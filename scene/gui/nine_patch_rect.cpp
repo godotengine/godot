@@ -30,8 +30,7 @@
 
 #include "nine_patch_rect.h"
 
-#include "scene/scene_string_names.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void NinePatchRect::_notification(int p_what) {
 	switch (p_what) {
@@ -46,7 +45,7 @@ void NinePatchRect::_notification(int p_what) {
 			texture->get_rect_region(rect, src_rect, rect, src_rect);
 
 			RID ci = get_canvas_item();
-			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
+			RS::get_singleton()->canvas_item_add_nine_patch(ci, rect, src_rect, texture->get_scaled_rid(), Vector2(margin[SIDE_LEFT], margin[SIDE_TOP]), Vector2(margin[SIDE_RIGHT], margin[SIDE_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center);
 		} break;
 	}
 }
@@ -111,7 +110,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 
 	queue_redraw();
 	update_minimum_size();
-	emit_signal(SceneStringNames::get_singleton()->texture_changed);
+	emit_signal(SceneStringName(texture_changed));
 }
 
 Ref<Texture2D> NinePatchRect::get_texture() const {

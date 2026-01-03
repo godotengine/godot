@@ -4,7 +4,7 @@
  *
  *   The FreeType internal cache interface (body).
  *
- * Copyright (C) 2000-2023 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -544,7 +544,6 @@
                           FTC_FaceID  face_id )
   {
     FTC_Manager  manager = cache->manager;
-    FTC_Node     frees   = NULL;
     FT_UFast     count   = cache->p;
     FT_UFast     i;
 
@@ -557,39 +556,25 @@
       for (;;)
       {
         FTC_Node  node = *pnode;
-        FT_Bool   list_changed = FALSE;
 
 
         if ( !node )
           break;
 
-        if ( cache->clazz.node_remove_faceid( node, face_id,
-                                              cache, &list_changed ) )
+        if ( cache->clazz.node_remove_faceid( node, face_id, cache, NULL ) )
         {
-          *pnode     = node->link;
-          node->link = frees;
-          frees      = node;
+          *pnode = node->link;
+
+          manager->cur_weight -= cache->clazz.node_weight( node, cache );
+          ftc_node_mru_unlink( node, manager );
+
+          cache->clazz.node_free( node, cache );
+
+          cache->slack++;
         }
         else
           pnode = &node->link;
       }
-    }
-
-    /* remove all nodes in the free list */
-    while ( frees )
-    {
-      FTC_Node  node;
-
-
-      node  = frees;
-      frees = node->link;
-
-      manager->cur_weight -= cache->clazz.node_weight( node, cache );
-      ftc_node_mru_unlink( node, manager );
-
-      cache->clazz.node_free( node, cache );
-
-      cache->slack++;
     }
 
     ftc_cache_resize( cache );

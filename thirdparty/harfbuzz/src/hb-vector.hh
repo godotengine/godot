@@ -32,17 +32,26 @@
 #include "hb-meta.hh"
 #include "hb-null.hh"
 
+// Change to 1 to force inline vector allocs, to see callsite in malloc-stats tool.
+#if 0
+#define HB_ALWAYS_INLINE_VECTOR_ALLOCS HB_ALWAYS_INLINE
+#else
+#define HB_ALWAYS_INLINE_VECTOR_ALLOCS
+#endif
 
 template <typename Type,
 	  bool sorted=false>
 struct hb_vector_t
 {
+  static constexpr bool realloc_move = true;
+
   typedef Type item_t;
   static constexpr unsigned item_size = hb_static_size (Type);
   using array_t = typename std::conditional<sorted, hb_sorted_array_t<Type>, hb_array_t<Type>>::type;
   using c_array_t = typename std::conditional<sorted, hb_sorted_array_t<const Type>, hb_array_t<const Type>>::type;
 
   hb_vector_t () = default;
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   hb_vector_t (std::initializer_list<Type> lst) : hb_vector_t ()
   {
     alloc (lst.size (), true);
@@ -51,32 +60,32 @@ struct hb_vector_t
   }
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
-  hb_vector_t (const Iterable &o) : hb_vector_t ()
+  explicit hb_vector_t (const Iterable &o) : hb_vector_t ()
   {
-    auto iter = hb_iter (o);
-    if (iter.is_random_access_iterator || iter.has_fast_len)
-      alloc (hb_len (iter), true);
-    hb_copy (iter, *this);
+    extend (o);
   }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   hb_vector_t (const hb_vector_t &o) : hb_vector_t ()
   {
-    alloc (o.length, true);
+    alloc_exact (o.length);
     if (unlikely (in_error ())) return;
     copy_array (o.as_array ());
   }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   hb_vector_t (array_t o) : hb_vector_t ()
   {
-    alloc (o.length, true);
+    alloc_exact (o.length);
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   hb_vector_t (c_array_t o) : hb_vector_t ()
   {
-    alloc (o.length, true);
+    alloc_exact (o.length);
     if (unlikely (in_error ())) return;
     copy_array (o);
   }
-  hb_vector_t (hb_vector_t &&o)
+  hb_vector_t (hb_vector_t &&o) noexcept
   {
     allocated = o.allocated;
     length = o.length;
@@ -84,6 +93,64 @@ struct hb_vector_t
     o.init ();
   }
   ~hb_vector_t () { fini (); }
+
+  template <unsigned n>
+  void
+  set_storage (Type (&array)[n])
+  { set_storage (array, n); }
+  void
+  set_storage (hb_array_t<Type> array)
+  { set_storage (array.arrayZ, array.length); }
+  template <typename T = Type,
+	    hb_enable_if (hb_is_trivially_constructible(T) &&
+			  hb_is_trivially_destructible(T))>
+  void
+  set_storage (Type *array, unsigned n)
+  {
+    assert (allocated == 0);
+    assert (length == 0);
+
+    arrayZ = array;
+    length = n;
+  }
+
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  void extend (const Iterable &o)
+  {
+    auto iter = hb_iter (o);
+    if (iter.is_random_access_iterator || iter.has_fast_len)
+    {
+      if (unlikely (!alloc (hb_len (iter), true)))
+	return;
+      unsigned count = hb_len (iter);
+      for (unsigned i = 0; i < count; i++)
+	push_has_room (*iter++);
+    }
+    while (iter)
+    {
+      if (unlikely (!alloc (length + 1)))
+        return;
+      unsigned room = allocated - length;
+      for (unsigned i = 0; i < room && iter; i++)
+	push_has_room (*iter++);
+    }
+  }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  void extend (array_t o)
+  {
+    alloc (length + o.length);
+    if (unlikely (in_error ())) return;
+    copy_array (o);
+  }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  void extend (c_array_t o)
+  {
+    alloc (length + o.length);
+    if (unlikely (in_error ())) return;
+    copy_array (o);
+  }
 
   public:
   int allocated = 0; /* < 0 means allocation failed. */
@@ -102,10 +169,7 @@ struct hb_vector_t
 
   void fini ()
   {
-    /* We allow a hack to make the vector point to a foriegn array
-     * by the user. In that case length/arrayZ are non-zero but
-     * allocated is zero. Don't free anything. */
-    if (allocated)
+    if (is_owned ())
     {
       shrink_vector (0);
       hb_free (arrayZ);
@@ -113,14 +177,16 @@ struct hb_vector_t
     init ();
   }
 
-  void reset ()
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  hb_vector_t &reset ()
   {
     if (unlikely (in_error ()))
       reset_error ();
     resize (0);
+    return *this;
   }
 
-  friend void swap (hb_vector_t& a, hb_vector_t& b)
+  friend void swap (hb_vector_t& a, hb_vector_t& b) noexcept
   {
     hb_swap (a.allocated, b.allocated);
     hb_swap (a.length, b.length);
@@ -130,14 +196,15 @@ struct hb_vector_t
   hb_vector_t& operator = (const hb_vector_t &o)
   {
     reset ();
-    alloc (o.length, true);
+    alloc_exact (o.length);
     if (unlikely (in_error ())) return *this;
 
+    length = 0;
     copy_array (o.as_array ());
 
     return *this;
   }
-  hb_vector_t& operator = (hb_vector_t &&o)
+  hb_vector_t& operator = (hb_vector_t &&o) noexcept
   {
     hb_swap (*this, o);
     return *this;
@@ -202,31 +269,16 @@ struct hb_vector_t
   Type * operator  + (unsigned int i) { return arrayZ + i; }
   const Type * operator  + (unsigned int i) const { return arrayZ + i; }
 
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   Type *push ()
   {
     if (unlikely (!resize (length + 1)))
       return std::addressof (Crap (Type));
     return std::addressof (arrayZ[length - 1]);
   }
-  template <typename T,
-	    typename T2 = Type,
-	    hb_enable_if (!std::is_copy_constructible<T2>::value &&
-			  std::is_copy_assignable<T>::value)>
-  Type *push (T&& v)
-  {
-    Type *p = push ();
-    if (p == std::addressof (Crap (Type)))
-      // If push failed to allocate then don't copy v, since this may cause
-      // the created copy to leak memory since we won't have stored a
-      // reference to it.
-      return p;
-    *p = std::forward<T> (v);
-    return p;
-  }
-  template <typename T,
-	    typename T2 = Type,
-	    hb_enable_if (std::is_copy_constructible<T2>::value)>
-  Type *push (T&& v)
+  template <typename... Args>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  Type *push (Args&&... args)
   {
     if (unlikely ((int) length >= allocated && !alloc (length + 1)))
       // If push failed to allocate then don't copy v, since this may cause
@@ -234,9 +286,20 @@ struct hb_vector_t
       // reference to it.
       return std::addressof (Crap (Type));
 
+    return push_has_room (std::forward<Args> (args)...);
+  }
+  template <typename... Args>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  Type *push_has_room (Args&&... args)
+  {
     /* Emplace. */
     Type *p = std::addressof (arrayZ[length++]);
-    return new (p) Type (std::forward<T> (v));
+    return new (p) Type (std::forward<Args> (args)...);
+  }
+
+  bool is_owned () const
+  {
+    return allocated != 0 && allocated != -1;
   }
 
   bool in_error () const { return allocated < 0; }
@@ -251,26 +314,34 @@ struct hb_vector_t
     allocated = -(allocated + 1);
   }
 
-  template <typename T = Type,
-	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
   Type *
-  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  _realloc (unsigned new_allocated)
   {
     if (!new_allocated)
     {
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
       return nullptr;
+    }
+    if (!allocated && arrayZ)
+    {
+      /* If we have a non-null arrayZ but allocated is 0, then we are
+       * reallocating from a foreign array. */
+      Type *new_array = (Type *) hb_malloc (new_allocated * sizeof (Type));
+      if (unlikely (!new_array))
+	return nullptr;
+      hb_memcpy ((void *) new_array, (const void *) arrayZ, length * sizeof (Type));
+      return new_array;
     }
     return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
   }
-  template <typename T = Type,
-	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
   Type *
-  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  _malloc_move (unsigned new_allocated)
   {
     if (!new_allocated)
     {
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
       return nullptr;
     }
     Type *new_array = (Type *) hb_malloc (new_allocated * sizeof (Type));
@@ -282,23 +353,33 @@ struct hb_vector_t
 	new_array[i] = std::move (arrayZ[i]);
 	arrayZ[i].~Type ();
       }
-      hb_free (arrayZ);
+      if (is_owned ())
+	hb_free (arrayZ);
     }
     return new_array;
   }
-  /* Specialization for hb_vector_t<hb_{vector,array}_t<U>> to speed up. */
+
   template <typename T = Type,
-	    hb_enable_if (hb_is_same (T, hb_vector_t<typename T::item_t>) ||
-			  hb_is_same (T, hb_array_t <typename T::item_t>))>
+	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
+  Type *
+  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  {
+    return _realloc (new_allocated);
+  }
+  template <typename T = Type,
+	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
+  Type *
+  realloc_vector (unsigned new_allocated, hb_priority<0>)
+  {
+    return _malloc_move (new_allocated);
+  }
+  /* Specialization for types that can be moved using realloc(). */
+  template <typename T = Type,
+	    hb_enable_if (T::realloc_move)>
   Type *
   realloc_vector (unsigned new_allocated, hb_priority<1>)
   {
-    if (!new_allocated)
-    {
-      hb_free (arrayZ);
-      return nullptr;
-    }
-    return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
+    return _realloc (new_allocated);
   }
 
   template <typename T = Type,
@@ -331,15 +412,18 @@ struct hb_vector_t
   template <typename T = Type,
 	    hb_enable_if (hb_is_trivially_copyable (T))>
   void
+  copy_array (hb_array_t<Type> other)
+  {
+    hb_memcpy ((void *) (arrayZ + length), (const void *) other.arrayZ, other.length * item_size);
+    length += other.length;
+  }
+  template <typename T = Type,
+	    hb_enable_if (hb_is_trivially_copyable (T))>
+  void
   copy_array (hb_array_t<const Type> other)
   {
-    length = other.length;
-    if (!HB_OPTIMIZE_SIZE_VAL && sizeof (T) >= sizeof (long long))
-      /* This runs faster because of alignment. */
-      for (unsigned i = 0; i < length; i++)
-	arrayZ[i] = other.arrayZ[i];
-    else
-       hb_memcpy ((void *) arrayZ, (const void *) other.arrayZ, length * item_size);
+    hb_memcpy ((void *) (arrayZ + length), (const void *) other.arrayZ, other.length * item_size);
+    length += other.length;
   }
   template <typename T = Type,
 	    hb_enable_if (!hb_is_trivially_copyable (T) &&
@@ -347,12 +431,9 @@ struct hb_vector_t
   void
   copy_array (hb_array_t<const Type> other)
   {
-    length = 0;
-    while (length < other.length)
-    {
-      length++;
-      new (std::addressof (arrayZ[length - 1])) Type (other.arrayZ[length - 1]);
-    }
+    for (unsigned i = 0; i < other.length; i++)
+      new (std::addressof (arrayZ[length + i])) Type (other.arrayZ[i]);
+    length += other.length;
   }
   template <typename T = Type,
 	    hb_enable_if (!hb_is_trivially_copyable (T) &&
@@ -362,25 +443,24 @@ struct hb_vector_t
   void
   copy_array (hb_array_t<const Type> other)
   {
-    length = 0;
-    while (length < other.length)
+    for (unsigned i = 0; i < other.length; i++)
     {
-      length++;
-      new (std::addressof (arrayZ[length - 1])) Type ();
-      arrayZ[length - 1] = other.arrayZ[length - 1];
+      new (std::addressof (arrayZ[length + i])) Type ();
+      arrayZ[length + i] = other.arrayZ[i];
     }
+    length += other.length;
   }
 
   void
   shrink_vector (unsigned size)
   {
     assert (size <= length);
-    if (!std::is_trivially_destructible<Type>::value)
+    if (!hb_is_trivially_destructible(Type))
     {
       unsigned count = length - size;
-      Type *p = arrayZ + length - 1;
+      Type *p = arrayZ + length;
       while (count--)
-        p--->~Type ();
+        (--p)->~Type ();
     }
     length = size;
   }
@@ -393,6 +473,7 @@ struct hb_vector_t
   }
 
   /* Allocate for size but don't adjust length. */
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
   bool alloc (unsigned int size, bool exact=false)
   {
     if (unlikely (in_error ()))
@@ -418,7 +499,6 @@ struct hb_vector_t
       while (size > new_allocated)
 	new_allocated += (new_allocated >> 1) + 8;
     }
-
 
     /* Reallocate */
 
@@ -449,8 +529,64 @@ struct hb_vector_t
 
     return true;
   }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool alloc_exact (unsigned int size)
+  {
+    return alloc (size, true);
+  }
 
-  bool resize (int size_, bool initialize = true, bool exact = false)
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  void clear ()
+  {
+    resize (0);
+  }
+
+  template <typename allocator_t>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool allocate_from_pool (allocator_t *allocator, unsigned size, unsigned int initialize = true)
+  {
+    if (allocator)
+    {
+      assert (!length && !allocated);
+      arrayZ = (Type *) allocator->alloc (size * sizeof (Type), alignof (Type));
+      if (unlikely (!arrayZ))
+      {
+	set_error ();
+	return false;
+      }
+      if (initialize)
+	grow_vector (size, hb_prioritize);
+      else
+	length = size;
+      return true;
+    }
+    return resize_full ((int) size, initialize, true);
+  }
+
+  template <typename allocator_t>
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool allocate_from_pool (allocator_t *allocator, const hb_vector_t &other)
+  {
+    if (unlikely (!allocate_from_pool (allocator, other.length, false)))
+      return false;
+    length = 0;
+    copy_array (other.as_array ());
+    return true;
+  }
+
+  template <typename allocator_t>
+  void shrink_back_to_pool (allocator_t *allocator, int size)
+  {
+    unsigned orig_length = length;
+
+    shrink (size, false);
+
+    if (allocator && !is_owned ())
+      allocator->discard (arrayZ + length, (orig_length - length) * sizeof (Type));
+  }
+
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool resize_full (int size_, bool initialize, bool exact)
   {
     unsigned int size = size_ < 0 ? 0u : (unsigned int) size_;
     if (!alloc (size, exact))
@@ -470,15 +606,26 @@ struct hb_vector_t
     length = size;
     return true;
   }
-  bool resize_exact (int size_, bool initialize = true)
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool resize (int size_)
   {
-    return resize (size_, initialize, true);
+    return resize_full (size_, true, false);
+  }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool resize_dirty (int size_)
+  {
+    return resize_full (size_, false, false);
+  }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  bool resize_exact (int size_)
+  {
+    return resize_full (size_, true, true);
   }
 
   Type pop ()
   {
     if (!length) return Null (Type);
-    Type v {std::move (arrayZ[length - 1])};
+    Type v (std::move (arrayZ[length - 1]));
     arrayZ[length - 1].~Type ();
     length--;
     return v;
@@ -513,8 +660,8 @@ struct hb_vector_t
 
     shrink_vector (size);
 
-    if (shrink_memory)
-      alloc (size, true); /* To force shrinking memory if needed. */
+    if (is_owned () && shrink_memory)
+      alloc_exact (size); /* To force shrinking memory if needed. */
   }
 
 

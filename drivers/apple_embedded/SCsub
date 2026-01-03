@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+from SCons.Script import Glob
+
+from platform_methods import setup_swift_builder
+
+Import("env")
+
+env_apple_embedded = env.Clone()
+
+# Enable module support
+env_apple_embedded.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+# Configure Swift builder
+apple_platform = env["APPLE_PLATFORM"]
+sdk_path = env["APPLE_SDK_PATH"]
+current_path = Dir(".").abspath
+bridging_header_filename = "bridging_header_apple_embedded.h"
+swift_files = Glob("*.swift")
+swift_file_names = list(map(lambda f: f.name, swift_files))
+setup_swift_builder(
+    env_apple_embedded, apple_platform, sdk_path, current_path, bridging_header_filename, swift_file_names
+)
+
+# Use bundled Vulkan headers
+vulkan_dir = "#thirdparty/vulkan"
+env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
+
+# Driver source files
+env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.mm")
+env_apple_embedded.add_source_files(env_apple_embedded.drivers_sources, "*.swift")

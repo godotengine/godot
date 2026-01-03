@@ -1,23 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HeightMapShape3D" inherits="Shape3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 3D height map shape used for physics collision.
+		A 3D heightmap shape used for physics collision.
 	</brief_description>
 	<description>
-		A 3D heightmap shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. This is useful for terrain, but it is limited as overhangs (such as caves) cannot be stored. Holes in a [HeightMapShape3D] are created by assigning very low values to points in the desired area.
+		A 3D heightmap shape, intended for use in physics to provide a shape for a [CollisionShape3D]. This type is most commonly used for terrain with vertices placed in a fixed-width grid.
+		The heightmap is represented as a 2D grid of height values, which represent the position of grid points on the Y axis. Grid points are spaced 1 unit apart on the X and Z axes, and the grid is centered on the origin of the [CollisionShape3D] node. Internally, each grid square is divided into two triangles.
+		Due to the nature of the heightmap, it cannot be used to model overhangs or caves, which would require multiple vertices at the same vertical location. Holes can be punched through the collision by assigning [constant @GDScript.NAN] to the height of the desired vertices (this is supported in both GodotPhysics3D and Jolt Physics). You could then insert meshes with their own separate collision to provide overhangs, caves, and so on.
 		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against than [ConcavePolygonShape3D], but it is significantly slower than primitive shapes like [BoxShape3D].
+		A heightmap collision shape can also be built by using an [Image] reference:
+		[codeblocks]
+		[gdscript]
+		var heightmap_texture = ResourceLoader.load("res://heightmap_image.exr")
+		var heightmap_image = heightmap_texture.get_image()
+		heightmap_image.convert(Image.FORMAT_RF)
+
+		var height_min = 0.0
+		var height_max = 10.0
+
+		update_map_data_from_image(heightmap_image, height_min, height_max)
+		[/gdscript]
+		[/codeblocks]
+		[b]Note:[/b] If you need to use a spacing different than 1 unit, you can adjust the [member Node3D.scale] of the shape. However, keep in mind that GodotPhysics3D does not support non-uniform scaling: you'll need to scale the Y axis by the same amount as the X and Z axes, which means the values in [member map_data] will need to be pre-scaled by the inverse of that scale. Also note that GodotPhysics3D does not support scaling at all for dynamic bodies (that is, non-frozen [RigidBody3D] nodes); to use a scaled [HeightMapShape3D] with those, you will need to use Jolt Physics.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_max_height" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the largest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+		<method name="get_min_height" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the smallest height value found in [member map_data]. Recalculates only when [member map_data] changes.
+			</description>
+		</method>
+		<method name="update_map_data_from_image">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="height_min" type="float" />
+			<param index="2" name="height_max" type="float" />
+			<description>
+				Updates [member map_data] with data read from an [Image] reference. Automatically resizes heightmap [member map_width] and [member map_depth] to fit the full image width and height.
+				The image needs to be in either [constant Image.FORMAT_RF] (32 bit), [constant Image.FORMAT_RH] (16 bit), or [constant Image.FORMAT_R8] (8 bit).
+				Each image pixel is read in as a float on the range from [code]0.0[/code] (black pixel) to [code]1.0[/code] (white pixel). This range value gets remapped to [param height_min] and [param height_max] to form the final height value.
+				[b]Note:[/b] Using a heightmap with 16-bit or 32-bit data, stored in EXR or HDR format is recommended. Using 8-bit height data, or a format like PNG that Godot imports as 8-bit, will result in a terraced terrain.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="map_data" type="PackedFloat32Array" setter="set_map_data" getter="get_map_data" default="PackedFloat32Array(0, 0, 0, 0)">
-			Height map data, pool array must be of [member map_width] * [member map_depth] size.
+			Heightmap data. The array's size must be equal to [member map_width] multiplied by [member map_depth].
 		</member>
 		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth" default="2">
-			Number of vertices in the depth of the height map. Changing this will resize the [member map_data].
+			Number of vertices in the depth of the heightmap. Changing this will resize the [member map_data].
 		</member>
 		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
-			Number of vertices in the width of the height map. Changing this will resize the [member map_data].
+			Number of vertices in the width of the heightmap. Changing this will resize the [member map_data].
 		</member>
 	</members>
 </class>

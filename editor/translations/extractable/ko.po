@@ -1,0 +1,200 @@
+# Korean translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-23 09:02+0000\n"
+"Last-Translator: nulta <un5450@outlook.com>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
+"ko/>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "New Code Region"
+msgstr "새 코드 구역"
+
+msgid "Pick a color from the screen."
+msgstr "화면에서 색상을 고르세요."
+
+msgid "Pick a color from the application window."
+msgstr "프로그램 창에서 색상을 고르세요."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "헥스 코드(\"#ff0000\") 또는 영어 색상 이름(\"red\")을 넣어 주세요."
+
+msgid "Save"
+msgstr "저장"
+
+msgid "Clear"
+msgstr "지우기"
+
+msgid "Select a picker shape."
+msgstr "피커 모양을 고르세요."
+
+msgid "Select a picker mode."
+msgstr "피커 모드를 고르세요."
+
+msgid "Hex code or named color"
+msgstr "헥스 코드 또는 색상 이름"
+
+msgid "Add current color as a preset."
+msgstr "현재 색상을 프리셋으로 추가합니다."
+
+msgid "Network"
+msgstr "네트워크"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"\"%s\" 파일이 이미 있습니다.\n"
+"덮어쓰시겠습니까?"
+
+msgid "Open"
+msgstr "열기"
+
+msgid "Select Current Folder"
+msgstr "현재 폴더 선택"
+
+msgid "Select This Folder"
+msgstr "이 폴더 선택"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "이 폴더에 접근할 권한이 없습니다."
+
+msgid "All Recognized"
+msgstr "인식 가능한 모든 파일"
+
+msgid "All Files"
+msgstr "모든 파일"
+
+msgid "Open a File"
+msgstr "파일 열기"
+
+msgid "Open File(s)"
+msgstr "여러 파일 열기"
+
+msgid "Open a Directory"
+msgstr "디렉토리 열기"
+
+msgid "Open a File or Directory"
+msgstr "디렉토리 또는 파일 열기"
+
+msgid "Save a File"
+msgstr "파일로 저장"
+
+msgid "Go to previous folder."
+msgstr "이전 폴더로 이동합니다."
+
+msgid "Go to next folder."
+msgstr "다음 폴더로 이동합니다."
+
+msgid "Go to parent folder."
+msgstr "부모 폴더로 이동합니다."
+
+msgid "Path:"
+msgstr "경로:"
+
+msgid "Refresh files."
+msgstr "파일을 새로고침합니다."
+
+msgid "Directories & Files:"
+msgstr "디렉토리 & 파일:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "숨긴 파일의 표시 여부를 토글합니다."
+
+msgid "File:"
+msgstr "파일:"
+
+msgid "Create Folder"
+msgstr "폴더 만들기"
+
+msgid "Name:"
+msgstr "이름:"
+
+msgid "Could not create folder."
+msgstr "폴더를 만들 수 없습니다."
+
+msgid "Invalid extension, or empty filename."
+msgstr "잘못된 확장자이거나 파일명이 비어 있습니다."
+
+msgid "Zoom Out"
+msgstr "줌 아웃"
+
+msgid "Zoom Reset"
+msgstr "줌 재설정"
+
+msgid "Zoom In"
+msgstr "줌 인"
+
+msgid "Toggle the visual grid."
+msgstr "배경 격자판을 보이거나 숨깁니다."
+
+msgid "Toggle snapping to the grid."
+msgstr "격자 스냅을 켜거나 끕니다."
+
+msgid "Change the snapping distance."
+msgstr "스냅의 거리를 변경합니다."
+
+msgid "Toggle the graph minimap."
+msgstr "그래프 미니맵을 활성화합니다."
+
+msgid "Automatically arrange selected nodes."
+msgstr "선택된 노드들을 자동으로 정렬합니다."
+
+msgid "Same as Layout Direction"
+msgstr "레이아웃 방향과 같음"
+
+msgid "Auto-Detect Direction"
+msgstr "방향 자동 감지"
+
+msgid "Left-to-Right"
+msgstr "좌-우 방향으로"
+
+msgid "Right-to-Left"
+msgstr "우-좌 방향으로"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "좌-우 방향 표식 (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "우-좌 방향 표식 (RLM)"
+
+msgid "Cut"
+msgstr "잘라내기"
+
+msgid "Copy"
+msgstr "복사"
+
+msgid "Paste"
+msgstr "붙여넣기"
+
+msgid "Select All"
+msgstr "모두 선택"
+
+msgid "Undo"
+msgstr "실행 취소"
+
+msgid "Redo"
+msgstr "다시 실행"
+
+msgid "Text Writing Direction"
+msgstr "텍스트 쓰기 방향"
+
+msgid "Display Control Characters"
+msgstr "제어 문자 표시"
+
+msgid "Insert Control Character"
+msgstr "제어 문자 삽입"
+
+msgid "(Other)"
+msgstr "(기타)"

@@ -31,22 +31,25 @@
 #include "editor_zoom_widget.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
+#include "core/string/translation_server.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 
 void EditorZoomWidget::_update_zoom_label() {
+	const String &lang = _get_locale();
+
 	String zoom_text;
 	// The zoom level displayed is relative to the editor scale
 	// (like in most image editors). Its lower bound is clamped to 1 as some people
 	// lower the editor scale to increase the available real estate,
 	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
-		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)));
+		zoom_text = TranslationServer::get_singleton()->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)), lang);
 	} else {
 		// 2 decimal places if the zoom is below 10%, 1 decimal place if it's below 1000%.
-		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, (zoom >= 0.1) ? 0.1 : 0.01)));
+		zoom_text = TranslationServer::get_singleton()->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, (zoom >= 0.1) ? 0.1 : 0.01)), lang);
 	}
-	zoom_text += " " + TS->percent_sign();
+	zoom_text += " " + TranslationServer::get_singleton()->get_percent_sign(lang);
 	zoom_reset->set_text(zoom_text);
 }
 
@@ -141,22 +144,15 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 			}
 		}
 	} else {
-		// Base increment factor defined as the twelveth root of two.
-		// This allows for a smooth geometric evolution of the zoom, with the advantage of
-		// visiting all integer power of two scale factors.
-		// Note: this is analogous to the 'semitone' interval in the music world
-		// In order to avoid numerical imprecisions, we compute and edit a zoom index
-		// with the following relation: zoom = 2 ^ (index / 12)
-
 		if (zoom < CMP_EPSILON || p_increment_count == 0) {
 			return;
 		}
 
-		// zoom = 2**(index/12) => log2(zoom) = index/12
-		float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
-
-		float new_zoom_index = closest_zoom_index + p_increment_count;
-		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+		// Zoom is calculated as pow(zoom_factor, zoom_step).
+		// This ensures the zoom will always equal 100% when zoom_step is 0.
+		float zoom_factor = EDITOR_GET("editors/2d/zoom_speed_factor");
+		float current_zoom_step = Math::round(Math::log(zoom_noscale) / Math::log(zoom_factor));
+		float new_zoom = Math::pow(zoom_factor, current_zoom_step + p_increment_count);
 
 		// Restore Editor scale transformation.
 		new_zoom *= MAX(1, EDSCALE);
@@ -167,10 +163,9 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 
 void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			zoom_minus->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			zoom_plus->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			zoom_minus->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_plus->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 		} break;
 	}
 }
@@ -194,41 +189,44 @@ void EditorZoomWidget::set_shortcut_context(Node *p_node) const {
 EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
+	zoom_minus->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_minus->set_flat(true);
-	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
+	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTRC("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
-	zoom_minus->set_focus_mode(FOCUS_NONE);
+	zoom_minus->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(zoom_minus);
-	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
+	zoom_minus->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
+	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
-	zoom_reset->add_theme_style_override("normal", empty_stylebox);
-	zoom_reset->add_theme_style_override("hover", empty_stylebox);
+	zoom_reset->add_theme_style_override(CoreStringName(normal), empty_stylebox);
+	zoom_reset->add_theme_style_override(SceneStringName(hover), empty_stylebox);
 	zoom_reset->add_theme_style_override("focus", empty_stylebox);
-	zoom_reset->add_theme_style_override("pressed", empty_stylebox);
+	zoom_reset->add_theme_style_override(SceneStringName(pressed), empty_stylebox);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
-	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
+	zoom_reset->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
 
 	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
-	zoom_reset->set_focus_mode(FOCUS_NONE);
+	zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
 	zoom_reset->set_custom_minimum_size(Size2(56 * EDSCALE, 0));
 	add_child(zoom_reset);
-	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
+	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 
 	zoom_plus = memnew(Button);
+	zoom_plus->set_accessibility_name(TTRC("Zoom In"));
 	zoom_plus->set_flat(true);
-	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
+	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTRC("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
-	zoom_plus->set_focus_mode(FOCUS_NONE);
+	zoom_plus->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(zoom_plus);
-	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
+	zoom_plus->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 
 	_update_zoom_label();
 

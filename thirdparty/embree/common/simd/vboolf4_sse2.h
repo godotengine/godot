@@ -119,7 +119,7 @@ namespace embree
 #if defined(__aarch64__)
   template<int i0, int i1, int i2, int i3>
   __forceinline vboolf4 shuffle(const vboolf4& v) {
-    return vreinterpretq_f32_u8(vqtbl1q_u8( vreinterpretq_u8_s32(v), _MN_SHUFFLE(i0, i1, i2, i3)));
+    return vreinterpretq_f32_u8(vqtbl1q_u8( vreinterpretq_u8_s32((int32x4_t)v.v), _MN_SHUFFLE(i0, i1, i2, i3)));
   }
 
   template<int i0, int i1, int i2, int i3>

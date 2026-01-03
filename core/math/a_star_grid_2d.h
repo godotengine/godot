@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef A_STAR_GRID_2D_H
-#define A_STAR_GRID_2D_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
-#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
 class AStarGrid2D : public RefCounted {
@@ -56,11 +54,19 @@ public:
 		HEURISTIC_MAX,
 	};
 
+	enum CellShape {
+		CELL_SHAPE_SQUARE,
+		CELL_SHAPE_ISOMETRIC_RIGHT,
+		CELL_SHAPE_ISOMETRIC_DOWN,
+		CELL_SHAPE_MAX,
+	};
+
 private:
 	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
+	CellShape cell_shape = CELL_SHAPE_SQUARE;
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
@@ -70,7 +76,6 @@ private:
 	struct Point {
 		Vector2i id;
 
-		bool solid = false;
 		Vector2 pos;
 		real_t weight_scale = 1.0;
 
@@ -80,6 +85,10 @@ private:
 		real_t f_score = 0;
 		uint64_t open_pass = 0;
 		uint64_t closed_pass = 0;
+
+		// Used for getting last_closest_point.
+		real_t abs_g_score = 0;
+		real_t abs_f_score = 0;
 
 		Point() {}
 
@@ -99,17 +108,20 @@ private:
 		}
 	};
 
+	LocalVector<bool> solid_mask;
 	LocalVector<LocalVector<Point>> points;
 	Point *end = nullptr;
+	Point *last_closest_point = nullptr;
 
 	uint64_t pass = 1;
 
 private: // Internal routines.
+	_FORCE_INLINE_ size_t _to_mask_index(int32_t p_x, int32_t p_y) const {
+		return ((p_y - region.position.y + 1) * (region.size.x + 2)) + p_x - region.position.x + 1;
+	}
+
 	_FORCE_INLINE_ bool _is_walkable(int32_t p_x, int32_t p_y) const {
-		if (region.has_point(Vector2i(p_x, p_y))) {
-			return !points[p_y - region.position.y][p_x - region.position.x].solid;
-		}
-		return false;
+		return !solid_mask[_to_mask_index(p_x, p_y)];
 	}
 
 	_FORCE_INLINE_ Point *_get_point(int32_t p_x, int32_t p_y) {
@@ -117,6 +129,18 @@ private: // Internal routines.
 			return &points[p_y - region.position.y][p_x - region.position.x];
 		}
 		return nullptr;
+	}
+
+	_FORCE_INLINE_ void _set_solid_unchecked(int32_t p_x, int32_t p_y, bool p_solid) {
+		solid_mask[_to_mask_index(p_x, p_y)] = p_solid;
+	}
+
+	_FORCE_INLINE_ void _set_solid_unchecked(const Vector2i &p_id, bool p_solid) {
+		solid_mask[_to_mask_index(p_id.x, p_id.y)] = p_solid;
+	}
+
+	_FORCE_INLINE_ bool _get_solid_unchecked(const Vector2i &p_id) const {
+		return solid_mask[_to_mask_index(p_id.x, p_id.y)];
 	}
 
 	_FORCE_INLINE_ Point *_get_point_unchecked(int32_t p_x, int32_t p_y) {
@@ -133,16 +157,23 @@ private: // Internal routines.
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
 	Point *_jump(Point *p_from, Point *p_to);
-	bool _solve(Point *p_begin_point, Point *p_end_point);
+	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
+	Point *_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive = false);
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
+	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_end_id);
 	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
+
+#ifndef DISABLE_DEPRECATED
+	TypedArray<Vector2i> _get_id_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> _get_point_path_bind_compat_88047(const Vector2i &p_from, const Vector2i &p_to);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_region(const Rect2i &p_region);
@@ -156,6 +187,9 @@ public:
 
 	void set_cell_size(const Size2 &p_cell_size);
 	Size2 get_cell_size() const;
+
+	void set_cell_shape(CellShape p_cell_shape);
+	CellShape get_cell_shape() const;
 
 	void update();
 
@@ -187,11 +221,11 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
-	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
+	TypedArray<Dictionary> get_point_data_in_region(const Rect2i &p_region) const;
+	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
 VARIANT_ENUM_CAST(AStarGrid2D::Heuristic);
-
-#endif // A_STAR_GRID_2D_H
+VARIANT_ENUM_CAST(AStarGrid2D::CellShape)

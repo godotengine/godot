@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINUXBSD_EXPORT_PLUGIN_H
-#define LINUXBSD_EXPORT_PLUGIN_H
+#pragma once
 
 #include "core/io/file_access.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/resources/image_texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
@@ -48,14 +47,14 @@ class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 		String cmd_args;
 		bool wait = false;
 
-		SSHCleanupCommand(){};
+		SSHCleanupCommand() {}
 		SSHCleanupCommand(const String &p_host, const String &p_port, const Vector<String> &p_ssh_arg, const String &p_cmd_args, bool p_wait = false) {
 			host = p_host;
 			port = p_port;
 			ssh_args = p_ssh_arg;
 			cmd_args = p_cmd_args;
 			wait = p_wait;
-		};
+		}
 	};
 
 	Ref<ImageTexture> run_icon;
@@ -69,26 +68,26 @@ class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 	bool is_shebang(const String &p_path) const;
 
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
+	String _get_exe_arch(const String &p_path) const;
 
 public:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 	virtual String get_template_file_name(const String &p_target, const String &p_arch) const override;
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) override;
 	virtual bool is_executable(const String &p_path) const override;
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformLinuxBSD();
+	virtual void initialize() override;
 };
-
-#endif // LINUXBSD_EXPORT_PLUGIN_H

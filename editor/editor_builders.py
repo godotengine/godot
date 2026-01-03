@@ -1,171 +1,154 @@
-"""Functions used to generate source files during build time
+"""Functions used to generate source files during build time"""
 
-All such functions are invoked in a subprocess on Windows to prevent build flakiness.
-
-"""
 import os
 import os.path
-import shutil
 import subprocess
 import tempfile
 import uuid
-import zlib
-from platform_methods import subprocess_main
+
+import methods
+
+
+def doc_data_class_path_builder(target, source, env):
+    paths = dict(sorted(source[0].read().items()))
+    data = "\n".join([f'\t{{"{key}", "{value}"}},' for key, value in paths.items()])
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            f"""\
+struct _DocDataClassPath {{
+	const char *name;
+	const char *path;
+}};
+
+inline constexpr int _doc_data_class_path_count = {len(paths)};
+inline constexpr _DocDataClassPath _doc_data_class_paths[{len(paths) + 1}] = {{
+	{data}
+	{{nullptr, nullptr}},
+}};
+"""
+        )
+
+
+def register_exporters_builder(target, source, env):
+    platforms = source[0].read()
+    exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
+    exp_reg = "\n\t".join([f"register_{p}_exporter();" for p in platforms])
+    exp_type = "\n\t".join([f"register_{p}_exporter_types();" for p in platforms])
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(
+            f"""\
+#include "register_exporters.h"
+
+{exp_inc}
+
+void register_exporters() {{
+	{exp_reg}
+}}
+
+void register_exporter_types() {{
+	{exp_type}
+}}
+"""
+        )
 
 
 def make_doc_header(target, source, env):
-    dst = target[0]
-    g = open(dst, "w", encoding="utf-8")
-    buf = ""
-    docbegin = ""
-    docend = ""
-    for src in source:
-        if not src.endswith(".xml"):
-            continue
-        with open(src, "r", encoding="utf-8") as f:
-            content = f.read()
-        buf += content
+    buffer = b"".join([methods.get_buffer(src) for src in map(str, source)])
+    decomp_size = len(buffer)
+    buffer = methods.compress_buffer(buffer)
 
-    buf = (docbegin + buf + docend).encode("utf-8")
-    decomp_size = len(buf)
-
-    # Use maximum zlib compression level to further reduce file size
-    # (at the cost of initial build times).
-    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _DOC_DATA_RAW_H\n")
-    g.write("#define _DOC_DATA_RAW_H\n")
-    g.write('static const char *_doc_data_hash = "' + str(hash(buf)) + '";\n')
-    g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
-    g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
-    g.write("static const unsigned char _doc_data_compressed[] = {\n")
-    for i in range(len(buf)):
-        g.write("\t" + str(buf[i]) + ",\n")
-    g.write("};\n")
-
-    g.write("#endif")
-
-    g.close()
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+inline constexpr const char *_doc_data_hash = "{hash(buffer)}";
+inline constexpr int _doc_data_compressed_size = {len(buffer)};
+inline constexpr int _doc_data_uncompressed_size = {decomp_size};
+inline constexpr const unsigned char _doc_data_compressed[] = {{
+	{methods.format_buffer(buffer, 1)}
+}};
+""")
 
 
-def make_fonts_header(target, source, env):
-    dst = target[0]
+def make_translations(target, source, env):
+    target_h, target_cpp = str(target[0]), str(target[1])
 
-    g = open(dst, "w", encoding="utf-8")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _EDITOR_FONTS_H\n")
-    g.write("#define _EDITOR_FONTS_H\n")
-
-    # Saving uncompressed, since FreeType will reference from memory pointer.
-    for i in range(len(source)):
-        with open(source[i], "rb") as f:
-            buf = f.read()
-
-        name = os.path.splitext(os.path.basename(source[i]))[0]
-
-        g.write("static const int _font_" + name + "_size = " + str(len(buf)) + ";\n")
-        g.write("static const unsigned char _font_" + name + "[] = {\n")
-        for j in range(len(buf)):
-            g.write("\t" + str(buf[j]) + ",\n")
-
-        g.write("};\n")
-
-    g.write("#endif")
-
-    g.close()
-
-
-def make_translations_header(target, source, env, category):
-    dst = target[0]
-
-    g = open(dst, "w", encoding="utf-8")
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _{}_TRANSLATIONS_H\n".format(category.upper()))
-    g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
-
-    sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
-
-    msgfmt_available = shutil.which("msgfmt") is not None
-
-    if not msgfmt_available:
-        print("WARNING: msgfmt is not found, using .po files instead of .mo")
+    category = os.path.basename(target_h).split("_")[0]
+    sorted_paths = sorted([src.abspath for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
 
     xl_names = []
-    for i in range(len(sorted_paths)):
-        if msgfmt_available:
-            mo_path = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex + ".mo")
-            cmd = "msgfmt " + sorted_paths[i] + " --no-hash -o " + mo_path
-            try:
-                subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                with open(mo_path, "rb") as f:
-                    buf = f.read()
-            except OSError as e:
-                print(
-                    "WARNING: msgfmt execution failed, using .po file instead of .mo: path=%r; [%s] %s"
-                    % (sorted_paths[i], e.__class__.__name__, e)
-                )
-                with open(sorted_paths[i], "rb") as f:
-                    buf = f.read()
-            finally:
+    msgfmt = env.Detect("msgfmt")
+    if not msgfmt:
+        methods.print_warning("msgfmt not found, using .po files instead of .mo")
+
+    with methods.generated_wrapper(target_cpp) as file:
+        for path in sorted_paths:
+            name = os.path.splitext(os.path.basename(path))[0]
+            # msgfmt erases non-translated messages, so avoid using it if exporting the POT.
+            if msgfmt and name != category:
+                mo_path = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex + ".mo")
+                cmd = f"{msgfmt} {path} --no-hash -o {mo_path}"
                 try:
-                    os.remove(mo_path)
+                    subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
+                    buffer = methods.get_buffer(mo_path)
                 except OSError as e:
-                    # Do not fail the entire build if it cannot delete a temporary file
-                    print(
-                        "WARNING: Could not delete temporary .mo file: path=%r; [%s] %s"
-                        % (mo_path, e.__class__.__name__, e)
+                    methods.print_warning(
+                        "msgfmt execution failed, using .po file instead of .mo: path=%r; [%s] %s"
+                        % (path, e.__class__.__name__, e)
                     )
-        else:
-            with open(sorted_paths[i], "rb") as f:
-                buf = f.read()
+                    buffer = methods.get_buffer(path)
+                finally:
+                    try:
+                        if os.path.exists(mo_path):
+                            os.remove(mo_path)
+                    except OSError as e:
+                        # Do not fail the entire build if it cannot delete a temporary file.
+                        methods.print_warning(
+                            "Could not delete temporary .mo file: path=%r; [%s] %s" % (mo_path, e.__class__.__name__, e)
+                        )
+            else:
+                buffer = methods.get_buffer(path)
+                if name == category:
+                    name = "source"
 
-        decomp_size = len(buf)
-        # Use maximum zlib compression level to further reduce file size
-        # (at the cost of initial build times).
-        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
-        name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
+            decomp_size = len(buffer)
+            buffer = methods.compress_buffer(buffer)
 
-        g.write("static const unsigned char _{}_translation_{}_compressed[] = {{\n".format(category, name))
-        for j in range(len(buf)):
-            g.write("\t" + str(buf[j]) + ",\n")
+            file.write(f"""\
+inline constexpr const unsigned char _{category}_translation_{name}_compressed[] = {{
+	{methods.format_buffer(buffer, 1)}
+}};
 
-        g.write("};\n")
+""")
 
-        xl_names.append([name, len(buf), str(decomp_size)])
+            xl_names.append([name, len(buffer), decomp_size])
 
-    g.write("struct {}TranslationList {{\n".format(category.capitalize()))
-    g.write("\tconst char* lang;\n")
-    g.write("\tint comp_size;\n")
-    g.write("\tint uncomp_size;\n")
-    g.write("\tconst unsigned char* data;\n")
-    g.write("};\n\n")
-    g.write("static {}TranslationList _{}_translations[] = {{\n".format(category.capitalize(), category))
-    for x in xl_names:
-        g.write(
-            '\t{{ "{}", {}, {}, _{}_translation_{}_compressed }},\n'.format(x[0], str(x[1]), str(x[2]), category, x[0])
-        )
-    g.write("\t{nullptr, 0, 0, nullptr}\n")
-    g.write("};\n")
+        file.write(f"""\
+#include "{target_h}"
 
-    g.write("#endif")
+const EditorTranslationList _{category}_translations[] = {{
+""")
 
-    g.close()
+        for x in xl_names:
+            file.write(f'\t{{ "{x[0]}", {x[1]}, {x[2]}, _{category}_translation_{x[0]}_compressed }},\n')
 
+        file.write("""\
+	{ nullptr, 0, 0, nullptr },
+};
+""")
 
-def make_editor_translations_header(target, source, env):
-    make_translations_header(target, source, env, "editor")
+    with methods.generated_wrapper(target_h) as file:
+        file.write(f"""\
 
+#ifndef EDITOR_TRANSLATION_LIST
+#define EDITOR_TRANSLATION_LIST
 
-def make_property_translations_header(target, source, env):
-    make_translations_header(target, source, env, "property")
+struct EditorTranslationList {{
+	const char* lang;
+	int comp_size;
+	int uncomp_size;
+	const unsigned char* data;
+}};
 
+#endif // EDITOR_TRANSLATION_LIST
 
-def make_doc_translations_header(target, source, env):
-    make_translations_header(target, source, env, "doc")
-
-
-if __name__ == "__main__":
-    subprocess_main(globals())
+extern const EditorTranslationList _{category}_translations[];
+""")

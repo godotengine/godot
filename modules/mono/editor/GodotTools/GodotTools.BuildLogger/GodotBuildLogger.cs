@@ -7,11 +7,11 @@ namespace GodotTools.BuildLogger
 {
     public class GodotBuildLogger : ILogger
     {
-        public string Parameters { get; set; }
+        public string? Parameters { get; set; }
         public LoggerVerbosity Verbosity { get; set; }
 
-        private StreamWriter _logStreamWriter;
-        private StreamWriter _issuesStreamWriter;
+        private StreamWriter _logStreamWriter = StreamWriter.Null;
+        private StreamWriter _issuesStreamWriter = StreamWriter.Null;
         private int _indent;
 
         public void Initialize(IEventSource eventSource)
@@ -86,7 +86,7 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+            string errorLine = $@"error,{e.File?.CsvEscape() ?? string.Empty},{e.LineNumber},{e.ColumnNumber}," +
                                $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             _issuesStreamWriter.WriteLine(errorLine);
@@ -101,7 +101,7 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+            string warningLine = $@"warning,{e.File?.CsvEscape() ?? string.Empty},{e.LineNumber},{e.ColumnNumber}," +
                                  $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                  $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             _issuesStreamWriter.WriteLine(warningLine);
@@ -165,7 +165,7 @@ namespace GodotTools.BuildLogger
             bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
 
             if (hasSpecialChar)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
+                return "\"" + value.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 
             return value;
         }

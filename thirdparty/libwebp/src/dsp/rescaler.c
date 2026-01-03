@@ -12,7 +12,10 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <stddef.h>
 
+#include "src/dsp/cpu.h"
+#include "src/webp/types.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/rescaler_utils.h"
 
@@ -26,8 +29,8 @@
 //------------------------------------------------------------------------------
 // Row import
 
-void WebPRescalerImportRowExpand_C(WebPRescaler* const wrk,
-                                   const uint8_t* src) {
+void WebPRescalerImportRowExpand_C(WebPRescaler* WEBP_RESTRICT const wrk,
+                                   const uint8_t* WEBP_RESTRICT src) {
   const int x_stride = wrk->num_channels;
   const int x_out_max = wrk->dst_width * wrk->num_channels;
   int channel;
@@ -59,8 +62,8 @@ void WebPRescalerImportRowExpand_C(WebPRescaler* const wrk,
   }
 }
 
-void WebPRescalerImportRowShrink_C(WebPRescaler* const wrk,
-                                   const uint8_t* src) {
+void WebPRescalerImportRowShrink_C(WebPRescaler* WEBP_RESTRICT const wrk,
+                                   const uint8_t* WEBP_RESTRICT src) {
   const int x_stride = wrk->num_channels;
   const int x_out_max = wrk->dst_width * wrk->num_channels;
   int channel;
@@ -158,7 +161,8 @@ void WebPRescalerExportRowShrink_C(WebPRescaler* const wrk) {
 //------------------------------------------------------------------------------
 // Main entry calls
 
-void WebPRescalerImportRow(WebPRescaler* const wrk, const uint8_t* src) {
+void WebPRescalerImportRow(WebPRescaler* WEBP_RESTRICT const wrk,
+                           const uint8_t* WEBP_RESTRICT src) {
   assert(!WebPRescalerInputDone(wrk));
   if (!wrk->x_expand) {
     WebPRescalerImportRowShrink(wrk, src);

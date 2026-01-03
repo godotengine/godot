@@ -1,42 +1,40 @@
-# Exhaustive licensing information for files in the Godot Engine repository
-# =========================================================================
-#
-# This file aims at documenting the copyright and license for every source
-# file in the Godot Engine repository, and especially outline the files
-# whose license differs from the MIT/Expat license used by Godot Engine.
-#
-# It is written as a machine-readable format following the debian/copyright
-# specification. Globbing patterns (e.g. "Files: *") mean that they affect
-# all corresponding files (also recursively in subfolders), apart from those
-# with a more explicit copyright statement.
-#
-# Licenses are given with their debian/copyright short name (or SPDX identifier
-# if no standard short name exists) and are all included in plain text at the
-# end of this file (in alphabetical order).
-#
-# Disclaimer for thirdparty libraries:
-# ------------------------------------
-#
-# Licensing details for thirdparty libraries in the 'thirdparty/' directory
-# are given in summarized form, i.e. with only the "main" license described
-# in the library's license statement. Different licenses of single files or
-# code snippets in thirdparty libraries are not documented here.
-# For example:
-#   Files: ./thirdparty/zlib/
-#   Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
-#   License: Zlib
-# The exact copyright for each file in that library *may* differ, and some
-# files or code snippets might be distributed under other compatible licenses
-# (e.g. a public domain dedication), but as far as Godot Engine is concerned
-# the library is considered as a whole under the Zlib license.
-#
-# Note: When linking dynamically against thirdparty libraries instead of
-# building them into the Godot binary, you may remove the corresponding
-# license details from this file.
-
------------------------------------------------------------------------
-
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Comment:
+ Exhaustive licensing information for files in the Godot Engine repository
+ =========================================================================
+ .
+ This file aims at documenting the copyright and license for every source
+ file in the Godot Engine repository, and especially outline the files
+ whose license differs from the MIT/Expat license used by Godot Engine.
+ .
+ It is written as a machine-readable format following the debian/copyright
+ specification. Globbing patterns (e.g. "Files: *") mean that they affect
+ all corresponding files (also recursively in subfolders), apart from those
+ with a more explicit copyright statement.
+ .
+ Licenses are given with their debian/copyright short name (or SPDX identifier
+ if no standard short name exists) and are all included in plain text at the
+ end of this file (in alphabetical order).
+ .
+ Disclaimer for thirdparty libraries:
+ ------------------------------------
+ .
+ Licensing details for thirdparty libraries in the 'thirdparty/' directory
+ are given in summarized form, i.e. with only the "main" license described
+ in the library's license statement. Different licenses of single files or
+ code snippets in thirdparty libraries are not documented here.
+ For example:
+   Files: thirdparty/zlib/*
+   Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
+   License: Zlib
+ The exact copyright for each file in that library *may* differ, and some
+ files or code snippets might be distributed under other compatible licenses
+ (e.g. a public domain dedication), but as far as Godot Engine is concerned
+ the library is considered as a whole under the Zlib license.
+ .
+ Note: When linking dynamically against thirdparty libraries instead of
+ building them into the Godot binary, you may remove the corresponding
+ license details from this file.
 Upstream-Name: Godot Engine
 Upstream-Contact: Rémi Verschelde <contact@godotengine.org>
 Source: https://github.com/godotengine/godot
@@ -47,212 +45,296 @@ Copyright: 2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: ./icon.png
- ./icon.svg
- ./logo.png
- ./logo.svg
+Files: icon.png
+ icon.svg
+ logo.png
+ logo.svg
 Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
 
-Files: ./core/math/convex_hull.cpp
- ./core/math/convex_hull.h
+Files: core/math/convex_hull.cpp
+ core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2011, Ole Kniemeyer, MAXON, www.maxon.net
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
-Files: ./modules/lightmapper_rd/lm_compute.glsl
-Comment: Joint Non-Local Means (JNLM) denoiser
-Copyright: 2020, Manuel Prandini
- 2014-present, Godot Engine contributors
- 2007-2014, Juan Linietsky, Ariel Manzur
+Files: misc/dist/linux/org.godotengine.Godot.appdata.xml
+Comment: Linux AppStream Metadata File
+Copyright: 2017-2022, Rémi Verschelde
+License: CC0-1.0
+
+Files: modules/betsy/alpha_stitch.glsl
+ modules/betsy/bc1.glsl
+ modules/betsy/bc4.glsl
+ modules/betsy/bc6h.glsl
+Comment: Betsy
+Copyright: 2020-2022, Matias N. Goldberg
 License: Expat
 
-Files: ./platform/android/java/lib/aidl/com/android/*
- ./platform/android/java/lib/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/lib/src/com/google/android/*
- ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerCompat.java
- ./platform/android/java/lib/src/org/godotengine/godot/input/InputManagerV16.java
-Comment: The Android Open Source Project
-Copyright: 2008-2016, The Android Open Source Project
- 2002, Google, Inc.
-License: Apache-2.0
-
-Files: ./platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix.java
-Comment: ProcessPhoenix
-Copyright: 2015, Jake Wharton
-License: Apache-2.0
-
-Files: ./scene/animation/easing_equations.h
-Comment: Robert Penner's Easing Functions
-Copyright: 2001, Robert Penner
- 2014-present, Godot Engine contributors
- 2007-2014, Juan Linietsky, Ariel Manzur
-License: Expat
-
-Files: ./servers/physics_2d/godot_joints_2d.cpp
+Files: modules/godot_physics_2d/godot_joints_2d.cpp
 Comment: Chipmunk2D Joint Constraints
 Copyright: 2007, Scott Lembcke
 License: Expat
 
-Files: ./servers/physics_3d/collision_solver_3d_sat.cpp
-Comment: Open Dynamics Engine
-Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
-License: BSD-3-clause
-
-Files: ./servers/physics_3d/gjk_epa.cpp
- ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.cpp
- ./servers/physics_3d/joints/generic_6dof_joint_3d_sw.h
- ./servers/physics_3d/joints/hinge_joint_3d_sw.cpp
- ./servers/physics_3d/joints/hinge_joint_3d_sw.h
- ./servers/physics_3d/joints/jacobian_entry_3d_sw.h
- ./servers/physics_3d/joints/pin_joint_3d_sw.cpp
- ./servers/physics_3d/joints/pin_joint_3d_sw.h
- ./servers/physics_3d/joints/slider_joint_3d_sw.cpp
- ./servers/physics_3d/joints/slider_joint_3d_sw.h
- ./servers/physics_3d/soft_body_3d_sw.cpp
- ./servers/physics_3d/soft_body_3d_sw.h
- ./servers/physics_3d/shape_3d_sw.cpp
- ./servers/physics_3d/shape_3d_sw.h
+Files: modules/godot_physics_3d/gjk_epa.cpp
+ modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.cpp
+ modules/godot_physics_3d/joints/godot_generic_6dof_joint_3d.h
+ modules/godot_physics_3d/joints/godot_hinge_joint_3d.cpp
+ modules/godot_physics_3d/joints/godot_hinge_joint_3d.h
+ modules/godot_physics_3d/joints/godot_jacobian_entry_3d.h
+ modules/godot_physics_3d/joints/godot_pin_joint_3d.cpp
+ modules/godot_physics_3d/joints/godot_pin_joint_3d.h
+ modules/godot_physics_3d/joints/godot_slider_joint_3d.cpp
+ modules/godot_physics_3d/joints/godot_slider_joint_3d.h
+ modules/godot_physics_3d/godot_soft_body_3d.cpp
+ modules/godot_physics_3d/godot_soft_body_3d.h
+ modules/godot_physics_3d/godot_shape_3d.cpp
+ modules/godot_physics_3d/godot_shape_3d.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
-Files: ./servers/physics_3d/joints/cone_twist_joint_3d_sw.cpp
- ./servers/physics_3d/joints/cone_twist_joint_3d_sw.h
+Files: modules/godot_physics_3d/godot_collision_solver_3d_sat.cpp
+Comment: Open Dynamics Engine
+Copyright: 2001-2003, Russell L. Smith, Alen Ladavac, Nguyen Binh
+License: BSD-3-clause
+
+Files: modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.cpp
+ modules/godot_physics_3d/joints/godot_cone_twist_joint_3d.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
  2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat and Zlib
 
-Files: ./servers/rendering/renderer_rd/shaders/ss_effects_downsample.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_blur.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_importance_map.glsl
- ./servers/rendering/renderer_rd/shaders/ssao_interleave.glsl
- ./servers/rendering/renderer_rd/shaders/ssao.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_blur.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_importance_map.glsl
- ./servers/rendering/renderer_rd/shaders/ssil_interleave.glsl
- ./servers/rendering/renderer_rd/shaders/ssil.glsl
+Files: modules/jolt_physics/spaces/jolt_temp_allocator.cpp
+Comment: Jolt Physics
+Copyright: 2021, Jorrit Rouwe
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: modules/lightmapper_rd/lm_compute.glsl
+Comment: Joint Non-Local Means (JNLM) denoiser
+Copyright: 2020, Manuel Prandini
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: platform/android/java/editor/src/main/java/com/android/*
+ platform/android/java/lib/src/main/aidl/com/android/*
+ platform/android/java/lib/src/main/res/layout/status_bar_ongoing_event_progress_bar.xml
+ platform/android/java/lib/src/main/java/com/google/android/*
+Comment: The Android Open Source Project
+Copyright: 2008-2016, The Android Open Source Project
+ 2002, Google, Inc.
+License: Apache-2.0
+
+Files: platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix.java
+Comment: ProcessPhoenix
+Copyright: 2015, Jake Wharton
+License: Apache-2.0
+
+Files: scene/animation/easing_equations.h
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+ 2014-present, Godot Engine contributors
+ 2007-2014, Juan Linietsky, Ariel Manzur
+License: Expat
+
+Files: servers/audio/effects/audio_effect_pitch_shift.cpp
+Copyright: 2014-present Godot Engine contributors
+ 2007-2014 Juan Linietsky, Ariel Manzur
+ 1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
+License: Expat and WOL
+
+Files: servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
+Comment: NVidia's FXAA 3.11, simplified by Simon Rodriguez
+Copyright: 2014-2015, NVIDIA CORPORATION
+ 2017 Simon Rodriguez
+License: BSD-3-clause and Expat
+
+Files: servers/rendering/renderer_rd/shaders/effects/ss_effects_downsample.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_blur.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_importance_map.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssao.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl
+ servers/rendering/renderer_rd/shaders/effects/ssil.glsl
 Comment: Intel ASSAO and related files
 Copyright: 2016, Intel Corporation
 License: Expat
 
-Files: ./servers/rendering/renderer_rd/shaders/taa_resolve.glsl
+Files: servers/rendering/renderer_rd/shaders/effects/taa_resolve.glsl
 Comment: Temporal Anti-Aliasing resolve implementation
 Copyright: 2016, Panos Karabelas
 License: Expat
 
-Files: ./thirdparty/amd-fsr/
+Files: servers/rendering/renderer_rd/shaders/effects/smaa_blending.glsl
+ servers/rendering/renderer_rd/shaders/effects/smaa_weight_calculation.glsl
+ servers/rendering/renderer_rd/shaders/effects/smaa_edge_detection.glsl
+ thirdparty/smaa/*
+Comment: Subpixel Morphological Antialiasing
+Copyright: 2013, Jorge Jimenez
+ 2013, Jose I. Echevarria
+ 2013, Belen Masia
+ 2013, Fernando Navarro
+ 2013, Diego Gutierrez
+License: Expat
+
+Files: thirdparty/accesskit/*
+Comment: AccessKit
+Copyright: 2023, The AccessKit Authors.
+License: Expat
+
+Files: thirdparty/amd-fsr/*
 Comment: AMD FidelityFX Super Resolution
 Copyright: 2021, Advanced Micro Devices, Inc.
 License: Expat
 
-Files: ./thirdparty/amd-fsr2/
+Files: thirdparty/amd-fsr2/*
 Comment: AMD FidelityFX Super Resolution 2
 Copyright: 2022-2023, Advanced Micro Devices, Inc.
 License: Expat
 
-Files: ./thirdparty/angle/
+Files: thirdparty/angle/*
 Comment: ANGLE
 Copyright: 2018, The ANGLE Project Authors.
 License: BSD-3-clause
 
-Files: ./thirdparty/astcenc/
+Files: thirdparty/astcenc/*
 Comment: Arm ASTC Encoder
-Copyright: 2011-2023, Arm Limited
+Copyright: 2011-2025, Arm Limited
 License: Apache-2.0
 
-Files: ./thirdparty/basis_universal/
+Files: thirdparty/basis_universal/*
 Comment: Basis Universal
-Copyright: 2022, Binomial LLC.
+Copyright: 2019-2025, Binomial LLC.
 License: Apache-2.0
 
-Files: ./thirdparty/brotli/
+Files: thirdparty/brotli/*
 Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
 License: Expat
 
-Files: ./thirdparty/certs/ca-certificates.crt
+Files: thirdparty/certs/ca-bundle.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
 
-Files: ./thirdparty/clipper2/
+Files: thirdparty/clipper2/*
 Comment: Clipper2
-Copyright: 2010-2013, Angus Johnson
+Copyright: 2010-2025, Angus Johnson
 License: BSL-1.0
 
-Files: ./thirdparty/cvtt/
+Files: thirdparty/cvtt/*
 Comment: Convection Texture Tools Stand-Alone Kernels
 Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
 License: Expat
 
-Files: ./thirdparty/doctest/
+Files: thirdparty/d3d12ma/*
+Comment: D3D12 Memory Allocator
+Copyright: 2019-2022 Advanced Micro Devices, Inc.
+License: Expat
+
+Files: thirdparty/directx_headers/*
+Comment: DirectX Headers
+Copyright: Microsoft Corporation
+License: Expat
+
+Files: thirdparty/doctest/*
 Comment: doctest
 Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
-Files: ./thirdparty/embree/
+Files: thirdparty/dr_libs/*
+Comment: dr_libs
+Copyright: 2020, David Reid
+License: Unlicense or MIT-0
+
+Files: thirdparty/embree/*
 Comment: Embree
 Copyright: 2009-2021 Intel Corporation
 License: Apache-2.0
 
-Files: ./thirdparty/enet/
+Files: thirdparty/enet/*
 Comment: ENet
-Copyright: 2002-2020, Lee Salzman
+Copyright: 2002-2024, Lee Salzman
 License: Expat
 
-Files: ./thirdparty/etcpak/
+Files: thirdparty/etcpak/*
 Comment: etcpak
 Copyright: 2013-2022, Bartosz Taudul
 License: BSD-3-clause
 
-Files: ./thirdparty/fonts/DroidSans*.woff2
+Files: thirdparty/fonts/DroidSans*.woff2
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
 License: Apache-2.0
 
-Files: ./thirdparty/fonts/JetBrainsMono_Regular.woff2
+Files: thirdparty/fonts/Inter*.woff2
+Comment: Inter font
+Copyright: 2016, The Inter Project Authors
+License: OFL-1.1
+
+Files: thirdparty/fonts/JetBrainsMono_Regular.woff2
 Comment: JetBrains Mono font
 Copyright: 2020, JetBrains s.r.o.
 License: OFL-1.1
 
-Files: ./thirdparty/fonts/NotoSans*.woff2
+Files: thirdparty/fonts/NotoSans*.woff2
 Comment: Noto Sans font
 Copyright: 2012, Google Inc.
 License: OFL-1.1
 
-Files: ./thirdparty/freetype/
+Files: thirdparty/fonts/OpenSans*.woff2
+Comment: Open Sans font
+Copyright: 2020, The Open Sans Project Authors
+License: OFL-1.1
+
+Files: thirdparty/fonts/Vazirmatn*.woff2
+Comment: Vazirmatn font
+Copyright: 2015, The Vazirmatn Project Authors.
+License: OFL-1.1
+
+Files: thirdparty/freetype/*
 Comment: The FreeType Project
-Copyright: 1996-2023, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2025, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
-Files: ./thirdparty/glad/
+Files: thirdparty/glad/*
 Comment: glad
 Copyright: 2013-2022, David Herberth
  2013-2020, The Khronos Group Inc.
 License: CC0-1.0 and Apache-2.0
 
-Files: ./thirdparty/glslang/
+Files: thirdparty/glslang/*
 Comment: glslang
 Copyright: 2015-2020, Google, Inc.
   2014-2020, The Khronos Group Inc
   2002, NVIDIA Corporation.
 License: glslang
 
-Files: ./thirdparty/graphite/
+Files: thirdparty/graphite/*
 Comment: Graphite engine
 Copyright: 2010, SIL International
 License: Expat
 
-Files: ./thirdparty/harfbuzz/
+Files: thirdparty/grisu2/*
+Comment: Grisu2 float serialization algorithm
+Copyright: 2009, Florian Loitsch
+ 2018-2023, The simdjson authors
+License: Expat and Apache-2.0
+
+Files: thirdparty/harfbuzz/*
 Comment: HarfBuzz text shaping library
 Copyright: 2010-2022, Google, Inc.
  2015-2020, Ebrahim Byagowi
@@ -273,252 +355,318 @@ Copyright: 2010-2022, Google, Inc.
  2013-2015, Alexei Podtelezhnikov
 License: HarfBuzz
 
-Files: ./thirdparty/icu4c/
+Files: thirdparty/icu4c/*
 Comment: International Components for Unicode
-Copyright: 1991-2021, Unicode
+Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
-Files: ./thirdparty/jpeg-compressor/
-Comment: jpeg-compressor
-Copyright: 2012, Rich Geldreich
-License: public-domain or Apache-2.0
+Files: thirdparty/jolt_physics/*
+Comment: Jolt Physics
+Copyright: 2021, Jorrit Rouwe
+License: Expat
 
-Files: ./thirdparty/libktx/
+Files: thirdparty/libbacktrace/*
+Comment: libbacktrace
+Copyright: 2012-2021, Free Software Foundation, Inc.
+License: BSD-3-clause
+
+Files: thirdparty/libjpeg-turbo/*
+Comment: libjpeg-turbo
+Copyright: 2009-2025, D. R. Commander
+ 2015, Viktor Szathmáry.
+ 1991-2020, Thomas G. Lane, Guido Vollbeding
+License: BSD-3-clause and IJG
+
+Files: thirdparty/libktx/*
 Comment: KTX
 Copyright: 2013-2020, Mark Callow
  2010-2020 The Khronos Group, Inc.
 License: Apache-2.0
 
-Files: ./thirdparty/libogg/
+Files: thirdparty/libogg/*
 Comment: OggVorbis
 Copyright: 2002, Xiph.org Foundation
 License: BSD-3-clause
 
-Files: ./thirdparty/libpng/
+Files: thirdparty/libpng/*
 Comment: libpng
-Copyright: 1995-2019, The PNG Reference Library Authors.
- 2018-2019, Cosmin Truta.
+Copyright: 1995-2025, The PNG Reference Library Authors.
+ 2018-2025, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
-Files: ./thirdparty/libtheora/
+Files: thirdparty/libtheora/*
 Comment: OggTheora
 Copyright: 2002-2009, Xiph.org Foundation
 License: BSD-3-clause
 
-Files: ./thirdparty/libvorbis/
+Files: thirdparty/libvorbis/*
 Comment: OggVorbis
 Copyright: 2002-2015, Xiph.org Foundation
 License: BSD-3-clause
 
-Files: ./thirdparty/libwebp/
+Files: thirdparty/libwebp/*
 Comment: WebP codec
 Copyright: 2010, Google Inc.
 License: BSD-3-clause
 
-Files: ./thirdparty/mbedtls/
+Files: thirdparty/manifold/*
+Comment: Manifold
+Copyright: 2020-2025, The Manifold Authors
+License: Apache-2.0
+
+Files: thirdparty/mbedtls/*
 Comment: Mbed TLS
 Copyright: The Mbed TLS Contributors
 License: Apache-2.0
 
-Files: ./thirdparty/meshoptimizer/
+Files: thirdparty/meshoptimizer/*
 Comment: meshoptimizer
-Copyright: 2016-2022, Arseny Kapoulkine
+Copyright: 2016-2024, Arseny Kapoulkine
 License: Expat
 
-Files: ./thirdparty/minimp3/
-Comment: MiniMP3
-Copyright: lieff
-License: CC0-1.0
+Files: thirdparty/mingw-std-threads/*
+Comment: mingw-std-threads
+Copyright: 2016, Mega Limited
+License: BSD-2-clause
 
-Files: ./thirdparty/miniupnpc/
+Files: thirdparty/miniupnpc/*
 Comment: MiniUPnP Project
-Copyright: 2005-2023, Thomas Bernard
+Copyright: 2005-2025, Thomas Bernard
 License: BSD-3-clause
 
-Files: ./thirdparty/minizip/
+Files: thirdparty/minizip/*
 Comment: MiniZip
 Copyright: 1998-2010, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
 
-Files: ./thirdparty/misc/clipper.cpp
- ./thirdparty/misc/clipper.hpp
-Comment: Clipper
-Copyright: 2010-2017, Angus Johnson
-License: BSL-1.0
+Files: thirdparty/misc/bcdec.h
+Comment: bcdec
+Copyright: 2022, Sergii Kudlai
+License: Expat
 
-Files: ./thirdparty/misc/cubemap_coeffs.h
+Files: thirdparty/misc/cubemap_coeffs.h
 Comment: Fast Filtering of Reflection Probes
 Copyright: 2016, Activision Publishing, Inc.
 License: Expat
 
-Files: ./thirdparty/misc/fastlz.c
- ./thirdparty/misc/fastlz.h
+Files: thirdparty/misc/fastlz.c
+ thirdparty/misc/fastlz.h
 Comment: FastLZ
 Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
-Files: ./thirdparty/misc/ifaddrs-android.cc
- ./thirdparty/misc/ifaddrs-android.h
+Files: thirdparty/misc/FastNoiseLite.h
+Comment: FastNoise Lite
+Copyright: 2023, Jordan Peck and contributors
+License: Expat
+
+Files: thirdparty/misc/ifaddrs-android.cc
+ thirdparty/misc/ifaddrs-android.h
 Comment: libjingle
 Copyright: 2012-2013, Google Inc.
 License: BSD-3-clause
 
-Files: ./thirdparty/misc/mikktspace.c
- ./thirdparty/misc/mikktspace.h
+Files: thirdparty/misc/mikktspace.c
+ thirdparty/misc/mikktspace.h
 Comment: Tangent Space Normal Maps implementation
 Copyright: 2011, Morten S. Mikkelsen
 License: Zlib
 
-Files: ./thirdparty/misc/ok_color.h
- ./thirdparty/misc/ok_color_shader.h
+Files: thirdparty/misc/nvapi_minimal.h
+Comment: NVIDIA NVAPI (minimal excerpt)
+Copyright: 2019-2022, NVIDIA Corporation
+License: Expat
+
+Files: thirdparty/misc/ok_color.h
+ thirdparty/misc/ok_color_shader.h
 Comment: OK Lab color space
 Copyright: 2021, Björn Ottosson
 License: Expat
 
-Files: ./thirdparty/noise/FastNoiseLite.h
-Comment: FastNoise Lite
-Copyright: 2020, Jordan Peck and contributors
-License: Expat
-
-Files: ./thirdparty/misc/pcg.cpp
- ./thirdparty/misc/pcg.h
+Files: thirdparty/misc/pcg.cpp
+ thirdparty/misc/pcg.h
 Comment: Minimal PCG32 implementation
 Copyright: 2014, M.E. O'Neill
 License: Apache-2.0
 
-Files: ./thirdparty/misc/polypartition.cpp
- ./thirdparty/misc/polypartition.h
+Files: thirdparty/misc/polypartition.cpp
+ thirdparty/misc/polypartition.h
 Comment: PolyPartition / Triangulator
 Copyright: 2011-2021, Ivan Fratric and contributors
 License: Expat
 
-Files: ./thirdparty/misc/r128.c
- ./thirdparty/misc/r128.h
+Files: thirdparty/misc/qoa.h
+Comment: Quite OK Audio Format
+Copyright: 2023, Dominic Szablewski
+License: Expat
+
+Files: thirdparty/misc/r128.c
+ thirdparty/misc/r128.h
 Comment: r128 library
 Copyright: Alan Hickman
-License: public-domain or Unlicense
+License: Unlicense
 
-Files: ./thirdparty/misc/smaz.c
- ./thirdparty/misc/smaz.h
+Files: thirdparty/misc/smaz.c
+ thirdparty/misc/smaz.h
 Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
 
-Files: ./thirdparty/misc/smolv.cpp
- ./thirdparty/misc/smolv.h
+Files: thirdparty/misc/smolv.cpp
+ thirdparty/misc/smolv.h
 Comment: SMOL-V
-Copyright: 2016-2020, Aras Pranckevicius
-License: public-domain or Unlicense or Expat
+Copyright: 2016-2024, Aras Pranckevicius
+License: Unlicense or Expat
 
-Files: ./thirdparty/misc/stb_rect_pack.h
+Files: thirdparty/misc/stb_rect_pack.h
 Comment: stb libraries
 Copyright: Sean Barrett
-License: public-domain or Unlicense or Expat
+License: Unlicense or Expat
 
-Files: ./thirdparty/misc/yuv2rgb.h
+Files: thirdparty/misc/yuv2rgb.h
 Comment: YUV2RGB
 Copyright: 2008-2011, Robin Watts
 License: BSD-2-clause
 
-Files: ./thirdparty/msdfgen/
+Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
-Copyright: 2016-2022, Viktor Chlumsky
+Copyright: 2014-2025, Viktor Chlumsky
 License: Expat
 
-Files: ./thirdparty/nvapi/nvapi_minimal.h
-Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
-Copyright: 2019-2022, NVIDIA Corporation
-License: Expat
-
-Files: ./thirdparty/openxr/
+Files: thirdparty/openxr/*
 Comment: OpenXR Loader
-Copyright: 2020-2023, The Khronos Group Inc.
+Copyright: 2020-2025, The Khronos Group Inc.
 License: Apache-2.0
 
-Files: ./thirdparty/pcre2/
+Files: thirdparty/pcre2/*
 Comment: PCRE2
-Copyright: 1997-2022, University of Cambridge
- 2009-2022, Zoltan Herczeg
+Copyright: 1997-2024, University of Cambridge
+ 2009-2024, Zoltan Herczeg
 License: BSD-3-clause
 
-Files: ./thirdparty/recastnavigation/
+Files: thirdparty/recastnavigation/*
 Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
-Files: ./thirdparty/rvo2/
+Files: thirdparty/rvo2/*
 Comment: RVO2
 Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
-Files: ./thirdparty/spirv-reflect/
+Files: thirdparty/sdl/*
+Comment: SDL
+Copyright: 1997-2025, Sam Lantinga
+License: Zlib
+
+Files: thirdparty/sdl/hidapi/*
+Comment: hidapi
+Copyright: 2010, Alan Ott, Signal 11 Software
+License: BSD-3-clause
+
+Files: thirdparty/spirv-cross/*
+Comment: SPIRV-Cross
+Copyright: 2015-2021, Arm Limited
+License: Apache-2.0 or Expat
+
+Files: thirdparty/spirv-reflect/*
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
 
-Files: ./thirdparty/squish/
-Comment: libSquish
-Copyright: 2006, Simon Brown
-License: Expat
+Files: thirdparty/swappy-frame-pacing/*
+Comment: Swappy
+Copyright: 2019, The Android Open Source Project
+License: Apache-2.0
 
-Files: ./thirdparty/thorvg/
+Files: thirdparty/thorvg/*
 Comment: ThorVG
-Copyright: 2020-2023, The ThorVG Project
+Copyright: 2020-2024, The ThorVG Project
 License: Expat
 
-Files: ./thirdparty/tinyexr/
+Files: thirdparty/tinyexr/*
 Comment: TinyEXR
 Copyright: 2014-2021, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
 
-Files: ./thirdparty/vhacd/
+Files: thirdparty/ufbx/*
+Comment: ufbx
+Copyright: 2020, Samuli Raivio
+License: Expat
+
+Files: thirdparty/vhacd/*
 Comment: V-HACD
 Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
-Files: ./thirdparty/volk/
+Files: thirdparty/volk/*
 Comment: volk
-Copyright: 2018-2023, Arseny Kapoulkine
+Copyright: 2018-2024, Arseny Kapoulkine
 License: Expat
 
-Files: ./thirdparty/vulkan/
+Files: thirdparty/vulkan/*
 Comment: Vulkan Headers
-Copyright: 2014-2023, The Khronos Group Inc.
-  2014-2023, Valve Corporation
-  2014-2023, LunarG, Inc.
-  2015-2023, Google Inc.
+Copyright: 2014-2024, The Khronos Group Inc.
+  2014-2024, Valve Corporation
+  2014-2024, LunarG, Inc.
 License: Apache-2.0
 
-Files: ./thirdparty/vulkan/vk_mem_alloc.h
+Files: thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2021, Advanced Micro Devices, Inc.
+Copyright: 2017-2024, Advanced Micro Devices, Inc.
 License: Expat
 
-Files: ./thirdparty/wslay/
+Files: thirdparty/wayland/*
+Comment: Wayland core protocol
+Copyright: 2008-2012, Kristian Høgsberg
+  2010-2012, Intel Corporation
+  2011, Benjamin Franzke
+  2012, Collabora, Ltd.
+License: Expat
+
+Files: thirdparty/wayland-protocols/*
+Comment: Wayland protocols
+Copyright: 2008-2013, Kristian Høgsberg
+  2010-2013, Intel Corporation
+  2013, Rafael Antognolli
+  2013, Jasper St. Pierre
+  2014, Jonas Ådahl
+  2014, Jason Ekstrand
+  2014-2015, Collabora, Ltd.
+  2015, Red Hat Inc.
+License: Expat
+
+Files: thirdparty/wayland-protocols/mesa/wayland-drm.xml
+Comment: Mesa Wayland protocols
+Copyright: 2008-2011, Kristian Høgsberg
+  2010-2011, Intel Corporation
+License: X11
+
+Files: thirdparty/wslay/*
 Comment: Wslay
 Copyright: 2011, 2012, 2015, Tatsuhiro Tsujikawa
 License: Expat
 
-Files: ./thirdparty/xatlas/
+Files: thirdparty/xatlas/*
 Comment: xatlas
 Copyright: 2018-2020, Jonathan Young
   2013, Thekla, Inc
   2006, NVIDIA Corporation, Ignacio Castano
 License: Expat
 
-Files: ./thirdparty/zlib/
+Files: thirdparty/zlib/*
 Comment: zlib
-Copyright: 1995-2023, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2025, Jean-loup Gailly and Mark Adler
 License: Zlib
 
-Files: ./thirdparty/zstd/
+Files: thirdparty/zstd/*
 Comment: Zstandard
 Copyright: Meta Platforms, Inc. and affiliates.
 License: BSD-3-clause
@@ -526,6 +674,196 @@ License: BSD-3-clause
 
 
 License: Apache-2.0
+                               Apache License
+                         Version 2.0, January 2004
+                      http://www.apache.org/licenses/
+ .
+ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+ .
+ 1. Definitions.
+ .
+    "License" shall mean the terms and conditions for use, reproduction,
+    and distribution as defined by Sections 1 through 9 of this document.
+ .
+    "Licensor" shall mean the copyright owner or entity authorized by
+    the copyright owner that is granting the License.
+ .
+    "Legal Entity" shall mean the union of the acting entity and all
+    other entities that control, are controlled by, or are under common
+    control with that entity. For the purposes of this definition,
+    "control" means (i) the power, direct or indirect, to cause the
+    direction or management of such entity, whether by contract or
+    otherwise, or (ii) ownership of fifty percent (50%) or more of the
+    outstanding shares, or (iii) beneficial ownership of such entity.
+ .
+    "You" (or "Your") shall mean an individual or Legal Entity
+    exercising permissions granted by this License.
+ .
+    "Source" form shall mean the preferred form for making modifications,
+    including but not limited to software source code, documentation
+    source, and configuration files.
+ .
+    "Object" form shall mean any form resulting from mechanical
+    transformation or translation of a Source form, including but
+    not limited to compiled object code, generated documentation,
+    and conversions to other media types.
+ .
+    "Work" shall mean the work of authorship, whether in Source or
+    Object form, made available under the License, as indicated by a
+    copyright notice that is included in or attached to the work
+    (an example is provided in the Appendix below).
+ .
+    "Derivative Works" shall mean any work, whether in Source or Object
+    form, that is based on (or derived from) the Work and for which the
+    editorial revisions, annotations, elaborations, or other modifications
+    represent, as a whole, an original work of authorship. For the purposes
+    of this License, Derivative Works shall not include works that remain
+    separable from, or merely link (or bind by name) to the interfaces of,
+    the Work and Derivative Works thereof.
+ .
+    "Contribution" shall mean any work of authorship, including
+    the original version of the Work and any modifications or additions
+    to that Work or Derivative Works thereof, that is intentionally
+    submitted to Licensor for inclusion in the Work by the copyright owner
+    or by an individual or Legal Entity authorized to submit on behalf of
+    the copyright owner. For the purposes of this definition, "submitted"
+    means any form of electronic, verbal, or written communication sent
+    to the Licensor or its representatives, including but not limited to
+    communication on electronic mailing lists, source code control systems,
+    and issue tracking systems that are managed by, or on behalf of, the
+    Licensor for the purpose of discussing and improving the Work, but
+    excluding communication that is conspicuously marked or otherwise
+    designated in writing by the copyright owner as "Not a Contribution."
+ .
+    "Contributor" shall mean Licensor and any individual or Legal Entity
+    on behalf of whom a Contribution has been received by Licensor and
+    subsequently incorporated within the Work.
+ .
+ 2. Grant of Copyright License. Subject to the terms and conditions of
+    this License, each Contributor hereby grants to You a perpetual,
+    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+    copyright license to reproduce, prepare Derivative Works of,
+    publicly display, publicly perform, sublicense, and distribute the
+    Work and such Derivative Works in Source or Object form.
+ .
+ 3. Grant of Patent License. Subject to the terms and conditions of
+    this License, each Contributor hereby grants to You a perpetual,
+    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+    (except as stated in this section) patent license to make, have made,
+    use, offer to sell, sell, import, and otherwise transfer the Work,
+    where such license applies only to those patent claims licensable
+    by such Contributor that are necessarily infringed by their
+    Contribution(s) alone or by combination of their Contribution(s)
+    with the Work to which such Contribution(s) was submitted. If You
+    institute patent litigation against any entity (including a
+    cross-claim or counterclaim in a lawsuit) alleging that the Work
+    or a Contribution incorporated within the Work constitutes direct
+    or contributory patent infringement, then any patent licenses
+    granted to You under this License for that Work shall terminate
+    as of the date such litigation is filed.
+ .
+ 4. Redistribution. You may reproduce and distribute copies of the
+    Work or Derivative Works thereof in any medium, with or without
+    modifications, and in Source or Object form, provided that You
+    meet the following conditions:
+ .
+ (a) You must give any other recipients of the Work or
+     Derivative Works a copy of this License; and
+ .
+ (b) You must cause any modified files to carry prominent notices
+     stating that You changed the files; and
+ .
+ (c) You must retain, in the Source form of any Derivative Works
+     that You distribute, all copyright, patent, trademark, and
+     attribution notices from the Source form of the Work,
+     excluding those notices that do not pertain to any part of
+     the Derivative Works; and
+ .
+ (d) If the Work includes a "NOTICE" text file as part of its
+     distribution, then any Derivative Works that You distribute must
+     include a readable copy of the attribution notices contained
+     within such NOTICE file, excluding those notices that do not
+     pertain to any part of the Derivative Works, in at least one
+     of the following places: within a NOTICE text file distributed
+     as part of the Derivative Works; within the Source form or
+     documentation, if provided along with the Derivative Works; or,
+     within a display generated by the Derivative Works, if and
+     wherever such third-party notices normally appear. The contents
+     of the NOTICE file are for informational purposes only and
+     do not modify the License. You may add Your own attribution
+     notices within Derivative Works that You distribute, alongside
+     or as an addendum to the NOTICE text from the Work, provided
+     that such additional attribution notices cannot be construed
+     as modifying the License.
+ .
+ You may add Your own copyright statement to Your modifications and
+ may provide additional or different license terms and conditions
+ for use, reproduction, or distribution of Your modifications, or
+ for any such Derivative Works as a whole, provided Your use,
+ reproduction, and distribution of the Work otherwise complies with
+ the conditions stated in this License.
+ .
+ 5. Submission of Contributions. Unless You explicitly state otherwise,
+    any Contribution intentionally submitted for inclusion in the Work
+    by You to the Licensor shall be under the terms and conditions of
+    this License, without any additional terms or conditions.
+    Notwithstanding the above, nothing herein shall supersede or modify
+    the terms of any separate license agreement you may have executed
+    with Licensor regarding such Contributions.
+ .
+ 6. Trademarks. This License does not grant permission to use the trade
+    names, trademarks, service marks, or product names of the Licensor,
+    except as required for reasonable and customary use in describing the
+    origin of the Work and reproducing the content of the NOTICE file.
+ .
+ 7. Disclaimer of Warranty. Unless required by applicable law or
+    agreed to in writing, Licensor provides the Work (and each
+    Contributor provides its Contributions) on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+    implied, including, without limitation, any warranties or conditions
+    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+    PARTICULAR PURPOSE. You are solely responsible for determining the
+    appropriateness of using or redistributing the Work and assume any
+    risks associated with Your exercise of permissions under this License.
+ .
+ 8. Limitation of Liability. In no event and under no legal theory,
+    whether in tort (including negligence), contract, or otherwise,
+    unless required by applicable law (such as deliberate and grossly
+    negligent acts) or agreed to in writing, shall any Contributor be
+    liable to You for damages, including any direct, indirect, special,
+    incidental, or consequential damages of any character arising as a
+    result of this License or out of the use or inability to use the
+    Work (including but not limited to damages for loss of goodwill,
+    work stoppage, computer failure or malfunction, or any and all
+    other commercial damages or losses), even if such Contributor
+    has been advised of the possibility of such damages.
+ .
+ 9. Accepting Warranty or Additional Liability. While redistributing
+    the Work or Derivative Works thereof, You may choose to offer,
+    and charge a fee for, acceptance of support, warranty, indemnity,
+    or other liability obligations and/or rights consistent with this
+    License. However, in accepting such obligations, You may act only
+    on Your own behalf and on Your sole responsibility, not on behalf
+    of any other Contributor, and only if You agree to indemnify,
+    defend, and hold each Contributor harmless for any liability
+    incurred by, or claims asserted against, such Contributor by reason
+    of your accepting any such warranty or additional liability.
+ .
+ END OF TERMS AND CONDITIONS
+ .
+ APPENDIX: How to apply the Apache License to your work.
+ .
+    To apply the Apache License to your work, attach the following
+    boilerplate notice, with the fields enclosed by brackets "[]"
+    replaced with your own identifying information. (Don't include
+    the brackets!)  The text should be enclosed in the appropriate
+    comment syntax for the file format. We also recommend that a
+    file or class name and description of purpose be included on the
+    same "printed page" as the copyright notice for easier
+    identification within third-party archives.
+ .
+ Copyright [yyyy] [name of copyright owner]
+ .
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -537,48 +875,6 @@ License: Apache-2.0
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
-
-License: Bitstream Vera Fonts Copyright
- Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. Bitstream Vera is a
- trademark of Bitstream, Inc.
- .
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- the fonts accompanying this license ("Fonts") and associated documentation
- files (the "Font Software"), to reproduce and distribute the Font Software,
- including without limitation the rights to use, copy, merge, publish,
- distribute, and/or sell copies of the Font Software, and to permit persons to
- whom the Font Software is furnished to do so, subject to the following
- conditions:
- .
- The above copyright and trademark notices and this permission notice shall be
- included in all copies of one or more of the Font Software typefaces.
- .
- The Font Software may be modified, altered, or added to, and in particular the
- designs of glyphs or characters in the Fonts may be modified and additional
- glyphs or characters may be added to the Fonts, only if the fonts are renamed
- to names not containing either the words "Bitstream" or the word "Vera".
- .
- This License becomes null and void to the extent applicable to Fonts or Font
- Software that has been modified and is distributed under the "Bitstream Vera"
- names.
- .
- The Font Software may be sold as part of a larger software package but no copy
- of one or more of the Font Software typefaces may be sold by itself.
- .
- THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF COPYRIGHT, PATENT,
- TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL BITSTREAM OR THE GNOME FOUNDATION
- BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, INCLUDING ANY GENERAL,
- SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, WHETHER IN AN ACTION
- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF THE USE OR INABILITY TO
- USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
- .
- Except as contained in this notice, the names of GNOME, the GNOME Foundation,
- and Bitstream Inc., shall not be used in advertising or otherwise to promote
- the sale, use or other dealings in this Font Software without prior written
- authorization from the GNOME Foundation or Bitstream Inc., respectively. For
- further information, contact: fonts at gnome dot org.
 
 License: BSD-2-clause
  Redistribution and use in source and binary forms, with or without
@@ -1247,9 +1543,9 @@ License: FTL
                     The FreeType Project LICENSE
                     ----------------------------
  .
-                            2000-Feb-08
+                            2006-Jan-27
  .
-                       Copyright 1996-2000 by
+                       Copyright 1996-2002, 2006 by
           David Turner, Robert Wilhelm, and Werner Lemberg
  .
  .
@@ -1287,6 +1583,19 @@ License: FTL
  software, with  or without modifications,  in commercial products.
  We  disclaim  all warranties  covering  The  FreeType Project  and
  assume no liability related to The FreeType Project.
+ .
+ .
+ Finally,  many  people  asked  us  for  a  preferred  form  for  a
+ credit/disclaimer to use in compliance with this license.  We thus
+ encourage you to use the following text:
+ .
+  """
+   Portions of this software are copyright © <year> The FreeType
+   Project (https://freetype.org).  All rights reserved.
+  """
+ .
+ Please replace <year> with the value from the FreeType version you
+ actually use.
  .
  .
  Legal Terms
@@ -1339,12 +1648,12 @@ License: FTL
  authorize others  to exercise  some or all  of the  rights granted
  herein, subject to the following conditions:
  .
-   o Redistribution  of source code  must retain this  license file
-     (`LICENSE.TXT') unaltered; any additions, deletions or changes
-     to   the  original   files  must   be  clearly   indicated  in
-     accompanying  documentation.   The  copyright notices  of  the
-     unaltered, original  files must be preserved in  all copies of
-     source files.
+   o Redistribution of  source code  must retain this  license file
+     (`FTL.TXT') unaltered; any  additions, deletions or changes to
+     the original  files must be clearly  indicated in accompanying
+     documentation.   The  copyright   notices  of  the  unaltered,
+     original  files must  be  preserved in  all  copies of  source
+     files.
  .
    o Redistribution in binary form must provide a  disclaimer  that
      states  that  the software is based in part of the work of the
@@ -1382,29 +1691,21 @@ License: FTL
  .
  There are two mailing lists related to FreeType:
  .
-   o freetype@freetype.org
+   o freetype@nongnu.org
  .
      Discusses general use and applications of FreeType, as well as
      future and  wanted additions to the  library and distribution.
      If  you are looking  for support,  start in  this list  if you
      haven't found anything to help you in the documentation.
  .
-   o devel@freetype.org
+   o freetype-devel@nongnu.org
  .
      Discusses bugs,  as well  as engine internals,  design issues,
      specific licenses, porting, etc.
  .
-   o http://www.freetype.org
+ Our home page can be found at
  .
-     Holds the current  FreeType web page, which will  allow you to
-     download  our  latest  development  version  and  read  online
-     documentation.
- .
- You can also contact us individually at:
- .
-   David Turner      <david.turner@freetype.org>
-   Robert Wilhelm    <robert.wilhelm@freetype.org>
-   Werner Lemberg    <werner.lemberg@freetype.org>
+   https://freetype.org
 
 License: HarfBuzz
  HarfBuzz is licensed under the so-called "Old MIT" license.  Details follow.
@@ -1445,6 +1746,42 @@ License: HarfBuzz
  FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+License: IJG
+ The authors make NO WARRANTY or representation, either express or implied,
+ with respect to this software, its quality, accuracy, merchantability, or
+ fitness for a particular purpose.  This software is provided "AS IS", and you,
+ its user, assume the entire risk as to its quality and accuracy.
+ .
+ This software is copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
+ All Rights Reserved except as specified below.
+ .
+ Permission is hereby granted to use, copy, modify, and distribute this
+ software (or portions thereof) for any purpose, without fee, subject to these
+ conditions:
+ (1) If any part of the source code for this software is distributed, then this
+ README file must be included, with this copyright and no-warranty notice
+ unaltered; and any additions, deletions, or changes to the original files
+ must be clearly indicated in accompanying documentation.
+ (2) If only executable code is distributed, then the accompanying
+ documentation must state that "this software is based in part on the work of
+ the Independent JPEG Group".
+ (3) Permission for use of this software is granted only if the user accepts
+ full responsibility for any undesirable consequences; the authors accept
+ NO LIABILITY for damages of any kind.
+ .
+ These conditions apply to any software derived from or based on the IJG code,
+ not just to the unmodified library.  If you use our work, you ought to
+ acknowledge us.
+ .
+ Permission is NOT granted for the use of any IJG author's name or company name
+ in advertising or publicity relating to this software or products derived from
+ it.  This software may be referred to only as "the Independent JPEG Group's
+ software".
+ .
+ We specifically permit and encourage the use of this software as the basis of
+ commercial products, provided that all warranty or liability claims are
+ assumed by the product vendor.
 
 License: MPL-2.0
  Mozilla Public License Version 2.0
@@ -1821,6 +2158,22 @@ License: MPL-2.0
    This Source Code Form is "Incompatible With Secondary Licenses", as
    defined by the Mozilla Public License, v. 2.0.
 
+License: MIT-0
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 License: OFL-1.1
  PREAMBLE
  The goals of the Open Font License (OFL) are to stimulate worldwide
@@ -1964,6 +2317,37 @@ License: Unlicense
  OTHER DEALINGS IN THE SOFTWARE.
  .
  For more information, please refer to <https://unlicense.org/>
+
+License: WOL
+                          The Wide Open License (WOL)
+ .
+ Permission to use, copy, modify, distribute and sell this software and its
+ documentation for any purpose is hereby granted without fee, provided that
+ the above copyright notice and this license appear in all source copies.
+ THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF
+ ANY KIND. See https://dspguru.com/wide-open-license/ for more information.
+
+License: X11
+ Permission to use, copy, modify, distribute, and sell this
+ software and its documentation for any purpose is hereby granted
+ without fee, provided that\n the above copyright notice appear in
+ all copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ the copyright holders not be used in advertising or publicity
+ pertaining to distribution of the software without specific,
+ written prior permission.  The copyright holders make no
+ representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied
+ warranty.
+ .
+ THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ THIS SOFTWARE.
 
 License: Zlib
  This software is provided 'as-is', without any express or implied

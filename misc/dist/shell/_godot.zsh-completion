@@ -37,7 +37,6 @@ _arguments \
   '--quit[quit after the first iteration]' \
   '(-l --language)'{-l,--language}'[use a specific locale (<locale> being a two-letter code)]:two-letter locale code' \
   "--path[path to a project (<directory> must contain a 'project.godot' file)]:path to directory with 'project.godot' file:_dirs" \
-  '(-u --upwards)'{-u,--upwards}'[scan folders upwards for project.godot file]' \
   '--main-pack[path to a pack (.pck) file to load]:path to .pck file:_files' \
   '--render-thread[set the render thread mode]:render thread mode:(unsafe safe separate)' \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
@@ -51,7 +50,8 @@ _arguments \
   '--text-driver[set the text driver]:text driver name' \
   '--tablet-driver[set the pen tablet input driver]:tablet driver name' \
   '--headless[enable headless mode (--display-driver headless --audio-driver Dummy), useful for servers and with --script]' \
-  '--write-movie[writes a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
+  '--log-file[write output/error log to the specified path instead of the default location defined by the project]:path to output log file' \
+  '--write-movie[write a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \

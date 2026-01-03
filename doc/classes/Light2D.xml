@@ -26,9 +26,9 @@
 	</methods>
 	<members>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="Light2D.BlendMode" default="0">
-			The Light2D's blend mode. See [enum BlendMode] constants for values.
+			The Light2D's blend mode.
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The Light2D's [Color].
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
@@ -63,7 +63,7 @@
 			If [code]true[/code], the Light2D will cast shadows.
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter" default="0">
-			Shadow filter type. See [enum ShadowFilter] for possible values.
+			Shadow filter type.
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth" default="0.0">
 			Smoothing value for shadows. Higher values will result in softer shadows, at the cost of visible streaks that can appear in shadow rendering. [member shadow_filter_smooth] only has an effect if [member shadow_filter] is [constant SHADOW_FILTER_PCF5] or [constant SHADOW_FILTER_PCF13].

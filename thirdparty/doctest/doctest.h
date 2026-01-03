@@ -48,7 +48,7 @@
 
 #define DOCTEST_VERSION_MAJOR 2
 #define DOCTEST_VERSION_MINOR 4
-#define DOCTEST_VERSION_PATCH 11
+#define DOCTEST_VERSION_PATCH 12
 
 // util we need here
 #define DOCTEST_TOSTR_IMPL(x) #x
@@ -490,13 +490,17 @@ DOCTEST_GCC_SUPPRESS_WARNING_POP
 #endif
 #endif // DOCTEST_CONFIG_USE_IOSFWD
 
-// for clang - always include ciso646 (which drags some std stuff) because
-// we want to check if we are using libc++ with the _LIBCPP_VERSION macro in
+// for clang - always include <version> or <ciso646> (which drags some std stuff)
+// because we want to check if we are using libc++ with the _LIBCPP_VERSION macro in
 // which case we don't want to forward declare stuff from std - for reference:
 // https://github.com/doctest/doctest/issues/126
 // https://github.com/doctest/doctest/issues/356
 #if DOCTEST_CLANG
+#if DOCTEST_CPLUSPLUS >= 201703L && __has_include(<version>)
+#include <version>
+#else
 #include <ciso646>
+#endif
 #endif // clang
 
 #ifdef _LIBCPP_VERSION
@@ -925,6 +929,7 @@ struct ContextOptions //!OCLINT too many fields
     bool no_skip;              // don't skip test cases which are marked to be skipped
     bool gnu_file_line;        // if line numbers should be surrounded with :x: and not (x):
     bool no_path_in_filenames; // if the path to files should be removed from the output
+    String strip_file_prefixes;// remove the longest matching one of these prefixes from any file paths in the output
     bool no_line_numbers;      // if source code line numbers should be omitted from the output
     bool no_debug_output;      // no output in the debug console when a debugger is attached
     bool no_skipped_summary;   // don't print "skipped" in the summary !!! UNDOCUMENTED !!!
@@ -1578,8 +1583,8 @@ DOCTEST_CLANG_SUPPRESS_WARNING_POP
         // https://github.com/catchorg/Catch2/issues/870
         // https://github.com/catchorg/Catch2/issues/565
         template <typename L>
-        Expression_lhs<L> operator<<(L&& operand) {
-            return Expression_lhs<L>(static_cast<L&&>(operand), m_at);
+        Expression_lhs<const L&&> operator<<(const L&& operand) { //bitfields bind to universal ref but not const rvalue ref
+            return Expression_lhs<const L&&>(static_cast<const L&&>(operand), m_at);
         }
 
         template <typename L,typename types::enable_if<!doctest::detail::types::is_rvalue_reference<L>::value,void >::type* = nullptr>
@@ -3243,6 +3248,10 @@ DOCTEST_MAKE_STD_HEADERS_CLEAN_FROM_WARNINGS_ON_WALL_END
 #define DOCTEST_CONFIG_OPTIONS_PREFIX "dt-"
 #endif
 
+#ifndef DOCTEST_CONFIG_OPTIONS_FILE_PREFIX_SEPARATOR
+#define DOCTEST_CONFIG_OPTIONS_FILE_PREFIX_SEPARATOR ':'
+#endif
+
 #ifndef DOCTEST_THREAD_LOCAL
 #if defined(DOCTEST_CONFIG_NO_MULTITHREADING) || DOCTEST_MSVC && (DOCTEST_MSVC < DOCTEST_COMPILER(19, 0, 0))
 #define DOCTEST_THREAD_LOCAL
@@ -3751,7 +3760,7 @@ String::size_type String::capacity() const {
 }
 
 String String::substr(size_type pos, size_type cnt) && {
-    cnt = std::min(cnt, size() - 1 - pos);
+    cnt = std::min(cnt, size() - pos);
     char* cptr = c_str();
     memmove(cptr, cptr + pos, cnt);
     setSize(cnt);
@@ -3759,7 +3768,7 @@ String String::substr(size_type pos, size_type cnt) && {
 }
 
 String String::substr(size_type pos, size_type cnt) const & {
-    cnt = std::min(cnt, size() - 1 - pos);
+    cnt = std::min(cnt, size() - pos);
     return String{ c_str() + pos, cnt };
 }
 
@@ -3891,6 +3900,26 @@ const char* skipPathFromFilename(const char* file) {
                 forward = back;
             return forward + 1;
         }
+    } else {
+        const auto prefixes = getContextOptions()->strip_file_prefixes;
+        const char separator = DOCTEST_CONFIG_OPTIONS_FILE_PREFIX_SEPARATOR;
+        String::size_type longest_match = 0U;
+        for(String::size_type pos = 0U; pos < prefixes.size(); ++pos)
+        {
+            const auto prefix_start = pos;
+            pos = std::min(prefixes.find(separator, prefix_start), prefixes.size());
+            
+            const auto prefix_size = pos - prefix_start;
+            if(prefix_size > longest_match)
+            {
+                // TODO under DOCTEST_MSVC: does the comparison need strnicmp() to work with drive letter capitalization?
+                if(0 == std::strncmp(prefixes.c_str() + prefix_start, file, prefix_size))
+                {
+                    longest_match = prefix_size;
+                }
+            }
+        }
+        return &file[longest_match];
     }
 #endif // DOCTEST_CONFIG_DISABLE
     return file;
@@ -6181,6 +6210,8 @@ namespace {
               << Whitespace(sizePrefixDisplay*1) << ":n: vs (n): for line numbers in output\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "npf, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "no-path-filenames=<bool>      "
               << Whitespace(sizePrefixDisplay*1) << "only filenames and no paths in output\n";
+            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "spp, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "skip-path-prefixes=<p1:p2>    "
+              << Whitespace(sizePrefixDisplay*1) << "whenever file paths start with this prefix, remove it from the output\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "nln, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "no-line-numbers=<bool>        "
               << Whitespace(sizePrefixDisplay*1) << "0 instead of real line numbers in output\n";
             // ================================================================================== << 79
@@ -6685,6 +6716,7 @@ void Context::parseArgs(int argc, const char* const* argv, bool withDefaults) {
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-skip", "ns", no_skip, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("gnu-file-line", "gfl", gnu_file_line, !bool(DOCTEST_MSVC));
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-path-filenames", "npf", no_path_in_filenames, false);
+    DOCTEST_PARSE_STR_OPTION("strip-file-prefixes", "sfp", strip_file_prefixes, "");
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-line-numbers", "nln", no_line_numbers, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-debug-output", "ndo", no_debug_output, false);
     DOCTEST_PARSE_AS_BOOL_OR_FLAG("no-skipped-summary", "nss", no_skipped_summary, false);

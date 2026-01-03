@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANDROID_KEYS_UTILS_H
-#define ANDROID_KEYS_UTILS_H
+#pragma once
 
 #include "core/os/keyboard.h"
 
@@ -177,4 +176,22 @@ static AndroidGodotCodePair android_godot_code_pairs[] = {
 
 Key godot_code_from_android_code(unsigned int p_code);
 
-#endif // ANDROID_KEYS_UTILS_H
+// Key location determination.
+struct AndroidGodotLocationPair {
+	unsigned int android_code = 0;
+	KeyLocation godot_code = KeyLocation::UNSPECIFIED;
+};
+
+static AndroidGodotLocationPair android_godot_location_pairs[] = {
+	{ AKEYCODE_ALT_LEFT, KeyLocation::LEFT },
+	{ AKEYCODE_ALT_RIGHT, KeyLocation::RIGHT },
+	{ AKEYCODE_SHIFT_LEFT, KeyLocation::LEFT },
+	{ AKEYCODE_SHIFT_RIGHT, KeyLocation::RIGHT },
+	{ AKEYCODE_CTRL_LEFT, KeyLocation::LEFT },
+	{ AKEYCODE_CTRL_RIGHT, KeyLocation::RIGHT },
+	{ AKEYCODE_META_LEFT, KeyLocation::LEFT },
+	{ AKEYCODE_META_RIGHT, KeyLocation::RIGHT },
+	{ AKEYCODE_MAX, KeyLocation::UNSPECIFIED }
+};
+
+KeyLocation godot_location_from_android_code(unsigned int p_code);

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MARSHALLS_H
-#define MARSHALLS_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/object/ref_counted.h"
@@ -82,6 +81,12 @@ static inline unsigned int encode_uint32(uint32_t p_uint, uint8_t *p_arr) {
 	}
 
 	return sizeof(uint32_t);
+}
+
+static inline unsigned int encode_half(float p_float, uint8_t *p_arr) {
+	encode_uint16(Math::make_half_float(p_float), p_arr);
+
+	return sizeof(uint16_t);
 }
 
 static inline unsigned int encode_float(float p_float, uint8_t *p_arr) {
@@ -172,6 +177,10 @@ static inline uint32_t decode_uint32(const uint8_t *p_arr) {
 	return u;
 }
 
+static inline float decode_half(const uint8_t *p_arr) {
+	return Math::half_to_float(decode_uint16(p_arr));
+}
+
 static inline float decode_float(const uint8_t *p_arr) {
 	MarshallFloat mf;
 	mf.i = decode_uint32(p_arr);
@@ -208,13 +217,9 @@ protected:
 public:
 	void set_object_id(ObjectID p_id);
 	ObjectID get_object_id() const;
-
-	EncodedObjectAsID() {}
 };
 
 Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = nullptr, bool p_allow_objects = false, int p_depth = 0);
 Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects = false, int p_depth = 0);
 
 Vector<float> vector3_to_float32_array(const Vector3 *vecs, size_t count);
-
-#endif // MARSHALLS_H

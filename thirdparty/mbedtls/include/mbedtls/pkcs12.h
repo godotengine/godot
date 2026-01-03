@@ -5,28 +5,12 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_PKCS12_H
 #define MBEDTLS_PKCS12_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/md.h"
 #include "mbedtls/cipher.h"
@@ -47,40 +31,26 @@
 #define MBEDTLS_PKCS12_DERIVE_IV        2   /**< initialization vector     */
 #define MBEDTLS_PKCS12_DERIVE_MAC_KEY   3   /**< integrity / MAC key       */
 
-#define MBEDTLS_PKCS12_PBE_DECRYPT      0
-#define MBEDTLS_PKCS12_PBE_ENCRYPT      1
+#define MBEDTLS_PKCS12_PBE_DECRYPT      MBEDTLS_DECRYPT
+#define MBEDTLS_PKCS12_PBE_ENCRYPT      MBEDTLS_ENCRYPT
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#if defined(MBEDTLS_ASN1_PARSE_C)
+#if defined(MBEDTLS_ASN1_PARSE_C) && defined(MBEDTLS_CIPHER_C)
 
-/**
- * \brief            PKCS12 Password Based function (encryption / decryption)
- *                   for pbeWithSHAAnd128BitRC4
- *
- * \param pbe_params an ASN1 buffer containing the pkcs-12PbeParams structure
- * \param mode       either MBEDTLS_PKCS12_PBE_ENCRYPT or MBEDTLS_PKCS12_PBE_DECRYPT
- * \param pwd        the password used (may be NULL if no password is used)
- * \param pwdlen     length of the password (may be 0)
- * \param input      the input data
- * \param len        data length
- * \param output     the output buffer
- *
- * \return           0 if successful, or a MBEDTLS_ERR_XXX code
- */
-int mbedtls_pkcs12_pbe_sha1_rc4_128(mbedtls_asn1_buf *pbe_params, int mode,
-                                    const unsigned char *pwd,  size_t pwdlen,
-                                    const unsigned char *input, size_t len,
-                                    unsigned char *output);
-
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
 /**
  * \brief            PKCS12 Password Based function (encryption / decryption)
  *                   for cipher-based and mbedtls_md-based PBE's
  *
  * \note             When encrypting, #MBEDTLS_CIPHER_PADDING_PKCS7 must
  *                   be enabled at compile time.
+ *
+ * \deprecated       This function is deprecated and will be removed in a
+ *                   future version of the library.
+ *                   Please use mbedtls_pkcs12_pbe_ext() instead.
  *
  * \warning          When decrypting:
  *                   - if #MBEDTLS_CIPHER_PADDING_PKCS7 is enabled at compile
@@ -116,11 +86,13 @@ int mbedtls_pkcs12_pbe_sha1_rc4_128(mbedtls_asn1_buf *pbe_params, int mode,
  *
  * \return           0 if successful, or a MBEDTLS_ERR_XXX code
  */
-int mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
-                       mbedtls_cipher_type_t cipher_type, mbedtls_md_type_t md_type,
-                       const unsigned char *pwd,  size_t pwdlen,
-                       const unsigned char *data, size_t len,
-                       unsigned char *output);
+int MBEDTLS_DEPRECATED mbedtls_pkcs12_pbe(mbedtls_asn1_buf *pbe_params, int mode,
+                                          mbedtls_cipher_type_t cipher_type,
+                                          mbedtls_md_type_t md_type,
+                                          const unsigned char *pwd,  size_t pwdlen,
+                                          const unsigned char *data, size_t len,
+                                          unsigned char *output);
+#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 #if defined(MBEDTLS_CIPHER_PADDING_PKCS7)
 
@@ -173,7 +145,7 @@ int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
 
 #endif /* MBEDTLS_CIPHER_PADDING_PKCS7 */
 
-#endif /* MBEDTLS_ASN1_PARSE_C */
+#endif /* MBEDTLS_ASN1_PARSE_C && MBEDTLS_CIPHER_C */
 
 /**
  * \brief            The PKCS#12 derivation function uses a password and a salt
@@ -191,7 +163,7 @@ int mbedtls_pkcs12_pbe_ext(mbedtls_asn1_buf *pbe_params, int mode,
  *                   no byte order mark and with a null terminator (i.e. the
  *                   last two bytes should be 0x00 0x00).
  * \param pwdlen     length of the password (may be 0).
- * \param salt       Salt buffer to use This may only be \c NULL when
+ * \param salt       Salt buffer to use. This may only be \c NULL when
  *                   \p saltlen is 0.
  * \param saltlen    length of the salt (may be zero)
  * \param mbedtls_md mbedtls_md type to use during the derivation

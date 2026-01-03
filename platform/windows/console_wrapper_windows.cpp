@@ -31,8 +31,8 @@
 #include <windows.h>
 
 #include <shlwapi.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
@@ -40,8 +40,8 @@
 
 int main(int argc, char *argv[]) {
 	// Get executable name.
-	WCHAR exe_name[MAX_PATH] = {};
-	if (!GetModuleFileNameW(nullptr, exe_name, MAX_PATH)) {
+	WCHAR exe_name[32767] = {};
+	if (!GetModuleFileNameW(nullptr, exe_name, 32767)) {
 		wprintf(L"GetModuleFileName failed, error %d\n", GetLastError());
 		return -1;
 	}
@@ -65,7 +65,9 @@ int main(int argc, char *argv[]) {
 
 	// Enable virtual terminal sequences processing.
 	HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD out_mode = ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	DWORD out_mode = 0;
+	GetConsoleMode(stdout_handle, &out_mode);
+	out_mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(stdout_handle, out_mode);
 
 	// Find main executable name and check if it exist.
@@ -136,6 +138,10 @@ int main(int argc, char *argv[]) {
 	STARTUPINFOW si;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
 	WCHAR new_command_line[32767];
 	_snwprintf_s(new_command_line, 32767, _TRUNCATE, L"%ls %ls", exe_name, PathGetArgsW(GetCommandLineW()));

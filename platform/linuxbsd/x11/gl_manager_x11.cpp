@@ -34,9 +34,9 @@
 
 #include "thirdparty/glad/glad/glx.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -137,6 +137,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		ERR_FAIL_NULL_V(fbc, ERR_UNCONFIGURED);
 
 		for (int i = 0; i < fbcount; i++) {
+			if (vi) {
+				XFree(vi);
+				vi = nullptr;
+			}
 			vi = (XVisualInfo *)glXGetVisualFromFBConfig(x11_display, fbc[i]);
 			if (!vi) {
 				continue;
@@ -206,6 +210,15 @@ XVisualInfo GLManager_X11::get_vi(Display *p_display, Error &r_error) {
 	}
 	r_error = OK;
 	return _displays[display_id].x_vi;
+}
+
+Error GLManager_X11::open_display(Display *p_display) {
+	int gldisplay_id = _find_or_create_display(p_display);
+	if (gldisplay_id < 0) {
+		return ERR_CANT_CREATE;
+	} else {
+		return OK;
+	}
 }
 
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
@@ -302,20 +315,6 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 	_internal_set_current_window(&win);
 }
 
-void GLManager_X11::make_current() {
-	if (!_current_window) {
-		return;
-	}
-	if (!_current_window->in_use) {
-		WARN_PRINT("current window not in use!");
-		return;
-	}
-	const GLDisplay &disp = get_current_display();
-	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
-		ERR_PRINT("glXMakeCurrent failed");
-	}
-}
-
 void GLManager_X11::swap_buffers() {
 	if (!_current_window) {
 		return;
@@ -362,7 +361,7 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
-		WARN_PRINT("Could not set V-Sync mode. V-Sync is not supported.");
+		WARN_PRINT_ONCE("Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.");
 		return;
 	}
 	use_vsync = p_use;

@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="texture_array" type="Texture2DArray" setter="set_texture_array" getter="get_texture_array">
+		<member name="texture_array" type="TextureLayered" setter="set_texture_array" getter="get_texture_array">
 			A source texture array. Used if [member VisualShaderNodeSample3D.source] is set to [constant VisualShaderNodeSample3D.SOURCE_TEXTURE].
 		</member>
 	</members>

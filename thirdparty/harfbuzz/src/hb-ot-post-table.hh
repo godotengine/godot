@@ -113,16 +113,19 @@ struct post
     }
 #endif
 
-    if (c->plan->user_axes_location.has (HB_TAG ('s','l','n','t')) &&
-        !c->plan->pinned_at_default)
+    Triple *axis_range;
+    if (c->plan->user_axes_location.has (HB_TAG ('s','l','n','t'), &axis_range))
     {
-      float italic_angle = c->plan->user_axes_location.get (HB_TAG ('s','l','n','t')).middle;
-      italic_angle = hb_max (-90.f, hb_min (italic_angle, 90.f));
-      post_prime->italicAngle.set_float (italic_angle);
+      float italic_angle = hb_max (-90.0, hb_min (axis_range->middle, 90.0));
+      if (post_prime->italicAngle.to_float () != italic_angle)
+        post_prime->italicAngle.set_float (italic_angle);
     }
 
     if (glyph_names && version.major == 2)
+    {
+      hb_barrier ();
       return_trace (v2X.subset (c));
+    }
 
     return_trace (true);
   }
@@ -138,6 +141,7 @@ struct post
 
       version = table->version.to_int ();
       if (version != 0x00020000) return;
+      hb_barrier ();
 
       const postV2Tail &v2 = table->v2X;
 
@@ -217,10 +221,16 @@ struct post
     unsigned int get_glyph_count () const
     {
       if (version == 0x00010000)
+      {
+        hb_barrier ();
 	return format1_names_length;
+      }
 
       if (version == 0x00020000)
+      {
+        hb_barrier ();
 	return glyphNameIndex->len;
+      }
 
       return 0;
     }
@@ -245,13 +255,18 @@ struct post
     {
       if (version == 0x00010000)
       {
+        hb_barrier ();
 	if (glyph >= format1_names_length)
 	  return hb_bytes_t ();
 
 	return format1_names (glyph);
       }
 
-      if (version != 0x00020000 || glyph >= glyphNameIndex->len)
+      if (version != 0x00020000)
+	return hb_bytes_t ();
+      hb_barrier ();
+
+      if (glyph >= glyphNameIndex->len)
 	return hb_bytes_t ();
 
       unsigned int index = glyphNameIndex->arrayZ[glyph];
@@ -275,7 +290,7 @@ struct post
     const Array16Of<HBUINT16> *glyphNameIndex = nullptr;
     hb_vector_t<uint32_t> index_to_offset;
     const uint8_t *pool = nullptr;
-    hb_atomic_ptr_t<uint16_t *> gids_sorted_by_name;
+    mutable hb_atomic_t<uint16_t *> gids_sorted_by_name;
   };
 
   bool has_data () const { return version.to_int (); }
@@ -284,8 +299,9 @@ struct post
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  (version.to_int () == 0x00010000 ||
-		   (version.to_int () == 0x00020000 && v2X.sanitize (c)) ||
+		   (version.to_int () == 0x00020000 && hb_barrier () && v2X.sanitize (c)) ||
 		   version.to_int () == 0x00030000));
   }
 

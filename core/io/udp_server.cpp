@@ -44,7 +44,7 @@ void UDPServer::_bind_methods() {
 }
 
 Error UDPServer::poll() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	if (!_sock->is_open()) {
 		return ERR_UNCONFIGURED;
 	}
@@ -88,7 +88,7 @@ Error UDPServer::poll() {
 }
 
 Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
@@ -99,7 +99,7 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -107,7 +107,8 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		stop();
@@ -117,19 +118,19 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 }
 
 int UDPServer::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
 bool UDPServer::is_listening() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	return _sock->is_open();
 }
 
 bool UDPServer::is_connection_available() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	if (!_sock->is_open()) {
 		return false;
@@ -161,7 +162,7 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 		return conn;
 	}
 
-	Peer peer = pending[0];
+	Peer peer = pending.front()->get();
 	pending.pop_front();
 	peers.push_back(peer);
 	return peer.peer;

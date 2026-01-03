@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType tables definitions and interface
  *   (specification only).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -192,7 +192,7 @@ FT_BEGIN_HEADER
    *     A pointer into the 'hmtx' table.
    *
    * @note:
-   *   For an OpenType variation font, the values of the following fields can
+   *   For OpenType Font Variations, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
    *   the font contains an 'MVAR' table: `caret_Slope_Rise`,
    *   `caret_Slope_Run`, and `caret_Offset`.
@@ -310,7 +310,7 @@ FT_BEGIN_HEADER
    *     A pointer into the 'vmtx' table.
    *
    * @note:
-   *   For an OpenType variation font, the values of the following fields can
+   *   For OpenType Font Variations, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
    *   the font contains an 'MVAR' table: `Ascender`, `Descender`,
    *   `Line_Gap`, `caret_Slope_Rise`, `caret_Slope_Run`, and `caret_Offset`.
@@ -359,7 +359,7 @@ FT_BEGIN_HEADER
    *   table.  In this case, the `version` field is always set to 0xFFFF.
    *
    * @note:
-   *   For an OpenType variation font, the values of the following fields can
+   *   For OpenType Font Variations, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
    *   the font contains an 'MVAR' table: `sCapHeight`, `sTypoAscender`,
    *   `sTypoDescender`, `sTypoLineGap`, `sxHeight`, `usWinAscent`,
@@ -442,7 +442,7 @@ FT_BEGIN_HEADER
    *   them.
    *
    * @note:
-   *   For an OpenType variation font, the values of the following fields can
+   *   For OpenType Font Variations, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
    *   the font contains an 'MVAR' table: `underlinePosition` and
    *   `underlineThickness`.
@@ -705,6 +705,9 @@ FT_BEGIN_HEADER
    *     definitions found in the @FT_TRUETYPE_TAGS_H file, or forge a new
    *     one with @FT_MAKE_TAG.
    *
+   *     [Since 2.14] Use value~1 if you want to access the table directory
+   *     of the (currently selected) font.
+   *
    *   offset ::
    *     The starting offset in the table (or file if tag~==~0).
    *
@@ -838,8 +841,9 @@ FT_BEGIN_HEADER
    *     The target charmap.
    *
    * @return:
-   *   The format of `charmap`.  If `charmap` doesn't belong to an SFNT face,
-   *   return -1.
+   *   The format of `charmap`.  If `charmap` doesn't belong to an SFNT face
+   *   (including the synthetic Unicode charmap sometimes created by
+   *   FreeType), return -1.
    */
   FT_EXPORT( FT_Long )
   FT_Get_CMap_Format( FT_CharMap  charmap );

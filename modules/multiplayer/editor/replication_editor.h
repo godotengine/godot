@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REPLICATION_EDITOR_H
-#define REPLICATION_EDITOR_H
+#pragma once
 
 #include "../scene_replication_config.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
 class ConfirmationDialog;
@@ -81,7 +80,6 @@ private:
 
 	void _pick_node_filter_text_changed(const String &p_newtext);
 	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
-	void _pick_node_filter_input(const Ref<InputEvent> &p_ie);
 	void _pick_node_selected(NodePath p_path);
 
 	void _pick_new_property();
@@ -103,7 +101,4 @@ public:
 
 	Button *get_pin() { return pin; }
 	ReplicationEditor();
-	~ReplicationEditor() {}
 };
-
-#endif // REPLICATION_EDITOR_H

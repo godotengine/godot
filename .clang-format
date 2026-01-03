@@ -1,80 +1,112 @@
 # Commented out parameters are those with the same value as base LLVM style.
 # We can uncomment them if we want to change their value, or enforce the
-# chosen value in case the base style changes (last sync: Clang 14.0).
----
-### General config, applies to all languages ###
-BasedOnStyle:  LLVM
+# chosen value in case the base style changes (last sync: Clang 18.1.8).
+BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: None
-# AlignConsecutiveMacros: None
-# AlignConsecutiveAssignments: None
-# AlignConsecutiveBitFields: None
-# AlignConsecutiveDeclarations: None
+# AlignConsecutiveAssignments:
+#   Enabled: false
+#   AcrossEmptyLines: false
+#   AcrossComments: false
+#   AlignCompound: false
+#   AlignFunctionPointers: false
+#   PadOperators: true
+# AlignConsecutiveBitFields:
+#   Enabled: false
+#   AcrossEmptyLines: false
+#   AcrossComments: false
+#   AlignCompound: false
+#   AlignFunctionPointers: false
+#   PadOperators: false
+# AlignConsecutiveDeclarations:
+#   Enabled: false
+#   AcrossEmptyLines: false
+#   AcrossComments: false
+#   AlignCompound: false
+#   AlignFunctionPointers: false
+#   PadOperators: false
+# AlignConsecutiveMacros:
+#   Enabled: false
+#   AcrossEmptyLines: false
+#   AcrossComments: false
+#   AlignCompound: false
+#   AlignFunctionPointers: false
+#   PadOperators: false
+# AlignConsecutiveShortCaseStatements:
+#   Enabled: false
+#   AcrossEmptyLines: false
+#   AcrossComments: false
+#   AlignCaseColons: false
 # AlignEscapedNewlines: Right
-AlignOperands:   DontAlign
-AlignTrailingComments: false
+AlignOperands: DontAlign
+AlignTrailingComments:
+  Kind: Never
+  OverEmptyLines: 0
 # AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
-# AllowShortEnumsOnASingleLine: true
+# AllowBreakBeforeNoexceptSpecifier: Never
 # AllowShortBlocksOnASingleLine: Never
 # AllowShortCaseLabelsOnASingleLine: false
-# AllowShortFunctionsOnASingleLine: All
-# AllowShortLambdasOnASingleLine: All
+# AllowShortCompoundRequirementOnASingleLine: true
+# AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
 # AllowShortIfStatementsOnASingleLine: Never
+# AllowShortLambdasOnASingleLine: All
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakAfterReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
 # AlwaysBreakTemplateDeclarations: MultiLine
-# AttributeMacros:
-#   - __capability
+AttributeMacros:
+  - _ALWAYS_INLINE_
+  - _FORCE_INLINE_
+  - _NO_INLINE_
 # BinPackArguments: true
 # BinPackParameters: true
+# BitFieldColonSpacing: Both
 # BraceWrapping:
-#   AfterCaseLabel:  false
-#   AfterClass:      false
+#   AfterCaseLabel: false
+#   AfterClass: false
 #   AfterControlStatement: Never
-#   AfterEnum:       false
-#   AfterFunction:   false
-#   AfterNamespace:  false
+#   AfterEnum: false
+#   AfterFunction: false
+#   AfterNamespace: false
 #   AfterObjCDeclaration: false
-#   AfterStruct:     false
-#   AfterUnion:      false
+#   AfterStruct: false
+#   AfterUnion: false
 #   AfterExternBlock: false
-#   BeforeCatch:     false
-#   BeforeElse:      false
+#   BeforeCatch: false
+#   BeforeElse: false
 #   BeforeLambdaBody: false
-#   BeforeWhile:     false
-#   IndentBraces:    false
+#   BeforeWhile: false
+#   IndentBraces: false
 #   SplitEmptyFunction: true
 #   SplitEmptyRecord: true
 #   SplitEmptyNamespace: true
+# BreakAdjacentStringLiterals: true
+# BreakAfterAttributes: Leave
+# BreakAfterJavaFieldAnnotations: false
+# BreakArrays: true
 # BreakBeforeBinaryOperators: None
-# BreakBeforeConceptDeclarations: true
 # BreakBeforeBraces: Attach
-# BreakBeforeInheritanceComma: false
-# BreakInheritanceList: BeforeColon
+# BreakBeforeConceptDeclarations: Always
+# BreakBeforeInlineASMColon: OnlyMultiline
 # BreakBeforeTernaryOperators: true
-# BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: AfterColon
+# BreakInheritanceList: BeforeColon
 # BreakStringLiterals: true
-ColumnLimit:     0
-# CommentPragmas:  '^ IWYU pragma:'
-# QualifierAlignment: Leave
+ColumnLimit: 0
+# CommentPragmas: "^ IWYU pragma:"
 # CompactNamespaces: false
 ConstructorInitializerIndentWidth: 8
 ContinuationIndentWidth: 8
 Cpp11BracedListStyle: false
-# DeriveLineEnding: true
 # DerivePointerAlignment: false
-# DisableFormat:   false
+# DisableFormat: false
 # EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
-# PackConstructorInitializers: BinPack
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-# AllowAllConstructorInitializersOnNextLine: true
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
@@ -82,118 +114,137 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 #   - BOOST_FOREACH
 # IfMacros:
 #   - KJ_IF_MAYBE
-# IncludeBlocks:   Preserve
+# IncludeBlocks: Preserve
 IncludeCategories:
-  - Regex:           '".*"'
-    Priority:        1
-  - Regex:           '^<.*\.h>'
-    Priority:        2
-  - Regex:           '^<.*'
-    Priority:        3
-# IncludeIsMainRegex: '(Test)?$'
-# IncludeIsMainSourceRegex: ''
+  - Regex: ^".*"$
+    Priority: 1
+  - Regex: ^<.*\.h>$
+    Priority: 2
+  - Regex: ^<.*>$
+    Priority: 3
+# IncludeIsMainRegex: (Test)?$
+# IncludeIsMainSourceRegex: ""
 # IndentAccessModifiers: false
-IndentCaseLabels: true
 # IndentCaseBlocks: false
+IndentCaseLabels: true
+# IndentExternBlock: AfterExternBlock
 # IndentGotoLabels: true
 # IndentPPDirectives: None
-# IndentExternBlock: AfterExternBlock
-# IndentRequires:  false
-IndentWidth:     4
+# IndentRequiresClause: true
+IndentWidth: 4
 # IndentWrappedFunctionNames: false
+InsertBraces: true
+# InsertNewlineAtEOF: false
 # InsertTrailingCommas: None
+# IntegerLiteralSeparator:
+#   Binary: 0
+#   BinaryMinDigits: 0
+#   Decimal: 0
+#   DecimalMinDigits: 0
+#   Hex: 0
+#   HexMinDigits: 0
+JavaImportGroups:
+  - org.godotengine
+  - android
+  - androidx
+  - com.android
+  - com.google
+  - java
+  - javax
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
+# KeepEmptyLinesAtEOF: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 # LambdaBodyIndentation: Signature
-# MacroBlockBegin: ''
-# MacroBlockEnd:   ''
+# Language: Cpp
+# LineEnding: DeriveLF
+# MacroBlockBegin: ""
+# MacroBlockEnd: ""
 # MaxEmptyLinesToKeep: 1
 # NamespaceIndentation: None
-# PenaltyBreakAssignment: 2
-# PenaltyBreakBeforeFirstCallParameter: 19
-# PenaltyBreakComment: 300
-# PenaltyBreakFirstLessLess: 120
-# PenaltyBreakOpenParenthesis: 0
-# PenaltyBreakString: 1000
-# PenaltyBreakTemplateDeclaration: 10
-# PenaltyExcessCharacter: 1000000
-# PenaltyReturnTypeOnItsOwnLine: 60
-# PenaltyIndentedWhitespace: 0
-# PointerAlignment: Right
-# PPIndentWidth:   -1
-# ReferenceAlignment: Pointer
-# ReflowComments:  true
-# RemoveBracesLLVM: false
-# SeparateDefinitionBlocks: Leave
-# ShortNamespaceLines: 1
-# SortIncludes:    CaseSensitive
-# SortJavaStaticImport: Before
-# SortUsingDeclarations: true
-# SpaceAfterCStyleCast: false
-# SpaceAfterLogicalNot: false
-# SpaceAfterTemplateKeyword: true
-# SpaceBeforeAssignmentOperators: true
-# SpaceBeforeCaseColon: false
-# SpaceBeforeCpp11BracedList: false
-# SpaceBeforeCtorInitializerColon: true
-# SpaceBeforeInheritanceColon: true
-# SpaceBeforeParens: ControlStatements
-# SpaceBeforeParensOptions:
-#   AfterControlStatements: true
-#   AfterForeachMacros: true
-#   AfterFunctionDefinitionName: false
-#   AfterFunctionDeclarationName: false
-#   AfterIfMacros:   true
-#   AfterOverloadedOperator: false
-#   BeforeNonEmptyParentheses: false
-# SpaceAroundPointerQualifiers: Default
-# SpaceBeforeRangeBasedForLoopColon: true
-# SpaceInEmptyBlock: false
-# SpaceInEmptyParentheses: false
-# SpacesBeforeTrailingComments: 1
-# SpacesInAngles:  Never
-# SpacesInConditionalStatement: false
-# SpacesInContainerLiterals: true
-# SpacesInCStyleCastParentheses: false
-## Godot TODO: We'll want to use a min of 1, but we need to see how to fix
-## our comment capitalization at the same time.
-SpacesInLineCommentPrefix:
-  Minimum:         0
-  Maximum:         -1
-# SpacesInParentheses: false
-# SpacesInSquareBrackets: false
-# SpaceBeforeSquareBrackets: false
-# BitFieldColonSpacing: Both
-# StatementAttributeLikeMacros:
-#   - Q_EMIT
-# StatementMacros:
-#   - Q_UNUSED
-#   - QT_REQUIRE_VERSION
-TabWidth:        4
-# UseCRLF:         false
-UseTab:          Always
-# WhitespaceSensitiveMacros:
-#   - STRINGIZE
-#   - PP_STRINGIZE
-#   - BOOST_PP_STRINGIZE
-#   - NS_SWIFT_NAME
-#   - CF_SWIFT_NAME
----
-### C++ specific config ###
-Language:        Cpp
-Standard:        c++17
----
-### ObjC specific config ###
-Language:        ObjC
 # ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 4
 # ObjCBreakBeforeNestedBlockParam: true
 # ObjCSpaceAfterProperty: false
 # ObjCSpaceBeforeProtocolList: true
----
-### Java specific config ###
-Language:        Java
-# BreakAfterJavaFieldAnnotations: false
-JavaImportGroups: ['org.godotengine', 'android', 'androidx', 'com.android', 'com.google', 'java', 'javax']
-...
+# PPIndentWidth: -1
+PackConstructorInitializers: NextLine
+# PenaltyBreakAssignment: 2
+# PenaltyBreakBeforeFirstCallParameter: 19
+# PenaltyBreakComment: 300
+# PenaltyBreakFirstLessLess: 120
+# PenaltyBreakOpenParenthesis: 0
+# PenaltyBreakScopeResolution: 500
+# PenaltyBreakString: 1000
+# PenaltyBreakTemplateDeclaration: 10
+# PenaltyExcessCharacter: 1000000
+# PenaltyIndentedWhitespace: 0
+# PenaltyReturnTypeOnItsOwnLine: 60
+# PointerAlignment: Right
+# QualifierAlignment: Leave
+# ReferenceAlignment: Pointer
+# ReflowComments: true
+# RemoveBracesLLVM: false
+# RemoveParentheses: Leave
+RemoveSemicolon: true
+# RequiresClausePosition: OwnLine
+# RequiresExpressionIndentation: OuterScope
+# SeparateDefinitionBlocks: Leave
+# ShortNamespaceLines: 1
+# SkipMacroDefinitionBody: false
+# SortIncludes: CaseSensitive
+# SortJavaStaticImport: Before
+# SortUsingDeclarations: LexicographicNumeric
+# SpaceAfterCStyleCast: false
+# SpaceAfterLogicalNot: false
+# SpaceAfterTemplateKeyword: true
+# SpaceAroundPointerQualifiers: Default
+# SpaceBeforeAssignmentOperators: true
+# SpaceBeforeCaseColon: false
+# SpaceBeforeCpp11BracedList: false
+# SpaceBeforeCtorInitializerColon: true
+# SpaceBeforeInheritanceColon: true
+# SpaceBeforeJsonColon: false
+# SpaceBeforeParens: ControlStatements
+# SpaceBeforeParensOptions:
+#   AfterControlStatements: true
+#   AfterForeachMacros: true
+#   AfterFunctionDeclarationName: false
+#   AfterFunctionDefinitionName: false
+#   AfterIfMacros: true
+#   AfterOverloadedOperator: false
+#   AfterPlacementOperator: true
+#   AfterRequiresInClause: false
+#   AfterRequiresInExpression: false
+#   BeforeNonEmptyParentheses: false
+# SpaceBeforeRangeBasedForLoopColon: true
+# SpaceBeforeSquareBrackets: false
+# SpaceInEmptyBlock: false
+# SpacesBeforeTrailingComments: 1
+# SpacesInAngles: Never
+# SpacesInContainerLiterals: true
+SpacesInLineCommentPrefix:
+  Minimum: 0 # We want a minimum of 1 for comments, but allow 0 for disabled code.
+  Maximum: -1
+# SpacesInParens: Never
+# SpacesInParensOptions:
+#   InConditionalStatements: false
+#   InCStyleCasts: false
+#   InEmptyParentheses: false
+#   Other: false
+# SpacesInSquareBrackets: false
+Standard: c++20
+# StatementAttributeLikeMacros:
+#   - Q_EMIT
+# StatementMacros:
+#   - Q_UNUSED
+#   - QT_REQUIRE_VERSION
+TabWidth: 4
+UseTab: Always
+# VerilogBreakBetweenInstancePorts: true
+# WhitespaceSensitiveMacros:
+#   - BOOST_PP_STRINGIZE
+#   - CF_SWIFT_NAME
+#   - NS_SWIFT_NAME
+#   - PP_STRINGIZE
+#   - STRINGIZE

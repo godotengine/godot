@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import fnmatch
-import os
-import sys
-import re
 import math
-import platform
+import os
+import re
+import sys
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Set
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
+
+from misc.utility.color import Ansi, force_stdout_color, is_stdout_color
 
 ################################################################################
 #                                    Config                                    #
 ################################################################################
 
 flags = {
-    "c": platform.platform() != "Windows",  # Disable by default on windows, since we use ANSI escape codes
+    "c": is_stdout_color(),
     "b": False,
     "g": False,
     "s": False,
@@ -85,16 +89,16 @@ table_column_names = [
     "Constructors",
 ]
 colors = {
-    "name": [36],  # cyan
-    "part_big_problem": [4, 31],  # underline, red
-    "part_problem": [31],  # red
-    "part_mostly_good": [33],  # yellow
-    "part_good": [32],  # green
-    "url": [4, 34],  # underline, blue
-    "section": [1, 4],  # bold, underline
-    "state_off": [36],  # cyan
-    "state_on": [1, 35],  # bold, magenta/plum
-    "bold": [1],  # bold
+    "name": [Ansi.CYAN],  # cyan
+    "part_big_problem": [Ansi.RED, Ansi.UNDERLINE],  # underline, red
+    "part_problem": [Ansi.RED],  # red
+    "part_mostly_good": [Ansi.YELLOW],  # yellow
+    "part_good": [Ansi.GREEN],  # green
+    "url": [Ansi.BLUE, Ansi.UNDERLINE],  # underline, blue
+    "section": [Ansi.BOLD, Ansi.UNDERLINE],  # bold, underline
+    "state_off": [Ansi.CYAN],  # cyan
+    "state_on": [Ansi.BOLD, Ansi.MAGENTA],  # bold, magenta/plum
+    "bold": [Ansi.BOLD],  # bold
 }
 overall_progress_description_weight = 10
 
@@ -111,13 +115,10 @@ def validate_tag(elem: ET.Element, tag: str) -> None:
 
 
 def color(color: str, string: str) -> str:
-    if flags["c"] and terminal_supports_color():
-        color_format = ""
-        for code in colors[color]:
-            color_format += "\033[" + str(code) + "m"
-        return color_format + string + "\033[0m"
-    else:
+    if not is_stdout_color():
         return string
+    color_format = "".join([str(x) for x in colors[color]])
+    return f"{color_format}{string}{Ansi.RESET}"
 
 
 ansi_escape = re.compile(r"\x1b[^m]*m")
@@ -125,16 +126,6 @@ ansi_escape = re.compile(r"\x1b[^m]*m")
 
 def nonescape_len(s: str) -> int:
     return len(ansi_escape.sub("", s))
-
-
-def terminal_supports_color():
-    p = sys.platform
-    supported_platform = p != "Pocket PC" and (p != "win32" or "ANSICON" in os.environ)
-
-    is_a_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-    if not supported_platform or not is_a_tty:
-        return False
-    return True
 
 
 ################################################################################
@@ -147,7 +138,7 @@ class ClassStatusProgress:
         self.described: int = described
         self.total: int = total
 
-    def __add__(self, other: "ClassStatusProgress"):
+    def __add__(self, other: ClassStatusProgress):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
     def increment(self, described: bool):
@@ -188,7 +179,7 @@ class ClassStatus:
         self.name: str = name
         self.has_brief_description: bool = True
         self.has_description: bool = True
-        self.progresses: Dict[str, ClassStatusProgress] = {
+        self.progresses: dict[str, ClassStatusProgress] = {
             "methods": ClassStatusProgress(),
             "constants": ClassStatusProgress(),
             "members": ClassStatusProgress(),
@@ -198,7 +189,7 @@ class ClassStatus:
             "constructors": ClassStatusProgress(),
         }
 
-    def __add__(self, other: "ClassStatus"):
+    def __add__(self, other: ClassStatus):
         new_status = ClassStatus()
         new_status.name = self.name
         new_status.has_brief_description = self.has_brief_description and other.has_brief_description
@@ -223,8 +214,8 @@ class ClassStatus:
             sum += self.progresses[k].total
         return sum < 1
 
-    def make_output(self) -> Dict[str, str]:
-        output: Dict[str, str] = {}
+    def make_output(self) -> dict[str, str]:
+        output: dict[str, str] = {}
         output["name"] = color("name", self.name)
 
         ok_string = color("part_good", "OK")
@@ -279,13 +270,18 @@ class ClassStatus:
 
             elif tag.tag in ["methods", "signals", "operators", "constructors"]:
                 for sub_tag in list(tag):
+                    is_deprecated = "deprecated" in sub_tag.attrib
+                    is_experimental = "experimental" in sub_tag.attrib
                     descr = sub_tag.find("description")
-                    increment = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
-                    status.progresses[tag.tag].increment(increment)
+                    has_descr = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
+                    status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
             elif tag.tag in ["constants", "members", "theme_items"]:
                 for sub_tag in list(tag):
-                    if not sub_tag.text is None:
-                        status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
+                    if sub_tag.text is not None:
+                        is_deprecated = "deprecated" in sub_tag.attrib
+                        is_experimental = "experimental" in sub_tag.attrib
+                        has_descr = len(sub_tag.text.strip()) > 0
+                        status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
 
             elif tag.tag in ["tutorials"]:
                 pass  # Ignore those tags for now
@@ -300,8 +296,8 @@ class ClassStatus:
 #                                  Arguments                                   #
 ################################################################################
 
-input_file_list: List[str] = []
-input_class_list: List[str] = []
+input_file_list: list[str] = []
+input_class_list: list[str] = []
 merged_file: str = ""
 
 for arg in sys.argv[1:]:
@@ -337,6 +333,7 @@ if flags["u"]:
     table_column_names.append("Docs URL")
     table_columns.append("url")
 
+force_stdout_color(flags["c"])
 
 ################################################################################
 #                                     Help                                     #
@@ -376,8 +373,8 @@ if len(input_file_list) < 1 or flags["h"]:
 #                               Parse class list                               #
 ################################################################################
 
-class_names: List[str] = []
-classes: Dict[str, ET.Element] = {}
+class_names: list[str] = []
+classes: dict[str, ET.Element] = {}
 
 for file in input_file_list:
     tree = ET.parse(file)
@@ -393,7 +390,7 @@ class_names.sort()
 if len(input_class_list) < 1:
     input_class_list = ["*"]
 
-filtered_classes_set: Set[str] = set()
+filtered_classes_set: set[str] = set()
 for pattern in input_class_list:
     filtered_classes_set |= set(fnmatch.filter(class_names, pattern))
 filtered_classes = list(filtered_classes_set)
@@ -423,7 +420,7 @@ for cn in filtered_classes:
         continue
 
     out = status.make_output()
-    row: List[str] = []
+    row: list[str] = []
     for column in table_columns:
         if column in out:
             row.append(out[column])
@@ -460,7 +457,7 @@ if flags["a"]:
     # without having to scroll back to the top.
     table.append(table_column_names)
 
-table_column_sizes: List[int] = []
+table_column_sizes: list[int] = []
 for row in table:
     for cell_i, cell in enumerate(row):
         if cell_i >= len(table_column_sizes):

@@ -28,16 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CVTT_REGISTER_TYPES_H
-#define CVTT_REGISTER_TYPES_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "modules/register_module_types.h"
 
 void initialize_cvtt_module(ModuleInitializationLevel p_level);
 void uninitialize_cvtt_module(ModuleInitializationLevel p_level);
-
-#endif // TOOLS_ENABLED
-
-#endif // CVTT_REGISTER_TYPES_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_TEXTURE_H
-#define STYLE_BOX_TEXTURE_H
+#pragma once
 
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -89,11 +88,6 @@ public:
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const override;
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
-
-	StyleBoxTexture();
-	~StyleBoxTexture();
 };
 
 VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
-
-#endif // STYLE_BOX_TEXTURE_H

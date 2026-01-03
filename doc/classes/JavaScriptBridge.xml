@@ -5,10 +5,10 @@
 	</brief_description>
 	<description>
 		The JavaScriptBridge singleton is implemented only in the Web export. It's used to access the browser's JavaScript context. This allows interaction with embedding pages or calling third-party JavaScript APIs.
-		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScriptBridge singleton is enabled. Official export templates also have the JavaScriptBridge singleton enabled. See [url=$DOCS_URL/contributing/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
+		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScriptBridge singleton is enabled. Official export templates also have the JavaScriptBridge singleton enabled. See [url=$DOCS_URL/engine_details/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
 	</description>
 	<tutorials>
-		<link title="Exporting for the Web: Calling JavaScript from script">$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-script</link>
+		<link title="The JavaScriptBridge singleton">$DOCS_URL/tutorials/platform/web/javascript_bridge.html</link>
 	</tutorials>
 	<methods>
 		<method name="create_callback">
@@ -16,6 +16,7 @@
 			<param index="0" name="callable" type="Callable" />
 			<description>
 				Creates a reference to a [Callable] that can be used as a callback by JavaScript. The reference must be kept until the callback happens, or it won't be called at all. See [JavaScriptObject] for usage.
+				[b]Note:[/b] The callback function must take exactly one [Array] argument, which is going to be the JavaScript [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments]arguments object[/url] converted to an array.
 			</description>
 		</method>
 		<method name="create_object" qualifiers="vararg">
@@ -58,6 +59,20 @@
 			<param index="0" name="interface" type="String" />
 			<description>
 				Returns an interface to a JavaScript object that can be used by scripts. The [param interface] must be a valid property of the JavaScript [code]window[/code]. The callback must accept a single [Array] argument, which will contain the JavaScript [code]arguments[/code]. See [JavaScriptObject] for usage.
+			</description>
+		</method>
+		<method name="is_js_buffer">
+			<return type="bool" />
+			<param index="0" name="javascript_object" type="JavaScriptObject" />
+			<description>
+				Returns [code]true[/code] if the given [param javascript_object] is of type [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer][code]ArrayBuffer[/code][/url], [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView][code]DataView[/code][/url], or one of the many [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray]typed array objects[/url].
+			</description>
+		</method>
+		<method name="js_buffer_to_packed_byte_array">
+			<return type="PackedByteArray" />
+			<param index="0" name="javascript_buffer" type="JavaScriptObject" />
+			<description>
+				Returns a copy of [param javascript_buffer]'s contents as a [PackedByteArray]. See also [method is_js_buffer].
 			</description>
 		</method>
 		<method name="pwa_needs_update" qualifiers="const">

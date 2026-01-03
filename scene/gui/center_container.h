@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CENTER_CONTAINER_H
-#define CENTER_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -50,8 +49,4 @@ public:
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
-
-	CenterContainer();
 };
-
-#endif // CENTER_CONTAINER_H

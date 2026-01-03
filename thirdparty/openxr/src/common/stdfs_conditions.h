@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017 Valve Corporation
 // Copyright (c) 2017 LunarG, Inc.
 //
@@ -27,7 +27,7 @@
 #define USE_FINAL_FS 0
 
 // If Clang, check for feature support
-#elif defined(__clang__) && (__cpp_lib_filesystem || __cpp_lib_experimental_filesystem)
+#elif defined(__clang__) && (defined(__cpp_lib_filesystem) || defined(__cpp_lib_experimental_filesystem))
 #if __cpp_lib_filesystem
 #define USE_EXPERIMENTAL_FS 0
 #define USE_FINAL_FS 1

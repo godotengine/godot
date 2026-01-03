@@ -9,24 +9,24 @@
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    var tree = Tree.new()
-		    var root = tree.create_item()
-		    tree.hide_root = true
-		    var child1 = tree.create_item(root)
-		    var child2 = tree.create_item(root)
-		    var subchild1 = tree.create_item(child1)
-		    subchild1.set_text(0, "Subchild1")
+			var tree = Tree.new()
+			var root = tree.create_item()
+			tree.hide_root = true
+			var child1 = tree.create_item(root)
+			var child2 = tree.create_item(root)
+			var subchild1 = tree.create_item(child1)
+			subchild1.set_text(0, "Subchild1")
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    var tree = new Tree();
-		    TreeItem root = tree.CreateItem();
-		    tree.HideRoot = true;
-		    TreeItem child1 = tree.CreateItem(root);
-		    TreeItem child2 = tree.CreateItem(root);
-		    TreeItem subchild1 = tree.CreateItem(child1);
-		    subchild1.SetText(0, "Subchild1");
+			var tree = new Tree();
+			TreeItem root = tree.CreateItem();
+			tree.HideRoot = true;
+			TreeItem child1 = tree.CreateItem(root);
+			TreeItem child2 = tree.CreateItem(root);
+			TreeItem subchild1 = tree.CreateItem(child1);
+			subchild1.SetText(0, "Subchild1");
 		}
 		[/csharp]
 		[/codeblocks]
@@ -124,6 +124,13 @@
 				Returns column title language code.
 			</description>
 		</method>
+		<method name="get_column_title_tooltip_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column title's tooltip text.
+			</description>
+		</method>
 		<method name="get_column_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
@@ -153,20 +160,20 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    $Tree.item_edited.connect(on_Tree_item_edited)
+					$Tree.item_edited.connect(on_Tree_item_edited)
 
 				func on_Tree_item_edited():
-				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
+					print($Tree.get_edited()) # This item just got edited (e.g. checked).
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
+					GetNode&lt;Tree&gt;("Tree").ItemEdited += OnTreeItemEdited;
 				}
 
 				public void OnTreeItemEdited()
 				{
-				    GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
+					GD.Print(GetNode&lt;Tree&gt;("Tree").GetEdited()); // This item just got edited (e.g. checked).
 				}
 				[/csharp]
 				[/codeblocks]
@@ -319,7 +326,15 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of column title used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the given [param column]'s title to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
+			</description>
+		</method>
+		<method name="set_column_title_tooltip_text">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="tooltip_text" type="String" />
+			<description>
+				Sets the column title's tooltip text.
 			</description>
 		</method>
 		<method name="set_selected">
@@ -341,6 +356,9 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows navigating the [Tree] with letter keys through incremental search.
 		</member>
+		<member name="auto_tooltip" type="bool" setter="set_auto_tooltip" getter="is_auto_tooltip_enabled" default="true">
+			If [code]true[/code], tree items with no tooltip assigned display their text as their tooltip. See also [method TreeItem.get_tooltip_text] and [method TreeItem.get_button_tooltip_text].
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="column_titles_visible" type="bool" setter="set_column_titles_visible" getter="are_column_titles_visible" default="false">
 			If [code]true[/code], column titles are visible.
@@ -352,8 +370,11 @@
 			The drop mode as an OR combination of flags. See [enum DropModeFlags] constants. Once dropping is done, reverts to [constant DROP_MODE_DISABLED]. Setting this during [method Control._can_drop_data] is recommended.
 			This controls the drop sections, i.e. the decision and drawing of possible drop locations based on the mouse position.
 		</member>
+		<member name="enable_drag_unfolding" type="bool" setter="set_enable_drag_unfolding" getter="is_drag_unfolding_enabled" default="true">
+			If [code]true[/code], tree items will unfold when hovered over during a drag-and-drop. The delay for when this happens is dictated by [theme_item dragging_unfold_wait_msec].
+		</member>
 		<member name="enable_recursive_folding" type="bool" setter="set_enable_recursive_folding" getter="is_recursive_folding_enabled" default="true">
-			If [code]true[/code], recursive folding is enabled for this [Tree]. Holding down Shift while clicking the fold arrow collapses or uncollapses the [TreeItem] and all its descendants.
+			If [code]true[/code], recursive folding is enabled for this [Tree]. Holding down [kbd]Shift[/kbd] while clicking the fold arrow or using [code]ui_right[/code]/[code]ui_left[/code] shortcuts collapses or uncollapses the [TreeItem] and all its descendants.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden" default="false">
@@ -361,6 +382,9 @@
 		</member>
 		<member name="hide_root" type="bool" setter="set_hide_root" getter="is_root_hidden" default="false">
 			If [code]true[/code], the tree's root is hidden.
+		</member>
+		<member name="scroll_hint_mode" type="int" setter="set_scroll_hint_mode" getter="get_scroll_hint_mode" enum="Tree.ScrollHintMode" default="0">
+			The way which scroll hints (indicators that show that the content can still be scrolled in a certain direction) will be shown.
 		</member>
 		<member name="scroll_horizontal_enabled" type="bool" setter="set_h_scroll_enabled" getter="is_h_scroll_enabled" default="true">
 			If [code]true[/code], enables horizontal scrolling.
@@ -370,6 +394,9 @@
 		</member>
 		<member name="select_mode" type="int" setter="set_select_mode" getter="get_select_mode" enum="Tree.SelectMode" default="0">
 			Allows single or multiple selection. See the [enum SelectMode] constants.
+		</member>
+		<member name="tile_scroll_hint" type="bool" setter="set_tile_scroll_hint" getter="is_scroll_hint_tiled" default="false">
+			If [code]true[/code], the scroll hint texture will be tiled instead of stretched. See [member scroll_hint_mode].
 		</member>
 	</members>
 	<signals>
@@ -414,7 +441,7 @@
 			</description>
 		</signal>
 		<signal name="empty_clicked">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="click_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when a mouse button is clicked in the empty space of the tree.
@@ -428,7 +455,8 @@
 		<signal name="item_collapsed">
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Emitted when an item is collapsed by a click on the folding arrow.
+				Emitted when an item is expanded or collapsed by clicking on the folding arrow or through code.
+				[b]Note:[/b] Despite its name, this signal is also emitted when an item is expanded.
 			</description>
 		</signal>
 		<signal name="item_edited">
@@ -442,7 +470,7 @@
 			</description>
 		</signal>
 		<signal name="item_mouse_selected">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="mouse_position" type="Vector2" />
 			<param index="1" name="mouse_button_index" type="int" />
 			<description>
 				Emitted when an item is selected with a mouse button.
@@ -492,6 +520,18 @@
 			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, and the "below item" drop section covers the bottom half.
 			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halves the height and stays on top / bottom accordingly.
 		</constant>
+		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
+			Scroll hints will never be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTH" value="1" enum="ScrollHintMode">
+			Scroll hints will be shown at the top and bottom.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_TOP" value="2" enum="ScrollHintMode">
+			Only the top scroll hint will be shown.
+		</constant>
+		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
+			Only the bottom scroll hint will be shown.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="children_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
@@ -506,7 +546,19 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Default text [Color] of the item.
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Text [Color] for a [constant TreeItem.CELL_MODE_CHECK] mode cell when it's non-editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
+			Text [Color] used when the item is hovered and not selected yet.
+		</theme_item>
+		<theme_item name="font_hovered_dimmed_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Text [Color] used when the item is hovered, while a button of the same item is hovered as the same time.
+		</theme_item>
+		<theme_item name="font_hovered_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the item is hovered and selected.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the item.
 		</theme_item>
 		<theme_item name="font_selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
@@ -530,6 +582,9 @@
 		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
+		<theme_item name="dragging_unfold_wait_msec" data_type="constant" type="int" default="500">
+			During a drag-and-drop, this is how many milliseconds to wait over a section before the section unfolds.
+		</theme_item>
 		<theme_item name="draw_guides" data_type="constant" type="int" default="1">
 			Draws the guidelines if not zero, this acts as a boolean. The guideline is a horizontal line drawn at the bottom of each item.
 		</theme_item>
@@ -543,16 +598,16 @@
 			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="inner_item_margin_bottom" data_type="constant" type="int" default="0">
-			The inner bottom margin of an item.
+			The inner bottom margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_left" data_type="constant" type="int" default="0">
-			The inner left margin of an item.
+			The inner left margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_right" data_type="constant" type="int" default="0">
-			The inner right margin of an item.
+			The inner right margin of a cell.
 		</theme_item>
 		<theme_item name="inner_item_margin_top" data_type="constant" type="int" default="0">
-			The inner top margin of an item.
+			The inner top margin of a cell.
 		</theme_item>
 		<theme_item name="item_margin" data_type="constant" type="int" default="16">
 			The horizontal margin at the start of an item. This is used when folding is enabled for the item.
@@ -619,19 +674,34 @@
 			The arrow icon used when a foldable item is collapsed (for right-to-left layouts).
 		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="checked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is checked and non-editable (see [method TreeItem.set_editable]).
 		</theme_item>
 		<theme_item name="indeterminate" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="indeterminate_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is indeterminate and non-editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="scroll_hint" data_type="icon" type="Texture2D">
+			The indicator that will be shown when the content can still be scrolled. See [member scroll_hint_mode].
 		</theme_item>
 		<theme_item name="select_arrow" data_type="icon" type="Texture2D">
 			The arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
 		<theme_item name="unchecked" data_type="icon" type="Texture2D">
-			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked.
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked and editable (see [method TreeItem.set_editable]).
+		</theme_item>
+		<theme_item name="unchecked_disabled" data_type="icon" type="Texture2D">
+			The check icon to display when the [constant TreeItem.CELL_MODE_CHECK] mode cell is unchecked and non-editable (see [method TreeItem.set_editable]).
 		</theme_item>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
+		</theme_item>
+		<theme_item name="button_hover" data_type="style" type="StyleBox">
+			[StyleBox] used when a button in the tree is hovered.
 		</theme_item>
 		<theme_item name="button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
@@ -643,16 +713,28 @@
 			[StyleBox] used for the cursor, when the [Tree] is not being focused.
 		</theme_item>
 		<theme_item name="custom_button" data_type="style" type="StyleBox">
-			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell.
+			Default [StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when button is enabled with [method TreeItem.set_custom_as_button].
 		</theme_item>
 		<theme_item name="custom_button_hover" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's hovered.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's hovered.
 		</theme_item>
 		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
-			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
+			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode button cell when it's pressed.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The focused style for the [Tree], drawn on top of everything.
+		</theme_item>
+		<theme_item name="hovered" data_type="style" type="StyleBox">
+			[StyleBox] for the item being hovered, but not selected.
+		</theme_item>
+		<theme_item name="hovered_dimmed" data_type="style" type="StyleBox">
+			[StyleBox] for the item being hovered, while a button of the same item is hovered as the same time.
+		</theme_item>
+		<theme_item name="hovered_selected" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [Tree] is not being focused.
+		</theme_item>
+		<theme_item name="hovered_selected_focus" data_type="style" type="StyleBox">
+			[StyleBox] for the hovered and selected items, used when the [Tree] is being focused.
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background style for the [Tree].

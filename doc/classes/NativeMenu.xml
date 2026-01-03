@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NativeMenu" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A server interface for OS native menus.
+	</brief_description>
+	<description>
+		[NativeMenu] handles low-level access to the OS native global menu bar and popup menus.
+		[b]Note:[/b] This is low-level API, consider using [MenuBar] with [member MenuBar.prefer_global_menu] set to [code]true[/code], and [PopupMenu] with [member PopupMenu.prefer_native_menu] set to [code]true[/code].
+		To create a menu, use [method create_menu], add menu items using [code]add_*_item[/code] methods. To remove a menu, use [method free_menu].
+		[codeblock]
+		var menu
+
+		func _menu_callback(item_id):
+			if item_id == "ITEM_CUT":
+				cut()
+			elif item_id == "ITEM_COPY":
+				copy()
+			elif item_id == "ITEM_PASTE":
+				paste()
+
+		func _enter_tree():
+			# Create new menu and add items:
+			menu = NativeMenu.create_menu()
+			NativeMenu.add_item(menu, "Cut", _menu_callback, Callable(), "ITEM_CUT")
+			NativeMenu.add_item(menu, "Copy", _menu_callback, Callable(), "ITEM_COPY")
+			NativeMenu.add_separator(menu)
+			NativeMenu.add_item(menu, "Paste", _menu_callback, Callable(), "ITEM_PASTE")
+
+		func _on_button_pressed():
+			# Show popup menu at mouse position:
+			NativeMenu.popup(menu, DisplayServer.mouse_get_position())
+
+		func _exit_tree():
+			# Remove menu when it's no longer needed:
+			NativeMenu.free_menu(menu)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_check_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new checkable item with text [param label] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_icon_check_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="icon" type="Texture2D" />
+			<param index="2" name="label" type="String" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
+			<description>
+				Adds a new checkable item with text [param label] and icon [param icon] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_icon_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="icon" type="Texture2D" />
+			<param index="2" name="label" type="String" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
+			<description>
+				Adds a new item with text [param label] and icon [param icon] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_icon_radio_check_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="icon" type="Texture2D" />
+			<param index="2" name="label" type="String" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
+			<description>
+				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new item with text [param label] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_multistate_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="max_states" type="int" />
+			<param index="3" name="default_state" type="int" />
+			<param index="4" name="callback" type="Callable" default="Callable()" />
+			<param index="5" name="key_callback" type="Callable" default="Callable()" />
+			<param index="6" name="tag" type="Variant" default="null" />
+			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="8" name="index" type="int" default="-1" />
+			<description>
+				Adds a new item with text [param label] to the global menu [param rid].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_radio_check_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
+			<description>
+				Adds a new radio-checkable item with text [param label] to the global menu [param rid].
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On Windows, [param accelerator] and [param key_callback] are ignored.
+			</description>
+		</method>
+		<method name="add_separator">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="index" type="int" default="-1" />
+			<description>
+				Adds a separator between items to the global menu [param rid]. Separators also occupy an index.
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="add_submenu_item">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="label" type="String" />
+			<param index="2" name="submenu_rid" type="RID" />
+			<param index="3" name="tag" type="Variant" default="null" />
+			<param index="4" name="index" type="int" default="-1" />
+			<description>
+				Adds an item that will act as a submenu of the global menu [param rid]. The [param submenu_rid] argument is the RID of the global menu that will be shown when the item is clicked.
+				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Removes all items from the global menu [param rid].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="create_menu">
+			<return type="RID" />
+			<description>
+				Creates a new global menu object.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="find_item_index_with_submenu" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="submenu_rid" type="RID" />
+			<description>
+				Returns the index of the item with the submenu specified by [param submenu_rid]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="find_item_index_with_tag" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="tag" type="Variant" />
+			<description>
+				Returns the index of the item with the specified [param tag]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="find_item_index_with_text" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="text" type="String" />
+			<description>
+				Returns the index of the item with the specified [param text]. Indices are automatically assigned to each item by the engine, and cannot be set manually.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="free_menu">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Frees a global menu object created by this [NativeMenu].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_accelerator" qualifiers="const">
+			<return type="int" enum="Key" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the accelerator of the item at index [param idx]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_item_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the callback of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns number of items in the global menu [param rid].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the icon of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_indentation_level" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the horizontal offset of the item at the given [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_item_key_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the callback of the item accelerator at index [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_item_max_states" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns number of states of a multistate item. See [method add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_state" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the state of a multistate item. See [method add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_submenu" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the submenu ID of the item at index [param idx]. See [method add_submenu_item] for more info on how to add a submenu.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_tag" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_tag], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the text of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_item_tooltip" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the tooltip associated with the specified index [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_minimum_width" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns global menu minimum width.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_popup_close_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns global menu close callback.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_popup_open_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns global menu open callback.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns global menu size.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="get_system_menu" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns RID of a special system menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_system_menu_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns readable name of a special system menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="get_system_menu_text" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="feature" type="int" enum="NativeMenu.Feature" />
+			<description>
+				Returns [code]true[/code] if the specified [param feature] is supported by the current [NativeMenu], [code]false[/code] otherwise.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="has_menu" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if [param rid] is valid global menu.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="has_system_menu" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<description>
+				Returns [code]true[/code] if a special system menu is supported.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="is_item_checkable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is checkable in some way, i.e. if it has a checkbox or radio button.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="is_item_checked" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is checked.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="is_item_disabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is disabled. When it is disabled it can't be selected, or its action invoked.
+				See [method set_item_disabled] for more info on how to disable an item.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="is_item_hidden" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is hidden.
+				See [method set_item_hidden] for more info on how to hide an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="is_item_radio_checkable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] has radio button-style checkability.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="is_opened" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if the menu is currently opened.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="is_system_menu" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Return [code]true[/code] is global menu is a special system menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="popup">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="position" type="Vector2i" />
+			<description>
+				Shows the global menu at [param position] in the screen coordinates.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="remove_item">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Removes the item at index [param idx] from the global menu [param rid].
+				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_interface_direction">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="is_rtl" type="bool" />
+			<description>
+				Sets the menu text layout direction from right-to-left if [param is_rtl] is [code]true[/code].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_accelerator">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="keycode" type="int" enum="Key" />
+			<description>
+				Sets the accelerator of the item at index [param idx]. [param keycode] can be a single [enum Key], or a combination of [enum KeyModifierMask]s and [enum Key]s using bitwise OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_callback">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_checkable">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="checkable" type="bool" />
+			<description>
+				Sets whether the item at index [param idx] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_checked">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="checked" type="bool" />
+			<description>
+				Sets the checkstate status of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_disabled">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="disabled" type="bool" />
+			<description>
+				Enables/disables the item at index [param idx]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_hidden">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="hidden" type="bool" />
+			<description>
+				Hides/shows the item at index [param idx]. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_hover_callbacks">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. The callback is emitted when an item is hovered.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_icon">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="icon" type="Texture2D" />
+			<description>
+				Replaces the [Texture2D] icon of the specified [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is not supported by macOS Dock menu items.
+			</description>
+		</method>
+		<method name="set_item_indentation_level">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="level" type="int" />
+			<description>
+				Sets the horizontal offset of the item at the given [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_key_callback">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="key_callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. Callback is emitted when its accelerator is activated.
+				[b]Note:[/b] The [param key_callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_max_states">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="max_states" type="int" />
+			<description>
+				Sets number of state of a multistate item. See [method add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_radio_checkable">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="checkable" type="bool" />
+			<description>
+				Sets the type of the item at the specified index [param idx] to radio button. If [code]false[/code], sets the type of the item to plain text.
+				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_state">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="state" type="int" />
+			<description>
+				Sets the state of a multistate item. See [method add_multistate_item] for details.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_submenu">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="submenu_rid" type="RID" />
+			<description>
+				Sets the submenu RID of the item at index [param idx]. The submenu is a global menu that would be shown when the item is clicked.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_tag">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="tag" type="Variant" />
+			<description>
+				Sets the metadata of an item, which may be of any type. You can later get it with [method get_item_tag], which provides a simple way of assigning context data to items.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_text">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="text" type="String" />
+			<description>
+				Sets the text of the item at index [param idx].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_item_tooltip">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="tooltip" type="String" />
+			<description>
+				Sets the [String] tooltip of the item at the specified index [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_minimum_width">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="width" type="float" />
+			<description>
+				Sets the minimum width of the global menu.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_popup_close_callback">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Registers callable to emit when the menu is about to show.
+				[b]Note:[/b] The OS can simulate menu opening to track menu item changes and global shortcuts, in which case the corresponding close callback is not triggered. Use [method is_opened] to check if the menu is currently opened.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="set_popup_open_callback">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Registers callable to emit after the menu is closed.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_system_menu_text">
+			<return type="void" />
+			<param index="0" name="menu_id" type="int" enum="NativeMenu.SystemMenus" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the text of the system menu item.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
+			[NativeMenu] supports native global main menu.
+		</constant>
+		<constant name="FEATURE_POPUP_MENU" value="1" enum="Feature">
+			[NativeMenu] supports native popup menus.
+		</constant>
+		<constant name="FEATURE_OPEN_CLOSE_CALLBACK" value="2" enum="Feature">
+			[NativeMenu] supports menu open and close callbacks.
+		</constant>
+		<constant name="FEATURE_HOVER_CALLBACK" value="3" enum="Feature">
+			[NativeMenu] supports menu item hover callback.
+		</constant>
+		<constant name="FEATURE_KEY_CALLBACK" value="4" enum="Feature">
+			[NativeMenu] supports menu item accelerator/key callback.
+		</constant>
+		<constant name="INVALID_MENU_ID" value="0" enum="SystemMenus">
+			Invalid special system menu ID.
+		</constant>
+		<constant name="MAIN_MENU_ID" value="1" enum="SystemMenus">
+			Global main menu ID.
+		</constant>
+		<constant name="APPLICATION_MENU_ID" value="2" enum="SystemMenus">
+			Application (first menu after "Apple" menu on macOS) menu ID.
+		</constant>
+		<constant name="WINDOW_MENU_ID" value="3" enum="SystemMenus">
+			"Window" menu ID (on macOS this menu includes standard window control items and a list of open windows).
+		</constant>
+		<constant name="HELP_MENU_ID" value="4" enum="SystemMenus">
+			"Help" menu ID (on macOS this menu includes help search bar).
+		</constant>
+		<constant name="DOCK_MENU_ID" value="5" enum="SystemMenus">
+			Dock icon right-click menu ID (on macOS this menu include standard application control items and a list of open windows).
+		</constant>
+	</constants>
+</class>

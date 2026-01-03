@@ -1,0 +1,6 @@
+GH-107167
+---------
+Validate extension JSON: Error: Field 'classes/EditorExportPreset/methods/get_script_export_mode': meta was removed.
+Validate extension JSON: Error: Field 'classes/EditorExportPreset/methods/get_script_export_mode/return_value': type changed value in new API, from "int" to "enum::EditorExportPreset.ScriptExportMode".
+
+Change return type from `int` to `EditorExportPreset.ScriptExportMode` enum. Compatibility method registered.

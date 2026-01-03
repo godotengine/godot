@@ -28,15 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_export.h"
+#include "editor_export_preset.h"
+#include "editor_export_preset.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	values[p_name] = p_value;
 	EditorExport::singleton->save_presets();
 	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
+			update_value_overrides();
 			notify_property_list_changed();
 		}
 		return true;
@@ -46,6 +51,11 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 }
 
 bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
+	if (value_overrides.has(p_name)) {
+		r_ret = value_overrides[p_name];
+		return true;
+	}
+
 	if (values.has(p_name)) {
 		r_ret = values[p_name];
 		return true;
@@ -54,11 +64,82 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+Variant EditorExportPreset::get_project_setting(const StringName &p_name) {
+	List<String> ftr_list;
+	platform->get_platform_features(&ftr_list);
+	platform->get_preset_features(this, &ftr_list);
+
+	Vector<String> features;
+	for (const String &E : ftr_list) {
+		features.push_back(E);
+	}
+
+	if (!get_custom_features().is_empty()) {
+		Vector<String> tmp_custom_list = get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (!f.is_empty()) {
+				features.push_back(f);
+			}
+		}
+	}
+	return ProjectSettings::get_singleton()->get_setting_with_override_and_custom_features(p_name, features);
+}
+
 void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
+
+	ClassDB::bind_method(D_METHOD("has", "property"), &EditorExportPreset::has);
+
+	ClassDB::bind_method(D_METHOD("get_files_to_export"), &EditorExportPreset::get_files_to_export);
+	ClassDB::bind_method(D_METHOD("get_customized_files"), &EditorExportPreset::get_customized_files);
+	ClassDB::bind_method(D_METHOD("get_customized_files_count"), &EditorExportPreset::get_customized_files_count);
+	ClassDB::bind_method(D_METHOD("has_export_file", "path"), &EditorExportPreset::has_export_file);
+	ClassDB::bind_method(D_METHOD("get_file_export_mode", "path", "default"), &EditorExportPreset::get_file_export_mode, DEFVAL(MODE_FILE_NOT_CUSTOMIZED));
+	ClassDB::bind_method(D_METHOD("get_project_setting", "name"), &EditorExportPreset::get_project_setting);
+
+	ClassDB::bind_method(D_METHOD("get_preset_name"), &EditorExportPreset::get_name);
+	ClassDB::bind_method(D_METHOD("is_runnable"), &EditorExportPreset::is_runnable);
+	ClassDB::bind_method(D_METHOD("are_advanced_options_enabled"), &EditorExportPreset::are_advanced_options_enabled);
+	ClassDB::bind_method(D_METHOD("is_dedicated_server"), &EditorExportPreset::is_dedicated_server);
+	ClassDB::bind_method(D_METHOD("get_export_filter"), &EditorExportPreset::get_export_filter);
+	ClassDB::bind_method(D_METHOD("get_include_filter"), &EditorExportPreset::get_include_filter);
+	ClassDB::bind_method(D_METHOD("get_exclude_filter"), &EditorExportPreset::get_exclude_filter);
+	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
+	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
+	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);
+	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
+	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
+	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
+	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
+	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
+	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
+
+	ClassDB::bind_method(D_METHOD("get_or_env", "name", "env_var"), &EditorExportPreset::_get_or_env);
+	ClassDB::bind_method(D_METHOD("get_version", "name", "windows_version"), &EditorExportPreset::get_version);
+
+	BIND_ENUM_CONSTANT(EXPORT_ALL_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_SCENES);
+	BIND_ENUM_CONSTANT(EXPORT_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXCLUDE_SELECTED_RESOURCES);
+	BIND_ENUM_CONSTANT(EXPORT_CUSTOMIZED);
+
+	BIND_ENUM_CONSTANT(MODE_FILE_NOT_CUSTOMIZED);
+	BIND_ENUM_CONSTANT(MODE_FILE_STRIP);
+	BIND_ENUM_CONSTANT(MODE_FILE_KEEP);
+	BIND_ENUM_CONSTANT(MODE_FILE_REMOVE);
+
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_TEXT);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS);
+	BIND_ENUM_CONSTANT(MODE_SCRIPT_BINARY_TOKENS_COMPRESSED);
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
+	if (value_overrides.has(p_name)) {
+		return String();
+	}
+
 	String warning = platform->get_export_option_warning(this, p_name);
 	if (!warning.is_empty()) {
 		warning += "\n";
@@ -83,8 +164,29 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
-		if (platform->get_export_option_visibility(this, E.key)) {
-			p_list->push_back(E.value);
+		if (!value_overrides.has(E.key)) {
+			bool property_visible = platform->get_export_option_visibility(this, E.key);
+			if (!property_visible) {
+				continue;
+			}
+
+			// Get option visibility from editor export plugins.
+			Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (!export_plugins[i]->supports_platform(platform)) {
+					continue;
+				}
+
+				export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+				property_visible = export_plugins[i]->_get_export_option_visibility(platform, E.key);
+				if (!property_visible) {
+					break;
+				}
+			}
+
+			if (property_visible) {
+				p_list->push_back(E.value);
+			}
 		}
 	}
 }
@@ -119,12 +221,50 @@ void EditorExportPreset::update_files() {
 	}
 }
 
+void EditorExportPreset::update_value_overrides() {
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	HashMap<StringName, Variant> new_value_overrides;
+
+	value_overrides.clear();
+
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (!export_plugins[i]->supports_platform(platform)) {
+			continue;
+		}
+
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+
+		Dictionary plugin_overrides = export_plugins[i]->_get_export_options_overrides(platform);
+		if (!plugin_overrides.is_empty()) {
+			for (const KeyValue<Variant, Variant> &kv : plugin_overrides) {
+				const StringName &key = kv.key;
+				const Variant &value = kv.value;
+				if (new_value_overrides.has(key) && new_value_overrides[key] != value) {
+					WARN_PRINT_ED(vformat("Editor export plugin '%s' overrides pre-existing export option override '%s' with new value.", export_plugins[i]->get_name(), key));
+				}
+				new_value_overrides[key] = value;
+			}
+		}
+	}
+
+	value_overrides = new_value_overrides;
+	notify_property_list_changed();
+}
+
 Vector<String> EditorExportPreset::get_files_to_export() const {
 	Vector<String> files;
 	for (const String &E : selected_files) {
 		files.push_back(E);
 	}
 	return files;
+}
+
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return selected_files;
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
 }
 
 Dictionary EditorExportPreset::get_customized_files() const {
@@ -180,11 +320,16 @@ String EditorExportPreset::get_name() const {
 
 void EditorExportPreset::set_runnable(bool p_enable) {
 	runnable = p_enable;
+	EditorExport::singleton->emit_presets_runnable_changed();
 	EditorExport::singleton->save_presets();
 }
 
 bool EditorExportPreset::is_runnable() const {
 	return runnable;
+}
+
+bool EditorExportPreset::are_advanced_options_enabled() const {
+	return EDITOR_GET("_export_preset_advanced_mode");
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -269,6 +414,87 @@ EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(cons
 	return p_default;
 }
 
+void EditorExportPreset::add_patch(const String &p_path, int p_at_pos) {
+	ERR_FAIL_COND_EDMSG(patches.has(p_path), vformat("Failed to add patch \"%s\". Patches must be unique.", p_path));
+
+	if (p_at_pos < 0) {
+		patches.push_back(p_path);
+	} else {
+		patches.insert(p_at_pos, p_path);
+	}
+
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index, const String &p_path) {
+	remove_patch(p_index);
+	add_patch(p_path, p_index);
+}
+
+String EditorExportPreset::get_patch(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
+	return patches[p_index];
+}
+
+void EditorExportPreset::remove_patch(int p_index) {
+	ERR_FAIL_INDEX(p_index, patches.size());
+	patches.remove_at(p_index);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patches(const Vector<String> &p_patches) {
+	patches = p_patches;
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
+
+void EditorExportPreset::set_patch_delta_encoding_enabled(bool p_enable) {
+	patch_delta_encoding_enabled = p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::is_patch_delta_encoding_enabled() const {
+	return patch_delta_encoding_enabled;
+}
+
+void EditorExportPreset::set_patch_delta_zstd_level(int p_level) {
+	patch_delta_zstd_level = p_level;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_patch_delta_zstd_level() const {
+	return patch_delta_zstd_level;
+}
+
+void EditorExportPreset::set_patch_delta_min_reduction(double p_ratio) {
+	patch_delta_min_reduction = p_ratio;
+	EditorExport::singleton->save_presets();
+}
+
+double EditorExportPreset::get_patch_delta_min_reduction() const {
+	return patch_delta_min_reduction;
+}
+
+void EditorExportPreset::set_patch_delta_include_filter(const String &p_filter) {
+	patch_delta_include_filter = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch_delta_include_filter() const {
+	return patch_delta_include_filter;
+}
+
+void EditorExportPreset::set_patch_delta_exclude_filter(const String &p_filter) {
+	patch_delta_exclude_filter = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch_delta_exclude_filter() const {
+	return patch_delta_exclude_filter;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -294,6 +520,15 @@ void EditorExportPreset::set_enc_ex_filter(const String &p_filter) {
 
 String EditorExportPreset::get_enc_ex_filter() const {
 	return enc_ex_filters;
+}
+
+void EditorExportPreset::set_seed(uint64_t p_seed) {
+	seed = p_seed;
+	EditorExport::singleton->save_presets();
+}
+
+uint64_t EditorExportPreset::get_seed() const {
+	return seed;
 }
 
 void EditorExportPreset::set_enc_pck(bool p_enabled) {
@@ -323,6 +558,15 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
+void EditorExportPreset::set_script_export_mode(ScriptExportMode p_mode) {
+	script_mode = p_mode;
+	EditorExport::singleton->save_presets();
+}
+
+EditorExportPreset::ScriptExportMode EditorExportPreset::get_script_export_mode() const {
+	return script_mode;
+}
+
 Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
 	const String from_env = OS::get_singleton()->get_environment(p_env_var);
 	if (!from_env.is_empty()) {
@@ -334,35 +578,57 @@ Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p
 	return get(p_name, r_valid);
 }
 
+_FORCE_INLINE_ bool _check_digits(const String &p_str) {
+	for (int i = 0; i < p_str.length(); i++) {
+		char32_t c = p_str.operator[](i);
+		if (!is_digit(c)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 String EditorExportPreset::get_version(const StringName &p_preset_string, bool p_windows_version) const {
 	String result = get(p_preset_string);
 	if (result.is_empty()) {
 		result = GLOBAL_GET("application/config/version");
 
-		if (p_windows_version) {
-			// Modify version number to match Windows constraints (version numbers must have 4 components).
-			const PackedStringArray result_split = result.split(".");
-			String windows_version;
-			if (result_split.is_empty()) {
-				// Use a valid fallback if the version string is empty, as a version number must be specified.
-				result = "1.0.0.0";
-			} else if (result_split.size() == 1) {
-				result = result + ".0.0.0";
-			} else if (result_split.size() == 2) {
-				result = result + ".0.0";
-			} else if (result_split.size() == 3) {
-				result = result + ".0";
-			} else {
-				// 4 components or more in the version string. Trim to contain only the first 4 components.
-				result = vformat("%s.%s.%s.%s", result_split[0] + result_split[1] + result_split[2] + result_split[3]);
+		// Split and validate version number components.
+		const PackedStringArray result_split = result.split(".", false);
+		bool valid_version = !result_split.is_empty();
+		for (const String &E : result_split) {
+			if (!_check_digits(E)) {
+				valid_version = false;
+				break;
 			}
-		} else if (result.is_empty()) {
-			// Use a valid fallback if the version string is empty, as a version number must be specified.
-			result = "1.0.0";
+		}
+
+		if (valid_version) {
+			if (p_windows_version) {
+				// Modify version number to match Windows constraints (version numbers must have 4 components).
+				if (result_split.size() == 1) {
+					result = result + ".0.0.0";
+				} else if (result_split.size() == 2) {
+					result = result + ".0.0";
+				} else if (result_split.size() == 3) {
+					result = result + ".0";
+				} else {
+					result = vformat("%s.%s.%s.%s", result_split[0], result_split[1], result_split[2], result_split[3]);
+				}
+			} else {
+				result = String(".").join(result_split);
+			}
+		} else {
+			if (!result.is_empty()) {
+				WARN_PRINT(vformat("Invalid version number \"%s\". The version number can only contain numeric characters (0-9) and non-consecutive periods (.).", result));
+			}
+			if (p_windows_version) {
+				result = "1.0.0.0";
+			} else {
+				result = "1.0.0";
+			}
 		}
 	}
 
 	return result;
 }
-
-EditorExportPreset::EditorExportPreset() {}

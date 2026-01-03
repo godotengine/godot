@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -12,6 +12,7 @@
 #include "extra_algorithms.h"
 #include "hex_and_handles.h"
 #include "loader_logger_recorders.hpp"
+#include "loader_properties.hpp"
 #include "platform_utils.hpp"
 
 #include <openxr/openxr.h>
@@ -102,7 +103,7 @@ XrDebugUtilsMessageTypeFlagsEXT LoaderLogMessageTypesToDebugUtilsMessageTypes(Xr
 }
 
 LoaderLogger::LoaderLogger() {
-    std::string debug_string = PlatformUtilsGetEnv("XR_LOADER_DEBUG");
+    std::string debug_string = LoaderProperty::Get("XR_LOADER_DEBUG");
 
     // Add an error logger by default so that we at least get errors out to std::cerr.
     // Normally we enable stderr output. But if the XR_LOADER_DEBUG environment variable is

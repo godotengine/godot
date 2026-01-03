@@ -30,28 +30,84 @@
 
 #include "progress_bar.h"
 
+#include "core/string/translation_server.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
-	minimum_size.height = MAX(minimum_size.height, theme_cache.fill_style->get_minimum_size().height);
-	minimum_size.width = MAX(minimum_size.width, theme_cache.fill_style->get_minimum_size().width);
+	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
 	if (show_percentage) {
 		String txt = "100%";
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
-		minimum_size.width = MAX(minimum_size.width, 1);
-		minimum_size.height = MAX(minimum_size.height, 1);
+		minimum_size = minimum_size.maxf(1);
 	}
 	return minimum_size;
 }
 
 void ProgressBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_visible_in_tree()) {
+				_indeterminate_fill_progress += get_process_delta_time() * MAX(indeterminate_min_speed, MAX(get_size().width, get_size().height) / 2);
+				queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_PROGRESS_INDICATOR);
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.background_style, Rect2(Point2(), get_size()));
+
+			if (indeterminate) {
+				Size2 size = get_size();
+				real_t fill_size = MIN(size.width, size.height) * 2;
+
+				if (is_part_of_edited_scene() && !editor_preview_indeterminate) {
+					// Center the filled bar when we're not previewing the animation.
+					_indeterminate_fill_progress = (MAX(size.width, size.height) / 2) + (fill_size / 2);
+				}
+
+				switch (mode) {
+					case FILL_END_TO_BEGIN:
+					case FILL_BEGIN_TO_END: {
+						// Follow the RTL layout with the animation to match how the bar would fill.
+						bool right_to_left = mode == (is_layout_rtl() ? FILL_BEGIN_TO_END : FILL_END_TO_BEGIN);
+
+						if (_indeterminate_fill_progress > size.width + fill_size) {
+							_indeterminate_fill_progress = right_to_left ? -fill_size : 0;
+						}
+
+						real_t x = right_to_left ? size.width - _indeterminate_fill_progress : _indeterminate_fill_progress - fill_size;
+						draw_style_box(theme_cache.fill_style, Rect2(x, 0, fill_size, size.height).intersection(Rect2(Point2(), size)));
+					} break;
+					case FILL_TOP_TO_BOTTOM: {
+						if (_indeterminate_fill_progress > size.height + fill_size) {
+							_indeterminate_fill_progress = 0;
+						}
+
+						draw_style_box(theme_cache.fill_style, Rect2(0, _indeterminate_fill_progress - fill_size, size.width, fill_size).intersection(Rect2(Point2(), size)));
+					} break;
+					case FILL_BOTTOM_TO_TOP: {
+						if (_indeterminate_fill_progress > size.height + fill_size) {
+							_indeterminate_fill_progress = -fill_size;
+						}
+
+						draw_style_box(theme_cache.fill_style, Rect2(0, size.height - _indeterminate_fill_progress, size.width, fill_size).intersection(Rect2(Point2(), size)));
+					} break;
+					case FILL_MODE_MAX:
+						break;
+				}
+
+				return;
+			}
 
 			float r = get_as_ratio();
 
@@ -59,13 +115,13 @@ void ProgressBar::_notification(int p_what) {
 				case FILL_BEGIN_TO_END:
 				case FILL_END_TO_BEGIN: {
 					int mp = theme_cache.fill_style->get_minimum_size().width;
-					int p = round(r * (get_size().width - mp));
+					int p = std::round(r * (get_size().width - mp));
 					// We want FILL_BEGIN_TO_END to map to right to left when UI layout is RTL,
 					// and left to right otherwise. And likewise for FILL_END_TO_BEGIN.
-					bool right_to_left = is_layout_rtl() ? (mode == FILL_BEGIN_TO_END) : (mode == FILL_END_TO_BEGIN);
+					bool right_to_left = mode == (is_layout_rtl() ? FILL_BEGIN_TO_END : FILL_END_TO_BEGIN);
 					if (p > 0) {
 						if (right_to_left) {
-							int p_remaining = round((1.0 - r) * (get_size().width - mp));
+							int p_remaining = std::round((1.0 - r) * (get_size().width - mp));
 							draw_style_box(theme_cache.fill_style, Rect2(Point2(p_remaining, 0), Size2(p + theme_cache.fill_style->get_minimum_size().width, get_size().height)));
 						} else {
 							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, 0), Size2(p + theme_cache.fill_style->get_minimum_size().width, get_size().height)));
@@ -75,13 +131,13 @@ void ProgressBar::_notification(int p_what) {
 				case FILL_TOP_TO_BOTTOM:
 				case FILL_BOTTOM_TO_TOP: {
 					int mp = theme_cache.fill_style->get_minimum_size().height;
-					int p = round(r * (get_size().height - mp));
+					int p = std::round(r * (get_size().height - mp));
 
 					if (p > 0) {
 						if (mode == FILL_TOP_TO_BOTTOM) {
 							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, 0), Size2(get_size().width, p + theme_cache.fill_style->get_minimum_size().height)));
 						} else {
-							int p_remaining = round((1.0 - r) * (get_size().height - mp));
+							int p_remaining = std::round((1.0 - r) * (get_size().height - mp));
 							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, p_remaining), Size2(get_size().width, p + theme_cache.fill_style->get_minimum_size().height)));
 						}
 					}
@@ -91,12 +147,33 @@ void ProgressBar::_notification(int p_what) {
 			}
 
 			if (show_percentage) {
-				String txt = itos(int(get_as_ratio() * 100));
+				double ratio = 0;
+
+				// Avoid division by zero.
+				if (Math::is_equal_approx(get_max(), get_min())) {
+					ratio = 1;
+				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
+					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
+					double exp_max = Math::log(get_max()) / Math::log((double)2);
+					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
+					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
+
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+				} else {
+					double percentage = (get_value() - get_min()) / (get_max() - get_min());
+
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+				}
+
+				String txt = itos(int(Math::round(ratio * 100)));
+
 				if (is_localizing_numeral_system()) {
-					txt = TS->format_number(txt) + TS->percent_sign();
+					const String &lang = _get_locale();
+					txt = TranslationServer::get_singleton()->format_number(txt, lang) + TranslationServer::get_singleton()->get_percent_sign(lang);
 				} else {
 					txt += String("%");
 				}
+
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 
@@ -110,9 +187,19 @@ void ProgressBar::_notification(int p_what) {
 	}
 }
 
+void ProgressBar::_validate_property(PropertyInfo &p_property) const {
+	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "show_percentage") {
+		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+	}
+	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void ProgressBar::set_fill_mode(int p_fill) {
 	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
 	mode = (FillMode)p_fill;
+	_indeterminate_fill_progress = 0;
 	queue_redraw();
 }
 
@@ -133,14 +220,57 @@ bool ProgressBar::is_percentage_shown() const {
 	return show_percentage;
 }
 
+void ProgressBar::set_indeterminate(bool p_indeterminate) {
+	if (indeterminate == p_indeterminate) {
+		return;
+	}
+	indeterminate = p_indeterminate;
+	_indeterminate_fill_progress = 0;
+
+	bool should_process = !is_part_of_edited_scene() || editor_preview_indeterminate;
+	set_process_internal(indeterminate && should_process);
+
+	notify_property_list_changed();
+	update_minimum_size();
+	queue_redraw();
+}
+
+bool ProgressBar::is_indeterminate() const {
+	return indeterminate;
+}
+
+void ProgressBar::set_editor_preview_indeterminate(bool p_preview_indeterminate) {
+	if (editor_preview_indeterminate == p_preview_indeterminate) {
+		return;
+	}
+	editor_preview_indeterminate = p_preview_indeterminate;
+
+	if (is_part_of_edited_scene()) {
+		_indeterminate_fill_progress = 0;
+		set_process_internal(indeterminate && editor_preview_indeterminate);
+		queue_redraw();
+	}
+}
+
+bool ProgressBar::is_editor_preview_indeterminate_enabled() const {
+	return editor_preview_indeterminate;
+}
+
 void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
 	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
 	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
+	ClassDB::bind_method(D_METHOD("set_indeterminate", "indeterminate"), &ProgressBar::set_indeterminate);
+	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
+	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
+	ClassDB::bind_method(D_METHOD("is_editor_preview_indeterminate_enabled"), &ProgressBar::is_editor_preview_indeterminate_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
+	ADD_GROUP("Editor", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);

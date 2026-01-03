@@ -48,12 +48,19 @@ namespace Godot
 
                 awaiter._completed = true;
 
-                Variant[] signalArgs = new Variant[argCount];
+                if (argCount > 0)
+                {
+                    Variant[] signalArgs = new Variant[argCount];
 
-                for (int i = 0; i < argCount; i++)
-                    signalArgs[i] = Variant.CreateCopyingBorrowed(*args[i]);
+                    for (int i = 0; i < argCount; i++)
+                        signalArgs[i] = Variant.CreateCopyingBorrowed(*args[i]);
 
-                awaiter._result = signalArgs;
+                    awaiter._result = signalArgs;
+                }
+                else
+                {
+                    awaiter._result = [];
+                }
 
                 awaiter._continuation?.Invoke();
             }

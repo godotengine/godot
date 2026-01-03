@@ -50,4 +50,11 @@
 #define MBEDTLS_PLATFORM_ZEROIZE_ALT
 #define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
 
+// This is only to pass a check in the mbedtls check_config.h header, none of
+// the files we include as part of the core build uses it anyway, we already
+// define MBEDTLS_PLATFORM_ZEROIZE_ALT which is the only relevant function.
+#if defined(__MINGW32__)
+#define MBEDTLS_PLATFORM_C
+#endif
+
 #endif // GODOT_CORE_MBEDTLS_CONFIG_H

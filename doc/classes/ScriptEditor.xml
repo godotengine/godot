@@ -10,6 +10,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="clear_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Removes the documentation for the given [param script].
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
+			</description>
+		</method>
+		<method name="get_breakpoints">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of breakpoints.
+			</description>
+		</method>
 		<method name="get_current_editor" qualifiers="const">
 			<return type="ScriptEditorBase" />
 			<description>
@@ -32,6 +46,34 @@
 			<return type="Script[]" />
 			<description>
 				Returns an array with all [Script] objects which are currently open in editor.
+			</description>
+		</method>
+		<method name="goto_help">
+			<return type="void" />
+			<param index="0" name="topic" type="String" />
+			<description>
+				Opens help for the given topic. The [param topic] is an encoded string that controls which class, method, constant, signal, annotation, property, or theme item should be focused.
+				The supported [param topic] formats include [code]class_name:class[/code], [code]class_method:class:method[/code], [code]class_constant:class:constant[/code], [code]class_signal:class:signal[/code], [code]class_annotation:class:@annotation[/code], [code]class_property:class:property[/code], and [code]class_theme_item:class:item[/code], where [code]class[/code] is the class name, [code]method[/code] is the method name, [code]constant[/code] is the constant name, [code]signal[/code] is the signal name, [code]annotation[/code] is the annotation name, [code]property[/code] is the property name, and [code]item[/code] is the theme item.
+				[codeblock]
+				# Shows help for the Node class.
+				class_name:Node
+				# Shows help for the global min function.
+				# Global objects are accessible in the `@GlobalScope` namespace, shown here.
+				class_method:@GlobalScope:min
+				# Shows help for get_viewport in the Node class.
+				class_method:Node:get_viewport
+				# Shows help for the Input constant MOUSE_BUTTON_MIDDLE.
+				class_constant:Input:MOUSE_BUTTON_MIDDLE
+				# Shows help for the BaseButton signal pressed.
+				class_signal:BaseButton:pressed
+				# Shows help for the CanvasItem property visible.
+				class_property:CanvasItem:visible
+				# Shows help for the GDScript annotation export.
+				# Annotations should be prefixed with the `@` symbol in the descriptor, as shown here.
+				class_annotation:@GDScript:@export
+				# Shows help for the GraphNode theme item named panel_selected.
+				class_theme_item:GraphNode:panel_selected
+				[/codeblock]
 			</description>
 		</method>
 		<method name="goto_line">
@@ -63,6 +105,14 @@
 			<description>
 				Unregisters the [EditorSyntaxHighlighter] from the editor.
 				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
+			</description>
+		</method>
+		<method name="update_docs_from_script">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Updates the documentation for the given [param script].
+				[b]Note:[/b] This should be called whenever the script is changed to keep the open documentation state up to date.
 			</description>
 		</method>
 	</methods>

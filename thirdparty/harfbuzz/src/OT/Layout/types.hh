@@ -29,6 +29,9 @@
 #ifndef OT_LAYOUT_TYPES_HH
 #define OT_LAYOUT_TYPES_HH
 
+using hb_ot_layout_mapping_cache_t = hb_cache_t<15, 8, 7>;
+static_assert (sizeof (hb_ot_layout_mapping_cache_t) == 256, "");
+
 namespace OT {
 namespace Layout {
 
@@ -38,8 +41,8 @@ struct SmallTypes {
   using HBUINT = HBUINT16;
   using HBGlyphID = HBGlyphID16;
   using Offset = Offset16;
-  template <typename Type, bool has_null=true>
-  using OffsetTo = OT::Offset16To<Type, has_null>;
+  template <typename Type, typename BaseType=void, bool has_null=true>
+  using OffsetTo = OT::Offset16To<Type, BaseType, has_null>;
   template <typename Type>
   using ArrayOf = OT::Array16Of<Type>;
   template <typename Type>
@@ -52,8 +55,8 @@ struct MediumTypes {
   using HBUINT = HBUINT24;
   using HBGlyphID = HBGlyphID24;
   using Offset = Offset24;
-  template <typename Type, bool has_null=true>
-  using OffsetTo = OT::Offset24To<Type, has_null>;
+  template <typename Type, typename BaseType=void, bool has_null=true>
+  using OffsetTo = OT::Offset24To<Type, BaseType, has_null>;
   template <typename Type>
   using ArrayOf = OT::Array24Of<Type>;
   template <typename Type>

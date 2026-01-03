@@ -2,9 +2,9 @@
  *
  * ftmm.h
  *
- *   FreeType Multiple Master font interface (specification).
+ *   FreeType variation font interface (specification).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,8 +19,13 @@
 #ifndef FTMM_H_
 #define FTMM_H_
 
+#include <freetype/freetype.h>
 
-#include <freetype/t1tables.h>
+#ifdef FREETYPE_H
+#error "freetype.h of FreeType 1 has been loaded!"
+#error "Please fix the directory search order for header files"
+#error "so that freetype.h of FreeType 2 is found first."
+#endif
 
 
 FT_BEGIN_HEADER
@@ -32,25 +37,104 @@ FT_BEGIN_HEADER
    *   multiple_masters
    *
    * @title:
-   *   Multiple Masters
+   *   OpenType Font Variations, TrueType GX, and Adobe MM Fonts
    *
    * @abstract:
-   *   How to manage Multiple Masters fonts.
+   *   How to manage variable fonts with multiple design axes.
    *
    * @description:
-   *   The following types and functions are used to manage Multiple Master
-   *   fonts, i.e., the selection of specific design instances by setting
-   *   design axis coordinates.
+   *   The following types and functions manage OpenType Font Variations,
+   *   Adobe Multiple Master (MM) fonts, and Apple TrueType GX fonts.  These
+   *   formats have in common that they allow the selection of specific
+   *   design instances by setting design coordinates for one or more axes
+   *   like font weight or width.
    *
-   *   Besides Adobe MM fonts, the interface supports Apple's TrueType GX and
-   *   OpenType variation fonts.  Some of the routines only work with Adobe
-   *   MM fonts, others will work with all three types.  They are similar
-   *   enough that a consistent interface makes sense.
+   *   For historical reasons there are two interfaces.  The first, older one
+   *   can be used with Adobe MM fonts only, and the second, newer one is a
+   *   unified interface that handles all three font formats.  However, some
+   *   differences remain and are documented accordingly; in particular,
+   *   Adobe MM fonts don't have named instances (see below).
    *
-   *   For Adobe MM fonts, macro @FT_IS_SFNT returns false.  For GX and
-   *   OpenType variation fonts, it returns true.
+   *   For Adobe MM fonts, macro @FT_IS_SFNT returns false.  For TrueType GX
+   *   and OpenType Font Variations, it returns true.
+   *
+   *   We use mostly the terminology of the OpenType standard.  Here are some
+   *   important technical terms.
+   *
+   *   * A 'named instance' is a tuple of design coordinates that has a
+   *     string ID (i.e., an index into the font's 'name' table) associated
+   *     with it.  The font can tell the user that, for example,
+   *     [Weight=700,Width=110] is 'Bold'.  Another name for 'named instance'
+   *     is 'named style'.
+   *
+   *       Adobe MM fonts don't have named instances.
+   *
+   *   * The 'default instance' of a variation font is that instance for
+   *     which the nth axis coordinate is equal to the nth default axis
+   *     coordinate (i.e., `axis[n].def` as specified in the @FT_MM_Var
+   *     structure), with~n covering all axes.  In TrueType GX and OpenType
+   *     Font Variations, the default instance is explicitly given.  In Adobe
+   *     MM fonts, the `WeightVector` entry as found in the font file is
+   *     taken as the default instance.
+   *
+   *       For TrueType GX and OpenType Font Variations, FreeType synthesizes
+   *       a named instance for the default instance if the font does not
+   *       contain such an entry.
+   *
+   *   * 'Design coordinates' are the axis values found in a variation font
+   *      file.  Their meaning is specified by the font designer and the
+   *      values are rather arbitrary.
+   *
+   *       For example, the 'weight' axis in design coordinates might vary
+   *       between 100 (thin) and 900 (heavy) in font~A, while font~B
+   *       contains values between 400 (normal) and 800 (extra bold).
+   *
+   *   * 'Normalized coordinates' are design coordinates mapped to a standard
+   *     range; they are also called 'blend coordinates'.
+   *
+   *       For TrueType GX and OpenType Font Variations, the range is [-1;1],
+   *       with the minimum mapped to value~-1, the default mapped to
+   *       value~0, and the maximum mapped to value~1, and all other
+   *       coordinates mapped to intervening points.  Please look up the
+   *       [OpenType
+   *       specification](https://learn.microsoft.com/en-us/typography/opentype/spec/otvaroverview)
+   *       on how this mapping works in detail.
+   *
+   *       For Adobe MM fonts, this standard range is [0;1], with the minimum
+   *       mapped to value~0 and the maximum mapped to value~1, and all other
+   *       coordinates mapped to intervening points.  Please look up [Adobe
+   *       TechNote
+   *       #5015](https://adobe-type-tools.github.io/font-tech-notes/pdfs/5015.Type1_Supp.pdf)
+   *       on how this mapping works in detail.
+   *
+   *       Assuming that the two fonts in the previous example are OpenType
+   *       Font Variations, both font~A's [100;900] and font~B's [400;800]
+   *       coordinate ranges get mapped to [-1;1].
+   */
+
+
+  /**************************************************************************
+   *
+   * @enum:
+   *   T1_MAX_MM_XXX
+   *
+   * @description:
+   *   Adobe MM font limits as defined in their specifications.
+   *
+   * @values:
+   *   T1_MAX_MM_AXIS ::
+   *     The maximum number of Adobe MM font axes.
+   *
+   *   T1_MAX_MM_DESIGNS ::
+   *     The maximum number of Adobe MM font designs.
+   *
+   *   T1_MAX_MM_MAP_POINTS ::
+   *     The maximum number of elements in a design map.
    *
    */
+#define T1_MAX_MM_AXIS         4
+#define T1_MAX_MM_DESIGNS     16
+#define T1_MAX_MM_MAP_POINTS  20
 
 
   /**************************************************************************
@@ -59,11 +143,10 @@ FT_BEGIN_HEADER
    *   FT_MM_Axis
    *
    * @description:
-   *   A structure to model a given axis in design space for Multiple Masters
-   *   fonts.
+   *   A structure to model a given axis in design space for Adobe MM fonts.
    *
-   *   This structure can't be used for TrueType GX or OpenType variation
-   *   fonts.
+   *   This structure can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @fields:
    *   name ::
@@ -90,17 +173,17 @@ FT_BEGIN_HEADER
    *   FT_Multi_Master
    *
    * @description:
-   *   A structure to model the axes and space of a Multiple Masters font.
+   *   A structure to model the axes and space of an Adobe MM font.
    *
-   *   This structure can't be used for TrueType GX or OpenType variation
-   *   fonts.
+   *   This structure can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @fields:
    *   num_axis ::
    *     Number of axes.  Cannot exceed~4.
    *
    *   num_designs ::
-   *     Number of designs; should be normally 2^num_axis even though the
+   *     Number of designs; should be normally `2^num_axis` even though the
    *     Type~1 specification strangely allows for intermediate designs to be
    *     present.  This number cannot exceed~16.
    *
@@ -122,13 +205,13 @@ FT_BEGIN_HEADER
    *   FT_Var_Axis
    *
    * @description:
-   *   A structure to model a given axis in design space for Multiple
-   *   Masters, TrueType GX, and OpenType variation fonts.
+   *   A structure to model a given axis in design space for Adobe MM fonts,
+   *   TrueType GX, and OpenType Font Variations.
    *
    * @fields:
    *   name ::
    *     The axis's name.  Not always meaningful for TrueType GX or OpenType
-   *     variation fonts.
+   *     Font Variations.
    *
    *   minimum ::
    *     The axis's minimum design coordinate.
@@ -142,17 +225,17 @@ FT_BEGIN_HEADER
    *
    *   tag ::
    *     The axis's tag (the equivalent to 'name' for TrueType GX and
-   *     OpenType variation fonts).  FreeType provides default values for
+   *     OpenType Font Variations).  FreeType provides default values for
    *     Adobe MM fonts if possible.
    *
    *   strid ::
    *     The axis name entry in the font's 'name' table.  This is another
    *     (and often better) version of the 'name' field for TrueType GX or
-   *     OpenType variation fonts.  Not meaningful for Adobe MM fonts.
+   *     OpenType Font Variations.  Not meaningful for Adobe MM fonts.
    *
    * @note:
    *   The fields `minimum`, `def`, and `maximum` are 16.16 fractional values
-   *   for TrueType GX and OpenType variation fonts.  For Adobe MM fonts, the
+   *   for TrueType GX and OpenType Font Variations.  For Adobe MM fonts, the
    *   values are whole numbers (i.e., the fractional part is zero).
    */
   typedef struct  FT_Var_Axis_
@@ -176,7 +259,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A structure to model a named instance in a TrueType GX or OpenType
-   *   variation font.
+   *   Font Variations.
    *
    *   This structure can't be used for Adobe MM fonts.
    *
@@ -186,11 +269,11 @@ FT_BEGIN_HEADER
    *     entry for each axis.
    *
    *   strid ::
-   *     The entry in 'name' table identifying this instance.
+   *     An index into the 'name' table identifying this instance.
    *
    *   psid ::
-   *     The entry in 'name' table identifying a PostScript name for this
-   *     instance.  Value 0xFFFF indicates a missing entry.
+   *     An index into the 'name' table identifying a PostScript name for
+   *     this instance.  Value 0xFFFF indicates a missing entry.
    */
   typedef struct  FT_Var_Named_Style_
   {
@@ -207,39 +290,33 @@ FT_BEGIN_HEADER
    *   FT_MM_Var
    *
    * @description:
-   *   A structure to model the axes and space of an Adobe MM, TrueType GX,
-   *   or OpenType variation font.
+   *   A structure to model the axes and space of Adobe MM fonts, TrueType
+   *   GX, or OpenType Font Variations.
    *
    *   Some fields are specific to one format and not to the others.
    *
    * @fields:
    *   num_axis ::
    *     The number of axes.  The maximum value is~4 for Adobe MM fonts; no
-   *     limit in TrueType GX or OpenType variation fonts.
+   *     limit in TrueType GX or OpenType Font Variations.
    *
    *   num_designs ::
-   *     The number of designs; should be normally 2^num_axis for Adobe MM
-   *     fonts.  Not meaningful for TrueType GX or OpenType variation fonts
+   *     The number of designs; should be normally `2^num_axis` for Adobe MM
+   *     fonts.  Not meaningful for TrueType GX or OpenType Font Variations
    *     (where every glyph could have a different number of designs).
    *
    *   num_namedstyles ::
-   *     The number of named styles; a 'named style' is a tuple of design
-   *     coordinates that has a string ID (in the 'name' table) associated
-   *     with it.  The font can tell the user that, for example,
-   *     [Weight=1.5,Width=1.1] is 'Bold'.  Another name for 'named style' is
-   *     'named instance'.
-   *
-   *     For Adobe Multiple Masters fonts, this value is always zero because
-   *     the format does not support named styles.
+   *     The number of named instances.  For Adobe MM fonts, this value is
+   *     always zero.
    *
    *   axis ::
-   *     An axis descriptor table.  TrueType GX and OpenType variation fonts
+   *     An axis descriptor table.  TrueType GX and OpenType Font Variations
    *     contain slightly more data than Adobe MM fonts.  Memory management
    *     of this pointer is done internally by FreeType.
    *
    *   namedstyle ::
-   *     A named style (instance) table.  Only meaningful for TrueType GX and
-   *     OpenType variation fonts.  Memory management of this pointer is done
+   *     An array of named instances.  Only meaningful for TrueType GX and
+   *     OpenType Font Variations.  Memory management of this pointer is done
    *     internally by FreeType.
    */
   typedef struct  FT_MM_Var_
@@ -261,8 +338,8 @@ FT_BEGIN_HEADER
    * @description:
    *   Retrieve a variation descriptor of a given Adobe MM font.
    *
-   *   This function can't be used with TrueType GX or OpenType variation
-   *   fonts.
+   *   This function can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @input:
    *   face ::
@@ -270,7 +347,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   amaster ::
-   *     The Multiple Masters descriptor.
+   *     The Adobe MM font's variation descriptor.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -337,8 +414,8 @@ FT_BEGIN_HEADER
    *   For Adobe MM fonts, choose an interpolated font design through design
    *   coordinates.
    *
-   *   This function can't be used with TrueType GX or OpenType variation
-   *   fonts.
+   *   This function can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @inout:
    *   face ::
@@ -362,8 +439,8 @@ FT_BEGIN_HEADER
    *
    *   [Since 2.9] If `num_coords` is larger than zero, this function sets
    *   the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field
-   *   (i.e., @FT_IS_VARIATION will return true).  If `num_coords` is zero,
-   *   this bit flag gets unset.
+   *   (i.e., @FT_IS_VARIATION returns true).  If `num_coords` is zero, this
+   *   bit flag gets unset.
    */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Design_Coordinates( FT_Face   face,
@@ -399,7 +476,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   The design coordinates are 16.16 fractional values for TrueType GX and
-   *   OpenType variation fonts.  For Adobe MM fonts, the values are supposed
+   *   OpenType Font Variations.  For Adobe MM fonts, the values are supposed
    *   to be whole numbers (i.e., the fractional part is zero).
    *
    *   [Since 2.8.1] To reset all axes to the default values, call the
@@ -409,8 +486,14 @@ FT_BEGIN_HEADER
    *
    *   [Since 2.9] If `num_coords` is larger than zero, this function sets
    *   the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field
-   *   (i.e., @FT_IS_VARIATION will return true).  If `num_coords` is zero,
-   *   this bit flag gets unset.
+   *   (i.e., @FT_IS_VARIATION returns true).  If `num_coords` is zero, this
+   *   bit flag gets unset.
+   *
+   *   [Since 2.14] This function also sets the @FT_FACE_FLAG_VARIATION bit
+   *   in @FT_Face's `face_flags` field (i.e., @FT_IS_VARIATION returns
+   *   true) if any of the provided coordinates is different from the face's
+   *   default value for the corresponding axis, that is, the set up face is
+   *   not at its default position.
    */
   FT_EXPORT( FT_Error )
   FT_Set_Var_Design_Coordinates( FT_Face    face,
@@ -439,14 +522,14 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   coords ::
-   *     The design coordinates array.
+   *     The design coordinates array, which must be allocated by the user.
    *
    * @return:
    *   FreeType error code.  0~means success.
    *
    * @note:
    *   The design coordinates are 16.16 fractional values for TrueType GX and
-   *   OpenType variation fonts.  For Adobe MM fonts, the values are whole
+   *   OpenType Font Variations.  For Adobe MM fonts, the values are whole
    *   numbers (i.e., the fractional part is zero).
    *
    * @since:
@@ -464,8 +547,7 @@ FT_BEGIN_HEADER
    *   FT_Set_MM_Blend_Coordinates
    *
    * @description:
-   *   Choose an interpolated font design through normalized blend
-   *   coordinates.
+   *   Choose an interpolated font design through normalized coordinates.
    *
    *   This function works with all supported variation formats.
    *
@@ -480,9 +562,10 @@ FT_BEGIN_HEADER
    *     the number of axes, use default values for the remaining axes.
    *
    *   coords ::
-   *     The design coordinates array.  Each element is a 16.16 fractional
-   *     value and must be between 0 and 1.0 for Adobe MM fonts, and between
-   *     -1.0 and 1.0 for TrueType GX and OpenType variation fonts.
+   *     The normalized coordinates array.  Each element is a 16.16
+   *     fractional value and must be between 0 and 1.0 for Adobe MM fonts,
+   *     and between -1.0 and 1.0 for TrueType GX and OpenType Font
+   *     Variations.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -495,8 +578,14 @@ FT_BEGIN_HEADER
    *
    *   [Since 2.9] If `num_coords` is larger than zero, this function sets
    *   the @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field
-   *   (i.e., @FT_IS_VARIATION will return true).  If `num_coords` is zero,
-   *   this bit flag gets unset.
+   *   (i.e., @FT_IS_VARIATION returns true).  If `num_coords` is zero, this
+   *   bit flag gets unset.
+   *
+   *   [Since 2.14] This function also sets the @FT_FACE_FLAG_VARIATION bit
+   *   in @FT_Face's `face_flags` field (i.e., @FT_IS_VARIATION returns
+   *   true) if any of the provided coordinates is different from the face's
+   *   default value for the corresponding axis, that is, the set up face is
+   *   not at its default position.
    */
   FT_EXPORT( FT_Error )
   FT_Set_MM_Blend_Coordinates( FT_Face    face,
@@ -510,8 +599,8 @@ FT_BEGIN_HEADER
    *   FT_Get_MM_Blend_Coordinates
    *
    * @description:
-   *   Get the normalized blend coordinates of the currently selected
-   *   interpolated font.
+   *   Get the normalized coordinates of the currently selected interpolated
+   *   font.
    *
    *   This function works with all supported variation formats.
    *
@@ -520,14 +609,14 @@ FT_BEGIN_HEADER
    *     A handle to the source face.
    *
    *   num_coords ::
-   *     The number of normalized blend coordinates to retrieve.  If it is
-   *     larger than the number of axes, set the excess values to~0.5 for
-   *     Adobe MM fonts, and to~0 for TrueType GX and OpenType variation
-   *     fonts.
+   *     The number of normalized coordinates to retrieve.  If it is larger
+   *     than the number of axes, set the excess values to~0.5 for Adobe MM
+   *     fonts, and to~0 for TrueType GX and OpenType Font Variations.
    *
    * @output:
    *   coords ::
-   *     The normalized blend coordinates array (as 16.16 fractional values).
+   *     The normalized coordinates array (as 16.16 fractional values), which
+   *     must be allocated by the user.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -581,8 +670,8 @@ FT_BEGIN_HEADER
    *   For Adobe MM fonts, choose an interpolated font design by directly
    *   setting the weight vector.
    *
-   *   This function can't be used with TrueType GX or OpenType variation
-   *   fonts.
+   *   This function can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @inout:
    *   face ::
@@ -601,16 +690,16 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   Adobe Multiple Master fonts limit the number of designs, and thus the
-   *   length of the weight vector to 16~elements.
+   *   Adobe MM fonts limit the number of designs, and thus the length of the
+   *   weight vector, to 16~elements.
    *
    *   If `len` is larger than zero, this function sets the
    *   @FT_FACE_FLAG_VARIATION bit in @FT_Face's `face_flags` field (i.e.,
-   *   @FT_IS_VARIATION will return true).  If `len` is zero, this bit flag
-   *   is unset and the weight vector array is reset to the default values.
+   *   @FT_IS_VARIATION returns true).  If `len` is zero, this bit flag is
+   *   unset and the weight vector array is reset to the default values.
    *
    *   The Adobe documentation also states that the values in the
-   *   WeightVector array must total 1.0 +/-~0.001.  In practice this does
+   *   `WeightVector` array must total 1.0 +/-~0.001.  In practice this does
    *   not seem to be enforced, so is not enforced here, either.
    *
    * @since:
@@ -630,8 +719,8 @@ FT_BEGIN_HEADER
    * @description:
    *   For Adobe MM fonts, retrieve the current weight vector of the font.
    *
-   *   This function can't be used with TrueType GX or OpenType variation
-   *   fonts.
+   *   This function can't be used with TrueType GX or OpenType Font
+   *   Variations.
    *
    * @inout:
    *   face ::
@@ -648,14 +737,14 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   weightvector ::
-   *     An array to be filled.
+   *     An array to be filled; it must be allocated by the user.
    *
    * @return:
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   Adobe Multiple Master fonts limit the number of designs, and thus the
-   *   length of the WeightVector to~16.
+   *   Adobe MM fonts limit the number of designs, and thus the length of the
+   *   weight vector, to~16 elements.
    *
    * @since:
    *   2.10
@@ -731,8 +820,8 @@ FT_BEGIN_HEADER
    *     A handle to the source face.
    *
    *   instance_index ::
-   *     The index of the requested instance, starting with value 1.  If set
-   *     to value 0, FreeType switches to font access without a named
+   *     The index of the requested instance, starting with value~1.  If set
+   *     to value~0, FreeType switches to font access without a named
    *     instance.
    *
    * @return:
@@ -742,11 +831,11 @@ FT_BEGIN_HEADER
    *   The function uses the value of `instance_index` to set bits 16-30 of
    *   the face's `face_index` field.  It also resets any variation applied
    *   to the font, and the @FT_FACE_FLAG_VARIATION bit of the face's
-   *   `face_flags` field gets reset to zero (i.e., @FT_IS_VARIATION will
-   *   return false).
+   *   `face_flags` field gets reset to zero (i.e., @FT_IS_VARIATION returns
+   *   false).
    *
-   *   For Adobe MM fonts (which don't have named instances) this function
-   *   simply resets the current face to the default instance.
+   *   For Adobe MM fonts, this function resets the current face to the
+   *   default instance.
    *
    * @since:
    *   2.9
@@ -765,10 +854,6 @@ FT_BEGIN_HEADER
    *   Retrieve the index of the default named instance, to be used with
    *   @FT_Set_Named_Instance.
    *
-   *   The default instance of a variation font is that instance for which
-   *   the nth axis coordinate is equal to `axis[n].def` (as specified in the
-   *   @FT_MM_Var structure), with~n covering all axes.
-   *
    *   FreeType synthesizes a named instance for the default instance if the
    *   font does not contain such an entry.
    *
@@ -784,8 +869,8 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   For Adobe MM fonts (which don't have named instances) this function
-   *   always returns zero for `instance_index`.
+   *   For Adobe MM fonts, this function always returns zero for
+   *   `instance_index`.
    *
    * @since:
    *   2.13.1

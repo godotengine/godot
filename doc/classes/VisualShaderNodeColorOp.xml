@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeColorOp.Operator" default="0">
-			An operator to be applied to the inputs. See [enum Operator] for options.
+			An operator to be applied to the inputs.
 		</member>
 	</members>
 	<constants>
@@ -42,13 +42,13 @@
 			Produce an overlay effect with the following formula:
 			[codeblock]
 			for (int i = 0; i &lt; 3; i++) {
-			    float base = a[i];
-			    float blend = b[i];
-			    if (base &lt; 0.5) {
-			        result[i] = 2.0 * base * blend;
-			    } else {
-			        result[i] = 1.0 - 2.0 * (1.0 - blend) * (1.0 - base);
-			    }
+				float base = a[i];
+				float blend = b[i];
+				if (base &lt; 0.5) {
+					result[i] = 2.0 * base * blend;
+				} else {
+					result[i] = 1.0 - 2.0 * (1.0 - blend) * (1.0 - base);
+				}
 			}
 			[/codeblock]
 		</constant>
@@ -68,13 +68,13 @@
 			Produce a soft light effect with the following formula:
 			[codeblock]
 			for (int i = 0; i &lt; 3; i++) {
-			    float base = a[i];
-			    float blend = b[i];
-			    if (base &lt; 0.5) {
-			        result[i] = base * (blend + 0.5);
-			    } else {
-			        result[i] = 1.0 - (1.0 - base) * (1.0 - (blend - 0.5));
-			    }
+				float base = a[i];
+				float blend = b[i];
+				if (base &lt; 0.5) {
+					result[i] = base * (blend + 0.5);
+				} else {
+					result[i] = 1.0 - (1.0 - base) * (1.0 - (blend - 0.5));
+				}
 			}
 			[/codeblock]
 		</constant>
@@ -82,13 +82,13 @@
 			Produce a hard light effect with the following formula:
 			[codeblock]
 			for (int i = 0; i &lt; 3; i++) {
-			    float base = a[i];
-			    float blend = b[i];
-			    if (base &lt; 0.5) {
-			        result[i] = base * (2.0 * blend);
-			    } else {
-			        result[i] = 1.0 - (1.0 - base) * (1.0 - 2.0 * (blend - 0.5));
-			    }
+				float base = a[i];
+				float blend = b[i];
+				if (base &lt; 0.5) {
+					result[i] = base * (2.0 * blend);
+				} else {
+					result[i] = 1.0 - (1.0 - base) * (1.0 - 2.0 * (blend - 0.5));
+				}
 			}
 			[/codeblock]
 		</constant>

@@ -9,6 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_collision_exception_with">
@@ -29,6 +30,12 @@
 			<return type="PhysicsBody3D[]" />
 			<description>
 				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the gravity vector computed from all sources that can affect the body, including all gravity overrides from [Area3D] nodes and the global world gravity.
 			</description>
 		</method>
 		<method name="move_and_collide">
@@ -62,7 +69,7 @@
 				Locks or unlocks the specified linear or rotational [param axis] depending on the value of [param lock].
 			</description>
 		</method>
-		<method name="test_move">
+		<method name="test_move" keywords="check, collision, sweep">
 			<return type="bool" />
 			<param index="0" name="from" type="Transform3D" />
 			<param index="1" name="motion" type="Vector3" />

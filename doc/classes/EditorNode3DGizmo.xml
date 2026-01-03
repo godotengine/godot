@@ -4,11 +4,18 @@
 		Gizmo for editing [Node3D] objects.
 	</brief_description>
 	<description>
-		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
+		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating an [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_begin_handle_action" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="secondary" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_commit_handle" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="id" type="int" />

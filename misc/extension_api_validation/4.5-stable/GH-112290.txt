@@ -1,0 +1,14 @@
+GH-112290
+---------
+Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedFloat64Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt32Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedInt64Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedStringArray/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector2Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector3Array/methods/duplicate': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'builtin_classes/PackedVector4Array/methods/duplicate': is_const changed value in new API, from false to true.
+
+Duplicate method made const. Compatibility methods registered.

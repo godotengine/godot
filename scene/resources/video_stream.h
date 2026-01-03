@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "scene/resources/texture.h"
 
 class VideoStreamPlayback : public Resource {
@@ -56,7 +54,7 @@ protected:
 	GDVIRTUAL1(_seek, double);
 	GDVIRTUAL1(_set_audio_track, int);
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_texture);
-	GDVIRTUAL1(_update, double);
+	GDVIRTUAL1_REQUIRED(_update, double);
 	GDVIRTUAL0RC(int, _get_channels);
 	GDVIRTUAL0RC(int, _get_mix_rate);
 
@@ -96,7 +94,7 @@ class VideoStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0R(Ref<VideoStreamPlayback>, _instantiate_playback);
+	GDVIRTUAL0R_REQUIRED(Ref<VideoStreamPlayback>, _instantiate_playback);
 
 	String file;
 	int audio_track = 0;
@@ -111,5 +109,3 @@ public:
 	VideoStream();
 	~VideoStream();
 };
-
-#endif // VIDEO_STREAM_H

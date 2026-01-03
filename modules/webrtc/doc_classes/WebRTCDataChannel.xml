@@ -55,7 +55,7 @@
 		<method name="get_ready_state" qualifiers="const">
 			<return type="int" enum="WebRTCDataChannel.ChannelState" />
 			<description>
-				Returns the current state of this channel, see [enum ChannelState].
+				Returns the current state of this channel.
 			</description>
 		</method>
 		<method name="is_negotiated" qualifiers="const">

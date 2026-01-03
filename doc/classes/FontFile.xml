@@ -28,6 +28,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear_cache">
@@ -41,7 +42,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
-				Removes all rendered glyphs information from the cache entry.
+				Removes all rendered glyph information from the cache entry.
 				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
 			</description>
 		</method>
@@ -57,7 +58,7 @@
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Removes all font sizes from the cache entry
+				Removes all font sizes from the cache entry.
 			</description>
 		</method>
 		<method name="clear_textures">
@@ -130,12 +131,19 @@
 				Returns embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="get_extra_baseline_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
 		<method name="get_extra_spacing" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<description>
-				Returns spacing for [param spacing] (see [enum TextServer.SpacingType]) in pixels (not relative to the font size).
+				Returns spacing for [param spacing] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="get_face_index" qualifiers="const">
@@ -444,13 +452,21 @@
 				Sets embolden strength, if is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
 			</description>
 		</method>
+		<method name="set_extra_baseline_offset">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="baseline_offset" type="float" />
+			<description>
+				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
 		<method name="set_extra_spacing">
 			<return type="void" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="2" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 		<method name="set_face_index">
@@ -563,7 +579,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
-				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				Sets 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
 			</description>
 		</method>
 		<method name="set_variation_coordinates">
@@ -585,6 +601,9 @@
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.
 		</member>
+		<member name="disable_embedded_bitmaps" type="bool" setter="set_disable_embedded_bitmaps" getter="get_disable_embedded_bitmaps" default="true">
+			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
+		</member>
 		<member name="fixed_size" type="int" setter="set_fixed_size" getter="get_fixed_size" default="0">
 			Font size, used only for the bitmap fonts.
 		</member>
@@ -598,7 +617,7 @@
 			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
 		</member>
 		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" is_bitfield="true" default="0">
-			Font style flags, see [enum TextServer.FontStyle].
+			Font style flags.
 		</member>
 		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
 			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
@@ -611,6 +630,12 @@
 		</member>
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="TextServer.Hinting" default="1">
 			Font hinting mode. Used by dynamic fonts only.
+		</member>
+		<member name="keep_rounding_remainders" type="bool" setter="set_keep_rounding_remainders" getter="get_keep_rounding_remainders" default="true">
+			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
+		</member>
+		<member name="modulate_color_glyphs" type="bool" setter="set_modulate_color_glyphs" getter="is_modulate_color_glyphs" default="false">
+			If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
 		</member>
 		<member name="msdf_pixel_range" type="int" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="16">
 			The width of the range around the shape between the minimum and maximum representable signed distance. If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline. The default [member msdf_pixel_range] value of [code]16[/code] allows outline sizes up to [code]8[/code] to look correct.
@@ -627,7 +652,7 @@
 			Font OpenType feature set override.
 		</member>
 		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="0.0">
-			Font oversampling factor. If set to [code]0.0[/code], the global oversampling factor is used instead. Used by dynamic fonts only (MSDF fonts ignore oversampling).
+			If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods.
 		</member>
 		<member name="style_name" type="String" setter="set_font_style_name" getter="get_font_style_name" default="&quot;&quot;">
 			Font style name.

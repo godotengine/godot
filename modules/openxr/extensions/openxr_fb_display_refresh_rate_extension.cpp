@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_fb_display_refresh_rate_extension.h"
+#include "../openxr_interface.h"
 
 OpenXRDisplayRefreshRateExtension *OpenXRDisplayRefreshRateExtension::singleton = nullptr;
 
@@ -44,7 +45,7 @@ OpenXRDisplayRefreshRateExtension::~OpenXRDisplayRefreshRateExtension() {
 	display_refresh_rate_ext = false;
 }
 
-HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;
@@ -62,6 +63,23 @@ void OpenXRDisplayRefreshRateExtension::on_instance_created(const XrInstance p_i
 
 void OpenXRDisplayRefreshRateExtension::on_instance_destroyed() {
 	display_refresh_rate_ext = false;
+}
+
+bool OpenXRDisplayRefreshRateExtension::on_event_polled(const XrEventDataBuffer &event) {
+	switch (event.type) {
+		case XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB: {
+			const XrEventDataDisplayRefreshRateChangedFB *event_fb = (XrEventDataDisplayRefreshRateChangedFB *)&event;
+
+			OpenXRInterface *xr_interface = OpenXRAPI::get_singleton()->get_xr_interface();
+			if (xr_interface) {
+				xr_interface->on_refresh_rate_changes(event_fb->toDisplayRefreshRate);
+			}
+
+			return true;
+		} break;
+		default:
+			return false;
+	}
 }
 
 float OpenXRDisplayRefreshRateExtension::get_refresh_rate() const {

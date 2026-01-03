@@ -31,31 +31,33 @@
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="nine_patch_stretch" type="bool" setter="set_nine_patch_stretch" getter="get_nine_patch_stretch" default="false">
-			If [code]true[/code], Godot treats the bar's textures like in [NinePatchRect]. Use the [code]stretch_margin_*[/code] properties like [member stretch_margin_bottom] to set up the nine patch's 3×3 grid. When using a radial [member fill_mode], this setting will enable stretching.
+			If [code]true[/code], Godot treats the bar's textures like in [NinePatchRect]. Use the [code]stretch_margin_*[/code] properties like [member stretch_margin_bottom] to set up the nine patch's 3×3 grid. When using a radial [member fill_mode], this setting will only enable stretching for [member texture_progress], while [member texture_under] and [member texture_over] will be treated like in [NinePatchRect].
 		</member>
 		<member name="radial_center_offset" type="Vector2" setter="set_radial_center_offset" getter="get_radial_center_offset" default="Vector2(0, 0)">
-			Offsets [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE].
+			Offsets [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE], [constant FILL_COUNTER_CLOCKWISE], or [constant FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE].
+			[b]Note:[/b] The effective radial center always stays within the [member texture_progress] bounds. If you need to move it outside the texture's bounds, modify the [member texture_progress] to contain additional empty space where needed.
 		</member>
 		<member name="radial_fill_degrees" type="float" setter="set_fill_degrees" getter="get_fill_degrees" default="360.0">
-			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
+			Upper limit for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE], [constant FILL_COUNTER_CLOCKWISE], or [constant FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]max_value[/code], the texture fills up to this angle.
 			See [member Range.value], [member Range.max_value].
 		</member>
 		<member name="radial_initial_angle" type="float" setter="set_radial_initial_angle" getter="get_radial_initial_angle" default="0.0">
-			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE] or [constant FILL_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
+			Starting angle for the fill of [member texture_progress] if [member fill_mode] is [constant FILL_CLOCKWISE], [constant FILL_COUNTER_CLOCKWISE], or [constant FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE]. When the node's [code]value[/code] is equal to its [code]min_value[/code], the texture doesn't show up at all. When the [code]value[/code] increases, the texture fills and tends towards [member radial_fill_degrees].
+			[b]Note:[/b] [member radial_initial_angle] is wrapped between [code]0[/code] and [code]360[/code] degrees (inclusive).
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
 		<member name="stretch_margin_bottom" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
-			The height of the 9-patch's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders.
+			The height of the 9-patch's bottom row. A margin of 16 means the 9-slice's bottom corners and side will have a height of 16 pixels. You can set all 4 margin values individually to create panels with non-uniform borders. Only effective if [member nine_patch_stretch] is [code]true[/code].
 		</member>
 		<member name="stretch_margin_left" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
-			The width of the 9-patch's left column.
+			The width of the 9-patch's left column. Only effective if [member nine_patch_stretch] is [code]true[/code].
 		</member>
 		<member name="stretch_margin_right" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
-			The width of the 9-patch's right column.
+			The width of the 9-patch's right column. Only effective if [member nine_patch_stretch] is [code]true[/code].
 		</member>
 		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
-			The height of the 9-patch's top row.
+			The height of the 9-patch's top row. Only effective if [member nine_patch_stretch] is [code]true[/code].
 		</member>
 		<member name="texture_over" type="Texture2D" setter="set_over_texture" getter="get_over_texture">
 			[Texture2D] that draws over the progress bar. Use it to add highlights or an upper-frame that hides part of [member texture_progress].
@@ -70,13 +72,13 @@
 		<member name="texture_under" type="Texture2D" setter="set_under_texture" getter="get_under_texture">
 			[Texture2D] that draws under the progress bar. The bar's background.
 		</member>
-		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color(1, 1, 1, 1)">
+		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_over] texture. The effect is similar to [member CanvasItem.modulate], except it only affects this specific texture instead of the entire node.
 		</member>
-		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress" default="Color(1, 1, 1, 1)">
+		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_progress] texture.
 		</member>
-		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under" default="Color(1, 1, 1, 1)">
+		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Multiplies the color of the bar's [member texture_under] texture.
 		</member>
 	</members>

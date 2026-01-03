@@ -28,14 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_HAND_TRACKING_EXTENSION_H
-#define OPENXR_HAND_TRACKING_EXTENSION_H
+#pragma once
 
 #include "../util.h"
 #include "core/math/quaternion.h"
 #include "openxr_extension_wrapper.h"
+#include "servers/xr/xr_hand_tracker.h"
 
 class OpenXRHandTrackingExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRHandTrackingExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	enum HandTrackedHands {
 		OPENXR_TRACKED_LEFT_HAND,
@@ -43,9 +48,19 @@ public:
 		OPENXR_MAX_TRACKED_HANDS
 	};
 
+	enum HandTrackedSource {
+		OPENXR_SOURCE_UNKNOWN,
+		OPENXR_SOURCE_UNOBSTRUCTED,
+		OPENXR_SOURCE_CONTROLLER,
+		OPENXR_SOURCE_NOT_TRACKED,
+		OPENXR_SOURCE_MAX
+	};
+
 	struct HandTracker {
 		bool is_initialized = false;
+		Ref<XRHandTracker> godot_tracker;
 		XrHandJointsMotionRangeEXT motion_range = XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT;
+		HandTrackedSource source = OPENXR_SOURCE_UNKNOWN;
 
 		XrHandTrackerEXT hand_tracker = XR_NULL_HANDLE;
 		XrHandJointLocationEXT joint_locations[XR_HAND_JOINT_COUNT_EXT];
@@ -53,6 +68,7 @@ public:
 
 		XrHandJointVelocitiesEXT velocities;
 		XrHandJointLocationsEXT locations;
+		XrHandTrackingDataSourceStateEXT data_source;
 	};
 
 	static OpenXRHandTrackingExtension *get_singleton();
@@ -60,7 +76,7 @@ public:
 	OpenXRHandTrackingExtension();
 	virtual ~OpenXRHandTrackingExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
@@ -76,6 +92,8 @@ public:
 
 	XrHandJointsMotionRangeEXT get_motion_range(HandTrackedHands p_hand) const;
 	void set_motion_range(HandTrackedHands p_hand, XrHandJointsMotionRangeEXT p_motion_range);
+
+	HandTrackedSource get_hand_tracking_source(HandTrackedHands p_hand) const;
 
 	XrSpaceLocationFlags get_hand_joint_location_flags(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
 	Quaternion get_hand_joint_rotation(HandTrackedHands p_hand, XrHandJointEXT p_joint) const;
@@ -96,6 +114,9 @@ private:
 	// related extensions
 	bool hand_tracking_ext = false;
 	bool hand_motion_range_ext = false;
+	bool hand_tracking_source_ext = false;
+	bool unobstructed_data_source = false;
+	bool controller_data_source = false;
 
 	// functions
 	void cleanup_hand_tracking();
@@ -105,5 +126,3 @@ private:
 	EXT_PROTO_XRRESULT_FUNC1(xrDestroyHandTrackerEXT, (XrHandTrackerEXT), p_handTracker)
 	EXT_PROTO_XRRESULT_FUNC3(xrLocateHandJointsEXT, (XrHandTrackerEXT), p_handTracker, (const XrHandJointsLocateInfoEXT *), p_locateInfo, (XrHandJointLocationsEXT *), p_locations)
 };
-
-#endif // OPENXR_HAND_TRACKING_EXTENSION_H

@@ -8,7 +8,7 @@
 		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
 	</description>
 	<tutorials>
-		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
+		<link title="Tween Interpolation Demo">https://godotengine.org/asset-library/asset/2733</link>
 	</tutorials>
 	<methods>
 		<method name="add_preset">
@@ -58,11 +58,11 @@
 		<member name="can_add_swatches" type="bool" setter="set_can_add_swatches" getter="are_swatches_enabled" default="true">
 			If [code]true[/code], it's possible to add presets under Swatches. If [code]false[/code], the button to add presets is disabled.
 		</member>
-		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
-			The currently selected color mode. See [enum ColorModeType].
+			The currently selected color mode.
 		</member>
 		<member name="color_modes_visible" type="bool" setter="set_modes_visible" getter="are_modes_visible" default="true">
 			If [code]true[/code], the color mode buttons are visible.
@@ -73,11 +73,14 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], shows an alpha channel slider (opacity).
 		</member>
+		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
+			If [code]true[/code], shows an intensity slider. The intensity is applied as follows: convert the color to linear encoding, multiply it by [code]2 ** intensity[/code], and then convert it back to nonlinear sRGB encoding.
+		</member>
 		<member name="hex_visible" type="bool" setter="set_hex_visible" getter="is_hex_visible" default="true">
 			If [code]true[/code], the hex color code input field is visible.
 		</member>
 		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
-			The shape of the color space view. See [enum PickerShapeType].
+			The shape of the color space view.
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
 			If [code]true[/code], the Swatches and Recent Colors presets are visible.
@@ -111,13 +114,15 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RGB" value="0" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders.
+			Allows editing the color with Red/Green/Blue sliders in sRGB color space.
 		</constant>
 		<constant name="MODE_HSV" value="1" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Value sliders.
 		</constant>
-		<constant name="MODE_RAW" value="2" enum="ColorModeType">
-			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		<constant name="MODE_RAW" value="2" enum="ColorModeType" deprecated="This is replaced by [constant MODE_LINEAR].">
+		</constant>
+		<constant name="MODE_LINEAR" value="2" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue sliders in linear color space.
 		</constant>
 		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Lightness sliders.
@@ -139,8 +144,17 @@
 		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
 			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
 		</constant>
+		<constant name="SHAPE_OK_HS_RECTANGLE" value="5" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant lightness.
+		</constant>
+		<constant name="SHAPE_OK_HL_RECTANGLE" value="6" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant saturation.
+		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="focused_not_editing_cursor_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.275)">
+			Color of rectangle or circle drawn when a picker shape part is focused but not editable via keyboard or joypad. Displayed [i]over[/i] the picker shape, so a partially transparent color should be used to ensure the picker shape remains visible.
+		</theme_item>
 		<theme_item name="center_slider_grabbers" data_type="constant" type="int" default="1">
 			Overrides the [theme_item Slider.center_grabber] theme property of the sliders.
 		</theme_item>
@@ -168,8 +182,8 @@
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
-		<theme_item name="color_okhsl_hue" data_type="icon" type="Texture2D">
-			Custom texture for the H slider in the OKHSL color mode.
+		<theme_item name="color_script" data_type="icon" type="Texture2D">
+			The icon for the button that switches color text to hexadecimal.
 		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.
@@ -177,14 +191,23 @@
 		<theme_item name="folded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when folded.
 		</theme_item>
+		<theme_item name="menu_option" data_type="icon" type="Texture2D">
+			The icon for color preset option menu.
+		</theme_item>
 		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.
 		</theme_item>
 		<theme_item name="picker_cursor" data_type="icon" type="Texture2D">
 			The image displayed over the color box/circle (depending on the [member picker_shape]), marking the currently selected color.
 		</theme_item>
+		<theme_item name="picker_cursor_bg" data_type="icon" type="Texture2D">
+			The fill image displayed behind the picker cursor.
+		</theme_item>
 		<theme_item name="sample_bg" data_type="icon" type="Texture2D">
 			Background panel for the color preview box (visible when the color is translucent).
+		</theme_item>
+		<theme_item name="sample_revert" data_type="icon" type="Texture2D">
+			The icon for the revert button (visible on the middle of the "old" color when it differs from the currently selected color). This icon is modulated with a dark color if the "old" color is bright enough, so the icon should be bright to ensure visibility in both scenarios.
 		</theme_item>
 		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
 			The icon for the screen color picker button.
@@ -197,6 +220,15 @@
 		</theme_item>
 		<theme_item name="shape_rect_wheel" data_type="icon" type="Texture2D">
 			The icon for rectangular wheel picker shapes.
+		</theme_item>
+		<theme_item name="picker_focus_circle" data_type="style" type="StyleBox">
+			The [StyleBox] used when the circle-shaped part of the picker is focused. Displayed [i]over[/i] the picker shape, so a partially transparent [StyleBox] should be used to ensure the picker shape remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="picker_focus_rectangle" data_type="style" type="StyleBox">
+			The [StyleBox] used when the rectangle-shaped part of the picker is focused. Displayed [i]over[/i] the picker shape, so a partially transparent [StyleBox] should be used to ensure the picker shape remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="sample_focus" data_type="style" type="StyleBox">
+			The [StyleBox] used for the old color sample part when it is focused. Displayed [i]over[/i] the sample, so a partially transparent [StyleBox] should be used to ensure the picker shape remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
 		</theme_item>
 	</theme_items>
 </class>

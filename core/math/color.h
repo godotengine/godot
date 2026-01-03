@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLOR_H
-#define COLOR_H
+#pragma once
 
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 
-struct _NO_DISCARD_ Color {
+struct [[nodiscard]] Color {
 	union {
+		// NOLINTBEGIN(modernize-use-default-member-init)
 		struct {
 			float r;
 			float g;
@@ -44,6 +45,7 @@ struct _NO_DISCARD_ Color {
 			float a;
 		};
 		float components[4] = { 0, 0, 0, 1.0 };
+		// NOLINTEND(modernize-use-default-member-init)
 	};
 
 	uint32_t to_rgba32() const;
@@ -61,6 +63,7 @@ struct _NO_DISCARD_ Color {
 	float get_ok_hsl_s() const;
 	float get_ok_hsl_l() const;
 	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -69,31 +72,32 @@ struct _NO_DISCARD_ Color {
 		return components[p_idx];
 	}
 
-	bool operator==(const Color &p_color) const {
+	constexpr bool operator==(const Color &p_color) const {
 		return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a);
 	}
-	bool operator!=(const Color &p_color) const {
+	constexpr bool operator!=(const Color &p_color) const {
 		return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a);
 	}
 
-	Color operator+(const Color &p_color) const;
-	void operator+=(const Color &p_color);
+	constexpr Color operator+(const Color &p_color) const;
+	constexpr void operator+=(const Color &p_color);
 
-	Color operator-() const;
-	Color operator-(const Color &p_color) const;
-	void operator-=(const Color &p_color);
+	constexpr Color operator-() const;
+	constexpr Color operator-(const Color &p_color) const;
+	constexpr void operator-=(const Color &p_color);
 
-	Color operator*(const Color &p_color) const;
-	Color operator*(float p_scalar) const;
-	void operator*=(const Color &p_color);
-	void operator*=(float p_scalar);
+	constexpr Color operator*(const Color &p_color) const;
+	constexpr Color operator*(float p_scalar) const;
+	constexpr void operator*=(const Color &p_color);
+	constexpr void operator*=(float p_scalar);
 
-	Color operator/(const Color &p_color) const;
-	Color operator/(float p_scalar) const;
-	void operator/=(const Color &p_color);
-	void operator/=(float p_scalar);
+	constexpr Color operator/(const Color &p_color) const;
+	constexpr Color operator/(float p_scalar) const;
+	constexpr void operator/=(const Color &p_color);
+	constexpr void operator/=(float p_scalar);
 
 	bool is_equal_approx(const Color &p_color) const;
+	bool is_same(const Color &p_color) const;
 
 	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
 	void invert();
@@ -129,33 +133,46 @@ struct _NO_DISCARD_ Color {
 	}
 
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
-		const float pow2to9 = 512.0f;
-		const float B = 15.0f;
-		const float N = 9.0f;
+		// https://github.com/microsoft/DirectX-Graphics-Samples/blob/v10.0.19041.0/MiniEngine/Core/Color.cpp
+		static const float kMaxVal = float(0x1FF << 7);
+		static const float kMinVal = float(1.f / (1 << 16));
 
-		float sharedexp = 65408.000f; // Result of: ((pow2to9 - 1.0f) / pow2to9) * powf(2.0f, 31.0f - 15.0f)
+		// Clamp RGB to [0, 1.FF*2^16]
+		const float _r = CLAMP(r, 0.0f, kMaxVal);
+		const float _g = CLAMP(g, 0.0f, kMaxVal);
+		const float _b = CLAMP(b, 0.0f, kMaxVal);
 
-		float cRed = MAX(0.0f, MIN(sharedexp, r));
-		float cGreen = MAX(0.0f, MIN(sharedexp, g));
-		float cBlue = MAX(0.0f, MIN(sharedexp, b));
+		// Compute the maximum channel, no less than 1.0*2^-15
+		const float MaxChannel = MAX(MAX(_r, _g), MAX(_b, kMinVal));
 
-		float cMax = MAX(cRed, MAX(cGreen, cBlue));
+		// Take the exponent of the maximum channel (rounding up the 9th bit) and
+		// add 15 to it.  When added to the channels, it causes the implicit '1.0'
+		// bit and the first 8 mantissa bits to be shifted down to the low 9 bits
+		// of the mantissa, rounding the truncated bits.
+		union {
+			float f;
+			uint32_t i;
+		} R, G, B, E;
 
-		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / (real_t)Math_LN2)) + 1.0f + B;
+		E.f = MaxChannel;
+		E.i += 0x07804000; // Add 15 to the exponent and 0x4000 to the mantissa
+		E.i &= 0x7F800000; // Zero the mantissa
 
-		float sMax = (float)floor((cMax / Math::pow(2.0f, expp - B - N)) + 0.5f);
+		// This shifts the 9-bit values we need into the lowest bits, rounding as
+		// needed. Note that if the channel has a smaller exponent than the max
+		// channel, it will shift even more.  This is intentional.
+		R.f = _r + E.f;
+		G.f = _g + E.f;
+		B.f = _b + E.f;
 
-		float exps = expp + 1.0f;
+		// Convert the Bias to the correct exponent in the upper 5 bits.
+		E.i <<= 4;
+		E.i += 0x10000000;
 
-		if (0.0f <= sMax && sMax < pow2to9) {
-			exps = expp;
-		}
-
-		float sRed = Math::floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
-		float sGreen = Math::floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
-		float sBlue = Math::floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-
-		return (uint32_t(Math::fast_ftoi(sRed)) & 0x1FF) | ((uint32_t(Math::fast_ftoi(sGreen)) & 0x1FF) << 9) | ((uint32_t(Math::fast_ftoi(sBlue)) & 0x1FF) << 18) | ((uint32_t(Math::fast_ftoi(exps)) & 0x1F) << 27);
+		// Combine the fields. RGB floats have unwanted data in the upper 9
+		// bits. Only red needs to mask them off because green and blue shift
+		// it out to the left.
+		return E.i | (B.i << 18U) | (G.i << 9U) | (R.i & 511U);
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
@@ -174,16 +191,16 @@ struct _NO_DISCARD_ Color {
 
 	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
-				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow((r + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
-				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow((g + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
-				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow((b + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow(float((r + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
+				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow(float((g + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
+				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow(float((b + 0.055) * (1.0 / (1.0 + 0.055))), 2.4f),
 				a);
 	}
 	_FORCE_INLINE_ Color linear_to_srgb() const {
 		return Color(
-				r < 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math::pow(r, 1.0f / 2.4f) - 0.055f,
-				g < 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math::pow(g, 1.0f / 2.4f) - 0.055f,
-				b < 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math::pow(b, 1.0f / 2.4f) - 0.055f, a);
+				r < 0.0031308f ? 12.92f * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
+				g < 0.0031308f ? 12.92f * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
+				b < 0.0031308f ? 12.92f * b : (1.0 + 0.055) * Math::pow(b, 1.0f / 2.4f) - 0.055, a);
 	}
 
 	static Color hex(uint32_t p_hex);
@@ -199,10 +216,12 @@ struct _NO_DISCARD_ Color {
 	static Color from_string(const String &p_string, const Color &p_default);
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	static Color from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
+	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
-	_FORCE_INLINE_ bool operator<(const Color &p_color) const; // Used in set keys.
-	operator String() const;
+	constexpr bool operator<(const Color &p_color) const; // Used in set keys.
+	explicit operator String() const;
 
 	// For the binder.
 	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }
@@ -221,39 +240,37 @@ struct _NO_DISCARD_ Color {
 	_FORCE_INLINE_ void set_ok_hsl_s(float p_s) { set_ok_hsl(get_ok_hsl_h(), p_s, get_ok_hsl_l(), a); }
 	_FORCE_INLINE_ void set_ok_hsl_l(float p_l) { set_ok_hsl(get_ok_hsl_h(), get_ok_hsl_s(), p_l, a); }
 
-	_FORCE_INLINE_ Color() {}
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_float(r);
+		h = hash_murmur3_one_float(r, h);
+		h = hash_murmur3_one_float(b, h);
+		h = hash_murmur3_one_float(a, h);
+		return hash_fmix32(h);
+	}
+
+	constexpr Color() :
+			r(0), g(0), b(0), a(1) {}
 
 	/**
 	 * RGBA construct parameters.
 	 * Alpha is not optional as otherwise we can't bind the RGB version for scripting.
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a) {
-		r = p_r;
-		g = p_g;
-		b = p_b;
-		a = p_a;
-	}
+	constexpr Color(float p_r, float p_g, float p_b, float p_a) :
+			r(p_r), g(p_g), b(p_b), a(p_a) {}
 
 	/**
 	 * RGB construct parameters.
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b) {
-		r = p_r;
-		g = p_g;
-		b = p_b;
-		a = 1.0f;
-	}
+	constexpr Color(float p_r, float p_g, float p_b) :
+			r(p_r), g(p_g), b(p_b), a(1) {}
 
 	/**
 	 * Construct a Color from another Color, but with the specified alpha value.
 	 */
-	_FORCE_INLINE_ Color(const Color &p_c, float p_a) {
-		r = p_c.r;
-		g = p_c.g;
-		b = p_c.b;
-		a = p_a;
-	}
+	constexpr Color(const Color &p_c, float p_a) :
+			r(p_c.r), g(p_c.g), b(p_c.b), a(p_a) {}
 
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
 	Color(const String &p_code) {
 		if (html_is_valid(p_code)) {
 			*this = html(p_code);
@@ -266,9 +283,108 @@ struct _NO_DISCARD_ Color {
 		*this = Color(p_code);
 		a = p_a;
 	}
+	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
-bool Color::operator<(const Color &p_color) const {
+constexpr Color Color::operator+(const Color &p_color) const {
+	return Color(
+			r + p_color.r,
+			g + p_color.g,
+			b + p_color.b,
+			a + p_color.a);
+}
+
+constexpr void Color::operator+=(const Color &p_color) {
+	r = r + p_color.r;
+	g = g + p_color.g;
+	b = b + p_color.b;
+	a = a + p_color.a;
+}
+
+constexpr Color Color::operator-(const Color &p_color) const {
+	return Color(
+			r - p_color.r,
+			g - p_color.g,
+			b - p_color.b,
+			a - p_color.a);
+}
+
+constexpr void Color::operator-=(const Color &p_color) {
+	r = r - p_color.r;
+	g = g - p_color.g;
+	b = b - p_color.b;
+	a = a - p_color.a;
+}
+
+constexpr Color Color::operator*(const Color &p_color) const {
+	return Color(
+			r * p_color.r,
+			g * p_color.g,
+			b * p_color.b,
+			a * p_color.a);
+}
+
+constexpr Color Color::operator*(float p_scalar) const {
+	return Color(
+			r * p_scalar,
+			g * p_scalar,
+			b * p_scalar,
+			a * p_scalar);
+}
+
+constexpr void Color::operator*=(const Color &p_color) {
+	r = r * p_color.r;
+	g = g * p_color.g;
+	b = b * p_color.b;
+	a = a * p_color.a;
+}
+
+constexpr void Color::operator*=(float p_scalar) {
+	r = r * p_scalar;
+	g = g * p_scalar;
+	b = b * p_scalar;
+	a = a * p_scalar;
+}
+
+constexpr Color Color::operator/(const Color &p_color) const {
+	return Color(
+			r / p_color.r,
+			g / p_color.g,
+			b / p_color.b,
+			a / p_color.a);
+}
+
+constexpr Color Color::operator/(float p_scalar) const {
+	return Color(
+			r / p_scalar,
+			g / p_scalar,
+			b / p_scalar,
+			a / p_scalar);
+}
+
+constexpr void Color::operator/=(const Color &p_color) {
+	r = r / p_color.r;
+	g = g / p_color.g;
+	b = b / p_color.b;
+	a = a / p_color.a;
+}
+
+constexpr void Color::operator/=(float p_scalar) {
+	r = r / p_scalar;
+	g = g / p_scalar;
+	b = b / p_scalar;
+	a = a / p_scalar;
+}
+
+constexpr Color Color::operator-() const {
+	return Color(
+			1.0f - r,
+			1.0f - g,
+			1.0f - b,
+			1.0f - a);
+}
+
+constexpr bool Color::operator<(const Color &p_color) const {
 	if (r == p_color.r) {
 		if (g == p_color.g) {
 			if (b == p_color.b) {
@@ -284,8 +400,6 @@ bool Color::operator<(const Color &p_color) const {
 	}
 }
 
-_FORCE_INLINE_ Color operator*(float p_scalar, const Color &p_color) {
+constexpr Color operator*(float p_scalar, const Color &p_color) {
 	return p_color * p_scalar;
 }
-
-#endif // COLOR_H

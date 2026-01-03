@@ -61,13 +61,13 @@
 		<method name="_get_play_area" qualifiers="virtual const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an [PackedVector3Array] that denotes the play areas boundaries (if applicable).
+				Returns a [PackedVector3Array] that represents the play areas boundaries (if applicable).
 			</description>
 		</method>
 		<method name="_get_play_area_mode" qualifiers="virtual const">
 			<return type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
-				Returns the [enum XRInterface.PlayAreaMode] that sets up our play area.
+				Returns the play area mode that sets up our play area.
 			</description>
 		</method>
 		<method name="_get_projection_for_view" qualifiers="virtual">
@@ -108,7 +108,7 @@
 		<method name="_get_tracking_status" qualifiers="virtual const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
-				Returns a [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
+				Returns the current status of our tracking.
 			</description>
 		</method>
 		<method name="_get_transform_for_view" qualifiers="virtual">
@@ -134,6 +134,12 @@
 		<method name="_get_vrs_texture" qualifiers="virtual">
 			<return type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="_get_vrs_texture_format" qualifiers="virtual">
+			<return type="int" enum="XRInterface.VRSTextureFormat" />
+			<description>
+				Returns the format of the texture returned by [method _get_vrs_texture].
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">

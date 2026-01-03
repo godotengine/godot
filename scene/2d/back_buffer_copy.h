@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BACK_BUFFER_COPY_H
-#define BACK_BUFFER_COPY_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -54,10 +53,10 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
@@ -71,5 +70,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(BackBufferCopy::CopyMode);
-
-#endif // BACK_BUFFER_COPY_H

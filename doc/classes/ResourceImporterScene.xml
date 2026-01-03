@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterScene" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Imports a glTF, FBX, Collada or Blender 3D scene.
+		Imports a glTF, FBX, COLLADA, or Blender 3D scene.
 	</brief_description>
 	<description>
-		See also [ResourceImporterOBJ], which is used for OBJ models that can be imported as a standalone [Mesh] or a scene.
+		See also [ResourceImporterOBJ], which is used for OBJ models that can be imported as an independent [Mesh] or a scene.
 		Additional options (such as extracting individual meshes or materials to files) are available in the [b]Advanced Import Settings[/b] dialog. This dialog can be accessed by double-clicking a 3D scene in the FileSystem dock or by selecting a 3D scene in the FileSystem dock, going to the Import dock and choosing [b]Advanced[/b].
 		[b]Note:[/b] [ResourceImporterScene] is [i]not[/i] used for [PackedScene]s, such as [code].tscn[/code] and [code].scn[/code] files.
 	</description>
@@ -21,6 +21,9 @@
 		<member name="animation/import" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], import animations from the 3D scene.
 		</member>
+		<member name="animation/import_rest_as_RESET" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], adds an [Animation] named [code]RESET[/code], containing the [method Skeleton3D.get_bone_rest] from [Skeleton3D] nodes. This can be useful to extract an animation in the reference pose.
+		</member>
 		<member name="animation/remove_immutable_tracks" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], remove animation tracks that only contain default values. This can reduce output file size and memory usage with certain 3D scenes, depending on the contents of their animation tracks.
 		</member>
@@ -29,6 +32,21 @@
 		</member>
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
+		</member>
+		<member name="materials/extract" type="int" setter="" getter="" default="0">
+			Material extraction mode.
+			- [code]0 (Keep Internal)[/code], materials are not extracted.
+			- [code]1 (Extract Once)[/code], materials are extracted once and reused on subsequent import.
+			- [code]2 (Extract and Overwrite)[/code], materials are extracted and overwritten on every import.
+		</member>
+		<member name="materials/extract_format" type="int" setter="" getter="" default="0">
+			Extracted material file format.
+			- [code]0 (Text)[/code], text file format ([code]*.tres[/code]).
+			- [code]1 (Binary)[/code], binary file format ([code]*.res[/code]).
+			- [code]2 (Material)[/code], binary file format ([code]*.material[/code]).
+		</member>
+		<member name="materials/extract_path" type="String" setter="" getter="" default="&quot;&quot;">
+			Path extracted materials are saved to. If empty, source scene path is used.
 		</member>
 		<member name="meshes/create_shadow_meshes" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables the generation of shadow meshes on import. This optimizes shadow rendering without reducing quality by welding vertices together when possible. This in turn reduces the memory bandwidth required to render shadows. Shadow mesh generation currently doesn't support using a lower detail level than the source mesh (but shadow rendering will make use of LODs when relevant).
@@ -53,14 +71,26 @@
 		<member name="nodes/apply_root_scale" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [member nodes/root_scale] will be applied to the descendant nodes, meshes, animations, bones, etc. This means that if you add a child node later on within the imported scene, it won't be scaled. If [code]false[/code], [member nodes/root_scale] will multiply the scale of the root node instead.
 		</member>
+		<member name="nodes/import_as_skeleton_bones" type="bool" setter="" getter="" default="false">
+			Treat all nodes in the imported scene as if they are bones within a single [Skeleton3D]. Can be used to guarantee that imported animations target skeleton bones rather than nodes. May also be used to assign the [code]"Root"[/code] bone in a [BoneMap]. See [url=$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html]Retargeting 3D Skeletons[/url] for more information.
+		</member>
 		<member name="nodes/root_name" type="String" setter="" getter="" default="&quot;&quot;">
 			Override for the root node name. If empty, the root node will use what the scene specifies, or the file name if the scene does not specify a root name.
 		</member>
 		<member name="nodes/root_scale" type="float" setter="" getter="" default="1.0">
 			The uniform scale to use for the scene root. The default value of [code]1.0[/code] will not perform any rescaling. See [member nodes/apply_root_scale] for details of how this scale is applied.
 		</member>
+		<member name="nodes/root_script" type="Script" setter="" getter="" default="null">
+			If set to a valid script, attaches the script to the root node of the imported scene. If the type of the root node is not compatible with the script, the root node will be replaced with a type that is compatible with the script. This setting can also be used on other non-mesh nodes in the scene to attach scripts to them.
+		</member>
 		<member name="nodes/root_type" type="String" setter="" getter="" default="&quot;&quot;">
 			Override for the root node type. If empty, the root node will use what the scene specifies, or [Node3D] if the scene does not specify a root type. Using a node type that inherits from [Node3D] is recommended. Otherwise, you'll lose the ability to position the node directly in the 3D editor.
+		</member>
+		<member name="nodes/use_name_suffixes" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], will use suffixes in the names of imported objects such as nodes and resources to determine types and properties, such as [code]-noimp[/code] to skip import of a node or animation, [code]-alpha[/code] to enable alpha transparency on a material, and [code]-vcol[/code] to enable vertex colors on a material. Disabling this makes editor-imported files more similar to the original files, and more similar to files imported at runtime. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/node_type_customization.html]Node type customization using name suffixes[/url] for more information.
+		</member>
+		<member name="nodes/use_node_type_suffixes" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], will use suffixes in the node names to determine the node type, such as [code]-col[/code] for collision shapes. This is only used when [member nodes/use_name_suffixes] is [code]true[/code]. Disabling this makes editor-imported files more similar to the original files, and more similar to files imported at runtime. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/node_type_customization.html]Node type customization using name suffixes[/url] for more information.
 		</member>
 		<member name="skins/use_named_skins" type="bool" setter="" getter="" default="true">
 			If checked, use named [Skin]s for animation. The [MeshInstance3D] node contains 3 properties of relevance here: a skeleton [NodePath] pointing to the [Skeleton3D] node (usually [code]..[/code]), a mesh, and a skin:

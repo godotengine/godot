@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_3D_H
-#define PATH_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
@@ -37,15 +36,18 @@
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);
 
-	Ref<Curve3D> curve;
-
-	void _curve_changed();
-
-	RID debug_instance;
-	Ref<ArrayMesh> debug_mesh;
-
 private:
+	Ref<Curve3D> curve;
+	RID debug_instance;
+	Color debug_custom_color;
+	Ref<ArrayMesh> debug_mesh;
+	Ref<Material> debug_material;
+
+	Callable update_callback; // Used only by CSG currently.
+
 	void _update_debug_mesh();
+	void _update_debug_path_material();
+	void _curve_changed();
 
 protected:
 	void _notification(int p_what);
@@ -53,8 +55,15 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_update_callback(Callable p_callback);
+
 	void set_curve(const Ref<Curve3D> &p_curve);
 	Ref<Curve3D> get_curve() const;
+
+	const Color &get_debug_custom_color() const;
+	void set_debug_custom_color(const Color &p_color);
+
+	Ref<StandardMaterial3D> get_debug_material();
 
 	Path3D();
 	~Path3D();
@@ -72,10 +81,6 @@ public:
 		ROTATION_ORIENTED
 	};
 
-	bool use_model_front = false;
-
-	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
-
 private:
 	Path3D *path = nullptr;
 	real_t progress = 0.0;
@@ -84,14 +89,14 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
+	bool use_model_front = false;
 	RotationMode rotation_mode = ROTATION_XYZ;
-
-	void _update_transform(bool p_update_xyz_rot = true);
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
+
 	static void _bind_methods();
 
 public:
@@ -124,9 +129,9 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	PathFollow3D() {}
+	void update_transform();
+
+	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 };
 
 VARIANT_ENUM_CAST(PathFollow3D::RotationMode);
-
-#endif // PATH_3D_H

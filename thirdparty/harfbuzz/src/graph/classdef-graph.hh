@@ -39,6 +39,7 @@ struct ClassDefFormat1 : public OT::ClassDefFormat1_3<SmallTypes>
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::ClassDefFormat1_3<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
     return vertex_len >= min_size + classValue.get_size () - classValue.len.get_size ();
   }
 };
@@ -50,6 +51,7 @@ struct ClassDefFormat2 : public OT::ClassDefFormat2_4<SmallTypes>
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     constexpr unsigned min_size = OT::ClassDefFormat2_4<SmallTypes>::min_size;
     if (vertex_len < min_size) return false;
+    hb_barrier ();
     return vertex_len >= min_size + rangeRecord.get_size () - rangeRecord.len.get_size ();
   }
 };
@@ -72,7 +74,7 @@ struct ClassDef : public OT::ClassDef
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_prime_id;
     class_def_link->position = link_position;
-    class_def_prime_vertex.add_parent (parent_id);
+    class_def_prime_vertex.add_parent (parent_id, false);
 
     return true;
   }
@@ -114,6 +116,7 @@ struct ClassDef : public OT::ClassDef
   {
     int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::ClassDef::min_size) return false;
+    hb_barrier ();
     switch (u.format)
     {
     case 1: return ((ClassDefFormat1*)this)->sanitize (vertex);
@@ -131,19 +134,22 @@ struct ClassDef : public OT::ClassDef
 
 struct class_def_size_estimator_t
 {
+  // TODO(garretrieger): update to support beyond64k coverage/classdef tables.
+  constexpr static unsigned class_def_format1_base_size = 6;
+  constexpr static unsigned class_def_format2_base_size = 4;
+  constexpr static unsigned coverage_base_size = 4;
+  constexpr static unsigned bytes_per_range = 6;
+  constexpr static unsigned bytes_per_glyph = 2;
+
   template<typename It>
   class_def_size_estimator_t (It glyph_and_class)
-      : gids_consecutive (true), num_ranges_per_class (), glyphs_per_class ()
+      : num_ranges_per_class (), glyphs_per_class ()
   {
-    unsigned last_gid = (unsigned) -1;
+    reset();
     for (auto p : + glyph_and_class)
     {
       unsigned gid = p.first;
       unsigned klass = p.second;
-
-      if (last_gid != (unsigned) -1 && gid != last_gid + 1)
-        gids_consecutive = false;
-      last_gid = gid;
 
       hb_set_t* glyphs;
       if (glyphs_per_class.has (klass, &glyphs) && glyphs) {
@@ -174,28 +180,54 @@ struct class_def_size_estimator_t
     }
   }
 
-  // Incremental increase in the Coverage and ClassDef table size
-  // (worst case) if all glyphs associated with 'klass' were added.
-  unsigned incremental_coverage_size (unsigned klass) const
-  {
-    // Coverage takes 2 bytes per glyph worst case,
-    return 2 * glyphs_per_class.get (klass).get_population ();
+  void reset() {
+    class_def_1_size = class_def_format1_base_size;
+    class_def_2_size = class_def_format2_base_size;
+    included_glyphs.clear();
+    included_classes.clear();
   }
 
-  // Incremental increase in the Coverage and ClassDef table size
-  // (worst case) if all glyphs associated with 'klass' were added.
-  unsigned incremental_class_def_size (unsigned klass) const
+  // Compute the size of coverage for all glyphs added via 'add_class_def_size'.
+  unsigned coverage_size () const
   {
-    // ClassDef takes 6 bytes per range
-    unsigned class_def_2_size = 6 * num_ranges_per_class.get (klass);
-    if (gids_consecutive)
-    {
-      // ClassDef1 takes 2 bytes per glyph, but only can be used
-      // when gids are consecutive.
-      return hb_min (2 * glyphs_per_class.get (klass).get_population (), class_def_2_size);
+    unsigned format1_size = coverage_base_size + bytes_per_glyph * included_glyphs.get_population();
+    unsigned format2_size = coverage_base_size + bytes_per_range * num_glyph_ranges();
+    return hb_min(format1_size, format2_size);
+  }
+
+  // Compute the new size of the ClassDef table if all glyphs associated with 'klass' were added.
+  unsigned add_class_def_size (unsigned klass)
+  {
+    if (!included_classes.has(klass)) {
+      hb_set_t* glyphs = nullptr;
+      if (glyphs_per_class.has(klass, &glyphs)) {
+        included_glyphs.union_(*glyphs);
+      }
+
+      class_def_1_size = class_def_format1_base_size;
+      if (!included_glyphs.is_empty()) {
+        unsigned min_glyph = included_glyphs.get_min();
+        unsigned max_glyph = included_glyphs.get_max();
+        class_def_1_size += bytes_per_glyph * (max_glyph - min_glyph + 1);
+      }
+
+      class_def_2_size += bytes_per_range * num_ranges_per_class.get (klass);
+
+      included_classes.add(klass);
     }
 
-    return class_def_2_size;
+    return hb_min (class_def_1_size, class_def_2_size);
+  }
+
+  unsigned num_glyph_ranges() const {
+    hb_codepoint_t start = HB_SET_VALUE_INVALID;
+    hb_codepoint_t end = HB_SET_VALUE_INVALID;
+
+    unsigned count = 0;
+    while (included_glyphs.next_range (&start, &end)) {
+        count++;
+    }
+    return count;
   }
 
   bool in_error ()
@@ -211,9 +243,12 @@ struct class_def_size_estimator_t
   }
 
  private:
-  bool gids_consecutive;
   hb_hashmap_t<unsigned, unsigned> num_ranges_per_class;
   hb_hashmap_t<unsigned, hb_set_t> glyphs_per_class;
+  hb_set_t included_classes;
+  hb_set_t included_glyphs;
+  unsigned class_def_1_size;
+  unsigned class_def_2_size;
 };
 
 

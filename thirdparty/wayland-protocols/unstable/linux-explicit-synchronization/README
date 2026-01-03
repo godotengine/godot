@@ -1,0 +1,5 @@
+Linux explicit synchronization (dma-fence) protocol
+
+Maintainers:
+Daniel Stone <daniels@collabora.com> (@daniels)
+Alexandros Frantzis <alexandros.frantzis@collabora.com> (@afrantzis)

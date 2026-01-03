@@ -30,44 +30,36 @@
 
 #include "string_name.h"
 
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-StaticCString StaticCString::create(const char *p_ptr) {
-	StaticCString scs;
-	scs.ptr = p_ptr;
-	return scs;
-}
+struct StringName::Table {
+	constexpr static uint32_t TABLE_BITS = 16;
+	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
+	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
-StringName::_Data *StringName::_table[STRING_TABLE_LEN];
-
-StringName _scs_create(const char *p_chr, bool p_static) {
-	return (p_chr[0] ? StringName(StaticCString::create(p_chr), p_static) : StringName());
-}
-
-bool StringName::configured = false;
-Mutex StringName::mutex;
-
-#ifdef DEBUG_ENABLED
-bool StringName::debug_stringname = false;
-#endif
+	static inline _Data *table[TABLE_LEN];
+	static inline BinaryMutex mutex;
+	static inline PagedAllocator<_Data> allocator;
+};
 
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
-	for (int i = 0; i < STRING_TABLE_LEN; i++) {
-		_table[i] = nullptr;
+	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
+		Table::table[i] = nullptr;
 	}
 	configured = true;
 }
 
 void StringName::cleanup() {
-	MutexLock lock(mutex);
+	MutexLock lock(Table::mutex);
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		Vector<_Data *> data;
-		for (int i = 0; i < STRING_TABLE_LEN; i++) {
-			_Data *d = _table[i];
+		for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
+			_Data *d = Table::table[i];
 			while (d) {
 				data.push_back(d);
 				d = d->next;
@@ -80,7 +72,7 @@ void StringName::cleanup() {
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
 		for (int i = 0; i < data.size(); i++) {
-			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
+			print_line(itos(i + 1) + ": " + data[i]->name + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;
 			} else if (data[i]->debug_references < 5) {
@@ -93,21 +85,19 @@ void StringName::cleanup() {
 	}
 #endif
 	int lost_strings = 0;
-	for (int i = 0; i < STRING_TABLE_LEN; i++) {
-		while (_table[i]) {
-			_Data *d = _table[i];
+	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
+		while (Table::table[i]) {
+			_Data *d = Table::table[i];
 			if (d->static_count.get() != d->refcount.get()) {
 				lost_strings++;
 
 				if (OS::get_singleton()->is_stdout_verbose()) {
-					String dname = String(d->cname ? d->cname : d->name);
-
-					print_line(vformat("Orphan StringName: %s (static: %d, total: %d)", dname, d->static_count.get(), d->refcount.get()));
+					print_line(vformat("Orphan StringName: %s (static: %d, total: %d)", d->name, d->static_count.get(), d->refcount.get()));
 				}
 			}
 
-			_table[i] = _table[i]->next;
-			memdelete(d);
+			Table::table[i] = Table::table[i]->next;
+			Table::allocator.free(d);
 		}
 	}
 	if (lost_strings) {
@@ -120,47 +110,46 @@ void StringName::unref() {
 	ERR_FAIL_COND(!configured);
 
 	if (_data && _data->refcount.unref()) {
-		MutexLock lock(mutex);
+		MutexLock lock(Table::mutex);
 
-		if (_data->static_count.get() > 0) {
-			if (_data->cname) {
-				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
-			} else {
-				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->name));
-			}
+		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
+			ERR_PRINT("BUG: Unreferenced static string to 0: " + _data->name);
 		}
 		if (_data->prev) {
 			_data->prev->next = _data->next;
 		} else {
-			if (_table[_data->idx] != _data) {
-				ERR_PRINT("BUG!");
-			}
-			_table[_data->idx] = _data->next;
+			const uint32_t idx = _data->hash & Table::TABLE_MASK;
+			Table::table[idx] = _data->next;
 		}
 
 		if (_data->next) {
 			_data->next->prev = _data->prev;
 		}
-		memdelete(_data);
+		Table::allocator.free(_data);
 	}
 
 	_data = nullptr;
 }
 
+uint32_t StringName::get_empty_hash() {
+	static uint32_t empty_hash = String::hash("");
+	return empty_hash;
+}
+
 bool StringName::operator==(const String &p_name) const {
-	if (!_data) {
-		return (p_name.length() == 0);
+	if (_data) {
+		return _data->name == p_name;
 	}
 
-	return (_data->get_name() == p_name);
+	return p_name.is_empty();
 }
 
 bool StringName::operator==(const char *p_name) const {
-	if (!_data) {
-		return (p_name[0] == 0);
+	if (_data) {
+		return _data->name == p_name;
 	}
 
-	return (_data->get_name() == p_name);
+	return p_name[0] == 0;
 }
 
 bool StringName::operator!=(const String &p_name) const {
@@ -171,15 +160,26 @@ bool StringName::operator!=(const char *p_name) const {
 	return !(operator==(p_name));
 }
 
-bool StringName::operator!=(const StringName &p_name) const {
-	// the real magic of all this mess happens here.
-	// this is why path comparisons are very fast
-	return _data != p_name._data;
+char32_t StringName::operator[](int p_index) const {
+	if (_data) {
+		return _data->name[p_index];
+	}
+
+	CRASH_BAD_INDEX(p_index, 0);
+	return 0;
 }
 
-void StringName::operator=(const StringName &p_name) {
+int StringName::length() const {
+	if (_data) {
+		return _data->name.length();
+	}
+
+	return 0;
+}
+
+StringName &StringName::operator=(const StringName &p_name) {
 	if (this == &p_name) {
-		return;
+		return *this;
 	}
 
 	unref();
@@ -187,6 +187,8 @@ void StringName::operator=(const StringName &p_name) {
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;
 	}
+
+	return *this;
 }
 
 StringName::StringName(const StringName &p_name) {
@@ -199,14 +201,6 @@ StringName::StringName(const StringName &p_name) {
 	}
 }
 
-void StringName::assign_static_unique_class_name(StringName *ptr, const char *p_name) {
-	mutex.lock();
-	if (*ptr == StringName()) {
-		*ptr = StringName(p_name, true);
-	}
-	mutex.unlock();
-}
-
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
@@ -216,17 +210,15 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return; //empty, ignore
 	}
 
-	MutexLock lock(mutex);
+	const uint32_t hash = String::hash(p_name);
+	const uint32_t idx = hash & Table::TABLE_MASK;
 
-	uint32_t hash = String::hash(p_name);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_data = _table[idx];
+	MutexLock lock(Table::mutex);
+	_data = Table::table[idx];
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name) {
+		if (_data->hash == hash && _data->name == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -245,14 +237,12 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return;
 	}
 
-	_data = memnew(_Data);
+	_data = Table::allocator.alloc();
 	_data->name = p_name;
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
-	_data->idx = idx;
-	_data->cname = nullptr;
-	_data->next = _table[idx];
+	_data->next = Table::table[idx];
 	_data->prev = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -262,68 +252,10 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
+	if (Table::table[idx]) {
+		Table::table[idx]->prev = _data;
 	}
-	_table[idx] = _data;
-}
-
-StringName::StringName(const StaticCString &p_static_string, bool p_static) {
-	_data = nullptr;
-
-	ERR_FAIL_COND(!configured);
-
-	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
-
-	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_static_string.ptr);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_static_string.ptr) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-		return;
-	}
-
-	_data = memnew(_Data);
-
-	_data->refcount.init();
-	_data->static_count.set(p_static ? 1 : 0);
-	_data->hash = hash;
-	_data->idx = idx;
-	_data->cname = p_static_string.ptr;
-	_data->next = _table[idx];
-	_data->prev = nullptr;
-#ifdef DEBUG_ENABLED
-	if (unlikely(debug_stringname)) {
-		// Keep in memory, force static.
-		_data->refcount.ref();
-		_data->static_count.increment();
-	}
-#endif
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
-	}
-	_table[idx] = _data;
+	Table::table[idx] = _data;
 }
 
 StringName::StringName(const String &p_name, bool p_static) {
@@ -335,15 +267,14 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
-	MutexLock lock(mutex);
+	const uint32_t hash = p_name.hash();
+	const uint32_t idx = hash & Table::TABLE_MASK;
 
-	uint32_t hash = p_name.hash();
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_data = _table[idx];
+	MutexLock lock(Table::mutex);
+	_data = Table::table[idx];
 
 	while (_data) {
-		if (_data->hash == hash && _data->get_name() == p_name) {
+		if (_data->hash == hash && _data->name == p_name) {
 			break;
 		}
 		_data = _data->next;
@@ -362,14 +293,12 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
-	_data = memnew(_Data);
+	_data = Table::allocator.alloc();
 	_data->name = p_name;
 	_data->refcount.init();
 	_data->static_count.set(p_static ? 1 : 0);
 	_data->hash = hash;
-	_data->idx = idx;
-	_data->cname = nullptr;
-	_data->next = _table[idx];
+	_data->next = Table::table[idx];
 	_data->prev = nullptr;
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
@@ -379,120 +308,22 @@ StringName::StringName(const String &p_name, bool p_static) {
 	}
 #endif
 
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
+	if (Table::table[idx]) {
+		Table::table[idx]->prev = _data;
 	}
-	_table[idx] = _data;
-}
-
-StringName StringName::search(const char *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_name);
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const char32_t *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_name);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
-
-	MutexLock lock(mutex);
-
-	uint32_t hash = p_name.hash();
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && p_name == _data->get_name()) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
+	Table::table[idx] = _data;
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {
-	return p_name == p_string_name.operator String();
+	return p_string_name.operator==(p_name);
 }
 bool operator!=(const String &p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
+	return p_string_name.operator!=(p_name);
 }
 
 bool operator==(const char *p_name, const StringName &p_string_name) {
-	return p_name == p_string_name.operator String();
+	return p_string_name.operator==(p_name);
 }
 bool operator!=(const char *p_name, const StringName &p_string_name) {
-	return p_name != p_string_name.operator String();
+	return p_string_name.operator!=(p_name);
 }

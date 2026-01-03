@@ -4,7 +4,7 @@
  *
  *   FreeType auxiliary PostScript module implementation (specification).
  *
- * Copyright (C) 2000-2023 by
+ * Copyright (C) 2000-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -44,9 +44,6 @@ FT_BEGIN_HEADER
 
   FT_CALLBACK_TABLE
   const CFF_Decoder_FuncsRec  cff_decoder_funcs;
-
-
-  FT_EXPORT_VAR( const FT_Module_Class )  psaux_driver_class;
 
 
   FT_DECLARE_MODULE( psaux_module_class )

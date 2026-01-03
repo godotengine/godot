@@ -29,7 +29,7 @@
 #ifndef OT_LAYOUT_GDEF_GDEF_HH
 #define OT_LAYOUT_GDEF_GDEF_HH
 
-#include "../../../hb-ot-layout-common.hh"
+#include "../../../hb-ot-var-common.hh"
 
 #include "../../../hb-font.hh"
 #include "../../../hb-cache.hh"
@@ -189,7 +189,7 @@ struct CaretValueFormat3
   friend struct CaretValue;
 
   hb_position_t get_caret_value (hb_font_t *font, hb_direction_t direction,
-				 const VariationStore &var_store) const
+				 const ItemVariationStore &var_store) const
   {
     return HB_DIRECTION_IS_HORIZONTAL (direction) ?
 	   font->em_scale_x (coordinate) + (this+deviceTable).get_x_delta (font, var_store) :
@@ -204,18 +204,19 @@ struct CaretValueFormat3
     if (!c->serializer->embed (coordinate)) return_trace (false);
 
     unsigned varidx = (this+deviceTable).get_variation_index ();
-    if (c->plan->layout_variation_idx_delta_map.has (varidx))
-    {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (varidx));
+    hb_pair_t<unsigned, int> *new_varidx_delta;
+    if (c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta)) {
+      uint32_t new_varidx = hb_first (*new_varidx_delta);
+      int delta = hb_second (*new_varidx_delta);
       if (delta != 0)
       {
         if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
           return_trace (false);
       }
-    }
 
-    if (c->plan->all_axes_pinned)
-      return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+      if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+        return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+    }
 
     if (!c->serializer->embed (deviceTable))
       return_trace (false);
@@ -249,7 +250,7 @@ struct CaretValue
   hb_position_t get_caret_value (hb_font_t *font,
 				 hb_direction_t direction,
 				 hb_codepoint_t glyph_id,
-				 const VariationStore &var_store) const
+				 const ItemVariationStore &var_store) const
   {
     switch (u.format) {
     case 1: return u.format1.get_caret_value (font, direction);
@@ -289,6 +290,7 @@ struct CaretValue
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     case 2: return_trace (u.format2.sanitize (c));
@@ -313,7 +315,7 @@ struct LigGlyph
   unsigned get_lig_carets (hb_font_t            *font,
 			   hb_direction_t        direction,
 			   hb_codepoint_t        glyph_id,
-			   const VariationStore &var_store,
+			   const ItemVariationStore &var_store,
 			   unsigned              start_offset,
 			   unsigned             *caret_count /* IN/OUT */,
 			   hb_position_t        *caret_array /* OUT */) const
@@ -369,7 +371,7 @@ struct LigCaretList
   unsigned int get_lig_carets (hb_font_t *font,
 			       hb_direction_t direction,
 			       hb_codepoint_t glyph_id,
-			       const VariationStore &var_store,
+			       const ItemVariationStore &var_store,
 			       unsigned int start_offset,
 			       unsigned int *caret_count /* IN/OUT */,
 			       hb_position_t *caret_array /* OUT */) const
@@ -439,6 +441,20 @@ struct MarkGlyphSetsFormat1
   bool covers (unsigned int set_index, hb_codepoint_t glyph_id) const
   { return (this+coverage[set_index]).get_coverage (glyph_id) != NOT_COVERED; }
 
+  void collect_used_mark_sets (const hb_set_t& glyph_set,
+                               hb_set_t& used_mark_sets /* OUT */) const
+  {
+    unsigned i = 0;
+    for (const auto &offset : coverage)
+     {
+       const auto &cov = this+offset;
+       if (cov.intersects (&glyph_set))
+         used_mark_sets.add (i);
+
+       i++;
+     }
+  }
+
   template <typename set_t>
   void collect_coverage (hb_vector_t<set_t> &sets) const
   {
@@ -459,6 +475,7 @@ struct MarkGlyphSetsFormat1
     bool ret = true;
     for (const Offset32To<Coverage>& offset : coverage.iter ())
     {
+      auto snap = c->serializer->snapshot ();
       auto *o = out->coverage.serialize_append (c->serializer);
       if (unlikely (!o))
       {
@@ -466,11 +483,17 @@ struct MarkGlyphSetsFormat1
 	break;
       }
 
-      //not using o->serialize_subset (c, offset, this, out) here because
-      //OTS doesn't allow null offset.
-      //See issue: https://github.com/khaledhosny/ots/issues/172
+      //skip empty coverage
       c->serializer->push ();
-      c->dispatch (this+offset);
+      bool res = false;
+      if (offset) res = c->dispatch (this+offset);
+      if (!res)
+      {
+        c->serializer->pop_discard ();
+        c->serializer->revert (snap);
+        (out->coverage.len)--;
+        continue;
+      }
       c->serializer->add_link (*o, c->serializer->pop_pack ());
     }
 
@@ -511,6 +534,15 @@ struct MarkGlyphSets
     }
   }
 
+  void collect_used_mark_sets (const hb_set_t& glyph_set,
+                               hb_set_t& used_mark_sets /* OUT */) const
+  {
+    switch (u.format) {
+    case 1: u.format1.collect_used_mark_sets (glyph_set, used_mark_sets); return;
+    default:return;
+    }
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -524,6 +556,7 @@ struct MarkGlyphSets
   {
     TRACE_SANITIZE (this);
     if (!u.format.sanitize (c)) return_trace (false);
+    hb_barrier ();
     switch (u.format) {
     case 1: return_trace (u.format1.sanitize (c));
     default:return_trace (true);
@@ -575,7 +608,7 @@ struct GDEFVersion1_2
 					 * definitions--from beginning of GDEF
 					 * header (may be NULL).  Introduced
 					 * in version 0x00010002. */
-  Offset32To<VariationStore>
+  Offset32To<ItemVariationStore>
 		varStore;		/* Offset to the table of Item Variation
 					 * Store--from beginning of GDEF
 					 * header (may be NULL).  Introduced
@@ -598,43 +631,109 @@ struct GDEFVersion1_2
 		  attachList.sanitize (c, this) &&
 		  ligCaretList.sanitize (c, this) &&
 		  markAttachClassDef.sanitize (c, this) &&
-		  (version.to_int () < 0x00010002u || markGlyphSetsDef.sanitize (c, this)) &&
-		  (version.to_int () < 0x00010003u || varStore.sanitize (c, this)));
+		  hb_barrier () &&
+		  ((version.to_int () < 0x00010002u && hb_barrier ()) || markGlyphSetsDef.sanitize (c, this)) &&
+		  ((version.to_int () < 0x00010003u && hb_barrier ()) || varStore.sanitize (c, this)));
+  }
+
+  static void remap_varidx_after_instantiation (const hb_map_t& varidx_map,
+                                                hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>>& layout_variation_idx_delta_map /* IN/OUT */)
+  {
+    /* varidx_map is empty which means varstore is empty after instantiation,
+     * no variations, map all varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX.
+     * varidx_map doesn't have original varidx, indicating delta row is all
+     * zeros, map varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX */
+    for (auto _ : layout_variation_idx_delta_map.iter_ref ())
+    {
+      /* old_varidx->(varidx, delta) mapping generated for subsetting, then this
+       * varidx is used as key of varidx_map during instantiation */
+      uint32_t varidx = _.second.first;
+      uint32_t *new_varidx;
+      if (varidx_map.has (varidx, &new_varidx))
+        _.second.first = *new_varidx;
+      else
+        _.second.first = HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    }
   }
 
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    auto *out = c->serializer->embed (*this);
-    if (unlikely (!out)) return_trace (false);
+    auto *out = c->serializer->start_embed (*this);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
-    bool subset_glyphclassdef = out->glyphClassDef.serialize_subset (c, glyphClassDef, this, nullptr, false, true);
-    bool subset_attachlist = out->attachList.serialize_subset (c, attachList, this);
-    bool subset_ligcaretlist = out->ligCaretList.serialize_subset (c, ligCaretList, this);
-    bool subset_markattachclassdef = out->markAttachClassDef.serialize_subset (c, markAttachClassDef, this, nullptr, false, true);
-
-    bool subset_markglyphsetsdef = false;
-    if (version.to_int () >= 0x00010002u)
-    {
-      subset_markglyphsetsdef = out->markGlyphSetsDef.serialize_subset (c, markGlyphSetsDef, this);
-    }
+    // Push var store first (if it's needed) so that it's last in the
+    // serialization order. Some font consumers assume that varstore runs to
+    // the end of the GDEF table.
+    // See: https://github.com/harfbuzz/harfbuzz/issues/4636
+    auto snapshot_version0 = c->serializer->snapshot ();
+    if (unlikely (version.to_int () >= 0x00010002u && hb_barrier () && !c->serializer->embed (markGlyphSetsDef)))
+      return_trace (false);
 
     bool subset_varstore = false;
-    if (version.to_int () >= 0x00010003u)
+    unsigned varstore_index = (unsigned) -1;
+    auto snapshot_version2 = c->serializer->snapshot ();
+    if (version.to_int () >= 0x00010003u && hb_barrier ())
     {
+      if (unlikely (!c->serializer->embed (varStore))) return_trace (false);
       if (c->plan->all_axes_pinned)
         out->varStore = 0;
+      else if (c->plan->normalized_coords)
+      {
+        if (varStore)
+        {
+          item_variations_t item_vars;
+          if (item_vars.instantiate (this+varStore, c->plan, true, true,
+                                     c->plan->gdef_varstore_inner_maps.as_array ())) {
+            subset_varstore = out->varStore.serialize_serialize (c->serializer,
+                                                                 item_vars.has_long_word (),
+                                                                 c->plan->axis_tags,
+                                                                 item_vars.get_region_list (),
+                                                                 item_vars.get_vardata_encodings ());
+            varstore_index = c->serializer->last_added_child_index();
+          }
+          remap_varidx_after_instantiation (item_vars.get_varidx_map (),
+                                            c->plan->layout_variation_idx_delta_map);
+        }
+      }
       else
+      {
         subset_varstore = out->varStore.serialize_subset (c, varStore, this, c->plan->gdef_varstore_inner_maps.as_array ());
+        varstore_index = c->serializer->last_added_child_index();
+      }
+    }
+
+    out->version.major = version.major;
+    out->version.minor = version.minor;
+
+    if (!subset_varstore && version.to_int () >= 0x00010002u) {
+      c->serializer->revert (snapshot_version2);
+    }
+
+    bool subset_markglyphsetsdef = false;
+    if (version.to_int () >= 0x00010002u && hb_barrier ())
+    {
+      subset_markglyphsetsdef = out->markGlyphSetsDef.serialize_subset (c, markGlyphSetsDef, this);
     }
 
     if (subset_varstore)
     {
       out->version.minor = 3;
+      c->plan->has_gdef_varstore = true;
     } else if (subset_markglyphsetsdef) {
-      out->version.minor = 2;
+      out->version.minor = 2;      
     } else  {
       out->version.minor = 0;
+      c->serializer->revert (snapshot_version0);
+    }
+
+    bool subset_glyphclassdef = out->glyphClassDef.serialize_subset (c, glyphClassDef, this, nullptr, false, true);
+    bool subset_attachlist = out->attachList.serialize_subset (c, attachList, this);
+    bool subset_markattachclassdef = out->markAttachClassDef.serialize_subset (c, markAttachClassDef, this, nullptr, false, true);
+    bool subset_ligcaretlist = out->ligCaretList.serialize_subset (c, ligCaretList, this);
+
+    if (subset_varstore && varstore_index != (unsigned) -1) {
+      c->serializer->repack_last(varstore_index);
     }
 
     return_trace (subset_glyphclassdef || subset_attachlist ||
@@ -671,6 +770,7 @@ struct GDEF
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.version.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.version.major) {
     case 1: return_trace (u.version1.sanitize (c));
 #ifndef HB_NO_BEYOND_64K
@@ -774,7 +874,7 @@ struct GDEF
   bool has_mark_glyph_sets () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010002u && u.version1.markGlyphSetsDef != 0;
+    case 1: return u.version.to_int () >= 0x00010002u && hb_barrier () && u.version1.markGlyphSetsDef != 0;
 #ifndef HB_NO_BEYOND_64K
     case 2: return u.version2.markGlyphSetsDef != 0;
 #endif
@@ -784,7 +884,7 @@ struct GDEF
   const MarkGlyphSets &get_mark_glyph_sets () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010002u ? this+u.version1.markGlyphSetsDef : Null(MarkGlyphSets);
+    case 1: return u.version.to_int () >= 0x00010002u && hb_barrier () ? this+u.version1.markGlyphSetsDef : Null(MarkGlyphSets);
 #ifndef HB_NO_BEYOND_64K
     case 2: return this+u.version2.markGlyphSetsDef;
 #endif
@@ -794,21 +894,21 @@ struct GDEF
   bool has_var_store () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010003u && u.version1.varStore != 0;
+    case 1: return u.version.to_int () >= 0x00010003u && hb_barrier () && u.version1.varStore != 0;
 #ifndef HB_NO_BEYOND_64K
     case 2: return u.version2.varStore != 0;
 #endif
     default: return false;
     }
   }
-  const VariationStore &get_var_store () const
+  const ItemVariationStore &get_var_store () const
   {
     switch (u.version.major) {
-    case 1: return u.version.to_int () >= 0x00010003u ? this+u.version1.varStore : Null(VariationStore);
+    case 1: return u.version.to_int () >= 0x00010003u && hb_barrier () ? this+u.version1.varStore : Null(ItemVariationStore);
 #ifndef HB_NO_BEYOND_64K
     case 2: return this+u.version2.varStore;
 #endif
-    default: return Null(VariationStore);
+    default: return Null(ItemVariationStore);
     }
   }
 
@@ -877,7 +977,7 @@ struct GDEF
       }
 
 #ifndef HB_NO_GDEF_CACHE
-      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_sets);
 #endif
     }
     ~accelerator_t () { table.destroy (); }
@@ -906,49 +1006,23 @@ struct GDEF
     {
       return
 #ifndef HB_NO_GDEF_CACHE
-	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+	     mark_glyph_sets[set_index].may_have (glyph_id)
+#else
+	     table->mark_set_covers (set_index, glyph_id)
 #endif
-	     table->mark_set_covers (set_index, glyph_id);
+      ;
     }
 
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
-    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
-    mutable hb_cache_t<21, 3, 8> glyph_props_cache;
+    hb_vector_t<hb_bit_set_t> mark_glyph_sets;
+    mutable hb_cache_t<21, 3> glyph_props_cache;
+    static_assert (sizeof (glyph_props_cache) == 512, "");
 #endif
   };
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   { get_lig_caret_list ().collect_variation_indices (c); }
-
-  void remap_layout_variation_indices (const hb_set_t *layout_variation_indices,
-				       hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map /* OUT */) const
-  {
-    if (!has_var_store ()) return;
-    if (layout_variation_indices->is_empty ()) return;
-
-    unsigned new_major = 0, new_minor = 0;
-    unsigned last_major = (layout_variation_indices->get_min ()) >> 16;
-    for (unsigned idx : layout_variation_indices->iter ())
-    {
-      uint16_t major = idx >> 16;
-      if (major >= get_var_store ().get_sub_table_count ()) break;
-      if (major != last_major)
-      {
-	new_minor = 0;
-	++new_major;
-      }
-
-      unsigned new_idx = (new_major << 16) + new_minor;
-      if (!layout_variation_idx_delta_map->has (idx))
-        continue;
-      int delta = hb_second (layout_variation_idx_delta_map->get (idx));
-
-      layout_variation_idx_delta_map->set (idx, hb_pair_t<unsigned, int> (new_idx, delta));
-      ++new_minor;
-      last_major = major;
-    }
-  }
 
   protected:
   union {

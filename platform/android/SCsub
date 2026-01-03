@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import platform
+import sys
+
+import platform_android_builders
+
+from methods import print_warning
 
 Import("env")
 
@@ -21,7 +29,11 @@ android_files = [
     "android_keys_utils.cpp",
     "display_server_android.cpp",
     "plugin/godot_plugin_jni.cpp",
-    "vulkan_context_android.cpp",
+    "rendering_context_driver_vulkan_android.cpp",
+    "variant/callable_jni.cpp",
+    "dialog_utils_jni.cpp",
+    "editor/game_menu_utils_jni.cpp",
+    "editor/editor_utils_jni.cpp",
 ]
 
 env_android = env.Clone()
@@ -35,24 +47,41 @@ env_thirdparty.disable_warnings()
 thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
 android_objects.append(thirdparty_obj)
 
-lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
+# FIXME: Hardcoded to bin to ensure the directory exists if not redirecting build objects.
+lib = env_android.add_shared_library("#bin/libgodot", android_objects, redirect_build_objects=False)
 
 # Needed to force rebuilding the platform files when the thirdparty code is updated.
 env.Depends(lib, thirdparty_obj)
 
 lib_arch_dir = ""
+triple_target_dir = ""
 if env["arch"] == "arm32":
     lib_arch_dir = "armeabi-v7a"
+    triple_target_dir = "arm-linux-androideabi"
 elif env["arch"] == "arm64":
     lib_arch_dir = "arm64-v8a"
+    triple_target_dir = "aarch64-linux-android"
 elif env["arch"] == "x86_32":
     lib_arch_dir = "x86"
+    triple_target_dir = "i686-linux-android"
 elif env["arch"] == "x86_64":
     lib_arch_dir = "x86_64"
+    triple_target_dir = "x86_64-linux-android"
 else:
-    print("WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin")
+    print_warning("Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
-if lib_arch_dir != "":
+host_subpath = ""
+if sys.platform.startswith("linux"):
+    host_subpath = "linux-x86_64"
+elif sys.platform.startswith("darwin"):
+    host_subpath = "darwin-x86_64"
+elif sys.platform.startswith("win"):
+    if platform.machine().endswith("64"):
+        host_subpath = "windows-x86_64"
+    else:
+        host_subpath = "windows"
+
+if lib_arch_dir != "" and host_subpath != "":
     if env.dev_build:
         lib_type_dir = "dev"
     elif env.debug_features:
@@ -68,12 +97,24 @@ if lib_arch_dir != "":
     else:
         lib_tools_dir = ""
 
-    out_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/" + lib_arch_dir
-    env_android.Command(
-        out_dir + "/libgodot_android.so", "#bin/libgodot" + env["SHLIBSUFFIX"], Move("$TARGET", "$SOURCE")
-    )
+    jni_libs_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/"
+    out_dir = jni_libs_dir + lib_arch_dir
+    env_android.CommandNoCache(out_dir + "/libgodot_android.so", lib, Move("$TARGET", "$SOURCE"))
 
-    stl_lib_path = (
-        str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
-    )
-    env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+    stl_lib_path = f"{env['ANDROID_NDK_ROOT']}/toolchains/llvm/prebuilt/{host_subpath}/sysroot/usr/lib/{triple_target_dir}/libc++_shared.so"
+    env_android.CommandNoCache(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    if env["debug_symbols"] and env["separate_debug_symbols"]:
+        debug_symbols_zip_file = (
+            ("#bin/android-editor-" if env.editor_build else "#bin/android-template-")
+            + lib_type_dir
+            + "-native-symbols.zip"
+        )
+        env_android.NoCache(Zip(debug_symbols_zip_file, jni_libs_dir, ZIPROOT=Dir(jni_libs_dir)))
+
+    if env["generate_android_binaries"]:
+        env_android.AlwaysBuild(
+            env_android.CommandNoCache(
+                "generate_android_binaries", lib, env.Run(platform_android_builders.generate_android_binaries)
+            )
+        )

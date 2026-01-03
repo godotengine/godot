@@ -28,20 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CURVE_H
-#define CURVE_H
+#pragma once
 
 #include "core/io/resource.h"
+#include "core/templates/rb_map.h"
 
 // y(x) curve
 class Curve : public Resource {
 	GDCLASS(Curve, Resource);
 
 public:
-	static const int MIN_X = 0.f;
-	static const int MAX_X = 1.f;
-
 	static const char *SIGNAL_RANGE_CHANGED;
+	static const char *SIGNAL_DOMAIN_CHANGED;
 
 	enum TangentMode {
 		TANGENT_FREE = 0,
@@ -79,15 +77,15 @@ public:
 	void set_point_count(int p_count);
 
 	int add_point(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE);
 	int add_point_no_update(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE);
 	void remove_point(int p_index);
 	void clear_points();
 
@@ -101,11 +99,18 @@ public:
 
 	real_t get_min_value() const { return _min_value; }
 	void set_min_value(real_t p_min);
-
 	real_t get_max_value() const { return _max_value; }
 	void set_max_value(real_t p_max);
+	real_t get_value_range() const { return _max_value - _min_value; }
 
-	real_t get_range() const { return _max_value - _min_value; }
+	real_t get_min_domain() const { return _min_domain; }
+	void set_min_domain(real_t p_min);
+	real_t get_max_domain() const { return _max_domain; }
+	void set_max_domain(real_t p_max);
+	real_t get_domain_range() const { return _max_domain - _min_domain; }
+
+	Array get_limits() const;
+	void set_limits(const Array &p_input);
 
 	real_t sample(real_t p_offset) const;
 	real_t sample_local_nocheck(int p_index, real_t p_local_offset) const;
@@ -122,12 +127,13 @@ public:
 	TangentMode get_point_left_mode(int p_index) const;
 	TangentMode get_point_right_mode(int p_index) const;
 
-	void update_auto_tangents(int i);
+	void update_auto_tangents(int p_index);
 
 	Array get_data() const;
-	void set_data(Array input);
+	void set_data(Array p_input);
 
 	void bake();
+	void _bake() const;
 	int get_bake_resolution() const { return _bake_resolution; }
 	void set_bake_resolution(int p_resolution);
 	real_t sample_baked(real_t p_offset) const;
@@ -144,19 +150,21 @@ protected:
 private:
 	void mark_dirty();
 	int _add_point(Vector2 p_position,
-			real_t left_tangent = 0,
-			real_t right_tangent = 0,
-			TangentMode left_mode = TANGENT_FREE,
-			TangentMode right_mode = TANGENT_FREE);
-	void _remove_point(int p_index);
+			real_t p_left_tangent = 0,
+			real_t p_right_tangent = 0,
+			TangentMode p_left_mode = TANGENT_FREE,
+			TangentMode p_right_mode = TANGENT_FREE,
+			bool p_mark_dirty = true);
+	void _remove_point(int p_index, bool p_mark_dirty = true);
 
-	Vector<Point> _points;
-	bool _baked_cache_dirty = false;
-	Vector<real_t> _baked_cache;
+	LocalVector<Point> _points;
+	mutable bool _baked_cache_dirty = false;
+	mutable Vector<real_t> _baked_cache;
 	int _bake_resolution = 100;
 	real_t _min_value = 0.0;
 	real_t _max_value = 1.0;
-	int _minmax_set_once = 0b00; // Encodes whether min and max have been set a first time, first bit for min and second for max.
+	real_t _min_domain = 0.0;
+	real_t _max_domain = 1.0;
 };
 
 VARIANT_ENUM_CAST(Curve::TangentMode)
@@ -170,7 +178,7 @@ class Curve2D : public Resource {
 		Vector2 position;
 	};
 
-	Vector<Point> points;
+	LocalVector<Point> points;
 
 	struct BakedPoint {
 		real_t ofs = 0.0;
@@ -237,14 +245,13 @@ public:
 	real_t get_baked_length() const;
 	Vector2 sample_baked(real_t p_offset, bool p_cubic = false) const;
 	Transform2D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false) const;
+	PackedVector2Array get_points() const;
 	PackedVector2Array get_baked_points() const; //useful for going through
 	Vector2 get_closest_point(const Vector2 &p_to_point) const;
 	real_t get_closest_offset(const Vector2 &p_to_point) const;
 
 	PackedVector2Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
 	PackedVector2Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 20.0) const; // Useful for baking.
-
-	Curve2D();
 };
 
 class Curve3D : public Resource {
@@ -257,11 +264,13 @@ class Curve3D : public Resource {
 		real_t tilt = 0.0;
 	};
 
-	Vector<Point> points;
+	LocalVector<Point> points;
 #ifdef TOOLS_ENABLED
 	// For Path3DGizmo.
 	mutable Vector<size_t> points_in_cache;
 #endif
+
+	bool closed = false;
 
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
@@ -329,6 +338,8 @@ public:
 	Vector3 sample(int p_index, real_t p_offset) const;
 	Vector3 samplef(real_t p_findex) const;
 
+	void set_closed(bool p_closed);
+	bool is_closed() const;
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
 	void set_up_vector_enabled(bool p_enable);
@@ -342,13 +353,11 @@ public:
 	PackedVector3Array get_baked_points() const; // Useful for going through.
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;
+	Vector<real_t> get_baked_dist_cache() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	real_t get_closest_offset(const Vector3 &p_to_point) const;
+	PackedVector3Array get_points() const;
 
 	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; // Useful for display.
 	PackedVector3Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const; // Useful for baking.
-
-	Curve3D();
 };
-
-#endif // CURVE_H

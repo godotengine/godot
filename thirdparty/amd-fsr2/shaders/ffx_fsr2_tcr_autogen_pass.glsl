@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
+//#version 450
 
 #extension GL_GOOGLE_include_directive : require
 #extension GL_EXT_samplerless_texture_functions : require
@@ -40,11 +40,9 @@
 #define FSR2_BIND_CB_FSR2									11
 #define FSR2_BIND_CB_REACTIVE                               12
 
-// -- GODOT start --
 #if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
 #define FSR2_BIND_SRV_INPUT_DEPTH                           13
 #endif
-// -- GODOT end --
 
 #include "ffx_fsr2_callbacks_glsl.h"
 #include "ffx_fsr2_common.h"

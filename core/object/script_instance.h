@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_INSTANCE_H
-#define SCRIPT_INSTANCE_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
@@ -52,6 +51,8 @@ public:
 
 	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
+
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
 
@@ -76,7 +77,7 @@ public:
 	}
 
 	//this is used by script languages that keep a reference counter of their own
-	//you can make make Ref<> not die when it reaches zero, so deleting the reference
+	//you can make Ref<> not die when it reaches zero, so deleting the reference
 	//depends entirely from the script
 
 	virtual void refcount_incremented() {}
@@ -92,7 +93,5 @@ public:
 	virtual const Variant get_rpc_config() const;
 
 	virtual ScriptLanguage *get_language() = 0;
-	virtual ~ScriptInstance();
+	virtual ~ScriptInstance() {}
 };
-
-#endif // SCRIPT_INSTANCE_H

@@ -1,60 +1,118 @@
 name: 🤖 Android Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-android
-  cancel-in-progress: true
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    tests=no
+    swappy=yes
 
 jobs:
-  android-template:
-    runs-on: "ubuntu-20.04"
-    name: Template (target=template_release)
+  build-android:
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.name }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (target=editor)
+            cache-name: android-editor
+            target: editor
+            scons-flags: >-
+              arch=arm64
+              production=yes
+
+          - name: Template arm32 (target=template_debug, arch=arm32)
+            cache-name: android-template-arm32
+            target: template_debug
+            scons-flags: arch=arm32
+
+          - name: Template arm64 (target=template_debug, arch=arm64)
+            cache-name: android-template-arm64
+            target: template_debug
+            scons-flags: arch=arm64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation (arm32)
-        uses: ./.github/actions/godot-build
-        with:
-          sconsflags: ${{ env.SCONSFLAGS }} arch=arm32
-          platform: android
-          target: template_release
-          tests: false
+      - name: Download Swappy
+        run: python ./misc/scripts/install_swappy_android.py
 
-      - name: Compilation (arm64)
+      - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: android
-          target: template_release
-          tests: false
+          target: ${{ matrix.target }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Generate Godot templates
+        if: matrix.target == 'template_debug'
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates
           cd ../../..
           ls -l bin/
 
+      - name: Generate Godot editor
+        if: matrix.target == 'editor'
+        run: |
+          cd platform/android/java
+          ./gradlew generateGodotEditor
+          ./gradlew generateGodotHorizonOSEditor
+          ./gradlew generateGodotPicoOSEditor
+          cd ../../..
+          ls -l bin/android_editor_builds/
+
+          # Separate different editors for multiple artifacts
+          mkdir horizonos
+          mv bin/android_editor_builds/*-horizonos-* horizonos
+          mkdir picoos
+          mv bin/android_editor_builds/*-picoos-* picoos
+
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
+
+      - name: Upload artifact (Horizon OS)
+        if: matrix.target == 'editor'
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}-horizonos
+          path: horizonos
+
+      - name: Upload artifact (PICO OS)
+        if: matrix.target == 'editor'
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}-picoos
+          path: picoos

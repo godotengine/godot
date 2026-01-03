@@ -39,7 +39,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
 #endif
 
 namespace GodotSharpDirs {
@@ -167,8 +167,12 @@ private:
 #else // TOOLS_ENABLED
 		String platform = _get_platform_name();
 		String arch = Engine::get_singleton()->get_architecture_name();
-		String appname_safe = path::get_csharp_project_name();
+		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
+#ifdef ANDROID_ENABLED
+		api_assemblies_dir = packed_path;
+		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+#else
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
 			String data_dir_root = OS::get_singleton()->get_cache_path().path_join("data_" + appname_safe + "_" + platform + "_" + arch);
@@ -192,9 +196,15 @@ private:
 				}
 			}
 			if (!has_data) {
-				// 3. Extract the data to a temporary location to load from there.
-				Ref<DirAccess> da = DirAccess::create_for_path(packed_path);
-				ERR_FAIL_NULL(da);
+				// 3. Extract the data to a temporary location to load from there, delete old data if it exists but is not up-to-date.
+				Ref<DirAccess> da;
+				if (DirAccess::exists(data_dir_root)) {
+					da = DirAccess::open(data_dir_root);
+					ERR_FAIL_COND(da.is_null());
+					ERR_FAIL_COND(da->erase_contents_recursive() != OK);
+				}
+				da = DirAccess::create_for_path(packed_path);
+				ERR_FAIL_COND(da.is_null());
 				ERR_FAIL_COND(da->copy_dir(packed_path, data_dir_root) != OK);
 			}
 			api_assemblies_dir = data_dir_root;
@@ -208,6 +218,7 @@ private:
 #endif
 			api_assemblies_dir = data_dir_root;
 		}
+#endif // ANDROID_ENABLED
 #endif
 	}
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedDataContainer" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PackedDataContainer" inherits="Resource" deprecated="Use [method @GlobalScope.var_to_bytes] or [method FileAccess.store_var] instead. To enable data compression, use [method PackedByteArray.compress] or [method FileAccess.open_compressed]." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Efficiently packs and serializes [Array] or [Dictionary].
 	</brief_description>
@@ -15,12 +15,13 @@
 		[codeblock]
 		var container = load("packed_data.res")
 		for key in container:
-		    prints(key, container[key])
-
-		# Prints:
-		# key value
-		# lock (0, 0)
-		# another_key 123
+			prints(key, container[key])
+		[/codeblock]
+		Prints:
+		[codeblock lang=text]
+		key value
+		lock (0, 0)
+		another_key 123
 		[/codeblock]
 		Nested containers will be packed recursively. While iterating, they will be returned as [PackedDataContainerRef].
 	</description>

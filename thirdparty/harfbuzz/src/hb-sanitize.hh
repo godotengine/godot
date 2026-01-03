@@ -72,8 +72,8 @@
  *
  * === The sanitize() contract ===
  *
- * The sanitize() method of each object type shall return true if it's safe to
- * call other methods of the object, and %false otherwise.
+ * The sanitize() method of each object type shall return `true` if it's safe to
+ * call other methods of the object, and `false` otherwise.
  *
  * Note that what sanitize() checks for might align with what the specification
  * describes as valid table data, but does not have to be.  In particular, we
@@ -120,8 +120,8 @@
 struct hb_sanitize_context_t :
        hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
 {
-  hb_sanitize_context_t () :
-	start (nullptr), end (nullptr),
+  hb_sanitize_context_t (const char *start_ = nullptr, const char *end_ = nullptr) :
+	start (start_), end (end_),
 	length (0),
 	max_ops (0), max_subtables (0),
         recursion_depth (0),
@@ -134,7 +134,10 @@ struct hb_sanitize_context_t :
   const char *get_name () { return "SANITIZE"; }
   template <typename T, typename F>
   bool may_dispatch (const T *obj HB_UNUSED, const F *format)
-  { return format->sanitize (this); }
+  {
+    return format->sanitize (this) &&
+	   hb_barrier ();
+  }
   static return_t default_return_value () { return true; }
   static return_t no_dispatch_return_value () { return false; }
   bool stop_sublookup_iteration (const return_t r) const { return !r; }
@@ -209,14 +212,22 @@ struct hb_sanitize_context_t :
 
   void reset_object ()
   {
-    this->start = this->blob->data;
-    this->end = this->start + this->blob->length;
+    if (this->blob)
+    {
+      this->start = this->blob->data;
+      this->end = this->start + this->blob->length;
+    }
     this->length = this->end - this->start;
     assert (this->start <= this->end); /* Must not overflow. */
   }
 
-  void start_processing ()
+  void start_processing (const char *start_ = nullptr, const char *end_ = nullptr)
   {
+    if (start_)
+    {
+      this->start = start_;
+      this->end = end_;
+    }
     reset_object ();
     unsigned m;
     if (unlikely (hb_unsigned_mul_overflows (this->end - this->start, HB_SANITIZE_MAX_OPS_FACTOR, &m)))
@@ -453,16 +464,18 @@ struct hb_sanitize_context_t :
 	edit_count = 0;
 	sane = t->sanitize (this);
 	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILLING", edit_count);
+	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILING", edit_count);
 	  sane = false;
 	}
       }
     }
     else
     {
-      if (edit_count && !writable) {
-	start = hb_blob_get_data_writable (blob, nullptr);
-	end = start + blob->length;
+      if (edit_count && !writable)
+      {
+        unsigned length;
+	start = hb_blob_get_data_writable (blob, &length);
+	end = start + length;
 
 	if (start)
 	{

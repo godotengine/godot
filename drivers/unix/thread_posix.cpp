@@ -35,6 +35,11 @@
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
 
+#if defined(PLATFORM_THREAD_OVERRIDE) && defined(__APPLE__)
+void init_thread_posix() {
+}
+#else
+
 #ifdef PTHREAD_BSD_SET_NAME
 #include <pthread_np.h>
 #endif
@@ -72,5 +77,7 @@ static Error set_name(const String &p_name) {
 void init_thread_posix() {
 	Thread::_set_platform_functions({ .set_name = set_name });
 }
+
+#endif // PLATFORM_THREAD_OVERRIDE && __APPLE__
 
 #endif // UNIX_ENABLED

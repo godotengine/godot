@@ -56,6 +56,7 @@ namespace spv {
         #include "GLSL.ext.NV.h"
         #include "GLSL.ext.ARM.h"
         #include "NonSemanticShaderDebugInfo100.h"
+        #include "GLSL.ext.QCOM.h"
     }
 }
 const char* GlslStd450DebugNames[spv::GLSLstd450Count];
@@ -79,6 +80,7 @@ enum ExtInstSet {
     GLSLextNVInst,
     OpenCLExtInst,
     NonSemanticDebugPrintfExtInst,
+    NonSemanticDebugBreakExtInst,
     NonSemanticShaderDebugInfo100
 };
 
@@ -359,7 +361,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                 switch (stream[word]) {
                 case 8:  idDescriptor[resultId] = "int8_t"; break;
                 case 16: idDescriptor[resultId] = "int16_t"; break;
-                default: assert(0); // fallthrough
+                default: assert(0); [[fallthrough]];
                 case 32: idDescriptor[resultId] = "int"; break;
                 case 64: idDescriptor[resultId] = "int64_t"; break;
                 }
@@ -367,7 +369,7 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
             case OpTypeFloat:
                 switch (stream[word]) {
                 case 16: idDescriptor[resultId] = "float16_t"; break;
-                default: assert(0); // fallthrough
+                default: assert(0); [[fallthrough]];
                 case 32: idDescriptor[resultId] = "float"; break;
                 case 64: idDescriptor[resultId] = "float64_t"; break;
                 }
@@ -505,6 +507,8 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                     extInstSet = OpenCLExtInst;
                 } else if (strcmp("NonSemantic.DebugPrintf", name) == 0) {
                     extInstSet = NonSemanticDebugPrintfExtInst;
+                } else if (strcmp("NonSemantic.DebugBreak", name) == 0) {
+                    extInstSet = NonSemanticDebugBreakExtInst;
                 } else if (strcmp("NonSemantic.Shader.DebugInfo.100", name) == 0) {
                     extInstSet = NonSemanticShaderDebugInfo100;
                 } else if (strcmp(spv::E_SPV_AMD_shader_ballot, name) == 0 ||
@@ -532,6 +536,8 @@ void SpirvStream::disassembleInstruction(Id resultId, Id /*typeId*/, Op opCode, 
                     out << "(" << GLSLextNVGetDebugNames(name, entrypoint) << ")";
                 } else if (extInstSet == NonSemanticDebugPrintfExtInst) {
                     out << "(DebugPrintf)";
+                } else if (extInstSet == NonSemanticDebugBreakExtInst) {
+                    out << "(DebugBreak)";
                 } else if (extInstSet == NonSemanticShaderDebugInfo100) {
                     out << "(" << NonSemanticShaderDebugInfo100GetDebugNames(entrypoint) << ")";
                 }

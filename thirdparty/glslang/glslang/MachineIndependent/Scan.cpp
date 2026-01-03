@@ -1073,12 +1073,18 @@ int TScanContext::tokenizeIdentifier()
             parseContext.extensionTurnedOn(E_GL_NV_ray_tracing))
             return keyword;
         return identifierOrType();
+    case ACCSTRUCTEXT:
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
+            parseContext.extensionTurnedOn(E_GL_EXT_ray_query) ||
+            parseContext.extensionTurnedOn(E_GL_NV_displacement_micromap))
+            return keyword;
+        return identifierOrType();
     case PAYLOADEXT:
     case PAYLOADINEXT:
     case HITATTREXT:
     case CALLDATAEXT:
     case CALLDATAINEXT:
-    case ACCSTRUCTEXT:
         if (parseContext.symbolTable.atBuiltInLevel() ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_tracing) ||
             parseContext.extensionTurnedOn(E_GL_EXT_ray_query))
@@ -1490,6 +1496,12 @@ int TScanContext::tokenizeIdentifier()
     case USAMPLERCUBE:
     case USAMPLER2DARRAY:
         afterType = true;
+        if (keyword == SAMPLER2DARRAY || keyword == SAMPLER2DARRAYSHADOW) {
+            if (!parseContext.isEsProfile() &&
+                (parseContext.extensionTurnedOn(E_GL_EXT_texture_array) || parseContext.symbolTable.atBuiltInLevel())) {
+                return keyword;
+            }
+        }
         return nonreservedKeyword(300, 130);
 
     case SAMPLER3D:
@@ -1533,6 +1545,12 @@ int TScanContext::tokenizeIdentifier()
     case USAMPLER1D:
     case USAMPLER1DARRAY:
         afterType = true;
+        if (keyword == SAMPLER1DARRAYSHADOW) {
+            if (!parseContext.isEsProfile() &&
+                (parseContext.extensionTurnedOn(E_GL_EXT_texture_array) || parseContext.symbolTable.atBuiltInLevel())) {
+                return keyword;
+            }
+        }
         return es30ReservedFromGLSL(130);
     case ISAMPLER2DRECT:
     case USAMPLER2DRECT:
@@ -1602,7 +1620,9 @@ int TScanContext::tokenizeIdentifier()
         if (parseContext.isEsProfile() && parseContext.version == 300)
             reservedWord();
         else if ((parseContext.isEsProfile() && parseContext.version < 300) ||
-                 (!parseContext.isEsProfile() && parseContext.version < 130))
+                 ((!parseContext.isEsProfile() && parseContext.version < 130) &&
+                   !parseContext.symbolTable.atBuiltInLevel() &&
+                   !parseContext.extensionTurnedOn(E_GL_EXT_texture_array)))
             return identifierOrType();
         return keyword;
 

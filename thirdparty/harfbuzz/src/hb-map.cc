@@ -365,7 +365,7 @@ hb_map_update (hb_map_t *map,
  * @key: (out): Key retrieved
  * @value: (out): Value retrieved
  *
- * Fetches the next key/value paire in @map.
+ * Fetches the next key/value pair in @map.
  *
  * Set @idx to -1 to get started.
  *

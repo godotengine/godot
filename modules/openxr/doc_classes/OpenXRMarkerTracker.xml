@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRMarkerTracker" inherits="OpenXRSpatialEntityTracker" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Spatial entity tracker for our spatial entity marker tracking extension.
+	</brief_description>
+	<description>
+		Spatial entity tracker for our OpenXR spatial entity marker tracking extension. These trackers identify entities in our real space detected by a visual marker such as a QRCode or Aruco code, and map their location to our virtual space.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_marker_data" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the marker data for this marker. This can return a [String] or [PackedByteArray]. Only applicable to QR Code based markers.
+			</description>
+		</method>
+		<method name="set_marker_data">
+			<return type="void" />
+			<param index="0" name="marker_data" type="Variant" />
+			<description>
+				Sets the marker data for this marker.
+				[b]Note:[/b] This should only be set by marker discovery logic.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds_size" type="Vector2" setter="set_bounds_size" getter="get_bounds_size" default="Vector2(0, 0)">
+			The bounds size for this marker.
+		</member>
+		<member name="marker_id" type="int" setter="set_marker_id" getter="get_marker_id" default="0">
+			The marker ID for this marker, this is only returned for Aruco and April Tag markers. Call [method get_marker_data] for QRCode markers.
+		</member>
+		<member name="marker_type" type="int" setter="set_marker_type" getter="get_marker_type" enum="OpenXRSpatialComponentMarkerList.MarkerType" default="0">
+			The type of marker.
+		</member>
+	</members>
+</class>

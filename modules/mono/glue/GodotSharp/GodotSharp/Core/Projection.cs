@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -248,10 +252,10 @@ namespace Godot
         /// <param name="right">The right clipping distance.</param>
         /// <param name="bottom">The bottom clipping distance.</param>
         /// <param name="top">The top clipping distance.</param>
-        /// <param name="near">The near clipping distance.</param>
-        /// <param name="far">The far clipping distance.</param>
+        /// <param name="depthNear">The near clipping distance.</param>
+        /// <param name="depthFar">The far clipping distance.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t near, real_t far)
+        public static Projection CreateFrustum(real_t left, real_t right, real_t bottom, real_t top, real_t depthNear, real_t depthFar)
         {
             if (right <= left)
             {
@@ -261,18 +265,18 @@ namespace Godot
             {
                 throw new ArgumentException("top is less or equal to bottom.");
             }
-            if (far <= near)
+            if (depthFar <= depthNear)
             {
                 throw new ArgumentException("far is less or equal to near.");
             }
 
-            real_t x = 2 * near / (right - left);
-            real_t y = 2 * near / (top - bottom);
+            real_t x = 2 * depthNear / (right - left);
+            real_t y = 2 * depthNear / (top - bottom);
 
             real_t a = (right + left) / (right - left);
             real_t b = (top + bottom) / (top - bottom);
-            real_t c = -(far + near) / (far - near);
-            real_t d = -2 * far * near / (far - near);
+            real_t c = -(depthFar + depthNear) / (depthFar - depthNear);
+            real_t d = -2 * depthFar * depthNear / (depthFar - depthNear);
 
             return new Projection(
                 new Vector4(x, 0, 0, 0),
@@ -290,17 +294,17 @@ namespace Godot
         /// <param name="size">The frustum size.</param>
         /// <param name="aspect">The aspect ratio.</param>
         /// <param name="offset">The offset to apply.</param>
-        /// <param name="near">The near clipping distance.</param>
-        /// <param name="far">The far clipping distance.</param>
+        /// <param name="depthNear">The near clipping distance.</param>
+        /// <param name="depthFar">The far clipping distance.</param>
         /// <param name="flipFov">If the field of view is flipped over the projection's diagonal.</param>
         /// <returns>The created projection.</returns>
-        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t near, real_t far, bool flipFov)
+        public static Projection CreateFrustumAspect(real_t size, real_t aspect, Vector2 offset, real_t depthNear, real_t depthFar, bool flipFov)
         {
             if (!flipFov)
             {
                 size *= aspect;
             }
-            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, near, far);
+            return CreateFrustum(-size / 2 + offset.X, +size / 2 + offset.X, -size / aspect / 2 + offset.Y, +size / aspect / 2 + offset.Y, depthNear, depthFar);
         }
 
         /// <summary>
@@ -586,7 +590,7 @@ namespace Godot
         public readonly Vector2 GetFarPlaneHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Far).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
-            return new Vector2(res.Value.X, res.Value.Y);
+            return res is null ? default : new Vector2(res.Value.X, res.Value.Y);
         }
 
         /// <summary>
@@ -597,7 +601,7 @@ namespace Godot
         public readonly Vector2 GetViewportHalfExtents()
         {
             var res = GetProjectionPlane(Planes.Near).Intersect3(GetProjectionPlane(Planes.Right), GetProjectionPlane(Planes.Top));
-            return new Vector2(res.Value.X, res.Value.Y);
+            return res is null ? default : new Vector2(res.Value.X, res.Value.Y);
         }
 
         /// <summary>
@@ -670,8 +674,8 @@ namespace Godot
         {
             Projection proj = this;
             int i, j, k;
-            int[] pvt_i = new int[4];
-            int[] pvt_j = new int[4]; /* Locations of pivot matrix */
+            Span<int> pvt_i = stackalloc int[4];
+            Span<int> pvt_j = stackalloc int[4]; /* Locations of pivot matrix */
             real_t pvt_val; /* Value of current pivot element */
             real_t hold; /* Temporary storage */
             real_t determinant = 1.0f;
@@ -842,6 +846,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a projection from 16 scalars.
+        /// </summary>
+        /// <param name="xx">The X column vector's X component, accessed via <c>p.X.X</c> or <c>[0][0]</c>.</param>
+        /// <param name="xy">The X column vector's Y component, accessed via <c>p.X.Y</c> or <c>[0][1]</c>.</param>
+        /// <param name="xz">The X column vector's Z component, accessed via <c>p.X.Z</c> or <c>[0][2]</c>.</param>
+        /// <param name="xw">The X column vector's W component, accessed via <c>p.X.W</c> or <c>[0][3]</c>.</param>
+        /// <param name="yx">The Y column vector's X component, accessed via <c>p.Y.X</c> or <c>[1][0]</c>.</param>
+        /// <param name="yy">The Y column vector's Y component, accessed via <c>p.Y.Y</c> or <c>[1][1]</c>.</param>
+        /// <param name="yz">The Y column vector's Z component, accessed via <c>p.Y.Z</c> or <c>[1][2]</c>.</param>
+        /// <param name="yw">The Y column vector's W component, accessed via <c>p.Y.W</c> or <c>[1][3]</c>.</param>
+        /// <param name="zx">The Z column vector's X component, accessed via <c>p.Z.X</c> or <c>[2][0]</c>.</param>
+        /// <param name="zy">The Z column vector's Y component, accessed via <c>p.Z.Y</c> or <c>[2][1]</c>.</param>
+        /// <param name="zz">The Z column vector's Z component, accessed via <c>p.Z.Z</c> or <c>[2][2]</c>.</param>
+        /// <param name="zw">The Z column vector's W component, accessed via <c>p.Z.W</c> or <c>[2][3]</c>.</param>
+        /// <param name="wx">The W column vector's X component, accessed via <c>p.W.X</c> or <c>[3][0]</c>.</param>
+        /// <param name="wy">The W column vector's Y component, accessed via <c>p.W.Y</c> or <c>[3][1]</c>.</param>
+        /// <param name="wz">The W column vector's Z component, accessed via <c>p.W.Z</c> or <c>[3][2]</c>.</param>
+        /// <param name="ww">The W column vector's W component, accessed via <c>p.W.W</c> or <c>[3][3]</c>.</param>
+        public Projection(real_t xx, real_t xy, real_t xz, real_t xw, real_t yx, real_t yy, real_t yz, real_t yw, real_t zx, real_t zy, real_t zz, real_t zw, real_t wx, real_t wy, real_t wz, real_t ww)
+        {
+            X = new Vector4(xx, xy, xz, xw);
+            Y = new Vector4(yx, yy, yz, yw);
+            Z = new Vector4(zx, zy, zz, zw);
+            W = new Vector4(wx, wy, wz, ww);
+        }
+
+        /// <summary>
         /// Constructs a new <see cref="Projection"/> from a <see cref="Transform3D"/>.
         /// </summary>
         /// <param name="transform">The <see cref="Transform3D"/>.</param>
@@ -981,7 +1012,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Projection other && Equals(other);
         }
@@ -1009,21 +1040,18 @@ namespace Godot
         /// Converts this <see cref="Projection"/> to a string.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public override readonly string ToString()
-        {
-            return $"{X.X}, {X.Y}, {X.Z}, {X.W}\n{Y.X}, {Y.Y}, {Y.Z}, {Y.W}\n{Z.X}, {Z.Y}, {Z.Z}, {Z.W}\n{W.X}, {W.Y}, {W.Z}, {W.W}\n";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Projection"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this projection.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"{X.X.ToString(format)}, {X.Y.ToString(format)}, {X.Z.ToString(format)}, {X.W.ToString(format)}\n" +
-                $"{Y.X.ToString(format)}, {Y.Y.ToString(format)}, {Y.Z.ToString(format)}, {Y.W.ToString(format)}\n" +
-                $"{Z.X.ToString(format)}, {Z.Y.ToString(format)}, {Z.Z.ToString(format)}, {Z.W.ToString(format)}\n" +
-                $"{W.X.ToString(format)}, {W.Y.ToString(format)}, {W.Z.ToString(format)}, {W.W.ToString(format)}\n";
+            return $"{X.X.ToString(format, CultureInfo.InvariantCulture)}, {X.Y.ToString(format, CultureInfo.InvariantCulture)}, {X.Z.ToString(format, CultureInfo.InvariantCulture)}, {X.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{Y.X.ToString(format, CultureInfo.InvariantCulture)}, {Y.Y.ToString(format, CultureInfo.InvariantCulture)}, {Y.Z.ToString(format, CultureInfo.InvariantCulture)}, {Y.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{Z.X.ToString(format, CultureInfo.InvariantCulture)}, {Z.Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.Z.ToString(format, CultureInfo.InvariantCulture)}, {Z.W.ToString(format, CultureInfo.InvariantCulture)}\n" +
+                $"{W.X.ToString(format, CultureInfo.InvariantCulture)}, {W.Y.ToString(format, CultureInfo.InvariantCulture)}, {W.Z.ToString(format, CultureInfo.InvariantCulture)}, {W.W.ToString(format, CultureInfo.InvariantCulture)}\n";
         }
     }
 }

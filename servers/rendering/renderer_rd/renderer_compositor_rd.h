@@ -28,16 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_COMPOSITOR_RD_H
-#define RENDERER_COMPOSITOR_RD_H
+#pragma once
 
-#include "core/os/os.h"
+#include "core/io/image.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
-#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_canvas_render_rd.h"
+#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -73,6 +71,9 @@ protected:
 		float src_rect[4];
 		float dst_rect[4];
 
+		float rotation_sin;
+		float rotation_cos;
+
 		float eye_center[2];
 		float k1;
 		float k2;
@@ -81,6 +82,8 @@ protected:
 		float aspect_ratio;
 		uint32_t layer;
 		uint32_t convert_to_srgb;
+		uint32_t use_debanding;
+		float pad;
 	};
 
 	struct Blit {
@@ -102,7 +105,7 @@ protected:
 	static RendererCompositorRD *singleton;
 
 public:
-	RendererUtilities *get_utilities() { return utilities; };
+	RendererUtilities *get_utilities() { return utilities; }
 	RendererLightStorage *get_light_storage() { return light_storage; }
 	RendererMaterialStorage *get_material_storage() { return material_storage; }
 	RendererMeshStorage *get_mesh_storage() { return mesh_storage; }
@@ -116,19 +119,23 @@ public:
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
-	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
+	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter);
 
 	void initialize();
 	void begin_frame(double frame_step);
-	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
-	void end_frame(bool p_swap_buffers);
+	bool is_opengl() { return false; }
+	void gl_end_frame(bool p_swap_buffers) {}
+	void end_frame(bool p_present);
 	void finalize();
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ bool can_create_resources_async() const { return true; }
+
+	virtual bool is_xr_enabled() const { return RendererCompositor::is_xr_enabled(); }
 
 	static Error is_viable() {
 		return OK;
@@ -147,5 +154,3 @@ public:
 	RendererCompositorRD();
 	~RendererCompositorRD();
 };
-
-#endif // RENDERER_COMPOSITOR_RD_H

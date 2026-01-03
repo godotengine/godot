@@ -1,116 +1,37 @@
 name: 📊 Static Checks
 on:
   workflow_call:
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
-  cancel-in-progress: true
+  workflow_dispatch:
 
 jobs:
   static-checks:
     name: Code style, file formatting, and docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Install APT dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: dos2unix libxml2-utils moreutils
-
-      - name: Install Python dependencies and general setup
-        run: |
-          pip3 install black==23.3.0 pytest==7.1.2 mypy==0.971
-          git config diff.wsErrorHighlight all
-
-      - name: Get changed files
-        id: changed-files
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
-          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
-          fi
-          echo "$files" >> changed.txt
-          cat changed.txt
-          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
-          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
-
       # This needs to happen before Python and npm execution; it must happen before any extra files are written.
       - name: .gitignore checks (gitignore_check.sh)
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
-      - name: File formatting checks (file_format.sh)
+      - name: Get changed files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          bash ./misc/scripts/file_format.sh changed.txt
-
-      - name: Header guards formatting checks (header_guards.sh)
-        run: |
-          bash ./misc/scripts/header_guards.sh changed.txt
-
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/black_format.sh
-          else
-            echo "Skipping Python formatting as no Python files were changed."
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r HEAD^1..HEAD 2> /dev/null || true)
+          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
+            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
           fi
+          files=$(echo "$files" | xargs -I {} sh -c 'echo "\"./{}\""' | tr '\n' ' ')
+          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
 
-      - name: Python scripts static analysis (mypy_check.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/mypy_check.sh
-          else
-            echo "Skipping Python static analysis as no Python files were changed."
-          fi
-
-      - name: Python builders checks via pytest (pytest_builders.sh)
-        run: |
-          bash ./misc/scripts/pytest_builders.sh
-
-      - name: JavaScript style and documentation checks via ESLint and JSDoc
-        run: |
-          if grep -q "platform/web" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            cd platform/web
-            npm ci
-            npm run lint
-            npm run docs -- -d dry-run
-          else
-            echo "Skipping JavaScript formatting as no Web/JS files were changed."
-          fi
-
-      - name: Class reference schema checks
-        run: |
-          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
-
-      - name: Documentation checks
-        run: |
-          doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
-          doc/tools/make_rst.py --dry-run --color doc/classes modules platform
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          clang-format --version
-          bash ./misc/scripts/clang_format.sh changed.txt
-
-      - name: Style checks via dotnet format (dotnet_format.sh)
-        run: |
-          if grep -q "modules/mono" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/dotnet_format.sh
-          else
-            echo "Skipping dotnet format as no C# files were changed."
-          fi
-
-      - name: Spell checks via codespell
-        if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
-        uses: codespell-project/actions-codespell@v2
+      - name: Style checks via pre-commit
+        uses: pre-commit/action@v3.0.1
         with:
-          skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
-          ignore_words_list: "curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
-          path: ${{ env.CHANGED_FILES }}
+          extra_args: --files ${{ env.CHANGED_FILES }}

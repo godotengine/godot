@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area3D" inherits="CollisionObject3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Area3D" inherits="CollisionObject3D" keywords="trigger" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A region of 3D space that detects other [CollisionObject3D]s entering or exiting it.
 	</brief_description>
 	<description>
 		[Area3D] is a region of 3D space defined by one or multiple [CollisionShape3D] or [CollisionPolygon3D] child nodes. It detects when other [CollisionObject3D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
 		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
+		[b]Note:[/b] Areas and bodies created with [PhysicsServer3D] might not interact as expected with [Area3D]s, and might not emit signals or track objects correctly.
 		[b]Warning:[/b] Using a [ConcavePolygonShape3D] inside a [CollisionShape3D] child of this node (created e.g. by using the [b]Create Trimesh Collision Sibling[/b] option in the [b]Mesh[/b] menu that appears when selecting a [MeshInstance3D] node) may give unexpected results, since this collision shape is hollow. If this is not desired, it has to be split into multiple [ConvexPolygonShape3D]s or primitive shapes like [BoxShape3D], or in some cases it may be replaceable by a [CollisionPolygon3D].
 	</description>
 	<tutorials>
 		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
 	</tutorials>
 	<methods>
 		<method name="get_overlapping_areas" qualifiers="const">
@@ -66,7 +67,7 @@
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for angular damping calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for angular damping calculations within this area.
 		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
 			The name of the area's audio bus.
@@ -91,14 +92,14 @@
 			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for gravity calculations within this area.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
-			Override mode for linear damping calculations within this area. See [enum SpaceOverride] for possible values.
+			Override mode for linear damping calculations within this area.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.
@@ -123,12 +124,15 @@
 		</member>
 		<member name="wind_attenuation_factor" type="float" setter="set_wind_attenuation_factor" getter="get_wind_attenuation_factor" default="0.0">
 			The exponential rate at which wind force decreases with distance from its origin.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 		<member name="wind_force_magnitude" type="float" setter="set_wind_force_magnitude" getter="get_wind_force_magnitude" default="0.0">
 			The magnitude of area-specific wind force.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 		<member name="wind_source_path" type="NodePath" setter="set_wind_source_path" getter="get_wind_source_path" default="NodePath(&quot;&quot;)">
 			The [Node3D] which is used to specify the direction and origin of an area-specific wind force. The direction is opposite to the z-axis of the [Node3D]'s local transform, and its origin is the origin of the [Node3D]'s local transform.
+			[b]Note:[/b] This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
 		</member>
 	</members>
 	<signals>
@@ -152,7 +156,7 @@
 			<description>
 				Emitted when a [Shape3D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
 				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer3D].
-				[b]Example of getting the[/b] [CollisionShape3D] [b]node from the shape index:[/b]
+				[b]Example:[/b] Get the [CollisionShape3D] node from the shape index:
 				[codeblocks]
 				[gdscript]
 				var other_shape_owner = area.shape_find_owner(area_shape_index)
@@ -194,7 +198,7 @@
 			<description>
 				Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer3D].
-				[b]Example of getting the[/b] [CollisionShape3D] [b]node from the shape index:[/b]
+				[b]Example:[/b] Get the [CollisionShape3D] node from the shape index:
 				[codeblocks]
 				[gdscript]
 				var body_shape_owner = body.shape_find_owner(body_shape_index)

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "../../include/embree4/rtcore.h"
 #include "../sys/platform.h"
 #include "../sys/alloc.h"
 #include "../sys/barrier.h"
@@ -12,8 +13,8 @@
 #include "../sys/ref.h"
 #include "../sys/atomic.h"
 #include "../math/range.h"
-#include "../../include/embree3/rtcore.h"
 
+#include <exception>
 #include <list>
 
 namespace embree
@@ -36,6 +37,13 @@ namespace embree
     /*! virtual interface for all tasks */
     struct TaskFunction {
       virtual void execute() = 0;
+    };
+
+
+    struct TaskGroupContext {
+      TaskGroupContext() : cancellingException(nullptr) {}
+
+      std::exception_ptr cancellingException;
     };
 
     /*! builds a task interface from a closure */
@@ -76,16 +84,16 @@ namespace embree
 	: state(DONE) {}
 
       /*! construction of new task */
-      __forceinline Task (TaskFunction* closure, Task* parent, size_t stackPtr, size_t N)
-        : dependencies(1), stealable(true), closure(closure), parent(parent), stackPtr(stackPtr), N(N)
+      __forceinline Task (TaskFunction* closure, Task* parent, TaskGroupContext* context, size_t stackPtr, size_t N)
+        : dependencies(1), stealable(true), closure(closure), parent(parent), context(context), stackPtr(stackPtr), N(N)
       {
         if (parent) parent->add_dependencies(+1);
 	switch_state(DONE,INITIALIZED);
       }
 
       /*! construction of stolen task, stealing thread will decrement initial dependency */
-      __forceinline Task (TaskFunction* closure, Task* parent)
-        : dependencies(1), stealable(false), closure(closure), parent(parent), stackPtr(-1), N(1)
+      __forceinline Task (TaskFunction* closure, Task* parent, TaskGroupContext* context)
+        : dependencies(1), stealable(false), closure(closure), parent(parent), context(context), stackPtr(-1), N(1)
       {
 	switch_state(DONE,INITIALIZED);
       }
@@ -95,7 +103,7 @@ namespace embree
       {
         if (!stealable) return false;
 	if (!try_switch_state(INITIALIZED,DONE)) return false;
-	new (&child) Task(closure, this);
+	new (&child) Task(closure, this, context);
         return true;
       }
 
@@ -110,6 +118,7 @@ namespace embree
       std::atomic<bool> stealable;       //!< true if task can be stolen
       TaskFunction* closure;             //!< the closure to execute
       Task* parent;                      //!< parent task to signal when we are finished
+      TaskGroupContext* context;
       size_t stackPtr;                   //!< stack location where closure is stored
       size_t N;                          //!< approximative size of task
     };
@@ -123,27 +132,21 @@ namespace embree
       {
         size_t ofs = bytes + ((align - stackPtr) & (align-1));
         if (stackPtr + ofs > CLOSURE_STACK_SIZE)
-          // -- GODOT start --
-          // throw std::runtime_error("closure stack overflow");
-          abort();
-          // -- GODOT end --
+          abort(); //throw std::runtime_error("closure stack overflow");
         stackPtr += ofs;
         return &stack[stackPtr-bytes];
       }
 
       template<typename Closure>
-      __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure)
+      __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure, TaskGroupContext* context)
       {
         if (right >= TASK_STACK_SIZE)
-           // -- GODOT start --
-           // throw std::runtime_error("task stack overflow");
-           abort();
-           // -- GODOT end --
+          abort(); //throw std::runtime_error("task stack overflow");
 
 	/* allocate new task on right side of stack */
         size_t oldStackPtr = stackPtr;
         TaskFunction* func = new (alloc(sizeof(ClosureTaskFunction<Closure>))) ClosureTaskFunction<Closure>(closure);
-        new (&(tasks[right.load()])) Task(func,thread.task,oldStackPtr,size);
+        new (&tasks[right.load()]) Task(func,thread.task,context,oldStackPtr,size);
         right++;
 
 	/* also move left pointer */
@@ -178,7 +181,7 @@ namespace embree
       : threadIndex(threadIndex), task(nullptr), scheduler(scheduler) {}
 
       __forceinline size_t threadCount() {
-        return scheduler->threadCounter;
+          return scheduler->threadCounter;
       }
 
       size_t threadIndex;              //!< ID of this thread
@@ -244,10 +247,7 @@ namespace embree
     void wait_for_threads(size_t threadCount);
 
     /*! thread loop for all worker threads */
-    // -- GODOT start --
-    // std::exception_ptr thread_loop(size_t threadIndex);
     void thread_loop(size_t threadIndex);
-    // -- GODOT end --
 
     /*! steals a task from a different thread */
     bool steal_from_other_threads(Thread& thread);
@@ -257,7 +257,7 @@ namespace embree
 
     /* spawn a new task at the top of the threads task stack */
     template<typename Closure>
-      void spawn_root(const Closure& closure, size_t size = 1, bool useThreadPool = true)
+      void spawn_root(const Closure& closure, TaskGroupContext* context, size_t size = 1, bool useThreadPool = true)
     {
       if (useThreadPool) startThreads();
 
@@ -267,7 +267,7 @@ namespace embree
       assert(threadLocal[threadIndex].load() == nullptr);
       threadLocal[threadIndex] = &thread;
       Thread* oldThread = swapThread(&thread);
-      thread.tasks.push_right(thread,size,closure);
+      thread.tasks.push_right(thread,size,closure,context);
       {
         Lock<MutexSys> lock(mutex);
 	anyTasksRunning++;
@@ -286,51 +286,52 @@ namespace embree
 
       /* remember exception to throw */
       std::exception_ptr except = nullptr;
-      if (cancellingException != nullptr) except = cancellingException;
+      if (context->cancellingException != nullptr) except = context->cancellingException;
 
       /* wait for all threads to terminate */
       threadCounter--;
       while (threadCounter > 0) yield();
-      cancellingException = nullptr;
+      context->cancellingException = nullptr;
 
       /* re-throw proper exception */
-      if (except != nullptr)
+      if (except != nullptr) {
         std::rethrow_exception(except);
+      }
     }
 
     /* spawn a new task at the top of the threads task stack */
     template<typename Closure>
-    static __forceinline void spawn(size_t size, const Closure& closure)
+    static __forceinline void spawn(size_t size, const Closure& closure, TaskGroupContext* context)
     {
       Thread* thread = TaskScheduler::thread();
-      if (likely(thread != nullptr)) thread->tasks.push_right(*thread,size,closure);
-      else                           instance()->spawn_root(closure,size);
+      if (likely(thread != nullptr)) thread->tasks.push_right(*thread,size,closure,context);
+      else                           instance()->spawn_root(closure,context,size);
     }
 
     /* spawn a new task at the top of the threads task stack */
     template<typename Closure>
-    static __forceinline void spawn(const Closure& closure) {
-      spawn(1,closure);
+    static __forceinline void spawn(const Closure& closure, TaskGroupContext* taskGroupContext) {
+      spawn(1,closure,taskGroupContext);
     }
 
     /* spawn a new task set  */
     template<typename Index, typename Closure>
-    static void spawn(const Index begin, const Index end, const Index blockSize, const Closure& closure)
+    static void spawn(const Index begin, const Index end, const Index blockSize, const Closure& closure, TaskGroupContext* context)
     {
       spawn(end-begin, [=]()
-        {
-	  if (end-begin <= blockSize) {
-	    return closure(range<Index>(begin,end));
-	  }
-	  const Index center = (begin+end)/2;
-	  spawn(begin,center,blockSize,closure);
-	  spawn(center,end  ,blockSize,closure);
-	  wait();
-	});
+      {
+        if (end-begin <= blockSize) {
+          return closure(range<Index>(begin,end));
+        }
+        const Index center = (begin+end)/2;
+        spawn(begin,center,blockSize,closure,context);
+        spawn(center,end  ,blockSize,closure,context);
+        wait();
+      },context);
     }
 
     /* work on spawned subtasks and wait until all have finished */
-    dll_export static bool wait();
+    dll_export static void wait();
 
     /* returns the ID of the current thread */
     dll_export static size_t threadID();
@@ -366,7 +367,6 @@ namespace embree
     std::atomic<size_t> threadCounter;
     std::atomic<size_t> anyTasksRunning;
     std::atomic<bool> hasRootTask;
-    std::exception_ptr cancellingException;
     MutexSys mutex;
     ConditionSys condition;
 

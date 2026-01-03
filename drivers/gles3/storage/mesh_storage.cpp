@@ -31,7 +31,8 @@
 #ifdef GLES3_ENABLED
 
 #include "mesh_storage.h"
-#include "material_storage.h"
+#include "config.h"
+#include "texture_storage.h"
 #include "utilities.h"
 
 using namespace GLES3;
@@ -200,14 +201,12 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 #else
 
 	if (surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION)) {
-		RS::_fix_surface_compatibility(new_surface);
+		RS::get_singleton()->fix_surface_compatibility(new_surface);
 		surface_version = new_surface.format & (uint64_t(RS::ARRAY_FLAG_FORMAT_VERSION_MASK) << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-		ERR_FAIL_COND_MSG(surface_version != uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION),
-				"Surface version provided (" +
-						itos((surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) +
-						") does not match current version (" +
-						itos((uint64_t(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION) >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK) +
-						")");
+		ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+				vformat("Surface version provided (%d) does not match current version (%d).",
+						(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
+						(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
 	}
 #endif
 
@@ -219,8 +218,23 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	if (new_surface.vertex_data.size()) {
 		glGenBuffers(1, &s->vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
-		s->vertex_buffer_size = new_surface.vertex_data.size();
+		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
+		// from a compressed array in the shader. To do so, we allow the normal to read 4 components out of the buffer
+		// But only give it 2 components per normal. So essentially, each vertex reads the next normal in normal.zw.
+		// This allows us to avoid adding a shader permutation, and avoid passing dummy tangents. Since the stride is kept small
+		// this should still be a net win for bandwidth.
+		// If we do this, then the last normal will read past the end of the array. So we need to pad the array with dummy data.
+		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
+			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
+			Vector<uint8_t> new_vertex_data;
+			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_vertex_data.size(), new_vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
+			s->vertex_buffer_size = new_vertex_data.size();
+		} else {
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_surface.vertex_data.size(), new_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
+			s->vertex_buffer_size = new_surface.vertex_data.size();
+		}
 	}
 
 	if (new_surface.attribute_data.size()) {
@@ -272,8 +286,72 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	ERR_FAIL_COND_MSG(!new_surface.index_count && !new_surface.vertex_count, "Meshes must contain a vertex array, an index array, or both");
 
+	if (GLES3::Config::get_singleton()->generate_wireframes && s->primitive == RS::PRIMITIVE_TRIANGLES) {
+		// Generate wireframes. This is mostly used by the editor.
+		s->wireframe = memnew(Mesh::Surface::Wireframe);
+		Vector<uint32_t> wf_indices;
+		uint32_t &wf_index_count = s->wireframe->index_count;
+		uint32_t *wr = nullptr;
+
+		if (new_surface.format & RS::ARRAY_FORMAT_INDEX) {
+			wf_index_count = s->index_count * 2;
+			wf_indices.resize(wf_index_count);
+
+			Vector<uint8_t> ir = new_surface.index_data;
+			wr = wf_indices.ptrw();
+
+			if (new_surface.vertex_count <= 65536) {
+				// Read 16 bit indices.
+				const uint16_t *src_idx = (const uint16_t *)ir.ptr();
+				for (uint32_t i = 0; i + 5 < wf_index_count; i += 6) {
+					// We use GL_LINES instead of GL_TRIANGLES for drawing these primitives later,
+					// so we need double the indices for each triangle.
+					wr[i + 0] = src_idx[i / 2];
+					wr[i + 1] = src_idx[i / 2 + 1];
+					wr[i + 2] = src_idx[i / 2 + 1];
+					wr[i + 3] = src_idx[i / 2 + 2];
+					wr[i + 4] = src_idx[i / 2 + 2];
+					wr[i + 5] = src_idx[i / 2];
+				}
+
+			} else {
+				// Read 32 bit indices.
+				const uint32_t *src_idx = (const uint32_t *)ir.ptr();
+				for (uint32_t i = 0; i + 5 < wf_index_count; i += 6) {
+					wr[i + 0] = src_idx[i / 2];
+					wr[i + 1] = src_idx[i / 2 + 1];
+					wr[i + 2] = src_idx[i / 2 + 1];
+					wr[i + 3] = src_idx[i / 2 + 2];
+					wr[i + 4] = src_idx[i / 2 + 2];
+					wr[i + 5] = src_idx[i / 2];
+				}
+			}
+		} else {
+			// Not using indices.
+			wf_index_count = s->vertex_count * 2;
+			wf_indices.resize(wf_index_count);
+			wr = wf_indices.ptrw();
+
+			for (uint32_t i = 0; i + 5 < wf_index_count; i += 6) {
+				wr[i + 0] = i / 2;
+				wr[i + 1] = i / 2 + 1;
+				wr[i + 2] = i / 2 + 1;
+				wr[i + 3] = i / 2 + 2;
+				wr[i + 4] = i / 2 + 2;
+				wr[i + 5] = i / 2;
+			}
+		}
+
+		s->wireframe->index_buffer_size = wf_index_count * sizeof(uint32_t);
+		glGenBuffers(1, &s->wireframe->index_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->wireframe->index_buffer);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->wireframe->index_buffer, s->wireframe->index_buffer_size, wr, GL_STATIC_DRAW, "Mesh wireframe index buffer");
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind
+	}
+
 	s->aabb = new_surface.aabb;
 	s->bone_aabbs = new_surface.bone_aabbs; //only really useful for returning them.
+	s->mesh_to_skeleton_xform = p_surface.mesh_to_skeleton_xform;
 
 	s->uv_scale = new_surface.uv_scale;
 
@@ -369,6 +447,72 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	mesh->material_cache.clear();
 }
 
+void MeshStorage::_mesh_surface_clear(Mesh *mesh, int p_surface) {
+	Mesh::Surface &s = *mesh->surfaces[p_surface];
+
+	if (s.vertex_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(s.vertex_buffer);
+		s.vertex_buffer = 0;
+	}
+
+	if (s.version_count != 0) {
+		for (uint32_t j = 0; j < s.version_count; j++) {
+			glDeleteVertexArrays(1, &s.versions[j].vertex_array);
+			s.versions[j].vertex_array = 0;
+		}
+	}
+
+	if (s.attribute_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(s.attribute_buffer);
+		s.attribute_buffer = 0;
+	}
+
+	if (s.skin_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(s.skin_buffer);
+		s.skin_buffer = 0;
+	}
+
+	if (s.index_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(s.index_buffer);
+		s.index_buffer = 0;
+	}
+
+	if (s.versions) {
+		memfree(s.versions); // reallocs, so free with memfree.
+	}
+
+	if (s.wireframe) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(s.wireframe->index_buffer);
+		memdelete(s.wireframe);
+	}
+
+	if (s.lod_count) {
+		for (uint32_t j = 0; j < s.lod_count; j++) {
+			if (s.lods[j].index_buffer != 0) {
+				GLES3::Utilities::get_singleton()->buffer_free_data(s.lods[j].index_buffer);
+				s.lods[j].index_buffer = 0;
+			}
+		}
+		memdelete_arr(s.lods);
+	}
+
+	if (mesh->blend_shape_count) {
+		for (uint32_t j = 0; j < mesh->blend_shape_count; j++) {
+			if (s.blend_shapes[j].vertex_buffer != 0) {
+				GLES3::Utilities::get_singleton()->buffer_free_data(s.blend_shapes[j].vertex_buffer);
+				s.blend_shapes[j].vertex_buffer = 0;
+			}
+			if (s.blend_shapes[j].vertex_array != 0) {
+				glDeleteVertexArrays(1, &s.blend_shapes[j].vertex_array);
+				s.blend_shapes[j].vertex_array = 0;
+			}
+		}
+		memdelete_arr(s.blend_shapes);
+	}
+
+	memdelete(mesh->surfaces[p_surface]);
+}
+
 int MeshStorage::mesh_get_blend_shape_count(RID p_mesh) const {
 	const Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL_V(mesh, -1);
@@ -390,10 +534,10 @@ RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 }
 
 void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->vertex_buffer_size);
@@ -405,10 +549,10 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 }
 
 void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->attribute_buffer_size);
@@ -420,16 +564,31 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 }
 
 void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.size() == 0);
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->skin_buffer_size);
 	const uint8_t *r = p_data.ptr();
 
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->skin_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->index_buffer_size);
+	const uint8_t *r = p_data.ptr();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->index_buffer);
 	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -463,6 +622,11 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	sd.format = s.format;
 	if (s.vertex_buffer != 0) {
 		sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+
+		// When using an uncompressed buffer with normals, but without tangents, we have to trim the padding.
+		if (!(s.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (s.format & RS::ARRAY_FORMAT_NORMAL) && !(s.format & RS::ARRAY_FORMAT_TANGENT)) {
+			sd.vertex_data.resize(sd.vertex_data.size() - sizeof(uint16_t) * 2);
+		}
 	}
 
 	if (s.attribute_buffer != 0) {
@@ -490,6 +654,7 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 	}
 
 	sd.bone_aabbs = s.bone_aabbs;
+	sd.mesh_to_skeleton_xform = s.mesh_to_skeleton_xform;
 
 	if (mesh->blend_shape_count) {
 		sd.blend_shape_data = Vector<uint8_t>();
@@ -543,15 +708,16 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		AABB laabb;
-		if ((mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->bone_aabbs.size()) {
-			int bs = mesh->surfaces[i]->bone_aabbs.size();
-			const AABB *skbones = mesh->surfaces[i]->bone_aabbs.ptr();
+		const Mesh::Surface &surface = *mesh->surfaces[i];
+		if ((surface.format & RS::ARRAY_FORMAT_BONES) && surface.bone_aabbs.size()) {
+			int bs = surface.bone_aabbs.size();
+			const AABB *skbones = surface.bone_aabbs.ptr();
 
 			int sbs = skeleton->size;
 			ERR_CONTINUE(bs > sbs);
 			const float *baseptr = skeleton->data.ptr();
 
-			bool first = true;
+			bool found_bone_aabb = false;
 
 			if (skeleton->use_2d) {
 				for (int j = 0; j < bs; j++) {
@@ -571,11 +737,13 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					mtx.basis.rows[1][1] = dataptr[5];
 					mtx.origin.y = dataptr[7];
 
-					AABB baabb = mtx.xform(skbones[j]);
+					// Transform bounds to skeleton's space before applying animation data.
+					AABB baabb = surface.mesh_to_skeleton_xform.xform(skbones[j]);
+					baabb = mtx.xform(baabb);
 
-					if (first) {
+					if (!found_bone_aabb) {
 						laabb = baabb;
-						first = false;
+						found_bone_aabb = true;
 					} else {
 						laabb.merge_with(baabb);
 					}
@@ -603,21 +771,29 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 					mtx.basis.rows[2][2] = dataptr[10];
 					mtx.origin.z = dataptr[11];
 
-					AABB baabb = mtx.xform(skbones[j]);
-					if (first) {
+					// Transform bounds to skeleton's space before applying animation data.
+					AABB baabb = surface.mesh_to_skeleton_xform.xform(skbones[j]);
+					baabb = mtx.xform(baabb);
+
+					if (!found_bone_aabb) {
 						laabb = baabb;
-						first = false;
+						found_bone_aabb = true;
 					} else {
 						laabb.merge_with(baabb);
 					}
 				}
 			}
 
+			if (found_bone_aabb) {
+				// Transform skeleton bounds back to mesh's space if any animated AABB applied.
+				laabb = surface.mesh_to_skeleton_xform.affine_inverse().xform(laabb);
+			}
+
 			if (laabb.size == Vector3()) {
-				laabb = mesh->surfaces[i]->aabb;
+				laabb = surface.aabb;
 			}
 		} else {
-			laabb = mesh->surfaces[i]->aabb;
+			laabb = surface.aabb;
 		}
 
 		if (i == 0) {
@@ -632,7 +808,22 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 	return aabb;
 }
 
+void MeshStorage::mesh_set_path(RID p_mesh, const String &p_path) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+
+	mesh->path = p_path;
+}
+
+String MeshStorage::mesh_get_path(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL_V(mesh, String());
+
+	return mesh->path;
+}
+
 void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
+	ERR_FAIL_COND_MSG(p_mesh == p_shadow_mesh, "Cannot set a mesh as its own shadow mesh.");
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 
@@ -661,64 +852,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	}
 
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
-		Mesh::Surface &s = *mesh->surfaces[i];
-
-		if (s.vertex_buffer != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(s.vertex_buffer);
-			s.vertex_buffer = 0;
-		}
-
-		if (s.version_count != 0) {
-			for (uint32_t j = 0; j < s.version_count; j++) {
-				glDeleteVertexArrays(1, &s.versions[j].vertex_array);
-				s.versions[j].vertex_array = 0;
-			}
-		}
-
-		if (s.attribute_buffer != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(s.attribute_buffer);
-			s.attribute_buffer = 0;
-		}
-
-		if (s.skin_buffer != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(s.skin_buffer);
-			s.skin_buffer = 0;
-		}
-
-		if (s.index_buffer != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(s.index_buffer);
-			s.index_buffer = 0;
-		}
-
-		if (s.versions) {
-			memfree(s.versions); //reallocs, so free with memfree.
-		}
-
-		if (s.lod_count) {
-			for (uint32_t j = 0; j < s.lod_count; j++) {
-				if (s.lods[j].index_buffer != 0) {
-					GLES3::Utilities::get_singleton()->buffer_free_data(s.lods[j].index_buffer);
-					s.lods[j].index_buffer = 0;
-				}
-			}
-			memdelete_arr(s.lods);
-		}
-
-		if (mesh->blend_shape_count) {
-			for (uint32_t j = 0; j < mesh->blend_shape_count; j++) {
-				if (s.blend_shapes[j].vertex_buffer != 0) {
-					GLES3::Utilities::get_singleton()->buffer_free_data(s.blend_shapes[j].vertex_buffer);
-					s.blend_shapes[j].vertex_buffer = 0;
-				}
-				if (s.blend_shapes[j].vertex_array != 0) {
-					glDeleteVertexArrays(1, &s.blend_shapes[j].vertex_array);
-					s.blend_shapes[j].vertex_array = 0;
-				}
-			}
-			memdelete_arr(s.blend_shapes);
-		}
-
-		memdelete(mesh->surfaces[i]);
+		_mesh_surface_clear(mesh, i);
 	}
 	if (mesh->surfaces) {
 		memfree(mesh->surfaces);
@@ -728,6 +862,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
 	mesh->has_bone_weights = false;
+	mesh->aabb = AABB();
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
@@ -737,7 +872,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	}
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, MeshInstance::Surface *mis) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *mis, int p_current_vertex_buffer, int p_prev_vertex_buffer) {
 	Mesh::Surface::Attrib attribs[RS::ARRAY_MAX];
 
 	int position_stride = 0; // Vertex position only.
@@ -746,14 +881,17 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	int skin_stride = 0;
 
 	for (int i = 0; i < RS::ARRAY_INDEX; i++) {
+		attribs[i].enabled = false;
+		attribs[i].integer = false;
 		if (!(s->format & (1ULL << i))) {
-			attribs[i].enabled = false;
-			attribs[i].integer = false;
 			continue;
 		}
 
-		attribs[i].enabled = true;
-		attribs[i].integer = false;
+		if ((p_input_mask & (1ULL << i))) {
+			// Only enable if it matches input mask.
+			// Iterate over all anyway, so we can calculate stride.
+			attribs[i].enabled = true;
+		}
 
 		switch (i) {
 			case RS::ARRAY_VERTEX: {
@@ -886,7 +1024,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		if (i <= RS::ARRAY_TANGENT) {
 			attribs[i].stride = (i == RS::ARRAY_VERTEX) ? position_stride : normal_tangent_stride;
 			if (mis) {
-				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffer);
+				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffers[p_current_vertex_buffer]);
 			} else {
 				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
 			}
@@ -906,12 +1044,78 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		glEnableVertexAttribArray(i);
 	}
 
+	if (p_uses_motion_vectors) {
+		for (int i = 0; i < RS::ARRAY_TANGENT; i++) {
+			if (mis) {
+				glBindBuffer(GL_ARRAY_BUFFER, mis->vertex_buffers[mis->prev_vertex_buffer]);
+			} else {
+				glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
+			}
+
+			glVertexAttribPointer(i + 16, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
+			glEnableVertexAttribArray(i + 16);
+		}
+	}
+
 	// Do not bind index here as we want to switch between index buffers for LOD
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	v.input_mask = p_input_mask;
+	v.uses_motion_vectors = p_uses_motion_vectors;
+	v.current_vertex_buffer = p_current_vertex_buffer;
+	v.prev_vertex_buffer = p_prev_vertex_buffer;
+}
+
+void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	// Clear instance data before mesh data.
+	for (MeshInstance *mi : mesh->instances) {
+		_mesh_instance_remove_surface(mi, p_surface);
+	}
+
+	_mesh_surface_clear(mesh, p_surface);
+
+	if ((uint32_t)p_surface < mesh->surface_count - 1) {
+		memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
+	}
+	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count - 1));
+	--mesh->surface_count;
+
+	mesh->material_cache.clear();
+
+	mesh->skeleton_aabb_version = 0;
+
+	if (mesh->has_bone_weights) {
+		mesh->has_bone_weights = false;
+		for (uint32_t i = 0; i < mesh->surface_count; i++) {
+			if (mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES) {
+				mesh->has_bone_weights = true;
+				break;
+			}
+		}
+	}
+
+	if (mesh->surface_count == 0) {
+		mesh->aabb = AABB();
+	} else {
+		mesh->aabb = mesh->surfaces[0]->aabb;
+		for (uint32_t i = 1; i < mesh->surface_count; i++) {
+			mesh->aabb.merge_with(mesh->surfaces[i]->aabb);
+		}
+	}
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
+		shadow_owner->shadow_mesh = RID();
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	}
 }
 
 /* MESH INSTANCE API */
@@ -964,30 +1168,10 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 }
 
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
-	for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-		if (mi->surfaces[i].version_count != 0) {
-			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
-				glDeleteVertexArrays(1, &mi->surfaces[i].versions[j].vertex_array);
-				mi->surfaces[i].versions[j].vertex_array = 0;
-			}
-			memfree(mi->surfaces[i].versions);
-		}
-
-		if (mi->surfaces[i].vertex_buffers[0] != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffers[0]);
-			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffers[1]);
-			mi->surfaces[i].vertex_buffers[0] = 0;
-			mi->surfaces[i].vertex_buffers[1] = 0;
-		}
-
-		if (mi->surfaces[i].vertex_buffer != 0) {
-			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffer);
-			mi->surfaces[i].vertex_buffer = 0;
-		}
+	while (mi->surfaces.size()) {
+		_mesh_instance_remove_surface(mi, mi->surfaces.size() - 1);
 	}
-	mi->surfaces.clear();
-	mi->blend_weights.clear();
-	mi->skeleton_version = 0;
+	mi->dirty = false;
 }
 
 void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface) {
@@ -1021,22 +1205,58 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 
 		int buffer_size = s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count;
 
-		// Buffer to be used for rendering. Final output of skeleton and blend shapes.
-		glGenBuffers(1, &s.vertex_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffer, buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
+		// First buffer to be used for rendering. Final output of skeleton and blend shapes.
+		// If motion vectors are enabled, a second buffer will be created on demand, and they'll be swapped every frame.
+		glGenBuffers(1, &s.vertex_buffers[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffers[0]);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[0], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
 		if (mesh->blend_shape_count > 0) {
 			// Ping-Pong buffers for processing blendshapes.
-			glGenBuffers(2, s.vertex_buffers);
+			glGenBuffers(2, s.blend_shape_vertex_buffers);
 			for (uint32_t i = 0; i < 2; i++) {
-				glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffers[i]);
-				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[i], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
+				glBindBuffer(GL_ARRAY_BUFFER, s.blend_shape_vertex_buffers[i]);
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.blend_shape_vertex_buffers[i], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
 
 	mi->surfaces.push_back(s);
+	mi->dirty = true;
+}
+
+void MeshStorage::_mesh_instance_remove_surface(MeshInstance *mi, int p_surface) {
+	MeshInstance::Surface &surface = mi->surfaces[p_surface];
+
+	if (surface.version_count != 0) {
+		for (uint32_t j = 0; j < surface.version_count; j++) {
+			glDeleteVertexArrays(1, &surface.versions[j].vertex_array);
+			surface.versions[j].vertex_array = 0;
+		}
+		memfree(surface.versions);
+	}
+
+	if (surface.blend_shape_vertex_buffers[0] != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(surface.blend_shape_vertex_buffers[0]);
+		GLES3::Utilities::get_singleton()->buffer_free_data(surface.blend_shape_vertex_buffers[1]);
+		surface.blend_shape_vertex_buffers[0] = 0;
+		surface.blend_shape_vertex_buffers[1] = 0;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (surface.vertex_buffers[i] != 0) {
+			GLES3::Utilities::get_singleton()->buffer_free_data(surface.vertex_buffers[i]);
+			surface.vertex_buffers[i] = 0;
+		}
+	}
+
+	mi->surfaces.remove_at(p_surface);
+
+	if (mi->surfaces.is_empty()) {
+		mi->blend_weights.clear();
+		mi->weights_dirty = false;
+		mi->skeleton_version = 0;
+	}
 	mi->dirty = true;
 }
 
@@ -1067,7 +1287,7 @@ void MeshStorage::mesh_instance_set_canvas_item_transform(RID p_mesh_instance, c
 }
 
 void MeshStorage::_blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uint32_t p_surface) {
-	glBindBuffer(GL_ARRAY_BUFFER, p_mi->surfaces[p_surface].vertex_buffers[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, p_mi->surfaces[p_surface].blend_shape_vertex_buffers[0]);
 
 	if ((p_mi->surfaces[p_surface].format_cache & (1ULL << RS::ARRAY_VERTEX))) {
 		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
@@ -1090,8 +1310,6 @@ void MeshStorage::_blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uin
 }
 
 void MeshStorage::_compute_skeleton(MeshInstance *p_mi, Skeleton *p_sk, uint32_t p_surface) {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	// Add in the bones and weights.
 	glBindBuffer(GL_ARRAY_BUFFER, p_mi->mesh->surfaces[p_surface]->skin_buffer);
 
@@ -1111,7 +1329,7 @@ void MeshStorage::_compute_skeleton(MeshInstance *p_mi, Skeleton *p_sk, uint32_t
 		glVertexAttribPointer(RS::ARRAY_WEIGHTS, 4, GL_UNSIGNED_SHORT, GL_TRUE, skin_stride, CAST_INT_TO_UCHAR_PTR(4 * sizeof(uint16_t)));
 	}
 
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, p_mi->surfaces[p_surface].vertex_buffer);
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, p_mi->surfaces[p_surface].vertex_buffers[p_mi->surfaces[p_surface].current_vertex_buffer]);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, p_sk->transforms_texture);
 
@@ -1133,23 +1351,53 @@ void MeshStorage::update_mesh_instances() {
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	// Process skeletons and blend shapes using transform feedback
 	while (dirty_mesh_instance_arrays.first()) {
 		MeshInstance *mi = dirty_mesh_instance_arrays.first()->self();
+
+		bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+		int frame = RSG::rasterizer->get_frame_number();
+		if (uses_motion_vectors) {
+			for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
+				mi->surfaces[i].prev_vertex_buffer = mi->surfaces[i].current_vertex_buffer;
+
+				if (frame - mi->surfaces[i].last_change == 1) {
+					// Previous buffer's data can only be one frame old to be able to use motion vectors.
+					uint32_t new_buffer_index = mi->surfaces[i].current_vertex_buffer ^ 1;
+
+					if (mi->surfaces[i].vertex_buffers[new_buffer_index] == 0) {
+						// Create the new vertex buffer on demand where the result for the current frame will be stored.
+						GLuint new_vertex_buffer = 0;
+						GLES3::Mesh::Surface *surface = mi->mesh->surfaces[i];
+						int buffer_size = mi->surfaces[i].vertex_stride_cache * surface->vertex_count;
+						glGenBuffers(1, &new_vertex_buffer);
+						glBindBuffer(GL_ARRAY_BUFFER, new_vertex_buffer);
+						GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_vertex_buffer, buffer_size, nullptr, (surface->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Secondary mesh vertex buffer");
+						glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+						mi->surfaces[i].vertex_buffers[new_buffer_index] = new_vertex_buffer;
+					}
+
+					mi->surfaces[i].current_vertex_buffer = new_buffer_index;
+				}
+
+				mi->surfaces[i].last_change = frame;
+			}
+		}
 
 		Skeleton *sk = skeleton_owner.get_or_null(mi->skeleton);
 
 		// Precompute base weight if using blend shapes.
 		float base_weight = 1.0;
-		if (mi->mesh->blend_shape_count && mi->mesh->blend_shape_mode == RS::BLEND_SHAPE_MODE_NORMALIZED) {
+		if (mi->surfaces.size() && mi->mesh->blend_shape_count && mi->mesh->blend_shape_mode == RS::BLEND_SHAPE_MODE_NORMALIZED) {
 			for (uint32_t i = 0; i < mi->mesh->blend_shape_count; i++) {
 				base_weight -= mi->blend_weights[i];
 			}
 		}
 
 		for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-			if (mi->surfaces[i].vertex_buffer == 0) {
+			if (mi->surfaces[i].vertex_buffers[mi->surfaces[i].current_vertex_buffer] == 0) {
 				continue;
 			}
 
@@ -1182,12 +1430,11 @@ void MeshStorage::update_mesh_instances() {
 
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				GLuint vertex_array_gl = 0;
-				uint64_t mask = ((1 << 10) - 1) << 3; // Mask from ARRAY_FORMAT_COLOR to ARRAY_FORMAT_INDEX.
-				mask = ~mask;
-				uint64_t format = mi->surfaces[i].format_cache & mask; // Format should only have vertex, normal, tangent (as necessary) + compressions.
-				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, vertex_array_gl);
+				uint64_t mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_VERTEX;
+				uint64_t format = mi->mesh->surfaces[i]->format & mask; // Format should only have vertex, normal, tangent (as necessary).
+				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, false, vertex_array_gl);
 				glBindVertexArray(vertex_array_gl);
-				glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].vertex_buffers[0]);
+				glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].blend_shape_vertex_buffers[0]);
 				glBeginTransformFeedback(GL_POINTS);
 				glDrawArrays(GL_POINTS, 0, mi->mesh->surfaces[i]->vertex_count);
 				glEndTransformFeedback();
@@ -1209,15 +1456,17 @@ void MeshStorage::update_mesh_instances() {
 					skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::BLEND_WEIGHT, weight, skeleton_shader.shader_version, variant, specialization);
 					skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::BLEND_SHAPE_COUNT, float(mi->mesh->blend_shape_count), skeleton_shader.shader_version, variant, specialization);
 
+					// Ensure the skeleton shader outputs to the correct (current) VBO.
+
 					glBindVertexArray(mi->mesh->surfaces[i]->blend_shapes[bs].vertex_array);
 					_blend_shape_bind_mesh_instance_buffer(mi, i);
-					glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].vertex_buffers[1]);
+					glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].blend_shape_vertex_buffers[1]);
 
 					glBeginTransformFeedback(GL_POINTS);
 					glDrawArrays(GL_POINTS, 0, mi->mesh->surfaces[i]->vertex_count);
 					glEndTransformFeedback();
 
-					SWAP(mi->surfaces[i].vertex_buffers[0], mi->surfaces[i].vertex_buffers[1]);
+					SWAP(mi->surfaces[i].blend_shape_vertex_buffers[0], mi->surfaces[i].blend_shape_vertex_buffers[1]);
 				}
 				uint32_t bs = mi->mesh->blend_shape_count - 1;
 
@@ -1253,7 +1502,7 @@ void MeshStorage::update_mesh_instances() {
 					can_use_skeleton = false;
 				} else {
 					// Do last blendshape by itself and prepare vertex data for use by the renderer.
-					glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].vertex_buffer);
+					glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, mi->surfaces[i].vertex_buffers[mi->surfaces[i].current_vertex_buffer]);
 
 					glBeginTransformFeedback(GL_POINTS);
 					glDrawArrays(GL_POINTS, 0, mi->mesh->surfaces[i]->vertex_count);
@@ -1297,10 +1546,9 @@ void MeshStorage::update_mesh_instances() {
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_OFFSET, inverse_transform[2], skeleton_shader.shader_version, variant, specialization);
 
 				GLuint vertex_array_gl = 0;
-				uint64_t mask = ((1 << 10) - 1) << 3; // Mask from ARRAY_FORMAT_COLOR to ARRAY_FORMAT_INDEX.
-				mask = ~mask;
-				uint64_t format = mi->surfaces[i].format_cache & mask; // Format should only have vertex, normal, tangent (as necessary) + compressions.
-				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, vertex_array_gl);
+				uint64_t mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_VERTEX;
+				uint64_t format = mi->mesh->surfaces[i]->format & mask; // Format should only have vertex, normal, tangent (as necessary).
+				mesh_surface_get_vertex_arrays_and_format(mi->mesh->surfaces[i], format, false, vertex_array_gl);
 				glBindVertexArray(vertex_array_gl);
 				_compute_skeleton(mi, sk, i);
 			}
@@ -1318,15 +1566,17 @@ void MeshStorage::update_mesh_instances() {
 
 /* MULTIMESH API */
 
-RID MeshStorage::multimesh_allocate() {
+RID MeshStorage::_multimesh_allocate() {
 	return multimesh_owner.allocate_rid();
 }
 
-void MeshStorage::multimesh_initialize(RID p_rid) {
+void MeshStorage::_multimesh_initialize(RID p_rid) {
 	multimesh_owner.initialize_rid(p_rid, MultiMesh());
 }
 
-void MeshStorage::multimesh_free(RID p_rid) {
+void MeshStorage::_multimesh_free(RID p_rid) {
+	// Remove from interpolator.
+	_interpolation_data.notify_free_multimesh(p_rid);
 	_update_dirty_multimeshes();
 	multimesh_allocate_data(p_rid, 0, RS::MULTIMESH_TRANSFORM_2D);
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_rid);
@@ -1334,7 +1584,7 @@ void MeshStorage::multimesh_free(RID p_rid) {
 	multimesh_owner.free(p_rid);
 }
 
-void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 
@@ -1342,9 +1592,11 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 		return;
 	}
 
-	if (multimesh->buffer) {
-		GLES3::Utilities::get_singleton()->buffer_free_data(multimesh->buffer);
-		multimesh->buffer = 0;
+	for (int i = 0; i < 2; i++) {
+		if (multimesh->buffer[i] != 0) {
+			GLES3::Utilities::get_singleton()->buffer_free_data(multimesh->buffer[i]);
+			multimesh->buffer[i] = 0;
+		}
 	}
 
 	if (multimesh->data_cache_dirty_regions) {
@@ -1372,22 +1624,22 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 	multimesh->visible_instances = MIN(multimesh->visible_instances, multimesh->instances);
 
 	if (multimesh->instances) {
-		glGenBuffers(1, &multimesh->buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW, "MultiMesh buffer");
+		glGenBuffers(1, &multimesh->buffer[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer[0]);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, multimesh->buffer[0], multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW, "MultiMesh buffer");
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH);
 }
 
-int MeshStorage::multimesh_get_instance_count(RID p_multimesh) const {
+int MeshStorage::_multimesh_get_instance_count(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, 0);
 	return multimesh->instances;
 }
 
-void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
+void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	if (multimesh->mesh == p_mesh || p_mesh.is_null()) {
@@ -1405,7 +1657,7 @@ void MeshStorage::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	} else if (multimesh->instances) {
 		// Need to re-create AABB. Unfortunately, calling this has a penalty.
 		if (multimesh->buffer_set) {
-			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer[multimesh->current_buffer], multimesh->instances * multimesh->stride_cache * sizeof(float));
 			const uint8_t *r = buffer.ptr();
 			const float *data = (const float *)r;
 			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
@@ -1429,7 +1681,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 		float *w = multimesh->data_cache.ptrw();
 
 		if (multimesh->buffer_set) {
-			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+			Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer[multimesh->current_buffer], multimesh->instances * multimesh->stride_cache * sizeof(float));
 
 			{
 				const uint8_t *r = buffer.ptr();
@@ -1439,7 +1691,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 			memset(w, 0, (size_t)multimesh->instances * multimesh->stride_cache * sizeof(float));
 		}
 	}
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
 	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 		multimesh->data_cache_dirty_regions[i] = false;
@@ -1450,7 +1702,7 @@ void MeshStorage::_multimesh_make_local(MultiMesh *multimesh) const {
 void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
 	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
 #ifdef DEBUG_ENABLED
-	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 	ERR_FAIL_UNSIGNED_INDEX(region_index, data_cache_dirty_region_count); //bug
 #endif
 	if (!multimesh->data_cache_dirty_regions[region_index]) {
@@ -1471,7 +1723,7 @@ void MeshStorage::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool 
 
 void MeshStorage::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
 	if (p_data) {
-		uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+		uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
 
 		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
 			if (!multimesh->data_cache_dirty_regions[i]) {
@@ -1494,6 +1746,9 @@ void MeshStorage::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, b
 
 void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances) {
 	ERR_FAIL_COND(multimesh->mesh.is_null());
+	if (multimesh->custom_aabb != AABB()) {
+		return;
+	}
 	AABB aabb;
 	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
 	for (int i = 0; i < p_instances; i++) {
@@ -1534,7 +1789,7 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 	multimesh->aabb = aabb;
 }
 
-void MeshStorage::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
+void MeshStorage::_multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -1564,7 +1819,7 @@ void MeshStorage::multimesh_instance_set_transform(RID p_multimesh, int p_index,
 	_multimesh_mark_dirty(multimesh, p_index, true);
 }
 
-void MeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+void MeshStorage::_multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -1590,7 +1845,7 @@ void MeshStorage::multimesh_instance_set_transform_2d(RID p_multimesh, int p_ind
 	_multimesh_mark_dirty(multimesh, p_index, true);
 }
 
-void MeshStorage::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
+void MeshStorage::_multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -1610,7 +1865,7 @@ void MeshStorage::multimesh_instance_set_color(RID p_multimesh, int p_index, con
 	_multimesh_mark_dirty(multimesh, p_index, false);
 }
 
-void MeshStorage::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
+void MeshStorage::_multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -1629,23 +1884,39 @@ void MeshStorage::multimesh_instance_set_custom_data(RID p_multimesh, int p_inde
 	_multimesh_mark_dirty(multimesh, p_index, false);
 }
 
-RID MeshStorage::multimesh_get_mesh(RID p_multimesh) const {
+RID MeshStorage::_multimesh_get_mesh(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, RID());
 
 	return multimesh->mesh;
 }
 
-AABB MeshStorage::multimesh_get_aabb(RID p_multimesh) const {
+void MeshStorage::_multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	multimesh->custom_aabb = p_aabb;
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+}
+
+AABB MeshStorage::_multimesh_get_custom_aabb(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, AABB());
+	return multimesh->custom_aabb;
+}
+
+AABB MeshStorage::_multimesh_get_aabb(RID p_multimesh) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, AABB());
+	if (multimesh->custom_aabb != AABB()) {
+		return multimesh->custom_aabb;
+	}
 	if (multimesh->aabb_dirty) {
-		const_cast<MeshStorage *>(this)->_update_dirty_multimeshes();
+		_update_dirty_multimeshes();
 	}
 	return multimesh->aabb;
 }
 
-Transform3D MeshStorage::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+Transform3D MeshStorage::_multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Transform3D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform3D());
@@ -1676,7 +1947,7 @@ Transform3D MeshStorage::multimesh_instance_get_transform(RID p_multimesh, int p
 	return t;
 }
 
-Transform2D MeshStorage::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
+Transform2D MeshStorage::_multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Transform2D());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform2D());
@@ -1701,7 +1972,7 @@ Transform2D MeshStorage::multimesh_instance_get_transform_2d(RID p_multimesh, in
 	return t;
 }
 
-Color MeshStorage::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
+Color MeshStorage::_multimesh_instance_get_color(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
@@ -1725,7 +1996,7 @@ Color MeshStorage::multimesh_instance_get_color(RID p_multimesh, int p_index) co
 	return c;
 }
 
-Color MeshStorage::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+Color MeshStorage::_multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
@@ -1749,9 +2020,13 @@ Color MeshStorage::multimesh_instance_get_custom_data(RID p_multimesh, int p_ind
 	return c;
 }
 
-void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
+void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
+
+	// Assign data to previous buffer if motion vectors are used, that data will be made current in _update_dirty_multimeshes().
+	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+	int buffer_index = uses_motion_vectors ? multimesh->prev_buffer : multimesh->current_buffer;
 
 	if (multimesh->uses_colors || multimesh->uses_custom_data) {
 		// Color and custom need to be packed so copy buffer to data_cache and pack.
@@ -1798,15 +2073,20 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 
 		multimesh->data_cache.resize(multimesh->instances * (int)multimesh->stride_cache);
 		const float *r = multimesh->data_cache.ptr();
-		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer[buffer_index]);
 		glBufferData(GL_ARRAY_BUFFER, multimesh->data_cache.size() * sizeof(float), r, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	} else {
+		// If we have a data cache, just update it.
+		if (multimesh->data_cache.size()) {
+			multimesh->data_cache = p_buffer;
+		}
+
 		// Only Transform is being used, so we can upload directly.
 		ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
 		const float *r = p_buffer.ptr();
-		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer[buffer_index]);
 		glBufferData(GL_ARRAY_BUFFER, p_buffer.size() * sizeof(float), r, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -1814,39 +2094,45 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 	multimesh->buffer_set = true;
 
 	if (multimesh->data_cache.size() || multimesh->uses_colors || multimesh->uses_custom_data) {
-		//if we have a data cache, just update it
-		multimesh->data_cache = multimesh->data_cache;
-		{
-			//clear dirty since nothing will be dirty anymore
-			uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-			for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
-				multimesh->data_cache_dirty_regions[i] = false;
-			}
-			multimesh->data_cache_used_dirty_regions = 0;
+		// Clear dirty since nothing will be dirty anymore.
+		uint32_t data_cache_dirty_region_count = Math::division_round_up(multimesh->instances, MULTIMESH_DIRTY_REGION_SIZE);
+		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+			multimesh->data_cache_dirty_regions[i] = false;
 		}
+		multimesh->data_cache_used_dirty_regions = 0;
 
 		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
 	} else if (multimesh->mesh.is_valid()) {
 		//if we have a mesh set, we need to re-generate the AABB from the new data
 		const float *data = p_buffer.ptr();
 
-		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
-		multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		if (multimesh->custom_aabb == AABB()) {
+			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
+			multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		}
 	}
 }
 
-Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
+RID MeshStorage::_multimesh_get_command_buffer_rd_rid(RID p_multimesh) const {
+	ERR_FAIL_V_MSG(RID(), "GLES3 does not implement indirect multimeshes.");
+}
+
+RID MeshStorage::_multimesh_get_buffer_rd_rid(RID p_multimesh) const {
+	ERR_FAIL_V_MSG(RID(), "GLES3 does not contain a Rid for the multimesh buffer.");
+}
+
+Vector<float> MeshStorage::_multimesh_get_buffer(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, Vector<float>());
 	Vector<float> ret;
-	if (multimesh->buffer == 0 || multimesh->instances == 0) {
+	if (multimesh->buffer[multimesh->current_buffer] == 0 || multimesh->instances == 0) {
 		return Vector<float>();
 	} else if (multimesh->data_cache.size()) {
 		ret = multimesh->data_cache;
 	} else {
 		// Buffer not cached, so fetch from GPU memory. This can be a stalling operation, avoid whenever possible.
 
-		Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float));
+		Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, multimesh->buffer[multimesh->current_buffer], multimesh->instances * multimesh->stride_cache * sizeof(float));
 		ret.resize(multimesh->instances * multimesh->stride_cache);
 		{
 			float *w = ret.ptrw();
@@ -1907,7 +2193,7 @@ Vector<float> MeshStorage::multimesh_get_buffer(RID p_multimesh) const {
 	}
 }
 
-void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
+void MeshStorage::_multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 	ERR_FAIL_COND(p_visible < -1 || p_visible > multimesh->instances);
@@ -1929,60 +2215,43 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
 }
 
-int MeshStorage::multimesh_get_visible_instances(RID p_multimesh) const {
+int MeshStorage::_multimesh_get_visible_instances(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, 0);
 	return multimesh->visible_instances;
+}
+
+MeshStorage::MultiMeshInterpolator *MeshStorage::_multimesh_get_interpolator(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V_MSG(multimesh, nullptr, "Multimesh not found: " + itos(p_multimesh.get_id()));
+
+	return &multimesh->interpolator;
 }
 
 void MeshStorage::_update_dirty_multimeshes() {
 	while (multimesh_dirty_list) {
 		MultiMesh *multimesh = multimesh_dirty_list;
 
-		if (multimesh->data_cache.size()) { //may have been cleared, so only process if it exists
-			const float *data = multimesh->data_cache.ptr();
+		bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0;
+		if (uses_motion_vectors) {
+			multimesh->prev_buffer = multimesh->current_buffer;
+			uint32_t new_buffer_index = multimesh->current_buffer ^ 1;
 
-			uint32_t visible_instances = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
-
-			if (multimesh->data_cache_used_dirty_regions) {
-				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-				uint32_t visible_region_count = visible_instances == 0 ? 0 : (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
-
-				GLint region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
-
-				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
-					// If there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
-					glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-					glBufferSubData(GL_ARRAY_BUFFER, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data);
-					glBindBuffer(GL_ARRAY_BUFFER, 0);
-				} else {
-					// Not that many regions? update them all
-					// TODO: profile the performance cost on low end
-					glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-					for (uint32_t i = 0; i < visible_region_count; i++) {
-						if (multimesh->data_cache_dirty_regions[i]) {
-							GLint offset = i * region_size;
-							GLint size = multimesh->stride_cache * (uint32_t)multimesh->instances * (uint32_t)sizeof(float);
-							uint32_t region_start_index = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * i;
-							glBufferSubData(GL_ARRAY_BUFFER, offset, MIN(region_size, size - offset), &data[region_start_index]);
-						}
-					}
-					glBindBuffer(GL_ARRAY_BUFFER, 0);
-				}
-
-				for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
-					multimesh->data_cache_dirty_regions[i] = false;
-				}
-
-				multimesh->data_cache_used_dirty_regions = 0;
+			// Generate secondary buffer if it doesn't exist.
+			if (multimesh->buffer[new_buffer_index] == 0 && multimesh->instances) {
+				GLuint new_buffer = 0;
+				glGenBuffers(1, &new_buffer);
+				glBindBuffer(GL_ARRAY_BUFFER, new_buffer);
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_buffer, multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW, "MultiMesh secondary buffer");
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				multimesh->buffer[new_buffer_index] = new_buffer;
 			}
 
-			if (multimesh->aabb_dirty && multimesh->mesh.is_valid()) {
-				_multimesh_re_create_aabb(multimesh, data, visible_instances);
-				multimesh->aabb_dirty = false;
-				multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
-			}
+			multimesh->current_buffer = new_buffer_index;
+			multimesh->last_change = RSG::rasterizer->get_frame_number();
 		}
+
+		_update_dirty_multimesh(multimesh, uses_motion_vectors);
 
 		multimesh_dirty_list = multimesh->dirty_list;
 
@@ -1991,6 +2260,86 @@ void MeshStorage::_update_dirty_multimeshes() {
 	}
 
 	multimesh_dirty_list = nullptr;
+}
+
+void MeshStorage::_update_dirty_multimesh(MultiMesh *p_multimesh, bool p_uses_motion_vectors) {
+	if (p_multimesh->data_cache.size()) { // May have been cleared, so only process if it exists.
+		const float *data = p_multimesh->data_cache.ptr();
+
+		uint32_t visible_instances = p_multimesh->visible_instances >= 0 ? p_multimesh->visible_instances : p_multimesh->instances;
+
+		if (p_multimesh->data_cache_used_dirty_regions) {
+			uint32_t data_cache_dirty_region_count = Math::division_round_up(p_multimesh->instances, (int)MULTIMESH_DIRTY_REGION_SIZE);
+			uint32_t visible_region_count = visible_instances == 0 ? 0 : Math::division_round_up(visible_instances, (uint32_t)MULTIMESH_DIRTY_REGION_SIZE);
+
+			GLint region_size = p_multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
+
+			if (p_multimesh->data_cache_used_dirty_regions > 32 || p_multimesh->data_cache_used_dirty_regions > visible_region_count / 2 || p_uses_motion_vectors) {
+				// If there are too many dirty regions, the dirty regions represent the majority of visible regions, or motion vectors are used:
+				// Just copy all, else transfer cost piles up too much.
+				glBindBuffer(GL_ARRAY_BUFFER, p_multimesh->buffer[p_multimesh->current_buffer]);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, MIN(visible_region_count * region_size, p_multimesh->instances * p_multimesh->stride_cache * sizeof(float)), data);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			} else {
+				// Not that many regions? Update them all.
+				// TODO: profile the performance cost on low end
+				glBindBuffer(GL_ARRAY_BUFFER, p_multimesh->buffer[p_multimesh->current_buffer]);
+				for (uint32_t i = 0; i < visible_region_count; i++) {
+					if (p_multimesh->data_cache_dirty_regions[i]) {
+						GLint offset = i * region_size;
+						GLint size = p_multimesh->stride_cache * (uint32_t)p_multimesh->instances * (uint32_t)sizeof(float);
+						uint32_t region_start_index = p_multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * i;
+						glBufferSubData(GL_ARRAY_BUFFER, offset, MIN(region_size, size - offset), &data[region_start_index]);
+					}
+				}
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+
+			for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+				p_multimesh->data_cache_dirty_regions[i] = false;
+			}
+
+			p_multimesh->data_cache_used_dirty_regions = 0;
+		}
+
+		if (p_multimesh->aabb_dirty && p_multimesh->mesh.is_valid()) {
+			p_multimesh->aabb_dirty = false;
+			if (p_multimesh->custom_aabb == AABB()) {
+				_multimesh_re_create_aabb(p_multimesh, data, visible_instances);
+				p_multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+			}
+		}
+	}
+}
+
+void GLES3::MeshStorage::multimesh_vertex_attrib_setup(GLuint p_instance_buffer, uint32_t p_stride, bool p_uses_format_2d, bool p_has_color_or_custom_data, int p_attrib_base_index) {
+	glBindBuffer(GL_ARRAY_BUFFER, p_instance_buffer);
+
+	glEnableVertexAttribArray(p_attrib_base_index + 0);
+	glVertexAttribPointer(p_attrib_base_index + 0, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(0));
+	glVertexAttribDivisor(p_attrib_base_index + 0, 1);
+	glEnableVertexAttribArray(p_attrib_base_index + 1);
+	glVertexAttribPointer(p_attrib_base_index + 1, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4));
+	glVertexAttribDivisor(p_attrib_base_index + 1, 1);
+	if (!p_uses_format_2d) {
+		glEnableVertexAttribArray(p_attrib_base_index + 2);
+		glVertexAttribPointer(p_attrib_base_index + 2, 4, GL_FLOAT, GL_FALSE, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(sizeof(float) * 8));
+		glVertexAttribDivisor(p_attrib_base_index + 2, 1);
+	}
+
+	if (p_has_color_or_custom_data) {
+		uint32_t color_custom_offset = p_uses_format_2d ? 8 : 12;
+		glEnableVertexAttribArray(p_attrib_base_index + 3);
+		glVertexAttribIPointer(p_attrib_base_index + 3, 4, GL_UNSIGNED_INT, p_stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(color_custom_offset * sizeof(float)));
+		glVertexAttribDivisor(p_attrib_base_index + 3, 1);
+	} else {
+		// Set all default instance color and custom data values to 1.0 or 0.0 using a compressed format.
+		uint16_t zero = Math::make_half_float(0.0f);
+		uint16_t one = Math::make_half_float(1.0f);
+		GLuint default_color = (uint32_t(one) << 16) | one;
+		GLuint default_custom = (uint32_t(zero) << 16) | zero;
+		glVertexAttribI4ui(p_attrib_base_index + 3, default_color, default_color, default_custom, default_custom);
+	}
 }
 
 /* SKELETON API */
@@ -2053,7 +2402,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 		glBindTexture(GL_TEXTURE_2D, 0);
 		GLES3::Utilities::get_singleton()->texture_allocated_data(skeleton->transforms_texture, skeleton->data.size() * sizeof(float), "Skeleton transforms texture");
 
-		memset(skeleton->data.ptrw(), 0, skeleton->data.size() * sizeof(float));
+		memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
 
 		_skeleton_make_dirty(skeleton);
 	}
@@ -2084,7 +2433,7 @@ void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const 
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(skeleton->use_2d);
 
-	float *dataptr = skeleton->data.ptrw() + p_bone * 12;
+	float *dataptr = skeleton->data.ptr() + p_bone * 12;
 
 	dataptr[0] = p_transform.basis.rows[0][0];
 	dataptr[1] = p_transform.basis.rows[0][1];
@@ -2136,7 +2485,7 @@ void MeshStorage::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, con
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
-	float *dataptr = skeleton->data.ptrw() + p_bone * 8;
+	float *dataptr = skeleton->data.ptr() + p_bone * 8;
 
 	dataptr[0] = p_transform.columns[0][0];
 	dataptr[1] = p_transform.columns[1][0];

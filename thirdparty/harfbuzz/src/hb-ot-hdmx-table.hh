@@ -71,6 +71,7 @@ struct DeviceRecord
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  c->check_range (this, sizeDeviceRecord)));
   }
 
@@ -94,7 +95,7 @@ struct hdmx
   bool serialize (hb_serialize_context_t *c,
 		  unsigned version,
 		  Iterator it,
-		  const hb_vector_t<hb_codepoint_pair_t> &new_to_old_gid_list,
+		  hb_array_t<const hb_codepoint_pair_t> new_to_old_gid_list,
 		  unsigned num_glyphs)
   {
     TRACE_SERIALIZE (this);
@@ -152,6 +153,7 @@ struct hdmx
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  !hb_unsigned_mul_overflows (numRecords, sizeDeviceRecord) &&
                   min_size + numRecords * sizeDeviceRecord > numRecords * sizeDeviceRecord &&
 		  sizeDeviceRecord >= DeviceRecord::min_size &&

@@ -1,5 +1,5 @@
 /* trees.c -- output deflated data using Huffman coding
- * Copyright (C) 1995-2021 Jean-loup Gailly
+ * Copyright (C) 1995-2024 Jean-loup Gailly
  * detect_data_type() function provided freely by Cosmin Truta, 2006
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -184,6 +184,7 @@ local void bi_windup(deflate_state *s) {
     } else if (s->bi_valid > 0) {
         put_byte(s, (Byte)s->bi_buf);
     }
+    s->bi_used = ((s->bi_valid - 1) & 7) + 1;
     s->bi_buf = 0;
     s->bi_valid = 0;
 #ifdef ZLIB_DEBUG
@@ -466,6 +467,7 @@ void ZLIB_INTERNAL _tr_init(deflate_state *s) {
 
     s->bi_buf = 0;
     s->bi_valid = 0;
+    s->bi_used = 0;
 #ifdef ZLIB_DEBUG
     s->compressed_len = 0L;
     s->bits_sent = 0L;
@@ -724,7 +726,7 @@ local void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
         if (++count < max_count && curlen == nextlen) {
             continue;
         } else if (count < min_count) {
-            s->bl_tree[curlen].Freq += count;
+            s->bl_tree[curlen].Freq += (ush)count;
         } else if (curlen != 0) {
             if (curlen != prevlen) s->bl_tree[curlen].Freq++;
             s->bl_tree[REP_3_6].Freq++;
@@ -899,14 +901,19 @@ local void compress_block(deflate_state *s, const ct_data *ltree,
                           const ct_data *dtree) {
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */
-    unsigned sx = 0;    /* running index in sym_buf */
+    unsigned sx = 0;    /* running index in symbol buffers */
     unsigned code;      /* the code to send */
     int extra;          /* number of extra bits to send */
 
     if (s->sym_next != 0) do {
+#ifdef LIT_MEM
+        dist = s->d_buf[sx];
+        lc = s->l_buf[sx++];
+#else
         dist = s->sym_buf[sx++] & 0xff;
         dist += (unsigned)(s->sym_buf[sx++] & 0xff) << 8;
         lc = s->sym_buf[sx++];
+#endif
         if (dist == 0) {
             send_code(s, lc, ltree); /* send a literal byte */
             Tracecv(isgraph(lc), (stderr," '%c' ", lc));
@@ -931,8 +938,12 @@ local void compress_block(deflate_state *s, const ct_data *ltree,
             }
         } /* literal or match pair ? */
 
-        /* Check that the overlay between pending_buf and sym_buf is ok: */
+        /* Check for no overlay of pending_buf on needed symbols */
+#ifdef LIT_MEM
+        Assert(s->pending < 2 * (s->lit_bufsize + sx), "pendingBuf overflow");
+#else
         Assert(s->pending < s->lit_bufsize + sx, "pendingBuf overflow");
+#endif
 
     } while (sx < s->sym_next);
 
@@ -1082,9 +1093,14 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, charf *buf,
  * the current block must be flushed.
  */
 int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
+#ifdef LIT_MEM
+    s->d_buf[s->sym_next] = (ush)dist;
+    s->l_buf[s->sym_next++] = (uch)lc;
+#else
     s->sym_buf[s->sym_next++] = (uch)dist;
     s->sym_buf[s->sym_next++] = (uch)(dist >> 8);
     s->sym_buf[s->sym_next++] = (uch)lc;
+#endif
     if (dist == 0) {
         /* lc is the unmatched char */
         s->dyn_ltree[lc].Freq++;

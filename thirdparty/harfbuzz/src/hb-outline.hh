@@ -69,6 +69,7 @@ struct hb_outline_t
 
   HB_INTERNAL void replay (hb_draw_funcs_t *pen, void *pen_data) const;
   HB_INTERNAL float control_area () const;
+  HB_INTERNAL void slant (float slant_xy);
   HB_INTERNAL void embolden (float x_strength, float y_strength,
 			     float x_shift, float y_shift);
 

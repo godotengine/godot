@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STREAM_PEER_GZIP_H
-#define STREAM_PEER_GZIP_H
+#pragma once
 
 #include "core/io/stream_peer.h"
 
@@ -69,8 +68,5 @@ public:
 
 	virtual int get_available_bytes() const override;
 
-	StreamPeerGZIP();
 	~StreamPeerGZIP();
 };
-
-#endif // STREAM_PEER_GZIP_H

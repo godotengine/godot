@@ -28,33 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_DICTIONARY_H
-#define TEST_DICTIONARY_H
+#pragma once
 
-#include "core/variant/dictionary.h"
+#include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
 
 namespace TestDictionary {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-static inline Dictionary build_dictionary() {
-	return Dictionary();
-}
-template <typename... Targs>
-static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fargs) {
-	Dictionary d = build_dictionary(Fargs...);
-	d[key] = item;
-	return d;
-}
-
 TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	Dictionary map;
 	map["Hello"] = 0;
@@ -66,8 +45,7 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 
 	map[StringName("HelloName")] = 6;
 	CHECK(int(map[StringName("HelloName")]) == 6);
-	// Check that StringName key is converted to String.
-	CHECK(int(map.find_key(6).get_type()) == Variant::STRING);
+	CHECK(int(map.find_key(6).get_type()) == Variant::STRING_NAME);
 	map[StringName("HelloName")] = 7;
 	CHECK(int(map[StringName("HelloName")]) == 7);
 
@@ -96,19 +74,39 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	CHECK(map.size() == length);
 }
 
-TEST_CASE("[Dictionary] get_key_lists()") {
+TEST_CASE("[Dictionary] List init") {
+	Dictionary dict{
+		{ 0, "int" },
+		{ "packed_string_array", PackedStringArray({ "array", "of", "values" }) },
+		{ "key", Dictionary({ { "nested", 200 } }) },
+		{ Vector2(), "v2" },
+	};
+	CHECK(dict.size() == 4);
+	CHECK(dict[0] == "int");
+	CHECK(PackedStringArray(dict["packed_string_array"])[2] == "values");
+	CHECK(Dictionary(dict["key"])["nested"] == Variant(200));
+	CHECK(dict[Vector2()] == "v2");
+
+	TypedDictionary<double, double> tdict{
+		{ 0.0, 1.0 },
+		{ 5.0, 2.0 },
+	};
+	CHECK_EQ(tdict[0.0], Variant(1.0));
+	CHECK_EQ(tdict[5.0], Variant(2.0));
+}
+
+TEST_CASE("[Dictionary] get_key_list()") {
 	Dictionary map;
-	List<Variant> keys;
-	List<Variant> *ptr = &keys;
-	map.get_key_list(ptr);
+	LocalVector<Variant> keys;
+	keys = map.get_key_list();
 	CHECK(keys.is_empty());
 	map[1] = 3;
-	map.get_key_list(ptr);
+	keys = map.get_key_list();
 	CHECK(keys.size() == 1);
 	CHECK(int(keys[0]) == 1);
 	map[2] = 4;
-	map.get_key_list(ptr);
-	CHECK(keys.size() == 3);
+	keys = map.get_key_list();
+	CHECK(keys.size() == 2);
 }
 
 TEST_CASE("[Dictionary] get_key_at_index()") {
@@ -138,14 +136,36 @@ TEST_CASE("[Dictionary] get_valid()") {
 	Variant val = map.get_valid(1);
 	CHECK(int(val) == 3);
 }
-TEST_CASE("[Dictionary] get()") {
+
+TEST_CASE("[Dictionary] set(), get(), and get_or_add()") {
 	Dictionary map;
-	map[1] = 3;
+
+	map.set(1, 3);
 	Variant val = map.get(1, -1);
 	CHECK(int(val) == 3);
+
+	map.set(1, 5);
+	val = map.get(1, -1);
+	CHECK(int(val) == 5);
+
+	CHECK(int(map.get_or_add(1, 7)) == 5);
+	CHECK(int(map.get_or_add(2, 7)) == 7);
 }
 
-TEST_CASE("[Dictionary] size(), empty() and clear()") {
+TEST_CASE("[Dictionary] make_read_only() and is_read_only()") {
+	Dictionary map;
+	CHECK_FALSE(map.is_read_only());
+	CHECK(map.set(1, 1));
+
+	map.make_read_only();
+	CHECK(map.is_read_only());
+
+	ERR_PRINT_OFF;
+	CHECK_FALSE(map.set(1, 2));
+	ERR_PRINT_ON;
+}
+
+TEST_CASE("[Dictionary] size(), is_empty() and clear()") {
 	Dictionary map;
 	CHECK(map.size() == 0);
 	CHECK(map.is_empty());
@@ -182,11 +202,47 @@ TEST_CASE("[Dictionary] keys() and values()") {
 	CHECK(int(values[0]) == 3);
 }
 
+TEST_CASE("[Dictionary] merge() and merged()") {
+	Dictionary d1 = {
+		{ "key1", 1 },
+		{ "key2", 2 },
+	};
+	Dictionary d2 = {
+		{ "key2", 200 },
+		{ "key3", 300 },
+	};
+	Dictionary expected_no_overwrite = {
+		{ "key1", 1 },
+		{ "key2", 2 },
+		{ "key3", 300 },
+	};
+	Dictionary expected_overwrite = {
+		{ "key1", 1 },
+		{ "key2", 200 },
+		{ "key3", 300 },
+	};
+
+	Dictionary d_test = d1.duplicate();
+	d_test.merge(d2, false);
+	CHECK_EQ(d_test, expected_no_overwrite);
+
+	d_test = d1.duplicate();
+	d_test.merge(d2, true);
+	CHECK_EQ(d_test, expected_overwrite);
+
+	CHECK_EQ(d1.merged(d2, false), expected_no_overwrite);
+	CHECK_EQ(d1.merged(d2, true), expected_overwrite);
+}
+
 TEST_CASE("[Dictionary] Duplicate dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 
 	// Deep copy
 	Dictionary deep_d = d.duplicate(true);
@@ -194,6 +250,11 @@ TEST_CASE("[Dictionary] Duplicate dictionary") {
 	CHECK_MESSAGE(Dictionary(deep_d[1]).id() != Dictionary(d[1]).id(), "Should clone nested dictionary");
 	CHECK_MESSAGE(Array(deep_d[k2]).id() != Array(d[k2]).id(), "Should clone nested array");
 	CHECK_EQ(deep_d, d);
+
+	// Check that duplicate_deep matches duplicate(true)
+	Dictionary deep_d2 = d.duplicate_deep();
+	CHECK_EQ(deep_d, deep_d2);
+
 	deep_d[0] = 0;
 	CHECK_NE(deep_d, d);
 	deep_d.erase(0);
@@ -304,9 +365,13 @@ TEST_CASE("[Dictionary] Duplicate recursive dictionary on keys") {
 
 TEST_CASE("[Dictionary] Hash dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
-	Dictionary k2 = build_dictionary(2, 2);
-	Array k3 = build_array(3);
-	Dictionary d = build_dictionary(1, build_dictionary(1, 1), k2, build_array(2), k3, 3);
+	Dictionary k2 = { { 2, 2 } };
+	Array k3 = { 3 };
+	Dictionary d = {
+		{ 1, Dictionary({ { 1, 1 } }) },
+		{ k2, Array({ 2 }) },
+		{ k3, 3 }
+	};
 	uint32_t original_hash = d.hash();
 
 	// Modify dict change the hash
@@ -376,9 +441,9 @@ TEST_CASE("[Dictionary] Empty comparison") {
 }
 
 TEST_CASE("[Dictionary] Flat comparison") {
-	Dictionary d1 = build_dictionary(1, 1);
-	Dictionary d2 = build_dictionary(1, 1);
-	Dictionary other_d = build_dictionary(2, 1);
+	Dictionary d1 = { { 1, 1 } };
+	Dictionary d2 = { { 1, 1 } };
+	Dictionary other_d = { { 2, 1 } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -391,12 +456,12 @@ TEST_CASE("[Dictionary] Flat comparison") {
 
 TEST_CASE("[Dictionary] Nested dictionary comparison") {
 	// d1 = {1: {2: {3: 4}}}
-	Dictionary d1 = build_dictionary(1, build_dictionary(2, build_dictionary(3, 4)));
+	Dictionary d1 = { { 1, Dictionary({ { 2, Dictionary({ { 3, 4 } }) } }) } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: {2: {3: 0}}}
-	Dictionary other_d = build_dictionary(1, build_dictionary(2, build_dictionary(3, 0)));
+	Dictionary other_d = { { 1, Dictionary({ { 2, Dictionary({ { 3, 0 } }) } }) } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -409,12 +474,12 @@ TEST_CASE("[Dictionary] Nested dictionary comparison") {
 
 TEST_CASE("[Dictionary] Nested array comparison") {
 	// d1 = {1: [2, 3]}
-	Dictionary d1 = build_dictionary(1, build_array(2, 3));
+	Dictionary d1 = { { 1, { 2, 3 } } };
 
 	Dictionary d2 = d1.duplicate(true);
 
 	// other_d = {1: [2, 0]}
-	Dictionary other_d = build_dictionary(1, build_array(2, 0));
+	Dictionary other_d = { { 1, { 2, 0 } } };
 
 	// test both operator== and operator!=
 	CHECK_EQ(d1, d1); // compare self
@@ -526,17 +591,160 @@ TEST_CASE("[Dictionary] Order and find") {
 	d[12] = "twelve";
 	d["4"] = "four";
 
-	Array keys;
-	keys.append(4);
-	keys.append(8);
-	keys.append(12);
-	keys.append("4");
+	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));
 	CHECK_EQ(d.find_key("does not exist"), Variant());
 }
 
-} // namespace TestDictionary
+TEST_CASE("[Dictionary] sort()") {
+	Dictionary d;
+	d[3] = 3;
+	d[2] = 2;
+	d[4] = 4;
+	d[1] = 1;
 
-#endif // TEST_DICTIONARY_H
+	Array expected_unsorted = { 3, 2, 4, 1 };
+	CHECK_EQ(d.keys(), expected_unsorted);
+
+	d.sort();
+	Array expected_sorted = { 1, 2, 3, 4 };
+	CHECK_EQ(d.keys(), expected_sorted);
+
+	Dictionary d_str;
+	d_str["b"] = 2;
+	d_str["c"] = 3;
+	d_str["a"] = 1;
+
+	d_str.sort();
+	Array expected_str_sorted = { "a", "b", "c" };
+	CHECK_EQ(d_str.keys(), expected_str_sorted);
+}
+
+TEST_CASE("[Dictionary] assign()") {
+	Dictionary untyped;
+	untyped["key1"] = "value";
+	CHECK(untyped.size() == 1);
+
+	Dictionary typed;
+	typed.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	typed.assign(untyped);
+	CHECK(typed.size() == 1);
+	typed["key2"] = "value";
+
+	untyped.assign(typed);
+	CHECK(untyped.size() == 2);
+	untyped["key3"] = 5;
+	CHECK(untyped.size() == 3);
+
+	ERR_PRINT_OFF;
+	typed.assign(untyped);
+	ERR_PRINT_ON;
+	CHECK(typed.size() == 2);
+}
+
+TEST_CASE("[Dictionary] Typed copying") {
+	TypedDictionary<int, int> d1;
+	d1[0] = 1;
+
+	TypedDictionary<double, double> d2;
+	d2[0] = 1.0;
+
+	Dictionary d3 = d1;
+	TypedDictionary<int, int> d4 = d3;
+
+	Dictionary d5 = d2;
+	TypedDictionary<int, int> d6 = d5;
+
+	d3[0] = 2;
+	d4[0] = 3;
+
+	// Same typed TypedDictionary should be shared.
+	CHECK_EQ(d1[0], Variant(3));
+	CHECK_EQ(d3[0], Variant(3));
+	CHECK_EQ(d4[0], Variant(3));
+
+	d5[0] = 2.0;
+	d6[0] = 3.0;
+
+	// Different typed TypedDictionary should not be shared.
+	CHECK_EQ(d2[0], Variant(2.0));
+	CHECK_EQ(d5[0], Variant(2.0));
+	CHECK_EQ(d6[0], Variant(3.0));
+
+	d1.clear();
+	d2.clear();
+	d3.clear();
+	d4.clear();
+	d5.clear();
+	d6.clear();
+}
+
+TEST_CASE("[Dictionary] Type checks/comparisons") {
+	Dictionary d1;
+	CHECK_FALSE(d1.is_typed());
+	CHECK_FALSE(d1.is_typed_key());
+	CHECK_FALSE(d1.is_typed_value());
+
+	d1.set_typed(Variant::STRING, StringName(), Variant(), Variant::OBJECT, "Node", Variant());
+	CHECK(d1.is_typed());
+	CHECK(d1.is_typed_key());
+	CHECK(d1.is_typed_value());
+	CHECK_EQ(d1.get_typed_key_builtin(), Variant::STRING);
+	CHECK_EQ(d1.get_typed_value_builtin(), Variant::OBJECT);
+	CHECK_EQ(d1.get_typed_value_class_name(), "Node");
+
+	Dictionary d2;
+	CHECK_FALSE(d1.is_same_typed(d2));
+	CHECK_FALSE(d1.is_same_typed_key(d2));
+	CHECK_FALSE(d1.is_same_typed_value(d2));
+
+	d2.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	CHECK_FALSE(d1.is_same_typed(d2));
+	CHECK(d1.is_same_typed_key(d2));
+	CHECK_FALSE(d1.is_same_typed_value(d2));
+}
+
+TEST_CASE("[Dictionary] Iteration") {
+	Dictionary a1 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+	Dictionary a2 = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+
+	int idx = 0;
+
+	for (const KeyValue<Variant, Variant> &kv : (const Dictionary &)a1) {
+		CHECK_EQ(int(a2[kv.key]), int(kv.value));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+	a2.clear();
+}
+
+TEST_CASE("[Dictionary] Object value init") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	TypedDictionary<double, Object *> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+	memdelete(a);
+	memdelete(b);
+}
+
+TEST_CASE("[Dictionary] RefCounted value init") {
+	Ref<RefCounted> a = memnew(RefCounted);
+	Ref<RefCounted> b = memnew(RefCounted);
+	TypedDictionary<double, Ref<RefCounted>> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+}
+
+} // namespace TestDictionary

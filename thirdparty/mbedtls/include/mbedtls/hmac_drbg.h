@@ -9,28 +9,13 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_HMAC_DRBG_H
 #define MBEDTLS_HMAC_DRBG_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/md.h"
 
@@ -54,7 +39,7 @@
  * \name SECTION: Module settings
  *
  * The configuration options you can set for this module are in this section.
- * Either change them in config.h or define them on the compiler command line.
+ * Either change them in mbedtls_config.h or define them on the compiler command line.
  * \{
  */
 
@@ -89,19 +74,19 @@ extern "C" {
 typedef struct mbedtls_hmac_drbg_context {
     /* Working state: the key K is not stored explicitly,
      * but is implied by the HMAC context */
-    mbedtls_md_context_t md_ctx;                    /*!< HMAC context (inc. K)  */
-    unsigned char V[MBEDTLS_MD_MAX_SIZE];  /*!< V in the spec          */
-    int reseed_counter;                     /*!< reseed counter         */
+    mbedtls_md_context_t MBEDTLS_PRIVATE(md_ctx);                    /*!< HMAC context (inc. K)  */
+    unsigned char MBEDTLS_PRIVATE(V)[MBEDTLS_MD_MAX_SIZE];  /*!< V in the spec          */
+    int MBEDTLS_PRIVATE(reseed_counter);                     /*!< reseed counter         */
 
     /* Administrative state */
-    size_t entropy_len;         /*!< entropy bytes grabbed on each (re)seed */
-    int prediction_resistance;  /*!< enable prediction resistance (Automatic
-                                     reseed before every random generation) */
-    int reseed_interval;        /*!< reseed interval   */
+    size_t MBEDTLS_PRIVATE(entropy_len);         /*!< entropy bytes grabbed on each (re)seed */
+    int MBEDTLS_PRIVATE(prediction_resistance);  /*!< enable prediction resistance (Automatic
+                                                    reseed before every random generation) */
+    int MBEDTLS_PRIVATE(reseed_interval);        /*!< reseed interval   */
 
     /* Callbacks */
-    int (*f_entropy)(void *, unsigned char *, size_t); /*!< entropy function */
-    void *p_entropy;            /*!< context for the entropy function        */
+    int(*MBEDTLS_PRIVATE(f_entropy))(void *, unsigned char *, size_t);  /*!< entropy function */
+    void *MBEDTLS_PRIVATE(p_entropy);            /*!< context for the entropy function        */
 
 #if defined(MBEDTLS_THREADING_C)
     /* Invariant: the mutex is initialized if and only if
@@ -112,7 +97,7 @@ typedef struct mbedtls_hmac_drbg_context {
      * Note that this invariant may change without notice. Do not rely on it
      * and do not access the mutex directly in application code.
      */
-    mbedtls_threading_mutex_t mutex;
+    mbedtls_threading_mutex_t MBEDTLS_PRIVATE(mutex);
 #endif
 } mbedtls_hmac_drbg_context;
 
@@ -297,8 +282,8 @@ void mbedtls_hmac_drbg_set_reseed_interval(mbedtls_hmac_drbg_context *ctx,
  * \return              \c 0 on success, or an error from the underlying
  *                      hash calculation.
  */
-int mbedtls_hmac_drbg_update_ret(mbedtls_hmac_drbg_context *ctx,
-                                 const unsigned char *additional, size_t add_len);
+int mbedtls_hmac_drbg_update(mbedtls_hmac_drbg_context *ctx,
+                             const unsigned char *additional, size_t add_len);
 
 /**
  * \brief               This function reseeds the HMAC_DRBG context, that is
@@ -399,30 +384,6 @@ int mbedtls_hmac_drbg_random(void *p_rng, unsigned char *output, size_t out_len)
  * \param ctx           The HMAC_DRBG context to free.
  */
 void mbedtls_hmac_drbg_free(mbedtls_hmac_drbg_context *ctx);
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#if defined(MBEDTLS_DEPRECATED_WARNING)
-#define MBEDTLS_DEPRECATED    __attribute__((deprecated))
-#else
-#define MBEDTLS_DEPRECATED
-#endif
-/**
- * \brief               This function updates the state of the HMAC_DRBG context.
- *
- * \deprecated          Superseded by mbedtls_hmac_drbg_update_ret()
- *                      in 2.16.0.
- *
- * \param ctx           The HMAC_DRBG context.
- * \param additional    The data to update the state with.
- *                      If this is \c NULL, there is no additional data.
- * \param add_len       Length of \p additional in bytes.
- *                      Unused if \p additional is \c NULL.
- */
-MBEDTLS_DEPRECATED void mbedtls_hmac_drbg_update(
-    mbedtls_hmac_drbg_context *ctx,
-    const unsigned char *additional, size_t add_len);
-#undef MBEDTLS_DEPRECATED
-#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
 #if defined(MBEDTLS_FS_IO)
 /**

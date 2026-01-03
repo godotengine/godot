@@ -59,7 +59,30 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="clampi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="min" type="int" />
+			<param index="1" name="max" type="int" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
+		<method name="distance_squared_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the squared distance between this vector and [param to].
+				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="to" type="Vector3i" />
+			<description>
+				Returns the distance between this vector and [param to].
+			</description>
+		</method>
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
 				Returns the length (magnitude) of this vector.
@@ -72,16 +95,44 @@
 				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3i(maxi(x, with.x), maxi(y, with.y), maxi(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="max_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector3i(maxi(x, with), maxi(y, with), maxi(z, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="Vector3i" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3i(mini(x, with.x), mini(y, with.y), mini(z, with.z))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="mini" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="with" type="int" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector3i(mini(x, with), mini(y, with), mini(z, with))[/code].
 			</description>
 		</method>
 		<method name="sign" qualifiers="const">
@@ -97,6 +148,13 @@
 				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
 			</description>
 		</method>
+		<method name="snappedi" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="step" type="int" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of [param step].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="x" type="int" setter="" getter="" default="0">
@@ -110,13 +168,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Z" value="2">
+		<constant name="AXIS_Z" value="2" enum="Axis">
 			Enumerated value for the Z axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector3i(0, 0, 0)">
@@ -164,7 +222,7 @@
 			<description>
 				Gets the remainder of each component of the [Vector3i] with the components of the given [Vector3i]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
-				print(Vector3i(10, -20, 30) % Vector3i(7, 8, 9)) # Prints "(3, -4, 3)"
+				print(Vector3i(10, -20, 30) % Vector3i(7, 8, 9)) # Prints (3, -4, 3)
 				[/codeblock]
 			</description>
 		</operator>
@@ -174,7 +232,7 @@
 			<description>
 				Gets the remainder of each component of the [Vector3i] with the given [int]. This operation uses truncated division, which is often not desired as it does not work well with negative numbers. Consider using [method @GlobalScope.posmod] instead if you want to handle negative numbers.
 				[codeblock]
-				print(Vector3i(10, -20, 30) % 7) # Prints "(3, -6, 2)"
+				print(Vector3i(10, -20, 30) % 7) # Prints (3, -6, 2)
 				[/codeblock]
 			</description>
 		</operator>
@@ -184,7 +242,7 @@
 			<description>
 				Multiplies each component of the [Vector3i] by the components of the given [Vector3i].
 				[codeblock]
-				print(Vector3i(10, 20, 30) * Vector3i(3, 4, 5)) # Prints "(30, 80, 150)"
+				print(Vector3i(10, 20, 30) * Vector3i(3, 4, 5)) # Prints (30, 80, 150)
 				[/codeblock]
 			</description>
 		</operator>
@@ -194,7 +252,7 @@
 			<description>
 				Multiplies each component of the [Vector3i] by the given [float]. Returns a [Vector3].
 				[codeblock]
-				print(Vector3i(10, 15, 20) * 0.9) # Prints "(9, 13.5, 18)"
+				print(Vector3i(10, 15, 20) * 0.9) # Prints (9.0, 13.5, 18.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -211,7 +269,7 @@
 			<description>
 				Adds each component of the [Vector3i] by the components of the given [Vector3i].
 				[codeblock]
-				print(Vector3i(10, 20, 30) + Vector3i(3, 4, 5)) # Prints "(13, 24, 35)"
+				print(Vector3i(10, 20, 30) + Vector3i(3, 4, 5)) # Prints (13, 24, 35)
 				[/codeblock]
 			</description>
 		</operator>
@@ -221,7 +279,7 @@
 			<description>
 				Subtracts each component of the [Vector3i] by the components of the given [Vector3i].
 				[codeblock]
-				print(Vector3i(10, 20, 30) - Vector3i(3, 4, 5)) # Prints "(7, 16, 25)"
+				print(Vector3i(10, 20, 30) - Vector3i(3, 4, 5)) # Prints (7, 16, 25)
 				[/codeblock]
 			</description>
 		</operator>
@@ -231,7 +289,7 @@
 			<description>
 				Divides each component of the [Vector3i] by the components of the given [Vector3i].
 				[codeblock]
-				print(Vector3i(10, 20, 30) / Vector3i(2, 5, 3)) # Prints "(5, 4, 10)"
+				print(Vector3i(10, 20, 30) / Vector3i(2, 5, 3)) # Prints (5, 4, 10)
 				[/codeblock]
 			</description>
 		</operator>
@@ -241,7 +299,7 @@
 			<description>
 				Divides each component of the [Vector3i] by the given [float]. Returns a [Vector3].
 				[codeblock]
-				print(Vector3i(10, 20, 30) / 2.9) # Prints "(5, 10, 15)"
+				print(Vector3i(1, 2, 3) / 2.5) # Prints (0.4, 0.8, 1.2)
 				[/codeblock]
 			</description>
 		</operator>

@@ -4,7 +4,7 @@
  *
  *   Compiler-specific macro definitions used internally by FreeType.
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -128,8 +128,8 @@ FT_BEGIN_HEADER
    * before a function declaration.
    */
 
-  /* Visual C, mingw */
-#if defined( _WIN32 )
+  /* Visual C, MinGW, Cygwin */
+#if defined( _WIN32 ) || defined( __CYGWIN__ )
 #define FT_INTERNAL_FUNCTION_ATTRIBUTE  /* empty */
 
   /* gcc, clang */

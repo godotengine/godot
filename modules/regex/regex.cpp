@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "regex.h"
+#include "regex.compat.inc"
 
 #include "core/os/memory.h"
 
@@ -53,8 +54,8 @@ int RegExMatch::_find(const Variant &p_name) const {
 			return -1;
 		}
 		return i;
-	} else if (p_name.get_type() == Variant::STRING || p_name.get_type() == Variant::STRING_NAME) {
-		HashMap<String, int>::ConstIterator found = names.find((String)p_name);
+	} else if (p_name.is_string()) {
+		HashMap<String, int>::ConstIterator found = names.find(p_name);
 		if (found) {
 			return found->value;
 		}
@@ -68,7 +69,7 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return 0;
 	}
 	return data.size() - 1;
@@ -161,10 +162,10 @@ void RegEx::_pattern_info(uint32_t what, void *where) const {
 	pcre2_pattern_info_32((pcre2_code_32 *)code, what, where);
 }
 
-Ref<RegEx> RegEx::create_from_string(const String &p_pattern) {
+Ref<RegEx> RegEx::create_from_string(const String &p_pattern, bool p_show_error) {
 	Ref<RegEx> ret;
 	ret.instantiate();
-	ret->compile(p_pattern);
+	ret->compile(p_pattern, p_show_error);
 	return ret;
 }
 
@@ -175,7 +176,7 @@ void RegEx::clear() {
 	}
 }
 
-Error RegEx::compile(const String &p_pattern) {
+Error RegEx::compile(const String &p_pattern, bool p_show_error) {
 	pattern = p_pattern;
 	clear();
 
@@ -192,10 +193,12 @@ Error RegEx::compile(const String &p_pattern) {
 	pcre2_compile_context_free_32(cctx);
 
 	if (!code) {
-		PCRE2_UCHAR32 buf[256];
-		pcre2_get_error_message_32(err, buf, 256);
-		String message = String::num(offset) + ": " + String((const char32_t *)buf);
-		ERR_PRINT(message.utf8());
+		if (p_show_error) {
+			PCRE2_UCHAR32 buf[256];
+			pcre2_get_error_message_32(err, buf, 256);
+			String message = String::num_int64(offset) + ": " + String((const char32_t *)buf);
+			ERR_PRINT(message);
+		}
 		return FAILED;
 	}
 	return OK;
@@ -268,40 +271,34 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 }
 
 TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
-	ERR_FAIL_COND_V_MSG(p_offset < 0, Array(), "RegEx search offset must be >= 0");
+	ERR_FAIL_COND_V_MSG(p_offset < 0, TypedArray<RegExMatch>(), "RegEx search offset must be >= 0");
 
-	int last_end = -1;
+	int last_end = 0;
 	TypedArray<RegExMatch> result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
+
 	while (match.is_valid()) {
-		if (last_end == match->get_end(0)) {
-			break;
-		}
-		result.push_back(match);
 		last_end = match->get_end(0);
-		match = search(p_subject, match->get_end(0), p_end);
+		if (match->get_start(0) == last_end) {
+			last_end++;
+		}
+
+		result.push_back(match);
+		match = search(p_subject, last_end, p_end);
 	}
 	return result;
 }
 
-String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
-	ERR_FAIL_COND_V(!is_valid(), String());
-	ERR_FAIL_COND_V_MSG(p_offset < 0, String(), "RegEx sub offset must be >= 0");
-
-	// safety_zone is the number of chars we allocate in addition to the number of chars expected in order to
-	// guard against the PCRE API writing one additional \0 at the end. PCRE's API docs are unclear on whether
-	// PCRE understands outlength in pcre2_substitute() as counting an implicit additional terminating char or
-	// not. always allocating one char more than telling PCRE has us on the safe side.
+int RegEx::_sub(const String &p_subject, const String &p_replacement, int p_offset, int p_end, uint32_t p_flags, String &r_output) const {
+	// `safety_zone` is the number of chars we allocate in addition to the number of chars expected in order to
+	// guard against the PCRE API writing one additional `\0` at the end. PCRE's API docs are unclear on whether
+	// PCRE understands outlength in `pcre2_substitute(`) as counting an implicit additional terminating char or
+	// not. Always allocating one char more than telling PCRE has us on the safe side.
 	const int safety_zone = 1;
 
-	PCRE2_SIZE olength = p_subject.length() + 1; // space for output string and one terminating \0 character
+	PCRE2_SIZE olength = p_subject.length() + 1; // Space for output string and one terminating `\0` character.
 	Vector<char32_t> output;
 	output.resize(olength + safety_zone);
-
-	uint32_t flags = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
-	if (p_all) {
-		flags |= PCRE2_SUBSTITUTE_GLOBAL;
-	}
 
 	PCRE2_SIZE length = p_subject.length();
 	if (p_end >= 0 && (uint32_t)p_end < length) {
@@ -317,22 +314,49 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 
 	pcre2_match_data_32 *match = pcre2_match_data_create_from_pattern_32(c, gctx);
 
-	int res = pcre2_substitute_32(c, s, length, p_offset, flags, match, mctx, r, p_replacement.length(), o, &olength);
+	int res = pcre2_substitute_32(c, s, length, p_offset, p_flags, match, mctx, r, p_replacement.length(), o, &olength);
 
 	if (res == PCRE2_ERROR_NOMEMORY) {
 		output.resize(olength + safety_zone);
 		o = (PCRE2_UCHAR32 *)output.ptrw();
-		res = pcre2_substitute_32(c, s, length, p_offset, flags, match, mctx, r, p_replacement.length(), o, &olength);
+		res = pcre2_substitute_32(c, s, length, p_offset, p_flags, match, mctx, r, p_replacement.length(), o, &olength);
 	}
 
 	pcre2_match_data_free_32(match);
 	pcre2_match_context_free_32(mctx);
 
-	if (res < 0) {
-		return String();
+	if (res >= 0) {
+		r_output = String::utf32(Span(output.ptr(), olength)) + p_subject.substr(length);
 	}
 
-	return String(output.ptr(), olength);
+	return res;
+}
+
+String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
+	ERR_FAIL_COND_V(!is_valid(), String());
+	ERR_FAIL_COND_V_MSG(p_offset < 0, String(), "RegEx sub offset must be >= 0");
+
+	uint32_t flags = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH | PCRE2_SUBSTITUTE_UNSET_EMPTY;
+	if (p_all) {
+		flags |= PCRE2_SUBSTITUTE_GLOBAL;
+	}
+
+	String output;
+	const int res = _sub(p_subject, p_replacement, p_offset, p_end, flags, output);
+
+	if (res < 0) {
+		PCRE2_UCHAR32 buf[256];
+		pcre2_get_error_message_32(res, buf, 256);
+		String message = "PCRE2 Error: " + String((const char32_t *)buf);
+		ERR_PRINT(message);
+
+		if (res == PCRE2_ERROR_NOSUBSTRING) {
+			flags |= PCRE2_SUBSTITUTE_UNKNOWN_UNSET;
+			_sub(p_subject, p_replacement, p_offset, p_end, flags, output);
+		}
+	}
+
+	return output;
 }
 
 bool RegEx::is_valid() const {
@@ -368,7 +392,7 @@ PackedStringArray RegEx::get_names() const {
 
 	for (uint32_t i = 0; i < count; i++) {
 		String name = &table[i * entry_size + 1];
-		if (result.find(name) < 0) {
+		if (!result.has(name)) {
 			result.append(name);
 		}
 	}
@@ -393,10 +417,10 @@ RegEx::~RegEx() {
 }
 
 void RegEx::_bind_methods() {
-	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::create_from_string);
+	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern", "show_error"), &RegEx::create_from_string, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
-	ClassDB::bind_method(D_METHOD("compile", "pattern"), &RegEx::compile);
+	ClassDB::bind_method(D_METHOD("compile", "pattern", "show_error"), &RegEx::compile, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));

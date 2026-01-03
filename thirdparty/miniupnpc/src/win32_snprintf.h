@@ -23,9 +23,9 @@
 	(defined(_MSC_VER) && _MSC_VER < 1900) /* Visual Studio older than 2015 */ || \
 	(defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR) && defined(__NO_ISOCEXT)) /* mingw32 without iso c ext */ || \
 	(defined(__MINGW64_VERSION_MAJOR) && /* mingw-w64 not ... */ !( \
-		(defined (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO != 0)) /* ... with ansi stdio */ || \
+		(defined (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO != 0) /* ... with ansi stdio */ || \
 		(__MINGW64_VERSION_MAJOR >= 6 && defined(_UCRT)) /* ... at least 6.0.0 with ucrt */ || \
-		(__MINGW64_VERSION_MAJOR >= 8 && !defined(__NO_ISOCEXT)) /* ... at least 8.0.0 with iso c ext */ || \
+		(__MINGW64_VERSION_MAJOR >= 8 && !defined(__NO_ISOCEXT))) /* ... at least 8.0.0 with iso c ext */ || \
 	0) || \
 0)
 

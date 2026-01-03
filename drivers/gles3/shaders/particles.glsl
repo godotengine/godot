@@ -112,22 +112,22 @@ layout(location = 4) in highp vec4 xform_2;
 layout(location = 5) in highp vec4 xform_3;
 #endif
 #ifdef USERDATA1_USED
-layout(location = 6) in highp vec4 userdata1;
+in highp vec4 userdata1;
 #endif
 #ifdef USERDATA2_USED
-layout(location = 7) in highp vec4 userdata2;
+in highp vec4 userdata2;
 #endif
 #ifdef USERDATA3_USED
-layout(location = 8) in highp vec4 userdata3;
+in highp vec4 userdata3;
 #endif
 #ifdef USERDATA4_USED
-layout(location = 9) in highp vec4 userdata4;
+in highp vec4 userdata4;
 #endif
 #ifdef USERDATA5_USED
-layout(location = 10) in highp vec4 userdata5;
+in highp vec4 userdata5;
 #endif
 #ifdef USERDATA6_USED
-layout(location = 11) in highp vec4 userdata6;
+in highp vec4 userdata6;
 #endif
 
 out highp vec4 out_color; //tfb:
@@ -219,6 +219,24 @@ void main() {
 #endif
 		xform = transpose(xform);
 		flags = floatBitsToUint(velocity_flags.w);
+#ifdef USERDATA1_USED
+		out_userdata1 = userdata1;
+#endif
+#ifdef USERDATA2_USED
+		out_userdata2 = userdata2;
+#endif
+#ifdef USERDATA3_USED
+		out_userdata3 = userdata3;
+#endif
+#ifdef USERDATA4_USED
+		out_userdata4 = userdata4;
+#endif
+#ifdef USERDATA5_USED
+		out_userdata5 = userdata5;
+#endif
+#ifdef USERDATA6_USED
+		out_userdata6 = userdata6;
+#endif
 	}
 
 	//clear started flag if set
@@ -321,9 +339,10 @@ void main() {
 				amount = max(0.0, 1.0 - d);
 			} else if (attractors[i].type == ATTRACTOR_TYPE_VECTOR_FIELD) {
 			}
-			amount = pow(amount, attractors[i].attenuation);
+			mediump float attractor_attenuation = attractors[i].attenuation;
+			amount = pow(amount, attractor_attenuation);
 			dir = safe_normalize(mix(dir, attractors[i].transform[2].xyz, attractors[i].directionality));
-			attractor_force -= amount * dir * attractors[i].strength;
+			attractor_force -= mass * amount * dir * attractors[i].strength;
 		}
 
 		float particle_size = particle_size;
@@ -353,10 +372,10 @@ void main() {
 
 				float d = vec4_to_float(texture(height_field_texture, uv_pos)) * SDF_MAX_LENGTH;
 
+				// Allowing for a small epsilon to allow particle just touching colliders to count as collided
+				const float EPSILON = 0.001;
 				d -= sdf_particle_size;
-
-				if (d < 0.0) {
-					const float EPSILON = 0.001;
+				if (d < EPSILON) {
 					vec2 n = normalize(vec2(
 							vec4_to_float(texture(height_field_texture, uv_pos + vec2(EPSILON, 0.0))) - vec4_to_float(texture(height_field_texture, uv_pos - vec2(EPSILON, 0.0))),
 							vec4_to_float(texture(height_field_texture, uv_pos + vec2(0.0, EPSILON))) - vec4_to_float(texture(height_field_texture, uv_pos - vec2(0.0, EPSILON)))));
@@ -381,10 +400,12 @@ void main() {
 				vec3 rel_vec = xform[3].xyz - colliders[i].transform[3].xyz;
 				vec3 local_pos = rel_vec * mat3(colliders[i].transform);
 
+				// Allowing for a small epsilon to allow particle just touching colliders to count as collided
+				const float EPSILON = 0.001;
 				if (colliders[i].type == COLLIDER_TYPE_SPHERE) {
 					float d = length(rel_vec) - (particle_size + colliders[i].extents.x);
 
-					if (d < 0.0) {
+					if (d < EPSILON) {
 						col = true;
 						depth = -d;
 						normal = normalize(rel_vec);
@@ -399,7 +420,7 @@ void main() {
 						vec3 closest = min(abs_pos, colliders[i].extents.xyz);
 						vec3 rel = abs_pos - closest;
 						depth = length(rel) - particle_size;
-						if (depth < 0.0) {
+						if (depth < EPSILON) {
 							col = true;
 							normal = mat3(colliders[i].transform) * (normalize(rel) * sgn_pos);
 							depth = -depth;
@@ -432,14 +453,14 @@ void main() {
 
 					vec3 uvw_pos = vec3(local_pos_bottom / colliders[i].extents.xyz) * 0.5 + 0.5;
 
-					float y = 1.0 - texture(height_field_texture, uvw_pos.xz).r;
+					float y = texture(height_field_texture, uvw_pos.xz).r;
 
-					if (y > uvw_pos.y) {
+					if (y + EPSILON > uvw_pos.y) {
 						//inside heightfield
 
 						vec3 pos1 = (vec3(uvw_pos.x, y, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
-						vec3 pos2 = (vec3(uvw_pos.x + DELTA, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
-						vec3 pos3 = (vec3(uvw_pos.x, 1.0 - texture(height_field_texture, uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * colliders[i].extents.xyz;
+						vec3 pos2 = (vec3(uvw_pos.x + DELTA, texture(height_field_texture, uvw_pos.xz + vec2(DELTA, 0)).r, uvw_pos.z) * 2.0 - 1.0) * colliders[i].extents.xyz;
+						vec3 pos3 = (vec3(uvw_pos.x, texture(height_field_texture, uvw_pos.xz + vec2(0, DELTA)).r, uvw_pos.z + DELTA) * 2.0 - 1.0) * colliders[i].extents.xyz;
 
 						normal = normalize(cross(pos1 - pos2, pos1 - pos3));
 						float local_y = (vec3(local_pos / colliders[i].extents.xyz) * 0.5 + 0.5).y;

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorDock" inherits="MarginContainer" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Dockable container for the editor.
+	</brief_description>
+	<description>
+		EditorDock is a [Container] node that can be docked in one of the editor's dock slots. Docks are added by plugins to provide space for controls related to an [EditorPlugin]. The editor comes with a few built-in docks, such as the Scene dock, FileSystem dock, etc.
+		You can add a dock by using [method EditorPlugin.add_dock]. The dock can be customized by changing its properties.
+		[codeblock]
+		@tool
+		extends EditorPlugin
+
+		# Dock reference.
+		var dock
+
+		# Plugin initialization.
+		func _enter_tree():
+			dock = EditorDock.new()
+			dock.title = "My Dock"
+			dock.dock_icon = preload("./dock_icon.png")
+			dock.default_slot = EditorPlugin.DOCK_SLOT_RIGHT_UL
+			var dock_content = preload("./dock_content.tscn").instantiate()
+			dock.add_child(dock_content)
+			add_dock(dock)
+
+		# Plugin clean-up.
+		func _exit_tree():
+			remove_dock(dock)
+			dock.queue_free()
+			dock = null
+		[/codeblock]
+	</description>
+	<tutorials>
+		<link title="Making plugins">$DOCS_URL/tutorials/plugins/editor/making_plugins.html</link>
+	</tutorials>
+	<methods>
+		<method name="_load_layout_from_config" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="config" type="ConfigFile" />
+			<param index="1" name="section" type="String" />
+			<description>
+				Implement this method to handle loading this dock's layout. It's equivalent to [method EditorPlugin._set_window_layout]. [param section] is a unique section based on [member layout_key].
+			</description>
+		</method>
+		<method name="_save_layout_to_config" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="config" type="ConfigFile" />
+			<param index="1" name="section" type="String" />
+			<description>
+				Implement this method to handle saving this dock's layout. It's equivalent to [method EditorPlugin._get_window_layout]. [param section] is a unique section based on [member layout_key].
+			</description>
+		</method>
+		<method name="_update_layout" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="layout" type="int" />
+			<description>
+				Implement this method to handle the layout switching for this dock. [param layout] is one of the [enum DockLayout] constants.
+				[codeblock]
+				func _update_layout(layout):
+					box_container.vertical = (layout == DOCK_LAYOUT_VERTICAL)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes the dock, making its tab hidden.
+			</description>
+		</method>
+		<method name="make_visible">
+			<return type="void" />
+			<description>
+				Focuses the dock's tab (or window if it's floating). If the dock was closed, it will be opened. If it's a bottom dock, makes the bottom panel visible.
+			</description>
+		</method>
+		<method name="open">
+			<return type="void" />
+			<description>
+				Opens the dock. It will appear in the last used dock slot. If the dock has no default slot, it will be opened floating.
+				[b]Note:[/b] This does not focus the dock. If you want to open and focus the dock, use [method make_visible].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
+			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
+		</member>
+		<member name="closable" type="bool" setter="set_closable" getter="is_closable" default="false">
+			If [code]true[/code], the dock can be closed with the Close button in the context popup. Docks with [member global] enabled are always closable.
+		</member>
+		<member name="default_slot" type="int" setter="set_default_slot" getter="get_default_slot" enum="EditorPlugin.DockSlot" default="-1">
+			The default dock slot used when adding the dock with [method EditorPlugin.add_dock].
+			After the dock is added, it can be moved to a different slot and the editor will automatically remember its position between sessions. If you remove and re-add the dock, it will be reset to default.
+		</member>
+		<member name="dock_icon" type="Texture2D" setter="set_dock_icon" getter="get_dock_icon">
+			The icon for the dock, as a texture. If specified, it will override [member icon_name].
+		</member>
+		<member name="dock_shortcut" type="Shortcut" setter="set_dock_shortcut" getter="get_dock_shortcut">
+			The shortcut used to open the dock.
+		</member>
+		<member name="force_show_icon" type="bool" setter="set_force_show_icon" getter="get_force_show_icon" default="false">
+			If [code]true[/code], the dock will always display an icon, regardless of [member EditorSettings.interface/editor/dock_tab_style] or [member EditorSettings.interface/editor/bottom_dock_tab_style].
+		</member>
+		<member name="global" type="bool" setter="set_global" getter="is_global" default="true">
+			If [code]true[/code], the dock appears in the [b]Editor &gt; Editor Docks[/b] menu and can be closed. Non-global docks can still be closed using [method close] or when [member closable] is [code]true[/code].
+		</member>
+		<member name="icon_name" type="StringName" setter="set_icon_name" getter="get_icon_name" default="&amp;&quot;&quot;">
+			The icon for the dock, as a name from the [code]EditorIcons[/code] theme type in the editor theme. You can find the list of available icons [url=https://godot-editor-icons.github.io/]here[/url].
+		</member>
+		<member name="layout_key" type="String" setter="set_layout_key" getter="get_layout_key" default="&quot;&quot;">
+			The key representing this dock in the editor's layout file. If empty, the dock's displayed name will be used instead.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			The title of the dock's tab. If empty, the dock's [member Node.name] will be used. If the name is auto-generated (contains [code]@[/code]), the first child's name will be used instead.
+		</member>
+		<member name="title_color" type="Color" setter="set_title_color" getter="get_title_color" default="Color(0, 0, 0, 0)">
+			The color of the dock tab's title. If its alpha is [code]0.0[/code], the default font color will be used.
+		</member>
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
+			If [code]true[/code], the dock is not automatically opened or closed when loading an editor layout, only moved. It also can't be opened using a shortcut. This is meant for docks that are opened and closed in specific cases, such as when selecting a [TileMap] or [AnimationTree] node.
+		</member>
+	</members>
+	<signals>
+		<signal name="closed">
+			<description>
+				Emitted when the dock is closed with the Close button in the context popup, before it's removed from its parent. See [member closable].
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
+			Allows placing the dock in the vertical dock slots on either side of the editor.
+		</constant>
+		<constant name="DOCK_LAYOUT_HORIZONTAL" value="2" enum="DockLayout" is_bitfield="true">
+			Allows placing the dock in the editor's bottom panel.
+		</constant>
+		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
+			Allows making the dock floating (opened as a separate window).
+		</constant>
+		<constant name="DOCK_LAYOUT_ALL" value="7" enum="DockLayout" is_bitfield="true">
+			Allows placing the dock in all available slots.
+		</constant>
+	</constants>
+</class>

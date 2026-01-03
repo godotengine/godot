@@ -28,20 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
-#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
-#include <stdarg.h>
+#include <cstdarg>
+
+class FileAccess;
+class RegEx;
+class ScriptBacktrace;
 
 class Logger {
 protected:
 	bool should_log(bool p_err);
 
-	static bool _flush_stdout_on_print;
+	static inline bool _flush_stdout_on_print = true;
 
 public:
 	enum ErrorType {
@@ -51,10 +54,38 @@ public:
 		ERR_SHADER
 	};
 
+	static constexpr const char *error_type_string(ErrorType p_type) {
+		switch (p_type) {
+			case ERR_ERROR:
+				return "ERROR";
+			case ERR_WARNING:
+				return "WARNING";
+			case ERR_SCRIPT:
+				return "SCRIPT ERROR";
+			case ERR_SHADER:
+				return "SHADER ERROR";
+		}
+		return "UNKNOWN ERROR";
+	}
+
+	static constexpr const char *error_type_indent(ErrorType p_type) {
+		switch (p_type) {
+			case ERR_ERROR:
+				return "   ";
+			case ERR_WARNING:
+				return "     ";
+			case ERR_SCRIPT:
+				return "          ";
+			case ERR_SHADER:
+				return "          ";
+		}
+		return "           ";
+	}
+
 	static void set_flush_stdout_on_print(bool value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR);
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 
 	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void logf_error(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -86,6 +117,8 @@ class RotatedFileLogger : public Logger {
 	void clear_old_backups();
 	void rotate_file();
 
+	Ref<RegEx> strip_ansi_regex;
+
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
 
@@ -96,14 +129,12 @@ class CompositeLogger : public Logger {
 	Vector<Logger *> loggers;
 
 public:
-	explicit CompositeLogger(Vector<Logger *> p_loggers);
+	explicit CompositeLogger(const Vector<Logger *> &p_loggers);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR) override;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 
 	void add_logger(Logger *p_logger);
 
 	virtual ~CompositeLogger();
 };
-
-#endif // LOGGER_H

@@ -43,13 +43,23 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<description>
-				Returns the enabled state of the given flag (see [enum ParticleFlags] for options).
+				Returns the enabled state of the given particle flag.
+			</description>
+		</method>
+		<method name="request_particles_process">
+			<return type="void" />
+			<param index="0" name="process_time" type="float" />
+			<description>
+				Requests the particles to process for extra process time during a single frame.
+				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
 			</description>
 		</method>
 		<method name="restart">
 			<return type="void" />
+			<param index="0" name="keep_seed" type="bool" default="false" />
 			<description>
 				Restarts the particle emitter.
+				If [param keep_seed] is [code]true[/code], the current random seed will be preserved. Useful for seeking and playback.
 			</description>
 		</method>
 		<method name="set_param_curve">
@@ -57,7 +67,7 @@
 			<param index="0" name="param" type="int" enum="CPUParticles2D.Parameter" />
 			<param index="1" name="curve" type="Curve" />
 			<description>
-				Sets the [Curve] of the parameter specified by [enum Parameter].
+				Sets the [Curve] of the parameter specified by [enum Parameter]. Should be a unit [Curve].
 			</description>
 		</method>
 		<method name="set_param_max">
@@ -81,7 +91,7 @@
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Enables or disables the given flag (see [enum ParticleFlags] for options).
+				Enables or disables the given particle flag.
 			</description>
 		</method>
 	</methods>
@@ -90,7 +100,7 @@
 			Number of particles emitted in one emission cycle.
 		</member>
 		<member name="angle_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's rotation will be animated along this [Curve].
+			Each particle's rotation will be animated along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="angle_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum initial rotation applied to each particle, in degrees.
@@ -99,7 +109,7 @@
 			Minimum equivalent of [member angle_max].
 		</member>
 		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's angular velocity will vary along this [Curve].
+			Each particle's angular velocity will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="angular_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum initial angular velocity (rotation speed) applied to each particle in [i]degrees[/i] per second.
@@ -108,7 +118,7 @@
 			Minimum equivalent of [member angular_velocity_max].
 		</member>
 		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's animation offset will vary along this [Curve].
+			Each particle's animation offset will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="anim_offset_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum animation offset that corresponds to frame index in the texture. [code]0[/code] is the first frame, [code]1[/code] is the last one. See [member CanvasItemMaterial.particles_animation].
@@ -117,7 +127,7 @@
 			Minimum equivalent of [member anim_offset_max].
 		</member>
 		<member name="anim_speed_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's animation speed will vary along this [Curve].
+			Each particle's animation speed will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="anim_speed_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum particle animation speed. Animation speed of [code]1[/code] means that the particles will make full [code]0[/code] to [code]1[/code] offset cycle during lifetime, [code]2[/code] means [code]2[/code] cycles etc.
@@ -126,17 +136,17 @@
 		<member name="anim_speed_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum equivalent of [member anim_speed_max].
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
-			Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).
+			Each particle's initial color will vary along this [Gradient] (multiplied with [member color]).
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Each particle's color will vary along this [Gradient] (multiplied with [member color]).
+			Each particle's color will vary along this [Gradient] over its lifetime (multiplied with [member color]).
 		</member>
 		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Damping will vary along this [Curve].
+			Damping will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="damping_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			The maximum rate at which particles lose velocity. For example value of [code]100[/code] means that the particle will go from [code]100[/code] velocity to [code]0[/code] in [code]1[/code] second.
@@ -148,7 +158,7 @@
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder" default="0">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
@@ -162,8 +172,14 @@
 		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
 		</member>
+		<member name="emission_ring_inner_radius" type="float" setter="set_emission_ring_inner_radius" getter="get_emission_ring_inner_radius">
+			The ring's inner radius if [member emission_shape] is set to [constant EMISSION_SHAPE_RING].
+		</member>
+		<member name="emission_ring_radius" type="float" setter="set_emission_ring_radius" getter="get_emission_ring_radius">
+			The ring's outer radius if [member emission_shape] is set to [constant EMISSION_SHAPE_RING].
+		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles2D.EmissionShape" default="0">
-			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].
@@ -184,7 +200,7 @@
 			Gravity applied to every particle.
 		</member>
 		<member name="hue_variation_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's hue will vary along this [Curve].
+			Each particle's hue will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="hue_variation_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum initial hue variation applied to each particle. It will shift the particle color's hue.
@@ -205,7 +221,7 @@
 			Particle lifetime randomness ratio.
 		</member>
 		<member name="linear_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's linear acceleration will vary along this [Curve].
+			Each particle's linear acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="linear_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum linear acceleration applied to each particle in the direction of motion.
@@ -220,7 +236,7 @@
 			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end.
 		</member>
 		<member name="orbit_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's orbital velocity will vary along this [Curve].
+			Each particle's orbital velocity will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="orbit_velocity_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum orbital velocity applied to each particle. Makes the particles circle around origin. Specified in number of full rotations around origin per second.
@@ -231,11 +247,12 @@
 		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Particle system starts as if it had already run for this many seconds.
 		</member>
 		<member name="radial_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's radial acceleration will vary along this [Curve].
+			Each particle's radial acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="radial_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum radial acceleration applied to each particle. Makes particle accelerate away from the origin or towards it if negative.
@@ -247,7 +264,7 @@
 			Emission lifetime randomness ratio.
 		</member>
 		<member name="scale_amount_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's scale will vary along this [Curve].
+			Each particle's scale will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="scale_amount_max" type="float" setter="set_param_max" getter="get_param_max" default="1.0">
 			Maximum initial scale applied to each particle.
@@ -256,12 +273,15 @@
 			Minimum equivalent of [member scale_amount_max].
 		</member>
 		<member name="scale_curve_x" type="Curve" setter="set_scale_curve_x" getter="get_scale_curve_x">
-			Each particle's horizontal scale will vary along this [Curve].
+			Each particle's horizontal scale will vary along this [Curve]. Should be a unit [Curve].
 			[member split_scale] must be enabled.
 		</member>
 		<member name="scale_curve_y" type="Curve" setter="set_scale_curve_y" getter="get_scale_curve_y">
-			Each particle's vertical scale will vary along this [Curve].
+			Each particle's vertical scale will vary along this [Curve]. Should be a unit [Curve].
 			[member split_scale] must be enabled.
+		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			Sets the random seed used by the particle system. Only effective if [member use_fixed_seed] is [code]true[/code].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
@@ -273,7 +293,7 @@
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.
 		</member>
 		<member name="tangential_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
-			Each particle's tangential acceleration will vary along this [Curve].
+			Each particle's tangential acceleration will vary along this [Curve]. Should be a unit [Curve].
 		</member>
 		<member name="tangential_accel_max" type="float" setter="set_param_max" getter="get_param_max" default="0.0">
 			Maximum tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
@@ -283,6 +303,9 @@
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code], particles will be squares.
+		</member>
+		<member name="use_fixed_seed" type="bool" setter="set_use_fixed_seed" getter="get_use_fixed_seed" default="false">
+			If [code]true[/code], particles will use the same seed for every simulation using the seed defined in [member seed]. This is useful for situations where the visual outcome should be consistent across replays, for example when using Movie Maker mode.
 		</member>
 	</members>
 	<signals>
@@ -297,7 +320,7 @@
 			Particles are drawn in the order emitted.
 		</constant>
 		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime.
+			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
 		</constant>
 		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
 			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.
@@ -368,7 +391,10 @@
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
 			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="6" enum="EmissionShape">
+		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
+			Particles will be emitted in the area of a ring parameterized by its outer and inner radius.
+		</constant>
+		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
 		</constant>
 	</constants>

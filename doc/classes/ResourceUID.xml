@@ -4,7 +4,7 @@
 		A singleton that manages the unique identifiers of all resources within a project.
 	</brief_description>
 	<description>
-		Resource UIDs (Unique IDentifiers) allow the engine to keep references between resources intact, even if files can renamed or moved. They can be accessed with [code]uid://[/code].
+		Resource UIDs (Unique IDentifiers) allow the engine to keep references between resources intact, even if files are renamed or moved. They can be accessed with [code]uid://[/code].
 		[ResourceUID] keeps track of all registered resource UIDs in a project, generates new UIDs, and converts between their string and integer representations.
 	</description>
 	<tutorials>
@@ -24,6 +24,20 @@
 			<description>
 				Generates a random resource UID which is guaranteed to be unique within the list of currently loaded UIDs.
 				In order for this UID to be registered, you must call [method add_id] or [method set_id].
+			</description>
+		</method>
+		<method name="create_id_for_path">
+			<return type="int" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Like [method create_id], but the UID is seeded with the provided [param path] and project name. UIDs generated for that path will be always the same within the current project.
+			</description>
+		</method>
+		<method name="ensure_path" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="path_or_uid" type="String" />
+			<description>
+				Returns a path, converting [param path_or_uid] if necessary. Fails and returns an empty string if an invalid UID is provided.
 			</description>
 		</method>
 		<method name="get_id_path" qualifiers="const">
@@ -48,6 +62,13 @@
 				Converts the given UID to a [code]uid://[/code] string value.
 			</description>
 		</method>
+		<method name="path_to_uid" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Converts the provided resource [param path] to a UID. Returns the unchanged path if it has no associated UID.
+			</description>
+		</method>
 		<method name="remove_id">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
@@ -70,6 +91,13 @@
 			<param index="0" name="text_id" type="String" />
 			<description>
 				Extracts the UID value from the given [code]uid://[/code] string.
+			</description>
+		</method>
+		<method name="uid_to_path" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="uid" type="String" />
+			<description>
+				Converts the provided [param uid] to a path. Prints an error if the UID is invalid.
 			</description>
 		</method>
 	</methods>

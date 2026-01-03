@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -334,7 +338,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
+            return Mathf.IsEqualApprox(LengthSquared(), 1, Mathf.Epsilon);
         }
 
         public readonly Quaternion Log()
@@ -554,18 +558,39 @@ namespace Godot
 
         public Quaternion(Vector3 arcFrom, Vector3 arcTo)
         {
-            Vector3 c = arcFrom.Cross(arcTo);
-            real_t d = arcFrom.Dot(arcTo);
-
-            if (d < -1.0f + Mathf.Epsilon)
+#if DEBUG
+            if (arcFrom.IsZeroApprox() || arcTo.IsZeroApprox())
             {
-                X = 0f;
-                Y = 1f;
-                Z = 0f;
-                W = 0f;
+                throw new ArgumentException("The vectors must not be zero.");
+            }
+#endif
+#if REAL_T_IS_DOUBLE
+            const real_t AlmostOne = 0.999999999999999;
+#else
+            const real_t AlmostOne = 0.99999975f;
+#endif
+            Vector3 n0 = arcFrom.Normalized();
+            Vector3 n1 = arcTo.Normalized();
+            real_t d = n0.Dot(n1);
+            if (Mathf.Abs(d) > AlmostOne)
+            {
+                if (d >= 0.0f)
+                {
+                    X = 0.0f;
+                    Y = 0.0f;
+                    Z = 0.0f;
+                    W = 1.0f;
+                    return; // Vectors are same.
+                }
+                Vector3 axis = n0.GetAnyPerpendicular();
+                X = axis.X;
+                Y = axis.Y;
+                Z = axis.Z;
+                W = 0.0f;
             }
             else
             {
+                Vector3 c = n0.Cross(n1);
                 real_t s = Mathf.Sqrt((1.0f + d) * 2.0f);
                 real_t rs = 1.0f / s;
 
@@ -574,6 +599,7 @@ namespace Godot
                 Z = c.Z * rs;
                 W = s * 0.5f;
             }
+            this = Normalized();
         }
 
         /// <summary>
@@ -769,7 +795,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The other object to compare.</param>
         /// <returns>Whether or not the quaternion and the other object are exactly equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Quaternion other && Equals(other);
         }
@@ -808,18 +834,15 @@ namespace Godot
         /// Converts this <see cref="Quaternion"/> to a string.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z}, {W})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Quaternion"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this quaternion.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)}, {W.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)}, {W.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

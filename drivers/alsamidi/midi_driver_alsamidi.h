@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MIDI_DRIVER_ALSAMIDI_H
-#define MIDI_DRIVER_ALSAMIDI_H
+#pragma once
 
 #ifdef ALSAMIDI_ENABLED
 
@@ -45,30 +44,19 @@
 #include <alsa/asoundlib.h>
 #endif
 
-#include <stdio.h>
-
 class MIDIDriverALSAMidi : public MIDIDriver {
 	Thread thread;
 	Mutex mutex;
 
-	class InputConnection {
-	public:
+	struct InputConnection {
 		InputConnection() = default;
-		InputConnection(snd_rawmidi_t *midi_in) :
-				rawmidi_ptr{ midi_in } {}
+		InputConnection(int p_device_index, snd_rawmidi_t *p_rawmidi);
 
-		// Read in and parse available data, forwarding any complete messages through the driver.
-		int read_in(MIDIDriverALSAMidi &driver, uint64_t timestamp);
-
+		Parser parser;
 		snd_rawmidi_t *rawmidi_ptr = nullptr;
 
-	private:
-		static const size_t MSG_BUFFER_SIZE = 3;
-		uint8_t buffer[MSG_BUFFER_SIZE] = { 0 };
-		size_t expected_data = 0;
-		size_t received_data = 0;
-		bool skipping_sys_ex = false;
-		void parse_byte(uint8_t byte, MIDIDriverALSAMidi &driver, uint64_t timestamp);
+		// Read in and parse available data, forwarding complete events to Input.
+		void read();
 	};
 
 	Vector<InputConnection> connected_inputs;
@@ -77,35 +65,15 @@ class MIDIDriverALSAMidi : public MIDIDriver {
 
 	static void thread_func(void *p_udata);
 
-	enum class MessageCategory {
-		Data,
-		Voice,
-		SysExBegin,
-		SystemCommon, // excluding System Exclusive Begin/End
-		SysExEnd,
-		RealTime,
-	};
-
-	// If the passed byte is a status byte, return the associated message category,
-	// else return MessageCategory::Data.
-	static MessageCategory msg_category(uint8_t msg_part);
-
-	// Return the number of data bytes expected for the provided status byte.
-	static size_t msg_expected_data(uint8_t status_byte);
-
 	void lock() const;
 	void unlock() const;
 
 public:
-	virtual Error open();
-	virtual void close();
-
-	virtual PackedStringArray get_connected_inputs();
+	virtual Error open() override;
+	virtual void close() override;
 
 	MIDIDriverALSAMidi();
 	virtual ~MIDIDriverALSAMidi();
 };
 
 #endif // ALSAMIDI_ENABLED
-
-#endif // MIDI_DRIVER_ALSAMIDI_H

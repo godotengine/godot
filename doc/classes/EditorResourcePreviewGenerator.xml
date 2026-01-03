@@ -4,7 +4,7 @@
 		Custom generator of previews.
 	</brief_description>
 	<description>
-		Custom code to generate previews. Please check [code]file_dialog/thumbnail_size[/code] in [EditorSettings] to find out the right size to do previews at.
+		Custom code to generate previews. Check [member EditorSettings.filesystem/file_dialog/thumbnail_size] to find a proper size to generate previews at.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,14 +16,14 @@
 				By default, it returns [code]false[/code].
 			</description>
 		</method>
-		<method name="_generate" qualifiers="virtual const">
+		<method name="_generate" qualifiers="virtual required const">
 			<return type="Texture2D" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="metadata" type="Dictionary" />
 			<description>
 				Generate a preview from a given resource with the specified size. This must always be implemented.
-				Returning an empty texture is an OK way to fail and let another generator take care.
+				Returning [code]null[/code] is an OK way to fail and let another generator take care.
 				Care must be taken because this function is always called from a thread (not the main thread).
 				[param metadata] dictionary can be modified to store file-specific metadata that can be used in [method EditorResourceTooltipPlugin._make_tooltip_for_path] (like image size, sample length etc.).
 			</description>
@@ -35,7 +35,7 @@
 			<param index="2" name="metadata" type="Dictionary" />
 			<description>
 				Generate a preview directly from a path with the specified size. Implementing this is optional, as default code will load and call [method _generate].
-				Returning an empty texture is an OK way to fail and let another generator take care.
+				Returning [code]null[/code] is an OK way to fail and let another generator take care.
 				Care must be taken because this function is always called from a thread (not the main thread).
 				[param metadata] dictionary can be modified to store file-specific metadata that can be used in [method EditorResourceTooltipPlugin._make_tooltip_for_path] (like image size, sample length etc.).
 			</description>
@@ -47,11 +47,18 @@
 				By default, it returns [code]false[/code].
 			</description>
 		</method>
-		<method name="_handles" qualifiers="virtual const">
+		<method name="_handles" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="type" type="String" />
 			<description>
 				Returns [code]true[/code] if your generator supports the resource of type [param type].
+			</description>
+		</method>
+		<method name="request_draw_and_wait" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Call from within [method _generate] to request the rendering server draw to the [param viewport].
 			</description>
 		</method>
 	</methods>

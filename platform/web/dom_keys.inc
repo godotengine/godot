@@ -223,3 +223,24 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 	return Key::NONE;
 #undef DOM2GODOT
 }
+
+KeyLocation dom_code2godot_key_location(EM_UTF8 const p_code[32]) {
+#define DOM2GODOT(m_str, m_godot_code)                                         \
+	if (memcmp((const void *)m_str, (void *)p_code, strlen(m_str) + 1) == 0) { \
+		return KeyLocation::m_godot_code;                                      \
+	}
+
+	DOM2GODOT("AltLeft", LEFT);
+	DOM2GODOT("AltRight", RIGHT);
+	DOM2GODOT("ControlLeft", LEFT);
+	DOM2GODOT("ControlRight", RIGHT);
+	DOM2GODOT("MetaLeft", LEFT);
+	DOM2GODOT("MetaRight", RIGHT);
+	DOM2GODOT("OSLeft", LEFT);
+	DOM2GODOT("OSRight", RIGHT);
+	DOM2GODOT("ShiftLeft", LEFT);
+	DOM2GODOT("ShiftRight", RIGHT);
+
+	return KeyLocation::UNSPECIFIED;
+#undef DOM2GODOT
+}

@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_LSP_H
-#define GODOT_LSP_H
+#pragma once
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
-namespace lsp {
+namespace LSP {
 
 typedef String DocumentUri;
 
@@ -200,7 +199,7 @@ struct LocationLink {
 
 	/**
 	 * The range that should be selected and revealed when this link is being followed, e.g the name of a function.
-	 * Must be contained by the the `targetRange`. See also `DocumentSymbol#range`
+	 * Must be contained by the `targetRange`. See also `DocumentSymbol#range`
 	 */
 	Range targetSelectionRange;
 };
@@ -236,7 +235,26 @@ struct ReferenceContext {
 	/**
 	 * Include the declaration of the current symbol.
 	 */
-	bool includeDeclaration;
+	bool includeDeclaration = false;
+};
+
+struct ShowMessageParams {
+	/**
+	 * The message type. See {@link MessageType}.
+	 */
+	int type;
+
+	/**
+	 * The actual message.
+	 */
+	String message;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["type"] = type;
+		dict["message"] = message;
+		return dict;
+	}
 };
 
 struct ReferenceParams : TextDocumentPositionParams {
@@ -384,7 +402,7 @@ struct Command {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications.
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
 
 namespace TextDocumentSyncKind {
 /**
@@ -405,6 +423,25 @@ static const int Full = 1;
  */
 static const int Incremental = 2;
 }; // namespace TextDocumentSyncKind
+
+namespace MessageType {
+/**
+ * An error message.
+ */
+static const int Error = 1;
+/**
+ * A warning message.
+ */
+static const int Warning = 2;
+/**
+ * An information message.
+ */
+static const int Info = 3;
+/**
+ * A log message.
+ */
+static const int Log = 4;
+}; // namespace MessageType
 
 /**
  * Completion options.
@@ -538,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -548,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -628,6 +663,11 @@ struct DocumentOnTypeFormattingOptions {
 	}
 };
 
+enum class LanguageId {
+	GDSCRIPT,
+	OTHER,
+};
+
 struct TextDocumentItem {
 	/**
 	 * The text document's URI.
@@ -637,7 +677,7 @@ struct TextDocumentItem {
 	/**
 	 * The text document's language identifier.
 	 */
-	String languageId;
+	LanguageId languageId;
 
 	/**
 	 * The version number of this document (it will increase after each
@@ -652,36 +692,24 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict["languageId"];
 		version = p_dict["version"];
 		text = p_dict["text"];
-	}
 
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["uri"] = uri;
-		dict["languageId"] = languageId;
-		dict["version"] = version;
-		dict["text"] = text;
-		return dict;
+		// Clients should use "gdscript" as language id, but we can't enforce it. The Rider integration
+		// in particular uses "gd" at the time of writing. We normalize the id to make it easier to work with.
+		String rawLanguageId = p_dict["languageId"];
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd") {
+			languageId = LanguageId::GDSCRIPT;
+		} else {
+			languageId = LanguageId::OTHER;
+		}
 	}
 };
 
 /**
- * An event describing a change to a text document. If range and rangeLength are omitted
- * the new text is considered to be the full content of the document.
+ * An event describing a change to a text document.
  */
 struct TextDocumentContentChangeEvent {
-	/**
-	 * The range of the document that changed.
-	 */
-	Range range;
-
-	/**
-	 * The length of the range that got replaced.
-	 */
-	int rangeLength = 0;
-
 	/**
 	 * The new text of the range/document.
 	 */
@@ -689,8 +717,6 @@ struct TextDocumentContentChangeEvent {
 
 	void load(const Dictionary &p_params) {
 		text = p_params["text"];
-		rangeLength = p_params["rangeLength"];
-		range.load(p_params["range"]);
 	}
 };
 
@@ -861,7 +887,7 @@ struct MarkupContent {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
 // And here C++ compilers are unhappy with our enumeration name like `Color`, `File`, `RefCounted` etc.
 /**
  * The kind of a completion entry.
@@ -958,28 +984,30 @@ struct CompletionItem {
 
 	/**
 	 * A string that should be used when comparing this item
-	 * with other items. When `falsy` the label is used.
+	 * with other items. When omitted the label is used
+	 * as the filter text for this item.
 	 */
 	String sortText;
 
 	/**
 	 * A string that should be used when filtering a set of
-	 * completion items. When `falsy` the label is used.
+	 * completion items. When omitted the label is used as the
+	 * filter text for this item.
 	 */
 	String filterText;
 
 	/**
 	 * A string that should be inserted into a document when selecting
-	 * this completion. When `falsy` the label is used.
+	 * this completion. When omitted the label is used as the insert text
+	 * for this item.
 	 *
 	 * The `insertText` is subject to interpretation by the client side.
 	 * Some tools might not take the string literally. For example
-	 * VS Code when code complete is requested in this example `con<cursor position>`
-	 * and a completion item with an `insertText` of `console` is provided it
-	 * will only insert `sole`. Therefore it is recommended to use `textEdit` instead
-	 * since it avoids additional client side interpretation.
-	 *
-	 * @deprecated Use textEdit instead.
+	 * VS Code when code complete is requested in this example
+	 * `con<cursor position>` and a completion item with an `insertText` of
+	 * `console` is provided it will only insert `sole`. Therefore it is
+	 * recommended to use `textEdit` instead since it avoids additional client
+	 * side interpretation.
 	 */
 	String insertText;
 
@@ -1034,14 +1062,20 @@ struct CompletionItem {
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
-		dict["insertText"] = insertText;
+		if (!insertText.is_empty()) {
+			dict["insertText"] = insertText;
+		}
 		if (resolved) {
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
-			dict["sortText"] = sortText;
-			dict["filterText"] = filterText;
+			if (!sortText.is_empty()) {
+				dict["sortText"] = sortText;
+			}
+			if (!filterText.is_empty()) {
+				dict["filterText"] = filterText;
+			}
 			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
 			}
@@ -1064,7 +1098,7 @@ struct CompletionItem {
 		}
 		if (p_dict.has("documentation")) {
 			Variant doc = p_dict["documentation"];
-			if (doc.get_type() == Variant::STRING) {
+			if (doc.is_string()) {
 				documentation.value = doc;
 			} else if (doc.get_type() == Variant::DICTIONARY) {
 				Dictionary v = doc;
@@ -1110,7 +1144,7 @@ struct CompletionList {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not
 // And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
 /**
  * A symbol kind.
@@ -1251,7 +1285,7 @@ struct DocumentSymbol {
 	}
 
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		lsp::CompletionItem item;
+		LSP::CompletionItem item;
 		item.label = name;
 
 		if (resolved) {
@@ -1259,33 +1293,33 @@ struct DocumentSymbol {
 		}
 
 		switch (kind) {
-			case lsp::SymbolKind::Enum:
-				item.kind = lsp::CompletionItemKind::Enum;
+			case LSP::SymbolKind::Enum:
+				item.kind = LSP::CompletionItemKind::Enum;
 				break;
-			case lsp::SymbolKind::Class:
-				item.kind = lsp::CompletionItemKind::Class;
+			case LSP::SymbolKind::Class:
+				item.kind = LSP::CompletionItemKind::Class;
 				break;
-			case lsp::SymbolKind::Property:
-				item.kind = lsp::CompletionItemKind::Property;
+			case LSP::SymbolKind::Property:
+				item.kind = LSP::CompletionItemKind::Property;
 				break;
-			case lsp::SymbolKind::Method:
-			case lsp::SymbolKind::Function:
-				item.kind = lsp::CompletionItemKind::Method;
+			case LSP::SymbolKind::Method:
+			case LSP::SymbolKind::Function:
+				item.kind = LSP::CompletionItemKind::Method;
 				break;
-			case lsp::SymbolKind::Event:
-				item.kind = lsp::CompletionItemKind::Event;
+			case LSP::SymbolKind::Event:
+				item.kind = LSP::CompletionItemKind::Event;
 				break;
-			case lsp::SymbolKind::Constant:
-				item.kind = lsp::CompletionItemKind::Constant;
+			case LSP::SymbolKind::Constant:
+				item.kind = LSP::CompletionItemKind::Constant;
 				break;
-			case lsp::SymbolKind::Variable:
-				item.kind = lsp::CompletionItemKind::Variable;
+			case LSP::SymbolKind::Variable:
+				item.kind = LSP::CompletionItemKind::Variable;
 				break;
-			case lsp::SymbolKind::File:
-				item.kind = lsp::CompletionItemKind::File;
+			case LSP::SymbolKind::File:
+				item.kind = LSP::CompletionItemKind::File;
 				break;
 			default:
-				item.kind = lsp::CompletionItemKind::Text;
+				item.kind = LSP::CompletionItemKind::Text;
 				break;
 		}
 
@@ -1414,7 +1448,7 @@ struct CompletionContext {
 
 	void load(const Dictionary &p_params) {
 		triggerKind = int(p_params["triggerKind"]);
-		triggerCharacter = p_params["triggerCharacter"];
+		triggerCharacter = p_params.get("triggerCharacter", "");
 	}
 };
 
@@ -1672,16 +1706,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };
@@ -1745,7 +1771,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides workspace symbol support.
 	 */
-	bool workspaceSymbolProvider = true;
+	bool workspaceSymbolProvider = false;
 
 	/**
 	 * The server supports workspace folder.
@@ -1866,7 +1892,7 @@ struct GodotNativeClassInfo {
 	const DocData::ClassDoc *class_doc = nullptr;
 	const ClassDB::ClassInfo *class_info = nullptr;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		dict["name"] = name;
 		dict["inherits"] = class_doc->inherits;
@@ -1881,11 +1907,11 @@ struct GodotCapabilities {
 	 */
 	List<GodotNativeClassInfo> native_classes;
 
-	Dictionary to_json() {
+	Dictionary to_json() const {
 		Dictionary dict;
 		Array classes;
-		for (List<GodotNativeClassInfo>::Element *E = native_classes.front(); E; E = E->next()) {
-			classes.push_back(E->get().to_json());
+		for (const GodotNativeClassInfo &native_class : native_classes) {
+			classes.push_back(native_class.to_json());
 		}
 		dict["native_classes"] = classes;
 		return dict;
@@ -1897,28 +1923,67 @@ static String marked_documentation(const String &p_bbcode) {
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
-	bool in_code_block = false;
-	int code_block_indent = -1;
+	bool in_codeblock_tag = false;
+	// This is for handling the special [codeblocks] syntax used by the built-in class reference.
+	bool in_codeblocks_tag = false;
+	bool in_codeblocks_gdscript_tag = false;
 
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
-		int block_start = line.find("[codeblock]");
+
+		// For [codeblocks] tags we locate a child [gdscript] tag and turn that
+		// into a GDScript code listing. Other languages and the surrounding tag
+		// are skipped.
+		if (line.contains("[codeblocks]")) {
+			in_codeblocks_tag = true;
+			continue;
+		}
+		if (in_codeblocks_tag && line.contains("[/codeblocks]")) {
+			in_codeblocks_tag = false;
+			continue;
+		}
+		if (in_codeblocks_tag) {
+			if (line.contains("[gdscript]")) {
+				in_codeblocks_gdscript_tag = true;
+				line = "```gdscript";
+			} else if (in_codeblocks_gdscript_tag && line.contains("[/gdscript]")) {
+				line = "```";
+				in_codeblocks_gdscript_tag = false;
+			} else if (!in_codeblocks_gdscript_tag) {
+				continue;
+			}
+		}
+
+		// We need to account for both [codeblock] and [codeblock lang=...].
+		String codeblock_lang = "gdscript";
+		int block_start = line.find("[codeblock");
 		if (block_start != -1) {
-			code_block_indent = block_start;
-			in_code_block = true;
-			line = "\n";
-		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent, line.length());
+			int bracket_pos = line.find_char(']', block_start);
+			if (bracket_pos != -1) {
+				int lang_start = line.find("lang=", block_start);
+				if (lang_start != -1 && lang_start < bracket_pos) {
+					constexpr int LANG_PARAM_LENGTH = 5; // Length of "lang=".
+					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
+					int lang_end = bracket_pos;
+					if (lang_value_start < lang_end) {
+						codeblock_lang = line.substr(lang_value_start, lang_end - lang_value_start);
+					}
+				}
+				in_codeblock_tag = true;
+				line = "```" + codeblock_lang;
+			}
 		}
 
-		if (in_code_block && line.contains("[/codeblock]")) {
-			line = "\n";
-			in_code_block = false;
+		if (in_codeblock_tag && line.contains("[/codeblock]")) {
+			line = "```";
+			in_codeblock_tag = false;
 		}
 
-		if (!in_code_block) {
+		if (!in_codeblock_tag) {
 			line = line.strip_edges();
+			line = line.replace("[br]", "\n\n");
+
 			line = line.replace("[code]", "`");
 			line = line.replace("[/code]", "`");
 			line = line.replace("[i]", "*");
@@ -1927,24 +1992,130 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[/b]", "**");
 			line = line.replace("[u]", "__");
 			line = line.replace("[/u]", "__");
-			line = line.replace("[method ", "`");
-			line = line.replace("[member ", "`");
-			line = line.replace("[signal ", "`");
-			line = line.replace("[enum ", "`");
-			line = line.replace("[constant ", "`");
-			line = line.replace("[", "`");
-			line = line.replace("]", "`");
+			line = line.replace("[s]", "~~");
+			line = line.replace("[/s]", "~~");
+			line = line.replace("[kbd]", "`");
+			line = line.replace("[/kbd]", "`");
+			line = line.replace("[center]", "");
+			line = line.replace("[/center]", "");
+			line = line.replace("[/font]", "");
+			line = line.replace("[/color]", "");
+			line = line.replace("[/img]", "");
+
+			// Convert remaining simple bracketed class names to backticks and literal brackets.
+			// This handles cases like [Node2D], [Sprite2D], etc. and [lb] and [rb].
+			int pos = 0;
+			while ((pos = line.find_char('[', pos)) != -1) {
+				// Replace the special cases for [lb] and [rb] first and walk
+				// past them to avoid conflicts with class names.
+				const bool is_within_bounds = pos + 4 <= line.length();
+				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
+					line = line.substr(0, pos) + "\\[" + line.substr(pos + 4);
+					// We advance past the newly inserted `\\` and `[` characters (2 chars) so the
+					// next `line.find()` does not stop at the same position.
+					pos += 2;
+					continue;
+				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
+					line = line.substr(0, pos) + "\\]" + line.substr(pos + 4);
+					pos += 2;
+					continue;
+				}
+
+				// Replace class names in brackets.
+				int end_pos = line.find_char(']', pos);
+				if (end_pos == -1) {
+					break;
+				}
+
+				String content = line.substr(pos + 1, end_pos - pos - 1);
+				// We only convert if it looks like a simple class name (no spaces, no special chars).
+				// GDScript supports unicode characters as identifiers so we only exclude markers of other BBCode tags to avoid conflicts.
+				bool is_class_name = (!content.is_empty() && content != "url" && !content.contains_char(' ') && !content.contains_char('=') && !content.contains_char('/'));
+				if (is_class_name) {
+					line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
+					pos += content.length() + 2;
+				} else {
+					pos = end_pos + 1;
+				}
+			}
+
+			constexpr int URL_OPEN_TAG_LENGTH = 5; // Length of "[url=".
+			constexpr int URL_CLOSE_TAG_LENGTH = 6; // Length of "[/url]".
+
+			// This is for the case [url=$url]$text[/url].
+			pos = 0;
+			while ((pos = line.find("[url=", pos)) != -1) {
+				int url_end = line.find_char(']', pos);
+				int close_start = line.find("[/url]", url_end);
+				if (url_end == -1 || close_start == -1) {
+					break;
+				}
+
+				String url = line.substr(pos + URL_OPEN_TAG_LENGTH, url_end - pos - URL_OPEN_TAG_LENGTH);
+				String text = line.substr(url_end + 1, close_start - url_end - 1);
+				String replacement = "[" + text + "](" + url + ")";
+				line = line.substr(0, pos) + replacement + line.substr(close_start + URL_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
+			// This is for the case [url]$url[/url].
+			pos = 0;
+			while ((pos = line.find("[url]", pos)) != -1) {
+				int close_pos = line.find("[/url]", pos);
+				if (close_pos == -1) {
+					break;
+				}
+
+				String url = line.substr(pos + URL_OPEN_TAG_LENGTH, close_pos - pos - URL_OPEN_TAG_LENGTH);
+				String replacement = "[" + url + "](" + url + ")";
+				line = line.substr(0, pos) + replacement + line.substr(close_pos + URL_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
+			// Replace the various link types with inline code ([class MyNode] to `MyNode`).
+			// Uses a while loop because there can occasionally be multiple links of the same type in a single line.
+			const Vector<String> link_start_patterns = {
+				"[class ", "[method ", "[member ", "[signal ", "[enum ", "[constant ",
+				"[annotation ", "[constructor ", "[operator ", "[theme_item ", "[param "
+			};
+			for (const String &pattern : link_start_patterns) {
+				int pattern_pos = 0;
+				while ((pattern_pos = line.find(pattern, pattern_pos)) != -1) {
+					int end_pos = line.find_char(']', pattern_pos);
+					if (end_pos == -1) {
+						break;
+					}
+
+					String content = line.substr(pattern_pos + pattern.length(), end_pos - pattern_pos - pattern.length());
+					String replacement = "`" + content + "`";
+					line = line.substr(0, pattern_pos) + replacement + line.substr(end_pos + 1);
+					pattern_pos += replacement.length();
+				}
+			}
+
+			// Remove tags with attributes like [color=red], as they don't have a direct Markdown
+			// equivalent supported by external tools.
+			const String attribute_tags[] = {
+				"color", "font", "img"
+			};
+			for (const String &tag_name : attribute_tags) {
+				int tag_pos = 0;
+				while ((tag_pos = line.find("[" + tag_name + "=", tag_pos)) != -1) {
+					int end_pos = line.find_char(']', tag_pos);
+					if (end_pos == -1) {
+						break;
+					}
+
+					line = line.substr(0, tag_pos) + line.substr(end_pos + 1);
+				}
+			}
 		}
 
-		if (!in_code_block && i < lines.size() - 1) {
-			line += "\n\n";
-		} else if (i < lines.size() - 1) {
+		if (i < lines.size() - 1) {
 			line += "\n";
 		}
 		markdown += line;
 	}
 	return markdown;
 }
-} // namespace lsp
-
-#endif // GODOT_LSP_H
+} // namespace LSP

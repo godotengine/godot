@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "tokenstream.h"
-#include "../math/math.h"
+#include "../math/emath.h"
 
 namespace embree
 {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedDataContainerRef" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PackedDataContainerRef" inherits="RefCounted" deprecated="Use [method @GlobalScope.var_to_bytes] or [method FileAccess.store_var] instead. To enable data compression, use [method PackedByteArray.compress] or [method FileAccess.open_compressed]." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An internal class used by [PackedDataContainer] to pack nested arrays and dictionaries.
 	</brief_description>
@@ -7,24 +7,25 @@
 		When packing nested containers using [PackedDataContainer], they are recursively packed into [PackedDataContainerRef] (only applies to [Array] and [Dictionary]). Their data can be retrieved the same way as from [PackedDataContainer].
 		[codeblock]
 		var packed = PackedDataContainer.new()
-		packed.pack([1, 2, 3, ["abc", "def"], 4, 5, 6])
+		packed.pack([1, 2, 3, ["nested1", "nested2"], 4, 5, 6])
 
 		for element in packed:
-		    if element is PackedDataContainerRef:
-		        for subelement in element:
-		            print("::", subelement)
-		    else:
-		        print(element)
-
-		# Prints:
-		# 1
-		# 2
-		# 3
-		# ::abc
-		# ::def
-		# 4
-		# 5
-		# 6
+			if element is PackedDataContainerRef:
+				for subelement in element:
+					print("::", subelement)
+			else:
+				print(element)
+		[/codeblock]
+		Prints:
+		[codeblock lang=text]
+		1
+		2
+		3
+		::nested1
+		::nested2
+		4
+		5
+		6
 		[/codeblock]
 	</description>
 	<tutorials>

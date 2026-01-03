@@ -30,23 +30,27 @@
 
 #include "array.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Dictionary);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
+
 #include "container_type_validate.h"
 #include "core/math/math_funcs.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/search_array.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
-#include "core/variant/variant.h"
 
-class ArrayPrivate {
-public:
+struct ArrayPrivate {
 	SafeRefCount refcount;
 	Vector<Variant> array;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
+
+	ArrayPrivate() {}
+	ArrayPrivate(std::initializer_list<Variant> p_init) :
+			array(p_init) {}
 };
 
 void Array::_ref(const Array &p_from) const {
@@ -81,6 +85,22 @@ void Array::_unref() const {
 	_p = nullptr;
 }
 
+Array::Iterator Array::begin() {
+	return Iterator(_p->array.ptrw(), _p->read_only);
+}
+
+Array::Iterator Array::end() {
+	return Iterator(_p->array.ptrw() + _p->array.size(), _p->read_only);
+}
+
+Array::ConstIterator Array::begin() const {
+	return ConstIterator(_p->array.ptr());
+}
+
+Array::ConstIterator Array::end() const {
+	return ConstIterator(_p->array.ptr() + _p->array.size());
+}
+
 Variant &Array::operator[](int p_idx) {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
@@ -90,10 +110,6 @@ Variant &Array::operator[](int p_idx) {
 }
 
 const Variant &Array::operator[](int p_idx) const {
-	if (unlikely(_p->read_only)) {
-		*_p->read_only = _p->array[p_idx];
-		return *_p->read_only;
-	}
 	return _p->array[p_idx];
 }
 
@@ -219,7 +235,7 @@ void Array::assign(const Array &p_array) {
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
 			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
 			}
 		}
 		_p->array = p_array._p->array;
@@ -242,11 +258,11 @@ void Array::assign(const Array &p_array) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(value->get_type(), typed.type)) {
-				ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(value->get_type()) + "' to '" + Variant::get_type_name(typed.type) + "'.");
+				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed.type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
 		}
 	} else if (Variant::can_convert_strict(source_typed.type, typed.type)) {
 		// from primitives to different convertible primitives
@@ -254,7 +270,7 @@ void Array::assign(const Array &p_array) {
 			const Variant *value = source + i;
 			Callable::CallError ce;
 			Variant::construct(typed.type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %d from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
 		}
 	} else {
 		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
@@ -267,15 +283,21 @@ void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "push_back"));
-	_p->array.push_back(value);
+	_p->array.push_back(std::move(value));
 }
 
 void Array::append_array(const Array &p_array) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 
+	if (!is_typed() || _p->typed.can_reference(p_array._p->typed)) {
+		_p->array.append_array(p_array._p->array);
+		return;
+	}
+
 	Vector<Variant> validated_array = p_array._p->array;
+	Variant *write = validated_array.ptrw();
 	for (int i = 0; i < validated_array.size(); ++i) {
-		ERR_FAIL_COND(!_p->typed.validate(validated_array.write[i], "append_array"));
+		ERR_FAIL_COND(!_p->typed.validate(write[i], "append_array"));
 	}
 
 	_p->array.append_array(validated_array);
@@ -285,27 +307,41 @@ Error Array::resize(int p_new_size) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant::Type &variant_type = _p->typed.type;
 	int old_size = _p->array.size();
-	Error err = _p->array.resize_zeroed(p_new_size);
+	Error err = _p->array.resize_initialized(p_new_size);
 	if (!err && variant_type != Variant::NIL && variant_type != Variant::OBJECT) {
+		Variant *write = _p->array.ptrw();
 		for (int i = old_size; i < p_new_size; i++) {
-			VariantInternal::initialize(&_p->array.write[i], variant_type);
+			VariantInternal::initialize(&write[i], variant_type);
 		}
 	}
 	return err;
+}
+
+Error Array::reserve(int p_new_size) {
+	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
+	return _p->array.reserve(p_new_size);
 }
 
 Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "insert"), ERR_INVALID_PARAMETER);
-	return _p->array.insert(p_pos, value);
+
+	if (p_pos < 0) {
+		// Relative offset from the end.
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size() + 1, ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
+
+	return _p->array.insert(p_pos, std::move(value));
 }
 
 void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "fill"));
-	_p->array.fill(value);
+	_p->array.fill(std::move(value));
 }
 
 void Array::erase(const Variant &p_value) {
@@ -316,22 +352,22 @@ void Array::erase(const Variant &p_value) {
 }
 
 Variant Array::front() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](0);
 }
 
 Variant Array::back() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](_p->array.size() - 1);
 }
 
 Variant Array::pick_random() const {
-	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	ERR_FAIL_COND_V_MSG(_p->array.is_empty(), Variant(), "Can't take value from empty array.");
 	return operator[](Math::rand() % _p->array.size());
 }
 
 int Array::find(const Variant &p_value, int p_from) const {
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return -1;
 	}
 	Variant value = p_value;
@@ -353,8 +389,36 @@ int Array::find(const Variant &p_value, int p_from) const {
 	return ret;
 }
 
+int Array::find_custom(const Callable &p_callable, int p_from) const {
+	int ret = -1;
+
+	if (p_from < 0 || size() == 0) {
+		return ret;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i < size(); i++) {
+		const Variant &val = _p->array[i];
+		argptrs[0] = &val;
+		Variant res;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, res, ce);
+		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+			ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'find_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+		}
+
+		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, ret, "Error on method from 'find_custom': Return type of callable must be boolean.");
+		if (res.operator bool()) {
+			return i;
+		}
+	}
+
+	return ret;
+}
+
 int Array::rfind(const Variant &p_value, int p_from) const {
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return -1;
 	}
 	Variant value = p_value;
@@ -378,10 +442,45 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	return -1;
 }
 
+int Array::rfind_custom(const Callable &p_callable, int p_from) const {
+	if (_p->array.is_empty()) {
+		return -1;
+	}
+
+	if (p_from < 0) {
+		// Relative offset from the end.
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries.
+		p_from = _p->array.size() - 1;
+	}
+
+	const Variant *argptrs[1];
+
+	for (int i = p_from; i >= 0; i--) {
+		const Variant &val = _p->array[i];
+		argptrs[0] = &val;
+		Variant res;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, res, ce);
+		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
+			ERR_FAIL_V_MSG(-1, vformat("Error calling method from 'rfind_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+		}
+
+		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, -1, "Error on method from 'rfind_custom': Return type of callable must be boolean.");
+		if (res.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::count(const Variant &p_value) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return 0;
 	}
 
@@ -404,6 +503,14 @@ bool Array::has(const Variant &p_value) const {
 
 void Array::remove_at(int p_pos) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+
+	if (p_pos < 0) {
+		// Relative offset from the end.
+		p_pos = _p->array.size() + p_pos;
+	}
+
+	ERR_FAIL_INDEX_MSG(p_pos, _p->array.size(), vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
+
 	_p->array.remove_at(p_pos);
 }
 
@@ -412,7 +519,7 @@ void Array::set(int p_idx, const Variant &p_value) {
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
 
-	operator[](p_idx) = value;
+	_p->array.write[p_idx] = std::move(value);
 }
 
 const Variant &Array::get(int p_idx) const {
@@ -420,10 +527,14 @@ const Variant &Array::get(int p_idx) const {
 }
 
 Array Array::duplicate(bool p_deep) const {
-	return recursive_duplicate(p_deep, 0);
+	return recursive_duplicate(p_deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
 }
 
-Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
+Array Array::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode) const {
+	return recursive_duplicate(true, p_deep_subresources_mode, 0);
+}
+
+Array Array::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
 	Array new_arr;
 	new_arr._p->typed = _p->typed;
 
@@ -433,11 +544,19 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 	}
 
 	if (p_deep) {
+		bool is_call_chain_end = recursion_count == 0;
+
 		recursion_count++;
 		int element_count = size();
 		new_arr.resize(element_count);
+		Variant *write = new_arr._p->array.ptrw();
 		for (int i = 0; i < element_count; i++) {
-			new_arr[i] = get(i).recursive_duplicate(true, recursion_count);
+			write[i] = get(i).recursive_duplicate(true, p_deep_subresources_mode, recursion_count);
+		}
+
+		// Variant::recursive_duplicate() may have created a remap cache by now.
+		if (is_call_chain_end) {
+			Resource::_teardown_duplicate_from_variant();
 		}
 	} else {
 		new_arr._p->array = _p->array;
@@ -473,8 +592,9 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 	int result_size = (end - begin) / p_step + (((end - begin) % p_step != 0) ? 1 : 0);
 	result.resize(result_size);
 
+	Variant *write = result._p->array.ptrw();
 	for (int src_idx = begin, dest_idx = 0; dest_idx < result_size; ++dest_idx) {
-		result[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
+		write[dest_idx] = p_deep ? get(src_idx).duplicate(true) : get(src_idx);
 		src_idx += p_step;
 	}
 
@@ -488,6 +608,7 @@ Array Array::filter(const Callable &p_callable) const {
 	int accepted_count = 0;
 
 	const Variant *argptrs[1];
+	Variant *write = new_arr._p->array.ptrw();
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
@@ -495,11 +616,11 @@ Array Array::filter(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), "Error calling method from 'filter': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (result.operator bool()) {
-			new_arr[accepted_count] = get(i);
+			write[accepted_count] = get(i);
 			accepted_count++;
 		}
 	}
@@ -514,17 +635,15 @@ Array Array::map(const Callable &p_callable) const {
 	new_arr.resize(size());
 
 	const Variant *argptrs[1];
+	Variant *write = new_arr._p->array.ptrw();
 	for (int i = 0; i < size(); i++) {
 		argptrs[0] = &get(i);
 
-		Variant result;
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, result, ce);
+		p_callable.callp(argptrs, 1, write[i], ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), "Error calling method from 'map': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'map': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
-
-		new_arr[i] = result;
 	}
 
 	return new_arr;
@@ -547,7 +666,7 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 2, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Variant(), "Error calling method from 'reduce': " + Variant::get_callable_error_text(p_callable, argptrs, 2, ce));
+			ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'reduce': %s.", Variant::get_callable_error_text(p_callable, argptrs, 2, ce)));
 		}
 		ret = result;
 	}
@@ -564,7 +683,7 @@ bool Array::any(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from 'any': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'any': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (result.operator bool()) {
@@ -586,7 +705,7 @@ bool Array::all(const Callable &p_callable) const {
 		Callable::CallError ce;
 		p_callable.callp(argptrs, 1, result, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, "Error calling method from 'all': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'all': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
 		}
 
 		if (!(result.operator bool())) {
@@ -630,17 +749,14 @@ void Array::shuffle() {
 	Variant *data = _p->array.ptrw();
 	for (int i = n - 1; i >= 1; i--) {
 		const int j = Math::rand() % (i + 1);
-		const Variant tmp = data[j];
-		data[j] = data[i];
-		data[i] = tmp;
+		SWAP(data[i], data[j]);
 	}
 }
 
 int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
-	SearchArray<Variant, _ArrayVariantSort> avs;
-	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
+	return _p->array.span().bisect<_ArrayVariantSort>(value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
@@ -659,7 +775,7 @@ void Array::push_front(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant value = p_value;
 	ERR_FAIL_COND(!_p->typed.validate(value, "push_front"));
-	_p->array.insert(0, value);
+	_p->array.insert(0, std::move(value));
 }
 
 Variant Array::pop_back() {
@@ -710,47 +826,45 @@ Variant Array::pop_at(int p_pos) {
 }
 
 Variant Array::min() const {
-	Variant minval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			minval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is less
-				minval = test;
-			}
+	int array_size = size();
+	if (array_size == 0) {
+		return Variant();
+	}
+
+	int min_index = 0;
+	Variant is_less;
+	for (int i = 1; i < array_size; i++) {
+		bool valid;
+		Variant::evaluate(Variant::OP_LESS, _p->array[i], _p->array[min_index], is_less, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(is_less)) {
+			min_index = i;
 		}
 	}
-	return minval;
+	return _p->array[min_index];
 }
 
 Variant Array::max() const {
-	Variant maxval;
-	for (int i = 0; i < size(); i++) {
-		if (i == 0) {
-			maxval = get(i);
-		} else {
-			bool valid;
-			Variant ret;
-			Variant test = get(i);
-			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
-			if (!valid) {
-				return Variant(); //not a valid comparison
-			}
-			if (bool(ret)) {
-				//is less
-				maxval = test;
-			}
+	int array_size = size();
+	if (array_size == 0) {
+		return Variant();
+	}
+
+	int max_index = 0;
+	Variant is_greater;
+	for (int i = 1; i < array_size; i++) {
+		bool valid;
+		Variant::evaluate(Variant::OP_GREATER, _p->array[i], _p->array[max_index], is_greater, valid);
+		if (!valid) {
+			return Variant(); //not a valid comparison
+		}
+		if (bool(is_greater)) {
+			max_index = i;
 		}
 	}
-	return maxval;
+	return _p->array[max_index];
 }
 
 const void *Array::id() const {
@@ -762,6 +876,10 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 	_p->refcount.init();
 	set_typed(p_type, p_class_name, p_script);
 	assign(p_from);
+}
+
+void Array::set_typed(const ContainerType &p_element_type) {
+	set_typed(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script);
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
@@ -787,6 +905,18 @@ bool Array::is_same_typed(const Array &p_other) const {
 	return _p->typed == p_other._p->typed;
 }
 
+bool Array::is_same_instance(const Array &p_other) const {
+	return _p == p_other._p;
+}
+
+ContainerType Array::get_element_type() const {
+	ContainerType type;
+	type.builtin_type = _p->typed.type;
+	type.class_name = _p->typed.class_name;
+	type.script = _p->typed.script;
+	return type;
+}
+
 uint32_t Array::get_typed_builtin() const {
 	return _p->typed.type;
 }
@@ -799,6 +929,12 @@ Variant Array::get_typed_script() const {
 	return _p->typed.script;
 }
 
+Array Array::create_read_only() {
+	Array array;
+	array.make_read_only();
+	return array;
+}
+
 void Array::make_read_only() {
 	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
@@ -809,9 +945,19 @@ bool Array::is_read_only() const {
 	return _p->read_only != nullptr;
 }
 
+Span<Variant> Array::span() const {
+	return _p->array.span();
+}
+
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(std::initializer_list<Variant> p_init) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = Vector<Variant>(p_init);
 }
 
 Array::Array() {

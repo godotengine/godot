@@ -1,0 +1,352 @@
+diff --git a/thirdparty/README.md b/thirdparty/README.md
+index c22ef77af7..52b635df05 100644
+--- a/thirdparty/README.md
++++ b/thirdparty/README.md
+@@ -539,7 +539,7 @@ Patches:
+ ## libjpeg-turbo
+ 
+ - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
+-- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
++- Version: 3.1.3 (af9c1c268520a29adf98cad5138dafe612b3d318, 2025)
+ - License: BSD-3-Clause and IJG
+ 
+ Files extracted from upstream source:
+diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
+index 6fecc5cb80..21d26536c1 100644
+--- a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
++++ b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
+@@ -286,271 +286,6 @@ bailout:
+   return retval;
+ }
+ 
+-
+-/*************************** Packed-Pixel Image I/O **************************/
+-
+-/* TurboJPEG 3.0+ */
+-DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
+-  (tjhandle handle, const char *filename, int *width, int align, int *height,
+-   int *pixelFormat)
+-{
+-  static const char FUNCTION_NAME[] =
+-    GET_STRING(tj3LoadImage, BITS_IN_JSAMPLE);
+-
+-#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+-
+-  int retval = 0, tempc;
+-  size_t pitch;
+-  tjhandle handle2 = NULL;
+-  tjinstance *this2;
+-  j_compress_ptr cinfo = NULL;
+-  cjpeg_source_ptr src;
+-  _JSAMPLE *dstBuf = NULL;
+-  FILE *file = NULL;
+-  boolean invert;
+-
+-  GET_TJINSTANCE(handle, NULL)
+-
+-  if (!filename || !width || align < 1 || !height || !pixelFormat ||
+-      *pixelFormat < TJPF_UNKNOWN || *pixelFormat >= TJ_NUMPF)
+-    THROW("Invalid argument");
+-  if ((align & (align - 1)) != 0)
+-    THROW("Alignment must be a power of 2");
+-
+-  /* The instance handle passed to this function is used only for parameter
+-     retrieval.  Create a new temporary instance to avoid interfering with the
+-     libjpeg state of the primary instance. */
+-  if ((handle2 = tj3Init(TJINIT_COMPRESS)) == NULL) return NULL;
+-  this2 = (tjinstance *)handle2;
+-  cinfo = &this2->cinfo;
+-
+-#ifdef _MSC_VER
+-  if (fopen_s(&file, filename, "rb") || file == NULL)
+-#else
+-  if ((file = fopen(filename, "rb")) == NULL)
+-#endif
+-    THROW_UNIX("Cannot open input file");
+-
+-  if ((tempc = getc(file)) < 0 || ungetc(tempc, file) == EOF)
+-    THROW_UNIX("Could not read input file")
+-  else if (tempc == EOF)
+-    THROW("Input file contains no data");
+-
+-  if (setjmp(this2->jerr.setjmp_buffer)) {
+-    /* If we get here, the JPEG code has signaled an error. */
+-    retval = -1;  goto bailout;
+-  }
+-
+-  cinfo->data_precision = BITS_IN_JSAMPLE;
+-  if (*pixelFormat == TJPF_UNKNOWN) cinfo->in_color_space = JCS_UNKNOWN;
+-  else cinfo->in_color_space = pf2cs[*pixelFormat];
+-  if (tempc == 'B') {
+-    if ((src = jinit_read_bmp(cinfo, FALSE)) == NULL)
+-      THROW("Could not initialize bitmap loader");
+-    invert = !this->bottomUp;
+-  } else if (tempc == 'P') {
+-#if BITS_IN_JSAMPLE == 8
+-    if (this->precision >= 2 && this->precision <= BITS_IN_JSAMPLE)
+-#else
+-    if (this->precision >= BITS_IN_JSAMPLE - 3 &&
+-        this->precision <= BITS_IN_JSAMPLE)
+-#endif
+-      cinfo->data_precision = this->precision;
+-    if ((src = _jinit_read_ppm(cinfo)) == NULL)
+-      THROW("Could not initialize PPM loader");
+-    invert = this->bottomUp;
+-  } else
+-    THROW("Unsupported file type");
+-
+-  cinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
+-
+-  src->input_file = file;
+-  /* Refuse to load images larger than the specified size. */
+-  src->max_pixels = this->maxPixels;
+-  (*src->start_input) (cinfo, src);
+-  if (tempc == 'B') {
+-    if (cinfo->X_density && cinfo->Y_density) {
+-      this->xDensity = cinfo->X_density;
+-      this->yDensity = cinfo->Y_density;
+-      this->densityUnits = cinfo->density_unit;
+-    }
+-  }
+-  (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);
+-
+-  *width = cinfo->image_width;  *height = cinfo->image_height;
+-  *pixelFormat = cs2pf[cinfo->in_color_space];
+-
+-  pitch = PAD((*width) * tjPixelSize[*pixelFormat], align);
+-  if (
+-#if ULLONG_MAX > SIZE_MAX
+-      (unsigned long long)pitch * (unsigned long long)(*height) >
+-      (unsigned long long)((size_t)-1) ||
+-#endif
+-      (dstBuf = (_JSAMPLE *)malloc(pitch * (*height) *
+-                                   sizeof(_JSAMPLE))) == NULL)
+-    THROW("Memory allocation failure");
+-
+-  if (setjmp(this2->jerr.setjmp_buffer)) {
+-    /* If we get here, the JPEG code has signaled an error. */
+-    retval = -1;  goto bailout;
+-  }
+-
+-  while (cinfo->next_scanline < cinfo->image_height) {
+-    int i, nlines = (*src->get_pixel_rows) (cinfo, src);
+-
+-    for (i = 0; i < nlines; i++) {
+-      _JSAMPLE *dstptr;
+-      int row;
+-
+-      row = cinfo->next_scanline + i;
+-      if (invert) dstptr = &dstBuf[((*height) - row - 1) * pitch];
+-      else dstptr = &dstBuf[row * pitch];
+-      memcpy(dstptr, src->_buffer[i],
+-             (*width) * tjPixelSize[*pixelFormat] * sizeof(_JSAMPLE));
+-    }
+-    cinfo->next_scanline += nlines;
+-  }
+-
+-  (*src->finish_input) (cinfo, src);
+-
+-bailout:
+-  tj3Destroy(handle2);
+-  if (file) fclose(file);
+-  if (retval < 0) { free(dstBuf);  dstBuf = NULL; }
+-  return dstBuf;
+-
+-#else /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */
+-
+-  static const char ERROR_MSG[] =
+-    "16-bit data precision requires lossless JPEG,\n"
+-    "which was disabled at build time.";
+-  _JSAMPLE *retval = NULL;
+-
+-  GET_TJINSTANCE(handle, NULL)
+-  SNPRINTF(this->errStr, JMSG_LENGTH_MAX, "%s(): %s", FUNCTION_NAME,
+-           ERROR_MSG);
+-  this->isInstanceError = TRUE;  THROWG(ERROR_MSG, NULL)
+-
+-bailout:
+-  return retval;
+-
+-#endif
+-}
+-
+-
+-/* TurboJPEG 3.0+ */
+-DLLEXPORT int GET_NAME(tj3SaveImage, BITS_IN_JSAMPLE)
+-  (tjhandle handle, const char *filename, const _JSAMPLE *buffer, int width,
+-   int pitch, int height, int pixelFormat)
+-{
+-  static const char FUNCTION_NAME[] =
+-    GET_STRING(tj3SaveImage, BITS_IN_JSAMPLE);
+-  int retval = 0;
+-
+-#if BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED)
+-
+-  tjhandle handle2 = NULL;
+-  tjinstance *this2;
+-  j_decompress_ptr dinfo = NULL;
+-  djpeg_dest_ptr dst;
+-  FILE *file = NULL;
+-  char *ptr = NULL;
+-  boolean invert;
+-
+-  GET_TJINSTANCE(handle, -1)
+-
+-  if (!filename || !buffer || width < 1 || pitch < 0 || height < 1 ||
+-      pixelFormat < 0 || pixelFormat >= TJ_NUMPF)
+-    THROW("Invalid argument");
+-
+-  /* The instance handle passed to this function is used only for parameter
+-     retrieval.  Create a new temporary instance to avoid interfering with the
+-     libjpeg state of the primary instance. */
+-  if ((handle2 = tj3Init(TJINIT_DECOMPRESS)) == NULL)
+-    return -1;
+-  this2 = (tjinstance *)handle2;
+-  dinfo = &this2->dinfo;
+-
+-#ifdef _MSC_VER
+-  if (fopen_s(&file, filename, "wb") || file == NULL)
+-#else
+-  if ((file = fopen(filename, "wb")) == NULL)
+-#endif
+-    THROW_UNIX("Cannot open output file");
+-
+-  if (setjmp(this2->jerr.setjmp_buffer)) {
+-    /* If we get here, the JPEG code has signaled an error. */
+-    retval = -1;  goto bailout;
+-  }
+-
+-  this2->dinfo.out_color_space = pf2cs[pixelFormat];
+-  dinfo->image_width = width;  dinfo->image_height = height;
+-  dinfo->global_state = DSTATE_READY;
+-  dinfo->scale_num = dinfo->scale_denom = 1;
+-  dinfo->data_precision = BITS_IN_JSAMPLE;
+-
+-  ptr = strrchr(filename, '.');
+-  if (ptr && !strcasecmp(ptr, ".bmp")) {
+-    if ((dst = jinit_write_bmp(dinfo, FALSE, FALSE)) == NULL)
+-      THROW("Could not initialize bitmap writer");
+-    invert = !this->bottomUp;
+-    dinfo->X_density = (UINT16)this->xDensity;
+-    dinfo->Y_density = (UINT16)this->yDensity;
+-    dinfo->density_unit = (UINT8)this->densityUnits;
+-  } else {
+-#if BITS_IN_JSAMPLE == 8
+-    if (this->precision >= 2 && this->precision <= BITS_IN_JSAMPLE)
+-#else
+-    if (this->precision >= BITS_IN_JSAMPLE - 3 &&
+-        this->precision <= BITS_IN_JSAMPLE)
+-#endif
+-      dinfo->data_precision = this->precision;
+-    if ((dst = _jinit_write_ppm(dinfo)) == NULL)
+-      THROW("Could not initialize PPM writer");
+-    invert = this->bottomUp;
+-  }
+-
+-  dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
+-
+-  dst->output_file = file;
+-  (*dst->start_output) (dinfo, dst);
+-  (*dinfo->mem->realize_virt_arrays) ((j_common_ptr)dinfo);
+-
+-  if (pitch == 0) pitch = width * tjPixelSize[pixelFormat];
+-
+-  while (dinfo->output_scanline < dinfo->output_height) {
+-    _JSAMPLE *rowptr;
+-
+-    if (invert)
+-      rowptr =
+-        (_JSAMPLE *)&buffer[(height - dinfo->output_scanline - 1) * pitch];
+-    else
+-      rowptr = (_JSAMPLE *)&buffer[dinfo->output_scanline * pitch];
+-    memcpy(dst->_buffer[0], rowptr,
+-           width * tjPixelSize[pixelFormat] * sizeof(_JSAMPLE));
+-    (*dst->put_pixel_rows) (dinfo, dst, 1);
+-    dinfo->output_scanline++;
+-  }
+-
+-  (*dst->finish_output) (dinfo, dst);
+-
+-bailout:
+-  tj3Destroy(handle2);
+-  if (file) fclose(file);
+-  return retval;
+-
+-#else /* BITS_IN_JSAMPLE != 16 || defined(D_LOSSLESS_SUPPORTED) */
+-
+-  GET_TJINSTANCE(handle, -1)
+-  THROW("16-bit data precision requires lossless JPEG,\n"
+-        "which was disabled at build time.")
+-bailout:
+-  return retval;
+-
+-#endif
+-}
+-
+-
+ #undef _JSAMPLE
+ #undef _JSAMPROW
+ #undef _buffer
+diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg.c b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+index 45fc0f954c..969174f72e 100644
+--- a/thirdparty/libjpeg-turbo/src/turbojpeg.c
++++ b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+@@ -1196,9 +1196,6 @@ bailout:
+ #define BITS_IN_JSAMPLE  12
+ #include "turbojpeg-mp.c"
+ #undef BITS_IN_JSAMPLE
+-#define BITS_IN_JSAMPLE  16
+-#include "turbojpeg-mp.c"
+-#undef BITS_IN_JSAMPLE
+ 
+ /* TurboJPEG 1.2+ */
+ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
+@@ -3094,48 +3091,3 @@ bailout:
+   free(sizes);
+   return retval;
+ }
+-
+-
+-/*************************** Packed-Pixel Image I/O **************************/
+-
+-/* tj3LoadImage*() is implemented in turbojpeg-mp.c */
+-
+-/* TurboJPEG 2.0+ */
+-DLLEXPORT unsigned char *tjLoadImage(const char *filename, int *width,
+-                                     int align, int *height,
+-                                     int *pixelFormat, int flags)
+-{
+-  tjhandle handle = NULL;
+-  unsigned char *dstBuf = NULL;
+-
+-  if ((handle = tj3Init(TJINIT_COMPRESS)) == NULL) return NULL;
+-
+-  processFlags(handle, flags, COMPRESS);
+-
+-  dstBuf = tj3LoadImage8(handle, filename, width, align, height, pixelFormat);
+-
+-  tj3Destroy(handle);
+-  return dstBuf;
+-}
+-
+-
+-/* tj3SaveImage*() is implemented in turbojpeg-mp.c */
+-
+-/* TurboJPEG 2.0+ */
+-DLLEXPORT int tjSaveImage(const char *filename, unsigned char *buffer,
+-                          int width, int pitch, int height, int pixelFormat,
+-                          int flags)
+-{
+-  tjhandle handle = NULL;
+-  int retval = -1;
+-
+-  if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL) return -1;
+-
+-  processFlags(handle, flags, DECOMPRESS);
+-
+-  retval = tj3SaveImage8(handle, filename, buffer, width, pitch, height,
+-                         pixelFormat);
+-
+-  tj3Destroy(handle);
+-  return retval;
+-}

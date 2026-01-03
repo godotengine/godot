@@ -8,12 +8,13 @@
 		To get cancel action, you can use:
 		[codeblocks]
 		[gdscript]
-		get_cancel_button().pressed.connect(self.canceled)
+		get_cancel_button().pressed.connect(_on_canceled)
 		[/gdscript]
 		[csharp]
-		GetCancelButton().Pressed += Canceled;
+		GetCancelButton().Pressed += OnCanceled;
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] [AcceptDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>

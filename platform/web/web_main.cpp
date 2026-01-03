@@ -33,11 +33,19 @@
 #include "os_web.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
+
+#ifdef TOOLS_ENABLED
+#include "editor/web_tools_editor_plugin.h"
+#endif
 
 #include <emscripten/emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 static OS_Web *os = nullptr;
 #ifndef PROXY_TO_PTHREAD_ENABLED
@@ -58,6 +66,7 @@ void exit_callback() {
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
 	memdelete(os);
 	os = nullptr;
+	godot_cleanup_profiler();
 	emscripten_force_exit(exit_code); // Exit runtime.
 }
 
@@ -98,9 +107,34 @@ void main_loop_callback() {
 	}
 }
 
+void print_web_header() {
+	// Emscripten.
+	char *emscripten_version_char = godot_js_emscripten_get_version();
+	String emscripten_version = vformat("Emscripten %s", emscripten_version_char);
+	// `free()` is used here because it's not memory that was allocated by Godot.
+	free(emscripten_version_char);
+
+	// Build features.
+	String thread_support = OS::get_singleton()->has_feature("threads")
+			? "multi-threaded"
+			: "single-threaded";
+	String extensions_support = OS::get_singleton()->has_feature("web_extensions")
+			? "GDExtension support"
+			: "no GDExtension support";
+
+	Vector<String> build_configuration = { emscripten_version, thread_support, extensions_support };
+	print_line(vformat("Build configuration: %s.", String(", ").join(build_configuration)));
+}
+
 /// When calling main, it is assumed FS is setup and synced.
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
+	godot_init_profiler();
+
 	os = new OS_Web();
+
+#ifdef TOOLS_ENABLED
+	WebToolsEditorPlugin::initialize();
+#endif
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
@@ -109,30 +143,30 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 
 	// Proper shutdown in case of setup failure.
 	if (err != OK) {
-		int exit_code = (int)err;
-		if (err == ERR_HELP) {
-			exit_code = 0; // Called with --help.
-		}
-		os->set_exit_code(exit_code);
 		// Will only exit after sync.
 		emscripten_set_main_loop(exit_callback, -1, false);
 		godot_js_os_finish_async(cleanup_after_sync);
-		return exit_code;
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			return EXIT_SUCCESS;
+		}
+		return EXIT_FAILURE;
 	}
 
-	os->set_exit_code(0);
+	print_web_header();
+
 	main_started = true;
 
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);
 
-	Main::start();
+	int ret = Main::start();
+	os->set_exit_code(ret);
 	os->get_main_loop()->initialize();
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_project_manager_hint() && FileAccess::exists("/tmp/preload.zip")) {
 		PackedStringArray ps;
 		ps.push_back("/tmp/preload.zip");
-		os->get_main_loop()->emit_signal(SNAME("files_dropped"), ps, -1);
+		SceneTree::get_singleton()->get_root()->emit_signal(SNAME("files_dropped"), ps);
 	}
 #endif
 	emscripten_set_main_loop(main_loop_callback, -1, false);
@@ -140,5 +174,5 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
 
-	return 0;
+	return os->get_exit_code();
 }

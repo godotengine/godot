@@ -1,0 +1,6 @@
+GH-75250 & GH-76401
+-------------------
+Validate extension JSON: Error: Hash changed for 'classes/RichTextLabel/methods/push_paragraph', from 3DD1D1C2 to BFDC71FE. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_paragraph/arguments': size changed value in new API, from 4 to 6.
+
+Added a optional parameters with default values. No adjustments should be necessary.

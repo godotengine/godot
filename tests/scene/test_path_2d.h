@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PATH_2D_H
-#define TEST_PATH_2D_H
+#pragma once
 
 #include "scene/2d/path_2d.h"
 
@@ -40,7 +39,7 @@ namespace TestPath2D {
 TEST_CASE("[SceneTree][Path2D] Initialization") {
 	SUBCASE("Path should be empty right after initialization") {
 		Path2D *test_path = memnew(Path2D);
-		CHECK(test_path->get_curve() == nullptr);
+		CHECK(test_path->get_curve().is_null());
 		memdelete(test_path);
 	}
 }
@@ -105,5 +104,3 @@ TEST_CASE("[SceneTree][Path2D] Curve setter and getter") {
 }
 
 } // namespace TestPath2D
-
-#endif // TEST_PATH_2D_H

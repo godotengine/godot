@@ -209,6 +209,23 @@ struct OS2
     return ret;
   }
 
+  static unsigned calc_avg_char_width (const hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>>& hmtx_map)
+  {
+    unsigned num = 0;
+    unsigned total_width = 0;
+    for (const auto& _ : hmtx_map.values_ref ())
+    {
+      unsigned width = _.first;
+      if (width)
+      {
+        total_width += width;
+        num++;
+      }
+    }
+
+    return num ? (unsigned) roundf ((double) total_width / (double) num) : 0;
+  }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -239,38 +256,39 @@ struct OS2
 
       if (os2_prime->version >= 2)
       {
+        hb_barrier ();
         auto *table = & const_cast<OS2V2Tail &> (os2_prime->v2 ());
         HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_X_HEIGHT,                   sxHeight);
         HB_ADD_MVAR_VAR (HB_OT_METRICS_TAG_CAP_HEIGHT,                 sCapHeight);
       }
+
+      unsigned avg_char_width = calc_avg_char_width (c->plan->hmtx_map);
+      if (!c->serializer->check_assign (os2_prime->xAvgCharWidth, avg_char_width,
+                                        HB_SERIALIZE_ERROR_INT_OVERFLOW))
+        return_trace (false);
     }
 #endif
 
-    if (c->plan->user_axes_location.has (HB_TAG ('w','g','h','t')) &&
-        !c->plan->pinned_at_default)
+    Triple *axis_range;
+    if (c->plan->user_axes_location.has (HB_TAG ('w','g','h','t'), &axis_range))
     {
-      float weight_class = c->plan->user_axes_location.get (HB_TAG ('w','g','h','t')).middle;
-      if (!c->serializer->check_assign (os2_prime->usWeightClass,
-                                        roundf (hb_clamp (weight_class, 1.0f, 1000.0f)),
-                                        HB_SERIALIZE_ERROR_INT_OVERFLOW))
-        return_trace (false);
+      unsigned weight_class = static_cast<unsigned> (roundf (hb_clamp (axis_range->middle, 1.0, 1000.0)));
+      if (os2_prime->usWeightClass != weight_class)
+        os2_prime->usWeightClass = weight_class;
     }
 
-    if (c->plan->user_axes_location.has (HB_TAG ('w','d','t','h')) &&
-        !c->plan->pinned_at_default)
+    if (c->plan->user_axes_location.has (HB_TAG ('w','d','t','h'), &axis_range))
     {
-      float width = c->plan->user_axes_location.get (HB_TAG ('w','d','t','h')).middle;
-      if (!c->serializer->check_assign (os2_prime->usWidthClass,
-                                        roundf (map_wdth_to_widthclass (width)),
-                                        HB_SERIALIZE_ERROR_INT_OVERFLOW))
-        return_trace (false);
+      unsigned width_class = static_cast<unsigned> (roundf (map_wdth_to_widthclass (axis_range->middle)));
+      if (os2_prime->usWidthClass != width_class)
+        os2_prime->usWidthClass = width_class;
     }
+
+    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->os2_info.min_cmap_codepoint);
+    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->os2_info.max_cmap_codepoint);
 
     if (c->plan->flags & HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES)
       return_trace (true);
-
-    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->unicodes.get_min ());
-    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->unicodes.get_max ());
 
     _update_unicode_ranges (&c->plan->unicodes, os2_prime->ulUnicodeRange);
 
@@ -339,6 +357,7 @@ struct OS2
   {
     TRACE_SANITIZE (this);
     if (unlikely (!c->check_struct (this))) return_trace (false);
+    hb_barrier ();
     if (unlikely (version >= 1 && !v1X.sanitize (c))) return_trace (false);
     if (unlikely (version >= 2 && !v2X.sanitize (c))) return_trace (false);
     if (unlikely (version >= 5 && !v5X.sanitize (c))) return_trace (false);

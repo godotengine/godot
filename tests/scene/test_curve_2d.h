@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CURVE_2D_H
-#define TEST_CURVE_2D_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "scene/resources/curve.h"
@@ -147,25 +146,86 @@ TEST_CASE("[Curve2D] Sampling") {
 		CHECK(curve->samplef(1) == Vector2(0, 50));
 	}
 
-	SUBCASE("sample_baked") {
+	SUBCASE("sample_baked, cubic = false") {
 		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 0))) == Vector2(0, 0));
 		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 25))) == Vector2(0, 25));
 		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 50))) == Vector2(0, 50));
 	}
 
-	SUBCASE("sample_baked_with_rotation") {
+	SUBCASE("sample_baked, cubic = true") {
+		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 0)), true) == Vector2(0, 0));
+		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 25)), true) == Vector2(0, 25));
+		CHECK(curve->sample_baked(curve->get_closest_offset(Vector2(0, 50)), true) == Vector2(0, 50));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = false") {
 		const real_t pi = 3.14159;
-		Transform2D t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 0)));
-		CHECK(t.get_origin() == Vector2(0, 0));
-		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
+		const real_t half_pi = pi * 0.5;
+		Ref<Curve2D> rot_curve = memnew(Curve2D);
+		Transform2D t;
 
-		t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 25)));
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(50, 0));
+		t = rot_curve->sample_baked_with_rotation(25);
+		CHECK(t.get_origin() == Vector2(25, 0));
+		CHECK(Math::is_equal_approx(t.get_rotation(), 0));
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(0, 50));
+		t = rot_curve->sample_baked_with_rotation(25);
 		CHECK(t.get_origin() == Vector2(0, 25));
+		CHECK(Math::is_equal_approx(t.get_rotation(), half_pi));
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(-50, 0));
+		t = rot_curve->sample_baked_with_rotation(25);
+		CHECK(t.get_origin() == Vector2(-25, 0));
 		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
 
-		t = curve->sample_baked_with_rotation(curve->get_closest_offset(Vector2(0, 50)));
-		CHECK(t.get_origin() == Vector2(0, 50));
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(0, -50));
+		t = rot_curve->sample_baked_with_rotation(25);
+		CHECK(t.get_origin() == Vector2(0, -25));
+		CHECK(Math::is_equal_approx(t.get_rotation(), -half_pi));
+	}
+
+	SUBCASE("sample_baked_with_rotation, cubic = true") {
+		const real_t pi = 3.14159;
+		const real_t half_pi = pi * 0.5;
+		Ref<Curve2D> rot_curve = memnew(Curve2D);
+		Transform2D t;
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(50, 0));
+		t = rot_curve->sample_baked_with_rotation(25, true);
+		CHECK(t.get_origin() == Vector2(25, 0));
+		CHECK(Math::is_equal_approx(t.get_rotation(), 0));
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(0, 50));
+		t = rot_curve->sample_baked_with_rotation(25, true);
+		CHECK(t.get_origin() == Vector2(0, 25));
+		CHECK(Math::is_equal_approx(t.get_rotation(), half_pi));
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(-50, 0));
+		t = rot_curve->sample_baked_with_rotation(25, true);
+		CHECK(t.get_origin() == Vector2(-25, 0));
 		CHECK(Math::is_equal_approx(t.get_rotation(), pi));
+
+		rot_curve->clear_points();
+		rot_curve->add_point(Vector2());
+		rot_curve->add_point(Vector2(0, -50));
+		t = rot_curve->sample_baked_with_rotation(25, true);
+		CHECK(t.get_origin() == Vector2(0, -25));
+		CHECK(Math::is_equal_approx(t.get_rotation(), -half_pi));
 	}
 
 	SUBCASE("get_closest_point") {
@@ -175,6 +235,19 @@ TEST_CASE("[Curve2D] Sampling") {
 		CHECK(curve->get_closest_point(Vector2(0, 50)) == Vector2(0, 50));
 		CHECK(curve->get_closest_point(Vector2(50, 50)) == Vector2(0, 50));
 		CHECK(curve->get_closest_point(Vector2(0, 100)) == Vector2(0, 50));
+	}
+
+	SUBCASE("sample_baked_with_rotation, linear curve with control1 = end and control2 = begin") {
+		// Regression test for issue #88923
+		// The Vector2s that aren't relevant to the issue have x = 2 or x = -2.
+		// They're just set to make collisions with corner cases less likely
+		// that involve zero-vector control points.
+		Ref<Curve2D> cross_linear_curve = memnew(Curve2D);
+		cross_linear_curve->set_bake_interval(0.5);
+		cross_linear_curve->add_point(Vector2(), Vector2(-2, 0), Vector2(1, 0));
+		cross_linear_curve->add_point(Vector2(1, 0), Vector2(-1, 0), Vector2(2, 0));
+		CHECK(cross_linear_curve->get_baked_points().size() >= 3);
+		CHECK(cross_linear_curve->sample_baked_with_rotation(cross_linear_curve->get_closest_offset(Vector2(0.5, 0))).is_equal_approx(Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(0.5, 0))));
 	}
 }
 
@@ -224,5 +297,3 @@ TEST_CASE("[Curve2D] Even length tessellation") {
 }
 
 } // namespace TestCurve2D
-
-#endif // TEST_CURVE_2D_H

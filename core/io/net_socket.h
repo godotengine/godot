@@ -28,54 +28,95 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#pragma once
 
 #include "core/io/ip.h"
 #include "core/object/ref_counted.h"
 
 class NetSocket : public RefCounted {
+	GDSOFTCLASS(NetSocket, RefCounted);
+
 protected:
 	static NetSocket *(*_create)();
 
 public:
 	static NetSocket *create();
 
-	enum PollType {
+	enum PollType : int32_t {
 		POLL_TYPE_IN,
 		POLL_TYPE_OUT,
 		POLL_TYPE_IN_OUT
 	};
 
-	enum Type {
+	enum Type : int32_t {
 		TYPE_NONE,
 		TYPE_TCP,
 		TYPE_UDP,
 	};
 
-	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
+	enum class Family {
+		NONE,
+		INET,
+		UNIX,
+	};
+
+	class Address {
+		Family _family = Family::NONE;
+		CharString _path;
+		IPAddress _ip;
+		uint16_t _port = 0;
+
+	public:
+		_FORCE_INLINE_ Family get_family() const { return _family; }
+		_FORCE_INLINE_ bool is_inet() const { return _family == Family::INET; }
+		_FORCE_INLINE_ bool is_unix() const { return _family == Family::UNIX; }
+		_FORCE_INLINE_ bool is_valid() const { return is_inet() || is_unix(); }
+
+		_FORCE_INLINE_ const IPAddress &ip() const { return _ip; }
+		_FORCE_INLINE_ const uint16_t &port() const { return _port; }
+
+		_FORCE_INLINE_ const CharString &get_path() const { return _path; }
+
+		Address() {}
+
+		Address(const IPAddress &p_addr, uint16_t p_port) :
+				_family(Family::INET) {
+			_ip = p_addr;
+			_port = p_port;
+		}
+
+		Address(const String &p_path) :
+				_family(Family::UNIX), _path(p_path.utf8()) {
+		}
+
+		Address(const CharString &p_path) :
+				_family(Family::UNIX), _path(p_path) {
+		}
+	};
+
+	virtual Error open(Family p_family, Type p_type, IP::Type &r_ip_type) = 0;
 	virtual void close() = 0;
-	virtual Error bind(IPAddress p_addr, uint16_t p_port) = 0;
+	virtual Error bind(Address p_addr) = 0;
 	virtual Error listen(int p_max_pending) = 0;
-	virtual Error connect_to_host(IPAddress p_addr, uint16_t p_port) = 0;
+	virtual Error connect_to_host(Address p_addr) = 0;
 	virtual Error poll(PollType p_type, int timeout) const = 0;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) = 0;
-	virtual Ref<NetSocket> accept(IPAddress &r_ip, uint16_t &r_port) = 0;
+	virtual Ref<NetSocket> accept(Address &r_addr) = 0;
 
 	virtual bool is_open() const = 0;
 	virtual int get_available_bytes() const = 0;
-	virtual Error get_socket_address(IPAddress *r_ip, uint16_t *r_port) const = 0;
+	virtual Error get_socket_address(Address *r_addr) const = 0;
 
 	virtual Error set_broadcasting_enabled(bool p_enabled) = 0; // Returns OK if the socket option has been set successfully.
 	virtual void set_blocking_enabled(bool p_enabled) = 0;
 	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
 	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
 	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
-	virtual Error join_multicast_group(const IPAddress &p_multi_address, String p_if_name) = 0;
-	virtual Error leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) = 0;
-};
+	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
+	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
 
-#endif // NET_SOCKET_H
+	virtual ~NetSocket() {}
+};

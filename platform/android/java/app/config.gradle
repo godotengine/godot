@@ -1,25 +1,28 @@
 ext.versions = [
-    androidGradlePlugin: '7.2.1',
-    compileSdk         : 33,
-    // Also update 'platform/android/export/export_plugin.cpp#OPENGL_MIN_SDK_VERSION'
-    minSdk             : 21,
+    androidGradlePlugin: '8.6.1',
+    compileSdk         : 35,
+    // Also update:
+    // - 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    // - 'platform/android/detect.py#get_min_target_api()'
+    minSdk             : 24,
     // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
-    targetSdk          : 33,
-    buildTools         : '33.0.2',
-    kotlinVersion      : '1.7.0',
-    fragmentVersion    : '1.3.6',
-    nexusPublishVersion: '1.1.0',
-    javaVersion        : 17,
+    targetSdk          : 35,
+    buildTools         : '35.0.1',
+    kotlinVersion      : '2.1.20',
+    fragmentVersion    : '1.8.6',
+    nexusPublishVersion: '1.3.0',
+    javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
-    ndkVersion         : '23.2.8568313'
-
-]
-
-ext.libraries = [
-    androidGradlePlugin: "com.android.tools.build:gradle:$versions.androidGradlePlugin",
-    kotlinGradlePlugin : "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlinVersion",
-    kotlinStdLib       : "org.jetbrains.kotlin:kotlin-stdlib:$versions.kotlinVersion",
-    androidxFragment   : "androidx.fragment:fragment:$versions.fragmentVersion",
+    ndkVersion         : '28.1.13356709',
+    splashscreenVersion: '1.0.1',
+    // 'openxrLoaderVersion' should be set to XR_CURRENT_API_VERSION, see 'thirdparty/openxr'
+    openxrLoaderVersion: '1.1.53',
+    openxrVendorsVersion: '4.2.2-stable',
+    junitVersion       : '1.3.0',
+    espressoCoreVersion: '3.7.0',
+    kotlinTestVersion  : '1.3.11',
+    testRunnerVersion  : '1.7.0',
+    testOrchestratorVersion: '1.6.1',
 ]
 
 ext.getExportPackageName = { ->
@@ -74,20 +77,6 @@ ext.getExportTargetSdkVersion = { ->
     } catch (NumberFormatException ignored) {
         return versions.targetSdk
     }
-}
-
-ext.getGodotEditorVersion = { ->
-    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
-    if (editorVersion == null || editorVersion.isEmpty()) {
-        // Try the library version first
-        editorVersion = getGodotLibraryVersionName()
-
-        if (editorVersion.isEmpty()) {
-            // Fallback value.
-            editorVersion = "custom_build"
-        }
-    }
-    return editorVersion
 }
 
 ext.getGodotLibraryVersionCode = { ->
@@ -201,17 +190,17 @@ final String VALUE_SEPARATOR_REGEX = "\\|"
 
 // get the list of ABIs the project should be exported to
 ext.getExportEnabledABIs = { ->
-    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : "";
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : ""
     if (enabledABIs == null || enabledABIs.isEmpty()) {
         enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
     }
-    Set<String> exportAbiFilter = [];
+    Set<String> exportAbiFilter = []
     for (String abi_name : enabledABIs.split(VALUE_SEPARATOR_REGEX)) {
         if (!abi_name.trim().isEmpty()){
-            exportAbiFilter.add(abi_name);
+            exportAbiFilter.add(abi_name)
         }
     }
-    return exportAbiFilter;
+    return exportAbiFilter
 }
 
 ext.getExportPath = {
@@ -228,6 +217,30 @@ ext.getExportFilename = {
         exportFilename = "godot_android"
     }
     return exportFilename
+}
+
+ext.getExportEdition = {
+    String exportEdition = project.hasProperty("export_edition") ? project.property("export_edition") : ""
+    if (exportEdition == null || exportEdition.isEmpty()) {
+        exportEdition = "standard"
+    }
+    return exportEdition
+}
+
+ext.getExportBuildType = {
+    String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
+    if (exportBuildType == null || exportBuildType.isEmpty()) {
+        exportBuildType = "debug"
+    }
+    return exportBuildType
+}
+
+ext.getExportFormat = {
+    String exportFormat = project.hasProperty("export_format") ? project.property("export_format") : ""
+    if (exportFormat == null || exportFormat.isEmpty()) {
+        exportFormat = "apk"
+    }
+    return exportFormat
 }
 
 /**
@@ -337,8 +350,7 @@ ext.getReleaseKeyAlias = { ->
 }
 
 ext.isAndroidStudio = { ->
-    def sysProps = System.getProperties()
-    return sysProps != null && sysProps['idea.platform.prefix'] != null
+    return project.hasProperty('android.injected.invoked.from.ide')
 }
 
 ext.shouldZipAlign = { ->
@@ -367,4 +379,32 @@ ext.shouldSign = { ->
 
 ext.shouldNotStrip = { ->
     return isAndroidStudio() || project.hasProperty("doNotStrip")
+}
+
+/**
+ * Whether to use the legacy convention of compressing all .so files in the APK.
+ *
+ * For more background, see:
+ * - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+ * - https://stackoverflow.com/a/44704840
+ */
+ext.shouldUseLegacyPackaging = { ->
+    String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
+    if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
+        return Boolean.parseBoolean(legacyPackagingFlag)
+    }
+
+    if (getExportMinSdkVersion() <= 29) {
+        // Use legacy packaging for compatibility with device running api <= 29.
+        // See https://github.com/godotengine/godot/issues/108842 for reference.
+        return true
+    }
+
+    // Default behavior for minSdk > 29.
+    return false
+}
+
+ext.getAddonsDirectory = { ->
+    String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
+    return addonsDirectory
 }

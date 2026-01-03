@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COPY_EFFECTS_GLES3_H
-#define COPY_EFFECTS_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
-#include "drivers/gles3/shaders/copy.glsl.gen.h"
+#include "drivers/gles3/shaders/effects/copy.glsl.gen.h"
 
 namespace GLES3 {
 
@@ -61,9 +60,13 @@ public:
 	~CopyEffects();
 
 	// These functions assume that a framebuffer and texture are bound already. They only manage the shader, uniforms, and vertex array.
-	void copy_to_rect(const Rect2 &p_rect);
-	void copy_screen();
+	void copy_to_rect(const Rect2 &p_rect, bool p_linear_to_srgb = false);
+	void copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type, float p_lod = 0.0f, bool p_linear_to_srgb = false);
+	void copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, const Vector2 &p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ration, bool p_linear_to_srgb = false);
+	void copy_to_and_from_rect(const Rect2 &p_rect);
+	void copy_screen(float p_multiply = 1.0);
 	void copy_cube_to_rect(const Rect2 &p_rect);
+	void copy_cube_to_panorama(float p_mip_level);
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
 	void gaussian_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size);
 	void set_color(const Color &p_color, const Rect2i &p_region);
@@ -74,5 +77,3 @@ public:
 } //namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // COPY_EFFECTS_GLES3_H

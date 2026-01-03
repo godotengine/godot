@@ -30,7 +30,7 @@
 
 #include "geometry_3d.h"
 
-#include "thirdparty/misc/polypartition.h"
+#include "core/templates/hash_map.h"
 
 void Geometry3D::get_closest_points_between_segments(const Vector3 &p_p0, const Vector3 &p_p1, const Vector3 &p_q0, const Vector3 &p_q1, Vector3 &r_ps, Vector3 &r_qt) {
 	// Based on David Eberly's Computation of Distance Between Line Segments algorithm.
@@ -186,13 +186,11 @@ struct _FaceClassify {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {}
 	};
 	bool valid = false;
 	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {}
 };
 
 /*** GEOMETRY WRAPPER ***/
@@ -393,7 +391,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		return;
 	}
 
-#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
+#define vert(m_idx) Vector3(((m_idx) & 4) >> 2, ((m_idx) & 2) >> 1, (m_idx) & 1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -449,7 +447,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	}
 }
 
-Vector<Face3> Geometry3D::wrap_geometry(Vector<Face3> p_array, real_t *p_error) {
+Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_error) {
 	int face_count = p_array.size();
 	const Face3 *faces = p_array.ptr();
 	constexpr double min_size = 1.0;
@@ -595,7 +593,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		Vector3 ref = Vector3(0.0, 1.0, 0.0);
 
-		if (ABS(p.normal.dot(ref)) > 0.95f) {
+		if (Math::abs(p.normal.dot(ref)) > 0.95f) {
 			ref = Vector3(0.0, 0.0, 1.0); // Change axis.
 		}
 
@@ -744,7 +742,7 @@ Vector<Plane> Geometry3D::build_cylinder_planes(real_t p_radius, real_t p_height
 
 	Vector<Plane> planes;
 
-	const double sides_step = Math_TAU / p_sides;
+	const double sides_step = Math::TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
@@ -775,7 +773,7 @@ Vector<Plane> Geometry3D::build_sphere_planes(real_t p_radius, int p_lats, int p
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
-	const double lon_step = Math_TAU / p_lons;
+	const double lon_step = Math::TAU / p_lons;
 	for (int i = 0; i < p_lons; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * lon_step);
@@ -806,7 +804,7 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	axis_neg[(p_axis + 2) % 3] = 1.0;
 	axis_neg[p_axis] = -1.0;
 
-	const double sides_step = Math_TAU / p_sides;
+	const double sides_step = Math::TAU / p_sides;
 	for (int i = 0; i < p_sides; i++) {
 		Vector3 normal;
 		normal[(p_axis + 1) % 3] = Math::cos(i * sides_step);
@@ -862,7 +860,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 }
 
 #define square(m_s) ((m_s) * (m_s))
-#define INF 1e20
+#define BIG_VAL 1e20
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
@@ -872,8 +870,8 @@ static void edt(float *f, int stride, int n) {
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -INF;
-	z[1] = +INF;
+	z[0] = -BIG_VAL;
+	z[1] = +BIG_VAL;
 	for (int q = 1; q <= n - 1; q++) {
 		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
@@ -884,7 +882,7 @@ static void edt(float *f, int stride, int n) {
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +INF;
+		z[k + 1] = +BIG_VAL;
 	}
 
 	k = 0;
@@ -909,7 +907,7 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = INF;
+		work_memory[i] = BIG_VAL;
 	}
 
 	uint32_t y_mult = p_size.x;
@@ -967,6 +965,8 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	return ret;
 }
+
+#undef BIG_VAL
 
 Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative) {
 	ERR_FAIL_COND_V(p_positive.size() != p_negative.size(), Vector<int8_t>());

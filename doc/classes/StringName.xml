@@ -5,10 +5,11 @@
 	</brief_description>
 	<description>
 		[StringName]s are immutable strings designed for general-purpose representation of unique names (also called "string interning"). Two [StringName]s with the same value are the same object. Comparing them is extremely fast compared to regular [String]s.
-		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code].
+		You will usually pass a [String] to methods expecting a [StringName] and it will be automatically converted (often at compile time), but in rare cases you can construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code]. Manually constructing a [StringName] allows you to control when the conversion from [String] occurs or to use the literal and prevent conversions entirely.
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed scene tree paths.
 		All of [String]'s methods are available in this class too. They convert the [StringName] into a string, and they also return a string. This is highly inefficient and should only be used if the string is desired.
-		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty [StringName]s.
+		[b]Note:[/b] In C#, an explicit conversion to [code]System.String[/code] is required to use the methods listed on this page. Use the [code]ToString()[/code] method to cast a [StringName] to a string, and then use the equivalent methods in [code]System.String[/code] or [code]StringExtensions[/code].
+		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -90,13 +91,14 @@
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
+				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
+				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -105,7 +107,7 @@
 			<description>
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" and "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to], [method filecasecmp_to], and [method naturalcasecmp_to].
 			</description>
 		</method>
 		<method name="contains" qualifiers="const">
@@ -120,11 +122,19 @@
 				print("I" in "team")         # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print("Node".Contains("de")); // Prints true
-				GD.Print("team".Contains("I"));  // Prints false
+				GD.Print("Node".Contains("de")); // Prints True
+				GD.Print("team".Contains("I"));  // Prints False
 				[/csharp]
 				[/codeblocks]
-				If you need to know where [param what] is within the string, use [method find].
+				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
+			</description>
+		</method>
+		<method name="containsn" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="what" type="String" />
+			<description>
+				Returns [code]true[/code] if the string contains [param what], [b]ignoring case[/b].
+				If you need to know where [param what] is within the string, use [method findn]. See also [method contains].
 			</description>
 		</method>
 		<method name="count" qualifiers="const">
@@ -166,6 +176,22 @@
 				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [param position] or [param chars] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
 			</description>
 		</method>
+		<method name="filecasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Like [method naturalcasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filenocasecmp_to], [method naturalcasecmp_to], and [method casecmp_to].
+			</description>
+		</method>
+		<method name="filenocasecmp_to" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="to" type="String" />
+			<description>
+				Like [method naturalnocasecmp_to] but prioritizes strings that begin with periods ([code].[/code]) and underscores ([code]_[/code]) before any other character. Useful when sorting folders or file names.
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method filecasecmp_to], [method naturalnocasecmp_to], and [method nocasecmp_to].
+			</description>
+		</method>
 		<method name="find" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="String" />
@@ -189,6 +215,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -205,7 +232,7 @@
 			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
-				[param values] can be a [Dictionary] or an [Array]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[param values] can be a [Dictionary], an [Array], or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it."
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -220,7 +247,20 @@
 				print("User {} is {}.".format([42, "Godot"], "{}"))
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
+				When passing an [Object], the property names from [method Object.get_property_list] are used as keys.
+				[codeblock]
+				# Prints "Visible true, position (0, 0)"
+				var node = Node2D.new()
+				print("Visible {visible}, position {position}".format(node))
+				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] Each replacement is done sequentially for each element of [param values], [b]not[/b] all at once. This means that if any element is inserted and it contains another placeholder, it may be changed by the next replacement. While this can be very useful, it often causes unexpected results. If not necessary, make sure [param values]'s elements do not contain placeholders.
+				[codeblock]
+				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x"
+				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}"
+				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c"
+				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c"
+				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
@@ -273,9 +313,8 @@
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="slice" type="int" />
 			<description>
-				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
+				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
 				This is faster than [method split], if you only need one substring.
-				[b]Example:[/b]
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -301,7 +340,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the contrary, strings with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -312,12 +351,12 @@
 				[gdscript]
 				var text = "hello world"
 				var encoded = text.to_utf8_buffer().hex_encode() # outputs "68656c6c6f20776f726c64"
-				print(buf.hex_decode().get_string_from_utf8())
+				print(encoded.hex_decode().get_string_from_utf8())
 				[/gdscript]
 				[csharp]
 				var text = "hello world";
 				var encoded = text.ToUtf8Buffer().HexEncode(); // outputs "68656c6c6f20776f726c64"
-				GD.Print(buf.HexDecode().GetStringFromUtf8());
+				GD.Print(encoded.HexDecode().GetStringFromUtf8());
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -377,7 +416,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order.
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -392,13 +431,26 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
+			</description>
+		</method>
+		<method name="is_valid_ascii_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid ASCII identifier. A valid ASCII identifier may contain only letters, digits, and underscores ([code]_[/code]), and the first character may not be a digit.
+				[codeblock]
+				print("node_2d".is_valid_ascii_identifier())    # Prints true
+				print("TYPE_FLOAT".is_valid_ascii_identifier()) # Prints true
+				print("1st_method".is_valid_ascii_identifier()) # Prints false
+				print("MyMethod#2".is_valid_ascii_identifier()) # Prints false
+				[/codeblock]
+				See also [method is_valid_unicode_identifier].
 			</description>
 		</method>
 		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string does not contain characters that are not allowed in file names ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
+				Returns [code]true[/code] if this string is a valid file name. A valid file name cannot be empty, begin or end with space characters, or contain characters that are not allowed ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
 			</description>
 		</method>
 		<method name="is_valid_float" qualifiers="const">
@@ -434,7 +486,7 @@
 				Returns [code]true[/code] if this string is a valid color in hexadecimal HTML notation. The string must be a hexadecimal value (see [method is_valid_hex_number]) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). Other HTML notations for colors, such as names or [code]hsl()[/code], are not considered valid. See also [method Color.html].
 			</description>
 		</method>
-		<method name="is_valid_identifier" qualifiers="const">
+		<method name="is_valid_identifier" qualifiers="const" deprecated="Use [method is_valid_ascii_identifier] instead.">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]), and the first character may not be a digit.
@@ -465,12 +517,28 @@
 				Returns [code]true[/code] if this string represents a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]"0.0.0.0"[/code] and [code]"ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"[/code] as valid.
 			</description>
 		</method>
+		<method name="is_valid_unicode_identifier" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this string is a valid Unicode identifier.
+				A valid Unicode identifier must begin with a Unicode character of class [code]XID_Start[/code] or [code]"_"[/code], and may contain Unicode characters of class [code]XID_Continue[/code] in the other positions.
+				[codeblock]
+				print("node_2d".is_valid_unicode_identifier())      # Prints true
+				print("1st_method".is_valid_unicode_identifier())   # Prints false
+				print("MyMethod#2".is_valid_unicode_identifier())   # Prints false
+				print("állóképesség".is_valid_unicode_identifier()) # Prints true
+				print("выносливость".is_valid_unicode_identifier()) # Prints true
+				print("体力".is_valid_unicode_identifier())         # Prints true
+				[/codeblock]
+				See also [method is_valid_ascii_identifier].
+				[b]Note:[/b] This method checks identifiers the same way as GDScript. See [method TextServer.is_valid_identifier] for more advanced checks.
+			</description>
+		</method>
 		<method name="join" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="parts" type="PackedStringArray" />
 			<description>
 				Returns the concatenation of [param parts]' elements, with each element separated by the string calling this method. This method is the opposite of [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var fruits = ["Apple", "Orange", "Pear", "Kiwi"]
@@ -479,7 +547,7 @@
 				print("---".join(fruits)) # Prints "Apple---Orange---Pear---Kiwi"
 				[/gdscript]
 				[csharp]
-				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
+				string[] fruits = ["Apple", "Orange", "Pear", "Kiwi"];
 
 				// In C#, this method is static.
 				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
@@ -505,7 +573,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="length" qualifiers="const">
+		<method name="length" qualifiers="const" keywords="size">
 			<return type="int" />
 			<description>
 				Returns the number of characters in the string. Empty strings ([code]""[/code]) always return [code]0[/code]. See also [method is_empty].
@@ -560,7 +628,7 @@
 				Performs a [b]case-sensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method nocasecmp_to], and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalnocasecmp_to], [method filecasecmp_to], and [method nocasecmp_to].
 			</description>
 		</method>
 		<method name="naturalnocasecmp_to" qualifiers="const">
@@ -570,7 +638,7 @@
 				Performs a [b]case-insensitive[/b], [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				When used for sorting, natural order comparison orders sequences of numbers by the combined value of each digit as is often expected, instead of the single digit's value. A sorted sequence of numbered strings will be [code]["1", "2", "3", ...][/code], not [code]["1", "10", "2", "3", ...][/code].
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method nocasecmp_to], and [method casecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method naturalcasecmp_to], [method filenocasecmp_to], and [method casecmp_to].
 			</description>
 		</method>
 		<method name="nocasecmp_to" qualifiers="const">
@@ -579,7 +647,7 @@
 			<description>
 				Performs a [b]case-insensitive[/b] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "Less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/url] of each string, which roughly matches the alphabetical order. Internally, lowercase characters are converted to uppercase for the comparison.
 				With different string lengths, returns [code]1[/code] if this string is longer than the [param to] string, or [code]-1[/code] if shorter. Note that the length of empty strings is [i]always[/i] [code]0[/code].
-				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method naturalcasecmp_to], and [method naturalnocasecmp_to].
+				To get a [bool] result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to], [method filenocasecmp_to], and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="pad_decimals" qualifiers="const">
@@ -598,10 +666,24 @@
 		</method>
 		<method name="path_join" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Concatenates [param file] at the end of the string as a subpath, adding [code]/[/code] if necessary.
+				Concatenates [param path] at the end of the string as a subpath, adding [code]/[/code] if necessary.
 				[b]Example:[/b] [code]"this/is".path_join("path") == "this/is/path"[/code].
+			</description>
+		</method>
+		<method name="remove_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="what" type="int" />
+			<description>
+				Removes all occurrences of the Unicode character with code [param what]. Faster version of [method replace] when the key is only one character long and the replacement is [code]""[/code].
+			</description>
+		</method>
+		<method name="remove_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="chars" type="String" />
+			<description>
+				Removes all occurrences of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">
@@ -619,6 +701,22 @@
 				Replaces all occurrences of [param what] inside the string with the given [param forwhat].
 			</description>
 		</method>
+		<method name="replace_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="key" type="int" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be composed of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+			</description>
+		</method>
+		<method name="replace_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="keys" type="String" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces any occurrence of the characters in [param keys] with the Unicode character with code [param with]. See also [method replace_char].
+			</description>
+		</method>
 		<method name="replacen" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="what" type="String" />
@@ -630,7 +728,7 @@
 		<method name="reverse" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the copy of this string in reverse order.
+				Returns the copy of this string in reverse order. This operation works on unicode codepoints, rather than sequences of codepoints, and may break things like compound letters or emojis.
 			</description>
 		</method>
 		<method name="rfind" qualifiers="const">
@@ -639,6 +737,8 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Returns the index of the [b]last[/b] occurrence of [param what] in this string, or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the string. This method is the reverse of [method find].
+				[b]Note:[/b] A negative value of [param from] is converted to a starting index by counting back from the last possible index with enough space to find [param what].
+				[b]Note:[/b] A value of [param from] that is greater than the last possible index with enough space to find [param what] is considered out-of-bounds, and returns [code]-1[/code].
 			</description>
 		</method>
 		<method name="rfindn" qualifiers="const">
@@ -677,7 +777,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings, starting from the end of the string. The splits in the returned array appear in the same order as the original string. If [param delimiter] is an empty string, each substring will be a single character.
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split, which is mostly identical to [method split].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_string = "One,Two,Three,Four"
@@ -729,7 +828,7 @@
 			<return type="float" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sørensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints 1.0
 				print("ABC123".similarity("XYZ456")) # Prints 0.0
@@ -757,7 +856,6 @@
 				Splits the string using a [param delimiter] and returns an array of the substrings. If [param delimiter] is an empty string, each substring will be a single character. This method is the opposite of [method join].
 				If [param allow_empty] is [code]false[/code], empty strings between adjacent delimiters are excluded from the array.
 				If [param maxsplit] is greater than [code]0[/code], the number of splits may not exceed [param maxsplit]. By default, the entire string is split.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var some_array = "One,Two,Three,Four".split(",", true, 2)
@@ -819,7 +917,7 @@
 		<method name="to_ascii_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces.
+				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces. This is the inverse of [method PackedByteArray.get_string_from_ascii].
 			</description>
 		</method>
 		<method name="to_camel_case" qualifiers="const">
@@ -833,11 +931,11 @@
 			<description>
 				Converts the string representing a decimal number into a [float]. This method stops on the first non-number character, except the first decimal point ([code].[/code]) and the exponent letter ([code]e[/code]). See also [method is_valid_float].
 				[codeblock]
-				var a = "12.35".to_float() # a is 12.35
-				var b = "1.2.3".to_float() # b is 1.2
-				var c = "12xy3".to_float() # c is 12.0
-				var d = "1e3".to_float()   # d is 1000.0
-				var e = "Hello!".to_int()  # e is 0.0
+				var a = "12.35".to_float()  # a is 12.35
+				var b = "1.2.3".to_float()  # b is 1.2
+				var c = "12xy3".to_float()  # c is 12.0
+				var d = "1e3".to_float()    # d is 1000.0
+				var e = "Hello!".to_float() # e is 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -853,10 +951,39 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_kebab_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]kebab-case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_kebab_case()               # Returns "node-2d"
+				"2nd place".to_kebab_case()            # Returns "2-nd-place"
+				"Texture3DAssetFolder".to_kebab_case() # Returns "texture-3d-asset-folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToKebabCase();               // Returns "node-2d"
+				"2nd place".ToKebabCase();            // Returns "2-nd-place"
+				"Texture3DAssetFolder".ToKebabCase(); // Returns "texture-3d-asset-folder"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
+			</description>
+		</method>
+		<method name="to_multibyte_char_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="encoding" type="String" default="&quot;&quot;" />
+			<description>
+				Converts the string to system multibyte code page encoded [PackedByteArray]. If conversion fails, empty array is returned.
+				The values permitted for [param encoding] are system dependent. If [param encoding] is empty string, system default encoding is used.
+				- For Windows, see [url=https://learn.microsoft.com/en-us/windows/win32/Intl/code-page-identifiers]Code Page Identifiers[/url] .NET names.
+				- For macOS and Linux/BSD, see [code]libiconv[/code] library documentation and [code]iconv --list[/code] for a list of supported encodings.
 			</description>
 		</method>
 		<method name="to_pascal_case" qualifiers="const">
@@ -869,36 +996,49 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to [code]snake_case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_snake_case()               # Returns "node_2d"
+				"2nd place".to_snake_case()            # Returns "2_nd_place"
+				"Texture3DAssetFolder".to_snake_case() # Returns "texture_3d_asset_folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToSnakeCase();               // Returns "node_2d"
+				"2nd place".ToSnakeCase();            // Returns "2_nd_place"
+				"Texture3DAssetFolder".ToSnakeCase(); // Returns "texture_3d_asset_folder"
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 			</description>
 		</method>
 		<method name="to_utf8_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method. This is the inverse of [method PackedByteArray.get_string_from_utf8].
 			</description>
 		</method>
 		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf16].
 			</description>
 		</method>
 		<method name="to_utf32_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf32].
 			</description>
 		</method>
 		<method name="to_wchar_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_wchar].
 			</description>
 		</method>
 		<method name="trim_prefix" qualifiers="const">
@@ -920,12 +1060,13 @@
 			<param index="0" name="at" type="int" />
 			<description>
 				Returns the character code at position [param at].
+				See also [method String.chr], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="uri_decode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request.
+				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request. See also [method uri_encode].
 				[codeblocks]
 				[gdscript]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
@@ -936,12 +1077,13 @@
 				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method decodes [code]+[/code] as space.
 			</description>
 		</method>
 		<method name="uri_encode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request.
+				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request. See also [method uri_decode].
 				[codeblocks]
 				[gdscript]
 				var prefix = "$DOCS_URL/?highlight="
@@ -956,6 +1098,12 @@
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_file_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes the file path from its URL-encoded format. Unlike [method uri_decode] this method leaves [code]+[/code] as is.
 			</description>
 		</method>
 		<method name="validate_filename" qualifiers="const">

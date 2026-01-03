@@ -10,261 +10,283 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_add_constant_central_force" qualifiers="virtual">
+		<method name="_add_constant_central_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_add_constant_force" qualifiers="virtual">
+		<method name="_add_constant_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="force" type="Vector3" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_add_constant_torque" qualifiers="virtual">
+		<method name="_add_constant_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_central_force" qualifiers="virtual">
+		<method name="_apply_central_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_central_impulse" qualifiers="virtual">
+		<method name="_apply_central_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_force" qualifiers="virtual">
+		<method name="_apply_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="force" type="Vector3" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_impulse" qualifiers="virtual">
+		<method name="_apply_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_torque" qualifiers="virtual">
+		<method name="_apply_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_apply_torque_impulse" qualifiers="virtual">
+		<method name="_apply_torque_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_angular_velocity" qualifiers="virtual const">
+		<method name="_get_angular_velocity" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_center_of_mass" qualifiers="virtual const">
+		<method name="_get_center_of_mass" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_center_of_mass_local" qualifiers="virtual const">
+		<method name="_get_center_of_mass_local" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_constant_force" qualifiers="virtual const">
+		<method name="_get_collision_layer" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_collision_mask" qualifiers="virtual required const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_constant_force" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_constant_torque" qualifiers="virtual const">
+		<method name="_get_constant_torque" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider" qualifiers="virtual const">
+		<method name="_get_contact_collider" qualifiers="virtual required const">
 			<return type="RID" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider_id" qualifiers="virtual const">
+		<method name="_get_contact_collider_id" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider_object" qualifiers="virtual const">
+		<method name="_get_contact_collider_object" qualifiers="virtual required const">
 			<return type="Object" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider_position" qualifiers="virtual const">
+		<method name="_get_contact_collider_position" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider_shape" qualifiers="virtual const">
+		<method name="_get_contact_collider_shape" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_collider_velocity_at_position" qualifiers="virtual const">
+		<method name="_get_contact_collider_velocity_at_position" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_count" qualifiers="virtual const">
+		<method name="_get_contact_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_impulse" qualifiers="virtual const">
+		<method name="_get_contact_impulse" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_local_normal" qualifiers="virtual const">
+		<method name="_get_contact_local_normal" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_local_position" qualifiers="virtual const">
+		<method name="_get_contact_local_position" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_local_shape" qualifiers="virtual const">
+		<method name="_get_contact_local_shape" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_contact_local_velocity_at_position" qualifiers="virtual const">
+		<method name="_get_contact_local_velocity_at_position" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_inverse_inertia" qualifiers="virtual const">
+		<method name="_get_inverse_inertia" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_inverse_inertia_tensor" qualifiers="virtual const">
+		<method name="_get_inverse_inertia_tensor" qualifiers="virtual required const">
 			<return type="Basis" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_inverse_mass" qualifiers="virtual const">
+		<method name="_get_inverse_mass" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_linear_velocity" qualifiers="virtual const">
+		<method name="_get_linear_velocity" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_principal_inertia_axes" qualifiers="virtual const">
+		<method name="_get_principal_inertia_axes" qualifiers="virtual required const">
 			<return type="Basis" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_space_state" qualifiers="virtual">
+		<method name="_get_space_state" qualifiers="virtual required">
 			<return type="PhysicsDirectSpaceState3D" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_step" qualifiers="virtual const">
+		<method name="_get_step" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_total_angular_damp" qualifiers="virtual const">
+		<method name="_get_total_angular_damp" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_total_gravity" qualifiers="virtual const">
+		<method name="_get_total_gravity" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_total_linear_damp" qualifiers="virtual const">
+		<method name="_get_total_linear_damp" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_transform" qualifiers="virtual const">
+		<method name="_get_transform" qualifiers="virtual required const">
 			<return type="Transform3D" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_velocity_at_local_position" qualifiers="virtual const">
+		<method name="_get_velocity_at_local_position" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="local_position" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_integrate_forces" qualifiers="virtual">
+		<method name="_integrate_forces" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_is_sleeping" qualifiers="virtual const">
+		<method name="_is_sleeping" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_angular_velocity" qualifiers="virtual">
+		<method name="_set_angular_velocity" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="velocity" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_constant_force" qualifiers="virtual">
+		<method name="_set_collision_layer" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_collision_mask" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="mask" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_set_constant_force" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="force" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_constant_torque" qualifiers="virtual">
+		<method name="_set_constant_torque" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="torque" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_linear_velocity" qualifiers="virtual">
+		<method name="_set_linear_velocity" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="velocity" type="Vector3" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_sleep_state" qualifiers="virtual">
+		<method name="_set_sleep_state" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_set_transform" qualifiers="virtual">
+		<method name="_set_transform" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="transform" type="Transform3D" />
 			<description>

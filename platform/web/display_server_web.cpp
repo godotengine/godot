@@ -36,7 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_method_pointer.h"
-#include "scene/resources/atlas_texture.h"
+#include "core/os/main_loop.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef GLES3_ENABLED
@@ -59,7 +59,7 @@ DisplayServerWeb *DisplayServerWeb::get_singleton() {
 // Window (canvas)
 bool DisplayServerWeb::check_size_force_redraw() {
 	bool size_changed = godot_js_display_size_update() != 0;
-	if (size_changed && !rect_changed_callback.is_null()) {
+	if (size_changed && rect_changed_callback.is_valid()) {
 		Size2i window_size = window_get_size();
 		Variant size = Rect2i(Point2i(), window_size); // TODO use window_get_position if implemented.
 		rect_changed_callback.call(size);
@@ -71,7 +71,7 @@ bool DisplayServerWeb::check_size_force_redraw() {
 void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_fullscreen_change_callback).bind(p_fullscreen).call_deferred();
+		callable_mp_static(DisplayServerWeb::_fullscreen_change_callback).call_deferred(p_fullscreen);
 		return;
 	}
 #endif
@@ -97,7 +97,7 @@ void DisplayServerWeb::drop_files_js_callback(const char **p_filev, int p_filec)
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_drop_files_js_callback).bind(files).call_deferred();
+		callable_mp_static(DisplayServerWeb::_drop_files_js_callback).call_deferred(files);
 		return;
 	}
 #endif
@@ -110,10 +110,17 @@ void DisplayServerWeb::_drop_files_js_callback(const Vector<String> &p_files) {
 	if (!ds) {
 		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
 	}
-	if (ds->drop_files_callback.is_null()) {
+	if (!ds->drop_files_callback.is_valid()) {
 		return;
 	}
-	ds->drop_files_callback.call(p_files);
+	Variant v_files = p_files;
+	const Variant *v_args[1] = { &v_files };
+	Variant ret;
+	Callable::CallError ce;
+	ds->drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(ds->drop_files_callback, v_args, 1, ce)));
+	}
 }
 
 // Web quit request callback.
@@ -130,7 +137,7 @@ void DisplayServerWeb::request_quit_callback() {
 
 void DisplayServerWeb::_request_quit_callback() {
 	DisplayServerWeb *ds = get_singleton();
-	if (ds && !ds->window_event_callback.is_null()) {
+	if (ds && ds->window_event_callback.is_valid()) {
 		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
 		ds->window_event_callback.call(event);
 	}
@@ -162,7 +169,7 @@ void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_key_callback).bind(code, key, p_pressed, p_repeat, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_key_callback).call_deferred(code, key, p_pressed, p_repeat, p_modifiers);
 		return;
 	}
 #endif
@@ -174,6 +181,11 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 	// Resume audio context after input in case autoplay was denied.
 	OS_Web::get_singleton()->resume_audio();
 
+	DisplayServerWeb *ds = get_singleton();
+	if (ds->ime_started) {
+		return;
+	}
+
 	char32_t c = 0x00;
 	String unicode = p_key_event_key;
 	if (unicode.length() == 1) {
@@ -182,18 +194,24 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 
 	Key keycode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), false);
 	Key scancode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), true);
+	KeyLocation location = dom_code2godot_key_location(p_key_event_code.utf8().get_data());
 
-	Ref<InputEventKey> ev;
-	ev.instantiate();
-	ev->set_echo(p_repeat);
-	ev->set_keycode(fix_keycode(c, keycode));
-	ev->set_physical_keycode(scancode);
-	ev->set_key_label(fix_key_label(c, keycode));
-	ev->set_unicode(fix_unicode(c));
-	ev->set_pressed(p_pressed);
-	dom2godot_mod(ev, p_modifiers, fix_keycode(c, keycode));
+	DisplayServerWeb::KeyEvent ke;
 
-	Input::get_singleton()->parse_input_event(ev);
+	ke.pressed = p_pressed;
+	ke.echo = p_repeat;
+	ke.raw = true;
+	ke.keycode = fix_keycode(c, keycode);
+	ke.physical_keycode = scancode;
+	ke.key_label = fix_key_label(c, keycode);
+	ke.unicode = fix_unicode(c);
+	ke.location = location;
+	ke.mod = p_modifiers;
+
+	if (ds->key_event_pos >= ds->key_event_buffer.size()) {
+		ds->key_event_buffer.resize(1 + ds->key_event_pos);
+	}
+	ds->key_event_buffer.write[ds->key_event_pos++] = ke;
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
 	Input::get_singleton()->flush_buffered_events();
@@ -204,7 +222,7 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_button_callback).bind(p_pressed, p_button, p_x, p_y, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_button_callback).call_deferred(p_pressed, p_button, p_x, p_y, p_modifiers);
 		return true;
 	}
 #endif
@@ -288,18 +306,18 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 	return true;
 }
 
-void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_move_callback).bind(p_x, p_y, p_rel_x, p_rel_y, p_modifiers).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 		return;
 	}
 #endif
 
-	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 }
 
-void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
@@ -315,9 +333,12 @@ void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel
 
 	ev->set_position(pos);
 	ev->set_global_position(pos);
+	ev->set_pressure((float)p_pressure);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
+	ev->set_relative_screen_position(ev->get_relative());
 	ev->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+	ev->set_screen_velocity(ev->get_velocity());
 
 	Input::get_singleton()->parse_input_event(ev);
 }
@@ -365,12 +386,10 @@ const char *DisplayServerWeb::godot2dom_cursor(DisplayServer::CursorShape p_shap
 }
 
 bool DisplayServerWeb::tts_is_speaking() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool DisplayServerWeb::tts_is_paused() const {
-	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -382,7 +401,7 @@ void DisplayServerWeb::update_voices_callback(int p_size, const char **p_voice) 
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_update_voices_callback).bind(voices).call_deferred();
+		callable_mp_static(DisplayServerWeb::_update_voices_callback).call_deferred(voices);
 		return;
 	}
 #endif
@@ -405,13 +424,11 @@ void DisplayServerWeb::_update_voices_callback(const Vector<String> &p_voices) {
 }
 
 TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
-	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
-void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -428,28 +445,25 @@ void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, in
 }
 
 void DisplayServerWeb::tts_pause() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void DisplayServerWeb::tts_resume() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void DisplayServerWeb::tts_stop() {
-	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
-	for (const KeyValue<int, CharString> &E : utterance_ids) {
+	for (const KeyValue<int64_t, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
 	utterance_ids.clear();
 	godot_js_tts_stop();
 }
 
-void DisplayServerWeb::js_utterance_callback(int p_event, int p_id, int p_pos) {
+void DisplayServerWeb::js_utterance_callback(int p_event, int64_t p_id, int p_pos) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_js_utterance_callback).bind(p_event, p_id, p_pos).call_deferred();
+		callable_mp_static(DisplayServerWeb::_js_utterance_callback).call_deferred(p_event, p_id, p_pos);
 		return;
 	}
 #endif
@@ -457,7 +471,7 @@ void DisplayServerWeb::js_utterance_callback(int p_event, int p_id, int p_pos) {
 	_js_utterance_callback(p_event, p_id, p_pos);
 }
 
-void DisplayServerWeb::_js_utterance_callback(int p_event, int p_id, int p_pos) {
+void DisplayServerWeb::_js_utterance_callback(int p_event, int64_t p_id, int p_pos) {
 	DisplayServerWeb *ds = (DisplayServerWeb *)DisplayServer::get_singleton();
 	if (ds->utterance_ids.has(p_id)) {
 		int pos = 0;
@@ -498,49 +512,9 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_cursor.is_valid()) {
-		Ref<Texture2D> texture = p_cursor;
-		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Size2 texture_size;
-		Rect2 atlas_rect;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
-			texture_size.width = atlas_texture->get_region().size.x;
-			texture_size.height = atlas_texture->get_region().size.y;
-		} else {
-			texture_size.width = texture->get_width();
-			texture_size.height = texture->get_height();
-		}
-
-		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
-		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
-		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
-
-		Ref<Image> image = texture->get_image();
-
-		ERR_FAIL_COND(!image.is_valid());
-
-		image = image->duplicate(true);
-
-		if (image->is_compressed()) {
-			Error err = image->decompress();
-			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
-		}
-
-		if (atlas_texture.is_valid()) {
-			image->crop_from_point(
-					atlas_rect.position.x,
-					atlas_rect.position.y,
-					texture_size.width,
-					texture_size.height);
-		}
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		ERR_FAIL_COND(image.is_null());
+		Vector2i texture_size = image->get_size();
 
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
@@ -571,24 +545,45 @@ void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 }
 
 // Mouse mode
-void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
-	if (p_mode == mouse_get_mode()) {
+void DisplayServerWeb::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	ERR_FAIL_COND_MSG(wanted_mouse_mode == MOUSE_MODE_CONFINED || wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
+	if (wanted_mouse_mode == mouse_get_mode()) {
 		return;
 	}
 
-	if (p_mode == MOUSE_MODE_VISIBLE) {
+	if (wanted_mouse_mode == MOUSE_MODE_VISIBLE) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		godot_js_display_cursor_set_visible(0);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_CAPTURED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(1);
 	}
+}
+
+void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (mouse_mode_override_enabled) {
+		mouse_mode_base = p_mode;
+		// No need to update, as override is enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_base && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
@@ -602,24 +597,57 @@ DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+void DisplayServerWeb::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (!mouse_mode_override_enabled) {
+		mouse_mode_override = p_mode;
+		// No need to update, as override is not enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_override && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWeb::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWeb::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
+}
+
 Point2i DisplayServerWeb::mouse_get_position() const {
 	return Input::get_singleton()->get_mouse_position();
 }
 
 // Wheel
-int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).bind(p_delta_x, p_delta_y).call_deferred();
+		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_mode, p_delta_x, p_delta_y);
 		return true;
 	}
 #endif
 
-	return _mouse_wheel_callback(p_delta_x, p_delta_y);
+	return _mouse_wheel_callback(p_delta_mode, p_delta_x, p_delta_y);
 }
 
-int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) {
-	if (!godot_js_display_canvas_is_focused()) {
+int DisplayServerWeb::_mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
+	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (get_singleton()->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
 		} else {
@@ -638,20 +666,43 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
 	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
+	enum DeltaMode {
+		DELTA_MODE_PIXEL = 0,
+		DELTA_MODE_LINE = 1,
+		DELTA_MODE_PAGE = 2,
+	};
+	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
+	const float MOUSE_WHEEL_LINE_FACTOR = 0.3f;
+	const float MOUSE_WHEEL_PAGE_FACTOR = 1.0f;
+	float mouse_wheel_factor;
+
+	switch (p_delta_mode) {
+		case DELTA_MODE_PIXEL: {
+			mouse_wheel_factor = MOUSE_WHEEL_PIXEL_FACTOR;
+		} break;
+		case DELTA_MODE_LINE: {
+			mouse_wheel_factor = MOUSE_WHEEL_LINE_FACTOR;
+		} break;
+		case DELTA_MODE_PAGE: {
+			mouse_wheel_factor = MOUSE_WHEEL_PAGE_FACTOR;
+		} break;
+	}
+
 	if (p_delta_y < 0) {
 		ev->set_button_index(MouseButton::WHEEL_UP);
+		ev->set_factor(-p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_y > 0) {
 		ev->set_button_index(MouseButton::WHEEL_DOWN);
+		ev->set_factor(p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_x > 0) {
 		ev->set_button_index(MouseButton::WHEEL_LEFT);
+		ev->set_factor(p_delta_x * mouse_wheel_factor);
 	} else if (p_delta_x < 0) {
 		ev->set_button_index(MouseButton::WHEEL_RIGHT);
+		ev->set_factor(-p_delta_x * mouse_wheel_factor);
 	} else {
 		return false;
 	}
-
-	// Different browsers give wildly different delta values, and we can't
-	// interpret deltaMode, so use default value for wheel events' factor.
 
 	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();
@@ -673,7 +724,7 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 void DisplayServerWeb::touch_callback(int p_type, int p_count) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_touch_callback).bind(p_type, p_count).call_deferred();
+		callable_mp_static(DisplayServerWeb::_touch_callback).call_deferred(p_type, p_count);
 		return;
 	}
 #endif
@@ -696,6 +747,7 @@ void DisplayServerWeb::_touch_callback(int p_type, int p_count) {
 
 			Point2 &prev = ds->touches[i];
 			ev->set_relative(ev->get_position() - prev);
+			ev->set_relative_screen_position(ev->get_relative());
 			prev = ev->get_position();
 
 			Input::get_singleton()->parse_input_event(ev);
@@ -726,11 +778,11 @@ bool DisplayServerWeb::is_touchscreen_available() const {
 
 // Virtual Keyboard
 void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) {
-	String text = p_text;
+	String text = String::utf8(p_text);
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_vk_input_text_callback).bind(text, p_cursor).call_deferred();
+		callable_mp_static(DisplayServerWeb::_vk_input_text_callback).call_deferred(text, p_cursor);
 		return;
 	}
 #endif
@@ -740,11 +792,11 @@ void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) 
 
 void DisplayServerWeb::_vk_input_text_callback(const String &p_text, int p_cursor) {
 	DisplayServerWeb *ds = DisplayServerWeb::get_singleton();
-	if (!ds || ds->input_text_callback.is_null()) {
+	if (!ds || !ds->input_text_callback.is_valid()) {
 		return;
 	}
 	// Call input_text
-	ds->input_text_callback.call(p_text);
+	ds->input_text_callback.call(p_text, true);
 	// Insert key right to reach position.
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;
@@ -792,7 +844,7 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_gamepad_callback).bind(p_index, p_connected, id, guid).call_deferred();
+		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid);
 		return;
 	}
 #endif
@@ -801,12 +853,115 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 }
 
 void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
+	if (p_connected) {
+		DisplayServerWeb::get_singleton()->gamepad_count += 1;
+	} else {
+		DisplayServerWeb::get_singleton()->gamepad_count -= 1;
+	}
+
 	Input *input = Input::get_singleton();
 	if (p_connected) {
 		input->joy_connection_changed(p_index, true, p_id, p_guid);
 	} else {
 		input->joy_connection_changed(p_index, false, "");
 	}
+}
+
+// IME.
+void DisplayServerWeb::ime_callback(int p_type, const char *p_text) {
+	String text = String::utf8(p_text);
+
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(DisplayServerWeb::_ime_callback).call_deferred(p_type, text);
+		return;
+	}
+#endif
+
+	_ime_callback(p_type, text);
+}
+
+void DisplayServerWeb::_ime_callback(int p_type, const String &p_text) {
+	DisplayServerWeb *ds = get_singleton();
+	// Resume audio context after input in case autoplay was denied.
+	OS_Web::get_singleton()->resume_audio();
+
+	switch (p_type) {
+		case 0: {
+			// IME start.
+			ds->ime_text = String();
+			ds->ime_selection = Vector2i();
+			for (int i = ds->key_event_pos - 1; i >= 0; i--) {
+				// Delete last raw keydown event from query.
+				if (ds->key_event_buffer[i].pressed && ds->key_event_buffer[i].raw) {
+					ds->key_event_buffer.remove_at(i);
+					ds->key_event_pos--;
+					break;
+				}
+			}
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			ds->ime_started = true;
+		} break;
+		case 1: {
+			// IME update.
+			if (ds->ime_active && ds->ime_started) {
+				ds->ime_text = p_text;
+				ds->ime_selection = Vector2i(ds->ime_text.length(), ds->ime_text.length());
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			}
+		} break;
+		case 2: {
+			// IME commit.
+			if (ds->ime_active && ds->ime_started) {
+				ds->ime_started = false;
+
+				ds->ime_text = String();
+				ds->ime_selection = Vector2i();
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+
+				String text = p_text;
+				for (int i = 0; i < text.length(); i++) {
+					DisplayServerWeb::KeyEvent ke;
+
+					ke.pressed = true;
+					ke.echo = false;
+					ke.raw = false;
+					ke.keycode = Key::NONE;
+					ke.physical_keycode = Key::NONE;
+					ke.key_label = Key::NONE;
+					ke.unicode = text[i];
+					ke.mod = 0;
+
+					if (ds->key_event_pos >= ds->key_event_buffer.size()) {
+						ds->key_event_buffer.resize(1 + ds->key_event_pos);
+					}
+					ds->key_event_buffer.write[ds->key_event_pos++] = ke;
+				}
+			}
+		} break;
+		default:
+			break;
+	}
+
+	ds->process_keys();
+	Input::get_singleton()->flush_buffered_events();
+}
+
+void DisplayServerWeb::window_set_ime_active(const bool p_active, WindowID p_window) {
+	ime_active = p_active;
+	godot_js_set_ime_active(p_active);
+}
+
+void DisplayServerWeb::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+	godot_js_set_ime_position(p_pos.x, p_pos.y);
+}
+
+Point2i DisplayServerWeb::ime_get_selection() const {
+	return ime_selection;
+}
+
+String DisplayServerWeb::ime_get_text() const {
+	return ime_text;
 }
 
 void DisplayServerWeb::process_joypads() {
@@ -825,8 +980,10 @@ void DisplayServerWeb::process_joypads() {
 		for (int b = 0; b < s_btns_num; b++) {
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JoyAxis::TRIGGER by Godot.
-			if (s_standard && (b == 6 || b == 7)) {
-				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
+			if (s_standard && (b == 6)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_LEFT, s_btns[b]);
+			} else if (s_standard && (b == 7)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_RIGHT, s_btns[b]);
 			} else {
 				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
@@ -851,7 +1008,7 @@ void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_update_clipboard_callback).bind(text).call_deferred();
+		callable_mp_static(DisplayServerWeb::_update_clipboard_callback).call_deferred(text);
 		return;
 	}
 #endif
@@ -877,7 +1034,7 @@ String DisplayServerWeb::clipboard_get() const {
 void DisplayServerWeb::send_window_event_callback(int p_notification) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_send_window_event_callback).bind(p_notification).call_deferred();
+		callable_mp_static(DisplayServerWeb::_send_window_event_callback).call_deferred(p_notification);
 		return;
 	}
 #endif
@@ -893,7 +1050,10 @@ void DisplayServerWeb::_send_window_event_callback(int p_notification) {
 	if (p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER || p_notification == DisplayServer::WINDOW_EVENT_MOUSE_EXIT) {
 		ds->cursor_inside_canvas = p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 	}
-	if (!ds->window_event_callback.is_null()) {
+	if (godot_js_is_ime_focused() && (p_notification == DisplayServer::WINDOW_EVENT_FOCUS_IN || p_notification == DisplayServer::WINDOW_EVENT_FOCUS_OUT)) {
+		return;
+	}
+	if (ds->window_event_callback.is_valid()) {
 		Variant event = int(p_notification);
 		ds->window_event_callback.call(event);
 	}
@@ -943,14 +1103,14 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
+DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
-DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
-	tts = GLOBAL_GET("audio/general/text_to_speech");
+	native_menu = memnew(NativeMenu); // Dummy native menu.
 
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
@@ -1003,6 +1163,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_input_paste_cb(&DisplayServerWeb::update_clipboard_callback);
 	godot_js_input_drop_files_cb(&DisplayServerWeb::drop_files_js_callback);
 	godot_js_input_gamepad_cb(&DisplayServerWeb::gamepad_callback);
+	godot_js_set_ime_cb(&DisplayServerWeb::ime_callback, &DisplayServerWeb::key_callback, key_event.code, key_event.key);
 
 	// JS Display interface (js/libs/library_godot_display.js)
 	godot_js_display_fullscreen_cb(&DisplayServerWeb::fullscreen_change_callback);
@@ -1018,6 +1179,10 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerWeb::~DisplayServerWeb() {
+	if (native_menu) {
+		memdelete(native_menu);
+		native_menu = nullptr;
+	}
 #ifdef GLES3_ENABLED
 	if (webgl_ctx) {
 		emscripten_webgl_commit_frame();
@@ -1028,9 +1193,12 @@ DisplayServerWeb::~DisplayServerWeb() {
 
 bool DisplayServerWeb::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_GLOBAL_MENU:
+#ifndef DISABLE_DEPRECATED
+		case FEATURE_GLOBAL_MENU: {
+			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
+		} break;
+#endif
 		//case FEATURE_HIDPI:
-		//case FEATURE_IME:
 		case FEATURE_ICON:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
@@ -1040,14 +1208,21 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 			return true;
 		//case FEATURE_MOUSE_WARP:
 		//case FEATURE_NATIVE_DIALOG:
+		//case FEATURE_NATIVE_DIALOG_INPUT:
+		//case FEATURE_NATIVE_DIALOG_FILE:
+		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		//case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
 		//case FEATURE_ORIENTATION:
+		case FEATURE_IME:
+			// IME does not work with experimental VK support.
+			return godot_js_display_vk_available() == 0;
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
-			return tts && (godot_js_display_tts_available() != 0);
+			return godot_js_display_tts_available() != 0;
 		default:
 			return false;
 	}
@@ -1070,30 +1245,54 @@ int DisplayServerWeb::get_primary_screen() const {
 }
 
 Point2i DisplayServerWeb::screen_get_position(int p_screen) const {
-	return Point2i(); // TODO offsetX/Y?
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0); // TODO offsetX/Y?
 }
 
 Size2i DisplayServerWeb::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	int size[2];
 	godot_js_display_screen_size_get(size, size + 1);
 	return Size2(size[0], size[1]);
 }
 
 Rect2i DisplayServerWeb::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	int size[2];
 	godot_js_display_window_size_get(size, size + 1);
 	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerWeb::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return godot_js_display_screen_dpi_get();
 }
 
 float DisplayServerWeb::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return godot_js_display_pixel_ratio_get();
 }
 
 float DisplayServerWeb::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	return SCREEN_REFRESH_RATE_FALLBACK; // Web doesn't have much of a need for the screen refresh rate, and there's no native way to do so.
 }
 
@@ -1140,7 +1339,8 @@ void DisplayServerWeb::window_set_title(const String &p_title, WindowID p_window
 }
 
 int DisplayServerWeb::window_get_current_screen(WindowID p_window) const {
-	return 1;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerWeb::window_set_current_screen(int p_screen, WindowID p_window) {
@@ -1260,10 +1460,36 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 }
 
 void DisplayServerWeb::process_events() {
+	process_keys();
 	Input::get_singleton()->flush_buffered_events();
-	if (godot_js_input_gamepad_sample() == OK) {
-		process_joypads();
+
+	if (gamepad_count > 0) {
+		if (godot_js_input_gamepad_sample() == OK) {
+			process_joypads();
+		}
 	}
+}
+
+void DisplayServerWeb::process_keys() {
+	for (int i = 0; i < key_event_pos; i++) {
+		const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
+
+		Ref<InputEventKey> ev;
+		ev.instantiate();
+		ev->set_pressed(ke.pressed);
+		ev->set_echo(ke.echo);
+		ev->set_keycode(ke.keycode);
+		ev->set_physical_keycode(ke.physical_keycode);
+		ev->set_key_label(ke.key_label);
+		ev->set_unicode(ke.unicode);
+		ev->set_location(ke.location);
+		if (ke.raw) {
+			dom2godot_mod(ev, ke.mod, ke.keycode);
+		}
+
+		Input::get_singleton()->parse_input_event(ev);
+	}
+	key_event_pos = 0;
 }
 
 int DisplayServerWeb::get_current_video_driver() const {

@@ -181,7 +181,7 @@ DynamicBVH::Volume DynamicBVH::_bounds(Node **leaves, int p_count) {
 
 void DynamicBVH::_bottom_up(Node **leaves, int p_count) {
 	while (p_count > 1) {
-		real_t minsize = INFINITY;
+		real_t minsize = Math::INF;
 		int minidx[2] = { -1, -1 };
 		for (int i = 0; i < p_count; ++i) {
 			for (int j = i + 1; j < p_count; ++j) {

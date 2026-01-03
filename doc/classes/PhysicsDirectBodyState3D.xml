@@ -202,7 +202,7 @@
 		<method name="integrate_forces">
 			<return type="void" />
 			<description>
-				Calls the built-in force integration code.
+				Updates the body's linear and angular velocity by applying gravity and damping for the equivalent of one physics tick.
 			</description>
 		</method>
 		<method name="set_constant_force">
@@ -231,6 +231,12 @@
 		</member>
 		<member name="center_of_mass_local" type="Vector3" setter="" getter="get_center_of_mass_local">
 			The body's center of mass position in the body's local coordinate system.
+		</member>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
+			The body's collision layer.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+			The body's collision mask.
 		</member>
 		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LOCAL_VECTOR_H
-#define TEST_LOCAL_VECTOR_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 
@@ -63,7 +62,7 @@ TEST_CASE("[LocalVector] Push Back.") {
 	CHECK(vector[4] == 4);
 }
 
-TEST_CASE("[LocalVector] Find.") {
+TEST_CASE("[LocalVector] Find, has.") {
 	LocalVector<int> vector;
 	vector.push_back(3);
 	vector.push_back(1);
@@ -85,6 +84,15 @@ TEST_CASE("[LocalVector] Find.") {
 
 	CHECK(vector.find(-1) == -1);
 	CHECK(vector.find(5) == -1);
+
+	CHECK(vector.has(0));
+	CHECK(vector.has(1));
+	CHECK(vector.has(2));
+	CHECK(vector.has(3));
+	CHECK(vector.has(4));
+
+	CHECK(!vector.has(-1));
+	CHECK(!vector.has(5));
 }
 
 TEST_CASE("[LocalVector] Remove.") {
@@ -170,6 +178,23 @@ TEST_CASE("[LocalVector] Remove Unordered.") {
 	CHECK(vector.size() == 0);
 }
 
+TEST_CASE("[LocalVector] Erase Unordered.") {
+	LocalVector<int> vector;
+	vector.push_back(1);
+	vector.push_back(3);
+	vector.push_back(0);
+	vector.push_back(2);
+	vector.push_back(4);
+
+	CHECK(vector.find(1) == 0);
+
+	vector.erase_unordered(1);
+
+	CHECK(vector.find(1) == -1);
+	CHECK(vector.size() == 4);
+	CHECK(vector[0] == 4);
+}
+
 TEST_CASE("[LocalVector] Erase.") {
 	LocalVector<int> vector;
 	vector.push_back(1);
@@ -236,5 +261,3 @@ TEST_CASE("[LocalVector] Size / Resize / Reserve.") {
 	CHECK(vector.get_capacity() >= 4);
 }
 } // namespace TestLocalVector
-
-#endif // TEST_LOCAL_VECTOR_H

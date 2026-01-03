@@ -28,24 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EGL_MANAGER_H
-#define EGL_MANAGER_H
+#pragma once
 
 #ifdef EGL_ENABLED
 
 // These must come first to avoid windows.h mess.
 #include "platform_gl.h"
 
-#include "core/config/project_settings.h"
-#include "core/crypto/crypto_core.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class EGLManager {
 private:
-	// An EGL-side rappresentation of a display with its own rendering
+	// An EGL-side representation of a display with its own rendering
 	// context.
 	struct GLDisplay {
 		void *display = nullptr;
@@ -53,11 +48,18 @@ private:
 		EGLDisplay egl_display = EGL_NO_DISPLAY;
 		EGLContext egl_context = EGL_NO_CONTEXT;
 		EGLConfig egl_config = nullptr;
+
+#ifdef WINDOWS_ENABLED
+		bool has_EGL_ANGLE_surface_orientation = false;
+#endif
 	};
 
 	// EGL specific window data.
 	struct GLWindow {
 		bool initialized = false;
+#ifdef WINDOWS_ENABLED
+		bool flipped_y = false;
+#endif
 
 		// An handle to the GLDisplay associated with this window.
 		int gldisplay_id = -1;
@@ -92,12 +94,12 @@ private:
 public:
 	int display_get_native_visual_id(void *p_display);
 
+	Error open_display(void *p_display);
 	Error window_create(DisplayServer::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
 
 	void window_destroy(DisplayServer::WindowID p_window_id);
 
 	void release_current();
-	void make_current();
 	void swap_buffers();
 
 	void window_make_current(DisplayServer::WindowID p_window_id);
@@ -106,13 +108,13 @@ public:
 	bool is_using_vsync() const;
 
 	EGLContext get_context(DisplayServer::WindowID p_window_id);
+	EGLDisplay get_display(DisplayServer::WindowID p_window_id);
+	EGLConfig get_config(DisplayServer::WindowID p_window_id);
 
-	Error initialize();
+	Error initialize(void *p_native_display = nullptr);
 
 	EGLManager();
 	virtual ~EGLManager();
 };
 
 #endif // EGL_ENABLED
-
-#endif // EGL_MANAGER_H

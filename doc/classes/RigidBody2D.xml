@@ -7,19 +7,22 @@
 		[RigidBody2D] implements full 2D physics. It cannot be controlled directly, instead, you must apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, rotation, react to collisions, and affect other physics bodies in its path.
 		The body's behavior can be adjusted via [member lock_rotation], [member freeze], and [member freeze_mode]. By changing various properties of the object, such as [member mass], you can control how the physics simulation acts on it.
 		A rigid body will always maintain its shape and size, even when forces are applied to it. It is useful for objects that can be interacted with in an environment, such as a tree that can be knocked over or a stack of crates that can be pushed around.
+		If you need to directly affect the body, prefer [method _integrate_forces] as it allows you to directly access the physics state.
 		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
-		[b]Note:[/b] Changing the 2D transform or [member linear_velocity] of a [RigidBody2D] very often may lead to some unpredictable behaviors. If you need to directly affect the body, prefer [method _integrate_forces] as it allows you to directly access the physics state.
+		[b]Note:[/b] Changing the 2D transform or [member linear_velocity] of a [RigidBody2D] very often may lead to some unpredictable behaviors. This also happens when a [RigidBody2D] is the descendant of a constantly moving node, like another [RigidBody2D], as that will cause its global transform to be set whenever its ancestor moves.
 	</description>
 	<tutorials>
-		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/119</link>
-		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
+		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/2725</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/2716</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="state" type="PhysicsDirectBodyState2D" />
 			<description>
-				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it is called before the standard force integration, but the [member custom_integrator] property allows you to disable the standard force integration and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_constant_central_force">
@@ -123,11 +126,11 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
-			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
+			Damps the body's rotation. By default, the body will use the [member ProjectSettings.physics/2d/default_angular_damp] setting or any value override set by an [Area2D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidBody2D.DampMode" default="0">
-			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
+			Defines how [member angular_damp] is applied.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity in [i]radians[/i] per second.
@@ -137,10 +140,10 @@
 		</member>
 		<member name="center_of_mass" type="Vector2" setter="set_center_of_mass" getter="get_center_of_mass" default="Vector2(0, 0)">
 			The body's custom center of mass, relative to the body's origin position, when [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_CUSTOM]. This is the balanced point of the body, where applied forces only cause linear acceleration. Applying forces outside of the center of mass causes angular acceleration.
-			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically computed.
+			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically determined, but this does not update the value of [member center_of_mass].
 		</member>
 		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidBody2D.CenterOfMassMode" default="0">
-			Defines the way the body's center of mass is set. See [enum CenterOfMassMode] for possible values.
+			Defines the way the body's center of mass is set.
 		</member>
 		<member name="constant_force" type="Vector2" setter="set_constant_force" getter="get_constant_force" default="Vector2(0, 0)">
 			The body's total constant positional forces applied during each physics update.
@@ -156,22 +159,23 @@
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
 			Continuous collision detection mode.
-			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [enum CCDMode] for details.
+			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
-			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
+			If [code]true[/code], the standard force integration (like gravity or damping) will be disabled for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] method, if that virtual method is overridden.
+			Setting this property will call the method [method PhysicsServer2D.body_set_omit_force_integration] internally.
 		</member>
 		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
 			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
 			See [member freeze_mode] to set the body's behavior when frozen.
-			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody2D.FreezeMode" default="0">
-			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled. See [enum FreezeMode] for possible values.
-			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+			The body's freeze mode. Determines the body's behavior when [member freeze] is [code]true[/code].
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
-			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
+			Multiplies the gravity applied to the body. The body's gravity is calculated from the [member ProjectSettings.physics/2d/default_gravity] project setting and/or any additional gravity vector applied by [Area2D]s.
 		</member>
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia" default="0.0">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
@@ -182,29 +186,29 @@
 			@onready var ball = $Ball
 
 			func get_ball_inertia():
-			    return 1.0 / PhysicsServer2D.body_get_direct_state(ball.get_rid()).inverse_inertia
+				return 1.0 / PhysicsServer2D.body_get_direct_state(ball.get_rid()).inverse_inertia
 			[/gdscript]
 			[csharp]
 			private RigidBody2D _ball;
 
 			public override void _Ready()
 			{
-			    _ball = GetNode&lt;RigidBody2D&gt;("Ball");
+				_ball = GetNode&lt;RigidBody2D&gt;("Ball");
 			}
 
 			private float GetBallInertia()
 			{
-			    return 1.0f / PhysicsServer2D.BodyGetDirectState(_ball.GetRid()).InverseInertia;
+				return 1.0f / PhysicsServer2D.BodyGetDirectState(_ball.GetRid()).InverseInertia;
 			}
 			[/csharp]
 			[/codeblocks]
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
-			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] or any value override set by an [Area2D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
+			Damps the body's movement. By default, the body will use the [member ProjectSettings.physics/2d/default_linear_damp] setting or any value override set by an [Area2D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidBody2D.DampMode" default="0">
-			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
+			Defines how [member linear_damp] is applied.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			The body's linear velocity in pixels per second. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.

@@ -28,15 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_OBJECT_H
-#define TEST_OBJECT_H
+#pragma once
 
-#include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 
 #include "tests/test_macros.h"
+
+#ifdef SANITIZERS_ENABLED
+#ifdef __has_feature
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#elif defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define ASAN_OR_TSAN_ENABLED
+#endif
+#endif
 
 // Declared in global namespace because of GDCLASS macro warning (Windows):
 // "Unqualified friend declaration referring to type outside of the nearest enclosing namespace
@@ -86,14 +94,20 @@ public:
 	}
 	bool property_can_revert(const StringName &p_name) const override {
 		return false;
-	};
+	}
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		return false;
-	};
+	}
 	void get_method_list(List<MethodInfo> *p_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {
 		return false;
+	}
+	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return 0;
 	}
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
@@ -129,15 +143,6 @@ TEST_CASE("[Object] Core getters") {
 	CHECK_MESSAGE(
 			object.get_save_class() == "Object",
 			"The returned save class should match the expected value.");
-
-	List<String> inheritance_list;
-	object.get_inheritance_list_static(&inheritance_list);
-	CHECK_MESSAGE(
-			inheritance_list.size() == 1,
-			"The inheritance list should consist of Object only");
-	CHECK_MESSAGE(
-			inheritance_list[0] == "Object",
-			"The inheritance list should consist of Object only");
 }
 
 TEST_CASE("[Object] Metadata") {
@@ -169,6 +174,31 @@ TEST_CASE("[Object] Metadata") {
 	CHECK_MESSAGE(
 			meta_list2.size() == 0,
 			"The metadata list should contain 0 items after removing all metadata items.");
+
+	Object other;
+	object.set_meta("conflicting_meta", "string");
+	object.set_meta("not_conflicting_meta", 123);
+	other.set_meta("conflicting_meta", Color(0, 1, 0));
+	other.set_meta("other_meta", "other");
+	object.merge_meta_from(&other);
+
+	CHECK_MESSAGE(
+			Color(object.get_meta("conflicting_meta")).is_equal_approx(Color(0, 1, 0)),
+			"String meta should be overwritten with Color after merging.");
+
+	CHECK_MESSAGE(
+			int(object.get_meta("not_conflicting_meta")) == 123,
+			"Not conflicting meta on destination should be kept intact.");
+
+	CHECK_MESSAGE(
+			object.get_meta("other_meta", String()) == "other",
+			"Not conflicting meta name on source should merged.");
+
+	List<StringName> meta_list3;
+	object.get_meta_list(&meta_list3);
+	CHECK_MESSAGE(
+			meta_list3.size() == 3,
+			"The metadata list should contain 3 items after merging meta from two objects.");
 }
 
 TEST_CASE("[Object] Construction") {
@@ -185,12 +215,12 @@ TEST_CASE("[Object] Construction") {
 }
 
 TEST_CASE("[Object] Script instance property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	object.set("some_name", 100, &valid);
+	object->set("some_name", 100, &valid);
 	CHECK(valid);
 	Variant actual_value;
 	CHECK_MESSAGE(
@@ -199,20 +229,22 @@ TEST_CASE("[Object] Script instance property setter") {
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the object.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	const Variant &actual_value = object.get("some_name", &valid);
+	const Variant &actual_value = object->get("some_name", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the script instance.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Built-in property setter") {
@@ -245,7 +277,7 @@ TEST_CASE("[Object] Script property setter") {
 	Variant script;
 
 	bool valid = false;
-	object.set(CoreStringNames::get_singleton()->_script, script, &valid);
+	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			object.get_script() == script,
@@ -258,7 +290,7 @@ TEST_CASE("[Object] Script property getter") {
 	object.set_script(script);
 
 	bool valid = false;
-	const Variant &actual_value = object.get(CoreStringNames::get_singleton()->_script, &valid);
+	const Variant &actual_value = object.get(CoreStringName(script), &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == script,
@@ -389,8 +421,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Emitting an existing signal should call the connected method") {
-		Array empty_signal_args;
-		empty_signal_args.push_back(Array());
+		Array empty_signal_args = { {} };
 
 		SIGNAL_WATCH(&object, "my_custom_signal");
 		SIGNAL_CHECK_FALSE("my_custom_signal");
@@ -426,74 +457,181 @@ TEST_CASE("[Object] Signals") {
 	}
 }
 
-class NotificationObject1 : public Object {
-	GDCLASS(NotificationObject1, Object);
+class NotificationObjectSuperclass : public Object {
+	GDCLASS(NotificationObjectSuperclass, Object);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal1 = order_global++;
-			} break;
-		}
+		order_superclass = ++order_global;
 	}
 
 public:
-	static int order_global;
-	int order_internal1 = -1;
-
-	void reset_order() {
-		order_internal1 = -1;
-		order_global = 1;
-	}
+	static inline int order_global = 0;
+	int order_superclass = -1;
 };
 
-int NotificationObject1::order_global = 1;
-
-class NotificationObject2 : public NotificationObject1 {
-	GDCLASS(NotificationObject2, NotificationObject1);
+class NotificationObjectSubclass : public NotificationObjectSuperclass {
+	GDCLASS(NotificationObjectSubclass, NotificationObjectSuperclass);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal2 = order_global++;
-			} break;
-		}
+		order_subclass = ++order_global;
 	}
 
 public:
-	int order_internal2 = -1;
-	void reset_order() {
-		NotificationObject1::reset_order();
-		order_internal2 = -1;
+	int order_subclass = -1;
+};
+
+class NotificationScriptInstance : public _MockScriptInstance {
+	void notification(int p_notification, bool p_reversed) override {
+		order_script = ++NotificationObjectSuperclass::order_global;
 	}
+
+public:
+	int order_script = -1;
 };
 
 TEST_CASE("[Object] Notification order") { // GH-52325
-	NotificationObject2 *test_notification_object = memnew(NotificationObject2);
+	NotificationObjectSubclass *object = memnew(NotificationObjectSubclass);
+
+	NotificationScriptInstance *script = memnew(NotificationScriptInstance);
+	object->set_script_instance(script);
 
 	SUBCASE("regular order") {
-		test_notification_object->notification(12345, false);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, false);
 
-		CHECK_EQ(test_notification_object->order_internal1, 1);
-		CHECK_EQ(test_notification_object->order_internal2, 2);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(object->order_superclass, 1);
+		CHECK_EQ(object->order_subclass, 2);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(script->order_script, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
 	SUBCASE("reverse order") {
-		test_notification_object->notification(12345, true);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, true);
 
-		CHECK_EQ(test_notification_object->order_internal1, 2);
-		CHECK_EQ(test_notification_object->order_internal2, 1);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(script->order_script, 1);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(object->order_subclass, 2);
+		CHECK_EQ(object->order_superclass, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
-	memdelete(test_notification_object);
+	memdelete(object);
+}
+
+TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
+	Object *object = memnew(Object);
+	ObjectID obj_id = object->get_instance_id();
+
+	class _SelfDestroyingScriptInstance : public _MockScriptInstance {
+		Object *self = nullptr;
+
+		// This has to be static because ~Object() also destroys the script instance.
+		static void free_self(Object *p_self) {
+#if defined(ASAN_OR_TSAN_ENABLED)
+			// Regular deletion is enough becausa asan/tsan will catch a potential heap-after-use.
+			memdelete(p_self);
+#else
+			// Without asan/tsan, try at least to force a crash by replacing the otherwise seemingly good data with garbage.
+			// Operations such as dereferencing pointers or decreasing a refcount would fail.
+			// Unfortunately, we may not poison the memory after the deletion, because the memory would no longer belong to us
+			// and on doing so we may cause a more generalized crash on some platforms (allocator implementations).
+			p_self->~Object();
+			memset((void *)p_self, 0, sizeof(Object));
+			Memory::free_static(p_self, false);
+#endif
+		}
+
+	public:
+		Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+			free_self(self);
+			return Variant();
+		}
+		bool has_method(const StringName &p_method) const override {
+			return p_method == "some_method";
+		}
+
+	public:
+		_SelfDestroyingScriptInstance(Object *p_self) :
+				self(p_self) {}
+	};
+
+	_SelfDestroyingScriptInstance *script_instance = memnew(_SelfDestroyingScriptInstance(object));
+	object->set_script_instance(script_instance);
+
+	SUBCASE("Within callp()") {
+		SUBCASE("Through call()") {
+			object->call("some_method");
+		}
+		SUBCASE("Through callv()") {
+			object->callv("some_method", Array());
+		}
+	}
+	SUBCASE("Within call_const()") {
+		Callable::CallError call_error;
+		object->call_const("some_method", nullptr, 0, call_error);
+	}
+	SUBCASE("Within signal handling (from emit_signalp(), through emit_signal())") {
+		Object emitter;
+		emitter.add_user_signal(MethodInfo("some_signal"));
+		emitter.connect("some_signal", Callable(object, "some_method"));
+		emitter.emit_signal("some_signal");
+	}
+
+	CHECK_MESSAGE(
+			ObjectDB::get_instance(obj_id) == nullptr,
+			"Object was tail-deleted without crashes.");
+}
+
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
+	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
+	return p_ref->get_reference_count();
+}
+
+TEST_CASE("[Object] RequiredParam Ref<T>") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+	const Ref<RefCounted> &ref_ref = ref;
+
+	RequiredParam<RefCounted> required = ref;
+	EXTRACT_PARAM_OR_FAIL(extract, required);
+
+	static_assert(std::is_same_v<decltype(ref_ref), decltype(extract)>);
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+
+	const int count = required_param_compare(ref, ref);
+	CHECK_NE(count, -1);
+	CHECK_EQ(count, ref->get_reference_count());
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+}
+
+TEST_CASE("[Object] RequiredResult") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredResult<RefCounted> required = ref;
+
+	Ref<RefCounted> unpacked = required;
+	Variant var = Ref<RefCounted>(required);
+
+	CHECK_EQ(ref, unpacked);
+	CHECK_EQ(ref, var);
 }
 
 } // namespace TestObject
-
-#endif // TEST_OBJECT_H

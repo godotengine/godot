@@ -1,0 +1,27 @@
+diff --git a/thirdparty/README.md b/thirdparty/README.md
+index c22ef77af7..52b635df05 100644
+--- a/thirdparty/README.md
++++ b/thirdparty/README.md
+@@ -539,7 +539,7 @@ Patches:
+ ## libjpeg-turbo
+ 
+ - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
+-- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
++- Version: 3.1.3 (af9c1c268520a29adf98cad5138dafe612b3d318, 2025)
+ - License: BSD-3-Clause and IJG
+ 
+ Files extracted from upstream source:
+diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg.c b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+index 45fc0f954c..d514da43d2 100644
+--- a/thirdparty/libjpeg-turbo/src/turbojpeg.c
++++ b/thirdparty/libjpeg-turbo/src/turbojpeg.c
+@@ -1196,9 +1196,6 @@ bailout:
+ #define BITS_IN_JSAMPLE  12
+ #include "turbojpeg-mp.c"
+ #undef BITS_IN_JSAMPLE
+-#define BITS_IN_JSAMPLE  16
+-#include "turbojpeg-mp.c"
+-#undef BITS_IN_JSAMPLE
+ 
+ /* TurboJPEG 1.2+ */
+ DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,

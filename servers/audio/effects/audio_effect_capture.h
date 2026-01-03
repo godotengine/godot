@@ -28,16 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_EFFECT_CAPTURE_H
-#define AUDIO_EFFECT_CAPTURE_H
+#pragma once
 
-#include "core/config/engine.h"
 #include "core/math/audio_frame.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/ring_buffer.h"
-#include "core/templates/vector.h"
 #include "servers/audio/audio_effect.h"
-#include "servers/audio_server.h"
 
 class AudioEffectCapture;
 
@@ -79,5 +75,3 @@ public:
 	int get_buffer_length_frames() const;
 	int64_t get_pushed_frames() const;
 };
-
-#endif // AUDIO_EFFECT_CAPTURE_H

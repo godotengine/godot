@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModifier3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that may modify a Skeleton3D's bones.
+	</brief_description>
+	<description>
+		[SkeletonModifier3D] retrieves a target [Skeleton3D] by having a [Skeleton3D] parent.
+		If there is an [AnimationMixer], a modification always performs after playback process of the [AnimationMixer].
+		This node should be used to implement custom IK solvers, constraints, or skeleton physics.
+	</description>
+	<tutorials>
+		<link title="Design of the Skeleton Modifier 3D">https://godotengine.org/article/design-of-the-skeleton-modifier-3d/</link>
+	</tutorials>
+	<methods>
+		<method name="_process_modification" qualifiers="virtual" deprecated="Use [method _process_modification_with_delta] instead.">
+			<return type="void" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+			</description>
+		</method>
+		<method name="_process_modification_with_delta" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification_with_delta] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+				[param delta] is passed from parent [Skeleton3D]. See also [method Skeleton3D.advance].
+			</description>
+		</method>
+		<method name="_skeleton_changed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="old_skeleton" type="Skeleton3D" />
+			<param index="1" name="new_skeleton" type="Skeleton3D" />
+			<description>
+				Called when the skeleton is changed.
+			</description>
+		</method>
+		<method name="_validate_bone_names" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when bone names and indices need to be validated, such as when entering the scene tree or changing skeleton.
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+				Returns the parent [Skeleton3D] node if it exists. Otherwise, returns [code]null[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="true">
+			If [code]true[/code], the [SkeletonModifier3D] will be processing.
+		</member>
+		<member name="influence" type="float" setter="set_influence" getter="get_influence" default="1.0">
+			Sets the influence of the modification.
+			[b]Note:[/b] This value is used by [Skeleton3D] to blend, so the [SkeletonModifier3D] should always apply only 100% of the result without interpolation.
+		</member>
+	</members>
+	<signals>
+		<signal name="modification_processed">
+			<description>
+				Notifies when the modification have been finished.
+				[b]Note:[/b] If you want to get the modified bone pose by the modifier, you must use [method Skeleton3D.get_bone_pose] or [method Skeleton3D.get_bone_global_pose] at the moment this signal is fired.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="BONE_AXIS_PLUS_X" value="0" enum="BoneAxis">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_X" value="1" enum="BoneAxis">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Y" value="2" enum="BoneAxis">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Y" value="3" enum="BoneAxis">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Z" value="4" enum="BoneAxis">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Z" value="5" enum="BoneAxis">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_X" value="0" enum="BoneDirection">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_X" value="1" enum="BoneDirection">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_Y" value="2" enum="BoneDirection">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_Y" value="3" enum="BoneDirection">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_DIRECTION_PLUS_Z" value="4" enum="BoneDirection">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_MINUS_Z" value="5" enum="BoneDirection">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="BONE_DIRECTION_FROM_PARENT" value="6" enum="BoneDirection">
+			Enumerated value for the axis from a parent bone to the child bone.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_NONE" value="0" enum="SecondaryDirection">
+			Enumerated value for the case when the axis is undefined.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_X" value="1" enum="SecondaryDirection">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_X" value="2" enum="SecondaryDirection">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_Y" value="3" enum="SecondaryDirection">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_Y" value="4" enum="SecondaryDirection">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_PLUS_Z" value="5" enum="SecondaryDirection">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_MINUS_Z" value="6" enum="SecondaryDirection">
+			Enumerated value for the -Z axis.
+		</constant>
+		<constant name="SECONDARY_DIRECTION_CUSTOM" value="7" enum="SecondaryDirection">
+			Enumerated value for an optional axis.
+		</constant>
+		<constant name="ROTATION_AXIS_X" value="0" enum="RotationAxis">
+			Enumerated value for the rotation of the X axis.
+		</constant>
+		<constant name="ROTATION_AXIS_Y" value="1" enum="RotationAxis">
+			Enumerated value for the rotation of the Y axis.
+		</constant>
+		<constant name="ROTATION_AXIS_Z" value="2" enum="RotationAxis">
+			Enumerated value for the rotation of the Z axis.
+		</constant>
+		<constant name="ROTATION_AXIS_ALL" value="3" enum="RotationAxis">
+			Enumerated value for the unconstrained rotation.
+		</constant>
+		<constant name="ROTATION_AXIS_CUSTOM" value="4" enum="RotationAxis">
+			Enumerated value for an optional rotation axis.
+		</constant>
+	</constants>
+</class>

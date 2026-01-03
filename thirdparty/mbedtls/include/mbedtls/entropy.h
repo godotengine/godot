@@ -5,38 +5,28 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_ENTROPY_H
 #define MBEDTLS_ENTROPY_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 
-#if defined(MBEDTLS_SHA512_C) && !defined(MBEDTLS_ENTROPY_FORCE_SHA256)
-#include "mbedtls/sha512.h"
+#include "md.h"
+
+#if (defined(MBEDTLS_MD_CAN_SHA512) || defined(PSA_WANT_ALG_SHA_512)) && \
+    !defined(MBEDTLS_ENTROPY_FORCE_SHA256)
 #define MBEDTLS_ENTROPY_SHA512_ACCUMULATOR
+#define MBEDTLS_ENTROPY_MD  MBEDTLS_MD_SHA512
+#define MBEDTLS_ENTROPY_BLOCK_SIZE      64      /**< Block size of entropy accumulator (SHA-512) */
 #else
-#if defined(MBEDTLS_SHA256_C)
+#if (defined(MBEDTLS_MD_CAN_SHA256) || defined(PSA_WANT_ALG_SHA_256))
 #define MBEDTLS_ENTROPY_SHA256_ACCUMULATOR
-#include "mbedtls/sha256.h"
+#define MBEDTLS_ENTROPY_MD  MBEDTLS_MD_SHA256
+#define MBEDTLS_ENTROPY_BLOCK_SIZE      32      /**< Block size of entropy accumulator (SHA-256) */
 #endif
 #endif
 
@@ -44,9 +34,6 @@
 #include "mbedtls/threading.h"
 #endif
 
-#if defined(MBEDTLS_HAVEGE_C)
-#include "mbedtls/havege.h"
-#endif
 
 /** Critical entropy source failure. */
 #define MBEDTLS_ERR_ENTROPY_SOURCE_FAILED                 -0x003C
@@ -63,7 +50,7 @@
  * \name SECTION: Module settings
  *
  * The configuration options you can set for this module are in this section.
- * Either change them in config.h or define them on the compiler command line.
+ * Either change them in mbedtls_config.h or define them on the compiler command line.
  * \{
  */
 
@@ -76,12 +63,6 @@
 #endif
 
 /** \} name SECTION: Module settings */
-
-#if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
-#define MBEDTLS_ENTROPY_BLOCK_SIZE      64      /**< Block size of entropy accumulator (SHA-512) */
-#else
-#define MBEDTLS_ENTROPY_BLOCK_SIZE      32      /**< Block size of entropy accumulator (SHA-256) */
-#endif
 
 #define MBEDTLS_ENTROPY_MAX_SEED_SIZE   1024    /**< Maximum size of seed we read from seed file */
 #define MBEDTLS_ENTROPY_SOURCE_MANUAL   MBEDTLS_ENTROPY_MAX_SOURCES
@@ -111,11 +92,11 @@ typedef int (*mbedtls_entropy_f_source_ptr)(void *data, unsigned char *output, s
  * \brief           Entropy source state
  */
 typedef struct mbedtls_entropy_source_state {
-    mbedtls_entropy_f_source_ptr    f_source;   /**< The entropy source callback */
-    void *p_source;             /**< The callback data pointer */
-    size_t          size;       /**< Amount received in bytes */
-    size_t          threshold;  /**< Minimum bytes required before release */
-    int             strong;     /**< Is the source strong? */
+    mbedtls_entropy_f_source_ptr    MBEDTLS_PRIVATE(f_source);   /**< The entropy source callback */
+    void *MBEDTLS_PRIVATE(p_source);             /**< The callback data pointer */
+    size_t          MBEDTLS_PRIVATE(size);       /**< Amount received in bytes */
+    size_t          MBEDTLS_PRIVATE(threshold);  /**< Minimum bytes required before release */
+    int             MBEDTLS_PRIVATE(strong);     /**< Is the source strong? */
 }
 mbedtls_entropy_source_state;
 
@@ -123,27 +104,28 @@ mbedtls_entropy_source_state;
  * \brief           Entropy context structure
  */
 typedef struct mbedtls_entropy_context {
-    int accumulator_started; /* 0 after init.
-                              * 1 after the first update.
-                              * -1 after free. */
-#if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)
-    mbedtls_sha512_context  accumulator;
-#elif defined(MBEDTLS_ENTROPY_SHA256_ACCUMULATOR)
-    mbedtls_sha256_context  accumulator;
-#endif
-    int             source_count; /* Number of entries used in source. */
-    mbedtls_entropy_source_state    source[MBEDTLS_ENTROPY_MAX_SOURCES];
-#if defined(MBEDTLS_HAVEGE_C)
-    mbedtls_havege_state    havege_data;
-#endif
+    mbedtls_md_context_t  MBEDTLS_PRIVATE(accumulator);
+    int MBEDTLS_PRIVATE(accumulator_started); /* 0 after init.
+                                               * 1 after the first update.
+                                               * -1 after free. */
+    int             MBEDTLS_PRIVATE(source_count); /* Number of entries used in source. */
+    mbedtls_entropy_source_state    MBEDTLS_PRIVATE(source)[MBEDTLS_ENTROPY_MAX_SOURCES];
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_threading_mutex_t mutex;    /*!< mutex                  */
+    mbedtls_threading_mutex_t MBEDTLS_PRIVATE(mutex);    /*!< mutex                  */
 #endif
 #if defined(MBEDTLS_ENTROPY_NV_SEED)
-    int initial_entropy_run;
+    int MBEDTLS_PRIVATE(initial_entropy_run);
 #endif
 }
 mbedtls_entropy_context;
+
+#if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
+/**
+ * \brief           Platform-specific entropy poll callback
+ */
+int mbedtls_platform_entropy_poll(void *data,
+                                  unsigned char *output, size_t len, size_t *olen);
+#endif
 
 /**
  * \brief           Initialize the context

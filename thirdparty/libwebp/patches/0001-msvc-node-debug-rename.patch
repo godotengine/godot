@@ -1,0 +1,14 @@
+diff --git a/thirdparty/libwebp/src/enc/quant_enc.c b/thirdparty/libwebp/src/enc/quant_enc.c
+index 4b8cb5e9be..440991f86d 100644
+--- a/thirdparty/libwebp/src/enc/quant_enc.c
++++ b/thirdparty/libwebp/src/enc/quant_enc.c
+@@ -562,6 +562,9 @@ static void AddScore(VP8ModeScore* WEBP_RESTRICT const dst,
+ //------------------------------------------------------------------------------
+ // Performs trellis-optimized quantization.
+ 
++// Prevents Visual Studio debugger from using this Node struct in place of the Godot Node class.
++#define Node Node_libwebp_quant
++
+ // Trellis node
+ typedef struct {
+   int8_t prev;            // best previous node

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINK_BUTTON_H
-#define LINK_BUTTON_H
+#pragma once
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/text_line.h"
@@ -55,6 +54,8 @@ private:
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
+	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
+	String el_char = U"…";
 
 	struct ThemeCache {
 		Ref<StyleBox> focus;
@@ -89,10 +90,16 @@ public:
 	void set_uri(const String &p_uri);
 	String get_uri() const;
 
+	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior() const;
+
+	void set_ellipsis_char(const String &p_char);
+	String get_ellipsis_char() const;
+
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_text_direction(TextDirection p_text_direction);
@@ -105,10 +112,11 @@ public:
 	UnderlineMode get_underline_mode() const;
 
 	Ref<Font> get_button_font() const;
+	int get_button_font_size() const;
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	LinkButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(LinkButton::UnderlineMode);
-
-#endif // LINK_BUTTON_H

@@ -31,6 +31,7 @@
 #include "random_pcg.h"
 
 #include "core/os/os.h"
+#include "core/templates/vector.h"
 
 RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 		pcg(),
@@ -40,6 +41,31 @@ RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 
 void RandomPCG::randomize() {
 	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
+}
+
+int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
+	ERR_FAIL_COND_V_MSG(p_weights.is_empty(), -1, "Weights array is empty.");
+	int64_t weights_size = p_weights.size();
+	const float *weights = p_weights.ptr();
+	float weights_sum = 0.0;
+	for (int64_t i = 0; i < weights_size; ++i) {
+		weights_sum += weights[i];
+	}
+
+	float remaining_distance = randf() * weights_sum;
+	for (int64_t i = 0; i < weights_size; ++i) {
+		remaining_distance -= weights[i];
+		if (remaining_distance < 0) {
+			return i;
+		}
+	}
+
+	for (int64_t i = weights_size - 1; i >= 0; --i) {
+		if (weights[i] > 0) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 double RandomPCG::random(double p_from, double p_to) {
@@ -54,5 +80,15 @@ int RandomPCG::random(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return p_from;
 	}
-	return rand(abs(p_from - p_to) + 1) + MIN(p_from, p_to);
+
+	int64_t min = MIN(p_from, p_to);
+	int64_t max = MAX(p_from, p_to);
+	uint32_t diff = static_cast<uint32_t>(max - min);
+
+	if (diff == UINT32_MAX) {
+		// Can't add 1 to max uint32_t value for inclusive range, so call rand without passing bounds.
+		return static_cast<int64_t>(rand()) + min;
+	}
+
+	return static_cast<int64_t>(rand(diff + 1U)) + min;
 }

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OptimizedTranslation" inherits="Translation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An optimized translation, used by default for CSV Translations.
+		An optimized translation.
 	</brief_description>
 	<description>
-		An optimized translation, used by default for CSV Translations. Uses real-time compressed translations, which results in very small dictionaries.
+		An optimized translation. Uses real-time compressed translations, which results in very small dictionaries.
+		This class does not store the untranslated strings for optimization purposes. Therefore, [method Translation.get_message_list] always returns an empty array, and [method Translation.get_message_count] always returns [code]0[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,6 +15,8 @@
 			<param index="0" name="from" type="Translation" />
 			<description>
 				Generates and sets an optimized translation from the given [Translation] resource.
+				[b]Note:[/b] Messages in [param from] should not use context or plural forms.
+				[b]Note:[/b] This method is intended to be used in the editor. It does nothing when called from an exported project.
 			</description>
 		</method>
 	</methods>

@@ -1,17 +1,4 @@
 // Gradle build config for Godot Engine's Android port.
-buildscript {
-    apply from: 'config.gradle'
-
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath libraries.androidGradlePlugin
-        classpath libraries.kotlinGradlePlugin
-    }
-}
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -23,6 +10,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -39,11 +29,20 @@ allprojects {
 configurations {
     // Initializes a placeholder for the devImplementation dependency configuration.
     devImplementation {}
+    // Initializes a placeholder for the monoImplementation dependency configuration.
+    monoImplementation {}
 }
 
 dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
+
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -52,9 +51,9 @@ dependencies {
     } else {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
-        debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
-        devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
-        releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
+        debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
+        devImplementation fileTree(dir: 'libs/dev', include: ['**/*.jar', '*.aar'])
+        releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
     }
 
     // Godot user plugins remote dependencies
@@ -69,6 +68,18 @@ dependencies {
     String[] pluginsBinaries = getGodotPluginsLocalBinaries()
     if (pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation files(pluginsBinaries)
+    }
+
+    // Automatically pick up local dependencies in res://addons
+    String addonsDirectory = getAddonsDirectory()
+    if (addonsDirectory != null && !addonsDirectory.isBlank()) {
+        implementation fileTree(dir: "$addonsDirectory", include: ['*.jar', '*.aar'])
+    }
+
+    // .NET dependencies
+    String jar = '../../../../modules/mono/thirdparty/libSystem.Security.Cryptography.Native.Android.jar'
+    if (file(jar).exists()) {
+        monoImplementation files(jar)
     }
 }
 
@@ -86,7 +97,9 @@ android {
         jvmTarget = versions.javaVersion
     }
 
-    assetPacks = [":assetPacks:installTime"]
+    assetPacks = [":assetPackInstallTime"]
+
+    namespace = 'com.godot.game'
 
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
@@ -95,11 +108,10 @@ android {
         }
 
         ndk {
+            debugSymbolLevel 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
-
-        manifestPlaceholders = [godotEditorVersion: getGodotEditorVersion()]
 
         // Feel free to modify the application id to your own.
         applicationId getExportPackageName()
@@ -109,6 +121,17 @@ android {
         targetSdkVersion getExportTargetSdkVersion()
 
         missingDimensionStrategy 'products', 'template'
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     lintOptions {
@@ -122,10 +145,26 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
         }
+
+        jniLibs {
+            // Setting this to true causes AGP to package compressed native libraries when building the app
+            // For more background, see:
+            // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
+            // - https://stackoverflow.com/a/44704840
+            useLegacyPackaging shouldUseLegacyPackaging()
+        }
+
+        // Always select Godot's version of libc++_shared.so in case deps have their own
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
     }
 
     signingConfigs {
@@ -147,6 +186,10 @@ android {
                 keyPassword getReleaseKeystorePassword()
             }
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -186,14 +229,26 @@ android {
         }
     }
 
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            res.srcDirs = ['res']
-            aidl.srcDirs = ['aidl']
-            assets.srcDirs = ['assets']
+    flavorDimensions 'edition'
+
+    productFlavors {
+        // Product flavor for the standard (no .net support) builds.
+        standard {
+            getIsDefault().set(true)
         }
+
+        // Product flavor for the Mono (.net) builds.
+        mono {}
+
+        // Product flavor used for running instrumented tests.
+        instrumented {
+            applicationIdSuffix ".instrumented"
+            versionNameSuffix "-instrumented"
+        }
+    }
+
+    sourceSets {
+        main.res.srcDirs += ['res']
         debug.jniLibs.srcDirs = ['libs/debug', 'libs/debug/vulkan_validation_layers']
         dev.jniLibs.srcDirs = ['libs/dev']
         release.jniLibs.srcDirs = ['libs/release']
@@ -201,43 +256,82 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            output.outputFileName = "android_${variant.name}.apk"
+            String filenameSuffix = variant.flavorName == "mono" ? variant.name : variant.buildType.name
+            output.outputFileName = "android_${filenameSuffix}.apk"
         }
     }
 }
 
-task copyAndRenameDebugApk(type: Copy) {
-    from "$buildDir/outputs/apk/debug/android_debug.apk"
-    into getExportPath()
-    rename "android_debug.apk", getExportFilename()
+task copyAndRenameBinary(type: Copy) {
+    // The 'doNotTrackState' is added to disable gradle's up-to-date checks for output files
+    // and directories. Otherwise this check may cause permissions access failures on Windows
+    // machines.
+    doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
+
+    String exportPath = getExportPath()
+    String exportFilename = getExportFilename()
+    String exportEdition = getExportEdition()
+    String exportBuildType = getExportBuildType()
+    String exportBuildTypeCapitalized = exportBuildType.capitalize()
+    String exportFormat = getExportFormat()
+
+    boolean isAab = exportFormat == "aab"
+    boolean isMono = exportEdition == "mono"
+    String filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : exportBuildType
+    if (isMono) {
+        filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
+    }
+
+    String sourceFilename = isAab ? "${project.name}-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
+    String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
+
+    from sourceFilepath
+    into exportPath
+    rename sourceFilename, exportFilename
 }
 
-task copyAndRenameDevApk(type: Copy) {
-    from "$buildDir/outputs/apk/dev/android_dev.apk"
-    into getExportPath()
-    rename "android_dev.apk", getExportFilename()
+/**
+ * Used to validate the version of the Java SDK used for the Godot gradle builds.
+ */
+task validateJavaVersion {
+    if (!JavaVersion.current().isCompatibleWith(versions.javaVersion)) {
+        throw new GradleException("Invalid Java version ${JavaVersion.current()}. Version ${versions.javaVersion} is the minimum supported Java version for Godot gradle builds.")
+    }
 }
 
-task copyAndRenameReleaseApk(type: Copy) {
-    from "$buildDir/outputs/apk/release/android_release.apk"
-    into getExportPath()
-    rename "android_release.apk", getExportFilename()
+/*
+ * Older versions of our vendor plugin include a loader that we no longer need.
+ * This code ensures those are removed.
+ */
+tasks.withType( com.android.build.gradle.internal.tasks.MergeNativeLibsTask) {
+    doFirst {
+        externalLibNativeLibs.each { jniDir ->
+            if (jniDir.getCanonicalPath().contains("godot-openxr-") || jniDir.getCanonicalPath().contains("godotopenxr")) {
+                // Delete the 'libopenxr_loader.so' files from the vendors plugin so we only use the version from the
+                // openxr loader dependency.
+                File armFile = new File(jniDir, "arm64-v8a/libopenxr_loader.so")
+                if (armFile.exists()) {
+                    armFile.delete()
+                }
+                File x86File = new File(jniDir, "x86_64/libopenxr_loader.so")
+                if (x86File.exists()) {
+                    x86File.delete()
+                }
+            }
+        }
+    }
 }
 
-task copyAndRenameDebugAab(type: Copy) {
-    from "$buildDir/outputs/bundle/debug/build-debug.aab"
-    into getExportPath()
-    rename "build-debug.aab", getExportFilename()
+/*
+When they're scheduled to run, the copy*AARToAppModule tasks generate dependencies for the 'app'
+module, so we're ensuring the ':app:preBuild' task is set to run after those tasks.
+ */
+if (rootProject.tasks.findByPath("copyDebugAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyDebugAARToAppModule"))
 }
-
-task copyAndRenameDevAab(type: Copy) {
-    from "$buildDir/outputs/bundle/dev/build-dev.aab"
-    into getExportPath()
-    rename "build-dev.aab", getExportFilename()
+if (rootProject.tasks.findByPath("copyDevAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyDevAARToAppModule"))
 }
-
-task copyAndRenameReleaseAab(type: Copy) {
-    from "$buildDir/outputs/bundle/release/build-release.aab"
-    into getExportPath()
-    rename "build-release.aab", getExportFilename()
+if (rootProject.tasks.findByPath("copyReleaseAARToAppModule") != null) {
+    preBuild.mustRunAfter(rootProject.tasks.named("copyReleaseAARToAppModule"))
 }

@@ -28,14 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRID_MAP_EDITOR_PLUGIN_H
-#define GRID_MAP_EDITOR_PLUGIN_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../grid_map.h"
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/slider.h"
@@ -44,16 +41,18 @@
 class ConfirmationDialog;
 class MenuButton;
 class Node3DEditorPlugin;
+class ButtonGroup;
+class EditorZoomWidget;
+class BaseButton;
 
 class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
 
-	enum {
-		GRID_CURSOR_SIZE = 50
-	};
+	static constexpr int32_t GRID_CURSOR_SIZE = 50;
 
 	enum InputAction {
 		INPUT_NONE,
+		INPUT_TRANSFORM,
 		INPUT_PAINT,
 		INPUT_ERASE,
 		INPUT_PICK,
@@ -71,11 +70,31 @@ class GridMapEditor : public VBoxContainer {
 	MenuButton *options = nullptr;
 	SpinBox *floor = nullptr;
 	double accumulated_floor_delta = 0.0;
+
+	HBoxContainer *toolbar = nullptr;
+	TightLocalVector<BaseButton *> viewport_shortcut_buttons;
+	Ref<ButtonGroup> mode_buttons_group;
+	// mode
+	Button *transform_mode_button = nullptr;
+	Button *select_mode_button = nullptr;
+	Button *erase_mode_button = nullptr;
+	Button *paint_mode_button = nullptr;
+	Button *pick_mode_button = nullptr;
+	// action
+	Button *fill_action_button = nullptr;
+	Button *move_action_button = nullptr;
+	Button *duplicate_action_button = nullptr;
+	Button *delete_action_button = nullptr;
+	// rotation
+	Button *rotate_x_button = nullptr;
+	Button *rotate_y_button = nullptr;
+	Button *rotate_z_button = nullptr;
+
+	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
 	Button *mode_list = nullptr;
 	LineEdit *search_box = nullptr;
 	HSlider *size_slider = nullptr;
-	HBoxContainer *spatial_editor_hb = nullptr;
 	ConfirmationDialog *settings_dialog = nullptr;
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_pick_distance = nullptr;
@@ -89,7 +108,7 @@ class GridMapEditor : public VBoxContainer {
 		int old_orientation = 0;
 	};
 
-	List<SetItem> set_items;
+	LocalVector<SetItem> set_items;
 
 	GridMap *node = nullptr;
 	Ref<MeshLibrary> mesh_library = nullptr;
@@ -102,6 +121,7 @@ class GridMapEditor : public VBoxContainer {
 
 	RID grid[3];
 	RID grid_instance[3];
+	RID cursor_mesh;
 	RID cursor_instance;
 	RID selection_mesh;
 	RID selection_instance;
@@ -117,9 +137,15 @@ class GridMapEditor : public VBoxContainer {
 		RID instance;
 	};
 
-	List<ClipboardItem> clipboard_items;
+	LocalVector<ClipboardItem> clipboard_items;
+	bool clipboard_is_move = false;
 
+	Color default_color;
+	Color erase_color;
+	Color pick_color;
 	Ref<StandardMaterial3D> indicator_mat;
+	Ref<StandardMaterial3D> cursor_inner_mat;
+	Ref<StandardMaterial3D> cursor_outer_mat;
 	Ref<StandardMaterial3D> inner_mat;
 	Ref<StandardMaterial3D> outer_mat;
 	Ref<StandardMaterial3D> selection_floor_mat;
@@ -140,6 +166,7 @@ class GridMapEditor : public VBoxContainer {
 		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
+		Vector3 distance_from_cursor;
 		int orientation = 0;
 	};
 	PasteIndicator paste_indicator;
@@ -148,6 +175,7 @@ class GridMapEditor : public VBoxContainer {
 	Transform3D cursor_transform;
 
 	Vector3 cursor_origin;
+	Vector3i cursor_gridpos;
 
 	int display_mode = DISPLAY_THUMBNAIL;
 	int selected_palette = -1;
@@ -169,7 +197,7 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_CURSOR_CLEAR_ROTATION,
 		MENU_OPTION_PASTE_SELECTS,
 		MENU_OPTION_SELECTION_DUPLICATE,
-		MENU_OPTION_SELECTION_CUT,
+		MENU_OPTION_SELECTION_MOVE,
 		MENU_OPTION_SELECTION_CLEAR,
 		MENU_OPTION_SELECTION_FILL,
 		MENU_OPTION_GRIDMAP_SETTINGS
@@ -196,10 +224,11 @@ class GridMapEditor : public VBoxContainer {
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
+	void _on_tool_mode_changed();
 	void _update_theme();
 
 	void _text_changed(const String &p_text);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _mesh_library_palette_input(const Ref<InputEvent> &p_ie);
 
 	void _icon_size_changed(float p_value);
@@ -208,15 +237,22 @@ class GridMapEditor : public VBoxContainer {
 	void _set_clipboard_data();
 	void _update_paste_indicator();
 	void _do_paste();
+	void _cancel_pending_move();
+	void _show_viewports_transform_gizmo(bool p_value);
 	void _update_selection_transform();
 	void _validate_selection();
 	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
+	AABB _get_selection() const;
+	bool _has_selection() const;
+	Array _get_selected_cells() const;
 
 	void _floor_changed(float p_value);
 	void _floor_mouse_exited();
 
 	void _delete_selection();
+	void _delete_selection_with_undo();
 	void _fill_selection();
+	void _setup_paste_mode();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
@@ -238,22 +274,26 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
+	Button *panel_button = nullptr;
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
-	virtual String get_name() const override { return "GridMap"; }
+	virtual String get_plugin_name() const override { return "GridMap"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
-	GridMapEditorPlugin();
-	~GridMapEditorPlugin();
+	GridMap *get_current_grid_map() const;
+	void set_selection(const Vector3i &p_begin, const Vector3i &p_end);
+	void clear_selection();
+	AABB get_selection() const;
+	bool has_selection() const;
+	Array get_selected_cells() const;
+	void set_selected_palette_item(int p_item) const;
+	int get_selected_palette_item() const;
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // GRID_MAP_EDITOR_PLUGIN_H

@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DATA_H
-#define EDITOR_DATA_H
+#pragma once
 
 #include "core/templates/list.h"
+#include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
 class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
+class PopupMenu;
 
 /**
  * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
@@ -74,6 +75,7 @@ public:
 	// Adds an object to the selection history. A property name can be passed if the target is a subresource of the given object.
 	// If the object should not change the main screen plugin, it can be set as inspector only.
 	void add_object(ObjectID p_object, const String &p_property = String(), bool p_inspector_only = false);
+	void replace_object(ObjectID p_old_object, ObjectID p_new_object);
 
 	int get_history_len();
 	int get_history_pos();
@@ -145,14 +147,14 @@ private:
 
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
-	HashMap<Ref<Script>, Ref<Texture>> _script_icon_cache;
+	HashMap<String, Ref<Texture2D>> _script_icon_cache;
 
 	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
 public:
 	EditorPlugin *get_handling_main_editor(Object *p_object);
 	Vector<EditorPlugin *> get_handling_sub_editors(Object *p_object);
-	EditorPlugin *get_editor_by_name(String p_name);
+	EditorPlugin *get_editor_by_name(const String &p_name);
 
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);
@@ -218,6 +220,7 @@ public:
 	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
+	bool reload_scene_from_memory(int p_idx, bool p_mark_unsaved);
 	void move_edited_scene_to_index(int p_idx);
 
 	bool call_build();
@@ -236,9 +239,9 @@ public:
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorSelectionHistory *p_history);
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
+	void notify_scene_saved(const String &p_path);
 
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
-	StringName script_class_get_base(const String &p_class) const;
 	Variant script_class_instance(const String &p_class);
 
 	Ref<Script> script_class_load_script(const String &p_class) const;
@@ -246,15 +249,15 @@ public:
 	StringName script_class_get_name(const String &p_path) const;
 	void script_class_set_name(const String &p_path, const StringName &p_class);
 
-	String script_class_get_icon_path(const String &p_class) const;
+	String script_class_get_icon_path(const String &p_class, bool *r_valid = nullptr) const;
 	void script_class_set_icon_path(const String &p_class, const String &p_icon_path);
 	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
-	void script_class_save_icon_paths();
+	void script_class_save_global_classes();
 	void script_class_load_icon_paths();
 
 	Ref<Texture2D> extension_class_get_icon(const String &p_class) const;
 
-	Ref<Texture2D> get_script_icon(const Ref<Script> &p_script);
+	Ref<Texture2D> get_script_icon(const String &p_script_path);
 	void clear_script_icon_cache();
 
 	EditorData();
@@ -272,7 +275,7 @@ class EditorSelection : public Object {
 
 	// Contains the selected nodes and corresponding metadata.
 	// Metadata objects come from calling _get_editor_data on the editor_plugins, passing the selected node.
-	HashMap<Node *, Object *> selection;
+	HashMap<ObjectID, Object *> selection;
 
 	// Tracks whether the selection change signal has been emitted.
 	// Prevents multiple signals being called in one frame.
@@ -285,10 +288,9 @@ class EditorSelection : public Object {
 
 	// Editor plugins which are related to selection.
 	List<Object *> editor_plugins;
-	List<Node *> selected_node_list;
+	LocalVector<ObjectID> top_selected_node_list;
 
 	void _update_node_list();
-	TypedArray<Node> _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:
@@ -299,12 +301,16 @@ public:
 	void remove_node(Node *p_node);
 	bool is_selected(Node *p_node) const;
 
-	template <class T>
+	template <typename T>
 	T *get_node_editor_data(Node *p_node) {
-		if (!selection.has(p_node)) {
+		if (!p_node) {
 			return nullptr;
 		}
-		return Object::cast_to<T>(selection[p_node]);
+		ObjectID nid = p_node->get_instance_id();
+		if (!selection.has(nid)) {
+			return nullptr;
+		}
+		return Object::cast_to<T>(selection[nid]);
 	}
 
 	// Adds an editor plugin which can provide metadata for selected nodes.
@@ -313,18 +319,17 @@ public:
 	void update();
 	void clear();
 
-	// Returns all the selected nodes.
-	TypedArray<Node> get_selected_nodes();
 	// Returns only the top level selected nodes.
 	// That is, if the selection includes some node and a child of that node, only the parent is returned.
-	List<Node *> &get_selected_node_list();
+	List<Node *> get_top_selected_node_list();
+	// Same as get_top_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_top_selected_nodes();
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
+	// Same as get_full_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	TypedArray<Node> get_selected_nodes();
 	// Returns the map of selected objects and their metadata.
-	HashMap<Node *, Object *> &get_selection() { return selection; }
+	HashMap<ObjectID, Object *> &get_selection() { return selection; }
 
-	EditorSelection();
 	~EditorSelection();
 };
-
-#endif // EDITOR_DATA_H

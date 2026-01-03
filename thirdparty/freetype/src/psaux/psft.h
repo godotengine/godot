@@ -92,19 +92,19 @@ FT_BEGIN_HEADER
   FT_LOCAL( void )
   cf2_getBlueValues( PS_Decoder*  decoder,
                      size_t*      count,
-                     FT_Pos*     *data );
+                     FT_Fixed*   *data );
   FT_LOCAL( void )
   cf2_getOtherBlues( PS_Decoder*  decoder,
                      size_t*      count,
-                     FT_Pos*     *data );
+                     FT_Fixed*   *data );
   FT_LOCAL( void )
   cf2_getFamilyBlues( PS_Decoder*  decoder,
                       size_t*      count,
-                      FT_Pos*     *data );
+                      FT_Fixed*   *data );
   FT_LOCAL( void )
   cf2_getFamilyOtherBlues( PS_Decoder*  decoder,
                            size_t*      count,
-                           FT_Pos*     *data );
+                           FT_Fixed*   *data );
 
   FT_LOCAL( CF2_Int )
   cf2_getLanguageGroup( PS_Decoder*  decoder );

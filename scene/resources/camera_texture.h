@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_TEXTURE_H
-#define CAMERA_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
+#include "servers/camera/camera_server.h"
 
 class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);
@@ -43,6 +43,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _on_format_changed();
 
 public:
 	virtual int get_width() const override;
@@ -64,5 +65,3 @@ public:
 	CameraTexture();
 	~CameraTexture();
 };
-
-#endif // CAMERA_TEXTURE_H

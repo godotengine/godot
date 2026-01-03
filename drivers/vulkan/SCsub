@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
 thirdparty_obj = []
 thirdparty_dir = "#thirdparty/vulkan"
 thirdparty_volk_dir = "#thirdparty/volk"
+thirdparty_spirv_headers_dir = "#thirdparty/spirv-headers"
+thirdparty_respirv_dir = "#thirdparty/re-spirv"
 
 # Use bundled Vulkan headers
 env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
@@ -16,11 +19,14 @@ if env["use_volk"]:
 if env["platform"] == "android":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_ANDROID_KHR"])
 elif env["platform"] == "ios":
-    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK"])
-elif env["platform"] == "linuxbsd" and env["x11"]:
-    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
+    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_IOS_MVK", "VK_USE_PLATFORM_METAL_EXT"])
+elif env["platform"] == "linuxbsd":
+    if env["x11"]:
+        env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_XLIB_KHR"])
+    if env["wayland"]:
+        env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WAYLAND_KHR"])
 elif env["platform"] == "macos":
-    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK"])
+    env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_MACOS_MVK", "VK_USE_PLATFORM_METAL_EXT"])
 elif env["platform"] == "windows":
     env.AppendUnique(CPPDEFINES=["VK_USE_PLATFORM_WIN32_KHR"])
 
@@ -30,7 +36,7 @@ env_thirdparty_vma.disable_warnings()
 thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
 if env["use_volk"]:
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_STATIC_VULKAN_FUNCTIONS=1"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_STATIC_VULKAN_FUNCTIONS", 1)])
     env_thirdparty_volk = env.Clone()
     env_thirdparty_volk.disable_warnings()
 
@@ -39,13 +45,19 @@ if env["use_volk"]:
 elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1000000)])
 elif env["platform"] == "macos" or env["platform"] == "ios":
     # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1001000)])
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 
+# Build re-spirv
+env_thirdparty_respirv = env.Clone()
+env_thirdparty_respirv.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "/include"])
+env_thirdparty_respirv.disable_warnings()
+thirdparty_sources_respirv = [thirdparty_respirv_dir + "/re-spirv.cpp"]
+env_thirdparty_respirv.add_source_files(thirdparty_obj, thirdparty_sources_respirv)
 
 env.drivers_sources += thirdparty_obj
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBRTC_MULTIPLAYER_PEER_H
-#define WEBRTC_MULTIPLAYER_PEER_H
+#pragma once
 
 #include "webrtc_peer_connection.h"
 
@@ -82,19 +81,19 @@ private:
 	List<TransferMode> channels_modes;
 	List<Dictionary> channels_config;
 
-	void _peer_to_dict(Ref<ConnectedPeer> p_connected_peer, Dictionary &r_dict);
+	void _peer_to_dict(const Ref<ConnectedPeer> &p_connected_peer, Dictionary &r_dict);
 	void _find_next_peer();
 	Ref<ConnectedPeer> _get_next_peer();
-	Error _initialize(int p_self_id, NetworkMode p_mode, Array p_channels_config = Array());
+	Error _initialize(int p_self_id, NetworkMode p_mode, const Array &p_channels_config = Array());
 
 public:
 	WebRTCMultiplayerPeer() {}
 	~WebRTCMultiplayerPeer();
 
-	Error create_server(Array p_channels_config = Array());
-	Error create_client(int p_self_id, Array p_channels_config = Array());
-	Error create_mesh(int p_self_id, Array p_channels_config = Array());
-	Error add_peer(Ref<WebRTCPeerConnection> p_peer, int p_peer_id, int p_unreliable_lifetime = 1);
+	Error create_server(const Array &p_channels_config = Array());
+	Error create_client(int p_self_id, const Array &p_channels_config = Array());
+	Error create_mesh(int p_self_id, const Array &p_channels_config = Array());
+	Error add_peer(const Ref<WebRTCPeerConnection> &p_peer, int p_peer_id, int p_unreliable_lifetime = 1);
 	void remove_peer(int p_peer_id);
 	bool has_peer(int p_peer_id);
 	Dictionary get_peer(int p_peer_id);
@@ -123,5 +122,3 @@ public:
 
 	virtual ConnectionStatus get_connection_status() const override;
 };
-
-#endif // WEBRTC_MULTIPLAYER_PEER_H

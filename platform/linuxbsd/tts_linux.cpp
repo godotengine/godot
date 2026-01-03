@@ -31,7 +31,7 @@
 #include "tts_linux.h"
 
 #include "core/config/project_settings.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 TTS_Linux *TTS_Linux::singleton = nullptr;
 
@@ -63,7 +63,7 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 			} else {
 				class_str = config_name.utf8();
 			}
-			tts->synth = spd_open(class_str, "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
+			tts->synth = spd_open(class_str.get_data(), "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
 			if (tts->synth) {
 				tts->synth->callback_end = &speech_event_callback;
 				tts->synth->callback_cancel = &speech_event_callback;
@@ -82,11 +82,11 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 void TTS_Linux::speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		callable_mp(tts, &TTS_Linux::_speech_index_mark).call_deferred(p_msg_id, p_client_id, (int)p_type, String::utf8(p_index_mark));
+		callable_mp(tts, &TTS_Linux::_speech_index_mark).call_deferred((int)p_msg_id, (int)p_type, String::utf8(p_index_mark));
 	}
 }
 
-void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark) {
+void TTS_Linux::_speech_index_mark(int p_msg_id, int p_type, const String &p_index_mark) {
 	_THREAD_SAFE_METHOD_
 
 	if (ids.has(p_msg_id)) {
@@ -97,11 +97,11 @@ void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_ty
 void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		callable_mp(tts, &TTS_Linux::_speech_event).call_deferred(p_msg_id, p_client_id, (int)p_type);
+		callable_mp(tts, &TTS_Linux::_speech_event).call_deferred((int)p_msg_id, (int)p_type);
 	}
 }
 
-void TTS_Linux::_load_voices() {
+void TTS_Linux::_load_voices() const {
 	if (!voices_loaded) {
 		SPDVoice **spd_voices = spd_list_synthesis_voices(synth);
 		if (spd_voices != nullptr) {
@@ -119,7 +119,7 @@ void TTS_Linux::_load_voices() {
 	}
 }
 
-void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
+void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 	_THREAD_SAFE_METHOD_
 
 	if (!paused && ids.has(p_msg_id)) {
@@ -149,20 +149,26 @@ void TTS_Linux::_speech_event(size_t p_msg_id, size_t p_client_id, int p_type) {
 		}
 
 		PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
+		int prev_end = -1;
 		for (int i = 0; i < breaks.size(); i += 2) {
 			const int start = breaks[i];
 			const int end = breaks[i + 1];
-			text += message.text.substr(start, end - start + 1);
+			if (prev_end != -1 && prev_end != start) {
+				text += message.text.substr(prev_end, start - prev_end);
+			}
+			text += message.text.substr(start, end - start);
 			text += "<mark name=\"" + String::num_int64(end, 10) + "\"/>";
+			prev_end = end;
 		}
+
 		spd_set_synthesis_voice(synth, message.voice.utf8().get_data());
 		spd_set_volume(synth, message.volume * 2 - 100);
 		spd_set_voice_pitch(synth, (message.pitch - 1) * 100);
 		float rate = 0;
 		if (message.rate > 1.f) {
-			rate = log10(MIN(message.rate, 2.5f)) / log10(2.5f) * 100;
+			rate = std::log10(MIN(message.rate, 2.5f)) / std::log10(2.5f) * 100;
 		} else if (message.rate < 1.f) {
-			rate = log10(MAX(message.rate, 0.5f)) / log10(0.5f) * -100;
+			rate = std::log10(MAX(message.rate, 0.5f)) / std::log10(0.5f) * -100;
 		}
 		spd_set_voice_rate(synth, rate);
 		spd_set_data_mode(synth, SPD_DATA_SSML);
@@ -187,7 +193,7 @@ Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL_V(synth, Array());
-	const_cast<TTS_Linux *>(this)->_load_voices();
+	_load_voices();
 
 	Array list;
 	for (const KeyValue<String, VoiceInfo> &E : voices) {
@@ -201,7 +207,7 @@ Array TTS_Linux::get_voices() const {
 	return list;
 }
 
-void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL(synth);
@@ -226,7 +232,7 @@ void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume,
 	if (is_paused()) {
 		resume();
 	} else {
-		_speech_event(0, 0, (int)SPD_EVENT_BEGIN);
+		_speech_event(0, (int)SPD_EVENT_BEGIN);
 	}
 }
 

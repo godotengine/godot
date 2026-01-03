@@ -8,17 +8,21 @@
 # Anonymous <noreply@weblate.org>, 2020.
 # StiLins <aigars.skilins@gmail.com>, 2020.
 # Rihards Kubilis <oldcar@inbox.lv>, 2020.
-# M E <gruffy7932@gmail.com>, 2021, 2022.
+# M E <gruffy7932@gmail.com>, 2021, 2022, 2025.
 # D āvis <dlektauers@gmail.com>, 2022.
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
-# Andrejs <ledaviskylv@gmail.com>, 2023.
+# Andrejs <ledaviskylv@gmail.com>, 2023, 2025.
+# Peter Lauris <peterlauris@gmail.com>, 2023.
+# GGLVXD <85647114+GGLVXD@users.noreply.github.com>, 2024.
+# Oskars Putāns <o.putaans@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-23 21:22+0000\n"
-"Last-Translator: Andrejs <ledaviskylv@gmail.com>\n"
+"PO-Revision-Date: 2025-12-10 05:35+0000\n"
+"Last-Translator: M E <gruffy7932@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -27,10 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.1-dev\n"
-
-msgid "Unset"
-msgstr "Neiestatīts"
+"X-Generator: Weblate 5.15-dev\n"
 
 msgid "Physical"
 msgstr "Fizisks"
@@ -71,11 +72,104 @@ msgstr "Dubultklikšķis"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Peles kustība pozīcijā (%s) ar ātrumu (%s)"
 
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Kreisā svira X-Axis, Kursorsvira 0 X-Axis"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Kreisā sviras Y-ass, kursorsviras 0 Y-ass"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Labā svira X-Axis, Kursorsvira 1 X-Axis"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Labā sviras Y-ass, kursorsviras 1 Y-ass"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Kursorsvira 2 X-Axis, kreisais trigeris, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Kursorsvira 2 Y-ass, labais trigeris, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Kursorsvira 3 X-Axis"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Kursorsvira 3 Y-ass"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Kursorsvira 4 X-Axis"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Kursorsvira 4 Y-ass"
+
+msgid "Unknown Joypad Axis"
+msgstr "Nezināma Joypad ass"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypad kustība uz ass %d (%s) ar vērtību %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Apakšējā Darbība, Sony Cross, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Labā Darbība, Sony Aplis, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Kreisā Darbība, Sony Kvadrāts, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Augšējā Darbība, Sony Trīsstūris, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Atpakaļ, Sony Izvēlne, Xbox Atpakaļ, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Rokasgrāmata, Sony PS, Xbox Home"
+
 msgid "Start, Xbox Menu, Nintendo +"
 msgstr "Sākums, Xbox Izvēlne, Nintendo +"
 
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Kreisā Svira, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Labā Svira, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Kreisais plecs, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Labais plecs, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad uz augšu"
+
+msgid "D-pad Down"
+msgstr "D-pad uz leju"
+
+msgid "D-pad Left"
+msgstr "D-pad pa kreisi"
+
+msgid "D-pad Right"
+msgstr "D-pad pa labi"
+
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Dalīties, PS5 Mikrofons, Nintendo Notvert"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Lāpstiņa 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Lāpstiņa 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Lāpstiņa 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Lāpstiņa 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Skārienpaliktnis"
 
 msgid "Joypad Button %d"
 msgstr "Joypad Poga %d"
@@ -87,7 +181,7 @@ msgid "canceled"
 msgstr "atcelts"
 
 msgid "touched"
-msgstr "pieskāries"
+msgstr "pieskārās"
 
 msgid "released"
 msgstr "atlaists"
@@ -110,6 +204,12 @@ msgstr "MIDI Ievade Kanālā=%s Ziņa=%s"
 
 msgid "Input Event with Shortcut=%s"
 msgstr "Ievades Notikums ar Saīsni=%s"
+
+msgid " or "
+msgstr " vai "
+
+msgid "Action has no bound inputs"
+msgstr "Darbībai nav piesaistīta ievade"
 
 msgid "Accept"
 msgstr "Pieņemt"
@@ -158,6 +258,9 @@ msgstr "Kopēt"
 
 msgid "Paste"
 msgstr "Ielīmēt"
+
+msgid "Toggle Tab Focus Mode"
+msgstr "Pārslēgt cilnes fokusa režīmu"
 
 msgid "Undo"
 msgstr "Atsaukt"
@@ -258,6 +361,9 @@ msgstr "Atlasīt Vārdu Zem Kursora"
 msgid "Add Selection for Next Occurrence"
 msgstr "Pievienot Atlasi Nākamajai Reizei"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Izlaist Atlasi Nākamajai Reizei"
+
 msgid "Clear Carets and Selection"
 msgstr "Notīrīt Kursorus un Atlasi"
 
@@ -273,6 +379,12 @@ msgstr "Dubliēt mezglus"
 msgid "Delete Nodes"
 msgstr "Dzēst mezglus"
 
+msgid "Follow Input Port Connection"
+msgstr "Sekot ieejas pieslēgvietas savienojumam"
+
+msgid "Follow Output Port Connection"
+msgstr "Sekot izejas pieslēgvietas savienojumam"
+
 msgid "Go Up One Level"
 msgstr "Doties Līmeni uz Augšu"
 
@@ -282,8 +394,17 @@ msgstr "Atsvaidzināt"
 msgid "Show Hidden"
 msgstr "Rādīt Paslēptos"
 
+msgid "Focus Path"
+msgstr "Fokusa ceļš"
+
 msgid "Swap Input Direction"
 msgstr "Mainīt Ievades Virzienu"
+
+msgid "Start Unicode Character Input"
+msgstr "Sākt Unicode Rakstzīmes Ievadi"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Pieejamība: Tastatūras \"Vilkt un Nomest\""
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Nederīga ievade %d (nav padota) izteikumā"
@@ -333,67 +454,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Piemērs: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d lietas"
-msgstr[1] "%d lieta"
-msgstr[2] "%d lietas"
-
-msgid ""
-"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
-"'\"'"
-msgstr ""
-"Nederīgs darbības nosaukums. Tas nevar būt tukšs vai saturēt '/', ':', '=', "
-"'\\' vai '\"'"
-
-msgid "An action with the name '%s' already exists."
-msgstr "Darbība ar nosaukumu '%s' jau pastāv."
-
-msgid "Cannot Revert - Action is same as initial"
-msgstr "Nevar Atgriezt — Darbība ir tāda pati kā sākotnējā"
-
-msgid "Revert Action"
-msgstr "Atsaukt Darbību"
-
-msgid "Add Event"
-msgstr "Pievienot Notikumu"
-
-msgid "Remove Action"
-msgstr "Noņemt Darbību"
-
-msgid "Cannot Remove Action"
-msgstr "Nevar Noņemt Darbību"
-
-msgid "Edit Event"
-msgstr "Rediģēt Notikumu"
-
-msgid "Remove Event"
-msgstr "Noņemt Notikumu"
-
-msgid "Filter by name..."
-msgstr "Filtrēt pēc nosaukuma..."
-
-msgid "Clear All"
-msgstr "Iztīrīt Visu"
-
-msgid "Add New Action"
-msgstr "Pievienot Jaunu Darbību"
-
-msgid "Add"
-msgstr "Pievienot"
-
-msgid "Show Built-in Actions"
-msgstr "Rādīt Iebūvētās Darbības"
-
-msgid "Action"
-msgstr "Darbība"
-
-msgid "Deadzone"
-msgstr "Beigtā zona"
-
 msgid "Time:"
 msgstr "Laiks:"
 
@@ -408,6 +468,15 @@ msgstr "Ievadiet Atslēgu Šeit"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Izveidot Dublikātu Izvēlētajai(ām) Atslēgai(ām)"
+
+msgid "Cut Selected Key(s)"
+msgstr "Izgriezt Atlasīto(ās) Atslēgu(as)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Kopēt Izvēlēto(ās) Atslēgu(as)"
+
+msgid "Paste Key(s)"
+msgstr "Ielīmēt Atslēgu(as)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Izdzēst Izvēlēto(ās) Atslēgu(as)"
@@ -433,6 +502,12 @@ msgstr "Pārvietot Bezjē Punktus"
 msgid "Animation Duplicate Keys"
 msgstr "Animācija Dublēt Atslēgas"
 
+msgid "Animation Cut Keys"
+msgstr "Izgriezt Animācijas Atslēgas"
+
+msgid "Animation Paste Keys"
+msgstr "Ielīmēt Animācijas Atslēgas"
+
 msgid "Animation Delete Keys"
 msgstr "Animācija Izdzēst Atslēgas"
 
@@ -445,8 +520,167 @@ msgstr "Atlasīt Visas Atslēgas"
 msgid "Deselect All Keys"
 msgstr "Atcelt Visu Atslēgu Atlasi"
 
+msgid "Load..."
+msgstr "Ielādē..."
+
+msgid "Add Node Point"
+msgstr "Pievienot Mezgla Punktu"
+
+msgid "Add Animation Point"
+msgstr "Pievienot Animācijas Punktu"
+
+msgid "Continuous"
+msgstr "Nepārtraukti"
+
+msgid "Discrete"
+msgstr "Diskrēta"
+
+msgid "Capture"
+msgstr "Uztvert"
+
+msgid "Create points."
+msgstr "Izveidot punktus."
+
+msgid "Blend:"
+msgstr "Sapludināt:"
+
+msgid "Point"
+msgstr "Punkts"
+
+msgid "Open Editor"
+msgstr "Atvērt Redaktoru"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Value"
+msgstr "Vērtība"
+
+msgid "Open Animation Node"
+msgstr "Atvērt Animācijas Mezglu"
+
+msgid "Triangle already exists."
+msgstr "Trijstūris"
+
+msgid "Add Triangle"
+msgstr "Pievienot Trijstūri"
+
+msgid "Nodes Connected"
+msgstr "Mezgli Savienoti"
+
+msgid "Set Animation"
+msgstr "Iestatīt Animāciju"
+
+msgid "Delete Node"
+msgstr "Izdzēst Mezglu"
+
+msgid "Delete Node(s)"
+msgstr "Dzēst mezglu(s)"
+
+msgid "Change Filter"
+msgstr "Nomainīt Filtru"
+
+msgid "Anim Clips"
+msgstr "Anim. Klipi"
+
+msgid "Audio Clips"
+msgstr "Audio Klipi"
+
+msgid "Functions"
+msgstr "Funkcijas"
+
+msgid "Enable Filtering"
+msgstr "Ieslēgt Filtrēšanu"
+
+msgid "Clear"
+msgstr "Notīrīt"
+
+msgid "Save"
+msgstr "Saglabāt"
+
+msgid "Save As"
+msgstr "Saglabāt Kā"
+
+msgid "Resource"
+msgstr "Resurss"
+
+msgid "Error:"
+msgstr "Kļūda:"
+
+msgid "Delete Animation '%s'?"
+msgstr "Vai Izdzēst Animāciju '%s'?"
+
+msgid "Invalid animation name!"
+msgstr "Nederīgs animācijas nosaukums!"
+
+msgid "Animation"
+msgstr "Animācija"
+
+msgid "Duplicate..."
+msgstr "Dublicēt..."
+
+msgid "Rename..."
+msgstr "Pārsaukt..."
+
+msgid "Remove"
+msgstr "Noņemt"
+
+msgid "Directions"
+msgstr "Virzieni"
+
+msgid "Past"
+msgstr "Pagātne"
+
+msgid "Future"
+msgstr "Nākotne"
+
+msgid "Depth"
+msgstr "Dziļums"
+
+msgid "1 step"
+msgstr "1 solis"
+
+msgid "Close"
+msgstr "Aizvērt"
+
+msgid "Error!"
+msgstr "Kļūda!"
+
+msgid "Transition exists!"
+msgstr "Pāreja eksistē!"
+
+msgid "Add Transition"
+msgstr "Pievienot Pāreju"
+
+msgid "Sync"
+msgstr "Sinhronizācija"
+
+msgid "Node Removed"
+msgstr "Mezgls Noņemts"
+
+msgid "Create new nodes."
+msgstr "Izveidot jaunus mezglus."
+
+msgid "Connect nodes."
+msgstr "Savienot mezglus."
+
+msgid "Remove selected node or transition."
+msgstr "Noņemt izvēlēto mezglu vai pāreju."
+
+msgid "Play Mode:"
+msgstr "Atskaņošanas Režīms:"
+
 msgid "Animation Change Transition"
 msgstr "Animācija Izmainīt Pāreju"
+
+msgid "Animation Change Position3D"
+msgstr "Nomainīt Animācijas Position3D"
+
+msgid "Animation Change Rotation3D"
+msgstr "Nomainīt Animācijas Rotation3D"
+
+msgid "Animation Change Scale3D"
+msgstr "Nomainīt Animācijas Scale3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Animācija Izmainīt Atslēgkadra Vērtību"
@@ -456,6 +690,15 @@ msgstr "Animācija Izmainīt Izsaukumu"
 
 msgid "Animation Multi Change Transition"
 msgstr "Animācija Vairākkārt Izmainīt Pāreju"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Vairākkārt Nomainīt Animācijas Position3D"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Vairākkārt Nomainīt Animācijas Rotation3D"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Vairākkārt Nomainīt Animācijas Scale3D"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Animācija Vairākkārt Izmainīt Atslēgkadra Vērtību"
@@ -469,33 +712,62 @@ msgstr "Izmainīt Animācijas Garumu"
 msgid "Change Animation Loop"
 msgstr "Izmainīt Animācijas Atkārtošanos"
 
-msgid "Can't change loop mode on animation instanced from imported scene."
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
 msgstr ""
-"Nevar mainīt atkārtošanās režīmu animācijai, kas iegūta no importētās ainas."
+"Nevar nomainīt animācijas atkārtošanās režīmu, kas radīta no importētas "
+"ainas.\n"
+"\n"
+"Lai nomainītu šīs animācijas atkārtošanās režīmu, dodieties uz ainas "
+"Advancētajiem Importēšanas iestatījumiem un atlasiet animāciju.\n"
+"Tad Jūs varat nomainīt atkārtošanās režīmu no inspector menu."
 
-msgid "Property Track"
-msgstr "Mainīgo Celiņš"
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Nevar mainīt atkārtošanās režīmu animācijai, kas iegūta no importētās resursa."
 
-msgid "3D Position Track"
-msgstr "3D Pozīcijas Celiņš"
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Nevar mainīt atkārtošanās režīmu animācijai, kas iegulta citā ainā.\n"
+"\n"
+"Jums jāatver šī aina un tur jānomaina animācijas atkārtošanās režīms."
 
-msgid "3D Rotation Track"
-msgstr "3D Rotācijas Celiņš"
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr "Nevar mainīt atkārtošanās režīmu animācijai, kas iegulta citā resursā."
 
-msgid "Blend Shape Track"
-msgstr "Formu Sajaukšanas Celiņš"
+msgid "Property Track..."
+msgstr "Mainīgo Celiņš..."
 
-msgid "Call Method Track"
-msgstr "Izsaukt Metožu Celiņu"
+msgid "3D Position Track..."
+msgstr "3D Pozīcijas Celiņš..."
 
-msgid "Bezier Curve Track"
-msgstr "Bezjē Līkņu Celiņš"
+msgid "3D Rotation Track..."
+msgstr "3D Rotācijas Celiņš..."
 
-msgid "Audio Playback Track"
-msgstr "Audio atskaņošanas celiņs"
+msgid "3D Scale Track..."
+msgstr "3D Transformācijas Celiņš..."
 
-msgid "Animation Playback Track"
-msgstr "Animācijas atskaņošanas celiņs"
+msgid "Blend Shape Track..."
+msgstr "Formu Sajaukšanas Celiņš..."
+
+msgid "Call Method Track..."
+msgstr "Izsaukt Metožu Celiņu..."
+
+msgid "Bezier Curve Track..."
+msgstr "Bezjē Līkņu Celiņš..."
+
+msgid "Audio Playback Track..."
+msgstr "Audio Atskaņošanas Celiņš..."
+
+msgid "Animation Playback Track..."
+msgstr "Animācijas Atskaņošanas Celiņš..."
 
 msgid "Animation length (frames)"
 msgstr "Animācijas garums (kadri)"
@@ -503,8 +775,8 @@ msgstr "Animācijas garums (kadri)"
 msgid "Animation length (seconds)"
 msgstr "Animācijas garums (sekundes)"
 
-msgid "Add Track"
-msgstr "Pievienot celiņu"
+msgid "Filter tracks by entering part of their node name or property."
+msgstr "Filtrē celiņus, ievadot daļu mezgla vārda vai īpašības."
 
 msgid "Animation Looping"
 msgstr "Animāciju Cilpa"
@@ -521,6 +793,12 @@ msgstr "Izmainīt Ceļu uz Celiņa"
 msgid "Toggle this track on/off."
 msgstr "Pārslēgt šo celiņu ieslēgts/izslēgts."
 
+msgid "Select node in scene."
+msgstr "Izvēlēties ainas mezglu"
+
+msgid "Use Blend"
+msgstr "Sapludināt"
+
 msgid "Update Mode (How this property is set)"
 msgstr "Atjaunošanas Režīms (Kā šis mainīgais tiek iestatīts)"
 
@@ -533,26 +811,35 @@ msgstr "Atkārtošanās Aptīšanas Režīms (Interpolē beigas ar cilpas sākum
 msgid "Remove this track."
 msgstr "Noņemt šo celiņu."
 
+msgid "Time (s):"
+msgstr "Laiks (s):"
+
+msgid "Position:"
+msgstr "Pozīcija:"
+
+msgid "Rotation:"
+msgstr "Rotācija:"
+
 msgid "Scale:"
 msgstr "Mērogs:"
+
+msgid "Blend Shape:"
+msgstr "Sapludināt Formu:"
 
 msgid "Type:"
 msgstr "Tips:"
 
-msgid "Handle mode: Free\n"
-msgstr "Rīkošanās režīms: Brīvs\n"
+msgid "(Invalid, expected type: %s)"
+msgstr "(Nederīgs, gaidīja %s tipu)"
 
-msgid "Handle mode: Linear\n"
-msgstr "Rīkošanās režīms: Lineārs\n"
-
-msgid "Handle mode: Balanced\n"
-msgstr "Rīkošanās režīms: Līdzsvarots\n"
-
-msgid "Handle mode: Mirrored\n"
-msgstr "Rīkošanās režīms: Atspoguļots\n"
+msgid "Easing:"
+msgstr "Pāreja:"
 
 msgid "Stream:"
 msgstr "Straume:"
+
+msgid "Start (s):"
+msgstr "Sākums (s):"
 
 msgid "End (s):"
 msgstr "Beigas:"
@@ -563,15 +850,6 @@ msgstr "Pārslēgt Celiņu uz Iespējotu"
 msgid "Don't Use Blend"
 msgstr "Neizmantot Sajaukšanu"
 
-msgid "Continuous"
-msgstr "Nepārtraukti"
-
-msgid "Discrete"
-msgstr "Diskrēta"
-
-msgid "Capture"
-msgstr "Uztvert"
-
 msgid "Nearest"
 msgstr "Tuvākais"
 
@@ -581,20 +859,32 @@ msgstr "Lineārs"
 msgid "Cubic"
 msgstr "Kubisks"
 
+msgid "Linear Angle"
+msgstr "Lineārs Leņķis"
+
+msgid "Cubic Angle"
+msgstr "Kubisks Leņķis"
+
 msgid "Clamp Loop Interp"
 msgstr "Apgriezt Cilpas Interpolāciju"
 
 msgid "Wrap Loop Interp"
 msgstr "Aptīt Cilpas Interpolāciju"
 
-msgid "Insert Key"
-msgstr "Ievietot Atslēgu"
+msgid "Go to Definition"
+msgstr "Iet uz definīciju"
+
+msgid "Insert Key..."
+msgstr "Ievietot Atslēgu..."
 
 msgid "Duplicate Key(s)"
 msgstr "Dublicēt atslēgvietnes"
 
-msgid "Add RESET Value(s)"
-msgstr "Pievienot RESET vērtību(-as)"
+msgid "Cut Key(s)"
+msgstr "Izgriezt Atslēgu(as)"
+
+msgid "Copy Key(s)"
+msgstr "Kopēt Atslēgu(as)"
 
 msgid "Delete Key(s)"
 msgstr "Izdzēst atslēgvietnes"
@@ -608,6 +898,9 @@ msgstr "Izmainīt Animācijas Interpolācijas Režīmu"
 msgid "Change Animation Loop Mode"
 msgstr "Izmainīt Animācijas Atkārtošanās Režīmu"
 
+msgid "Change Animation Use Blend"
+msgstr "Nomainīt Animāciju Izmantot Sapludināšanu"
+
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
 "compression disabled in order to edit."
@@ -618,8 +911,21 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Noņemt Anim. Celiņu"
 
+msgid "Create new track for %s and insert key?"
+msgstr "Izveidot jaunu celiņu priekš %s un ievietot atslēgu?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Izveidot %d jaunus celiņus un ievietot atslēgas?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr ""
+"Turiet Shift, kad spiežat atslēgas ikonu, lai izlaistu šo dialoglodziņu."
+
 msgid "Create"
 msgstr "Izveidot"
+
+msgid "Animation Insert Key"
+msgstr "Ievietot Animācijas Atslēgu"
 
 msgid "node '%s'"
 msgstr "mezgls '%s'"
@@ -633,11 +939,20 @@ msgstr "AnimationPlayer nevar animēt pats sevi, tikai citus spēlētājus."
 msgid "property '%s'"
 msgstr "vērtība '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "Tuvākais FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "Izmainīt Animācijas Soli"
 
 msgid "Rearrange Tracks"
 msgstr "Pārkārtot Celiņus"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Saplūšanas Formu celiņi tiek tikai pievienoti MeshInstance3D mezgliem."
+
+msgid "Add Track"
+msgstr "Pievienot celiņu"
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -665,14 +980,14 @@ msgstr "Pievienot Bezjē Celiņu"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot atslēgu."
 
-msgid "Add Track Key"
-msgstr "Pievienot Celiņa Atslēgu"
-
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ceļš uz Celiņu nav derīgs, tāpēc nevar pievienot metodes atslēgu."
 
 msgid "Add Method Track Key"
 msgstr "Pievienot Celiņa Metodes Atslēgu"
+
+msgid "Method not found in object:"
+msgstr "Metode objektā netika atrasta:"
 
 msgid "Scale"
 msgstr "Mērogs"
@@ -695,10 +1010,6 @@ msgstr "Starpliktuve ir tukša!"
 msgid "Paste Tracks"
 msgstr "Ielīmēt celiņus"
 
-msgid ""
-"This option does not work for Bezier editing, as it's only a single track."
-msgstr "Šī iespēja nestrādā ar Bazjē rediģēšanu, jo tai ir tikai viens celiņš."
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Izvēlieties 'AnimationPlayer' mezglu, lai izveidotu un rediģētu animācijas."
@@ -711,9 +1022,6 @@ msgstr "Rādīt celiņus tikai no mezgliem izvēlētajā kokā."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Sagrupēt celiņus atkarībā no mezgliem vai rādīt tos vienkāršā sarakstā."
-
-msgid "Snap:"
-msgstr "Pievilkt:"
 
 msgid "Animation step value."
 msgstr "Animācijas soļa vērtība."
@@ -730,21 +1038,6 @@ msgstr "Rediģēt"
 msgid "Animation properties."
 msgstr "Animācijas īpašības."
 
-msgid "Copy Tracks"
-msgstr "Kopēt celiņus"
-
-msgid "Scale Selection"
-msgstr "Mēroga Izvēle"
-
-msgid "Scale From Cursor"
-msgstr "Skala No Kursora"
-
-msgid "Duplicate Selection"
-msgstr "Izveidot Dublikātu Izvēlētajam"
-
-msgid "Duplicate Transposed"
-msgstr "Dublicēt transponējušās"
-
 msgid "Delete Selection"
 msgstr "Dzēst izvēlētos"
 
@@ -753,9 +1046,6 @@ msgstr "Doties uz Nākamo Soli"
 
 msgid "Go to Previous Step"
 msgstr "Doties uz iepriekšejo soli"
-
-msgid "Apply Reset"
-msgstr "Pielietot atiestatīšanu"
 
 msgid "Use Bezier Curves"
 msgstr "Izmanto Bezjē Līknes"
@@ -788,14 +1078,6 @@ msgctxt "Transition Type"
 msgid "Bounce"
 msgstr "Atlecošs"
 
-msgctxt "Ease Type"
-msgid "InOut"
-msgstr "Iekšā Ārā"
-
-msgctxt "Ease Type"
-msgid "OutIn"
-msgstr "Ārā Iekšā"
-
 msgid "FPS:"
 msgstr "FPS:"
 
@@ -804,6 +1086,9 @@ msgstr "Izvēlēties Celiņus ko Kopēt"
 
 msgid "Select All/None"
 msgstr "Izvēlēties Visus/Nevienu"
+
+msgid "Copy Selection"
+msgstr "Kopēt Izvēlēto"
 
 msgid "Add Audio Track Clip"
 msgstr "Pievienot Audio Celiņa Klipu"
@@ -814,467 +1099,83 @@ msgstr "Mainīt Audio Celiņa Apgriešanas Sākuma Kompensāciju"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Mainīt Audio Celiņa Apgriešanas Beigu Kompensāciju"
 
-msgid "Go to Line"
-msgstr "Doties uz Rindu"
-
-msgid "Line Number:"
-msgstr "Rindas Numurs:"
-
-msgid "%d replaced."
-msgstr "%d aizvietots."
-
-msgid "Match Case"
-msgstr "Atrast Gadījumu"
-
-msgid "Whole Words"
-msgstr "Visu Vārdu"
-
-msgid "Replace"
-msgstr "Aizvietot"
-
-msgid "Replace All"
-msgstr "Aizvietot visu"
-
-msgid "Selection Only"
-msgstr "Tikai izvēlētais"
-
-msgid "Toggle Scripts Panel"
-msgstr "Pārslēgt Skriptu Paneli"
-
-msgid "Zoom In"
-msgstr "Palielināt"
-
-msgid "Zoom Out"
-msgstr "Attālināt"
-
-msgid "Reset Zoom"
-msgstr "Atiestatīt Tālummaiņu"
-
-msgid "Errors"
-msgstr "Kļūdas"
-
-msgid "Warnings"
-msgstr "Brīdinājumi"
-
-msgid "Line and column numbers."
-msgstr "Rindu un kolonnu numuri."
-
-msgid "Method in target node must be specified."
-msgstr "Metodi mērķa mezglā nepieciešams specificēt."
-
-msgid "Method name must be a valid identifier."
-msgstr "Metodes nosaukumam jābūt korektam identifikātoram."
-
-msgid ""
-"Target method not found. Specify a valid method or attach a script to the "
-"target node."
-msgstr ""
-"Mērķa metode netika atrasta. Specificējiet derīgu metodi vai pievienojiet "
-"skriptu mērķa mezglam."
-
-msgid "Connect to Node:"
-msgstr "Savienot ar Mezglu:"
-
-msgid "Connect to Script:"
-msgstr "Savieno ar Skriptu:"
-
-msgid "From Signal:"
-msgstr "No Signāla:"
-
-msgid "Scene does not contain any script."
-msgstr "Aina nesatur skriptu."
-
-msgid "Select Method"
-msgstr "Izvēlēties Metodi"
-
-msgid "No method found matching given filters."
-msgstr "Nav atrasta neviena metode, kas atbilstu dotajam filtram."
-
-msgid "Remove"
-msgstr "Noņemt"
-
-msgid "Add Extra Call Argument:"
-msgstr "Pievienot Ekstra Izsaukuma Argumentu:"
-
-msgid "Extra Call Arguments:"
-msgstr "Ekstra Izsaukuma Argumenti:"
-
-msgid "Receiver Method:"
-msgstr "Saņemšanas Metode:"
-
-msgid "Advanced"
-msgstr "Papildus"
-
-msgid "Deferred"
-msgstr "Atlikts"
-
-msgid ""
-"Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr "Atliek signālu, glabājot to rindā, un to izstaro tikai dīkstāvē."
-
-msgid "Disconnects the signal after its first emission."
-msgstr "Atvieno signālu pēc tā pirmās izstarošanas."
-
-msgid "Cannot connect signal"
-msgstr "Nevar savienot signālu"
-
-msgid "Close"
-msgstr "Aizvērt"
-
-msgid "Connect"
-msgstr "Savienot"
-
-msgid "Class:"
-msgstr "Klase:"
-
-msgid "Signal:"
-msgstr "Signāls:"
-
-msgid "No description."
-msgstr "Nav apraksta."
-
-msgid "Connect '%s' to '%s'"
-msgstr "Savienot '%s' pie '%s'"
-
-msgid "Disconnect '%s' from '%s'"
-msgstr "Atvienot '%s' no '%s'"
-
-msgid "Disconnect all from signal: '%s'"
-msgstr "Atvienot visus no signāla: '%s'"
-
-msgid "Connect..."
-msgstr "Savienot..."
-
-msgid "Disconnect"
-msgstr "Atvienot"
-
-msgid "Connect a Signal to a Method"
-msgstr "Savienot Signālu ar Metodi"
-
-msgid "Edit Connection: '%s'"
-msgstr "Izmainīt Savienojumu: %s"
-
-msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
-"Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no \"%s\" signāla?"
-
-msgid "Signals"
-msgstr "Signāli"
-
-msgid "Filter Signals"
-msgstr "Filtrēt Signālus"
-
-msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
-"Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no šī signāla?"
-
-msgid "Open Documentation"
-msgstr "Atvērt dokumentāciju"
-
-msgid "Disconnect All"
-msgstr "Atvienot visu"
-
-msgid "Edit..."
-msgstr "Rediģēt..."
-
-msgid "Go to Method"
-msgstr "Doties uz Metodi"
-
-msgid "Change Type of \"%s\""
-msgstr "Mainīt \"%s\" Veidu"
-
-msgid "Change"
-msgstr "Nomainīt"
-
-msgid "Create New %s"
-msgstr "Izveidot Jaunu %s"
-
-msgid "No results for \"%s\"."
-msgstr "Nav rezultātu \"%s\"."
-
-msgid "No description available for %s."
-msgstr "Apraksts nav pieejams priekš %s."
-
-msgid "Favorites:"
-msgstr "Favorīti:"
-
-msgid "Recent:"
-msgstr "Nesenie:"
-
-msgid "Search:"
-msgstr "Meklēt:"
-
-msgid "Matches:"
-msgstr "Sakritības:"
-
-msgid "Description:"
-msgstr "Apraksts:"
-
-msgid "Debugger"
-msgstr "Atkļūdotājs"
-
-msgid "Debug"
-msgstr "Atkļūdot"
-
-msgid "Save Branch as Scene"
-msgstr "Saglabāt zaru kā ainu"
-
-msgid "Copy Node Path"
-msgstr "Kopēt mezgla ceļu"
-
-msgid "Toggle Visibility"
-msgstr "Pārslēgt redzamību"
-
-msgid "Value"
-msgstr "Vērtība"
-
-msgid "Stop"
-msgstr "Pārtraukt"
-
-msgid "Start"
-msgstr "Sākt"
-
-msgid "Clear"
-msgstr "Notīrīt"
-
-msgid "Measure:"
-msgstr "Mērogs:"
-
-msgid "Frame Time (ms)"
-msgstr "Kadra Laiks (ms)"
-
-msgid "Average Time (ms)"
-msgstr "Vidējais laiks (ms)"
-
-msgid "Frame %"
-msgstr "Kadrs %"
-
-msgid "Physics Frame %"
-msgstr "Fizikas kadrs %"
-
-msgid "Inclusive"
-msgstr "Iekļaujošs"
-
-msgid "Self"
-msgstr "Sevi"
-
-msgid "Frame #:"
-msgstr "Kadrs #:"
-
-msgid "Name"
-msgstr "Nosaukums"
-
-msgid "Time"
-msgstr "Laiks"
-
-msgid "Calls"
-msgstr "Izsaukumi"
-
-msgid "Error:"
-msgstr "Kļūda:"
-
-msgid "%s Error"
-msgstr "%s Kļūda"
-
-msgid "C++ Source"
-msgstr "C++ avots"
-
-msgid "Skip Breakpoints"
-msgstr "Izlaist pārrāvumpunktus"
-
-msgid "Break"
-msgstr "Pārtraukt"
-
-msgid "Continue"
-msgstr "turpināt"
-
-msgid "Breakpoints"
-msgstr "Pārrāvumpunkts"
-
-msgid "Misc"
-msgstr "Citi"
-
-msgid "Search Replacement For:"
-msgstr "Meklēt Aizstājēju Priekš:"
-
-msgid "Dependencies For:"
-msgstr "Atkarības Priekš:"
-
-msgid ""
-"Scene '%s' is currently being edited.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Aina '%s' pašlaik tiek rediģēta.\n"
-"Izmaiņas stāsies spēkā, kad tā tiks pārlādēta."
-
-msgid ""
-"Resource '%s' is in use.\n"
-"Changes will only take effect when reloaded."
-msgstr ""
-"Resurss '%s' tiek izmantots.\n"
-"Izmaiņas stāsies spēkā, kad tas tiks pārlādēts."
-
-msgid "Dependencies"
-msgstr "Atkarības"
-
-msgid "Resource"
-msgstr "Resurss"
-
-msgid "Path"
-msgstr "Ceļš"
-
-msgid "Dependencies:"
-msgstr "Atkarības:"
-
-msgid "Fix Broken"
-msgstr "Labot Salauzto"
-
-msgid "Dependency Editor"
-msgstr "Atkarību Redaktors"
-
-msgid "Search Replacement Resource:"
-msgstr "Meklēt aizstājēja resursu:"
-
-msgid "Open"
-msgstr "Atvērt"
-
-msgid ""
-"Remove the selected files from the project? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved to "
-"the system trash or deleted permanently."
-msgstr ""
-"Vai noņemt izvēlētos failus no projekta? (Netiks atjaunoti)\n"
-"Atšķirībā no failu sistēmas konfigurācijas, faili tiks aizvākti uz sistēmas "
-"atkritni vai dzēsti pilnībā."
-
-msgid ""
-"The files being removed are required by other resources in order for them to "
-"work.\n"
-"Remove them anyway? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved to "
-"the system trash or deleted permanently."
-msgstr ""
-"Faili, kurus Jūs vēlaties noņemt ir nepieciešami citiem resursiem, lai tie "
-"varētu strādāt.\n"
-"Tik un tā noņemt tos? (Nevar atsaukt)\n"
-"Atšķirībā no jūsu failu sistēmas konfigurācijas, faili tiks aizvākti uz "
-"sistēmas atkritni vai dzēsti pilnībā."
-
-msgid "Cannot remove:"
-msgstr "Nevar noņemt:"
-
-msgid "Error loading:"
-msgstr "Kļūme lādējot:"
-
-msgid "Load failed due to missing dependencies:"
-msgstr "Ielādēšana apturēta, jo trūkst pamata faili:"
-
-msgid "Open Anyway"
-msgstr "Atvērt jebkurā gadījumā"
-
-msgid "Which action should be taken?"
-msgstr "Kādu darbību veikt ?"
-
-msgid "Fix Dependencies"
-msgstr "Salabot Atkarības"
-
-msgid "Errors loading!"
-msgstr "Kļūmes lādējot!"
-
-msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Vai neatgriezeniski izdzēst %d priekšmetu(us)? (NEATGRIEZENISKI!)"
-
-msgid "Show Dependencies"
-msgstr "Rādīt Ceļus uz Pamata Failiem"
-
-msgid "Orphan Resource Explorer"
-msgstr "Bāreņu Resursu Pārlūks"
-
-msgid "Owns"
-msgstr "Pieder"
-
-msgid "Resources Without Explicit Ownership:"
-msgstr "Resursi bez izteiktas piederības:"
-
-msgid "Could not create folder."
-msgstr "Neizdevās izveidot mapi."
-
-msgid "Create Folder"
-msgstr "Izveidot mapi"
-
-msgid "Thanks from the Godot community!"
-msgstr "Paldies no Godot sabiedrības!"
-
-msgid "Click to copy."
-msgstr "Klikšķini, lai kopētu."
-
-msgid "Godot Engine contributors"
-msgstr "Godot Dzinēja ieguldītāji"
-
-msgid "Project Founders"
-msgstr "Projekta Dibinātāji"
-
-msgid "Lead Developer"
-msgstr "Galvenais Izstrādātājs"
-
-msgid "Developers"
-msgstr "Izstrādātāji"
-
-msgid "Authors"
-msgstr "Autori"
-
-msgid "Platinum Sponsors"
-msgstr "Platīna Sponsori"
-
-msgid "Gold Sponsors"
-msgstr "Zelta Sponsori"
-
-msgid "Silver Sponsors"
-msgstr "Sudraba Sponsors"
-
-msgid "Bronze Sponsors"
-msgstr "Bronzas Sponsors"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Zelta Donors"
-
-msgid "Silver Donors"
-msgstr "Sudraba Donors"
-
-msgid "Bronze Donors"
-msgstr "Bronzas Donors"
-
-msgid "Donors"
-msgstr "Ziedotāji"
+msgid "Path:"
+msgstr "Ceļš:"
+
+msgid "Author"
+msgstr "Autors"
 
 msgid "License"
 msgstr "Licence"
 
-msgid "Third-party Licenses"
-msgstr "Trešās partijas Licences"
+msgid "Version:"
+msgstr "Versija:"
 
-msgid ""
-"Godot Engine relies on a number of third-party free and open source "
-"libraries, all compatible with the terms of its MIT license. The following is "
-"an exhaustive list of all such third-party components with their respective "
-"copyright statements and license terms."
-msgstr ""
-"Godot Konstruktors paļaujas uz citiem trešās partijas brīvajām un atvērtā "
-"avota bibliotēkām, kuras ir saderīgas ar to MIT licences nosacījumiem. "
-"Sekojošais ir saraksts ar šīm trešās partijas komponentēm ar to autortiesību "
-"apgalvojumiem un licences nosacījumiem."
+msgid "Contents:"
+msgstr "Saturs:"
 
-msgid "All Components"
-msgstr "Visas Komponentes"
+msgid "Description:"
+msgstr "Apraksts:"
 
-msgid "Components"
-msgstr "Komponentes"
+msgid "Download"
+msgstr "Lejuplādēt"
 
-msgid "Licenses"
-msgstr "Licences"
+msgid "Cannot save response to:"
+msgstr "Nevar saglabāt atbildi uz:"
+
+msgid "Failed:"
+msgstr "Neizdevās:"
+
+msgid "Got:"
+msgstr "Saņemts:"
+
+msgid "Resolving..."
+msgstr "Atrisina.."
+
+msgid "Connecting..."
+msgstr "Savienojas..."
+
+msgid "Requesting..."
+msgstr "Pieprasa..."
+
+msgid "Idle"
+msgstr "Dīkstāve"
+
+msgid "Install..."
+msgstr "Instalēt..."
+
+msgid "Retry"
+msgstr "Mēģināt vēlreiz"
+
+msgid "License (A-Z)"
+msgstr "Licence (A-Z)"
+
+msgid "License (Z-A)"
+msgstr "Licence (Z-A)"
+
+msgid "Community"
+msgstr "Komūna"
+
+msgid "Testing"
+msgstr "Testē"
+
+msgid "Loading..."
+msgstr "Ielādēt..."
+
+msgid "All"
+msgstr "Visi"
+
+msgid "Install"
+msgstr "Ieinstalēt"
+
+msgid "Sort:"
+msgstr "Kārtot:"
+
+msgid "Category:"
+msgstr "Kategorija:"
+
+msgid "Site:"
+msgstr "Lapa:"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Kļūme atverot pakotnes failu \"%s\" (nav ZIP formātā)."
@@ -1291,14 +1192,11 @@ msgstr "Sekojošie faili netika izvilkti no paketes \"%s\":"
 msgid "(and %s more files)"
 msgstr "(un vēl %s faili)"
 
-msgid "Asset \"%s\" installed successfully!"
-msgstr "Pakete \"%s\" instalēta sekmīgi!"
-
 msgid "Success!"
 msgstr "Mērķis sasniegts!"
 
-msgid "Install"
-msgstr "Ieinstalēt"
+msgid "Stop"
+msgstr "Pārtraukt"
 
 msgid "Speakers"
 msgstr "Skaļruņi"
@@ -1381,12 +1279,6 @@ msgstr "Jaunā izkārtojuma lokācija..."
 msgid "Open Audio Bus Layout"
 msgstr "Atvērt audio kopnes izkārtojumu"
 
-msgid "There is no '%s' file."
-msgstr "Fails '%s' neeksistē."
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Nepareizs fails, nav audio kopnes izkārtojuma."
-
 msgid "Error saving file: %s"
 msgstr "Kļūda saglabājot failu: %s"
 
@@ -1402,9 +1294,6 @@ msgstr "Ielādēt"
 msgid "Load an existing Bus Layout."
 msgstr "Ielādēt eksistējošu Kopnes Izkārtojumu."
 
-msgid "Save As"
-msgstr "Saglabāt Kā"
-
 msgid "Save this Bus Layout to a file."
 msgstr "Saglabāt šo Kopni failā."
 
@@ -1417,82 +1306,440 @@ msgstr "Ielādēt Kopnes Izkārtojuma noklusējumu."
 msgid "Create a new Bus Layout."
 msgstr "Izveidot jaunu Kopnes izkārtojumu."
 
-msgid "Invalid name."
-msgstr "Nederīgs nosaukums."
+msgid "Break"
+msgstr "Pārtraukt"
 
-msgid "Cannot begin with a digit."
-msgstr "Nevar sākt ar ciparu."
+msgid "Continue"
+msgstr "turpināt"
 
-msgid "Valid characters:"
-msgstr "Derīgie simboli:"
+msgid "Deploy with Remote Debug"
+msgstr "Palaist ar tālvadības atkļūdošanu"
 
-msgid "Must not collide with an existing engine class name."
+msgid ""
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Nosaukums nedrīkst būt vienāds ar eksistējošu konstruktora klases nosaukumu."
+"Kad šī opcija ir ieslēgta, izmantojot viena klikšķa palaišanu, tā liks spēlei "
+"savienoties ar šī datora IP adresi, lai pašreizējais projekts varētu tik "
+"atkļūdots attālināti.\n"
+"Šī opcija ir paredzēta izmantošanai tālvadības atkļūdošanai (parasti ar "
+"mobilu ierīci).\n"
+"Jums tā nav jāieslēdz, lai izmantotu GDScript atkļūdotāju lokāli."
 
-msgid "Must not collide with an existing built-in type name."
-msgstr "Nosaukums nedrīkst būt vienāds ar eksistējošu iebūvēta tipa nosaukumu."
+msgid "Small Deploy with Network Filesystem"
+msgstr "Mazā palaišana ar tīkla failu sistēmu"
 
-msgid "Must not collide with an existing global constant name."
+msgid ""
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
+"The filesystem will be provided from the project by the editor over the "
+"network.\n"
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
-"Nosaukums nedrīkst būt vienāds ar eksistējošu globālo konstantes nosaukumu."
+"Kad šī opcija ir ieslēgta, izmantojot viena klikšķa palaišanu uz Android, tā "
+"eksportēs tikai spēles palaišanas failu bez projekta datiem.\n"
+"Projekta failu sistēma tiks nodrošināta attālināti, caur internetu.\n"
+"Uz Android, palaišana izmantos USB kabeli, lai nodrošinātu ātrāku "
+"izpildījumu. Šī opcija paātrina projektu testēšanu ar milzīgiem resursiem."
 
-msgid "Autoload '%s' already exists!"
-msgstr "Auto-ielāde '%s' jau eksistē!"
+msgid "Visible Collision Shapes"
+msgstr "Redzamas sadursmes formas"
 
-msgid "Rename Autoload"
-msgstr "Pārsaukt Auto-ielādi"
+msgid "Visible Navigation"
+msgstr "Redzama navigācija"
 
-msgid "Move Autoload"
-msgstr "Pārvietot Auto-ielādi"
+msgid "Synchronize Scene Changes"
+msgstr "Sinhronizēt ainas izmaiņas"
 
-msgid "Remove Autoload"
-msgstr "Izdzēst Auto-ielādi"
+msgid "Synchronize Script Changes"
+msgstr "Sinhronizēt skripta izmaiņas"
 
-msgid "Enable"
-msgstr "Iespējot"
+msgid "Set %s"
+msgstr "Likt %s"
 
-msgid "Rearrange Autoloads"
-msgstr "Pārkārtot Auto-ielādes"
+msgid "Debugger"
+msgstr "Atkļūdotājs"
 
-msgid "%s is an invalid path. File does not exist."
-msgstr "%s ir nederīgs ceļš. Fails neeksistē."
+msgid "Debug"
+msgstr "Atkļūdot"
 
-msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr "%s ir nederīgs ceļš. Nav resursu ceļā (res://)."
+msgid "Copy Node Path"
+msgstr "Kopēt mezgla ceļu"
 
-msgid "Path:"
-msgstr "Ceļš:"
+msgid "Toggle Visibility"
+msgstr "Pārslēgt redzamību"
 
-msgid "Node Name:"
-msgstr "Mezgla Vārds:"
+msgid "Start"
+msgstr "Sākt"
 
-msgid "Global Variable"
-msgstr "Globāls mainīgais"
+msgid "Measure:"
+msgstr "Mērogs:"
 
-msgid "Navigation"
-msgstr "Navigācija"
+msgid "Frame Time (ms)"
+msgstr "Kadra Laiks (ms)"
 
-msgid "Nodes and Classes:"
-msgstr "Mezgli un klases:"
+msgid "Average Time (ms)"
+msgstr "Vidējais laiks (ms)"
 
-msgid "File '%s' format is invalid, import aborted."
-msgstr "Faila '%s' formāts ir nepareizs, importēšana atcelta."
+msgid "Frame %"
+msgstr "Kadrs %"
 
-msgid "Error saving profile to path: '%s'."
-msgstr "Kļūda saglabājot profilu uz ceļu: '%s'."
+msgid "Physics Frame %"
+msgstr "Fizikas kadrs %"
 
-msgid "New"
-msgstr "Jauns"
+msgid "Inclusive"
+msgstr "Iekļaujošs"
 
-msgid "Save"
-msgstr "Saglabāt"
+msgid "Self"
+msgstr "Sevi"
 
-msgid "Reset to Defaults"
-msgstr "Atiestatīt uz noklusējumiem"
+msgid "Frame #:"
+msgstr "Kadrs #:"
 
-msgid "Export Profile"
-msgstr "Eksportēt profilu"
+msgid "Name"
+msgstr "Nosaukums"
+
+msgid "Time"
+msgstr "Laiks"
+
+msgid "Calls"
+msgstr "Izsaukumi"
+
+msgid "Errors"
+msgstr "Kļūdas"
+
+msgid "Main Thread"
+msgstr "Galvenais Pavediens"
+
+msgid "%s Error"
+msgstr "%s Kļūda"
+
+msgid "C++ Source"
+msgstr "C++ avots"
+
+msgid "Skip Breakpoints"
+msgstr "Izlaist pārrāvumpunktus"
+
+msgid "Breakpoints"
+msgstr "Pārrāvumpunkts"
+
+msgid "Misc"
+msgstr "Citi"
+
+msgid "Operators"
+msgstr "Operātors"
+
+msgid "Method Descriptions"
+msgstr "Metožu Apraksts"
+
+msgid "Top"
+msgstr "Virsotne"
+
+msgid "Class:"
+msgstr "Klase:"
+
+msgid "Inherits:"
+msgstr "Manto:"
+
+msgid "Inherited by:"
+msgstr "Manto uz:"
+
+msgid "Description"
+msgstr "Apraksts"
+
+msgid "Online Tutorials"
+msgstr "Online Pamācības"
+
+msgid "Properties"
+msgstr "Iestatījumi"
+
+msgid "overrides %s:"
+msgstr "pārraksta %s:"
+
+msgid "default:"
+msgstr "pēc noklusējuma:"
+
+msgid "Theme Properties"
+msgstr "Motīva iestatījumi"
+
+msgid "Colors"
+msgstr "Krāsas"
+
+msgid "Constants"
+msgstr "Konstantes"
+
+msgid "Fonts"
+msgstr "Fonti"
+
+msgid "Icons"
+msgstr "Ikonas"
+
+msgid "Styles"
+msgstr "Stili"
+
+msgid "Signals"
+msgstr "Signāli"
+
+msgid "Enumerations"
+msgstr "Uzskaites"
+
+msgid "Property Descriptions"
+msgstr "Iestatījumu apraksti"
+
+msgid "(value)"
+msgstr "(vērtība)"
+
+msgid ""
+"There is currently no description for this property. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Pašreiz šim mainīgajam nav apraksta. Lūdzu, palīdzi mums [color=$color]"
+"[url=$url]izveidot to[/url][/color]!"
+
+msgid "Editor"
+msgstr "Redaktors"
+
+msgid "Open"
+msgstr "Atvērt"
+
+msgid "Show in FileSystem"
+msgstr "Parādīt failu sistēmā"
+
+msgid "Open in File Manager"
+msgstr "Atvērt Failu Pārlūkā"
+
+msgid "Class"
+msgstr "Klase"
+
+msgid "Constant"
+msgstr "Konstante"
+
+msgid "Property"
+msgstr "Mainīgais"
+
+msgid "Theme Property"
+msgstr "Motīva Mainīgais"
+
+msgid "Method"
+msgstr "Metode"
+
+msgid "Signal"
+msgstr "Signāls"
+
+msgid "File"
+msgstr "Fails"
+
+msgid "Path"
+msgstr "Ceļš"
+
+msgid "Search"
+msgstr "Meklēt"
+
+msgid "Search Help"
+msgstr "Meklēt Palīdzību"
+
+msgid "Case Sensitive"
+msgstr "Reģistrjūtīgs"
+
+msgid "Show Hierarchy"
+msgstr "Rādīt Hierarhiju"
+
+msgid "Filter"
+msgstr "Filtrēt"
+
+msgid "Display All"
+msgstr "Parādīt Visu"
+
+msgid "Classes Only"
+msgstr "Tikai Klases"
+
+msgid "Methods Only"
+msgstr "Tikai Metodes"
+
+msgid "Signals Only"
+msgstr "Tikai Signāli"
+
+msgid "Constants Only"
+msgstr "Tikai Konstantes"
+
+msgid "Properties Only"
+msgstr "Tikai Iestatījumus"
+
+msgid "Theme Properties Only"
+msgstr "Tikai Motīva Iestatījumus"
+
+msgid "Member Type"
+msgstr "Dalībnieka veids"
+
+msgid "Dock Position"
+msgstr "Doka pozīcija"
+
+msgid "Favorites:"
+msgstr "Favorīti:"
+
+msgid "Favorites"
+msgstr "Favorīti"
+
+msgid "View items as a grid of thumbnails."
+msgstr "Skatīt vienumus kā režģi ar sīktēliem."
+
+msgid "View items as a list."
+msgstr "Skatīt lietas kā sarakstu."
+
+msgid "Error moving:"
+msgstr "Kļūda parvietojot:"
+
+msgid "Create Folder"
+msgstr "Izveidot mapi"
+
+msgid "Open Scenes"
+msgstr "Atvērt Ainas"
+
+msgid "Run"
+msgstr "Palaist"
+
+msgid "Add to Favorites"
+msgstr "Pievienot Favorītiem"
+
+msgid "Remove from Favorites"
+msgstr "Noņemt no Favorītiem"
+
+msgid "Reimport"
+msgstr "Reimportēt"
+
+msgid "Show in File Manager"
+msgstr "Parādīt failu menedžerī"
+
+msgid "New Folder..."
+msgstr "Jauna mape..."
+
+msgid "New Scene..."
+msgstr "Jauna Aina..."
+
+msgid "New Script..."
+msgstr "Jauns Skripts..."
+
+msgid "New Resource..."
+msgstr "Jauns Resurss..."
+
+msgid "Copy Path"
+msgstr "Kopēt celiņu"
+
+msgid "Groups"
+msgstr "Grupas"
+
+msgid "Rename Group"
+msgstr "Pārsaukt Grupu"
+
+msgid "Name:"
+msgstr "Nosaukums:"
+
+msgid "Rename"
+msgstr "Pārsaukt"
+
+msgid "Scene"
+msgstr "Aina"
+
+msgid "%d Files"
+msgstr "%d Failā"
+
+msgid "Default"
+msgstr "Noklusējuma"
+
+msgid "Clear Default for '%s'"
+msgstr "Notīrtīt noklusējumu priekš '%s'"
+
+msgid "Import"
+msgstr "Importēt"
+
+msgid "Preset"
+msgstr "Sagatave"
+
+msgid "Copy Properties"
+msgstr "Kopēt iestatījumus"
+
+msgid "Paste Properties"
+msgstr "Ielīmēt iestatījumus"
+
+msgid "Inspector"
+msgstr "Inspektors"
+
+msgid "Save As..."
+msgstr "Saglabāt kā..."
+
+msgid "Open documentation for this object."
+msgstr "Atvērt dokumentāciju šim objektam."
+
+msgid "Open Documentation"
+msgstr "Atvērt dokumentāciju"
+
+msgid "Manage object properties."
+msgstr "Pārvaldīt objekta rekvizītus."
+
+msgid "Error loading scene from %s"
+msgstr "Kļūda ielādējot ainu no %s"
+
+msgid "Detach Script"
+msgstr "Atvienot skriptu"
+
+msgid "Delete %d nodes?"
+msgstr "Izdzēst %d mezglus?"
+
+msgid "Delete the root node \"%s\"?"
+msgstr "Dzēst saknes mezglu \"%s\"?"
+
+msgid "Delete node \"%s\" and its children?"
+msgstr "Dzēst mezglu \"%s\" un tā bērnus?"
+
+msgid "Delete node \"%s\"?"
+msgstr "Izdzēst mezglu \"%s\"?"
+
+msgid "Save New Scene As..."
+msgstr "Saglabāt jaunu ainu kā..."
+
+msgid "Create Root Node:"
+msgstr "Izveidot Cilmes Mezglu:"
+
+msgid "2D Scene"
+msgstr "2D Aina"
+
+msgid "3D Scene"
+msgstr "3D Aina"
+
+msgid "User Interface"
+msgstr "Lietotāja interfeiss"
+
+msgid "Other Node"
+msgstr "Cits mezgls"
+
+msgid "Attach Script"
+msgstr "Pievienot skriptu"
+
+msgid "Change type of node(s)"
+msgstr "Mezgla(-u) tipa maiņa"
+
+msgid "Can't overwrite scene that is still open!"
+msgstr "Nevar pārrakstīt ainu, kas joprojām ir atvērta!"
+
+msgid "Move Up"
+msgstr "Bīdīt augšup"
+
+msgid "Move Down"
+msgstr "Bīdīt lejup"
+
+msgid "Duplicate"
+msgstr "Izveidot dublikātu"
+
+msgid "Add/Create a New Node."
+msgstr "Pievienot/Izveidot Jaunu Mezglu."
+
+msgid "Attach a new or existing script to the selected node."
+msgstr "Pievienot jaunu vai eksistējošu skriptu izvēlētajam mezglam."
 
 msgid "Paste Params"
 msgstr "Ielīmēt Parametrus"
@@ -1512,20 +1759,1942 @@ msgstr "[tukšs]"
 msgid "[unsaved]"
 msgstr "[nesaglabāts]"
 
-msgid "3D Editor"
-msgstr "3D Redaktors"
+msgid "Thumbnail..."
+msgstr "Sīktēls..."
 
-msgid "Script Editor"
-msgstr "Skripta redaktors"
+msgid "Create New %s"
+msgstr "Izveidot Jaunu %s"
+
+msgid "Clear Output"
+msgstr "Notīrīt Izeju"
+
+msgid "Warnings"
+msgstr "Brīdinājumi"
+
+msgid "Unnamed Project"
+msgstr "Nenosaukts Projekts"
+
+msgid ""
+"Spins when the editor window redraws.\n"
+"Update Continuously is enabled, which can increase power usage. Click to "
+"disable it."
+msgstr ""
+"Griežas, kad redaktora logs atjauninas.\n"
+"Atjaunināt konstanti ir iespējots, kas var palielināt jaudas izmantošanu. "
+"Klikšķini, lai atslēgtu."
+
+msgid "Spins when the editor window redraws."
+msgstr "Griežas, kad redaktora logs atjauninas."
+
+msgid "OK"
+msgstr "Labi"
+
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"Šo resursu nevar saglabāt, jo tas nepieder rediģētajai ainai. Vispirms "
+"uztaisi to unikālu."
+
+msgid "Save Resource As..."
+msgstr "Saglabāt Resursu Kā..."
+
+msgid "Saving Scene"
+msgstr "Saglabā Ainu"
+
+msgid "Analyzing"
+msgstr "Analizē"
+
+msgid "Save scene before running..."
+msgstr "Saglabā ainu pirms palaišanas..."
+
+msgid "Apply MeshInstance Transforms"
+msgstr "Pielietot MeshInstances Transformācijas"
+
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
+"Notika gļūda saglabājot redaktora izkārtojumu.\n"
+"Pārliecinies, ka redaktora lietotāja datu mape ir rakstāma."
+
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
+"Noklusējuma redaktora izkārtojums pārrakstīts.\n"
+"Lai atjaunotu noklusējuma izkārtojumu uz bāzes iestatījumiem, izmantojiet "
+"Dzēst izkārtojumu opciju."
+
+msgid "Layout name not found!"
+msgstr "Izkārtojuma nosaukums nav atrasts!"
+
+msgid "Restored the Default layout to its base settings."
+msgstr "Noklusējuma izkārtojums atjaunots uz bāzes iestatījumiem."
+
+msgid ""
+"This resource belongs to a scene that was imported, so it's not editable.\n"
+"Please read the documentation relevant to importing scenes to better "
+"understand this workflow."
+msgstr ""
+"Šis resurss pieder ainai, kas ir importēta, tādēļ to nevar rediģēt.\n"
+"Lūdzu, lasiet dokumentāciju par ainu importēšanu, lai labāk saprastu šo "
+"darbplūsmu."
+
+msgid ""
+"This resource was imported, so it's not editable. Change its settings in the "
+"import panel and then re-import."
+msgstr ""
+"Šis resurss tika importēts, tāpēc to nevar rediģēt. Mainiet tā iestatījumus "
+"importēšanas panelī un pēc tam importējiet atkārtoti."
+
+msgid "Open Base Scene"
+msgstr "Atvērt bāzes ainu"
+
+msgid ""
+"A root node is required to save the scene. You can add a root node using the "
+"Scene tree dock."
+msgstr ""
+"Lai saglabātu ainu, ir nepieciešams saknes mezgls. Saknes mezglu var "
+"pievienot, izmantojot ainas koka doku."
+
+msgid "Save Scene As..."
+msgstr "Saglabāt ainu kā..."
+
+msgid "Can't undo while mouse buttons are pressed."
+msgstr "Nevar atgriezt, kad peles pogas ir nospiestas."
+
+msgid "Nothing to undo."
+msgstr "Nav ko atgriezt."
+
+msgid "Can't redo while mouse buttons are pressed."
+msgstr "Nevar atgriezt, kad peles pogas ir nospiestas."
+
+msgid "Nothing to redo."
+msgstr "Nav ko pārstrādāt."
+
+msgid "Can't reload a scene that was never saved."
+msgstr "Nevar pārlādēt ainu, kas nav bijusi saglabāta."
+
+msgid "Save & Quit"
+msgstr "Saglabāt & iziet"
+
+msgid "Save changes to the following scene(s) before opening Project Manager?"
+msgstr ""
+"Saglabāt izmaiņas sekojošai ainai(-ām) pirms projektu menedžera atvēršanas ?"
+
+msgid "Pick a Main Scene"
+msgstr "Izvēlēties galveno ainu"
+
+msgid "Export Mesh Library"
+msgstr "Ekportēt tīkla bibliotēku"
+
+msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
+msgstr "Nevar iespējot spraudni: '%s' konfigurācijas parsēšana neizdevās."
+
+msgid "Unable to find script field for addon plugin at: '%s'."
+msgstr "Nevarēja atrast skripta lauku spraudnim: '%s'."
+
+msgid "Unable to load addon script from path: '%s'."
+msgstr "Nevarēja ielādēt spraudņa skriptu no: '%s'."
+
+msgid ""
+"Unable to load addon script from path: '%s'. This might be due to a code "
+"error in that script.\n"
+"Disabling the addon at '%s' to prevent further errors."
+msgstr ""
+"Nevar ielādēt spraudņa skriptu no: '%s'. Tā iemesls var būt kļūda šajā "
+"slripta kodā.\n"
+"Spraudnis '%s' atspējots, lai novērstu tupmākās kļūdas."
+
+msgid ""
+"Scene '%s' was automatically imported, so it can't be modified.\n"
+"To make changes to it, a new inherited scene can be created."
+msgstr ""
+"Aina '%s' tika importēta automātiski, tāpēc to nevar modificēt.\n"
+"Lai tajā veiktu izmaiņas, izveidojiet jaunu pārmantotu ainu."
+
+msgid "Scene '%s' has broken dependencies:"
+msgstr "Ainai '%s' ir bojātas atkarības:"
+
+msgid "Clear Recent Scenes"
+msgstr "Notīrīt nesenās ainas"
+
+msgid "Cannot run the script because it contains errors, check the output log."
+msgstr "Nevar palaist skriptu, jo tajā ir kļūdas. Pārbaudiet izejas žurnālu."
+
+msgid "Cannot run the script because it doesn't extend EditorScript."
+msgstr "Nevar palaist skriptu, jo tas nepaplašina EditorScript."
+
+msgid ""
+"Cannot run the script because it's not a tool script (add the @tool "
+"annotation at the top)."
+msgstr ""
+"Nevar palaist skriptu, jo tas nav rīka skripts (pievienojiet @tool anotāciju "
+"skripta augšā)."
+
+msgid "Cannot run the script because it's not a tool script."
+msgstr "Nevar palaist skriptu, jo tas nav rīka skripts."
+
+msgid "Save Layout"
+msgstr "Saglabāt izkārtojumu"
+
+msgid "Delete Layout"
+msgstr "Dzēst izkārtojumu"
+
+msgid "Save & Close"
+msgstr "Saglabāt & aizvērt"
+
+msgid "%d more files or folders"
+msgstr "%d vēl faili vai mapes"
+
+msgid "%d more files"
+msgstr "%d vēl faili"
+
+msgid "Save & Restart"
+msgstr "Saglabāt & pārstartēt"
+
+msgid "Forward+"
+msgstr "UzPriekšu+"
+
+msgid "Open Recent"
+msgstr "Atvērt nesenu"
+
+msgid "Version Control"
+msgstr "Versiju Kontrole"
+
+msgid "Install Android Build Template..."
+msgstr "Instalēt Android būves šablonu..."
+
+msgid "Open User Data Folder"
+msgstr "Atvērt lietotāja datu mapi"
+
+msgid "Tools"
+msgstr "Rīki"
+
+msgid "Editor Layout"
+msgstr "Redaktora izkārtojums"
+
+msgid "Open Editor Data/Settings Folder"
+msgstr "Atvērt redaktora datu / iestatījumu mapi"
+
+msgid "Open Editor Data Folder"
+msgstr "Atvērt redaktora datu mapi"
+
+msgid "Open Editor Settings Folder"
+msgstr "Atvērt redaktora iestatījumu mapi"
+
+msgid "Manage Editor Features..."
+msgstr "Pārvaldīt redaktora iespējas..."
+
+msgid "Manage Export Templates..."
+msgstr "Pārvaldīt eksporta šablonus..."
+
+msgid "Lock Selected Node(s)"
+msgstr "Aizslēgt izvēlēto mezglu(s)"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Atslēgt izvēlēto muzglu(s)"
+
+msgid "Distraction Free Mode"
+msgstr "Traucējumu brīvs režīms"
+
+msgid "Toggle distraction-free mode."
+msgstr "Pārslēgt traucējumu brīvo režīmu."
+
+msgid "Copy Text"
+msgstr "Kopēt Tekstu"
+
+msgid "New Scene"
+msgstr "Jauna aina"
+
+msgid "New Inherited Scene..."
+msgstr "Jauna mantota aina..."
+
+msgid "Open Scene..."
+msgstr "Atvērt ainu..."
+
+msgid "Reopen Closed Scene"
+msgstr "Atvērt Aizvērto Ainu"
+
+msgid "Save Scene"
+msgstr "Saglabāt ainu"
+
+msgid "Save All Scenes"
+msgstr "Saglabāt Visas Ainas"
+
+msgid "Quick Open..."
+msgstr "Ātri Atvērt..."
+
+msgid "Quick Open Scene..."
+msgstr "Ātri atvērt ainu..."
+
+msgid "Quick Open Script..."
+msgstr "ātri atvērt skriptu..."
+
+msgid "MeshLibrary..."
+msgstr "TīklaBibliotēka..."
+
+msgid "Reload Saved Scene"
+msgstr "Pārlādēt saglabāto ainu"
+
+msgid "Close Scene"
+msgstr "Aizvērt ainu"
+
+msgid "Editor Settings..."
+msgstr "Redaktora iestatījumi..."
+
+msgid "Quit"
+msgstr "Iziet"
+
+msgid "Find in Files..."
+msgstr "Atrast Failos..."
+
+msgid "Export"
+msgstr "Eksportēt"
+
+msgid "Orphan Resource Explorer..."
+msgstr "Bāreņu resursu pārlūks..."
+
+msgid "Reload Current Project"
+msgstr "Pārlādēt pašreizējo projektu"
+
+msgid "Quit to Project List"
+msgstr "Iziet uz projektu sarakstu"
+
+msgid "Take Screenshot"
+msgstr "Uzņemt Ekrānšāviņu"
+
+msgid "Toggle Fullscreen"
+msgstr "Pārslēgt Pilnekrānu"
+
+msgid "Online Documentation"
+msgstr "Tiešsaistes Dokumentācija"
+
+msgid "Report a Bug"
+msgstr "Ziņot par kļūmi"
+
+msgid "Suggest a Feature"
+msgstr "Ieteikt Iespēju"
+
+msgid "Send Docs Feedback"
+msgstr "Sūtīt dokumentu atsauksmi"
+
+msgid "Support Godot Development"
+msgstr "Atbalstīt Godot izstrādi"
+
+msgid "Open Script Editor"
+msgstr "Atvērt skriptu redaktoru"
+
+msgid "Open Asset Library"
+msgstr "Atvērt līdzekļu bibliotēku"
+
+msgid "Open the next Editor"
+msgstr "Atvērt nākamo redaktoru"
+
+msgid "Open the previous Editor"
+msgstr "Atvērt iepriekšējo redaktoru"
+
+msgid "Project"
+msgstr "Projekts"
+
+msgid "Help"
+msgstr "Palīdzība"
+
+msgid "Update Continuously"
+msgstr "Nepārtraukti Atjaunot"
+
+msgid "Don't Save"
+msgstr "Nesaglabāt"
+
+msgid "Android build template is missing, please install relevant templates."
+msgstr "Trūkst Android būves šablonu, lūdzu, instalējiet atbilstošos šablonus."
+
+msgid "Manage Templates"
+msgstr "Pārvaldīt šablonus"
+
+msgid "Install from file"
+msgstr "Instalēt no faila"
+
+msgid "Import Templates From ZIP File"
+msgstr "Importēt šablonus no ZIP faila"
+
+msgid "Template Package"
+msgstr "Šablona pakotne"
+
+msgid "Export Library"
+msgstr "Eksportēt bibliotēku"
+
+msgid "Open Anyway"
+msgstr "Atvērt jebkurā gadījumā"
+
+msgid "Load Errors"
+msgstr "Ielādes kļūdas"
+
+msgid "Select Current"
+msgstr "Izvēlēties pašreizējo"
+
+msgid "Warning!"
+msgstr "Brīdinājums!"
+
+msgid "Storing File:"
+msgstr "Faila saglabāšana:"
+
+msgid "Packing"
+msgstr "Pako"
+
+msgid "Invalid Identifier:"
+msgstr "Nederīgs Identifikators:"
+
+msgid "Custom debug template not found."
+msgstr "Pielāgots atkļūdošanas šablons nav atrasts."
+
+msgid "Custom release template not found."
+msgstr "Pielāgots relīzes šablons nav atrasts."
+
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr "Pie 32-bitu eksportēšanas, iepakotais PCK nevar būt lielāks par 4GB."
+
+msgid "Uninstall these templates."
+msgstr "Atinstalēt šos šablonus."
+
+msgid "There are no mirrors available."
+msgstr "Spoguļi nav pieejami."
+
+msgid "Retrieving the mirror list..."
+msgstr "Saņem spoguļu sarakstu..."
+
+msgid "Starting the download..."
+msgstr "Sāk lejuplādi..."
+
+msgid "Error requesting URL:"
+msgstr "Kļūda pieprasot URL:"
+
+msgid "Connecting to the mirror..."
+msgstr "Savienojas ar spoguli..."
+
+msgid "Can't resolve the requested address."
+msgstr "Nevar atrisināt pieprasīto adresi."
+
+msgid "Can't connect to the mirror."
+msgstr "Nevar pievienoties spogulim."
+
+msgid "Cannot remove temporary file:"
+msgstr "Nevar noņemt pagaidu failu:"
+
+msgid "Importing:"
+msgstr "Importē:"
+
+msgid "Remove templates for the version '%s'?"
+msgstr "Noņemt šablonus versijai '%s'?"
+
+msgid "Official export templates aren't available for development builds."
+msgstr "Oficiālie eksporta šabloni nav pieejami eksperimentālajām būvēm."
+
+msgid "Uncompressing Android Build Sources"
+msgstr "Atspiež Android būves avotus"
+
+msgid "Export Template Manager"
+msgstr "Eksporta šablonu menedžeris"
+
+msgid "Current Version:"
+msgstr "Pašreizējā Versija:"
+
+msgid "Open Folder"
+msgstr "Atvērt mapi"
+
+msgid "Uninstall"
+msgstr "Atinstalēt"
+
+msgid "Download from:"
+msgstr "Lejuplādēt no:"
+
+msgid "Open in Web Browser"
+msgstr "Atvērt interneta pārlūkā"
+
+msgid "Copy Mirror URL"
+msgstr "Kopēt spoguļa linku"
+
+msgid "Download and Install"
+msgstr "Lejuplādēt un instalēt"
+
+msgid "Install from File"
+msgstr "Instalēt no Faila"
+
+msgid "Cancel the download of the templates."
+msgstr "Atcelt šablonu lejuplādi."
+
+msgid "Other Installed Versions:"
+msgstr "Citas instalētās versijas:"
+
+msgid "Select Template File"
+msgstr "Izvēlēties Šablona Failu"
+
+msgid ""
+"The templates will continue to download.\n"
+"You may experience a short editor freeze when they finish."
+msgstr ""
+"Šablonu lejuplādes turpināsies.\n"
+"Jūs varat pieredzēt īslaicīgu redaktora sastingšanu, kad tās tiks pabeigtas."
+
+msgid "Options"
+msgstr "Opcijas"
+
+msgid "Manage Export Templates"
+msgstr "Pārvaldīt Eksporta Šablonus"
+
+msgid "Dependencies For:"
+msgstr "Atkarības Priekš:"
+
+msgid "Dependencies"
+msgstr "Atkarības"
+
+msgid "Dependencies:"
+msgstr "Atkarības:"
+
+msgid "Fix Broken"
+msgstr "Labot Salauzto"
+
+msgid "Dependency Editor"
+msgstr "Atkarību Redaktors"
+
+msgid ""
+"Remove the selected files from the project? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"Vai noņemt izvēlētos failus no projekta? (Netiks atjaunoti)\n"
+"Atšķirībā no failu sistēmas konfigurācijas, faili tiks aizvākti uz sistēmas "
+"atkritni vai dzēsti pilnībā."
+
+msgid ""
+"The files being removed are required by other resources in order for them to "
+"work.\n"
+"Remove them anyway? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"Faili, kurus Jūs vēlaties noņemt ir nepieciešami citiem resursiem, lai tie "
+"varētu strādāt.\n"
+"Tik un tā noņemt tos? (Nevar atsaukt)\n"
+"Atšķirībā no jūsu failu sistēmas konfigurācijas, faili tiks aizvākti uz "
+"sistēmas atkritni vai dzēsti pilnībā."
+
+msgid "Cannot remove:"
+msgstr "Nevar noņemt:"
+
+msgid "Fix Dependencies"
+msgstr "Salabot Atkarības"
+
+msgid "Load failed due to missing dependencies:"
+msgstr "Ielādēšana apturēta, jo trūkst pamata faili:"
+
+msgid "Which action should be taken?"
+msgstr "Kādu darbību veikt ?"
+
+msgid "Permanently delete %d item(s)? (No undo!)"
+msgstr "Vai neatgriezeniski izdzēst %d priekšmetu(us)? (NEATGRIEZENISKI!)"
+
+msgid "Show Dependencies"
+msgstr "Rādīt Ceļus uz Pamata Failiem"
+
+msgid "Orphan Resource Explorer"
+msgstr "Bāreņu Resursu Pārlūks"
+
+msgid "Owns"
+msgstr "Pieder"
+
+msgid "Resources Without Explicit Ownership:"
+msgstr "Resursi bez izteiktas piederības:"
+
+msgid "ScanSources"
+msgstr "ScanSources / Skenēšanas Avoti"
+
+msgid ""
+"There are multiple importers for different types pointing to file %s, import "
+"aborted"
+msgstr ""
+"Ir vairāki importētāji dažādiem tipiem, kas norāda uz failu %s, importēšana "
+"atcelta"
+
+msgid "(Re)Importing Assets"
+msgstr "(Re)Importē vienumus"
+
+msgid "Go to Line"
+msgstr "Doties uz Rindu"
+
+msgid "Line Number:"
+msgstr "Rindas Numurs:"
+
+msgid "%d replaced."
+msgstr "%d aizvietots."
+
+msgid "Match Case"
+msgstr "Atrast Gadījumu"
+
+msgid "Whole Words"
+msgstr "Visu Vārdu"
+
+msgid "Replace"
+msgstr "Aizvietot"
+
+msgid "Replace All"
+msgstr "Aizvietot visu"
+
+msgid "Selection Only"
+msgstr "Tikai izvēlētais"
+
+msgid "Zoom In"
+msgstr "Palielināt"
+
+msgid "Zoom Out"
+msgstr "Attālināt"
+
+msgid "Reset Zoom"
+msgstr "Atiestatīt Tālummaiņu"
+
+msgid "Line and column numbers."
+msgstr "Rindu un kolonnu numuri."
+
+msgid "Change Type of \"%s\""
+msgstr "Mainīt \"%s\" Veidu"
+
+msgid "Change"
+msgstr "Nomainīt"
+
+msgid "No results for \"%s\"."
+msgstr "Nav rezultātu \"%s\"."
+
+msgid "Recent:"
+msgstr "Nesenie:"
+
+msgid "Search:"
+msgstr "Meklēt:"
+
+msgid "Matches:"
+msgstr "Sakritības:"
+
+msgid "Project Founders"
+msgstr "Projekta Dibinātāji"
+
+msgid "Lead Developer"
+msgstr "Galvenais Izstrādātājs"
+
+msgid "Developers"
+msgstr "Izstrādātāji"
+
+msgid "Platinum Sponsors"
+msgstr "Platīna Sponsori"
+
+msgid "Gold Sponsors"
+msgstr "Zelta Sponsori"
+
+msgid "Silver Sponsors"
+msgstr "Sudraba Sponsors"
+
+msgid "Godot Engine contributors"
+msgstr "Godot Dzinēja ieguldītāji"
+
+msgid "Thanks from the Godot community!"
+msgstr "Paldies no Godot sabiedrības!"
+
+msgid "Authors"
+msgstr "Autori"
+
+msgid "Donors"
+msgstr "Ziedotāji"
+
+msgid "Third-party Licenses"
+msgstr "Trešās partijas Licences"
+
+msgid ""
+"Godot Engine relies on a number of third-party free and open source "
+"libraries, all compatible with the terms of its MIT license. The following is "
+"an exhaustive list of all such third-party components with their respective "
+"copyright statements and license terms."
+msgstr ""
+"Godot Konstruktors paļaujas uz citiem trešās partijas brīvajām un atvērtā "
+"avota bibliotēkām, kuras ir saderīgas ar to MIT licences nosacījumiem. "
+"Sekojošais ir saraksts ar šīm trešās partijas komponentēm ar to autortiesību "
+"apgalvojumiem un licences nosacījumiem."
+
+msgid "All Components"
+msgstr "Visas Komponentes"
+
+msgid "Components"
+msgstr "Komponentes"
+
+msgid "Licenses"
+msgstr "Licences"
+
+msgid "Expand Bottom Panel"
+msgstr "Izvērst apakšējo paneli"
+
+msgid "Move"
+msgstr "Kustināt"
+
+msgid "No sub-resources found."
+msgstr "Sub-resursi nav atrasti."
+
+msgid "Open a list of sub-resources."
+msgstr "Atvērt sarakstu ar sub-resursiem."
+
+msgid "Remove Item"
+msgstr "Noņemt vienumu"
+
+msgid "Saving..."
+msgstr "Saglabā..."
+
+msgid "Status"
+msgstr "Statuss"
+
+msgid "Enable"
+msgstr "Iespējot"
+
+msgid "Preview:"
+msgstr "Priekškatījums:"
+
+msgid "Browse"
+msgstr "Pārlūkot"
+
+msgid "Reset to Defaults"
+msgstr "Atiestatīt uz noklusējumiem"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Add"
+msgstr "Pievienot"
+
+msgid "Metadata name is valid."
+msgstr "Metadatu nosaukums ir derīgs"
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Pievienot Metadatu Mainīgo priekš \"%s\""
+
+msgid "Metadata name can't be empty."
+msgstr "Metadatu nosaukums nevar būt tukšs."
+
+msgid "Metadata name must be a valid identifier."
+msgstr "Metadatu nosaukumam jābūt derīgam identifikatoram."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Metadati ar nosaukumu \"%s\" jau eksistē."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr ""
+"Nosaukumi, kuri sākas ar _, ir rezervēti tikai priekš redaktora metadatiem."
+
+msgid "Pinning a value forces it to be saved even if it's equal to the default."
+msgstr ""
+"Vērtības piespraušana liek to saglabāt, pat ja tā ir vienāda ar noklusējuma "
+"vērtību."
+
+msgid "On"
+msgstr "Ieslēgts"
+
+msgid "Resize Array"
+msgstr "Mainīt Masīva Lielumu"
+
+msgid "Unpinned %s"
+msgstr "Atsprausts %s"
+
+msgid "Copy Property Path"
+msgstr "Kopēt mainīgā ceļu"
+
+msgid "Edit Text:"
+msgstr "Rediģēt Tekstu:"
+
+msgid "Bit %d, value %d"
+msgstr "Bits %d, vērtība %d"
+
+msgid "Assign..."
+msgstr "Pievienot..."
+
+msgid "Invalid RID"
+msgstr "Nederīgs RID"
+
+msgid "New Key:"
+msgstr "Jauna atslēga:"
+
+msgid "New Value:"
+msgstr "Jauna vērtība:"
+
+msgid "Size"
+msgstr "Izmērs"
+
+msgid "Convert to %s"
+msgstr "Konvertēt uz %s"
+
+msgid "New"
+msgstr "Jauns"
+
+msgid "Select Method"
+msgstr "Izvēlēties Metodi"
+
+msgid "Edit Plugin"
+msgstr "Rediģēt spraudni"
+
+msgid "Installed Plugins:"
+msgstr "Instalētie spraudņi:"
+
+msgid "Version"
+msgstr "Versija"
+
+msgid "Author:"
+msgstr "Autors:"
+
+msgid "Language:"
+msgstr "Valoda:"
+
+msgid "New Game Project"
+msgstr "Jauns spēles projekts"
+
+msgid "Error opening package file, not in ZIP format."
+msgstr "Kļūda atverot failu arhīvu, nav ZIP formātā."
+
+msgid "The following files failed extraction from package:"
+msgstr "Sekojošie faili netika izvilkti no paketes:"
+
+msgid "Rename Project"
+msgstr "Pārsaukt Projektu"
+
+msgid "Project Path:"
+msgstr "Projekta ceļš:"
+
+msgid "Project Installation Path:"
+msgstr "Projekta instalācijas ceļš:"
+
+msgid "Toggle Favorite"
+msgstr "Pārslēgt favorītu"
+
+msgid "Run Project"
+msgstr "Palaist Projektu"
+
+msgid "New Window"
+msgstr "Jauns logs"
+
+msgid "Remove this project from the list?"
+msgstr "Noņemt šo projektu no saraksta?"
+
+msgid "New Project"
+msgstr "Jauns projekts"
+
+msgid "Import Project"
+msgstr "Importēt Projektu"
+
+msgid "Scan"
+msgstr "Skenēt"
+
+msgid "Scan Projects"
+msgstr "Skenēt Projektu"
+
+msgid "Loading, please wait..."
+msgstr "Ielādē, lūdzu uzgaidi..."
+
+msgid "Edit Project"
+msgstr "Rediģēt Projektu"
+
+msgid "Remove Project"
+msgstr "Noņemt Projektu"
+
+msgid "Remove Missing"
+msgstr "Noņemt trūkstošo"
 
 msgid "Asset Library"
 msgstr "Līdzekļu bibliotēka"
 
+msgid "Select a Folder to Scan"
+msgstr "Norādīt mapi kuru skenēt"
+
+msgid "Remove All"
+msgstr "Noņemt visu"
+
+msgid "Error"
+msgstr "Kļūda"
+
+msgid "Restart Now"
+msgstr "Restartēt tagad"
+
+msgid "Clear All"
+msgstr "Iztīrīt Visu"
+
+msgid "Create Polygon"
+msgstr "Izveidot Daudzstūri"
+
+msgid "Edit Polygon"
+msgstr "Rediģēt Daudzstūri"
+
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
+msgid "Convert to CPUParticles2D"
+msgstr "Konvertēt uz CPUParticles2D"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
+
+msgid "Please Confirm..."
+msgstr "Lūdzu apstipriniet..."
+
+msgid "Create Polygon & UV"
+msgstr "Izveidot Daudzstūri un UV"
+
+msgid "Create Internal Vertex"
+msgstr "Izveidot Iekšējo Virsotni"
+
+msgid "Remove Internal Vertex"
+msgstr "Noņemt Iekšējo Virsotni"
+
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr "Nederīgs Daudzstūris (vajag 3 dažādas virsotnes)"
+
+msgid "Add Custom Polygon"
+msgstr "Pievienot pielāgotu daudzstūri"
+
+msgid "Remove Custom Polygon"
+msgstr "Noņemt pielāgotu daudzstūri"
+
+msgid "Transform UV Map"
+msgstr "Transformēt UV Karti"
+
+msgid "Transform Polygon"
+msgstr "Transformēt daudzstūri"
+
+msgid "Paint Bone Weights"
+msgstr "Krāsot Kaulu Svarus"
+
+msgid "Points"
+msgstr "Punkti"
+
+msgid "Polygons"
+msgstr "Daudzstūri"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Bones"
+msgstr "Kauli"
+
+msgid "%s + Shift: Scale"
+msgstr "%s + Shift: Mainīt Izmēru"
+
+msgid "Move Polygon"
+msgstr "Pārvietot Daudzstūri"
+
+msgid "Rotate Polygon"
+msgstr "Rotēt Daudzstūri"
+
+msgid "Scale Polygon"
+msgstr "Mainīt Izmēru Daudzstūrim"
+
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr "Izveidot pielāgotu daudzstūri. Ļauj renderēt pielāgotus daudzstūrus."
+
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is disabled."
+msgstr ""
+"Noņemt pielāgotu daudzstūri. Ja vairs nav pielāgotu daudzstūru, tiek atslēgta "
+"to renderēšana."
+
+msgid "Paint weights with specified intensity."
+msgstr "Krāsot svarus ar konkrētu intensitāti."
+
+msgid "Unpaint weights with specified intensity."
+msgstr "Nekrāsot svarus ar konkrētu intensitāti."
+
+msgid "Radius:"
+msgstr "Rādiuss:"
+
+msgid "Copy Polygon to UV"
+msgstr "Kopēt Daudzstūri uz UV"
+
+msgid "Copy UV to Polygon"
+msgstr "Kopēt UV uz daudzstūra"
+
+msgid "Clear UV"
+msgstr "Notīrīt UV"
+
+msgid "Grid Settings"
+msgstr "Režģa Iestatījumi"
+
+msgid "Snap"
+msgstr "Piestiprināt"
+
+msgid "Enable Snap"
+msgstr "Ieslēgt Piestiprināšanu"
+
+msgid "Grid"
+msgstr "Režģis"
+
+msgid "Show Grid"
+msgstr "Parādīt Režģi"
+
+msgid "Configure Grid:"
+msgstr "Mainīt Režģi:"
+
+msgid "Grid Offset X:"
+msgstr "Režģa Novirze X asī:"
+
+msgid "Grid Offset Y:"
+msgstr "Režģa Novirze Y asī:"
+
+msgid "Grid Step X:"
+msgstr "Režģa Solis X asī:"
+
+msgid "Grid Step Y:"
+msgstr "Režģa Solis Y asī:"
+
+msgid "Sync Bones to Polygon"
+msgstr "Sinhronizēt Kaulus ar Daudzstūri"
+
+msgid "This skeleton has no bones, create some children Bone2D nodes."
+msgstr "Šim skeletam nav kaulu, izveido dažus Bone2D apakšmezglus."
+
+msgid "Set Rest Pose to Bones"
+msgstr "Iestatīt Miera Pozu Kauliem"
+
+msgid "Create Rest Pose from Bones"
+msgstr "Izveidot Miera Pozu no Kauliem"
+
+msgid "Reset to Rest Pose"
+msgstr "Atiestatīt uz atpūtas pozu"
+
+msgid "Overwrite Rest Pose"
+msgstr "Pārrakstīt Miera Pozu"
+
+msgid "Create Polygon2D"
+msgstr "Izveidot Polygon2D"
+
+msgid "Create CollisionPolygon2D"
+msgstr "Izveidot CollisionPolygon2D"
+
+msgid "CollisionPolygon2D Preview"
+msgstr "CollisionPolygon2D priekšskatījums"
+
+msgid "Create LightOccluder2D"
+msgstr "Izveidot LightOccluder2D"
+
+msgid "LightOccluder2D Preview"
+msgstr "LightOccluder2D priekšskatījums"
+
+msgid "Convert to Polygon2D"
+msgstr "Konvertēt uz Polygon2D"
+
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Izveidot CollisionPolygon2D radinieku"
+
+msgid "Advanced"
+msgstr "Papildus"
+
+msgid "Physics"
+msgstr "Fizika"
+
+msgid "Navigation"
+msgstr "Navigācija"
+
+msgid "Yes"
+msgstr "Jā"
+
+msgid "Preview"
+msgstr "Priekšskats"
+
+msgid "Select lightmap bake file:"
+msgstr "Izvēlēties gaismas kartes cepšanas failu:"
+
+msgid "X-Axis"
+msgstr "X ass"
+
+msgid "Y-Axis"
+msgstr "Y ass"
+
+msgid "Z-Axis"
+msgstr "Z ass"
+
+msgid "Amount:"
+msgstr "Daudzums:"
+
+msgid "Populate"
+msgstr "Apdzīvot"
+
+msgid "Perspective"
+msgstr "Perspektīva"
+
+msgid "Grouped"
+msgstr "Grupēts"
+
+msgid "View"
+msgstr "Skatīt"
+
+msgid "Enable Doppler"
+msgstr "Iespējot doppler"
+
+msgid "Group Selected"
+msgstr "Grupa Izvēlēta"
+
+msgid "Ungroup Selected"
+msgstr "Pārtraukt Izvēlētā Grupēšanu"
+
+msgid "Scale Mode"
+msgstr "Mēroga Režīms"
+
+msgid "Ruler Mode"
+msgstr "Lineāla Režīms"
+
+msgid "Pre"
+msgstr "iepriekš"
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
+msgid "Edit Poly"
+msgstr "Rediģēt Daudzstūri"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Rediģēt Daudzstūri (Noņemt Punktu)"
+
+msgid ""
+"AnimationMixer has no valid root node path, so unable to retrieve track names."
+msgstr ""
+"AnimationMixer nav derīga saknes mezgla ceļa, tādēļ nav iespējams iegūt "
+"celiņu nosaukumus."
+
+msgid "Add Bone Metadata"
+msgstr "Pievienot Kaulu Metadatus"
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
+
+msgid "Scale Step:"
+msgstr "Mainīt Soļa Mērogu:"
+
+msgid "Create Vertical Guide"
+msgstr "Izveidot Vertikālu Vadotni"
+
+msgid "Remove Vertical Guide"
+msgstr "Noņemt Vertikālo Vadotni"
+
+msgid "Create Horizontal Guide"
+msgstr "Izveidot Horizontālu Vadotni"
+
+msgid "Remove Horizontal Guide"
+msgstr "Noņemt Horizontālo Vadotni"
+
+msgid "Clear Guides"
+msgstr "Notīrīt Vadotnes"
+
+msgid "Zoom to 25%"
+msgstr "Tuvināt uz 25%"
+
+msgid "Zoom to 50%"
+msgstr "Tuvināt uz 50%"
+
+msgid "Zoom to 100%"
+msgstr "Tuvināt uz 100%"
+
+msgid "Zoom to 200%"
+msgstr "Tuvināt uz 200%"
+
+msgid "Zoom to 400%"
+msgstr "Tuvināt uz 400%"
+
+msgid "Zoom to 800%"
+msgstr "Tuvināt uz 800%"
+
+msgid "Insert Key"
+msgstr "Ievietot Atslēgu"
+
+msgid "Auto Insert Key"
+msgstr "Automātiski Ievietot Atslēgu"
+
+msgid "Animation Key and Pose Options"
+msgstr "Animācijas Atslēga un Pozas Iestatījumi"
+
+msgid "Clear Pose"
+msgstr "Notīrīt pozu"
+
+msgid "Method in target node must be specified."
+msgstr "Metodi mērķa mezglā nepieciešams specificēt."
+
+msgid "Method name must be a valid identifier."
+msgstr "Metodes nosaukumam jābūt korektam identifikātoram."
+
+msgid ""
+"Target method not found. Specify a valid method or attach a script to the "
+"target node."
+msgstr ""
+"Mērķa metode netika atrasta. Specificējiet derīgu metodi vai pievienojiet "
+"skriptu mērķa mezglam."
+
+msgid "Connect to Node:"
+msgstr "Savienot ar Mezglu:"
+
+msgid "Connect to Script:"
+msgstr "Savieno ar Skriptu:"
+
+msgid "From Signal:"
+msgstr "No Signāla:"
+
+msgid "Scene does not contain any script."
+msgstr "Aina nesatur skriptu."
+
+msgid "No method found matching given filters."
+msgstr "Nav atrasta neviena metode, kas atbilstu dotajam filtram."
+
+msgid "Add Extra Call Argument:"
+msgstr "Pievienot Ekstra Izsaukuma Argumentu:"
+
+msgid "Extra Call Arguments:"
+msgstr "Ekstra Izsaukuma Argumenti:"
+
+msgid "Receiver Method:"
+msgstr "Saņemšanas Metode:"
+
+msgid "Deferred"
+msgstr "Atlikts"
+
+msgid ""
+"Defers the signal, storing it in a queue and only firing it at idle time."
+msgstr "Atliek signālu, glabājot to rindā, un to izstaro tikai dīkstāvē."
+
+msgid "Disconnects the signal after its first emission."
+msgstr "Atvieno signālu pēc tā pirmās izstarošanas."
+
+msgid "Cannot connect signal"
+msgstr "Nevar savienot signālu"
+
+msgid "Connect"
+msgstr "Savienot"
+
+msgid "Connect '%s' to '%s'"
+msgstr "Savienot '%s' pie '%s'"
+
+msgid "Disconnect '%s' from '%s'"
+msgstr "Atvienot '%s' no '%s'"
+
+msgid "Disconnect all from signal: '%s'"
+msgstr "Atvienot visus no signāla: '%s'"
+
+msgid "Connect..."
+msgstr "Savienot..."
+
+msgid "Disconnect"
+msgstr "Atvienot"
+
+msgid "Connect a Signal to a Method"
+msgstr "Savienot Signālu ar Metodi"
+
+msgid "Edit Connection: '%s'"
+msgstr "Izmainīt Savienojumu: %s"
+
+msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
+msgstr ""
+"Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no \"%s\" signāla?"
+
+msgid "Filter Signals"
+msgstr "Filtrēt Signālus"
+
+msgid "Are you sure you want to remove all connections from this signal?"
+msgstr ""
+"Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no šī signāla?"
+
+msgid "Disconnect All"
+msgstr "Atvienot visu"
+
+msgid "Edit..."
+msgstr "Rediģēt..."
+
+msgid "Go to Method"
+msgstr "Doties uz Metodi"
+
+msgid "Play This Scene"
+msgstr "Spēlēt šo ainu"
+
+msgid "Close Tab"
+msgstr "Aizvērt Cilni"
+
+msgid "Undo Close Tab"
+msgstr "Atcelt Cilnes Aizvēršanu"
+
+msgid "Close Other Tabs"
+msgstr "Aizvērt pārējās cilnes"
+
+msgid "Close Tabs to the Right"
+msgstr "Aizvērt cilnes pa labi"
+
+msgid "Close All Tabs"
+msgstr "Aizvērt Visas Cilnes"
+
+msgid "Add a new scene."
+msgstr "Pievienot jaunu ainu."
+
+msgid "Left Wide"
+msgstr "Pa Kreisi, Plašs"
+
+msgid "Right Wide"
+msgstr "Pa labi, Plašs"
+
+msgid "Full Rect"
+msgstr "Pilns logs"
+
+msgid "Importing Theme Items"
+msgstr "Tēmas elementu importēšana"
+
+msgid "Updating the editor"
+msgstr "Atjaunina redaktoru"
+
+msgid "Select all Theme items."
+msgstr "Atlasiet visus motīvu vienumus."
+
+msgid "Deselect All"
+msgstr "Atcelt visu atlasi"
+
+msgid "Import Selected"
+msgstr "Importēt izvēlēto"
+
+msgid "Remove All Color Items"
+msgstr "Noņemt visas krāsas vienības"
+
+msgid "Rename Item"
+msgstr "Noņemt vienību"
+
+msgid "Remove All Font Items"
+msgstr "Noņemt visus fontu vienumus"
+
+msgid "Remove All Icon Items"
+msgstr "Noņemt visus ikonu vienumus"
+
+msgid "Add Color Item"
+msgstr "Pievienot krāsas vienumu"
+
+msgid "Add Constant Item"
+msgstr "Pievienot konstantes vienumu"
+
+msgid "Add Font Item"
+msgstr "Pievienot fonta vienumu"
+
+msgid "Add Icon Item"
+msgstr "Pievienot ikonas vienumu"
+
+msgid "Rename Stylebox Item"
+msgstr "Pārsaukt Stila kastes Priekšmetu"
+
+msgid "Invalid file, not a Theme resource."
+msgstr "Nederīgs fails, nav Motīva resurss."
+
+msgid "Invalid file, same as the edited Theme resource."
+msgstr "Nederīgs fails, tāds pats kā rediģētais Motīva resurss."
+
+msgid "Manage Theme Items"
+msgstr "Pārvaldīt Motīva Vienumus"
+
+msgid "Edit Items"
+msgstr "Rediģēt vienumus"
+
+msgid "Types:"
+msgstr "Tipi:"
+
+msgid "Add Type:"
+msgstr "Pievienot Tipu:"
+
+msgid "Add Item:"
+msgstr "Pievienot Vienumu:"
+
+msgid "Add StyleBox Item"
+msgstr "Pievienot Stila kastes Vienumu"
+
+msgid "Remove Items:"
+msgstr "Noņemt vienumus:"
+
+msgid "Remove Class Items"
+msgstr "Noņemt Klases Vienumus"
+
+msgid "Remove Custom Items"
+msgstr "Noņemt pielāgotos vienumus"
+
+msgid "Remove All Items"
+msgstr "Noņemt Visus Vienumus"
+
+msgid "Add Theme Item"
+msgstr "Pievienot Motīva Vienumu"
+
+msgid "Old Name:"
+msgstr "Vecais vārds:"
+
+msgid "Import Items"
+msgstr "Importēt vienumus"
+
+msgid "Default Theme"
+msgstr "Noklusējuma motīvs"
+
+msgid "Editor Theme"
+msgstr "Redaktora motīvs"
+
+msgid "Select Another Theme Resource:"
+msgstr "Izvēlēties citu motīva resursu:"
+
+msgid "Another Theme"
+msgstr "Cits Motīvs"
+
+msgid "Filter the list of types or create a new custom type:"
+msgstr "Filtrēt tipu sarakstu vai izveidot jaunu pielāgotu tipu:"
+
+msgid "Type name is empty!"
+msgstr "Tipa nosaukums ir tukšs!"
+
+msgid "Confirm Item Rename"
+msgstr "Apstiprināt Vienuma Pārsaukšanu"
+
+msgid "Cancel Item Rename"
+msgstr "Atcelt pārsaukšanu"
+
+msgid "Override Item"
+msgstr "Pārrakstīt Vienumu"
+
+msgid "Unpin this StyleBox as a main style."
+msgstr "Atspraust šo Stila kasti no galvenā stila."
+
+msgid ""
+"Pin this StyleBox as a main style. Editing its properties will update the "
+"same properties in all other StyleBoxes of this type."
+msgstr ""
+"Piespraust šo Stila kasti kā galveno stilu. Rediģējot tās īpašības, tiks "
+"atjauninātas arī tās pašas īpašības visās pārējās Stila kastēs ar tādu pašu "
+"tipu."
+
+msgid "Add Item Type"
+msgstr "Pievienot Vienuma Tipu"
+
+msgid "Add Type"
+msgstr "Pievienot tipu"
+
+msgid "Override All Default Theme Items"
+msgstr "Pārrakstīt Visus Noklusējuma Motīva Vienumus"
+
+msgid "Set Font Size Item in Theme"
+msgstr "Iestatīt Vienuma Fonta Izmēru Motīvā"
+
+msgid "Set Font Item in Theme"
+msgstr "Iestatīt Vienuma Fontu Motīvā"
+
+msgid "Set Icon Item in Theme"
+msgstr "Iestatīt Vienuma Ikonu Motīvā"
+
+msgid "Set Stylebox Item in Theme"
+msgstr "Iestatīt Stila kastes Vienumu Motīvā"
+
+msgid "Pin Stylebox"
+msgstr "Piespraust Stila kasti"
+
+msgid "Unpin Stylebox"
+msgstr "Atspraust Stila kasti"
+
+msgid "Add a type from a list of available types or create a new one."
+msgstr "Pievieno tipu no saraksta ar pieejamiem tipiem vai izveido jaunu."
+
+msgid "Show Default"
+msgstr "Rādīt noklusējumu"
+
+msgid "Theme"
+msgstr "Motīvs"
+
+msgid "Theme:"
+msgstr "Motīvs:"
+
+msgid "Add Preview"
+msgstr "Pievienot priekšskatījumu"
+
+msgid "Select UI Scene:"
+msgstr "Izvēlēties UI ainu:"
+
+msgid "Disabled Button"
+msgstr "Atspējota poga"
+
+msgid "Disabled Item"
+msgstr "Atspējots vienums"
+
+msgid "Has"
+msgstr "Satur"
+
+msgid "Many"
+msgstr "Daudz"
+
+msgid "Disabled LineEdit"
+msgstr "Atspējota LineEdit"
+
+msgid "Has,Many,Options"
+msgstr "Ir,Daudz,Opcijas"
+
+msgid "Replace:"
+msgstr "Aizvietot:"
+
+msgid "Step"
+msgstr "Solis"
+
+msgid "Reset"
+msgstr "Atiestatīt"
+
+msgid "At character %s"
+msgstr "Pie rakstzīmes %s"
+
+msgid "ERROR: Couldn't load resource!"
+msgstr "KĻŪDA: Nevarēja ielādēt resursu!"
+
+msgid "Add Resource"
+msgstr "Pievienot Resursu"
+
+msgid "Rename Resource"
+msgstr "Pārsaukt Resursu"
+
+msgid "Delete Resource"
+msgstr "Izdzēst Resursu"
+
+msgid "Resource clipboard is empty!"
+msgstr "Resursu starpliktuve ir tukša!"
+
+msgid "Paste Resource"
+msgstr "Ielīmēt Resursu"
+
+msgid "Load Resource"
+msgstr "Ielādēt Resursu"
+
+msgid "(Connecting From)"
+msgstr "(Savienojas No)"
+
+msgid "No Frames Selected"
+msgstr "Nav izvēlēti kadri"
+
+msgid "Animations:"
+msgstr "Animācijas:"
+
+msgid "Animation Frames:"
+msgstr "Animācijas Kadri:"
+
+msgid "Zoom Reset"
+msgstr "Atiestatīt Tuvinājumu"
+
+msgid "Separation:"
+msgstr "Atdalījums:"
+
+msgid "Write your logic in the _run() method."
+msgstr "Raksti savu loģiku _run() metodē."
+
+msgid "Find in Files"
+msgstr "Atrast Failos"
+
+msgid "Find..."
+msgstr "Meklēt..."
+
+msgid "Replace..."
+msgstr "Aizvietot..."
+
+msgid "Replace in Files"
+msgstr "Aizvietot failos"
+
+msgid "Searching..."
+msgstr "Meklē..."
+
+msgid "Path is empty."
+msgstr "Ceļš nav definēts."
+
+msgid "Filename is empty."
+msgstr "Faila Nosaukums nav definēts."
+
+msgid "Invalid extension."
+msgstr "Nederīgs paplašinājums."
+
+msgid "Template:"
+msgstr "Šablons:"
+
+msgid "Invalid path."
+msgstr "Nederīgs ceļš."
+
+msgid "Will load an existing script file."
+msgstr "Ielādēs eksistējošu skriptu."
+
+msgid "Script path/name is valid."
+msgstr "Skripta ceļš/nosaukums ir derīgs."
+
+msgid "Will create a new script file."
+msgstr "Izveidos jaunu skripta failu."
+
+msgid "Built-in Script:"
+msgstr "Iebūvētais skripts:"
+
+msgid "Attach Node Script"
+msgstr "Pievienot mezgla skriptu"
+
+msgid "(truncated)"
+msgstr "(saīsināts)"
+
+msgid "Can't open '%s'. The file could have been moved or deleted."
+msgstr "Nevar atvērt '%s'. Fails ir pārvietots vai dzēsts."
+
+msgid "Close and save changes?"
+msgstr "Aizvērt un saglabāt izmaiņas?"
+
+msgid "New Text File..."
+msgstr "Jauns teksta fails..."
+
+msgid "Open File"
+msgstr "Atvērt failu"
+
+msgid "Save File As..."
+msgstr "Saglabāt Failu Kā..."
+
+msgid "Can't obtain the script for reloading."
+msgstr "Nevar iegūt skriptu priekš pārlādes."
+
+msgid "Reload only takes effect on tool scripts."
+msgstr "Pārlāde tikai ietekmē rīku skriptus."
+
+msgid "Cannot run the edited file because it's not a script."
+msgstr "Nevar palaist rediģēto failu, jo tas nav skripts."
+
+msgid "Import Theme"
+msgstr "Importēt Motīvu"
+
+msgid "Save Theme As..."
+msgstr "Saglabāt motīvu kā..."
+
+msgid "Online Docs"
+msgstr "Tiešsaistes Dokumenti"
+
+msgid "Open Godot online documentation."
+msgstr "Atvērt Godot tiešsaistes dokumentāciju."
+
+msgid "Unsaved file."
+msgstr "Nesaglabāts fails."
+
+msgid "%s Class Reference"
+msgstr "%s Klases Reference"
+
+msgid "Find Next"
+msgstr "Atrast Nākamo"
+
+msgid "Find Previous"
+msgstr "Atrast Iepriekšējo"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Pārslēgt alfabētisko kārtojumu metožu sarakstam."
+
+msgid "Sort"
+msgstr "Šķirot"
+
+msgid "Next Script"
+msgstr "Nākamais skripts"
+
+msgid "Previous Script"
+msgstr "Iepriekšējais skripts"
+
+msgid "Open..."
+msgstr "Atvērt..."
+
+msgid "Save All"
+msgstr "Saglabāt visu"
+
+msgid "Soft Reload Tool Script"
+msgstr "Maigi Pārlādēt Rīka Skriptu"
+
+msgid "Copy Script Path"
+msgstr "Kopēt Skripta Ceļu"
+
+msgid "History Previous"
+msgstr "Vēstures Iepriekšējais"
+
+msgid "History Next"
+msgstr "Vēstures Nākamais"
+
+msgid "Import Theme..."
+msgstr "Importēt Motīvu..."
+
+msgid "Reload Theme"
+msgstr "Pārlādēt Motīvu"
+
+msgid "Close All"
+msgstr "Aizvērt Visu"
+
+msgid "Close Docs"
+msgstr "Aizvērt Dokumentāciju"
+
+msgid "Search the reference documentation."
+msgstr "Meklēt atsauces dokumentāciju."
+
+msgid "Go to previous edited document."
+msgstr "Doties uz iepriekš rediģēto dokumentu."
+
+msgid "Go to next edited document."
+msgstr "Doties uz nākamo rediģēto dokumentu."
+
+msgid "Discard"
+msgstr "Atmest"
+
+msgid "Script Editor"
+msgstr "Skripta redaktors"
+
+msgid "There are unsaved changes in the following built-in script(s):"
+msgstr "Ir nesaglabātas izmaiņas šajā(os) iebūvētajā(os) skriptā(os):"
+
+msgid "Reopen Closed Script"
+msgstr "Atvērt aizvērto skriptu"
+
+msgid "Clear Recent Scripts"
+msgstr "Notīrīt nesenos skriptus"
+
+msgid "Uppercase"
+msgstr "Lielie burti"
+
+msgid "Lowercase"
+msgstr "Mazie burti"
+
+msgid "Capitalize"
+msgstr "Pārvērst lielajos burtos"
+
+msgid "Standard"
+msgstr "Standarts"
+
+msgid "JSON"
+msgstr "JSON"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Connections to method:"
+msgstr "Savienojumi ar metodi:"
+
+msgid "Source"
+msgstr "Avots"
+
+msgid "Target"
+msgstr "Mērķis"
+
+msgid ""
+"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
+msgstr ""
+"Trūkst savienošanas metode '%s' signālam '%s' no mezgla '%s' uz mezglu '%s'."
+
+msgid "[Ignore]"
+msgstr "[Ignorēt]"
+
+msgid ""
+"The resource does not have a valid path because it has not been saved.\n"
+"Please save the scene or resource that contains this resource and try again."
+msgstr ""
+"Resursam nav derīgs ceļš, jo tas nav saglabāts.\n"
+"Lūdzu, saglabājiet ainu vai resursu, kurā atrodas šis resurss, un pamēģiniet "
+"atkal."
+
+msgid "Preloading internal resources is not supported."
+msgstr "Nav atbalsta iepriekšielādēt iekšējos resursus."
+
+msgid "Can't drop nodes because script '%s' does not inherit Node."
+msgstr "Nevar nomest mezglus, jo skripts '%s' nepaplašina Node."
+
+msgid "Emoji & Symbols"
+msgstr "Emocijzīmes un Simboli"
+
+msgid "Pick Color"
+msgstr "Atlasiet Krāsu"
+
+msgid "Go to Function"
+msgstr "Iet uz funkciju"
+
+msgid "Line"
+msgstr "Rinda"
+
+msgid "Syntax Highlighter"
+msgstr "Sintakses Marķētājs"
+
+msgid "Bookmarks"
+msgstr "Grāmatzīmes"
+
+msgid "Go To"
+msgstr "Iet uz"
+
+msgid "Delete Line"
+msgstr "Izdzēst Rindu"
+
+msgid "Unindent"
+msgstr "Noņemt Atkāpi"
+
+msgid "Toggle Comment"
+msgstr "Pārslēgt Komentāru"
+
+msgid "Fold/Unfold Line"
+msgstr "Savērst/Atvērst Rindu"
+
+msgid "Fold All Lines"
+msgstr "Savērst Visas Rindas"
+
+msgid "Unfold All Lines"
+msgstr "Atvērst Visas Rindas"
+
+msgid "Duplicate Selection"
+msgstr "Izveidot Dublikātu Izvēlētajam"
+
+msgid "Evaluate Selection"
+msgstr "Novērtēt izvēli"
+
+msgid "Trim Trailing Whitespace"
+msgstr "Apgriezt Beigu Caurredzamās Rakstzīmes"
+
+msgid "Trim Final Newlines"
+msgstr "Apgriezt Beigu Jaunās Rindiņas"
+
+msgid "Convert Indent to Spaces"
+msgstr "Pārvērst Atkāpes par Atstarpēm"
+
+msgid "Convert Indent to Tabs"
+msgstr "Pārvērst Atkāpes Par TAB"
+
+msgid "Auto Indent"
+msgstr "Automātiski Atkāpt"
+
+msgid "Contextual Help"
+msgstr "Kontekstuālā Palīdzība"
+
+msgid "Toggle Bookmark"
+msgstr "Pārslēgt Grāmatzīmi"
+
+msgid "Go to Next Bookmark"
+msgstr "Doties uz nākamo grāmatzīmi"
+
+msgid "Go to Previous Bookmark"
+msgstr "Doties uz iepriekšējo grāmatzīmi"
+
+msgid "Remove All Bookmarks"
+msgstr "Noņemt visas grāmatzīmes"
+
+msgid "Go to Function..."
+msgstr "Doties uz Funkciju..."
+
+msgid "Go to Line..."
+msgstr "Doties uz Rindu..."
+
+msgid "Lookup Symbol"
+msgstr "Uzmeklēt Simbolu"
+
+msgid "Toggle Breakpoint"
+msgstr "Pārslēgt Pārrāvumpunktu"
+
+msgid "Remove All Breakpoints"
+msgstr "Noņemt Visus Pārrāvumpunktus"
+
+msgid "Go to Next Breakpoint"
+msgstr "Doties uz nākamo pārrāvumpunktu"
+
+msgid "Go to Previous Breakpoint"
+msgstr "Doties uz iepriekšējo pārrāvumpunktu"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Nederīgs darbības nosaukums. Tas nevar būt tukšs vai saturēt '/', ':', '=', "
+"'\\' vai '\"'"
+
+msgid "An action with the name '%s' already exists."
+msgstr "Darbība ar nosaukumu '%s' jau pastāv."
+
+msgid "Action %s"
+msgstr "Darbība %s"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Nevar Atsaukt - Darbība ir tāda pati kā sākotnējā"
+
+msgid "Revert Action"
+msgstr "Atsaukt Darbību"
+
+msgid "Add Event"
+msgstr "Pievienot Notikumu"
+
+msgid "Remove Action"
+msgstr "Noņemt Darbību"
+
+msgid "Cannot Remove Action"
+msgstr "Nevar Noņemt Darbību"
+
+msgid "Edit Event"
+msgstr "Rediģēt Notikumu"
+
+msgid "Remove Event"
+msgstr "Noņemt Notikumu"
+
+msgid "Add New Action"
+msgstr "Pievienot Jaunu Darbību"
+
+msgid "Show Built-in Actions"
+msgstr "Rādīt Iebūvētās Darbības"
+
+msgid "Action Map"
+msgstr "Darbību kartējums"
+
+msgid "Action"
+msgstr "Darbība"
+
+msgid "Deadzone"
+msgstr "Beigtā zona"
+
+msgid "Autoload '%s' already exists!"
+msgstr "Auto-ielāde '%s' jau eksistē!"
+
+msgid "Rename Autoload"
+msgstr "Pārsaukt Auto-ielādi"
+
+msgid "Move Autoload"
+msgstr "Pārvietot Auto-ielādi"
+
+msgid "Remove Autoload"
+msgstr "Izdzēst Auto-ielādi"
+
+msgid "Rearrange Autoloads"
+msgstr "Pārkārtot Auto-ielādes"
+
+msgid "%s is an invalid path. File does not exist."
+msgstr "%s ir nederīgs ceļš. Fails neeksistē."
+
+msgid "%s is an invalid path. Not in resource path (res://)."
+msgstr "%s ir nederīgs ceļš. Nav resursu ceļā (res://)."
+
+msgid "Node Name:"
+msgstr "Mezgla Vārds:"
+
+msgid "Global Variable"
+msgstr "Globāls mainīgais"
+
+msgid "Nodes and Classes:"
+msgstr "Mezgli un klases:"
+
+msgid "File '%s' format is invalid, import aborted."
+msgstr "Faila '%s' formāts ir nepareizs, importēšana atcelta."
+
+msgid "Error saving profile to path: '%s'."
+msgstr "Kļūda saglabājot profilu uz ceļu: '%s'."
+
+msgid "Export Profile"
+msgstr "Eksportēt profilu"
+
+msgid "Filter by Name"
+msgstr "Filtrēt pēc nosaukuma"
+
+msgid "Action Event"
+msgstr "Darbības notikums"
+
+msgid "Clear all search filters."
+msgstr "Notīrīt visus meklēšanas filtrus."
+
+msgid "3D Editor"
+msgstr "3D Redaktors"
+
 msgid "Scene Tree Editing"
 msgstr "Ainas koka rediģēšana"
-
-msgid "Node Dock"
-msgstr "Mezgla doks"
 
 msgid "FileSystem Dock"
 msgstr "Failu sistēmas doks"
@@ -1602,11 +3771,14 @@ msgstr ""
 "Profils '%s' jau eksistē. Vispirms to noņem pirms importēšanas. Importēšana "
 "atcelta."
 
+msgid "Current Profile:"
+msgstr "Pašreizējais profils:"
+
 msgid "Reset to Default"
 msgstr "Atiestatīt uz noklusējumu"
 
-msgid "Current Profile:"
-msgstr "Pašreizējais profils:"
+msgid "Available Profiles:"
+msgstr "Pieejamie Profili:"
 
 msgid "Create Profile"
 msgstr "Izveidot profilu"
@@ -1614,17 +3786,8 @@ msgstr "Izveidot profilu"
 msgid "Remove Profile"
 msgstr "Noņemt profilu"
 
-msgid "Available Profiles:"
-msgstr "Pieejamie Profili:"
-
 msgid "Make Current"
 msgstr "Aktualizēt"
-
-msgid "Import"
-msgstr "Importēt"
-
-msgid "Export"
-msgstr "Eksportēt"
 
 msgid "Configure Selected Profile:"
 msgstr "Konfigurēt izvēlēto profilu:"
@@ -1648,675 +3811,45 @@ msgstr "Importēt profilu(s)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Pārvaldīt redaktora iespēju profilus"
 
-msgid "Save & Restart"
-msgstr "Saglabāt & pārstartēt"
+msgid "General"
+msgstr "Vispārēji"
 
-msgid "ScanSources"
-msgstr "ScanSources / Skenēšanas Avoti"
+msgid "Unicode"
+msgstr "Unicode"
 
-msgid ""
-"There are multiple importers for different types pointing to file %s, import "
-"aborted"
-msgstr ""
-"Ir vairāki importētāji dažādiem tipiem, kas norāda uz failu %s, importēšana "
-"atcelta"
+msgid "Project Settings (project.godot)"
+msgstr "Projekta iestatījumi (project.godot)"
 
-msgid "(Re)Importing Assets"
-msgstr "(Re)Importē vienumus"
+msgid "Input Map"
+msgstr "Ievade"
 
-msgid "Top"
-msgstr "Virsotne"
+msgid "Localization"
+msgstr "Lokalizācija"
 
-msgid "Inherits:"
-msgstr "Manto:"
+msgid "Autoload"
+msgstr "Autoielāde"
 
-msgid "Inherited by:"
-msgstr "Manto uz:"
+msgid "Plugins"
+msgstr "Spraudņi"
 
-msgid "Description"
-msgstr "Apraksts"
+msgid "Import Defaults"
+msgstr "Importēt noklusējumus"
 
-msgid "Online Tutorials"
-msgstr "Online Pamācības"
+msgid "Invalid base path."
+msgstr "Nederīgs bāzes ceļš."
 
-msgid "Properties"
-msgstr "Iestatījumi"
+msgid "No valid shader stages found."
+msgstr "Netika atrasti derīgi ēnotāja posmi."
 
-msgid "overrides %s:"
-msgstr "pārraksta %s:"
-
-msgid "default:"
-msgstr "pēc noklusējuma:"
-
-msgid "Operators"
-msgstr "Operātors"
-
-msgid "Theme Properties"
-msgstr "Motīva iestatījumi"
-
-msgid "Colors"
-msgstr "Krāsas"
-
-msgid "Constants"
-msgstr "Konstantes"
-
-msgid "Fonts"
-msgstr "Fonti"
-
-msgid "Icons"
-msgstr "Ikonas"
-
-msgid "Styles"
-msgstr "Stili"
-
-msgid "Enumerations"
-msgstr "Uzskaites"
-
-msgid "Property Descriptions"
-msgstr "Iestatījumu apraksti"
-
-msgid "(value)"
-msgstr "(vērtība)"
+msgid "Shader stage compiled without errors."
+msgstr "Ēnotāja posms tika kompilēts bez kļūdām."
 
 msgid ""
-"There is currently no description for this property. Please help us by "
-"[color=$color][url=$url]contributing one[/url][/color]!"
+"File structure for '%s' contains unrecoverable errors:\n"
+"\n"
 msgstr ""
-"Pašreiz šim mainīgajam nav apraksta. Lūdzu, palīdzi mums [color=$color]"
-"[url=$url]izveidot to[/url][/color]!"
-
-msgid "Method Descriptions"
-msgstr "Metožu Apraksts"
-
-msgid "%d match."
-msgstr "%d sakritība."
-
-msgid "%d matches."
-msgstr "%d sakritības."
-
-msgid "Search Help"
-msgstr "Meklēt Palīdzību"
-
-msgid "Case Sensitive"
-msgstr "Reģistrjūtīgs"
-
-msgid "Show Hierarchy"
-msgstr "Rādīt Hierarhiju"
-
-msgid "Display All"
-msgstr "Parādīt Visu"
-
-msgid "Classes Only"
-msgstr "Tikai Klases"
-
-msgid "Methods Only"
-msgstr "Tikai Metodes"
-
-msgid "Signals Only"
-msgstr "Tikai Signāli"
-
-msgid "Constants Only"
-msgstr "Tikai Konstantes"
-
-msgid "Properties Only"
-msgstr "Tikai Iestatījumus"
-
-msgid "Theme Properties Only"
-msgstr "Tikai Motīva Iestatījumus"
-
-msgid "Member Type"
-msgstr "Dalībnieka veids"
-
-msgid "Class"
-msgstr "Klase"
-
-msgid "Method"
-msgstr "Metode"
-
-msgid "Signal"
-msgstr "Signāls"
-
-msgid "Constant"
-msgstr "Konstante"
-
-msgid "Property"
-msgstr "Mainīgais"
-
-msgid "Theme Property"
-msgstr "Motīva Mainīgais"
-
-msgid "Property:"
-msgstr "Parametrs:"
-
-msgid "Pinning a value forces it to be saved even if it's equal to the default."
-msgstr ""
-"Vērtības piespraušana liek to saglabāt, pat ja tā ir vienāda ar noklusējuma "
-"vērtību."
-
-msgid "Move Up"
-msgstr "Bīdīt augšup"
-
-msgid "Move Down"
-msgstr "Bīdīt lejup"
-
-msgid "Resize Array"
-msgstr "Mainīt Masīva Lielumu"
-
-msgid "Set %s"
-msgstr "Likt %s"
-
-msgid "Pinned %s"
-msgstr "Piesprausts %s"
-
-msgid "Unpinned %s"
-msgstr "Atsprausts %s"
-
-msgid "Name:"
-msgstr "Nosaukums:"
-
-msgid "Copy Property Path"
-msgstr "Kopēt mainīgā ceļu"
-
-msgid "Thumbnail..."
-msgstr "Sīktēls..."
-
-msgid "Language:"
-msgstr "Valoda:"
-
-msgid "Clear Output"
-msgstr "Notīrīt Izeju"
-
-msgid "Copy Selection"
-msgstr "Kopēt Izvēlēto"
-
-msgid "Unnamed Project"
-msgstr "Nenosaukts Projekts"
-
-msgid ""
-"Spins when the editor window redraws.\n"
-"Update Continuously is enabled, which can increase power usage. Click to "
-"disable it."
-msgstr ""
-"Griežas, kad redaktora logs atjauninas.\n"
-"Atjaunināt konstanti ir iespējots, kas var palielināt jaudas izmantošanu. "
-"Klikšķini, lai atslēgtu."
-
-msgid "Spins when the editor window redraws."
-msgstr "Griežas, kad redaktora logs atjauninas."
-
-msgid "Imported resources can't be saved."
-msgstr "Importētie resursi nevar tikt saglabāti."
-
-msgid "OK"
-msgstr "Labi"
-
-msgid "Error saving resource!"
-msgstr "Kļūda saglabājot resursu!"
-
-msgid ""
-"This resource can't be saved because it does not belong to the edited scene. "
-"Make it unique first."
-msgstr ""
-"Šo resursu nevar saglabāt, jo tas nepieder rediģētajai ainai. Vispirms "
-"uztaisi to unikālu."
-
-msgid "Save Resource As..."
-msgstr "Saglabāt Resursu Kā..."
-
-msgid "Can't open file for writing:"
-msgstr "Nevar atvērt failu rakstīšanai:"
-
-msgid "Requested file format unknown:"
-msgstr "Pieprasītais faila formāts ir nezināms:"
-
-msgid "Error while saving."
-msgstr "Kļūda saglabājot."
-
-msgid "Saving Scene"
-msgstr "Saglabā Ainu"
-
-msgid "Analyzing"
-msgstr "Analizē"
-
-msgid "Creating Thumbnail"
-msgstr "Izveido sīktēlu"
-
-msgid "This operation can't be done without a tree root."
-msgstr "Nevar veikt šo darbību bez koka cilmes."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Nevar saglabāt ainu. Drošivien atkarības (instances vai mantojumi) ir "
-"kļūdainas."
-
-msgid "Save scene before running..."
-msgstr "Saglabā ainu pirms palaišanas..."
-
-msgid "Could not save one or more scenes!"
-msgstr "Nevar saglabāt vienu vai vairākas ainas!"
-
-msgid "Save All Scenes"
-msgstr "Saglabāt Visas Ainas"
-
-msgid "Can't overwrite scene that is still open!"
-msgstr "Nevar pārrakstīt ainu, kas joprojām ir atvērta!"
-
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Nevarēja ielādēt tīklu bibliotēku sapludināšanai!"
-
-msgid "Error saving MeshLibrary!"
-msgstr "Kļūda saglabājot tīkla bibliotēku!"
-
-msgid ""
-"An error occurred while trying to save the editor layout.\n"
-"Make sure the editor's user data path is writable."
-msgstr ""
-"Notika gļūda saglabājot redaktora izkārtojumu.\n"
-"Pārliecinies, ka redaktora lietotāja datu mape ir rakstāma."
-
-msgid ""
-"Default editor layout overridden.\n"
-"To restore the Default layout to its base settings, use the Delete Layout "
-"option and delete the Default layout."
-msgstr ""
-"Noklusējuma redaktora izkārtojums pārrakstīts.\n"
-"Lai atjaunotu noklusējuma izkārtojumu uz bāzes iestatījumiem, izmantojiet "
-"Dzēst izkārtojumu opciju."
-
-msgid "Layout name not found!"
-msgstr "Izkārtojuma nosaukums nav atrasts!"
-
-msgid "Restored the Default layout to its base settings."
-msgstr "Noklusējuma izkārtojums atjaunots uz bāzes iestatījumiem."
-
-msgid ""
-"This resource belongs to a scene that was imported, so it's not editable.\n"
-"Please read the documentation relevant to importing scenes to better "
-"understand this workflow."
-msgstr ""
-"Šis resurss pieder ainai, kas ir importēta, tādēļ to nevar rediģēt.\n"
-"Lūdzu, lasiet dokumentāciju par ainu importēšanu, lai labāk saprastu šo "
-"darbplūsmu."
-
-msgid ""
-"This resource was imported, so it's not editable. Change its settings in the "
-"import panel and then re-import."
-msgstr ""
-"Šis resurss tika importēts, tāpēc to nevar rediģēt. Mainiet tā iestatījumus "
-"importēšanas panelī un pēc tam importējiet atkārtoti."
-
-msgid "Open Base Scene"
-msgstr "Atvērt bāzes ainu"
-
-msgid "Quick Open..."
-msgstr "Ātri Atvērt..."
-
-msgid "Quick Open Scene..."
-msgstr "Ātri atvērt ainu..."
-
-msgid "Quick Open Script..."
-msgstr "ātri atvērt skriptu..."
-
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s vairs neeksistē! Lūdzu norādi jaunu saglabāšanas lokāciju."
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Pašreizējai ainav nav saknes mezgla, bet %d pārveidoti ārējie resursi tika "
-"saglbāti tāpat."
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr ""
-"Lai saglabātu ainu, ir nepieciešams saknes mezgls. Saknes mezglu var "
-"pievienot, izmantojot ainas koka doku."
-
-msgid "Save Scene As..."
-msgstr "Saglabāt ainu kā..."
-
-msgid "Current scene not saved. Open anyway?"
-msgstr "Pašreizējā aina nav saglabāta. Vienalga atvērt ?"
-
-msgid "Can't undo while mouse buttons are pressed."
-msgstr "Nevar atgriezt, kad peles pogas ir nospiestas."
-
-msgid "Nothing to undo."
-msgstr "Nav ko atgriezt."
-
-msgid "Can't redo while mouse buttons are pressed."
-msgstr "Nevar atgriezt, kad peles pogas ir nospiestas."
-
-msgid "Nothing to redo."
-msgstr "Nav ko pārstrādāt."
-
-msgid "Can't reload a scene that was never saved."
-msgstr "Nevar pārlādēt ainu, kas nav bijusi saglabāta."
-
-msgid "Reload Saved Scene"
-msgstr "Pārlādēt saglabāto ainu"
-
-msgid ""
-"The current scene has unsaved changes.\n"
-"Reload the saved scene anyway? This action cannot be undone."
-msgstr ""
-"Pašreizējai ainai ir nesaglabātas izmaiņas.\n"
-"Vai tomēr pārlādēt saglabāto ainu? Šo darbību nevar atsaukt."
-
-msgid "Save & Quit"
-msgstr "Saglabāt & iziet"
-
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Saglabāt izmaiņas sekojošai ainai(-ām) pirms iziešanas ?"
-
-msgid "Save changes to the following scene(s) before opening Project Manager?"
-msgstr ""
-"Saglabāt izmaiņas sekojošai ainai(-ām) pirms projektu menedžera atvēršanas ?"
-
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Šī iespēja in novecojusi. Situācijas, kad atsvaidzināšana ir jāveic piespiedu "
-"kārtā, ir uzskatāma par kļūdu, lūdzu ziņojiet."
-
-msgid "Pick a Main Scene"
-msgstr "Izvēlēties galveno ainu"
-
-msgid "This operation can't be done without a scene."
-msgstr "Šo operāciju nevar veikt bez ainas."
-
-msgid "Export Mesh Library"
-msgstr "Ekportēt tīkla bibliotēku"
-
-msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "Nevar iespējot spraudni: '%s' konfigurācijas parsēšana neizdevās."
-
-msgid "Unable to find script field for addon plugin at: '%s'."
-msgstr "Nevarēja atrast skripta lauku spraudnim: '%s'."
-
-msgid "Unable to load addon script from path: '%s'."
-msgstr "Nevarēja ielādēt spraudņa skriptu no: '%s'."
-
-msgid ""
-"Unable to load addon script from path: '%s'. This might be due to a code "
-"error in that script.\n"
-"Disabling the addon at '%s' to prevent further errors."
-msgstr ""
-"Nevar ielādēt spraudņa skriptu no: '%s'. Tā iemesls var būt kļūda šajā "
-"slripta kodā.\n"
-"Spraudnis '%s' atspējots, lai novērstu tupmākās kļūdas."
-
-msgid ""
-"Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
-"Nevar ielādēt papildinājuma skriptu no ceļa: '%s' Bāzes tips nav EditorPlugin."
-
-msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
-"Nevarēja ielādēt spraudņa skriptu no mapes: '%s' Skripts nav rīka režīmā."
-
-msgid ""
-"Scene '%s' was automatically imported, so it can't be modified.\n"
-"To make changes to it, a new inherited scene can be created."
-msgstr ""
-"Aina '%s' tika importēta automātiski, tāpēc to nevar modificēt.\n"
-"Lai tajā veiktu izmaiņas, izveidojiet jaunu pārmantotu ainu."
-
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Kļūda ielādējot ainu, tai jābūt projekta ceļā. Izmantojiet 'Importēt', lai "
-"atvērtu ainu, pēc tam saglabājiet to projekta ceļā."
-
-msgid "Scene '%s' has broken dependencies:"
-msgstr "Ainai '%s' ir bojātas atkarības:"
-
-msgid "Clear Recent Scenes"
-msgstr "Notīrīt nesenās ainas"
-
-msgid "There is no defined scene to run."
-msgstr "Nav definēta aina, kuru palaist."
-
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Galvenā aina vēl nav definēta, izvēlēties tagad?\n"
-"To var mainīt vēlāk projekta Iestatījumos sadaļā 'aplikācija'."
-
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Izvēlētā aina '%s' nepastāv, izvēlieties derīgu?\n"
-"To var mainīt vēlāk \"Projekta iestatījumi\" sadaļā 'lietojumprogramma'."
-
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Izvēlētā aina '%s' nav ainas fails, izvēlieties derīgu?\n"
-"To var mainīt vēlāk projekta iestatījumos sadaļā 'aplikācija'."
-
-msgid "Save Layout"
-msgstr "Saglabāt izkārtojumu"
-
-msgid "Delete Layout"
-msgstr "Dzēst izkārtojumu"
-
-msgid "Default"
-msgstr "Noklusējuma"
-
-msgid "Save & Close"
-msgstr "Saglabāt & aizvērt"
-
-msgid "%d more files or folders"
-msgstr "%d vēl faili vai mapes"
-
-msgid "%d more folders"
-msgstr "%s vēl mapes"
-
-msgid "%d more files"
-msgstr "%d vēl faili"
-
-msgid "Dock Position"
-msgstr "Doka pozīcija"
-
-msgid "Distraction Free Mode"
-msgstr "Traucējumu brīvs režīms"
-
-msgid "Toggle distraction-free mode."
-msgstr "Pārslēgt traucējumu brīvo režīmu."
-
-msgid "Scene"
-msgstr "Aina"
-
-msgid "Operations with scene files."
-msgstr "Darbības ar ainas failiem."
-
-msgid "Copy Text"
-msgstr "Kopēt Tekstu"
-
-msgid "New Scene"
-msgstr "Jauna aina"
-
-msgid "New Inherited Scene..."
-msgstr "Jauna mantota aina..."
-
-msgid "Open Scene..."
-msgstr "Atvērt ainu..."
-
-msgid "Reopen Closed Scene"
-msgstr "Atvērt Aizvērto Ainu"
-
-msgid "Open Recent"
-msgstr "Atvērt nesenu"
-
-msgid "Save Scene"
-msgstr "Saglabāt ainu"
-
-msgid "MeshLibrary..."
-msgstr "TīklaBibliotēka..."
-
-msgid "Close Scene"
-msgstr "Aizvērt ainu"
-
-msgid "Quit"
-msgstr "Iziet"
-
-msgid "Project"
-msgstr "Projekts"
-
-msgid "Project Settings..."
-msgstr "Projekta iestatjumi..."
-
-msgid "Version Control"
-msgstr "Versiju Kontrole"
-
-msgid "Export..."
-msgstr "Eksportēt..."
-
-msgid "Install Android Build Template..."
-msgstr "Instalēt Android būves šablonu..."
-
-msgid "Open User Data Folder"
-msgstr "Atvērt lietotāja datu mapi"
-
-msgid "Tools"
-msgstr "Rīki"
-
-msgid "Orphan Resource Explorer..."
-msgstr "Bāreņu resursu pārlūks..."
-
-msgid "Reload Current Project"
-msgstr "Pārlādēt pašreizējo projektu"
-
-msgid "Quit to Project List"
-msgstr "Iziet uz projektu sarakstu"
-
-msgid "Editor"
-msgstr "Redaktors"
-
-msgid "Editor Settings..."
-msgstr "Redaktora iestatījumi..."
-
-msgid "Editor Layout"
-msgstr "Redaktora izkārtojums"
-
-msgid "Take Screenshot"
-msgstr "Uzņemt Ekrānšāviņu"
-
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Ekrānšāviņi tiek saglabāti redaktora datu / iestatījumu mapē."
-
-msgid "Toggle Fullscreen"
-msgstr "Pārslēgt Pilnekrānu"
-
-msgid "Open Editor Data/Settings Folder"
-msgstr "Atvērt redaktora datu / iestatījumu mapi"
-
-msgid "Open Editor Data Folder"
-msgstr "Atvērt redaktora datu mapi"
-
-msgid "Open Editor Settings Folder"
-msgstr "Atvērt redaktora iestatījumu mapi"
-
-msgid "Manage Editor Features..."
-msgstr "Pārvaldīt redaktora iespējas..."
-
-msgid "Manage Export Templates..."
-msgstr "Pārvaldīt eksporta šablonus..."
-
-msgid "Help"
-msgstr "Palīdzība"
-
-msgid "Online Documentation"
-msgstr "Tiešsaistes Dokumentācija"
-
-msgid "Questions & Answers"
-msgstr "Jautājumi & Atbildes"
-
-msgid "Community"
-msgstr "Komūna"
-
-msgid "Report a Bug"
-msgstr "Ziņot par kļūmi"
-
-msgid "Suggest a Feature"
-msgstr "Ieteikt Iespēju"
-
-msgid "Send Docs Feedback"
-msgstr "Sūtīt dokumentu atsauksmi"
-
-msgid "About Godot"
-msgstr "Par Godot"
-
-msgid "Support Godot Development"
-msgstr "Atbalstīt Godot izstrādi"
-
-msgid "Forward+"
-msgstr "UzPriekšu+"
-
-msgid "Update Continuously"
-msgstr "Nepārtraukti Atjaunot"
-
-msgid "FileSystem"
-msgstr "Failu sistēma"
-
-msgid "Inspector"
-msgstr "Inspektors"
-
-msgid "Node"
-msgstr "Mezgls"
-
-msgid "Expand Bottom Panel"
-msgstr "Izvērst apakšējo paneli"
-
-msgid "Output"
-msgstr "Izeja"
-
-msgid "Don't Save"
-msgstr "Nesaglabāt"
-
-msgid "Android build template is missing, please install relevant templates."
-msgstr "Trūkst Android būves šablonu, lūdzu, instalējiet atbilstošos šablonus."
-
-msgid "Manage Templates"
-msgstr "Pārvaldīt šablonus"
-
-msgid "Install from file"
-msgstr "Instalēt no faila"
-
-msgid "Show in File Manager"
-msgstr "Parādīt failu menedžerī"
-
-msgid "Import Templates From ZIP File"
-msgstr "Importēr šablonus no ZIP faila"
-
-msgid "Template Package"
-msgstr "Šablona pakotne"
-
-msgid "Export Library"
-msgstr "Eksportēt bibliotēku"
-
-msgid "Apply MeshInstance Transforms"
-msgstr "Pielietot MeshInstances Transformācijas"
-
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?"
-msgstr ""
-"Sekojošie faili ir jaunāki uz diska.\n"
-"Kādu darbību veikt ?"
+"Failu struktūra priekš '%s' satur neatgūstamas kļūdas:\n"
+"\n"
 
 msgid "Reload"
 msgstr "Pārlādēt"
@@ -2324,1174 +3857,41 @@ msgstr "Pārlādēt"
 msgid "Resave"
 msgstr "Pārglabāt"
 
-msgid "Load Errors"
-msgstr "Ielādes kļūdas"
+msgid "Add Output"
+msgstr "Pievienot Izeju"
 
-msgid "Select Current"
-msgstr "Izvēlēties pašreizējo"
+msgid "Add Input Port"
+msgstr "Pievienot Ieejas Pieslēgvietu"
 
-msgid "Open 2D Editor"
-msgstr "Atvērt 2D redaktoru"
+msgid "Add Output Port"
+msgstr "Pievienot Izejas Pieslēgvietu"
 
-msgid "Open 3D Editor"
-msgstr "Atvērt 3D redaktoru"
+msgid "Remove Input Port"
+msgstr "Noņemt ienākošo portu"
 
-msgid "Open Script Editor"
-msgstr "Atvērt skriptu redaktoru"
+msgid "Remove Output Port"
+msgstr "Noņemt izejas portu"
 
-msgid "Open Asset Library"
-msgstr "Atvērt līdzekļu bibliotēku"
+msgid "Create Shader Node"
+msgstr "Izveidot ēnotāja mezglu"
 
-msgid "Open the next Editor"
-msgstr "Atvērt nākamo redaktoru"
+msgid "Color function."
+msgstr "Krāsas funkcija."
 
-msgid "Open the previous Editor"
-msgstr "Atvērt iepriekšējo redaktoru"
+msgid "Grayscale function."
+msgstr "Pelēktoņu funkcija."
 
-msgid "Warning!"
-msgstr "Brīdinājums!"
+msgid "Sepia function."
+msgstr "Sēpija funkcija."
 
-msgid "Main Script:"
-msgstr "Galvenais Skripts:"
+msgid "Transform function."
+msgstr "Transformēšanas funkcija."
 
-msgid "Edit Plugin"
-msgstr "Rediģēt spraudni"
+msgid "Transform constant."
+msgstr "Transformēt konstanti."
 
-msgid "Installed Plugins:"
-msgstr "Instalētie spraudņi:"
-
-msgid "Version"
-msgstr "Versija"
-
-msgid "Author"
-msgstr "Autors"
-
-msgid "Status"
-msgstr "Statuss"
-
-msgid "Edit Text:"
-msgstr "Rediģēt Tekstu:"
-
-msgid "On"
-msgstr "Ieslēgts"
-
-msgid "Bit %d, value %d"
-msgstr "Bits %d, vērtība %d"
-
-msgid "Rename"
-msgstr "Pārsaukt"
-
-msgid "Assign..."
-msgstr "Pievienot..."
-
-msgid "Invalid RID"
-msgstr "Nederīgs RID"
-
-msgid "Remove Item"
-msgstr "Noņemt vienumu"
-
-msgid "New Key:"
-msgstr "Jauna atslēga:"
-
-msgid "New Value:"
-msgstr "Jauna vērtība:"
-
-msgid "Show in FileSystem"
-msgstr "Parādīt failu sistēmā"
-
-msgid "Convert to %s"
-msgstr "Konvertēt uz %s"
-
-msgid "New Script"
-msgstr "Jauns skripts"
-
-msgid "Extend Script"
-msgstr "Pagarināt skriptu"
-
-msgid "Write your logic in the _run() method."
-msgstr "Raksti savu loģiku _run() metodē."
-
-msgid "There is an edited scene already."
-msgstr "Jau ir rediģēta aina."
-
-msgid "General"
-msgstr "Vispārēji"
-
-msgid "Unicode"
-msgstr "Unicode"
-
-msgid "Storing File:"
-msgstr "Faila saglabāšana:"
-
-msgid "No export template found at the expected path:"
-msgstr "Norādītajā ceļā nav atrasta eksporta veidne:"
-
-msgid "Packing"
-msgstr "Pako"
-
-msgid "Custom debug template not found."
-msgstr "Pielāgots atkļūdošanas šablons nav atrasts."
-
-msgid "Custom release template not found."
-msgstr "Pielāgots relīzes šablons nav atrasts."
-
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Pie 32-bitu eksportēšanas, iepakotais PCK nevar būt lielāks par 4GB."
-
-msgid "Uninstall these templates."
-msgstr "Atinstalēt šos šablonus."
-
-msgid "There are no mirrors available."
-msgstr "Spoguļi nav pieejami."
-
-msgid "Retrieving the mirror list..."
-msgstr "Saņem spoguļu sarakstu..."
-
-msgid "Starting the download..."
-msgstr "Sāk lejuplādi..."
-
-msgid "Error requesting URL:"
-msgstr "Kļūda pieprasot URL:"
-
-msgid "Connecting to the mirror..."
-msgstr "Savienojas ar spoguli..."
-
-msgid "Can't resolve the requested address."
-msgstr "Nevar atrisināt pieprasīto adresi."
-
-msgid "Can't connect to the mirror."
-msgstr "Nevar pievienoties spogulim."
-
-msgid "Cannot remove temporary file:"
-msgstr "Nevar noņemt pagaidu failu:"
-
-msgid "Disconnected"
-msgstr "Atvienots"
-
-msgid "Resolving"
-msgstr "Atrisina"
-
-msgid "Connecting..."
-msgstr "Savienojas..."
-
-msgid "Can't Connect"
-msgstr "Nevar Savieoties"
-
-msgid "Connected"
-msgstr "Savienots"
-
-msgid "Requesting..."
-msgstr "Pieprasa..."
-
-msgid "Downloading"
-msgstr "Lejuplādē"
-
-msgid "Importing:"
-msgstr "Importē:"
-
-msgid "Remove templates for the version '%s'?"
-msgstr "Noņemt šablonus versijai '%s'?"
-
-msgid "Uncompressing Android Build Sources"
-msgstr "Atspiež Android būves avotus"
-
-msgid "Export Template Manager"
-msgstr "Eksporta šablonu menedžeris"
-
-msgid "Current Version:"
-msgstr "Pašreizējā Versija:"
-
-msgid "Open Folder"
-msgstr "Atvērt mapi"
-
-msgid "Uninstall"
-msgstr "Atinstalēt"
-
-msgid "Download from:"
-msgstr "Lejuplādēt no:"
-
-msgid "Open in Web Browser"
-msgstr "Atvērt interneta pārlūkā"
-
-msgid "Copy Mirror URL"
-msgstr "Kopēt spoguļa linku"
-
-msgid "Download and Install"
-msgstr "Lejuplādēt un instalēt"
-
-msgid "Official export templates aren't available for development builds."
-msgstr "Oficiālie eksporta šabloni nav pieejami eksperimentālajām būvēm."
-
-msgid "Install from File"
-msgstr "Instalēt no Faila"
-
-msgid "Cancel the download of the templates."
-msgstr "Atcelt šablonu lejuplādi."
-
-msgid "Other Installed Versions:"
-msgstr "Citas instalētās versijas:"
-
-msgid "Select Template File"
-msgstr "Izvēlēties Šablona Failu"
-
-msgid ""
-"The templates will continue to download.\n"
-"You may experience a short editor freeze when they finish."
-msgstr ""
-"Šablonu lejuplādes turpināsies.\n"
-"Jūs varat pieredzēt īslaicīgu redaktora sastingšanu, kad tās tiks pabeigtas."
-
-msgid "Duplicate"
-msgstr "Izveidot dublikātu"
-
-msgid "Options"
-msgstr "Opcijas"
-
-msgid "Manage Export Templates"
-msgstr "Pārvaldīt Eksporta Šablonus"
-
-msgid "Browse"
-msgstr "Pārlūkot"
-
-msgid "Favorites"
-msgstr "Favorīti"
-
-msgid "View items as a grid of thumbnails."
-msgstr "Skatīt vienumus kā režģi ar sīktēliem."
-
-msgid "View items as a list."
-msgstr "Skatīt lietas kā sarakstu."
-
-msgid "Error moving:"
-msgstr "Kļūda parvietojot:"
-
-msgid "Set As Main Scene"
-msgstr "Iestatīt Kā Galveno Ainu"
-
-msgid "Open Scenes"
-msgstr "Atvērt Ainas"
-
-msgid "Add to Favorites"
-msgstr "Pievienot Favorītiem"
-
-msgid "Remove from Favorites"
-msgstr "Noņemt no Favorītiem"
-
-msgid "Reimport"
-msgstr "Reimportēt"
-
-msgid "Open in File Manager"
-msgstr "Atvērt Failu Pārlūkā"
-
-msgid "New Folder..."
-msgstr "Jauna mape..."
-
-msgid "New Scene..."
-msgstr "Jauna Aina..."
-
-msgid "New Script..."
-msgstr "Jauns Skripts..."
-
-msgid "New Resource..."
-msgstr "Jauns Resurss..."
-
-msgid "Copy Path"
-msgstr "Kopēt celiņu"
-
-msgid "Duplicate..."
-msgstr "Dublicēt..."
-
-msgid "Rename..."
-msgstr "Pārsaukt..."
-
-msgid "Find in Files"
-msgstr "Atrast Failos"
-
-msgid "Replace:"
-msgstr "Aizvietot:"
-
-msgid "Find..."
-msgstr "Meklēt..."
-
-msgid "Replace..."
-msgstr "Aizvietot..."
-
-msgid "Replace in Files"
-msgstr "Aizvietot failos"
-
-msgid "Searching..."
-msgstr "Meklē..."
-
-msgid "Invalid group name."
-msgstr "Nederīgs grupas nosaukums."
-
-msgid "Rename Group"
-msgstr "Pārsaukt Grupu"
-
-msgid "Delete Group"
-msgstr "Izdzēst Grupu"
-
-msgid "Groups"
-msgstr "Grupas"
-
-msgid "Empty groups will be automatically removed."
-msgstr "Tukšās grupas tiks automātiski noņemtas."
-
-msgid "Group Editor"
-msgstr "Grupas Redaktors"
-
-msgid "Manage Groups"
-msgstr "Pārvaldīt grupas"
-
-msgid "Move"
-msgstr "Kustināt"
-
-msgid "Please select a base directory first."
-msgstr "Lūdzu vispirms izvēlaties bāzes mapi."
-
-msgid "Choose a Directory"
-msgstr "Izvēlēties Direktoriju"
-
-msgid "Select Current Folder"
-msgstr "Izvēlēties pašreizējo mapi"
-
-msgid "Select This Folder"
-msgstr "Izvēlēties Šo Mapi"
-
-msgid "All Recognized"
-msgstr "Viss atpazīts"
-
-msgid "All Files (*)"
-msgstr "Visi faili (*)"
-
-msgid "Open a File"
-msgstr "Atvērt failu"
-
-msgid "Open File(s)"
-msgstr "Atvērt failu(s)"
-
-msgid "Open a Directory"
-msgstr "Atvērt mapi"
-
-msgid "Open a File or Directory"
-msgstr "Atvērt failu vai mapi"
-
-msgid "Save a File"
-msgstr "Saglabāt failu"
-
-msgid "Go Back"
-msgstr "Doties atpakaļ"
-
-msgid "Go Forward"
-msgstr "Doties tālāk"
-
-msgid "Go Up"
-msgstr "Doties augšup"
-
-msgid "Toggle Hidden Files"
-msgstr "Pārslēgt slēptos failus"
-
-msgid "Toggle Favorite"
-msgstr "Pārslēgt favorītu"
-
-msgid "Toggle Mode"
-msgstr "Pārslēgt režīmu"
-
-msgid "Focus Path"
-msgstr "Fokusa ceļš"
-
-msgid "Move Favorite Up"
-msgstr "Pārvietot favorītu augšup"
-
-msgid "Move Favorite Down"
-msgstr "Pārvietot favorītu lejup"
-
-msgid "Go to previous folder."
-msgstr "Doties uz iepriekšējo mapi."
-
-msgid "Go to next folder."
-msgstr "Doties uz nākamo mapi."
-
-msgid "Go to parent folder."
-msgstr "Atvērt mātes mapi."
-
-msgid "Refresh files."
-msgstr "Atjaunot failus."
-
-msgid "(Un)favorite current folder."
-msgstr "Pievienot/noņemt pašreizējo mapi pie/no favorītiem."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Pārslēgt slēpto failu redzamību."
-
-msgid "Directories & Files:"
-msgstr "Mapes & Faili:"
-
-msgid "Preview:"
-msgstr "Priekškatījums:"
-
-msgid "File:"
-msgstr "Fails:"
-
-msgid "No sub-resources found."
-msgstr "Sub-resursi nav atrasti."
-
-msgid "Open a list of sub-resources."
-msgstr "Atvērt sarakstu ar sub-resursiem."
-
-msgid "Play the project."
-msgstr "Atskaņot projektu."
-
-msgid "Play the edited scene."
-msgstr "Atskaņot rediģēto ainu."
-
-msgid "Quick Run Scene..."
-msgstr "Ātri palaist ainu..."
-
-msgid "Run Project"
-msgstr "Palaist Projektu"
-
-msgid "Play This Scene"
-msgstr "Spēlēt šo ainu"
-
-msgid "Close Tab"
-msgstr "Aizvērt Cilni"
-
-msgid "Undo Close Tab"
-msgstr "Atcelt Cilnes Aizvēršanu"
-
-msgid "Close Other Tabs"
-msgstr "Aizvērt pārējās cilnes"
-
-msgid "Close Tabs to the Right"
-msgstr "Aizvērt cilnes pa labi"
-
-msgid "Close All Tabs"
-msgstr "Aizvērt Visas Cilnes"
-
-msgid "New Window"
-msgstr "Jauns logs"
-
-msgid "Add a new scene."
-msgstr "Pievienot jaunu ainu."
-
-msgid "(Connecting From)"
-msgstr "(Savienojas No)"
-
-msgid "Saving..."
-msgstr "Saglabā..."
-
-msgid "2D"
-msgstr "2D"
-
-msgid "3D"
-msgstr "3D"
-
-msgid "%d Files"
-msgstr "%d Failā"
-
-msgid "Clear Default for '%s'"
-msgstr "Notīrtīt noklusējumu priekš '%s'"
-
-msgid "Preset"
-msgstr "Sagatave"
-
-msgid "Raw"
-msgstr "Jēls"
-
-msgid "Copy Properties"
-msgstr "Kopēt iestatījumus"
-
-msgid "Paste Properties"
-msgstr "Ielīmēt iestatījumus"
-
-msgid "Save As..."
-msgstr "Saglabāt kā..."
-
-msgid "Open documentation for this object."
-msgstr "Atvērt dokumentāciju šim objektam."
-
-msgid "Manage object properties."
-msgstr "Pārvaldīt objekta rekvizītus."
-
-msgid "Add %d Translations"
-msgstr "Pievienot %d tulkojumus"
-
-msgid "Select a single node to edit its signals and groups."
-msgstr "Izvēlies kādu mezglu, lai rediģētu tā signālus un grupas."
-
-msgid "Update"
-msgstr "Atjaunināt"
-
-msgid "Author:"
-msgstr "Autors:"
-
-msgid "Version:"
-msgstr "Versija:"
-
-msgid "Create Polygon"
-msgstr "Izveidot Daudzstūri"
-
-msgid "Create points."
-msgstr "Izveidot punktus."
-
-msgid "Edit Polygon"
-msgstr "Rediģēt Daudzstūri"
-
-msgid "Load..."
-msgstr "Ielādē..."
-
-msgid "Add Node Point"
-msgstr "Pievienot Mezgla Punktu"
-
-msgid "Add Animation Point"
-msgstr "Pievienot Animācijas Punktu"
-
-msgid "Blend:"
-msgstr "Sapludināt:"
-
-msgid "Open Animation Node"
-msgstr "Atvērt Animācijas Mezglu"
-
-msgid "Add Triangle"
-msgstr "Pievienot Trijstūri"
-
-msgid "Nodes Connected"
-msgstr "Mezgli Savienoti"
-
-msgid "Set Animation"
-msgstr "Iestatīt Animāciju"
-
-msgid "Delete Node"
-msgstr "Izdzēst Mezglu"
-
-msgid "Delete Node(s)"
-msgstr "Dzēst mezglu(s)"
-
-msgid "Change Filter"
-msgstr "Nomainīt Filtru"
-
-msgid "Anim Clips"
-msgstr "Anim. Klipi"
-
-msgid "Audio Clips"
-msgstr "Audio Klipi"
-
-msgid "Functions"
-msgstr "Funkcijas"
-
-msgid "Enable Filtering"
-msgstr "Ieslēgt Filtrēšanu"
-
-msgid "Delete Animation '%s'?"
-msgstr "Vai Izdzēst Animāciju '%s'?"
-
-msgid "Invalid animation name!"
-msgstr "Nederīgs animācijas nosaukums!"
-
-msgid "Animation"
-msgstr "Animācija"
-
-msgid "Directions"
-msgstr "Virzieni"
-
-msgid "Past"
-msgstr "Pagātne"
-
-msgid "Future"
-msgstr "Nākotne"
-
-msgid "Depth"
-msgstr "Dziļums"
-
-msgid "1 step"
-msgstr "1 solis"
-
-msgid "Error!"
-msgstr "Kļūda!"
-
-msgid "Transition exists!"
-msgstr "Pāreja eksistē!"
-
-msgid "Add Transition"
-msgstr "Pievienot Pāreju"
-
-msgid "Sync"
-msgstr "Sinhronizācija"
-
-msgid "Node Removed"
-msgstr "Mezgls Noņemts"
-
-msgid "Create new nodes."
-msgstr "Izveidot jaunus mezglus."
-
-msgid "Connect nodes."
-msgstr "Savienot mezglus."
-
-msgid "Remove selected node or transition."
-msgstr "Noņemt izvēlēto mezglu vai pāreju."
-
-msgid "Play Mode:"
-msgstr "Atskaņošanas Režīms:"
-
-msgid "Contents:"
-msgstr "Saturs:"
-
-msgid "Download"
-msgstr "Lejuplādēt"
-
-msgid "Cannot save response to:"
-msgstr "Nevar saglabāt atbildi uz:"
-
-msgid "Failed:"
-msgstr "Neizdevās:"
-
-msgid "Expected:"
-msgstr "Sagaidāms:"
-
-msgid "Got:"
-msgstr "Saņemts:"
-
-msgid "Resolving..."
-msgstr "Atrisina.."
-
-msgid "Idle"
-msgstr "Dīkstāve"
-
-msgid "Install..."
-msgstr "Instalēt..."
-
-msgid "Retry"
-msgstr "Mēģināt vēlreiz"
-
-msgid "License (A-Z)"
-msgstr "Licence (A-Z)"
-
-msgid "License (Z-A)"
-msgstr "Licence (Z-A)"
-
-msgid "Official"
-msgstr "Oficiāls"
-
-msgid "Testing"
-msgstr "Testē"
-
-msgid "Loading..."
-msgstr "Ielādēt..."
-
-msgid "All"
-msgstr "Visi"
-
-msgid "Sort:"
-msgstr "Kārtot:"
-
-msgid "Category:"
-msgstr "Kategorija:"
-
-msgid "Site:"
-msgstr "Lapa:"
-
-msgid "Preview"
-msgstr "Priekšskats"
-
-msgid "Scale Step:"
-msgstr "Mainīt Soļa Mērogu:"
-
-msgid "Create Vertical Guide"
-msgstr "Izveidot Vertikālu Vadotni"
-
-msgid "Remove Vertical Guide"
-msgstr "Noņemt Vertikālo Vadotni"
-
-msgid "Create Horizontal Guide"
-msgstr "Izveidot Horizontālu Vadotni"
-
-msgid "Remove Horizontal Guide"
-msgstr "Noņemt Horizontālo Vadotni"
-
-msgid "Grouped"
-msgstr "Grupēts"
-
-msgid "Group Selected"
-msgstr "Grupa Izvēlēta"
-
-msgid "Ungroup Selected"
-msgstr "Pārtraukt Izvēlētā Grupēšanu"
-
-msgid "Clear Guides"
-msgstr "Notīrīt Vadotnes"
-
-msgid "Zoom to 25%"
-msgstr "Tuvināt uz 25%"
-
-msgid "Zoom to 50%"
-msgstr "Tuvināt uz 50%"
-
-msgid "Zoom to 100%"
-msgstr "Tuvināt uz 100%"
-
-msgid "Zoom to 200%"
-msgstr "Tuvināt uz 200%"
-
-msgid "Zoom to 400%"
-msgstr "Tuvināt uz 400%"
-
-msgid "Zoom to 800%"
-msgstr "Tuvināt uz 800%"
-
-msgid "Drag: Rotate selected node around pivot."
-msgstr "Bīdīt: Rotē izvēlēto mezglu apkārt asij."
-
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Bīdīt: Pārvietot izvēlēto mezglu."
-
-msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Bīdīt: Pielāgo mērogu izvēlētajam mezglam."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Uzlikt izvēlētā mezgla centra pozīciju."
-
-msgid "Scale Mode"
-msgstr "Mēroga Režīms"
-
-msgid "Ruler Mode"
-msgstr "Lineāla Režīms"
-
-msgid "Lock Selected Node(s)"
-msgstr "Aizslēgt izvēlēto mezglu(s)"
-
-msgid "Unlock Selected Node(s)"
-msgstr "Atslēgt izvēlēto muzglu(s)"
-
-msgid "View"
-msgstr "Skatīt"
-
-msgid "Grid"
-msgstr "Režģis"
-
-msgid "Auto Insert Key"
-msgstr "Automātiski Ievietot Atslēgu"
-
-msgid "Animation Key and Pose Options"
-msgstr "Animācijas Atslēga un Pozas Iestatījumi"
-
-msgid "Clear Pose"
-msgstr "Notīrīt pozu"
-
-msgid "Change Default Type"
-msgstr "Nomainīt Noklusējuma Tipu"
-
-msgid "Left Wide"
-msgstr "Pa Kreisi, Plašs"
-
-msgid "Right Wide"
-msgstr "Pa labi, Plašs"
-
-msgid "Full Rect"
-msgstr "Pilns logs"
-
-msgid "Deploy with Remote Debug"
-msgstr "Palaist ar tālvadības atkļūdošanu"
-
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"Kad šī opcija ir ieslēgta, izmantojot viena klikšķa palaišanu, tā liks spēlei "
-"savienoties ar šī datora IP adresi, lai pašreizējais projekts varētu tik "
-"atkļūdots attālināti.\n"
-"Šī opcija ir paredzēta izmantošanai tālvadības atkļūdošanai (parasti ar "
-"mobilu ierīci).\n"
-"Jums tā nav jāieslēdz, lai izmantotu GDScript atkļūdotāju lokāli."
-
-msgid "Small Deploy with Network Filesystem"
-msgstr "Mazā palaišana ar tīkla failu sistēmu"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"Kad šī opcija ir ieslēgta, izmantojot viena klikšķa palaišanu uz Android, tā "
-"eksportēs tikai spēles palaišanas failu bez projekta datiem.\n"
-"Projekta failu sistēma tiks nodrošināta attālināti, caur internetu.\n"
-"Uz Android, palaišana izmantos USB kabeli, lai nodrošinātu ātrāku "
-"izpildījumu. Šī opcija paātrina projektu testēšanu ar milzīgiem resursiem."
-
-msgid "Visible Collision Shapes"
-msgstr "Redzamas sadursmes formas"
-
-msgid "Visible Navigation"
-msgstr "Redzama navigācija"
-
-msgid "Synchronize Scene Changes"
-msgstr "Sinhronizēt ainas izmaiņas"
-
-msgid "Synchronize Script Changes"
-msgstr "Sinhronizēt skripta izmaiņas"
-
-msgid " - Variation"
-msgstr " - Dažādība"
-
-msgid "Convert to CPUParticles2D"
-msgstr "Konvertēt uz CPUParticles2D"
-
-msgid "Select lightmap bake file:"
-msgstr "Izvēlēties gaismas kartes cepšanas failu:"
-
-msgid "Create Simplified Convex Shape"
-msgstr "Izveidot vienkāršotu izliektu formu"
-
-msgid "Create Single Convex Shape"
-msgstr "Izveidot Vienu Izliektu Formu"
-
-msgid "Create Multiple Convex Shapes"
-msgstr "Izveidot Vairākas Izliektas Formas"
-
-msgid "Create Single Convex Collision Sibling"
-msgstr "Izveidot Vienu Izliektu Sadursmes Uzmavu"
-
-msgid "Create Simplified Convex Collision Sibling"
-msgstr "Izveidot vienkāršotu izliektu sadursmes radinieku"
-
-msgid "Create Multiple Convex Collision Siblings"
-msgstr "Izveidot Vairākas Izliektas Sadursmes Uzmavas"
-
-msgid "X-Axis"
-msgstr "X ass"
-
-msgid "Y-Axis"
-msgstr "Y ass"
-
-msgid "Z-Axis"
-msgstr "Z ass"
-
-msgid "Amount:"
-msgstr "Daudzums:"
-
-msgid "Populate"
-msgstr "Apdzīvot"
-
-msgid "Perspective"
-msgstr "Perspektīva"
-
-msgid "Enable Doppler"
-msgstr "Iespējot doppler"
-
-msgid "Pre"
-msgstr "iepriekš"
-
-msgid "Add Custom Polygon"
-msgstr "Pievienot pielāgotu daudzstūri"
-
-msgid "Remove Custom Polygon"
-msgstr "Noņemt pielāgotu daudzstūri"
-
-msgid "Transform Polygon"
-msgstr "Transformēt daudzstūri"
-
-msgid "Polygons"
-msgstr "Daudzstūri"
-
-msgid "Copy UV to Polygon"
-msgstr "Kopēt UV uz daudzstūra"
-
-msgid "Create Polygon3D"
-msgstr "Izveidot Daudzstūris3D"
-
-msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "Nevar atvērt '%s'. Fails ir pārvietots vai dzēsts."
-
-msgid "Close and save changes?"
-msgstr "Aizvērt un saglabāt izmaiņas?"
-
-msgid "Error saving file!"
-msgstr "Kļūda saglabājot failu!"
-
-msgid "Error while saving theme."
-msgstr "Kļūda saglabājot motīvu."
-
-msgid "Error Saving"
-msgstr "Kļūda Saglabājot"
-
-msgid "Error importing theme."
-msgstr "Kļūda importējot motīvu."
-
-msgid "Error Importing"
-msgstr "Kļūda Importējot"
-
-msgid "New Text File..."
-msgstr "Jauns teksta fails..."
-
-msgid "Open File"
-msgstr "Atvērt failu"
-
-msgid "Save File As..."
-msgstr "Saglabāt Failu Kā..."
-
-msgid "Save Theme As..."
-msgstr "Saglabāt motīvu kā..."
-
-msgid "Find Next"
-msgstr "Atrast Nākamo"
-
-msgid "Sort"
-msgstr "Šķirot"
-
-msgid "Next Script"
-msgstr "Nākamais skripts"
-
-msgid "Previous Script"
-msgstr "Iepriekšējais skripts"
-
-msgid "File"
-msgstr "Fails"
-
-msgid "Open..."
-msgstr "Atvērt..."
-
-msgid "Reopen Closed Script"
-msgstr "Atvērt aizvērto skriptu"
-
-msgid "Save All"
-msgstr "Saglabāt visu"
-
-msgid "Save Theme"
-msgstr "Saglabāt motīvu"
-
-msgid "Close All"
-msgstr "Aizvērt Visu"
-
-msgid "Run"
-msgstr "Palaist"
-
-msgid "Search"
-msgstr "Meklēt"
-
-msgid "Online Docs"
-msgstr "Tiešsaistes Dokumenti"
-
-msgid "Open Godot online documentation."
-msgstr "Atvērt Godot tiešsaistes dokumentāciju."
-
-msgid "Discard"
-msgstr "Atmest"
-
-msgid "Search Results"
-msgstr "Meklēšanas Rezultāti"
-
-msgid "Clear Recent Scripts"
-msgstr "Notīrīt nesenos skriptus"
-
-msgid "Standard"
-msgstr "Standarts"
-
-msgid "Source"
-msgstr "Avots"
-
-msgid ""
-"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr ""
-"Trūkst savienošanas metode '%s' signālam '%s' no mezgla '%s' uz mezglu '%s'."
-
-msgid "[Ignore]"
-msgstr "[Ignorēt]"
-
-msgid "Line"
-msgstr "Rinda"
-
-msgid "Go to Function"
-msgstr "Iet uz funkciju"
-
-msgid "Bookmarks"
-msgstr "Grāmatzīmes"
-
-msgid "Go To"
-msgstr "Iet uz"
-
-msgid "Evaluate Selection"
-msgstr "Novērtēt izvēli"
-
-msgid "Go to Next Bookmark"
-msgstr "Doties uz nākamo grāmatzīmi"
-
-msgid "Go to Previous Bookmark"
-msgstr "Doties uz iepriekšējo grāmatzīmi"
-
-msgid "Remove All Bookmarks"
-msgstr "Noņemt visas grāmatzīmes"
-
-msgid "Go to Function..."
-msgstr "Doties uz Funkciju..."
-
-msgid "Go to Line..."
-msgstr "Doties uz Rindu..."
-
-msgid "Go to Next Breakpoint"
-msgstr "Doties uz nākamo pārrāvumpunktu"
-
-msgid "Go to Previous Breakpoint"
-msgstr "Doties uz iepriekšējo pārrāvumpunktu"
-
-msgid "Reset to Rest Pose"
-msgstr "Atiestatīt uz atpūtas pozu"
-
-msgid "Create Polygon2D"
-msgstr "Izveidot Polygon2D"
-
-msgid "Create CollisionPolygon2D"
-msgstr "Izveidot CollisionPolygon2D"
-
-msgid "CollisionPolygon2D Preview"
-msgstr "CollisionPolygon2D priekšskatījums"
-
-msgid "Create LightOccluder2D"
-msgstr "Izveidot LightOccluder2D"
-
-msgid "LightOccluder2D Preview"
-msgstr "LightOccluder2D priekšskatījums"
-
-msgid "Convert to Polygon2D"
-msgstr "Konvertēt uz Polygon2D"
-
-msgid "Create CollisionPolygon2D Sibling"
-msgstr "Izveidot CollisionPolygon2D radinieku"
-
-msgid "No Frames Selected"
-msgstr "Nav izvēlēti kadri"
-
-msgid "Animations:"
-msgstr "Animācijas:"
-
-msgid "Animation Frames:"
-msgstr "Animācijas Kadri:"
-
-msgid "Zoom Reset"
-msgstr "Atiestatīt Tuvinājumu"
-
-msgid "Size"
-msgstr "Izmērs"
-
-msgid "Separation:"
-msgstr "Atdalījums:"
-
-msgid "Importing Theme Items"
-msgstr "Tēmas elementu importēšana"
-
-msgid "Updating the editor"
-msgstr "Atjaunina redaktoru"
-
-msgid "Select all Theme items."
-msgstr "Atlasiet visus motīvu vienumus."
-
-msgid "Deselect All"
-msgstr "Atcelt visu atlasi"
-
-msgid "Import Selected"
-msgstr "Importēt izvēlēto"
-
-msgid "Remove All Color Items"
-msgstr "Noņemt visas krāsas vienības"
-
-msgid "Rename Item"
-msgstr "Noņemt vienību"
-
-msgid "Remove All Font Items"
-msgstr "Noņemt visus fontu vienumus"
-
-msgid "Remove All Icon Items"
-msgstr "Noņemt visus ikonu vienumus"
-
-msgid "Add Color Item"
-msgstr "Pievienot krāsas vienumu"
-
-msgid "Add Constant Item"
-msgstr "Pievienot konstantes vienumu"
-
-msgid "Add Font Item"
-msgstr "Pievienot fonta vienumu"
-
-msgid "Add Icon Item"
-msgstr "Pievienot ikonas vienumu"
-
-msgid "Edit Items"
-msgstr "Rediģēt vienumus"
-
-msgid "Remove Items:"
-msgstr "Noņemt vienumus:"
-
-msgid "Remove Custom Items"
-msgstr "Noņemt pielāgotos vienumus"
-
-msgid "Old Name:"
-msgstr "Vecais vārds:"
-
-msgid "Import Items"
-msgstr "Importēt vienumus"
-
-msgid "Default Theme"
-msgstr "Noklusējuma motīvs"
-
-msgid "Editor Theme"
-msgstr "Redaktora motīvs"
-
-msgid "Select Another Theme Resource:"
-msgstr "Izvēlēties citu motīva resursu:"
-
-msgid "Type name is empty!"
-msgstr "Tipa nosaukums ir tukšs!"
-
-msgid "Cancel Item Rename"
-msgstr "Atcelt pārsaukšanu"
-
-msgid "Add Type"
-msgstr "Pievienot tipu"
-
-msgid "Show Default"
-msgstr "Rādīt noklusējumu"
-
-msgid "Theme:"
-msgstr "Motīvs:"
-
-msgid "Add Preview"
-msgstr "Pievienot priekšskatījumu"
-
-msgid "Select UI Scene:"
-msgstr "Izvēlēties UI ainu:"
-
-msgid "Disabled Button"
-msgstr "Atspējota poga"
-
-msgid "Disabled Item"
-msgstr "Atspējots vienums"
-
-msgid "Has"
-msgstr "Satur"
-
-msgid "Many"
-msgstr "Daudz"
-
-msgid "Disabled LineEdit"
-msgstr "Atspējota LineEdit"
-
-msgid "Has,Many,Options"
-msgstr "Ir,Daudz,Opcijas"
-
-msgid "Physics"
-msgstr "Fizika"
-
-msgid "Yes"
-msgstr "Jā"
-
-msgid "Error"
-msgstr "Kļūda"
+msgid "Vector function."
+msgstr "Vektora funkcija."
 
 msgid "Staged Changes"
 msgstr "Soļu izmaiņas"
@@ -3501,6 +3901,9 @@ msgstr "Neiestudētas izmaiņas"
 
 msgid "Commit:"
 msgstr "Izdarīt:"
+
+msgid "File:"
+msgstr "Fails:"
 
 msgid "SSH Passphrase"
 msgstr "SSH Parole"
@@ -3538,254 +3941,6 @@ msgstr "Tipa maiņa"
 msgid "View:"
 msgstr "Skatīt:"
 
-msgid "Add Output"
-msgstr "Pievienot Izeju"
-
-msgid "Add Input Port"
-msgstr "Pievienot Ieejas Pieslēgvietu"
-
-msgid "Add Output Port"
-msgstr "Pievienot Izejas Pieslēgvietu"
-
-msgid "Remove Input Port"
-msgstr "Noņemt ienākošo portu"
-
-msgid "Remove Output Port"
-msgstr "Noņemt izejas portu"
-
-msgid "Node(s) Moved"
-msgstr "Mezgls(-i) pārvietots(-i)"
-
-msgid "Create Shader Node"
-msgstr "Izveidot ēnotāja mezglu"
-
-msgid "Color function."
-msgstr "Krāsas funkcija."
-
-msgid "Grayscale function."
-msgstr "Pelēktoņu funkcija."
-
-msgid "Sepia function."
-msgstr "Sēpija funkcija."
-
-msgid "Transform function."
-msgstr "Transformēšanas funkcija."
-
-msgid "Transform constant."
-msgstr "Transformēt konstanti."
-
-msgid "Vector function."
-msgstr "Vektora funkcija."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Kļūme atverot paketes failu (tā nav ZIP formātā)."
-
-msgid "New Game Project"
-msgstr "Jauns spēles projekts"
-
-msgid "Invalid project name."
-msgstr "Nederīgs projekta nosaukums."
-
-msgid "Error opening package file, not in ZIP format."
-msgstr "Kļūda atverot failu arhīvu, nav ZIP formātā."
-
-msgid "The following files failed extraction from package:"
-msgstr "Sekojošie faili netika izvilkti no paketes:"
-
-msgid "Package installed successfully!"
-msgstr "Pakete instalēta sekmīgi!"
-
-msgid "Rename Project"
-msgstr "Pārsaukt Projektu"
-
-msgid "Install & Edit"
-msgstr "Instalēt & Rediģēt"
-
-msgid "Project Path:"
-msgstr "Projekta ceļš:"
-
-msgid "Project Installation Path:"
-msgstr "Projekta instalācijas ceļš:"
-
-msgid "Local Projects"
-msgstr "Lokālie projekti"
-
-msgid "Asset Library Projects"
-msgstr "Līdzekļu bibliotēkas projekti"
-
-msgid "Remove this project from the list?"
-msgstr "Noņemt šo projektu no saraksta?"
-
-msgid "New Project"
-msgstr "Jauns projekts"
-
-msgid "Import Project"
-msgstr "Importēt Projektu"
-
-msgid "Scan"
-msgstr "Skenēt"
-
-msgid "Scan Projects"
-msgstr "Skenēt Projektu"
-
-msgid "Loading, please wait..."
-msgstr "Ielādē, lūdzu uzgaidi..."
-
-msgid "Edit Project"
-msgstr "Rediģēt Projektu"
-
-msgid "Remove Project"
-msgstr "Noņemt Projektu"
-
-msgid "Remove Missing"
-msgstr "Noņemt trūkstošo"
-
-msgid "About"
-msgstr "Par"
-
-msgid "Restart Now"
-msgstr "Restartēt tagad"
-
-msgid "Select a Folder to Scan"
-msgstr "Norādīt mapi kuru skenēt"
-
-msgid "Remove All"
-msgstr "Noņemt visu"
-
-msgid "Also delete project contents (no undo!)"
-msgstr "Dzēst projekta saturu (nevar atsaukt)"
-
-msgid "Can't run project"
-msgstr "Nevar palaist projektu"
-
-msgid ""
-"You currently don't have any projects.\n"
-"Would you like to explore official example projects in the Asset Library?"
-msgstr ""
-"Jums pašreiz nav neviena projekta.\n"
-"Vai vēlaties skatīt oficiālos paraugu projektus Līdzekļu bibliotēkā ?"
-
-msgid "Project Settings (project.godot)"
-msgstr "Projekta iestatījumi (project.godot)"
-
-msgid "Input Map"
-msgstr "Ievade"
-
-msgid "Localization"
-msgstr "Lokalizācija"
-
-msgid "Autoload"
-msgstr "Autoielāde"
-
-msgid "Plugins"
-msgstr "Spraudņi"
-
-msgid "Import Defaults"
-msgstr "Importēt noklusējumus"
-
-msgid "Step"
-msgstr "Solis"
-
-msgid "Reset"
-msgstr "Atiestatīt"
-
-msgid "At character %s"
-msgstr "Pie rakstzīmes %s"
-
-msgid "2D Scene"
-msgstr "2D Aina"
-
-msgid "3D Scene"
-msgstr "3D Aina"
-
-msgid "User Interface"
-msgstr "Lietotāja interfeiss"
-
-msgid "Error loading scene from %s"
-msgstr "Kļūda ielādējot ainu no %s"
-
-msgid "Detach Script"
-msgstr "Atvienot skriptu"
-
-msgid "Delete %d nodes and any children?"
-msgstr "Dzēst %d mezglus un to bērnus?"
-
-msgid "Delete %d nodes?"
-msgstr "Izdzēst %d mezglus?"
-
-msgid "Delete the root node \"%s\"?"
-msgstr "Dzēst saknes mezglu \"%s\"?"
-
-msgid "Delete node \"%s\" and its children?"
-msgstr "Dzēst mezglu \"%s\" un tā bērnus?"
-
-msgid "Delete node \"%s\"?"
-msgstr "Izdzēst mezglu \"%s\"?"
-
-msgid "Save New Scene As..."
-msgstr "Saglabāt jaunu ainu kā..."
-
-msgid "Create Root Node:"
-msgstr "Izveidot Cilmes Mezglu:"
-
-msgid "Other Node"
-msgstr "Cits mezgls"
-
-msgid "Attach Script"
-msgstr "Pievienot skriptu"
-
-msgid "Cut Node(s)"
-msgstr "Izgriezt mezglu(s)"
-
-msgid "Change type of node(s)"
-msgstr "Mezgla(-u) tipa maiņa"
-
-msgid "Reparent to New Node"
-msgstr "Pakļaut zem jauna mezgla"
-
-msgid "Add/Create a New Node."
-msgstr "Pievienot/Izveidot Jaunu Mezglu."
-
-msgid "Attach a new or existing script to the selected node."
-msgstr "Pievienot jaunu vai eksistējošu skriptu izvēlētajam mezglam."
-
-msgid "Path is empty."
-msgstr "Ceļš nav definēts."
-
-msgid "Filename is empty."
-msgstr "Faila Nosaukums nav definēts."
-
-msgid "Invalid extension."
-msgstr "Nederīgs paplašinājums."
-
-msgid "Template:"
-msgstr "Šablons:"
-
-msgid "Invalid path."
-msgstr "Nederīgs ceļš."
-
-msgid "Will load an existing script file."
-msgstr "Ielādēs eksistējošu skriptu."
-
-msgid "Script path/name is valid."
-msgstr "Skripta ceļš/nosaukums ir derīgs."
-
-msgid "Will create a new script file."
-msgstr "Izveidos jaunu skripta failu."
-
-msgid "Built-in Script:"
-msgstr "Iebūvētais skripts:"
-
-msgid "Attach Node Script"
-msgstr "Pievienot mezgla skriptu"
-
-msgid "Invalid base path."
-msgstr "Nederīgs bāzes ceļš."
-
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"Nepareizs argumenta tips convert() izsaukšanai, lietojiet TYPE_* konstantes."
-
 msgid "GridMap Fill Selection"
 msgstr "Režģkartes pildīšanas izvēle"
 
@@ -3795,20 +3950,14 @@ msgstr "Režģkartes ielīmēšanas izvēle"
 msgid "GridMap Selection"
 msgstr "Režģkartes izvēle"
 
-msgid "Paste Selects"
-msgstr "Ielīmēt izvēlnes"
-
-msgid "Cut Selection"
-msgstr "Griezt izvēlēto"
-
-msgid "Fill Selection"
-msgstr "Aizpildīt izvēlni"
-
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nepietiekams skaits baitu lai dekodētu baitus vai nepareizs formāts."
 
 msgid "%s/s"
 msgstr "%s/s"
+
+msgid "Node"
+msgstr "Mezgls"
 
 msgid "Incoming RPC"
 msgstr "Ienākošs RPC"
@@ -3838,9 +3987,6 @@ msgstr ""
 msgid "Adding files..."
 msgstr "Failu pievienošana..."
 
-msgid "Invalid Identifier:"
-msgstr "Nederīgs Identifikators:"
-
 msgid "Invalid bundle identifier:"
 msgstr "Nederīgs bunduļa identifikators:"
 
@@ -3850,26 +3996,11 @@ msgstr "Animācija netika atrasta: '%s'"
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nekas nav savienots ar ieeju '%s' mezglam '%s'."
 
-msgid "Add current color as a preset."
-msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
-
-msgid "Alert!"
-msgstr "Brīdinājums!"
-
-msgid "Please Confirm..."
-msgstr "Lūdzu apstipriniet..."
-
-msgid "(Other)"
-msgstr "(Cits(i))"
-
 msgid "Invalid source for preview."
 msgstr "Nederīgs avots priekšskatījumam."
 
 msgid "Invalid source for shader."
 msgstr "Nederīgs fēnotāja avots."
-
-msgid "Filter"
-msgstr "Filtrēt"
 
 msgid "Repeat"
 msgstr "Atkārtot"

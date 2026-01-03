@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationAprilTag" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for April tag markers.
+	</brief_description>
+	<description>
+		Configuration header for April tag markers. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect April tags.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns the components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="april_dict" type="int" setter="set_april_dict" getter="get_april_dict" enum="OpenXRSpatialCapabilityConfigurationAprilTag.AprilTagDict" default="4">
+			Dictionary to use to decode April tags.
+			[b]Note:[/b] Must be set before using this configuration to create a spatial context.
+		</member>
+	</members>
+	<constants>
+		<constant name="APRIL_TAG_DICT_16H5" value="1" enum="AprilTagDict">
+			4 by 4 bits, minimum Hamming distance between any two codes = 5, 30 codes.
+		</constant>
+		<constant name="APRIL_TAG_DICT_25H9" value="2" enum="AprilTagDict">
+			5 by 5 bits, minimum Hamming distance between any two codes = 9, 35 codes.
+		</constant>
+		<constant name="APRIL_TAG_DICT_36H10" value="3" enum="AprilTagDict">
+			 6 by 6 bits, minimum Hamming distance between any two codes = 10, 2320 codes.
+		</constant>
+		<constant name="APRIL_TAG_DICT_36H11" value="4" enum="AprilTagDict">
+			6 by 6 bits, minimum Hamming distance between any two codes = 11, 587 codes.
+		</constant>
+	</constants>
+</class>

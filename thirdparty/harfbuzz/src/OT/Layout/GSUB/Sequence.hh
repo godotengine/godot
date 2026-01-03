@@ -115,7 +115,7 @@ struct Sequence
 
       for (unsigned i = c->buffer->idx - count; i < c->buffer->idx; i++)
       {
-	if (buf < p)
+	if (buf < p && sizeof(buf) - 1u > unsigned (p - buf))
 	  *p++ = ',';
 	snprintf (p, sizeof(buf) - (p - buf), "%u", i);
 	p += strlen(p);

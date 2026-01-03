@@ -1,51 +1,78 @@
 name: 🌐 Web Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no
-  EM_VERSION: 3.1.45
-  EM_CACHE_FOLDER: "emsdk-cache"
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-web
-  cancel-in-progress: true
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    tests=no
+    debug_symbols=no
+    use_closure_compiler=yes
+  EM_VERSION: 4.0.11
 
 jobs:
   web-template:
-    runs-on: "ubuntu-22.04"
-    name: Template (target=template_release)
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.name }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Template w/ threads (target=template_release, threads=yes)
+            cache-name: web-template
+            target: template_release
+            scons-flags: threads=yes
+            artifact: true
+
+          - name: Template w/o threads (target=template_release, threads=no)
+            cache-name: web-nothreads-template
+            target: template_release
+            scons-flags: threads=no
+            artifact: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         with:
-          version: ${{env.EM_VERSION}}
-          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          version: ${{ env.EM_VERSION }}
+          no-cache: true
 
       - name: Verify Emscripten setup
         run: |
           emcc -v
 
-      - name: Setup Godot build cache
-        uses: ./.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup python and scons
+      - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: web
-          target: template_release
-          tests: false
+          target: ${{ matrix.target }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+        if: matrix.artifact
+        with:
+          name: ${{ matrix.cache-name }}

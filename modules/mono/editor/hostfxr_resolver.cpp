@@ -82,7 +82,7 @@ namespace {
 String get_hostfxr_file_name() {
 #if defined(WINDOWS_ENABLED)
 	return "hostfxr.dll";
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	return "libhostfxr.dylib";
 #else
 	return "libhostfxr.so";
@@ -119,8 +119,8 @@ bool get_latest_fxr(const String &fxr_root, String &r_fxr_path) {
 		return false;
 	}
 
-	String fxr_with_ver = path::join(fxr_root, latest_ver_str);
-	String hostfxr_file_path = path::join(fxr_with_ver, get_hostfxr_file_name());
+	String fxr_with_ver = Path::join(fxr_root, latest_ver_str);
+	String hostfxr_file_path = Path::join(fxr_with_ver, get_hostfxr_file_name());
 
 	ERR_FAIL_COND_V_MSG(!FileAccess::exists(hostfxr_file_path), false, "Missing hostfxr library in directory: " + fxr_with_ver);
 
@@ -130,19 +130,11 @@ bool get_latest_fxr(const String &fxr_root, String &r_fxr_path) {
 }
 
 #ifdef WINDOWS_ENABLED
-typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-
 BOOL is_wow64() {
 	BOOL wow64 = FALSE;
-
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-	if (fnIsWow64Process) {
-		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
-			wow64 = FALSE;
-		}
+	if (!IsWow64Process(GetCurrentProcess(), &wow64)) {
+		wow64 = FALSE;
 	}
-
 	return wow64;
 }
 #endif
@@ -188,22 +180,22 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	// When emulating x64 on arm
-	String dotnet_root_emulated = path::join(program_files_dir, "dotnet", "x64");
-	if (FileAccess::exists(path::join(dotnet_root_emulated, "dotnet.exe"))) {
+	String dotnet_root_emulated = Path::join(program_files_dir, "dotnet", "x64");
+	if (FileAccess::exists(Path::join(dotnet_root_emulated, "dotnet.exe"))) {
 		r_dotnet_root = dotnet_root_emulated;
 		return true;
 	}
 #endif
 
-	r_dotnet_root = path::join(program_files_dir, "dotnet");
+	r_dotnet_root = Path::join(program_files_dir, "dotnet");
 	return true;
 #elif defined(MACOS_ENABLED)
 	r_dotnet_root = "/usr/local/share/dotnet";
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	// When emulating x64 on arm
-	String dotnet_root_emulated = path::join(r_dotnet_root, "x64");
-	if (FileAccess::exists(path::join(dotnet_root_emulated, "dotnet"))) {
+	String dotnet_root_emulated = Path::join(r_dotnet_root, "x64");
+	if (FileAccess::exists(Path::join(dotnet_root_emulated, "dotnet"))) {
 		r_dotnet_root = dotnet_root_emulated;
 		return true;
 	}
@@ -216,6 +208,7 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 #endif
 }
 
+#ifndef WINDOWS_ENABLED
 bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_root) {
 	Error err = OK;
 	Ref<FileAccess> f = FileAccess::open(p_file_path, FileAccess::READ, &err);
@@ -233,13 +226,14 @@ bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_
 	r_dotnet_root = line;
 	return true;
 }
+#endif
 
 bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 #if defined(WINDOWS_ENABLED)
 	String sub_key = "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + get_dotnet_arch();
 	Char16String value = String("InstallLocation").utf16();
 
-	HKEY hkey = NULL;
+	HKEY hkey = nullptr;
 	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(sub_key.utf16().get_data()), 0, KEY_READ | KEY_WOW64_32KEY, &hkey);
 	if (result != ERROR_SUCCESS) {
 		return false;
@@ -260,11 +254,11 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr());
+	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace_char('\\', '/');
 	RegCloseKey(hkey);
 	return true;
 #else
-	String install_location_file = path::join("/etc/dotnet", "install_location_" + get_dotnet_arch().to_lower());
+	String install_location_file = Path::join("/etc/dotnet", "install_location_" + get_dotnet_arch().to_lower());
 	if (get_install_location_from_file(install_location_file, r_dotnet_root)) {
 		return true;
 	}
@@ -274,7 +268,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	String legacy_install_location_file = path::join("/etc/dotnet", "install_location");
+	String legacy_install_location_file = Path::join("/etc/dotnet", "install_location");
 	return get_install_location_from_file(legacy_install_location_file, r_dotnet_root);
 #endif
 }
@@ -283,7 +277,7 @@ bool get_file_path_from_env(const String &p_env_key, String &r_dotnet_root) {
 	String env_value = OS::get_singleton()->get_environment(p_env_key);
 
 	if (!env_value.is_empty()) {
-		env_value = path::realpath(env_value);
+		env_value = Path::realpath(env_value);
 
 		if (DirAccess::exists(env_value)) {
 			r_dotnet_root = env_value;
@@ -319,7 +313,7 @@ bool get_dotnet_root_from_env(String &r_dotnet_root) {
 } //namespace
 
 bool godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(const String &p_dotnet_root, String &r_fxr_path) {
-	String fxr_dir = path::join(p_dotnet_root, "host", "fxr");
+	String fxr_dir = Path::join(p_dotnet_root, "host", "fxr");
 	if (!DirAccess::exists(fxr_dir)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			ERR_PRINT("The host fxr folder does not exist: " + fxr_dir + ".");

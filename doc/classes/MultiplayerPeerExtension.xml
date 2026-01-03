@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerPeerExtension" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiplayerPeerExtension" inherits="MultiplayerPeer" keywords="network" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Class that can be inherited to implement custom multiplayer API networking layers via GDExtension.
 	</brief_description>
@@ -9,13 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_close" qualifiers="virtual">
+		<method name="_close" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				Called when the multiplayer peer should be immediately closed (see [method MultiplayerPeer.close]).
 			</description>
 		</method>
-		<method name="_disconnect_peer" qualifiers="virtual">
+		<method name="_disconnect_peer" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="p_peer" type="int" />
 			<param index="1" name="p_force" type="bool" />
@@ -23,19 +23,19 @@
 				Called when the connected [param p_peer] should be forcibly disconnected (see [method MultiplayerPeer.disconnect_peer]).
 			</description>
 		</method>
-		<method name="_get_available_packet_count" qualifiers="virtual const">
+		<method name="_get_available_packet_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the available packet count is internally requested by the [MultiplayerAPI].
 			</description>
 		</method>
-		<method name="_get_connection_status" qualifiers="virtual const">
+		<method name="_get_connection_status" qualifiers="virtual required const">
 			<return type="int" enum="MultiplayerPeer.ConnectionStatus" />
 			<description>
 				Called when the connection status is requested on the [MultiplayerPeer] (see [method MultiplayerPeer.get_connection_status]).
 			</description>
 		</method>
-		<method name="_get_max_packet_size" qualifiers="virtual const">
+		<method name="_get_max_packet_size" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the maximum allowed packet size (in bytes) is requested by the [MultiplayerAPI].
@@ -49,19 +49,19 @@
 				Called when a packet needs to be received by the [MultiplayerAPI], with [param r_buffer_size] being the size of the binary [param r_buffer] in bytes.
 			</description>
 		</method>
-		<method name="_get_packet_channel" qualifiers="virtual const">
+		<method name="_get_packet_channel" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called to get the channel over which the next available packet was received. See [method MultiplayerPeer.get_packet_channel].
 			</description>
 		</method>
-		<method name="_get_packet_mode" qualifiers="virtual const">
+		<method name="_get_packet_mode" qualifiers="virtual required const">
 			<return type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
-				Called to get the [enum MultiplayerPeer.TransferMode] the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
+				Called to get the transfer mode the remote peer used to send the next available packet. See [method MultiplayerPeer.get_packet_mode].
 			</description>
 		</method>
-		<method name="_get_packet_peer" qualifiers="virtual const">
+		<method name="_get_packet_peer" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the ID of the [MultiplayerPeer] who sent the most recent packet is requested (see [method MultiplayerPeer.get_packet_peer]).
@@ -73,19 +73,19 @@
 				Called when a packet needs to be received by the [MultiplayerAPI], if [method _get_packet] isn't implemented. Use this when extending this class via GDScript.
 			</description>
 		</method>
-		<method name="_get_transfer_channel" qualifiers="virtual const">
+		<method name="_get_transfer_channel" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the transfer channel to use is read on this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_channel]).
 			</description>
 		</method>
-		<method name="_get_transfer_mode" qualifiers="virtual const">
+		<method name="_get_transfer_mode" qualifiers="virtual required const">
 			<return type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
 				Called when the transfer mode to use is read on this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_mode]).
 			</description>
 		</method>
-		<method name="_get_unique_id" qualifiers="virtual const">
+		<method name="_get_unique_id" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the unique ID of this [MultiplayerPeer] is requested (see [method MultiplayerPeer.get_unique_id]). The value must be between [code]1[/code] and [code]2147483647[/code].
@@ -97,7 +97,7 @@
 				Called when the "refuse new connections" status is requested on this [MultiplayerPeer] (see [member MultiplayerPeer.refuse_new_connections]).
 			</description>
 		</method>
-		<method name="_is_server" qualifiers="virtual const">
+		<method name="_is_server" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Called when the "is server" status is requested on the [MultiplayerAPI]. See [method MultiplayerAPI.is_server].
@@ -109,7 +109,7 @@
 				Called to check if the server can act as a relay in the current configuration. See [method MultiplayerPeer.is_server_relay_supported].
 			</description>
 		</method>
-		<method name="_poll" qualifiers="virtual">
+		<method name="_poll" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				Called when the [MultiplayerAPI] is polled. See [method MultiplayerAPI.poll].
@@ -137,21 +137,21 @@
 				Called when the "refuse new connections" status is set on this [MultiplayerPeer] (see [member MultiplayerPeer.refuse_new_connections]).
 			</description>
 		</method>
-		<method name="_set_target_peer" qualifiers="virtual">
+		<method name="_set_target_peer" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="p_peer" type="int" />
 			<description>
 				Called when the target peer to use is set for this [MultiplayerPeer] (see [method MultiplayerPeer.set_target_peer]).
 			</description>
 		</method>
-		<method name="_set_transfer_channel" qualifiers="virtual">
+		<method name="_set_transfer_channel" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="p_channel" type="int" />
 			<description>
 				Called when the channel to use is set for this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_channel]).
 			</description>
 		</method>
-		<method name="_set_transfer_mode" qualifiers="virtual">
+		<method name="_set_transfer_mode" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="p_mode" type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>

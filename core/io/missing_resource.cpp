@@ -74,6 +74,10 @@ bool MissingResource::is_recording_properties() const {
 	return recording_properties;
 }
 
+String MissingResource::get_save_class() const {
+	return original_class;
+}
+
 void MissingResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_class", "name"), &MissingResource::set_original_class);
 	ClassDB::bind_method(D_METHOD("get_original_class"), &MissingResource::get_original_class);
@@ -84,7 +88,4 @@ void MissingResource::_bind_methods() {
 	// Expose, but not save.
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_class", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_class", "get_original_class");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_properties", "is_recording_properties");
-}
-
-MissingResource::MissingResource() {
 }

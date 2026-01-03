@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Initial Author: Ryan Pavlik <ryan.pavlik@collabora.com>
+// Initial Author: Rylie Pavlik <rylie.pavlik@collabora.com>
 //
 
 #pragma once

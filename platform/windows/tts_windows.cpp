@@ -35,7 +35,7 @@ TTS_Windows *TTS_Windows::singleton = nullptr;
 void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) {
 	TTS_Windows *tts = TTS_Windows::get_singleton();
 	SPEVENT event;
-	while (tts->synth->GetEvents(1, &event, NULL) == S_OK) {
+	while (tts->synth->GetEvents(1, &event, nullptr) == S_OK) {
 		uint32_t stream_num = (uint32_t)event.ulStreamNum;
 		if (tts->ids.has(stream_num)) {
 			if (event.eEventId == SPEI_START_INPUT_STREAM) {
@@ -43,7 +43,7 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 			} else if (event.eEventId == SPEI_END_INPUT_STREAM) {
 				DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_ENDED, tts->ids[stream_num].id);
 				tts->ids.erase(stream_num);
-				tts->_update_tts();
+				tts->update_requested = true;
 			} else if (event.eEventId == SPEI_WORD_BOUNDARY) {
 				const Char16String &string = tts->ids[stream_num].string;
 				int pos = 0;
@@ -60,8 +60,8 @@ void __stdcall TTS_Windows::speech_event_callback(WPARAM wParam, LPARAM lParam) 
 	}
 }
 
-void TTS_Windows::_update_tts() {
-	if (!is_speaking() && !paused && queue.size() > 0) {
+void TTS_Windows::process_events() {
+	if (update_requested && !paused && queue.size() > 0 && !is_speaking()) {
 		DisplayServer::TTSUtterance &message = queue.front()->get();
 
 		String text;
@@ -82,7 +82,7 @@ void TTS_Windows::_update_tts() {
 				if (SUCCEEDED(hr)) {
 					hr = cpEnum->GetCount(&ulCount);
 					while (SUCCEEDED(hr) && ulCount--) {
-						wchar_t *w_id = 0L;
+						wchar_t *w_id = nullptr;
 						hr = cpEnum->Next(1, &cpVoiceToken, nullptr);
 						cpVoiceToken->GetId(&w_id);
 						if (String::utf16((const char16_t *)w_id) == message.voice) {
@@ -104,12 +104,14 @@ void TTS_Windows::_update_tts() {
 		ut.id = message.id;
 
 		synth->SetVolume(message.volume);
-		synth->SetRate(10.f * log10(message.rate) / log10(3.f));
+		synth->SetRate(10.f * std::log10(message.rate) / std::log10(3.f));
 		synth->Speak((LPCWSTR)ut.string.get_data(), flags, &stream_number);
 
 		ids[(uint32_t)stream_number] = ut;
 
 		queue.pop_front();
+
+		update_requested = false;
 	}
 }
 
@@ -184,7 +186,7 @@ Array TTS_Windows::get_voices() const {
 	return list;
 }
 
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();
@@ -207,7 +209,7 @@ void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volum
 	if (is_paused()) {
 		resume();
 	} else {
-		_update_tts();
+		update_requested = true;
 	}
 }
 

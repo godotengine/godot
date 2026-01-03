@@ -8,10 +8,6 @@
 
 #include <brotli/shared_dictionary.h>
 
-#include <memory.h>
-#include <stdlib.h>  /* malloc, free */
-#include <stdio.h>
-
 #include "dictionary.h"
 #include "platform.h"
 #include "shared_dictionary_internal.h"
@@ -19,6 +15,8 @@
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
+
+#if defined(BROTLI_EXPERIMENTAL)
 
 #define BROTLI_NUM_ENCODED_LENGTHS (SHARED_BROTLI_MAX_DICTIONARY_WORD_LENGTH \
     - SHARED_BROTLI_MIN_DICTIONARY_WORD_LENGTH + 1)
@@ -277,7 +275,7 @@ static BROTLI_BOOL ParseDictionary(const uint8_t* encoded, size_t size,
   size_t pos = 0;
   uint32_t chunk_size = 0;
   size_t total_prefix_suffix_count = 0;
-  size_t trasform_list_start[SHARED_BROTLI_NUM_DICTIONARY_CONTEXTS];
+  size_t transform_list_start[SHARED_BROTLI_NUM_DICTIONARY_CONTEXTS];
   uint16_t temporary_prefix_suffix_table[256];
 
   /* Skip magic header bytes. */
@@ -331,7 +329,7 @@ static BROTLI_BOOL ParseDictionary(const uint8_t* encoded, size_t size,
   for (i = 0; i < dict->num_transform_lists; i++) {
     BROTLI_BOOL ok = BROTLI_FALSE;
     size_t prefix_suffix_count = 0;
-    trasform_list_start[i] = pos;
+    transform_list_start[i] = pos;
     dict->transforms_instances[i].prefix_suffix_map =
         temporary_prefix_suffix_table;
     ok = ParseTransformsList(
@@ -349,7 +347,7 @@ static BROTLI_BOOL ParseDictionary(const uint8_t* encoded, size_t size,
   total_prefix_suffix_count = 0;
   for (i = 0; i < dict->num_transform_lists; i++) {
     size_t prefix_suffix_count = 0;
-    size_t position = trasform_list_start[i];
+    size_t position = transform_list_start[i];
     uint16_t* prefix_suffix_map =
       &dict->prefix_suffix_maps[total_prefix_suffix_count];
     BROTLI_BOOL ok = ParsePrefixSuffixTable(
@@ -442,6 +440,8 @@ static BROTLI_BOOL DecodeSharedDictionary(
   return ParseDictionary(encoded, size, dict);
 }
 
+#endif  /* BROTLI_EXPERIMENTAL */
+
 void BrotliSharedDictionaryDestroyInstance(
     BrotliSharedDictionary* dict) {
   if (!dict) {
@@ -464,9 +464,12 @@ BROTLI_BOOL BrotliSharedDictionaryAttach(
   if (!dict) {
     return BROTLI_FALSE;
   }
+#if defined(BROTLI_EXPERIMENTAL)
   if (type == BROTLI_SHARED_DICTIONARY_SERIALIZED) {
     return DecodeSharedDictionary(data, data_size, dict);
-  } else if (type == BROTLI_SHARED_DICTIONARY_RAW) {
+  }
+#endif  /* BROTLI_EXPERIMENTAL */
+  if (type == BROTLI_SHARED_DICTIONARY_RAW) {
     if (dict->num_prefix >= SHARED_BROTLI_MAX_COMPOUND_DICTS) {
       return BROTLI_FALSE;
     }
@@ -474,9 +477,8 @@ BROTLI_BOOL BrotliSharedDictionaryAttach(
     dict->prefix[dict->num_prefix] = data;
     dict->num_prefix++;
     return BROTLI_TRUE;
-  } else {
-    return BROTLI_FALSE;
   }
+  return BROTLI_FALSE;
 }
 
 BrotliSharedDictionary* BrotliSharedDictionaryCreateInstance(

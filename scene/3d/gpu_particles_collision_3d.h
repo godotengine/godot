@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GPU_PARTICLES_COLLISION_3D_H
-#define GPU_PARTICLES_COLLISION_3D_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
@@ -225,6 +224,7 @@ public:
 	};
 
 private:
+	uint32_t heightfield_mask = (1 << 20) - 1; // Only the first 20 bits are set by default to ignore editor layers.
 	Vector3 size = Vector3(2, 2, 2);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
@@ -248,6 +248,12 @@ public:
 
 	void set_update_mode(UpdateMode p_update_mode);
 	UpdateMode get_update_mode() const;
+
+	void set_heightfield_mask(uint32_t p_heightfield_mask);
+	uint32_t get_heightfield_mask() const;
+
+	void set_heightfield_mask_value(int p_layer_number, bool p_value);
+	bool get_heightfield_mask_value(int p_layer_number) const;
 
 	void set_follow_camera_enabled(bool p_enabled);
 	bool is_follow_camera_enabled() const;
@@ -357,5 +363,3 @@ public:
 	GPUParticlesAttractorVectorField3D();
 	~GPUParticlesAttractorVectorField3D();
 };
-
-#endif // GPU_PARTICLES_COLLISION_3D_H

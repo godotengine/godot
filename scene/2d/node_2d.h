@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_2D_H
-#define NODE_2D_H
+#pragma once
 
 #include "scene/main/canvas_item.h"
 
@@ -56,6 +55,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::NODE_2D;
+
 #ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
@@ -72,7 +73,7 @@ public:
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 #endif
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(real_t p_radians);
@@ -117,7 +118,5 @@ public:
 
 	Transform2D get_transform() const override;
 
-	Node2D() {}
+	Node2D();
 };
-
-#endif // NODE_2D_H

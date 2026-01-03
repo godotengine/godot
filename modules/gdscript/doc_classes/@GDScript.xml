@@ -4,14 +4,14 @@
 		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
-		A list of GDScript-specific utility functions and annotations accessible from any script.
-		For the list of the global functions and constants see [@GlobalScope].
+		A list of utility functions and annotations accessible from any script written in GDScript.
+		For the list of global functions and constants that can be accessed in any scripting language, see [@GlobalScope].
 	</description>
 	<tutorials>
 		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
 	</tutorials>
 	<methods>
-		<method name="Color8">
+		<method name="Color8" deprecated="Use [method Color.from_rgba8] instead.">
 			<return type="Color" />
 			<param index="0" name="r8" type="int" />
 			<param index="1" name="g8" type="int" />
@@ -43,26 +43,26 @@
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
 				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
+				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
 		<method name="char">
 			<return type="String" />
-			<param index="0" name="char" type="int" />
+			<param index="0" name="code" type="int" />
 			<description>
-				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
+				Returns a single character (as a [String] of length 1) of the given Unicode code point [param code].
 				[codeblock]
-				a = char(65)      # a is "A"
-				a = char(65 + 32) # a is "a"
-				a = char(8364)    # a is "€"
+				print(char(65))     # Prints "A"
+				print(char(129302)) # Prints "🤖" (robot face emoji)
 				[/codeblock]
+				This is the inverse of [method ord]. See also [method String.chr] and [method String.unicode_at].
 			</description>
 		</method>
-		<method name="convert" is_deprecated="true">
+		<method name="convert" deprecated="Use [method @GlobalScope.type_convert] instead.">
 			<return type="Variant" />
 			<param index="0" name="what" type="Variant" />
-			<param index="1" name="type" type="int" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
-				[i]Deprecated.[/i] Use [method @GlobalScope.type_convert] instead.
 				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
 				var a = [4, 2.5, 1.2]
@@ -74,7 +74,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="dict_to_inst">
+		<method name="dict_to_inst" deprecated="Consider using [method JSON.to_native] or [method Object.get_property_list] instead.">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
@@ -84,43 +84,44 @@
 		<method name="get_stack">
 			<return type="Array" />
 			<description>
-				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
+				Returns an array of dictionaries representing the current call stack.
 				[codeblock]
 				func _ready():
-				    foo()
+					foo()
 
 				func foo():
-				    bar()
+					bar()
 
 				func bar():
-				    print(get_stack())
+					print(get_stack())
 				[/codeblock]
 				Starting from [code]_ready()[/code], [code]bar()[/code] would print:
-				[codeblock]
+				[codeblock lang=text]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
+				See also [method print_debug], [method print_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
-		<method name="inst_to_dict">
+		<method name="inst_to_dict" deprecated="Consider using [method JSON.from_native] or [method Object.get_property_list] instead.">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
-				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
+				Returns the passed [param instance] converted to a [Dictionary]. Can be useful for serializing.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst_to_dict(self)
-				    print(d.keys())
-				    print(d.values())
+					var d = inst_to_dict(self)
+					print(d.keys())
+					print(d.values())
 				[/codeblock]
 				Prints out:
-				[codeblock]
+				[codeblock lang=text]
 				[@subpath, @path, foo]
 				[, res://test.gd, bar]
 				[/codeblock]
+				[b]Note:[/b] This function can only be used to serialize objects with an attached [GDScript] stored in a separate file. Objects without an attached script, with a script written in another language, or with a built-in script are not supported.
+				[b]Note:[/b] This function is not recursive, which means that nested objects will not be represented as dictionaries. Also, properties passed by reference ([Object], [Dictionary], [Array], and packed arrays) are copied by reference, not duplicated.
 			</description>
 		</method>
 		<method name="is_instance_of">
@@ -132,8 +133,8 @@
 				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
-				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
-				Examples:
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need to check the type dynamically.
+				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
 				print(is_instance_of(a, Node))
@@ -148,12 +149,12 @@
 			<return type="int" />
 			<param index="0" name="var" type="Variant" />
 			<description>
-				Returns the length of the given Variant [param var]. The length can be the character count of a [String], the element count of any array type or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
+				Returns the length of the given Variant [param var]. The length can be the character count of a [String] or [StringName], the element count of any array type, or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
 				[codeblock]
-				a = [1, 2, 3, 4]
+				var a = [1, 2, 3, 4]
 				len(a) # Returns 4
 
-				b = "Hello!"
+				var b = "Hello!"
 				len(b) # Returns 6
 				[/codeblock]
 			</description>
@@ -162,16 +163,28 @@
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
+				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload]. This method is equivalent of using [method ResourceLoader.load] with [constant ResourceLoader.CACHE_MODE_REUSE].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
+				[b]Important:[/b] Relative paths are [i]not[/i] relative to the script calling this method, instead it is prefixed with [code]"res://"[/code]. Loading from relative paths might not work as expected.
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+			</description>
+		</method>
+		<method name="ord">
+			<return type="int" />
+			<param index="0" name="char" type="String" />
+			<description>
+				Returns an integer representing the Unicode code point of the given character [param char], which should be a string of length 1.
+				[codeblock]
+				print(ord("A")) # Prints 65
+				print(ord("🤖")) # Prints 129302
+				[/codeblock]
+				This is the inverse of [method char]. See also [method String.chr] and [method String.unicode_at].
 			</description>
 		</method>
 		<method name="preload">
@@ -184,6 +197,7 @@
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
+				[b]Note:[/b] [method preload] is a keyword, not a function. So you cannot access it as a [Callable].
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
@@ -191,26 +205,27 @@
 			<description>
 				Like [method @GlobalScope.print], but includes the current stack frame when running with the debugger turned on.
 				The output in the console may look like the following:
-				[codeblock]
+				[codeblock lang=text]
 				Test print
 				At: res://test.gd:15:_process()
 				[/codeblock]
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				See also [method print_stack], [method get_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
 		<method name="print_stack">
 			<return type="void" />
 			<description>
-				Prints a stack trace at the current code location. See also [method get_stack].
+				Prints a stack trace at the current code location.
 				The output in the console may look like the following:
-				[codeblock]
+				[codeblock lang=text]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				See also [method print_debug], [method get_stack], and [method Engine.capture_script_backtraces].
+				[b]Note:[/b] By default, backtraces are only available in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 			</description>
 		</method>
-		<method name="range" qualifiers="vararg">
+		<method name="range" qualifiers="vararg" keywords="seq">
 			<return type="Array" />
 			<description>
 				Returns an array with the given range. [method range] can be called in three ways:
@@ -219,7 +234,7 @@
 				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
 				[method range] converts all arguments to [int] before processing.
 				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
-				Examples:
+				[b]Examples:[/b]
 				[codeblock]
 				print(range(4))        # Prints [0, 1, 2, 3]
 				print(range(2, 5))     # Prints [2, 3, 4]
@@ -230,10 +245,10 @@
 				[codeblock]
 				var array = [3, 6, 9]
 				for i in range(array.size() - 1, -1, -1):
-				    print(array[i])
+					print(array[i])
 				[/codeblock]
 				Output:
-				[codeblock]
+				[codeblock lang=text]
 				9
 				6
 				3
@@ -241,10 +256,10 @@
 				To iterate over [float], convert them in the loop.
 				[codeblock]
 				for i in range (3, 0, -1):
-				    print(i / 10.0)
+					print(i / 10.0)
 				[/codeblock]
 				Output:
-				[codeblock]
+				[codeblock lang=text]
 				0.3
 				0.2
 				0.1
@@ -275,11 +290,33 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			[constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). Due to this, you must use [method @GlobalScope.is_nan] to check whether a number is equal to [constant NAN].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
 	<annotations>
+		<annotation name="@abstract">
+			<return type="void" />
+			<description>
+				Marks a class or a method as abstract.
+				An abstract class is a class that cannot be instantiated directly. Instead, it is meant to be inherited by other classes. Attempting to instantiate an abstract class will result in an error.
+				An abstract method is a method that has no implementation. Therefore, a newline or a semicolon is expected after the function header. This defines a contract that inheriting classes must conform to, because the method signature must be compatible when overriding.
+				Inheriting classes must either provide implementations for all abstract methods, or the inheriting class must be marked as abstract. If a class has at least one abstract method (either its own or an unimplemented inherited one), then it must also be marked as abstract. However, the reverse is not true: an abstract class is allowed to have no abstract methods.
+				[codeblock]
+				@abstract class Shape:
+					@abstract func draw()
+
+				class Circle extends Shape:
+					func draw():
+						print("Drawing a circle.")
+
+				class Square extends Shape:
+					func draw():
+						print("Drawing a square.")
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export">
 			<return type="void" />
 			<description>
@@ -313,7 +350,7 @@
 				@export var image_array: Array[Image]
 				@export var node_array: Array[Node]
 				[/codeblock]
-				[b]Note:[/b] Custom resources and nodes must be registered as global classes using [code]class_name[/code].
+				[b]Note:[/b] Custom resources and nodes should be registered as global classes using [code]class_name[/code], since the Inspector currently only supports global classes. Otherwise, a less specific type will be exported instead.
 				[b]Note:[/b] Node export is only supported in [Node]-derived classes and has a number of other limitations.
 			</description>
 		</annotation>
@@ -334,20 +371,35 @@
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
-				Export a [Color] property without allowing its transparency ([member Color.a]) to be edited.
+				Export a [Color], [Array][lb][Color][rb], or [PackedColorArray] property without allowing its transparency ([member Color.a]) to be edited.
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
 				@export_color_no_alpha var dye_color: Color
+				@export_color_no_alpha var dye_colors: Array[Color]
 				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@export_custom">
+			<return type="void" />
+			<param index="0" name="hint" type="int" enum="PropertyHint" />
+			<param index="1" name="hint_string" type="String" />
+			<param index="2" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="6" />
+			<description>
+				Allows you to set a custom hint, hint string, and usage flags for the exported property. Note that there's no validation done in GDScript, it will just pass the parameters to the editor.
+				[codeblock]
+				@export_custom(PROPERTY_HINT_NONE, "suffix:m") var suffix: Vector3
+				[/codeblock]
+				[b]Note:[/b] Regardless of the [param usage] value, the [constant PROPERTY_USAGE_SCRIPT_VARIABLE] flag is always added, as with any explicitly declared script variable.
 			</description>
 		</annotation>
 		<annotation name="@export_dir">
 			<return type="void" />
 			<description>
-				Export a [String] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
 				See also [constant PROPERTY_HINT_DIR].
 				[codeblock]
 				@export_dir var sprite_folder_path: String
+				@export_dir var sprite_folder_paths: Array[String]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -355,12 +407,15 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
+				Export an [int], [String], [Array][lb][int][rb], [Array][lb][String][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], or [PackedStringArray] property as an enumerated list of options (or an array of options). If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
 				[codeblock]
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
 				@export_enum("Slow:30", "Average:60", "Very Fast:200") var character_speed: int
 				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
+
+				@export_enum("Sword", "Spear", "Mace") var character_items: Array[int]
+				@export_enum("double_jump", "climb", "dash") var character_skills: Array[String]
 				[/codeblock]
 				If you want to set an initial value, you must specify it explicitly:
 				[codeblock]
@@ -370,6 +425,9 @@
 				[codeblock]
 				enum CharacterName {REBECCA, MARY, LEAH}
 				@export var character_name: CharacterName
+
+				enum CharacterItem {SWORD, SPEAR, MACE}
+				@export var character_items: Array[CharacterItem]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -383,6 +441,7 @@
 				@export_exp_easing var transition_speed
 				@export_exp_easing("attenuation") var fading_attenuation
 				@export_exp_easing("positive_only") var effect_power
+				@export_exp_easing var speeds: Array[float]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -390,13 +449,22 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as a path to a file. The path will be limited to the project folder and its subfolders. See [annotation @export_global_file] to allow picking from the entire filesystem.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_FILE].
 				[codeblock]
 				@export_file var sound_effect_path: String
 				@export_file("*.txt") var notes_path: String
+				@export_file var level_paths: Array[String]
 				[/codeblock]
+				[b]Note:[/b] The file will be stored and referenced as UID, if available. This ensures that the reference is valid even when the file is moved. You can use [ResourceUID] methods to convert it to path.
+			</description>
+		</annotation>
+		<annotation name="@export_file_path" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="filter" type="String" default="&quot;&quot;" />
+			<description>
+				Same as [annotation @export_file], except the file will be stored as a raw path. This means that it may become invalid when the file is moved. If you are exporting a [Resource] path, consider using [annotation @export_file] instead.
 			</description>
 		</annotation>
 		<annotation name="@export_flags" qualifiers="vararg">
@@ -422,6 +490,10 @@
 				[codeblock]
 				@export_flags("A:16", "B", "C") var x
 				[/codeblock]
+				You can also use the annotation on [Array][lb][int][rb], [PackedByteArray], [PackedInt32Array], and [PackedInt64Array]
+				[codeblock]
+				@export_flags("Fire", "Water", "Earth", "Wind") var phase_elements: Array[int]
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_flags_2d_navigation">
@@ -431,6 +503,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_2D_NAVIGATION].
 				[codeblock]
 				@export_flags_2d_navigation var navigation_layers: int
+				@export_flags_2d_navigation var navigation_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -441,6 +514,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_2D_PHYSICS].
 				[codeblock]
 				@export_flags_2d_physics var physics_layers: int
+				@export_flags_2d_physics var physics_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -451,6 +525,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_2D_RENDER].
 				[codeblock]
 				@export_flags_2d_render var render_layers: int
+				@export_flags_2d_render var render_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -461,6 +536,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_3D_NAVIGATION].
 				[codeblock]
 				@export_flags_3d_navigation var navigation_layers: int
+				@export_flags_3d_navigation var navigation_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -471,6 +547,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_3D_PHYSICS].
 				[codeblock]
 				@export_flags_3d_physics var physics_layers: int
+				@export_flags_3d_physics var physics_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -481,6 +558,7 @@
 				See also [constant PROPERTY_HINT_LAYERS_3D_RENDER].
 				[codeblock]
 				@export_flags_3d_render var render_layers: int
+				@export_flags_3d_render var render_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -491,16 +569,18 @@
 				See also [constant PROPERTY_HINT_LAYERS_AVOIDANCE].
 				[codeblock]
 				@export_flags_avoidance var avoidance_layers: int
+				@export_flags_avoidance var avoidance_layers_array: Array[int]
 				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
-				Export a [String] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
 				See also [constant PROPERTY_HINT_GLOBAL_DIR].
 				[codeblock]
 				@export_global_dir var sprite_folder_path: String
+				@export_global_dir var sprite_folder_paths: Array[String]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -508,12 +588,13 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_GLOBAL_FILE].
 				[codeblock]
 				@export_global_file var sound_effect_path: String
 				@export_global_file("*.txt") var notes_path: String
+				@export_global_file var multiple_paths: Array[String]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -540,13 +621,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@export_multiline">
+		<annotation name="@export_multiline" qualifiers="vararg">
 			<return type="void" />
+			<param index="0" name="hint" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
+				Export a [String], [Array][lb][String][rb], [PackedStringArray], [Dictionary] or [Array][lb][Dictionary][rb] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
 				@export_multiline var character_biography
+				@export_multiline var npc_dialogs: Array[String]
+				@export_multiline("monospace", "no_wrap") var favorite_ascii_art: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -554,10 +638,11 @@
 			<return type="void" />
 			<param index="0" name="type" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [NodePath] property with a filter for allowed node types.
+				Export a [NodePath] or [Array][lb][NodePath][rb] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
 				@export_node_path("Button", "TouchScreenButton") var some_button
+				@export_node_path("Button", "TouchScreenButton") var many_buttons: Array[NodePath]
 				[/codeblock]
 				[b]Note:[/b] The type must be a native class or a globally registered script (using the [code]class_name[/code] keyword) that inherits [Node].
 			</description>
@@ -566,10 +651,11 @@
 			<return type="void" />
 			<param index="0" name="placeholder" type="String" />
 			<description>
-				Export a [String] property with a placeholder text displayed in the editor widget when no value is present.
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property with a placeholder text displayed in the editor widget when no value is present.
 				See also [constant PROPERTY_HINT_PLACEHOLDER_TEXT].
 				[codeblock]
 				@export_placeholder("Name in lowercase") var character_id: String
+				@export_placeholder("Name in lowercase") var friend_ids: Array[String]
 				[/codeblock]
 			</description>
 		</annotation>
@@ -580,14 +666,15 @@
 			<param index="2" name="step" type="float" default="1.0" />
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
-				Export an [int] or [float] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
-				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
+				Export an [int], [float], [Array][lb][int][rb], [Array][lb][float][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], or [PackedFloat64Array] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [member EditorSettings.interface/inspector/default_float_step] setting.
+				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"prefer_slider"[/code] hint will make integer values use the slider instead of arrows for editing, while [code]"hide_control"[/code] will hide the element controlling the value of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians_as_degrees"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock (the range values are also in degrees). [code]"degrees"[/code] allows to add a degree sign as a unit suffix (the value is unchanged). Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
 				@export_range(0, 20) var number
 				@export_range(-10, 20) var number
 				@export_range(-10, 20, 0.2) var number: float
+				@export_range(0, 20) var numbers: Array[float]
 
 				@export_range(0, 100, 1, "or_greater") var power_percent
 				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
@@ -595,6 +682,17 @@
 				@export_range(-180, 180, 0.001, "radians_as_degrees") var angle_radians
 				@export_range(0, 360, 1, "degrees") var angle_degrees
 				@export_range(-8, 8, 2, "suffix:px") var target_offset
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@export_storage">
+			<return type="void" />
+			<description>
+				Export a property with [constant PROPERTY_USAGE_STORAGE] flag. The property is not displayed in the editor, but it is serialized and stored in the scene or resource file. This can be useful for [annotation @tool] scripts. Also the property value is copied when [method Resource.duplicate] or [method Node.duplicate] is called, unlike non-exported variables.
+				[codeblock]
+				var a # Not stored in the file, not displayed in the editor.
+				@export_storage var b # Stored in the file, not displayed in the editor.
+				@export var c: int # Stored in the file, displayed in the editor.
 				[/codeblock]
 			</description>
 		</annotation>
@@ -614,7 +712,54 @@
 				@export var car_label = "Speedy"
 				@export var car_number = 3
 				[/codeblock]
-				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
+				[b]Note:[/b] Subgroups cannot be nested, but you can use the slash separator ([code]/[/code]) to achieve the desired effect:
+				[codeblock]
+				@export_group("Car Properties")
+				@export_subgroup("Wheels", "wheel_")
+				@export_subgroup("Wheels/Front", "front_wheel_")
+				@export var front_wheel_strength = 10
+				@export var front_wheel_mobility = 5
+				@export_subgroup("Wheels/Rear", "rear_wheel_")
+				@export var rear_wheel_strength = 8
+				@export var rear_wheel_mobility = 3
+				@export_subgroup("Wheels", "wheel_")
+				@export var wheel_material: PhysicsMaterial
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@export_tool_button">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="icon" type="String" default="&quot;&quot;" />
+			<description>
+				Export a [Callable] property as a clickable button with the label [param text]. When the button is pressed, the callable is called.
+				If [param icon] is specified, it is used to fetch an icon for the button via [method Control.get_theme_icon], from the [code]"EditorIcons"[/code] theme type. If [param icon] is omitted, the default [code]"Callable"[/code] icon is used instead.
+				Consider using the [EditorUndoRedoManager] to allow the action to be reverted safely.
+				See also [constant PROPERTY_HINT_TOOL_BUTTON].
+				[codeblock]
+				@tool
+				extends Sprite2D
+
+				@export_tool_button("Hello") var hello_action = hello
+				@export_tool_button("Randomize the color!", "ColorRect")
+				var randomize_color_action = randomize_color
+
+				func hello():
+					print("Hello world!")
+
+				func randomize_color():
+					var undo_redo = EditorInterface.get_editor_undo_redo()
+					undo_redo.create_action("Randomized Sprite2D Color")
+					undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
+					undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
+					undo_redo.commit_action()
+				[/codeblock]
+				[b]Note:[/b] The property is exported without the [constant PROPERTY_USAGE_STORAGE] flag because a [Callable] cannot be properly serialized and stored in a file.
+				[b]Note:[/b] In an exported project neither [EditorInterface] nor [EditorUndoRedoManager] exist, which may cause some scripts to break. To prevent this, you can use [method Engine.get_singleton] and omit the static type from the variable declaration:
+				[codeblock]
+				var undo_redo = Engine.get_singleton(&amp;"EditorInterface").get_editor_undo_redo()
+				[/codeblock]
+				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
 		<annotation name="@icon">
@@ -627,7 +772,7 @@
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
 				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -635,7 +780,7 @@
 			<description>
 				Mark the following property as assigned when the [Node] is ready. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._ready].
 				[codeblock]
-				@onready var character_name: Label = $Label
+				@onready var character_name = $Label
 				[/codeblock]
 			</description>
 		</annotation>
@@ -643,7 +788,7 @@
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
-			<param index="2" name="transfer_mode" type="String" default="&quot;unreliable&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;reliable&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
@@ -659,15 +804,18 @@
 				@rpc("any_peer", "unreliable_ordered")
 				func fn_update_pos(): pass
 
-				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				@rpc("authority", "call_remote", "reliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
+				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.
 			</description>
 		</annotation>
 		<annotation name="@static_unload">
 			<return type="void" />
 			<description>
 				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
+				[b]Note:[/b] As annotations describe their subject, the [annotation @static_unload] annotation must be placed before the class definition and inheritance.
+				[b]Warning:[/b] Currently, due to a bug, scripts are never freed, even if [annotation @static_unload] annotation is used.
 			</description>
 		</annotation>
 		<annotation name="@tool">
@@ -688,11 +836,38 @@
 				Mark the following statement to ignore the specified [param warning]. See [url=$DOCS_URL/tutorials/scripting/gdscript/warning_system.html]GDScript warning system[/url].
 				[codeblock]
 				func test():
-				    print("hello")
-				    return
-				    @warning_ignore("unreachable_code")
-				    print("unreachable")
+					print("hello")
+					return
+					@warning_ignore("unreachable_code")
+					print("unreachable")
 				[/codeblock]
+				See also [annotation @warning_ignore_start] and [annotation @warning_ignore_restore].
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_restore" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Stops ignoring the listed warning types after [annotation @warning_ignore_start]. Ignoring the specified warning types will be reset to Project Settings. This annotation can be omitted to ignore the warning types until the end of the file.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_restore] annotation must be string literals (constant expressions are not supported).
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_start" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Starts ignoring the listed warning types until the end of the file or the [annotation @warning_ignore_restore] annotation with the given warning type.
+				[codeblock]
+				func test():
+					var a = 1 # Warning (if enabled in the Project Settings).
+					@warning_ignore_start("unused_variable")
+					var b = 2 # No warning.
+					var c = 3 # No warning.
+					@warning_ignore_restore("unused_variable")
+					var d = 4 # Warning (if enabled in the Project Settings).
+				[/codeblock]
+				[b]Note:[/b] To suppress a single warning, use [annotation @warning_ignore] instead.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_start] annotation must be string literals (constant expressions are not supported).
 			</description>
 		</annotation>
 	</annotations>

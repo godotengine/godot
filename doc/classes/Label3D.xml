@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Label3D" inherits="GeometryInstance3D" keywords="text" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for displaying plain text in 3D space.
 	</brief_description>
@@ -28,7 +28,7 @@
 			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the specified flag will be enabled. See [enum Label3D.DrawFlags] for a list of flags.
+				If [code]true[/code], the specified [param flag] will be enabled.
 			</description>
 		</method>
 	</methods>
@@ -37,10 +37,10 @@
 			Threshold at which antialiasing will be applied on the alpha channel.
 		</member>
 		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing" default="0">
-			The type of alpha antialiasing to apply. See [enum BaseMaterial3D.AlphaAntiAliasing].
+			The type of alpha antialiasing to apply.
 		</member>
 		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" enum="Label3D.AlphaCutMode" default="0">
-			The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for possible values.
+			The alpha cutting mode to use for the sprite.
 		</member>
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale" default="1.0">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
@@ -49,17 +49,20 @@
 			Threshold at which the alpha scissor will discard values.
 		</member>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="0">
-			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum TextServer.AutowrapMode].
+			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
+		</member>
+		<member name="autowrap_trim_flags" type="int" setter="set_autowrap_trim_flags" getter="get_autowrap_trim_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="192">
+			Autowrap space trimming flags. See [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] for more info.
 		</member>
 		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
-			The billboard mode to use for the label. See [enum BaseMaterial3D.BillboardMode] for possible values.
+			The billboard mode to use for the label.
 		</member>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" overrides="GeometryInstance3D" enum="GeometryInstance3D.ShadowCastingSetting" default="0" />
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], text can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
 		<member name="fixed_size" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
-			If [code]true[/code], the label is rendered at the same size regardless of distance.
+			If [code]true[/code], the label is rendered at the same size regardless of distance. The label's size on screen is the same as if the camera was [code]1.0[/code] units away from the label's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the label is drawn at.
 		</member>
 		<member name="font" type="Font" setter="set_font" getter="get_font">
 			Font configuration used to display text.
@@ -70,18 +73,18 @@
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" overrides="GeometryInstance3D" enum="GeometryInstance3D.GIMode" default="0" />
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
-			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+			Controls the text's horizontal alignment. Supports left, center, right, and fill (also known as justify).
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
+			Line fill alignment rules.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="line_spacing" type="float" setter="set_line_spacing" getter="get_line_spacing" default="0.0">
-			Vertical space between lines in multiline [Label3D].
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Text [Color] of the [Label3D].
 		</member>
 		<member name="no_depth_test" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
@@ -125,13 +128,13 @@
 			Base text writing direction.
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
-			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
+			Filter flags for the texture.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
 		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="1">
-			Controls the text's vertical alignment. Supports top, center, bottom. Set it to one of the [enum VerticalAlignment] constants.
+			Controls the text's vertical alignment. Supports top, center, and bottom.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
 			Text width (in pixels), used for autowrap and fill alignment.

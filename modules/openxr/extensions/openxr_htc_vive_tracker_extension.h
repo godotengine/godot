@@ -28,14 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_HTC_VIVE_TRACKER_EXTENSION_H
-#define OPENXR_HTC_VIVE_TRACKER_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
 class OpenXRHTCViveTrackerExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRHTCViveTrackerExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
+
+	PackedStringArray get_suggested_tracker_names() override;
 
 	bool is_available();
 
@@ -45,5 +51,3 @@ public:
 private:
 	bool available = false;
 };
-
-#endif // OPENXR_HTC_VIVE_TRACKER_EXTENSION_H

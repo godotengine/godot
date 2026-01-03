@@ -4,7 +4,8 @@
 		A class information repository.
 	</brief_description>
 	<description>
-		Provides access to metadata stored for every available class.
+		Provides access to metadata stored for every available engine class.
+		[b]Note:[/b] Script-defined classes with [code]class_name[/code] are not part of [ClassDB], so they will not return reflection data such as a method or property list. However, [GDExtension]-defined classes [i]are[/i] part of [ClassDB], so they will return reflection data.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,11 +17,26 @@
 				Returns [code]true[/code] if objects can be instantiated from the specified [param class], otherwise returns [code]false[/code].
 			</description>
 		</method>
+		<method name="class_call_static" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<description>
+				Calls a static method on a class.
+			</description>
+		</method>
 		<method name="class_exists" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
 			<description>
 				Returns whether the specified [param class] is available or not.
+			</description>
+		</method>
+		<method name="class_get_api_type" qualifiers="const">
+			<return type="int" enum="ClassDB.APIType" />
+			<param index="0" name="class" type="StringName" />
+			<description>
+				Returns the API type of the specified [param class].
 			</description>
 		</method>
 		<method name="class_get_enum_constants" qualifiers="const">
@@ -65,6 +81,15 @@
 				Returns an array with the names all the integer constants of [param class] or its ancestry.
 			</description>
 		</method>
+		<method name="class_get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="method" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns the number of arguments of the method [param method] of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+			</description>
+		</method>
 		<method name="class_get_method_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
@@ -82,12 +107,36 @@
 				Returns the value of [param property] of [param object] or its ancestry.
 			</description>
 		</method>
+		<method name="class_get_property_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the default value of [param property] of [param class] or its ancestor classes.
+			</description>
+		</method>
+		<method name="class_get_property_getter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the getter method name of [param property] of [param class].
+			</description>
+		</method>
 		<method name="class_get_property_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the properties of [param class] or its ancestry if [param no_inheritance] is [code]false[/code].
+			</description>
+		</method>
+		<method name="class_get_property_setter">
+			<return type="StringName" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="property" type="StringName" />
+			<description>
+				Returns the setter method name of [param property] of [param class].
 			</description>
 		</method>
 		<method name="class_get_signal" qualifiers="const">
@@ -152,14 +201,15 @@
 		<method name="get_class_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the names of all the classes available.
+				Returns the names of all engine classes available.
+				[b]Note:[/b] Script-defined classes with [code]class_name[/code] are not included in this list. Use [method ProjectSettings.get_global_class_list] to get a list of script-defined classes instead.
 			</description>
 		</method>
 		<method name="get_inheriters_from_class" qualifiers="const">
 			<return type="PackedStringArray" />
 			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns the names of all the classes that directly or indirectly inherit from [param class].
+				Returns the names of all engine classes that directly or indirectly inherit from [param class].
 			</description>
 		</method>
 		<method name="get_parent_class" qualifiers="const">
@@ -183,6 +233,15 @@
 				Returns whether this [param class] is enabled or not.
 			</description>
 		</method>
+		<method name="is_class_enum_bitfield" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="enum" type="StringName" />
+			<param index="2" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns whether [param class] (or its ancestor classes if [param no_inheritance] is [code]false[/code]) has an enum called [param enum] that is a bitfield.
+			</description>
+		</method>
 		<method name="is_parent_class" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
@@ -192,4 +251,21 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="API_CORE" value="0" enum="APIType">
+			Native Core class type.
+		</constant>
+		<constant name="API_EDITOR" value="1" enum="APIType">
+			Native Editor class type.
+		</constant>
+		<constant name="API_EXTENSION" value="2" enum="APIType">
+			GDExtension class type.
+		</constant>
+		<constant name="API_EDITOR_EXTENSION" value="3" enum="APIType">
+			GDExtension Editor class type.
+		</constant>
+		<constant name="API_NONE" value="4" enum="APIType">
+			Unknown class type.
+		</constant>
+	</constants>
 </class>

@@ -1,0 +1,5 @@
+GH-111117
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/LineEdit/methods/edit': arguments
+
+Optional argument added. Compatibility method registered.

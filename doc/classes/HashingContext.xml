@@ -11,46 +11,48 @@
 		const CHUNK_SIZE = 1024
 
 		func hash_file(path):
-		    # Check that file exists.
-		    if not FileAccess.file_exists(path):
-		        return
-		    # Start a SHA-256 context.
-		    var ctx = HashingContext.new()
-		    ctx.start(HashingContext.HASH_SHA256)
-		    # Open the file to hash.
-		    var file = FileAccess.open(path, FileAccess.READ)
-		    # Update the context after reading each chunk.
-		    while not file.eof_reached():
-		        ctx.update(file.get_buffer(CHUNK_SIZE))
-		    # Get the computed hash.
-		    var res = ctx.finish()
-		    # Print the result as hex string and array.
-		    printt(res.hex_encode(), Array(res))
+			# Check that file exists.
+			if not FileAccess.file_exists(path):
+				return
+			# Start an SHA-256 context.
+			var ctx = HashingContext.new()
+			ctx.start(HashingContext.HASH_SHA256)
+			# Open the file to hash.
+			var file = FileAccess.open(path, FileAccess.READ)
+			# Update the context after reading each chunk.
+			while file.get_position() &lt; file.get_length():
+				var remaining = file.get_length() - file.get_position()
+				ctx.update(file.get_buffer(min(remaining, CHUNK_SIZE)))
+			# Get the computed hash.
+			var res = ctx.finish()
+			# Print the result as hex string and array.
+			printt(res.hex_encode(), Array(res))
 		[/gdscript]
 		[csharp]
 		public const int ChunkSize = 1024;
 
 		public void HashFile(string path)
 		{
-		    // Check that file exists.
-		    if (!FileAccess.FileExists(path))
-		    {
-		        return;
-		    }
-		    // Start a SHA-256 context.
-		    var ctx = new HashingContext();
-		    ctx.Start(HashingContext.HashType.Sha256);
-		    // Open the file to hash.
-		    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-		    // Update the context after reading each chunk.
-		    while (!file.EofReached())
-		    {
-		        ctx.Update(file.GetBuffer(ChunkSize));
-		    }
-		    // Get the computed hash.
-		    byte[] res = ctx.Finish();
-		    // Print the result as hex string and array.
-		    GD.PrintT(res.HexEncode(), (Variant)res);
+			// Check that file exists.
+			if (!FileAccess.FileExists(path))
+			{
+				return;
+			}
+			// Start an SHA-256 context.
+			var ctx = new HashingContext();
+			ctx.Start(HashingContext.HashType.Sha256);
+			// Open the file to hash.
+			using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+			// Update the context after reading each chunk.
+			while (file.GetPosition() &lt; file.GetLength())
+			{
+				int remaining = (int)(file.GetLength() - file.GetPosition());
+				ctx.Update(file.GetBuffer(Mathf.Min(remaining, ChunkSize)));
+			}
+			// Get the computed hash.
+			byte[] res = ctx.Finish();
+			// Print the result as hex string and array.
+			GD.PrintT(res.HexEncode(), (Variant)res);
 		}
 		[/csharp]
 		[/codeblocks]
@@ -68,7 +70,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="type" type="int" enum="HashingContext.HashType" />
 			<description>
-				Starts a new hash computation of the given [param type] (e.g. [constant HASH_SHA256] to start computation of a SHA-256).
+				Starts a new hash computation of the given [param type] (e.g. [constant HASH_SHA256] to start computation of an SHA-256).
 			</description>
 		</method>
 		<method name="update">

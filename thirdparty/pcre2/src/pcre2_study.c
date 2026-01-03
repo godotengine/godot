@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2021 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,15 +38,14 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains functions for scanning a compiled pattern and
 collecting data (e.g. minimum matching length). */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
+
 
 /* The maximum remembered capturing brackets minimum. */
 
@@ -114,7 +113,7 @@ uint32_t once_fudge = 0;
 BOOL had_recurse = FALSE;
 BOOL dupcapused = (re->flags & PCRE2_DUPCAPUSED) != 0;
 PCRE2_SPTR nextbranch = code + GET(code, 1);
-PCRE2_UCHAR *cc = (PCRE2_UCHAR *)code + 1 + LINK_SIZE;
+PCRE2_SPTR cc = code + 1 + LINK_SIZE;
 recurse_check this_recurse;
 
 /* If this is a "could be empty" group, its minimum length is 0. */
@@ -136,12 +135,13 @@ passes 16-bits, reset to that value and skip the rest of the branch. */
 for (;;)
   {
   int d, min, recno;
-  PCRE2_UCHAR op, *cs, *ce;
+  PCRE2_UCHAR op;
+  PCRE2_SPTR cs, ce;
 
-  if (branchlength >= UINT16_MAX)
+  if (branchlength >= (int)UINT16_MAX)
     {
     branchlength = UINT16_MAX;
-    cc = (PCRE2_UCHAR *)nextbranch;
+    cc = nextbranch;
     }
 
   op = *cc;
@@ -175,7 +175,7 @@ for (;;)
       cc += 1 + LINK_SIZE;
       break;
       }
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     case OP_ONCE:
     case OP_SCRIPT_RUN:
@@ -249,13 +249,15 @@ for (;;)
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
     case OP_ASSERT_NA:
+    case OP_ASSERT_SCS:
     case OP_ASSERTBACK_NA:
     do cc += GET(cc, 1); while (*cc == OP_ALT);
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     /* Skip over things that don't match chars */
 
     case OP_REVERSE:
+    case OP_VREVERSE:
     case OP_CREF:
     case OP_DNCREF:
     case OP_RREF:
@@ -273,6 +275,8 @@ for (;;)
     case OP_DOLLM:
     case OP_NOT_WORD_BOUNDARY:
     case OP_WORD_BOUNDARY:
+    case OP_NOT_UCP_WORD_BOUNDARY:
+    case OP_UCP_WORD_BOUNDARY:
     cc += PRIV(OP_lengths)[*cc];
     break;
 
@@ -348,7 +352,7 @@ for (;;)
     case OP_PROP:
     case OP_NOTPROP:
     cc += 2;
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     case OP_NOT_DIGIT:
     case OP_DIGIT:
@@ -414,15 +418,14 @@ for (;;)
     case OP_NCLASS:
 #ifdef SUPPORT_WIDE_CHARS
     case OP_XCLASS:
+    case OP_ECLASS:
     /* The original code caused an unsigned overflow in 64 bit systems,
     so now we use a conditional statement. */
-    if (op == OP_XCLASS)
+    if (op == OP_XCLASS || op == OP_ECLASS)
       cc += GET(cc, 1);
     else
-      cc += PRIV(OP_lengths)[OP_CLASS];
-#else
-    cc += PRIV(OP_lengths)[OP_CLASS];
 #endif
+      cc += PRIV(OP_lengths)[OP_CLASS];
 
     switch (*cc)
       {
@@ -430,7 +433,7 @@ for (;;)
       case OP_CRMINPLUS:
       case OP_CRPOSPLUS:
       branchlength++;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
 
       case OP_CRSTAR:
       case OP_CRMINSTAR:
@@ -476,8 +479,8 @@ for (;;)
     if (!dupcapused && (re->overall_options & PCRE2_MATCH_UNSET_BACKREF) == 0)
       {
       int count = GET2(cc, 1+IMM2_SIZE);
-      PCRE2_UCHAR *slot =
-        (PCRE2_UCHAR *)((uint8_t *)re + sizeof(pcre2_real_code)) +
+      PCRE2_SPTR slot =
+        (PCRE2_SPTR)((const uint8_t *)re + sizeof(pcre2_real_code)) +
           GET2(cc, 1) * re->name_entry_size;
 
       d = INT_MAX;
@@ -493,13 +496,12 @@ for (;;)
           dd = backref_cache[recno];
         else
           {
-          ce = cs = (PCRE2_UCHAR *)PRIV(find_bracket)(startcode, utf, recno);
+          ce = cs = PRIV(find_bracket)(startcode, utf, recno);
           if (cs == NULL) return -2;
           do ce += GET(ce, 1); while (*ce == OP_ALT);
 
           dd = 0;
-          if (!dupcapused ||
-              (PCRE2_UCHAR *)PRIV(find_bracket)(ce, utf, recno) == NULL)
+          if (!dupcapused || PRIV(find_bracket)(ce, utf, recno) == NULL)
             {
             if (cc > cs && cc < ce)    /* Simple recursion */
               {
@@ -536,7 +538,7 @@ for (;;)
         }
       }
     else d = 0;
-    cc += 1 + 2*IMM2_SIZE;
+    cc += PRIV(OP_lengths)[*cc];
     goto REPEAT_BACK_REFERENCE;
 
     /* Single back reference by number. References by name are converted to by
@@ -554,12 +556,11 @@ for (;;)
 
       if ((re->overall_options & PCRE2_MATCH_UNSET_BACKREF) == 0)
         {
-        ce = cs = (PCRE2_UCHAR *)PRIV(find_bracket)(startcode, utf, recno);
+        ce = cs = PRIV(find_bracket)(startcode, utf, recno);
         if (cs == NULL) return -2;
         do ce += GET(ce, 1); while (*ce == OP_ALT);
 
-        if (!dupcapused ||
-            (PCRE2_UCHAR *)PRIV(find_bracket)(ce, utf, recno) == NULL)
+        if (!dupcapused || PRIV(find_bracket)(ce, utf, recno) == NULL)
           {
           if (cc > cs && cc < ce)    /* Simple recursion */
             {
@@ -590,7 +591,7 @@ for (;;)
       backref_cache[0] = recno;
       }
 
-    cc += 1 + IMM2_SIZE;
+    cc += PRIV(OP_lengths)[*cc];
 
     /* Handle repeated back references */
 
@@ -626,11 +627,11 @@ for (;;)
       break;
       }
 
-     /* Take care not to overflow: (1) min and d are ints, so check that their
-     product is not greater than INT_MAX. (2) branchlength is limited to
-     UINT16_MAX (checked at the top of the loop). */
+    /* Take care not to overflow: (1) min and d are ints, so check that their
+    product is not greater than INT_MAX. (2) branchlength is limited to
+    UINT16_MAX (checked at the top of the loop). */
 
-    if ((d > 0 && (INT_MAX/d) < min) || UINT16_MAX - branchlength < min*d)
+    if ((d > 0 && (INT_MAX/d) < min) || (int)UINT16_MAX - branchlength < min*d)
       branchlength = UINT16_MAX;
     else branchlength += min * d;
     break;
@@ -640,7 +641,7 @@ for (;;)
     pattern contains multiple subpatterns with the same number. */
 
     case OP_RECURSE:
-    cs = ce = (PCRE2_UCHAR *)startcode + GET(cc, 1);
+    cs = ce = startcode + GET(cc, 1);
     recno = GET2(cs, 1+LINK_SIZE);
     if (recno == prev_recurse_recno)
       {
@@ -751,11 +752,18 @@ for (;;)
     /* This should not occur: we list all opcodes explicitly so that when
     new ones get added they are properly considered. */
 
+    /* LCOV_EXCL_START */
     default:
+    PCRE2_DEBUG_UNREACHABLE();
     return -3;
+    /* LCOV_EXCL_STOP */
     }
   }
-/* Control never gets here */
+
+/* LCOV_EXCL_START */
+PCRE2_DEBUG_UNREACHABLE(); /* Control should never reach here */
+return -3;                 /* Avoid compiler warnings */
+/* LCOV_EXCL_STOP */
 }
 
 
@@ -916,6 +924,138 @@ if (table_limit != 32) for (c = 24; c < 32; c++) re->start_bitmap[c] = 0xff;
 
 
 
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
+/*************************************************
+*     Set starting bits for a character list.    *
+*************************************************/
+
+/* This function sets starting bits for a character list. It enumerates
+all characters and character ranges in the character list, and sets
+the starting bits accordingly.
+
+Arguments:
+  code           pointer to the code
+  start_bitmap   pointer to the starting bitmap
+
+Returns:         nothing
+*/
+static void
+study_char_list(PCRE2_SPTR code, uint8_t *start_bitmap,
+  const uint8_t *char_lists_end)
+{
+uint32_t type, list_ind;
+uint32_t char_list_add = XCL_CHAR_LIST_LOW_16_ADD;
+uint32_t range_start = ~(uint32_t)0, range_end = 0;
+const uint8_t *next_char;
+PCRE2_UCHAR start_buffer[6], end_buffer[6];
+PCRE2_UCHAR start, end;
+
+/* Only needed in 8-bit mode at the moment. */
+type = (uint32_t)(code[0] << 8) | code[1];
+code += 2;
+
+/* Align characters. */
+next_char = char_lists_end - (GET(code, 0) << 1);
+type &= XCL_TYPE_MASK;
+list_ind = 0;
+
+if ((type & XCL_BEGIN_WITH_RANGE) != 0)
+  range_start = XCL_CHAR_LIST_LOW_16_START;
+
+while (type > 0)
+  {
+  uint32_t item_count = type & XCL_ITEM_COUNT_MASK;
+
+  if (item_count == XCL_ITEM_COUNT_MASK)
+    {
+    if (list_ind <= 1)
+      {
+      item_count = *(const uint16_t*)next_char;
+      next_char += 2;
+      }
+    else
+      {
+      item_count = *(const uint32_t*)next_char;
+      next_char += 4;
+      }
+    }
+
+  while (item_count > 0)
+    {
+    if (list_ind <= 1)
+      {
+      range_end = *(const uint16_t*)next_char;
+      next_char += 2;
+      }
+    else
+      {
+      range_end = *(const uint32_t*)next_char;
+      next_char += 4;
+      }
+
+    if ((range_end & XCL_CHAR_END) != 0)
+      {
+      range_end = char_list_add + (range_end >> XCL_CHAR_SHIFT);
+
+      PRIV(ord2utf)(range_end, end_buffer);
+      end = end_buffer[0];
+
+      if (range_start < range_end)
+        {
+        PRIV(ord2utf)(range_start, start_buffer);
+        for (start = start_buffer[0]; start <= end; start++)
+          start_bitmap[start / 8] |= (1u << (start & 7));
+        }
+      else
+        start_bitmap[end / 8] |= (1u << (end & 7));
+
+      range_start = ~(uint32_t)0;
+      }
+    else
+      range_start = char_list_add + (range_end >> XCL_CHAR_SHIFT);
+
+    item_count--;
+    }
+
+  list_ind++;
+  type >>= XCL_TYPE_BIT_LEN;
+
+  if (range_start == ~(uint32_t)0)
+    {
+    if ((type & XCL_BEGIN_WITH_RANGE) != 0)
+      {
+      /* In 8 bit mode XCL_CHAR_LIST_HIGH_32_START is not possible. */
+      if (list_ind == 1) range_start = XCL_CHAR_LIST_HIGH_16_START;
+      else range_start = XCL_CHAR_LIST_LOW_32_START;
+      }
+    }
+  else if ((type & XCL_BEGIN_WITH_RANGE) == 0)
+    {
+    PRIV(ord2utf)(range_start, start_buffer);
+
+    /* In 8 bit mode XCL_CHAR_LIST_LOW_32_END and
+    XCL_CHAR_LIST_HIGH_32_END are not possible. */
+    if (list_ind == 1) range_end = XCL_CHAR_LIST_LOW_16_END;
+    else range_end = XCL_CHAR_LIST_HIGH_16_END;
+
+    PRIV(ord2utf)(range_end, end_buffer);
+    end = end_buffer[0];
+
+    for (start = start_buffer[0]; start <= end; start++)
+      start_bitmap[start / 8] |= (1u << (start & 7));
+
+    range_start = ~(uint32_t)0;
+    }
+
+  /* In 8 bit mode XCL_CHAR_LIST_HIGH_32_ADD is not possible. */
+  if (list_ind == 1) char_list_add = XCL_CHAR_LIST_HIGH_16_ADD;
+  else char_list_add = XCL_CHAR_LIST_LOW_32_ADD;
+  }
+}
+#endif
+
+
+
 /*************************************************
 *      Create bitmap of starting code units      *
 *************************************************/
@@ -976,7 +1116,8 @@ do
   while (try_next)    /* Loop for items in this branch */
     {
     int rc;
-    uint8_t *classmap = NULL;
+    PCRE2_SPTR ncode;
+    const uint8_t *classmap = NULL;
 #ifdef SUPPORT_WIDE_CHARS
     PCRE2_UCHAR xclassflags;
 #endif
@@ -1054,6 +1195,7 @@ do
       case OP_REF:
       case OP_REFI:
       case OP_REVERSE:
+      case OP_VREVERSE:
       case OP_RREF:
       case OP_SCOND:
       case OP_SET_SOM:
@@ -1101,13 +1243,101 @@ do
 
       case OP_WORD_BOUNDARY:
       case OP_NOT_WORD_BOUNDARY:
+      case OP_UCP_WORD_BOUNDARY:
+      case OP_NOT_UCP_WORD_BOUNDARY:
       tcode++;
       break;
 
-      /* If we hit a bracket or a positive lookahead assertion, recurse to set
-      bits from within the subpattern. If it can't find anything, we have to
-      give up. If it finds some mandatory character(s), we are done for this
-      branch. Otherwise, carry on scanning after the subpattern. */
+      /* For a positive lookahead assertion, inspect what immediately follows,
+      ignoring intermediate assertions and callouts. If the next item is one
+      that sets a mandatory character, skip this assertion. Otherwise, treat it
+      the same as other bracket groups. */
+
+      case OP_ASSERT:
+      case OP_ASSERT_NA:
+      ncode = tcode + GET(tcode, 1);
+      while (*ncode == OP_ALT) ncode += GET(ncode, 1);
+      ncode += 1 + LINK_SIZE;
+
+      /* Skip irrelevant items */
+
+      for (BOOL done = FALSE; !done;)
+        {
+        switch (*ncode)
+          {
+          case OP_ASSERT:
+          case OP_ASSERT_NOT:
+          case OP_ASSERTBACK:
+          case OP_ASSERTBACK_NOT:
+          case OP_ASSERT_NA:
+          case OP_ASSERTBACK_NA:
+          case OP_ASSERT_SCS:
+          ncode += GET(ncode, 1);
+          while (*ncode == OP_ALT) ncode += GET(ncode, 1);
+          ncode += 1 + LINK_SIZE;
+          break;
+
+          case OP_WORD_BOUNDARY:
+          case OP_NOT_WORD_BOUNDARY:
+          case OP_UCP_WORD_BOUNDARY:
+          case OP_NOT_UCP_WORD_BOUNDARY:
+          ncode++;
+          break;
+
+          case OP_CALLOUT:
+          ncode += PRIV(OP_lengths)[OP_CALLOUT];
+          break;
+
+          case OP_CALLOUT_STR:
+          ncode += GET(ncode, 1 + 2*LINK_SIZE);
+          break;
+
+          default:
+          done = TRUE;
+          break;
+          }
+        }
+
+      /* Now check the next significant item. */
+
+      switch(*ncode)
+        {
+        default:
+        break;
+
+        case OP_PROP:
+        if (ncode[1] != PT_CLIST) break;
+        PCRE2_FALLTHROUGH /* Fall through */
+        case OP_ANYNL:
+        case OP_CHAR:
+        case OP_CHARI:
+        case OP_EXACT:
+        case OP_EXACTI:
+        case OP_HSPACE:
+        case OP_MINPLUS:
+        case OP_MINPLUSI:
+        case OP_PLUS:
+        case OP_PLUSI:
+        case OP_POSPLUS:
+        case OP_POSPLUSI:
+        case OP_VSPACE:
+        /* Note that these types will only be present in non-UCP mode. */
+        case OP_DIGIT:
+        case OP_NOT_DIGIT:
+        case OP_WORDCHAR:
+        case OP_NOT_WORDCHAR:
+        case OP_WHITESPACE:
+        case OP_NOT_WHITESPACE:
+        tcode = ncode;
+        continue;   /* With the following significant opcode */
+        }
+      PCRE2_FALLTHROUGH /* Fall through */
+
+      /* For a group bracket or a positive assertion without an immediately
+      following mandatory setting, recurse to set bits from within the
+      subpattern. If it can't find anything, we have to give up. If it finds
+      some mandatory character(s), we are done for this branch. Otherwise,
+      carry on scanning after the subpattern. */
 
       case OP_BRA:
       case OP_SBRA:
@@ -1119,8 +1349,6 @@ do
       case OP_SCBRAPOS:
       case OP_ONCE:
       case OP_SCRIPT_RUN:
-      case OP_ASSERT:
-      case OP_ASSERT_NA:
       rc = set_start_bits(re, tcode, utf, ucp, depthptr);
       if (rc == SSB_DONE)
         {
@@ -1162,12 +1390,14 @@ do
       tcode += GET(tcode, 1 + 2*LINK_SIZE);
       break;
 
-      /* Skip over lookbehind and negative lookahead assertions */
+      /* Skip over lookbehind, negative lookahead, and scan substring
+      assertions */
 
       case OP_ASSERT_NOT:
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
       case OP_ASSERTBACK_NA:
+      case OP_ASSERT_SCS:
       do tcode += GET(tcode, 1); while (*tcode == OP_ALT);
       tcode += 1 + LINK_SIZE;
       break;
@@ -1229,7 +1459,7 @@ do
 
       case OP_EXACT:
       tcode += IMM2_SIZE;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_CHAR:
       case OP_PLUS:
       case OP_MINPLUS:
@@ -1240,7 +1470,7 @@ do
 
       case OP_EXACTI:
       tcode += IMM2_SIZE;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_CHARI:
       case OP_PLUSI:
       case OP_MINPLUSI:
@@ -1260,10 +1490,10 @@ do
       SET_BIT(CHAR_SPACE);
 
       /* For the 16-bit and 32-bit libraries (which can never be EBCDIC), set
-      the bits for 0xA0 and for code units >= 255, independently of UTF. */
+      the bits for NBSP and for code units >= 255, independently of UTF. */
 
 #if PCRE2_CODE_UNIT_WIDTH != 8
-      SET_BIT(0xA0);
+      SET_BIT(CHAR_NBSP);
       SET_BIT(0xFF);
 #else
       /* For the 8-bit library in UTF-8 mode, set the bits for the first code
@@ -1279,12 +1509,9 @@ do
         }
       else
 #endif
-      /* For the 8-bit library not in UTF-8 mode, set the bit for 0xA0, unless
-      the code is EBCDIC. */
+      /* For the 8-bit library not in UTF-8 mode, set the bit for NBSP. */
         {
-#ifndef EBCDIC
-        SET_BIT(0xA0);
-#endif  /* Not EBCDIC */
+        SET_BIT(CHAR_NBSP);
         }
 #endif  /* 8-bit support */
 
@@ -1379,7 +1606,8 @@ do
       case OP_TYPEUPTO:
       case OP_TYPEMINUPTO:
       case OP_TYPEPOSUPTO:
-      tcode += IMM2_SIZE;  /* Fall through */
+      tcode += IMM2_SIZE;
+      PCRE2_FALLTHROUGH /* Fall through */
 
       case OP_TYPESTAR:
       case OP_TYPEMINSTAR:
@@ -1399,10 +1627,10 @@ do
         SET_BIT(CHAR_SPACE);
 
         /* For the 16-bit and 32-bit libraries (which can never be EBCDIC), set
-        the bits for 0xA0 and for code units >= 255, independently of UTF. */
+        the bits for NBSP and for code units >= 255, independently of UTF. */
 
 #if PCRE2_CODE_UNIT_WIDTH != 8
-        SET_BIT(0xA0);
+        SET_BIT(CHAR_NBSP);
         SET_BIT(0xFF);
 #else
         /* For the 8-bit library in UTF-8 mode, set the bits for the first code
@@ -1418,12 +1646,9 @@ do
           }
         else
 #endif
-        /* For the 8-bit library not in UTF-8 mode, set the bit for 0xA0, unless
-        the code is EBCDIC. */
+        /* For the 8-bit library not in UTF-8 mode, set the bit for NBSP. */
           {
-#ifndef EBCDIC
-          SET_BIT(0xA0);
-#endif  /* Not EBCDIC */
+          SET_BIT(CHAR_NBSP);
           }
 #endif  /* 8-bit support */
         break;
@@ -1488,6 +1713,13 @@ do
       tcode += 2;
       break;
 
+      /* Set-based ECLASS: treat it the same as a "complex" XCLASS; give up. */
+
+#ifdef SUPPORT_WIDE_CHARS
+      case OP_ECLASS:
+      return SSB_FAIL;
+#endif
+
       /* Extended class: if there are any property checks, or if this is a
       negative XCLASS without a map, give up. If there are no property checks,
       there must be wide characters on the XCLASS list, because otherwise an
@@ -1506,7 +1738,7 @@ do
       map pointer if there is one, and fall through. */
 
       classmap = ((xclassflags & XCL_MAP) == 0)? NULL :
-        (uint8_t *)(tcode + 1 + LINK_SIZE + 1);
+        (const uint8_t *)(tcode + 1 + LINK_SIZE + 1);
 
       /* In UTF-8 mode, scan the character list and set bits for leading bytes,
       then jump to handle the map. */
@@ -1517,6 +1749,13 @@ do
         PCRE2_UCHAR b, e;
         PCRE2_SPTR p = tcode + 1 + LINK_SIZE + 1 + ((classmap == NULL)? 0:32);
         tcode += GET(tcode, 1);
+
+        if (*p >= XCL_LIST)
+          {
+          study_char_list(p, re->start_bitmap,
+            ((const uint8_t *)re + re->code_start));
+          goto HANDLE_CLASSMAP;
+          }
 
         for (;;) switch (*p++)
           {
@@ -1538,8 +1777,11 @@ do
           case XCL_END:
           goto HANDLE_CLASSMAP;
 
+          /* LCOV_EXCL_START */
           default:
+          PCRE2_DEBUG_UNREACHABLE();
           return SSB_UNKNOWN;   /* Internal error, should not occur */
+          /* LCOV_EXCL_STOP */
           }
         }
 #endif  /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8 */
@@ -1548,7 +1790,7 @@ do
       /* It seems that the fall through comment must be outside the #ifdef if
       it is to avoid the gcc compiler warning. */
 
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
 
       /* Enter here for a negative non-XCLASS. In the 8-bit library, if we are
       in UTF mode, any byte with a value >= 0xc4 is a potentially valid starter
@@ -1563,19 +1805,20 @@ do
         re->start_bitmap[24] |= 0xf0;            /* Bits for 0xc4 - 0xc8 */
         memset(re->start_bitmap+25, 0xff, 7);    /* Bits for 0xc9 - 0xff */
         }
+      PCRE2_FALLTHROUGH /* Fall through */
 #elif PCRE2_CODE_UNIT_WIDTH != 8
       SET_BIT(0xFF);                             /* For characters >= 255 */
+      PCRE2_FALLTHROUGH /* Fall through */
 #endif
-      /* Fall through */
 
       /* Enter here for a positive non-XCLASS. If we have fallen through from
       an XCLASS, classmap will already be set; just advance the code pointer.
-      Otherwise, set up classmap for a a non-XCLASS and advance past it. */
+      Otherwise, set up classmap for a non-XCLASS and advance past it. */
 
       case OP_CLASS:
       if (*tcode == OP_XCLASS) tcode += GET(tcode, 1); else
         {
-        classmap = (uint8_t *)(++tcode);
+        classmap = (const uint8_t *)(++tcode);
         tcode += 32 / sizeof(PCRE2_UCHAR);
         }
 
@@ -1678,8 +1921,7 @@ BOOL ucp = (re->overall_options & PCRE2_UCP) != 0;
 
 /* Find start of compiled code */
 
-code = (PCRE2_UCHAR *)((uint8_t *)re + sizeof(pcre2_real_code)) +
-  re->name_entry_size * re->name_count;
+code = (PCRE2_UCHAR *)((uint8_t *)re + re->code_start);
 
 /* For a pattern that has a first code unit, or a multiline pattern that
 matches only at "line start", there is no point in seeking a list of starting
@@ -1689,7 +1931,13 @@ if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
   {
   int depth = 0;
   int rc = set_start_bits(re, code, utf, ucp, &depth);
-  if (rc == SSB_UNKNOWN) return 1;
+  /* LCOV_EXCL_START */
+  if (rc == SSB_UNKNOWN)
+    {
+    PCRE2_DEBUG_UNREACHABLE();
+    return 1;
+    }
+  /* LCOV_EXCL_STOP */
 
   /* If a list of starting code units was set up, scan the list to see if only
   one or two were listed. Having only one listed is rare because usually a
@@ -1757,30 +2005,37 @@ if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
 
           if (d != a) goto DONE;   /* Not the other case of a */
           b = c;                   /* Save second in b */
+
+#ifdef EBCDIC
+          /* To match ASCII (which puts the uppercase one in a), swap a & b
+          if needed. This doesn't really matter, but neatens the tests. */
+          if (TABLE_GET((unsigned int)a, re->tables + lcc_offset, a) == a)
+            {
+            b = a;
+            a = c;
+            }
+#endif
           }
         else goto DONE;   /* More than two characters found */
         }
       }
 
-    /* Replace the start code unit bits with a first code unit, but only if it
-    is not the same as a required later code unit. This is because a search for
-    a required code unit starts after an explicit first code unit, but at a
-    code unit found from the bitmap. Patterns such as /a*a/ don't work
-    if both the start unit and required unit are the same. */
+    /* Replace the start code unit bits with a first code unit. If it is the
+    same as a required later code unit, then clear the required later code
+    unit. This is because a search for a required code unit starts after an
+    explicit first code unit, but at a code unit found from the bitmap.
+    Patterns such as /a*a/ don't work if both the start unit and required
+    unit are the same. */
 
-    if (a >= 0 &&
-        (
-        (re->flags & PCRE2_LASTSET) == 0 ||
-          (
-          re->last_codeunit != (uint32_t)a &&
-          (b < 0 || re->last_codeunit != (uint32_t)b)
-          )
-        ))
-      {
+    if (a >= 0) {
+      if ((re->flags & PCRE2_LASTSET) && (re->last_codeunit == (uint32_t)a || (b >= 0 && re->last_codeunit == (uint32_t)b))) {
+        re->flags &= ~(PCRE2_LASTSET | PCRE2_LASTCASELESS);
+        re->last_codeunit = 0;
+      }
       re->first_codeunit = a;
       flags = PCRE2_FIRSTSET;
       if (b >= 0) flags |= PCRE2_FIRSTCASELESS;
-      }
+    }
 
     DONE:
     re->flags |= flags;
@@ -1807,14 +2062,20 @@ if ((re->flags & (PCRE2_MATCH_EMPTY|PCRE2_HASACCEPT)) == 0 &&
     case -1:  /* \C in UTF mode or over-complex regex */
     break;    /* Leave minlength unchanged (will be zero) */
 
+    /* LCOV_EXCL_START */
     case -2:
+    PCRE2_DEBUG_UNREACHABLE();
     return 2; /* missing capturing bracket */
+    /* LCOV_EXCL_STOP */
 
+    /* LCOV_EXCL_START */
     case -3:
+    PCRE2_DEBUG_UNREACHABLE();
     return 3; /* unrecognized opcode */
+    /* LCOV_EXCL_STOP */
 
     default:
-    re->minlength = (min > UINT16_MAX)? UINT16_MAX : min;
+    re->minlength = (min > (int)UINT16_MAX)? (int)UINT16_MAX : min;
     break;
     }
   }

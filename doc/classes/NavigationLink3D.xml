@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationLink3D" inherits="Node3D" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationLink3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A link between two positions on [NavigationRegion3D]s that agents can be routed through.
 	</brief_description>
@@ -29,6 +29,18 @@
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the current navigation map [RID] used by this link.
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this link on the [NavigationServer3D].
+			</description>
+		</method>
 		<method name="set_global_end_position">
 			<return type="void" />
 			<param index="0" name="position" type="Vector3" />
@@ -49,6 +61,13 @@
 			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this link should use. By default the link will automatically join the [World3D] default navigation map so this function is only required to override the default map.
 			</description>
 		</method>
 	</methods>

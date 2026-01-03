@@ -30,11 +30,50 @@
 
 #include "range.h"
 
-PackedStringArray Range::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+#include "thirdparty/misc/r128.h"
 
-	if (shared->exp_ratio && shared->min <= 0) {
-		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."));
+double Range::_snapped_r128(double p_value, double p_step) {
+	if (p_step == 0.0) {
+		return p_value;
+	}
+	if (p_value > (1e18 * p_step) || p_value < -(1e18 * p_step)) {
+		// If the value goes outside of the range R128 supports, fallback to normal snapping.
+		return Math::snapped(p_value, p_step);
+	}
+	// Rescale values to better utilize R128's range before snapping.
+	// R128 is fixed-precision with 64 bits after the decimal point, but double already uses 53 of those,
+	// so a step size finer than 2^-11 will lose precision, and in practice even 1e-3 can be problematic.
+	// By rescaling the value and step, we can shift precision into the higher bits (effectively turning R128 into a makeshift float).
+	const int decimals = MIN(18, 14 - Math::floor(std::log10(MAX(Math::abs(p_value), p_step))));
+	const double scale = Math::pow(10.0, decimals);
+	p_value *= scale;
+	p_step *= scale;
+	// All these lines are the equivalent of: p_value = Math::floor(p_value / p_step + 0.5) * p_step;
+	// Convert to String to force rounding to a decimal value (not a binary one).
+	String step_str = String::num(p_step);
+	String value_str = String::num(p_value);
+	R128 step_r128;
+	R128 value_r128;
+	const R128 half_r128 = R128(0.5);
+	r128FromString(&step_r128, step_str.ascii().get_data(), nullptr);
+	r128FromString(&value_r128, value_str.ascii().get_data(), nullptr);
+	r128Div(&value_r128, &value_r128, &step_r128);
+	r128Add(&value_r128, &value_r128, &half_r128);
+	r128Floor(&value_r128, &value_r128);
+	r128Mul(&value_r128, &value_r128, &step_r128);
+	if (scale != 1.0) {
+		const R128 scale_r128 = R128(scale);
+		r128Div(&value_r128, &value_r128, &scale_r128);
+	}
+	p_value = (double)value_r128;
+	return p_value;
+}
+
+PackedStringArray Range::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	if (shared->exp_ratio && shared->min < 0) {
+		warnings.push_back(RTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."));
 	}
 
 	return warnings;
@@ -43,10 +82,49 @@ PackedStringArray Range::get_configuration_warnings() const {
 void Range::_value_changed(double p_value) {
 	GDVIRTUAL_CALL(_value_changed, p_value);
 }
+
 void Range::_value_changed_notify() {
 	_value_changed(shared->val);
-	emit_signal(SNAME("value_changed"), shared->val);
+	emit_signal(SceneStringName(value_changed), shared->val);
+	queue_accessibility_update();
 	queue_redraw();
+}
+
+void Range::_accessibility_action_inc(const Variant &p_data) {
+	double step = ((shared->step > 0) ? shared->step : 1);
+	set_value(shared->val + step);
+}
+
+void Range::_accessibility_action_dec(const Variant &p_data) {
+	double step = ((shared->step > 0) ? shared->step : 1);
+	set_value(shared->val - step);
+}
+
+void Range::_accessibility_action_set_value(const Variant &p_data) {
+	double new_val = p_data;
+	set_value(new_val);
+}
+
+void Range::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
+	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, shared->val);
+			DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, shared->min, shared->max);
+			if (shared->step > 0) {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, shared->step);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_num_step(ae, 1);
+			}
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &Range::_accessibility_action_dec));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &Range::_accessibility_action_inc));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &Range::_accessibility_action_set_value));
+		} break;
+	}
 }
 
 void Range::Shared::emit_value_changed() {
@@ -59,18 +137,18 @@ void Range::Shared::emit_value_changed() {
 	}
 }
 
-void Range::_changed_notify(const char *p_what) {
-	emit_signal(SNAME("changed"));
+void Range::_changed_notify() {
+	emit_signal(CoreStringName(changed));
 	queue_redraw();
 }
 
-void Range::Shared::emit_changed(const char *p_what) {
+void Range::Shared::emit_changed() {
 	for (Range *E : owners) {
 		Range *r = E;
 		if (!r->is_inside_tree()) {
 			continue;
 		}
-		r->_changed_notify(p_what);
+		r->_changed_notify();
 	}
 }
 
@@ -80,6 +158,7 @@ void Range::Shared::redraw_owners() {
 		if (!r->is_inside_tree()) {
 			continue;
 		}
+		r->queue_accessibility_update();
 		r->queue_redraw();
 	}
 }
@@ -91,15 +170,17 @@ void Range::set_value(double p_val) {
 	if (shared->val != prev_val) {
 		shared->emit_value_changed();
 	}
+	queue_accessibility_update();
 }
 
 void Range::_set_value_no_signal(double p_val) {
-	if (!Math::is_finite(p_val)) {
-		return;
-	}
+	shared->val = _calc_value(p_val, shared->step);
+}
 
-	if (shared->step > 0) {
-		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
+double Range::_calc_value(double p_val, double p_step) const {
+	if (p_step > 0) {
+		// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
+		p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
 	}
 
 	if (_rounded_values) {
@@ -113,12 +194,7 @@ void Range::_set_value_no_signal(double p_val) {
 	if (!shared->allow_lesser && p_val < shared->min) {
 		p_val = shared->min;
 	}
-
-	if (shared->val == p_val) {
-		return;
-	}
-
-	shared->val = p_val;
+	return p_val;
 }
 
 void Range::set_value_no_signal(double p_val) {
@@ -140,9 +216,11 @@ void Range::set_min(double p_min) {
 	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
 
-	shared->emit_changed("min");
+	shared->emit_changed();
 
 	update_configuration_warnings();
+
+	queue_accessibility_update();
 }
 
 void Range::set_max(double p_max) {
@@ -155,7 +233,9 @@ void Range::set_max(double p_max) {
 	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
 
-	shared->emit_changed("max");
+	shared->emit_changed();
+
+	queue_accessibility_update();
 }
 
 void Range::set_step(double p_step) {
@@ -164,7 +244,9 @@ void Range::set_step(double p_step) {
 	}
 
 	shared->step = p_step;
-	shared->emit_changed("step");
+	shared->emit_changed();
+
+	queue_accessibility_update();
 }
 
 void Range::set_page(double p_page) {
@@ -176,7 +258,9 @@ void Range::set_page(double p_page) {
 	shared->page = page_validated;
 	set_value(shared->val);
 
-	shared->emit_changed("page");
+	shared->emit_changed();
+
+	queue_accessibility_update();
 }
 
 double Range::get_value() const {
@@ -209,7 +293,7 @@ void Range::set_as_ratio(double p_value) {
 	} else {
 		double percent = (get_max() - get_min()) * p_value;
 		if (get_step() > 0) {
-			double steps = round(percent / get_step());
+			double steps = std::round(percent / get_step());
 			v = steps * get_step() + get_min();
 		} else {
 			v = percent + get_min();
@@ -228,12 +312,12 @@ double Range::get_as_ratio() const {
 	if (shared->exp_ratio && get_min() >= 0) {
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		double v = Math::log(value) / Math::log((double)2);
 
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
 	} else {
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
 	}
 }
@@ -264,6 +348,7 @@ void Range::unshare() {
 	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();
 	_ref_shared(nshared);
+	queue_accessibility_update();
 }
 
 void Range::_ref_shared(Shared *p_shared) {
@@ -279,7 +364,7 @@ void Range::_ref_shared(Shared *p_shared) {
 void Range::_unref_shared() {
 	if (shared) {
 		shared->owners.erase(this);
-		if (shared->owners.size() == 0) {
+		if (shared->owners.is_empty()) {
 			memdelete(shared);
 			shared = nullptr;
 		}

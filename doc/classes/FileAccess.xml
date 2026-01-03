@@ -4,42 +4,44 @@
 		Provides methods for file reading and writing operations.
 	</brief_description>
 	<description>
-		This class can be used to permanently store data in the user device's file system and to read from it. This is useful for store game save data or player configuration files.
-		Here's a sample on how to write and read from a file:
+		This class can be used to permanently store data in the user device's file system and to read from it. This is useful for storing game save data or player configuration files.
+		[b]Example:[/b] How to write and read from a file. The file named [code]"save_game.dat"[/code] will be stored in the user data folder, as specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] documentation:
 		[codeblocks]
 		[gdscript]
-		func save(content):
-		    var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
-		    file.store_string(content)
+		func save_to_file(content):
+			var file = FileAccess.open("user://save_game.dat", FileAccess.WRITE)
+			file.store_string(content)
 
-		func load():
-		    var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
-		    var content = file.get_as_text()
-		    return content
+		func load_from_file():
+			var file = FileAccess.open("user://save_game.dat", FileAccess.READ)
+			var content = file.get_as_text()
+			return content
 		[/gdscript]
 		[csharp]
-		public void Save(string content)
+		public void SaveToFile(string content)
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
-		    file.StoreString(content);
+			using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
+			file.StoreString(content);
 		}
 
-		public string Load()
+		public string LoadFromFile()
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
-		    string content = file.GetAsText();
-		    return content;
+			using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
+			string content = file.GetAsText();
+			return content;
 		}
 		[/csharp]
 		[/codeblocks]
-		In the example above, the file will be saved in the user data folder as specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] documentation.
-		[FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. [method close] can be used to close it before then explicitly. In C# the reference must be disposed manually, which can be done with the [code]using[/code] statement or by calling the [code]Dispose[/code] method directly.
-		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of [FileAccess], as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
-		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [b]Alt + F4[/b]). If you stop the project execution by pressing [b]F8[/b] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
+		A [FileAccess] instance has its own file cursor, which is the position in bytes in the file where the next read/write operation will occur. Functions such as [method get_8], [method get_16], [method store_8], and [method store_16] will move the file cursor forward by the number of bytes read/written. The file cursor can be moved to a specific position using [method seek] or [method seek_end], and its position can be retrieved using [method get_position].
+		A [FileAccess] instance will close its file when the instance is freed. Since it inherits [RefCounted], this happens automatically when it is no longer in use. [method close] can be called to close it earlier. In C#, the reference must be disposed manually, which can be done with the [code]using[/code] statement or by calling the [code]Dispose[/code] method directly.
+		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of [FileAccess], as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package. If using [FileAccess], make sure the file is included in the export by changing its import mode to [b]Keep File (exported as is)[/b] in the Import dock, or, for files where this option is not available, change the non-resource export filter in the Export dialog to include the file's extension (e.g. [code]*.txt[/code]).
+		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [kbd]Alt + F4[/kbd]). If you stop the project execution by pressing [kbd]F8[/kbd] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
 	</description>
 	<tutorials>
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
+		<link title="Binary serialization API">$DOCS_URL/tutorials/io/binary_serialization_api.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
 	</tutorials>
 	<methods>
 		<method name="close">
@@ -47,6 +49,20 @@
 			<description>
 				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
 				[b]Note:[/b] [FileAccess] will automatically close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
+			</description>
+		</method>
+		<method name="create_temp" qualifiers="static">
+			<return type="FileAccess" />
+			<param index="0" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
+			<param index="1" name="prefix" type="String" default="&quot;&quot;" />
+			<param index="2" name="extension" type="String" default="&quot;&quot;" />
+			<param index="3" name="keep" type="bool" default="false" />
+			<description>
+				Creates a temporary file. This file will be freed when the returned [FileAccess] is freed.
+				If [param prefix] is not empty, it will be prefixed to the file name, separated by a [code]-[/code].
+				If [param extension] is not empty, it will be appended to the temporary file name.
+				If [param keep] is [code]true[/code], the file is not deleted when the returned [FileAccess] is freed.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="eof_reached" qualifiers="const">
@@ -57,12 +73,12 @@
 				[codeblocks]
 				[gdscript]
 				while file.get_position() &lt; file.get_length():
-				    # Read data
+					# Read data
 				[/gdscript]
 				[csharp]
 				while (file.GetPosition() &lt; file.GetLength())
 				{
-				    // Read data
+					// Read data
 				}
 				[/csharp]
 				[/codeblocks]
@@ -87,40 +103,45 @@
 		<method name="get_8" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 8 bits from the file as an integer. See [method store_8] for details on what values can be stored and retrieved this way.
+				Returns the next 8 bits from the file as an integer. This advances the file cursor by 1 byte. See [method store_8] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 16 bits from the file as an integer. See [method store_16] for details on what values can be stored and retrieved this way.
+				Returns the next 16 bits from the file as an integer. This advances the file cursor by 2 bytes. See [method store_16] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_32" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 32 bits from the file as an integer. See [method store_32] for details on what values can be stored and retrieved this way.
+				Returns the next 32 bits from the file as an integer. This advances the file cursor by 4 bytes. See [method store_32] for details on what values can be stored and retrieved this way.
 			</description>
 		</method>
 		<method name="get_64" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the next 64 bits from the file as an integer. See [method store_64] for details on what values can be stored and retrieved this way.
+				Returns the next 64 bits from the file as an integer. This advances the file cursor by 8 bytes. See [method store_64] for details on what values can be stored and retrieved this way.
+			</description>
+		</method>
+		<method name="get_access_time" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns the last time the [param file] was accessed in Unix timestamp format, or [code]0[/code] on error. This Unix timestamp can be converted to another format using the [Time] singleton.
 			</description>
 		</method>
 		<method name="get_as_text" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="skip_cr" type="bool" default="false" />
 			<description>
-				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded.
-				If [param skip_cr] is [code]true[/code], carriage return characters ([code]\r[/code], CR) will be ignored when parsing the UTF-8, so that only line feed characters ([code]\n[/code], LF) represent a new line (Unix convention).
+				Returns the whole file as a [String]. Text is interpreted as being UTF-8 encoded. This ignores the file cursor and does not affect it.
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="length" type="int" />
 			<description>
-				Returns next [param length] bytes of the file as a [PackedByteArray].
+				Returns next [param length] bytes of the file as a [PackedByteArray]. This advances the file cursor by [param length] bytes.
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
@@ -128,9 +149,9 @@
 			<param index="0" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
 				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long, and cannot be a double quotation mark.
-				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence.
+				Text is interpreted as being UTF-8 encoded. Text values must be enclosed in double quotes if they include the delimiter character. Double quotes within a text value can be escaped by doubling their occurrence. This advances the file cursor to after the newline character at the end of the line.
 				For example, the following CSV lines are valid and will be properly parsed as two strings each:
-				[codeblock]
+				[codeblock lang=text]
 				Alice,"Hello, Bob!"
 				Bob,Alice! What a surprise!
 				Alice,"I thought you'd reply with ""Hello, world""."
@@ -141,13 +162,48 @@
 		<method name="get_double" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next 64 bits from the file as a floating-point number.
+				Returns the next 64 bits from the file as a floating-point number. This advances the file cursor by 8 bytes.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
 			<return type="int" enum="Error" />
 			<description>
 				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
+			</description>
+		</method>
+		<method name="get_extended_attribute" qualifiers="static">
+			<return type="PackedByteArray" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Reads the file extended attribute with name [param attribute_name] as a byte array.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="get_extended_attribute_string" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Reads the file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="get_extended_attributes_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns a list of file extended attributes.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
 			</description>
 		</method>
 		<method name="get_file_as_bytes" qualifiers="static">
@@ -169,27 +225,33 @@
 		<method name="get_float" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next 32 bits from the file as a floating-point number.
+				Returns the next 32 bits from the file as a floating-point number. This advances the file cursor by 4 bytes.
+			</description>
+		</method>
+		<method name="get_half" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the next 16 bits from the file as a half-precision floating-point number. This advances the file cursor by 2 bytes.
 			</description>
 		</method>
 		<method name="get_hidden_attribute" qualifiers="static">
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]hidden[/code] attribute is set.
+				Returns [code]true[/code] if the [b]hidden[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_length" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the size of the file in bytes.
+				Returns the size of the file in bytes. For a pipe, returns the number of bytes available for reading from the pipe.
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the next line of the file as a [String].
+				Returns the next line of the file as a [String]. The returned string doesn't include newline ([code]\n[/code]) or carriage return ([code]\r[/code]) characters, but does include any other leading or trailing whitespace. This advances the file cursor to after the newline character at the end of the line.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -216,7 +278,7 @@
 		<method name="get_pascal_string">
 			<return type="String" />
 			<description>
-				Returns a [String] saved in Pascal format from the file.
+				Returns a [String] saved in Pascal format from the file, meaning that the length of the string is explicitly stored at the start. See [method store_pascal_string]. This may include newline characters. The file cursor is advanced after the bytes read.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -235,35 +297,43 @@
 		<method name="get_position" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the file cursor's position.
+				Returns the file cursor's position in bytes from the beginning of the file. This is the file reading/writing cursor set by [method seek] or [method seek_end] and advanced by read/write operations.
 			</description>
 		</method>
 		<method name="get_read_only_attribute" qualifiers="static">
 			<return type="bool" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns [code]true[/code], if file [code]read only[/code] attribute is set.
+				Returns [code]true[/code] if the [b]read only[/b] attribute is set on the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, BSD, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_real" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the next bits from the file as a floating-point number.
+				Returns the next bits from the file as a floating-point number. This advances the file cursor by either 4 or 8 bytes, depending on the precision used by the Godot build that saved the file.
+				If the file was saved by a Godot build compiled with the [code]precision=single[/code] option (the default), the number of read bits for that file is 32. Otherwise, if compiled with the [code]precision=double[/code] option, the number of read bits is 64.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+				Returns an SHA-256 [String] representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_size" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="file" type="String" />
+			<description>
+				Returns the size of the file at the given path, in bytes, or [code]-1[/code] on error.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
 			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns file UNIX permissions.
+				Returns the UNIX permissions of the file at the given path.
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
@@ -271,8 +341,8 @@
 			<return type="Variant" />
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
-				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
-				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
+				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed. This advances the file cursor by the number of bytes read.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method, as described in the [url=$DOCS_URL/tutorials/io/binary_serialization_api.html]Binary serialization API[/url] documentation.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -307,6 +377,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
 			<param index="2" name="key" type="PackedByteArray" />
+			<param index="3" name="iv" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
 				[b]Note:[/b] The provided key must be 32 bytes long.
@@ -323,19 +394,64 @@
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
+		<method name="remove_extended_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<description>
+				Removes file extended attribute with name [param attribute_name].
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="int" enum="Error" />
+			<param index="0" name="length" type="int" />
+			<description>
+				Resizes the file to a specified length. The file must be open in a mode that permits writing. If the file is extended, NUL characters are appended. If the file is truncated, all data from the end file to the original length of the file is lost.
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
+				Sets the file cursor to the specified position in bytes, from the beginning of the file. This changes the value returned by [method get_position].
 			</description>
 		</method>
 		<method name="seek_end">
 			<return type="void" />
 			<param index="0" name="position" type="int" default="0" />
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file).
-				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+				Sets the file cursor to the specified position in bytes, from the end of the file. This changes the value returned by [method get_position].
+				[b]Note:[/b] This is an offset, so you should use negative numbers otherwise the file cursor will be at the end of the file.
+			</description>
+		</method>
+		<method name="set_extended_attribute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<param index="2" name="data" type="PackedByteArray" />
+			<description>
+				Writes file extended attribute with name [param attribute_name] as a byte array.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
+			</description>
+		</method>
+		<method name="set_extended_attribute_string" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="file" type="String" />
+			<param index="1" name="attribute_name" type="String" />
+			<param index="2" name="data" type="String" />
+			<description>
+				Writes file extended attribute with name [param attribute_name] as a UTF-8 encoded string.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] Extended attributes support depends on the file system. Attributes will be lost when the file is moved between incompatible file systems.
+				[b]Note:[/b] On Linux, only "user" namespace attributes are accessible, namespace prefix should not be included.
+				[b]Note:[/b] On Windows, alternate data streams are used to store extended attributes.
 			</description>
 		</method>
 		<method name="set_hidden_attribute" qualifiers="static">
@@ -366,20 +482,22 @@
 			</description>
 		</method>
 		<method name="store_8">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 8 bits in the file.
+				Stores an integer as 8 bits in the file. This advances the file cursor by 1 byte. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 255][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_16">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 16 bits in the file.
+				Stores an integer as 16 bits in the file. This advances the file cursor by 2 bytes. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
 				[codeblocks]
 				[gdscript]
@@ -387,141 +505,161 @@
 				const MAX_16B = 1 &lt;&lt; 16
 
 				func unsigned16_to_signed(unsigned):
-				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
+					return (unsigned + MAX_15B) % MAX_16B - MAX_15B
 
 				func _ready():
-				    var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
-				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
-				    f.store_16(121) # In bounds, will store 121.
-				    f.seek(0) # Go back to start to read the stored value.
-				    var read1 = f.get_16() # 65494
-				    var read2 = f.get_16() # 121
-				    var converted1 = unsigned16_to_signed(read1) # -42
-				    var converted2 = unsigned16_to_signed(read2) # 121
+					var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
+					f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
+					f.store_16(121) # In bounds, will store 121.
+					f.seek(0) # Go back to start to read the stored value.
+					var read1 = f.get_16() # 65494
+					var read2 = f.get_16() # 121
+					var converted1 = unsigned16_to_signed(read1) # -42
+					var converted2 = unsigned16_to_signed(read2) # 121
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
-				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
-				    f.Store16(121); // In bounds, will store 121.
-				    f.Seek(0); // Go back to start to read the stored value.
-				    ushort read1 = f.Get16(); // 65494
-				    ushort read2 = f.Get16(); // 121
-				    short converted1 = (short)read1; // -42
-				    short converted2 = (short)read2; // 121
+					using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
+					f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
+					f.Store16(121); // In bounds, will store 121.
+					f.Seek(0); // Go back to start to read the stored value.
+					ushort read1 = f.Get16(); // 65494
+					ushort read2 = f.Get16(); // 121
+					short converted1 = (short)read1; // -42
+					short converted2 = (short)read2; // 121
 				}
 				[/csharp]
 				[/codeblocks]
 			</description>
 		</method>
 		<method name="store_32">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 32 bits in the file.
+				Stores an integer as 32 bits in the file. This advances the file cursor by 4 bytes. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] The [param value] should lie in the interval [code][0, 2^32 - 1][/code]. Any other value will overflow and wrap around.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 				To store a signed integer, use [method store_64], or convert it manually (see [method store_16] for an example).
 			</description>
 		</method>
 		<method name="store_64">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="int" />
 			<description>
-				Stores an integer as 64 bits in the file.
+				Stores an integer as 64 bits in the file. This advances the file cursor by 8 bytes. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] The [param value] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_buffer">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
-				Stores the given array of bytes in the file.
+				Stores the given array of bytes in the file. This advances the file cursor by the number of bytes written. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_csv_line">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="values" type="PackedStringArray" />
 			<param index="1" name="delim" type="String" default="&quot;,&quot;" />
 			<description>
-				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
-				Text will be encoded as UTF-8.
+				Stores the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [param delim] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Text will be encoded as UTF-8. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_double">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number as 64 bits in the file.
+				Stores a floating-point number as 64 bits in the file. This advances the file cursor by 8 bytes. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_float">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number as 32 bits in the file.
+				Stores a floating-point number as 32 bits in the file. This advances the file cursor by 4 bytes. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_half">
+			<return type="bool" />
+			<param index="0" name="value" type="float" />
+			<description>
+				Stores a half-precision floating-point number as 16 bits in the file. This advances the file cursor by 2 bytes. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_line">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="line" type="String" />
 			<description>
-				Appends [param line] to the file followed by a line return character ([code]\n[/code]), encoding the text as UTF-8.
+				Stores [param line] in the file followed by a newline character ([code]\n[/code]), encoding the text as UTF-8. This advances the file cursor by the length of the line, after the newline character. The amount of bytes written depends on the UTF-8 encoded bytes, which may be different from [method String.length] which counts the number of UTF-32 codepoints. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_pascal_string">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
-				Text will be encoded as UTF-8.
+				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string). Text will be encoded as UTF-8. This advances the file cursor by the number of bytes written depending on the UTF-8 encoded bytes, which may be different from [method String.length] which counts the number of UTF-32 codepoints. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_real">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="float" />
 			<description>
-				Stores a floating-point number in the file.
+				Stores a floating-point number in the file. This advances the file cursor by either 4 or 8 bytes, depending on the precision used by the current Godot build.
+				If using a Godot build compiled with the [code]precision=single[/code] option (the default), this method will save a 32-bit float. Otherwise, if compiled with the [code]precision=double[/code] option, this will save a 64-bit float. Returns [code]true[/code] if the operation is successful.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_string">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Appends [param string] to the file without a line return, encoding the text as UTF-8.
+				Stores [param string] in the file without a newline character ([code]\n[/code]), encoding the text as UTF-8. This advances the file cursor by the length of the string in UTF-8 encoded bytes, which may be different from [method String.length] which counts the number of UTF-32 codepoints. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 		<method name="store_var">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
-				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
-				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
+				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code). This advances the file cursor by the number of bytes written. Returns [code]true[/code] if the operation is successful.
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method, as described in the [url=$DOCS_URL/tutorials/io/binary_serialization_api.html]Binary serialization API[/url] documentation.
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
+				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian">
 			If [code]true[/code], the file is read with big-endian [url=https://en.wikipedia.org/wiki/Endianness]endianness[/url]. If [code]false[/code], the file is read with little-endian endianness. If in doubt, leave this to [code]false[/code] as most files are written with little-endian endianness.
-			[b]Note:[/b] [member big_endian] is only about the file format, not the CPU type. The CPU endianness doesn't affect the default endianness for files written.
-			[b]Note:[/b] This is always reset to [code]false[/code] whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
+			[b]Note:[/b] This is always reset to system endianness, which is little-endian on all supported platforms, whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
 		</member>
 	</members>
 	<constants>
 		<constant name="READ" value="1" enum="ModeFlags">
-			Opens the file for read operations. The cursor is positioned at the beginning of the file.
+			Opens the file for read operations. The file cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
+			Opens the file for write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
-			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
+			Opens the file for read and write operations. Does not truncate the file. The file cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
+			Opens the file for read and write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created. The file cursor is positioned at the beginning of the file.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextEdit" inherits="Control" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A multiline text editor.
 	</brief_description>
 	<description>
 		A multiline text editor. It also has limited facilities for editing code, such as syntax highlighting support. For more advanced facilities for editing code, see [CodeEdit].
-		[b]Note:[/b] Most viewport, caret and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets.
+		While entering text, it is possible to insert special characters using Unicode, OEM or Windows alt codes:
+		- To enter Unicode codepoints, hold [kbd]Alt[/kbd] and type the codepoint on the numpad. For example, to enter the character [code]á[/code] (U+00E1), hold [kbd]Alt[/kbd] and type [kbd]+E1[/kbd] on the numpad (the leading zeroes can be omitted).
+		- To enter OEM codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (OEM 160), hold [kbd]Alt[/kbd] and type [code]160[/code] on the numpad.
+		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
+		[b]Note:[/b] Most viewport, caret, and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets in the order they were created.
 		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
 	</description>
 	<tutorials>
@@ -58,7 +62,7 @@
 		<method name="add_caret">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
-			<param index="1" name="col" type="int" />
+			<param index="1" name="column" type="int" />
 			<description>
 				Adds a new caret at the given location. Returns the index of the new caret, or [code]-1[/code] if the location is invalid.
 			</description>
@@ -67,7 +71,7 @@
 			<return type="void" />
 			<param index="0" name="below" type="bool" />
 			<description>
-				Adds an additional caret above or below every caret. If [param below] is true the new caret will be added below and above otherwise.
+				Adds an additional caret above or below every caret. If [param below] is [code]true[/code] the new caret will be added below and above otherwise.
 			</description>
 		</method>
 		<method name="add_gutter">
@@ -83,7 +87,7 @@
 				Adds a selection and a caret for the next occurrence of the current selection. If there is no active selection, selects word under caret.
 			</description>
 		</method>
-		<method name="adjust_carets_after_edit">
+		<method name="adjust_carets_after_edit" deprecated="No longer necessary since methods now adjust carets themselves.">
 			<return type="void" />
 			<param index="0" name="caret" type="int" />
 			<param index="1" name="from_line" type="int" />
@@ -91,7 +95,7 @@
 			<param index="3" name="to_line" type="int" />
 			<param index="4" name="to_col" type="int" />
 			<description>
-				Reposition the carets affected by the edit. This assumes edits are applied in edit order, see [method get_caret_index_edit_order].
+				This method does nothing.
 			</description>
 		</method>
 		<method name="adjust_viewport_to_caret">
@@ -99,6 +103,12 @@
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
 				Adjust the viewport so the caret is visible.
+			</description>
+		</method>
+		<method name="apply_ime">
+			<return type="void" />
+			<description>
+				Applies text from the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) to each caret and closes the IME if it is open.
 			</description>
 		</method>
 		<method name="backspace">
@@ -112,6 +122,28 @@
 			<return type="void" />
 			<description>
 				Starts a multipart edit. All edits will be treated as one action until [method end_complex_operation] is called.
+			</description>
+		</method>
+		<method name="begin_multicaret_edit">
+			<return type="void" />
+			<description>
+				Starts an edit for multiple carets. The edit must be ended with [method end_multicaret_edit]. Multicaret edits can be used to edit text at multiple carets and delay merging the carets until the end, so the caret indexes aren't affected immediately. [method begin_multicaret_edit] and [method end_multicaret_edit] can be nested, and the merge will happen at the last [method end_multicaret_edit].
+				[codeblock]
+				begin_complex_operation()
+				begin_multicaret_edit()
+				for i in range(get_caret_count()):
+					if multicaret_edit_ignore_caret(i):
+						continue
+					# Logic here.
+				end_multicaret_edit()
+				end_complex_operation()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cancel_ime">
+			<return type="void" />
+			<description>
+				Closes the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME) if it is open. Any text in the IME will be lost.
 			</description>
 		</method>
 		<method name="center_viewport_to_caret">
@@ -131,6 +163,20 @@
 			<return type="void" />
 			<description>
 				Clears the undo history.
+			</description>
+		</method>
+		<method name="collapse_carets">
+			<return type="void" />
+			<param index="0" name="from_line" type="int" />
+			<param index="1" name="from_column" type="int" />
+			<param index="2" name="to_line" type="int" />
+			<param index="3" name="to_column" type="int" />
+			<param index="4" name="inclusive" type="bool" default="false" />
+			<description>
+				Collapse all carets in the given range to the [param from_line] and [param from_column] position.
+				[param inclusive] applies to both ends.
+				If [method is_in_mulitcaret_edit] is [code]true[/code], carets that are collapsed will be [code]true[/code] for [method multicaret_edit_ignore_caret].
+				[method merge_overlapping_carets] will be called if any carets were collapsed.
 			</description>
 		</method>
 		<method name="copy">
@@ -173,6 +219,12 @@
 				Ends a multipart edit, started with [method begin_complex_operation]. If called outside a complex operation, the current operation is pushed onto the undo/redo stack.
 			</description>
 		</method>
+		<method name="end_multicaret_edit">
+			<return type="void" />
+			<description>
+				Ends an edit for multiple carets, that was started with [method begin_multicaret_edit]. If this was the last [method end_multicaret_edit] and [method merge_overlapping_carets] was called, carets will be merged.
+			</description>
+		</method>
 		<method name="get_caret_column" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
@@ -193,7 +245,7 @@
 				Returns the caret pixel draw position.
 			</description>
 		</method>
-		<method name="get_caret_index_edit_order">
+		<method name="get_caret_index_edit_order" deprecated="Carets no longer need to be edited in any specific order. If the carets need to be sorted, use [method get_sorted_carets] instead.">
 			<return type="PackedInt32Array" />
 			<description>
 				Returns a list of caret indexes in their edit order, this done from bottom to top. Edit order refers to the way actions such as [method insert_text_at_caret] are applied.
@@ -217,7 +269,7 @@
 			<return type="int" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns the first column containing a non-whitespace character.
+				Returns the first column containing a non-whitespace character on the given line. If there is only whitespace, returns the number of characters.
 			</description>
 		</method>
 		<method name="get_first_visible_line" qualifiers="const">
@@ -243,7 +295,7 @@
 			<return type="int" enum="TextEdit.GutterType" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns the type of the gutter at the given index.
+				Returns the type of the gutter at the given index. Gutters can contain icons, text, or custom visuals.
 			</description>
 		</method>
 		<method name="get_gutter_width" qualifiers="const">
@@ -263,7 +315,7 @@
 			<return type="int" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns the number of spaces and [code]tab * tab_size[/code] before the first char.
+				Returns the indent level of the given line. This is the number of spaces and tabs at the beginning of the line, with the tabs taking the tab size into account (see [method get_tab_size]).
 			</description>
 		</method>
 		<method name="get_last_full_visible_line" qualifiers="const">
@@ -295,15 +347,18 @@
 			<return type="Color" />
 			<param index="0" name="line" type="int" />
 			<description>
-				Returns the current background color of the line. [code]Color(0, 0, 0, 0)[/code] is returned if no color is set.
+				Returns the custom background color of the given line. If no color is set, returns [code]Color(0, 0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_line_column_at_pos" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="position" type="Vector2i" />
-			<param index="1" name="allow_out_of_bounds" type="bool" default="true" />
+			<param index="1" name="clamp_line" type="bool" default="true" />
+			<param index="2" name="clamp_column" type="bool" default="true" />
 			<description>
-				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If [param allow_out_of_bounds] is [code]false[/code] and the position is not over the text, both vector values will be set to [code]-1[/code].
+				Returns the line and column at the given position. In the returned vector, [code]x[/code] is the column and [code]y[/code] is the line.
+				If [param clamp_line] is [code]false[/code] and [param position] is below the last line, [code]Vector2i(-1, -1)[/code] is returned.
+				If [param clamp_column] is [code]false[/code] and [param position] is outside the column range of the line, [code]Vector2i(-1, -1)[/code] is returned.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
@@ -317,7 +372,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the icon currently in [param gutter] at [param line].
+				Returns the icon currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_gutter_item_color" qualifiers="const">
@@ -341,7 +396,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns the text currently in [param gutter] at [param line].
+				Returns the text currently in [param gutter] at [param line]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -351,12 +406,28 @@
 				[b]Note:[/b] The return value is influenced by [theme_item line_spacing] and [theme_item font_size]. And it will not be less than [code]1[/code].
 			</description>
 		</method>
+		<method name="get_line_ranges_from_carets" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="only_selections" type="bool" default="false" />
+			<param index="1" name="merge_adjacent" type="bool" default="true" />
+			<description>
+				Returns an [Array] of line ranges where [code]x[/code] is the first line and [code]y[/code] is the last line. All lines within these ranges will have a caret on them or be part of a selection. Each line will only be part of one line range, even if it has multiple carets on it.
+				If a selection's end column ([method get_selection_to_column]) is at column [code]0[/code], that line will not be included. If a selection begins on the line after another selection ends and [param merge_adjacent] is [code]true[/code], or they begin and end on the same line, one line range will include both selections.
+			</description>
+		</method>
 		<method name="get_line_width" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
 			<param index="1" name="wrap_index" type="int" default="-1" />
 			<description>
 				Returns the width in pixels of the [param wrap_index] on [param line].
+			</description>
+		</method>
+		<method name="get_line_with_ime" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returns line text as it is currently displayed, including IME composition string.
 			</description>
 		</method>
 		<method name="get_line_wrap_count" qualifiers="const">
@@ -371,7 +442,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
-				Returns the wrap index of the given line column.
+				Returns the wrap index of the given column on the given line. This ranges from [code]0[/code] to [method get_line_wrap_count].
 			</description>
 		</method>
 		<method name="get_line_wrapped_text" qualifiers="const">
@@ -395,38 +466,38 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var menu = get_menu()
-				    # Remove all items after "Redo".
-				    menu.item_count = menu.get_item_index(MENU_REDO) + 1
-				    # Add custom items.
-				    menu.add_separator()
-				    menu.add_item("Insert Date", MENU_MAX + 1)
-				    # Connect callback.
-				    menu.id_pressed.connect(_on_item_pressed)
+					var menu = get_menu()
+					# Remove all items after "Redo".
+					menu.item_count = menu.get_item_index(MENU_REDO) + 1
+					# Add custom items.
+					menu.add_separator()
+					menu.add_item("Insert Date", MENU_MAX + 1)
+					# Connect callback.
+					menu.id_pressed.connect(_on_item_pressed)
 
 				func _on_item_pressed(id):
-				    if id == MENU_MAX + 1:
-				        insert_text_at_caret(Time.get_date_string_from_system())
+					if id == MENU_MAX + 1:
+						insert_text_at_caret(Time.get_date_string_from_system())
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    var menu = GetMenu();
-				    // Remove all items after "Redo".
-				    menu.ItemCount = menu.GetItemIndex(TextEdit.MenuItems.Redo) + 1;
-				    // Add custom items.
-				    menu.AddSeparator();
-				    menu.AddItem("Insert Date", TextEdit.MenuItems.Max + 1);
-				    // Add event handler.
-				    menu.IdPressed += OnItemPressed;
+					var menu = GetMenu();
+					// Remove all items after "Redo".
+					menu.ItemCount = menu.GetItemIndex(TextEdit.MenuItems.Redo) + 1;
+					// Add custom items.
+					menu.AddSeparator();
+					menu.AddItem("Insert Date", TextEdit.MenuItems.Max + 1);
+					// Add event handler.
+					menu.IdPressed += OnItemPressed;
 				}
 
 				public void OnItemPressed(int id)
 				{
-				    if (id == TextEdit.MenuItems.Max + 1)
-				    {
-				        InsertTextAtCaret(Time.GetDateStringFromSystem());
-				    }
+					if (id == TextEdit.MenuItems.Max + 1)
+					{
+						InsertTextAtCaret(Time.GetDateStringFromSystem());
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -444,6 +515,15 @@
 			<return type="int" />
 			<description>
 				Returns the number of lines that may be drawn on the minimap.
+			</description>
+		</method>
+		<method name="get_next_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the correct column at the end of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the start of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_next_composite_character_column(get_caret_line(), get_caret_column())[/code]
 			</description>
 		</method>
 		<method name="get_next_visible_line_index_offset_from" qualifiers="const">
@@ -470,6 +550,15 @@
 			<description>
 				Returns the local position for the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
 				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
+			</description>
+		</method>
+		<method name="get_previous_composite_character_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the correct column at the start of a composite character like ❤️‍🩹 (mending heart; Unicode: [code]U+2764 U+FE0F U+200D U+1FA79[/code]) which is comprised of more than one Unicode code point, if the caret is at the end of the composite character. Also returns the correct column with the caret at mid grapheme and for non-composite characters.
+				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_line(), get_caret_column())[/code]
 			</description>
 		</method>
 		<method name="get_rect_at_line_column" qualifiers="const">
@@ -502,7 +591,18 @@
 				Returns the text inside the selection of a caret, or all the carets if [param caret_index] is its default value [code]-1[/code].
 			</description>
 		</method>
-		<method name="get_selection_column" qualifiers="const">
+		<method name="get_selection_at_line_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<param index="2" name="include_edges" type="bool" default="true" />
+			<param index="3" name="only_selections" type="bool" default="true" />
+			<description>
+				Returns the caret index of the selection at the given [param line] and [param column], or [code]-1[/code] if there is none.
+				If [param include_edges] is [code]false[/code], the position must be inside the selection and not at either end. If [param only_selections] is [code]false[/code], carets without a selection will also be considered.
+			</description>
+		</method>
+		<method name="get_selection_column" qualifiers="const" deprecated="Use [method get_selection_origin_column] instead.">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
@@ -513,17 +613,17 @@
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection begin column.
+				Returns the selection begin column. Returns the caret column if there is no selection.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection begin line.
+				Returns the selection begin line. Returns the caret line if there is no selection.
 			</description>
 		</method>
-		<method name="get_selection_line" qualifiers="const">
+		<method name="get_selection_line" qualifiers="const" deprecated="Use [method get_selection_origin_line] instead.">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
@@ -536,18 +636,40 @@
 				Returns the current selection mode.
 			</description>
 		</method>
+		<method name="get_selection_origin_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="caret_index" type="int" default="0" />
+			<description>
+				Returns the origin column of the selection. This is the opposite end from the caret.
+			</description>
+		</method>
+		<method name="get_selection_origin_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="caret_index" type="int" default="0" />
+			<description>
+				Returns the origin line of the selection. This is the opposite end from the caret.
+			</description>
+		</method>
 		<method name="get_selection_to_column" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection end column.
+				Returns the selection end column. Returns the caret column if there is no selection.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection end line.
+				Returns the selection end line. Returns the caret line if there is no selection.
+			</description>
+		</method>
+		<method name="get_sorted_carets" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="include_ignored_carets" type="bool" default="false" />
+			<description>
+				Returns the carets sorted by selection beginning from lowest line and column to highest (from top to bottom of text).
+				If [param include_ignored_carets] is [code]false[/code], carets from [method multicaret_edit_ignore_caret] will be ignored.
 			</description>
 		</method>
 		<method name="get_tab_size" qualifiers="const">
@@ -565,7 +687,7 @@
 		<method name="get_total_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of lines that may be drawn.
+				Returns the total number of lines in the text. This includes wrapped lines and excludes folded lines. If [member wrap_mode] is set to [constant LINE_WRAPPING_NONE] and no lines are folded (see [method CodeEdit.is_line_folded]) then this is equivalent to [method get_line_count]. See [method get_visible_line_count_in_range] for a limited range of lines.
 			</description>
 		</method>
 		<method name="get_v_scroll_bar" qualifiers="const">
@@ -583,7 +705,7 @@
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of visible lines, including wrapped text.
+				Returns the number of lines that can visually fit, rounded down, based on this control's height.
 			</description>
 		</method>
 		<method name="get_visible_line_count_in_range" qualifiers="const">
@@ -591,7 +713,7 @@
 			<param index="0" name="from_line" type="int" />
 			<param index="1" name="to_line" type="int" />
 			<description>
-				Returns the total number of visible + wrapped lines between the two lines.
+				Returns the total number of lines between [param from_line] and [param to_line] (inclusive) in the text. This includes wrapped lines and excludes folded lines. If the range covers all lines it is equivalent to [method get_total_visible_line_count].
 			</description>
 		</method>
 		<method name="get_word_at_pos" qualifiers="const">
@@ -611,7 +733,7 @@
 		<method name="has_ime_text" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns if the user has IME text.
+				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
 		<method name="has_redo" qualifiers="const">
@@ -641,6 +763,19 @@
 				Inserts a new line with [param text] at [param line].
 			</description>
 		</method>
+		<method name="insert_text">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="line" type="int" />
+			<param index="2" name="column" type="int" />
+			<param index="3" name="before_selection_begin" type="bool" default="true" />
+			<param index="4" name="before_selection_end" type="bool" default="false" />
+			<description>
+				Inserts the [param text] at [param line] and [param column].
+				If [param before_selection_begin] is [code]true[/code], carets and selections that begin at [param line] and [param column] will moved to the end of the inserted text, along with all carets after it.
+				If [param before_selection_end] is [code]true[/code], selections that end at [param line] and [param column] will be extended to the end of the inserted text. These parameters can be used to insert text inside of or outside of selections.
+			</description>
+		</method>
 		<method name="insert_text_at_caret">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
@@ -649,38 +784,52 @@
 				Insert the specified text at the caret position.
 			</description>
 		</method>
+		<method name="is_caret_after_selection_origin" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="caret_index" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the caret of the selection is after the selection origin. This can be used to determine the direction of the selection.
+			</description>
+		</method>
 		<method name="is_caret_visible" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns [code]true[/code] if the caret is visible on the screen.
+				Returns [code]true[/code] if the caret is visible, [code]false[/code] otherwise. A caret will be considered hidden if it is outside the scrollable area when scrolling is enabled.
+				[b]Note:[/b] [method is_caret_visible] does not account for a caret being off-screen if it is still within the scrollable area. It will return [code]true[/code] even if the caret is off-screen as long as it meets [TextEdit]'s own conditions for being visible. This includes uses of [member scroll_fit_content_width] and [member scroll_fit_content_height] that cause the [TextEdit] to expand beyond the viewport's bounds.
 			</description>
 		</method>
 		<method name="is_dragging_cursor" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the user is dragging their mouse for scrolling or selecting.
+				Returns [code]true[/code] if the user is dragging their mouse for scrolling, selecting, or text dragging.
 			</description>
 		</method>
 		<method name="is_gutter_clickable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns whether the gutter is clickable.
+				Returns [code]true[/code] if the gutter at the given index is clickable. See [method set_gutter_clickable].
 			</description>
 		</method>
 		<method name="is_gutter_drawn" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns whether the gutter is currently drawn.
+				Returns [code]true[/code] if the gutter at the given index is currently drawn. See [method set_gutter_draw].
 			</description>
 		</method>
 		<method name="is_gutter_overwritable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Returns whether the gutter is overwritable.
+				Returns [code]true[/code] if the gutter at the given index is overwritable. See [method set_gutter_overwritable].
+			</description>
+		</method>
+		<method name="is_in_mulitcaret_edit" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a [method begin_multicaret_edit] has been called and [method end_multicaret_edit] has not yet been called.
 			</description>
 		</method>
 		<method name="is_line_gutter_clickable" qualifiers="const">
@@ -688,7 +837,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="gutter" type="int" />
 			<description>
-				Returns whether the gutter on the given line is clickable.
+				Returns [code]true[/code] if the gutter at the given index on the given line is clickable. See [method set_line_gutter_clickable].
 			</description>
 		</method>
 		<method name="is_line_wrapped" qualifiers="const">
@@ -701,7 +850,7 @@
 		<method name="is_menu_visible" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided).
+				Returns [code]true[/code] if the menu is visible. Use this instead of [code]get_menu().visible[/code] to improve performance (so the creation of the menu is avoided). See [method get_menu].
 			</description>
 		</method>
 		<method name="is_mouse_over_selection" qualifiers="const">
@@ -709,13 +858,13 @@
 			<param index="0" name="edges" type="bool" />
 			<param index="1" name="caret_index" type="int" default="-1" />
 			<description>
-				Returns whether the mouse is over selection. If [param edges] is [code]true[/code], the edges are considered part of the selection.
+				Returns [code]true[/code] if the mouse is over a selection. If [param edges] is [code]true[/code], the edges are considered part of the selection.
 			</description>
 		</method>
 		<method name="is_overtype_mode_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the user is in overtype mode.
+				Returns [code]true[/code] if overtype mode is enabled. See [method set_overtype_mode_enabled].
 			</description>
 		</method>
 		<method name="menu_option">
@@ -730,14 +879,23 @@
 			<param index="0" name="from_line" type="int" />
 			<param index="1" name="to_line" type="int" />
 			<description>
-				Merge the gutters from [param from_line] into [param to_line]. Only overwritable gutters will be copied.
+				Merge the gutters from [param from_line] into [param to_line]. Only overwritable gutters will be copied. See [method set_gutter_overwritable].
 			</description>
 		</method>
 		<method name="merge_overlapping_carets">
 			<return type="void" />
 			<description>
 				Merges any overlapping carets. Will favor the newest caret, or the caret with a selection.
+				If [method is_in_mulitcaret_edit] is [code]true[/code], the merge will be queued to happen at the end of the multicaret edit. See [method begin_multicaret_edit] and [method end_multicaret_edit].
 				[b]Note:[/b] This is not called when a caret changes position but after certain actions, so it is possible to get into a state where carets overlap.
+			</description>
+		</method>
+		<method name="multicaret_edit_ignore_caret" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="caret_index" type="int" />
+			<description>
+				Returns [code]true[/code] if the given [param caret_index] should be ignored as part of a multicaret edit. See [method begin_multicaret_edit] and [method end_multicaret_edit]. Carets that should be ignored are ones that were part of removed text and will likely be merged at the end of the edit, or carets that were added during the edit.
+				It is recommended to [code]continue[/code] within a loop iterating on multiple carets if a caret should be ignored.
 			</description>
 		</method>
 		<method name="paste">
@@ -772,7 +930,16 @@
 			<return type="void" />
 			<param index="0" name="gutter" type="int" />
 			<description>
-				Removes the gutter from this [TextEdit].
+				Removes the gutter at the given index.
+			</description>
+		</method>
+		<method name="remove_line_at">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="move_carets_down" type="bool" default="true" />
+			<description>
+				Removes the line of text at [param line]. Carets on this line will attempt to match their previous visual x position.
+				If [param move_carets_down] is [code]true[/code] carets will move to the next line down, otherwise carets will move up.
 			</description>
 		</method>
 		<method name="remove_secondary_carets">
@@ -789,7 +956,6 @@
 			<param index="3" name="to_column" type="int" />
 			<description>
 				Removes text between the given positions.
-				[b]Note:[/b] This does not adjust the caret or selection, which as a result it can end up in an invalid position.
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
@@ -797,7 +963,7 @@
 			<param index="0" name="text" type="String" />
 			<param index="1" name="flags" type="int" />
 			<param index="2" name="from_line" type="int" />
-			<param index="3" name="from_colum" type="int" />
+			<param index="3" name="from_column" type="int" />
 			<description>
 				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
 				In the returned vector, [code]x[/code] is the column, [code]y[/code] is the line. If no results are found, both are equal to [code]-1[/code].
@@ -805,17 +971,17 @@
 				[gdscript]
 				var result = search("print", SEARCH_WHOLE_WORDS, 0, 0)
 				if result.x != -1:
-				    # Result found.
-				    var line_number = result.y
-				    var column_number = result.x
+					# Result found.
+					var line_number = result.y
+					var column_number = result.x
 				[/gdscript]
 				[csharp]
 				Vector2I result = Search("print", (uint)TextEdit.SearchFlags.WholeWords, 0, 0);
 				if (result.X != -1)
 				{
-				    // Result found.
-				    int lineNumber = result.Y;
-				    int columnNumber = result.X;
+					// Result found.
+					int lineNumber = result.Y;
+					int columnNumber = result.X;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -823,14 +989,15 @@
 		</method>
 		<method name="select">
 			<return type="void" />
-			<param index="0" name="from_line" type="int" />
-			<param index="1" name="from_column" type="int" />
-			<param index="2" name="to_line" type="int" />
-			<param index="3" name="to_column" type="int" />
+			<param index="0" name="origin_line" type="int" />
+			<param index="1" name="origin_column" type="int" />
+			<param index="2" name="caret_line" type="int" />
+			<param index="3" name="caret_column" type="int" />
 			<param index="4" name="caret_index" type="int" default="0" />
 			<description>
-				Perform selection, from line/column to line/column.
+				Selects text from [param origin_line] and [param origin_column] to [param caret_line] and [param caret_column] for the given [param caret_index]. This moves the selection origin and the caret. If the positions are the same, the selection will be deselected.
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
+				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
 			</description>
 		</method>
 		<method name="select_all">
@@ -866,9 +1033,10 @@
 			<param index="3" name="wrap_index" type="int" default="0" />
 			<param index="4" name="caret_index" type="int" default="0" />
 			<description>
-				Moves the caret to the specified [param line] index.
+				Moves the caret to the specified [param line] index. The caret column will be moved to the same visual position it was at the last time [method set_caret_column] was called, or clamped to the end of the line.
 				If [param adjust_viewport] is [code]true[/code], the viewport will center at the caret position after the move occurs.
 				If [param can_be_hidden] is [code]true[/code], the specified [param line] can be hidden.
+				If [param wrap_index] is [code]-1[/code], the caret column will be clamped to the [param line]'s length. If [param wrap_index] is greater than [code]-1[/code], the column will be moved to attempt to match the visual x position on the line's [param wrap_index] to the position from the last time [method set_caret_column] was called.
 				[b]Note:[/b] If supporting multiple carets this will not check for any overlap. See [method merge_overlapping_carets].
 			</description>
 		</method>
@@ -877,7 +1045,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="clickable" type="bool" />
 			<description>
-				Sets the gutter as clickable. This will change the mouse cursor to a pointing hand when hovering over the gutter.
+				If [code]true[/code], the mouse cursor will change to a pointing hand ([constant Control.CURSOR_POINTING_HAND]) when hovering over the gutter at the given index. See [method is_gutter_clickable] and [method set_line_gutter_clickable].
 			</description>
 		</method>
 		<method name="set_gutter_custom_draw">
@@ -885,7 +1053,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="draw_callback" type="Callable" />
 			<description>
-				Set a custom draw method for the gutter. The callback method must take the following args: [code]line: int, gutter: int, Area: Rect2[/code].
+				Set a custom draw callback for the gutter at the given index. [param draw_callback] must take the following arguments: A line index [int], a gutter index [int], and an area [Rect2]. This callback only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_gutter_draw">
@@ -893,7 +1061,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="draw" type="bool" />
 			<description>
-				Sets whether the gutter should be drawn.
+				If [code]true[/code], the gutter at the given index is drawn. The gutter type ([method set_gutter_type]) determines how it is drawn. See [method is_gutter_drawn].
 			</description>
 		</method>
 		<method name="set_gutter_name">
@@ -901,7 +1069,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="name" type="String" />
 			<description>
-				Sets the name of the gutter.
+				Sets the name of the gutter at the given index.
 			</description>
 		</method>
 		<method name="set_gutter_overwritable">
@@ -909,7 +1077,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="overwritable" type="bool" />
 			<description>
-				Sets the gutter to overwritable. See [method merge_gutters].
+				If [code]true[/code], the line data of the gutter at the given index can be overridden when using [method merge_gutters]. See [method is_gutter_overwritable].
 			</description>
 		</method>
 		<method name="set_gutter_type">
@@ -917,7 +1085,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="type" type="int" enum="TextEdit.GutterType" />
 			<description>
-				Sets the type of gutter.
+				Sets the type of gutter at the given index. Gutters can contain icons, text, or custom visuals.
 			</description>
 		</method>
 		<method name="set_gutter_width">
@@ -925,7 +1093,7 @@
 			<param index="0" name="gutter" type="int" />
 			<param index="1" name="width" type="int" />
 			<description>
-				Set the width of the gutter.
+				Set the width of the gutter at the given index.
 			</description>
 		</method>
 		<method name="set_line">
@@ -933,7 +1101,8 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="new_text" type="String" />
 			<description>
-				Sets the text for a specific line.
+				Sets the text for a specific [param line].
+				Carets on the line will attempt to keep their visual x position.
 			</description>
 		</method>
 		<method name="set_line_as_center_visible">
@@ -965,7 +1134,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the current background color of the line. Set to [code]Color(0, 0, 0, 0)[/code] for no color.
+				Sets the custom background color of the given line. If transparent, this color is applied on top of the default background color (See [theme_item background_color]). If set to [code]Color(0, 0, 0, 0)[/code], no additional color is applied.
 			</description>
 		</method>
 		<method name="set_line_gutter_clickable">
@@ -974,7 +1143,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="clickable" type="bool" />
 			<description>
-				If [param clickable] is [code]true[/code], makes the [param gutter] on [param line] clickable. See [signal gutter_clicked].
+				If [param clickable] is [code]true[/code], makes the [param gutter] on the given [param line] clickable. This is like [method set_gutter_clickable], but for a single line. If [method is_gutter_clickable] is [code]true[/code], this will not have any effect. See [method is_line_gutter_clickable] and [signal gutter_clicked].
 			</description>
 		</method>
 		<method name="set_line_gutter_icon">
@@ -983,7 +1152,7 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="icon" type="Texture2D" />
 			<description>
-				Sets the icon for [param gutter] on [param line] to [param icon].
+				Sets the icon for [param gutter] on [param line] to [param icon]. This only works when the gutter type is [constant GUTTER_TYPE_ICON] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_line_gutter_item_color">
@@ -1010,14 +1179,14 @@
 			<param index="1" name="gutter" type="int" />
 			<param index="2" name="text" type="String" />
 			<description>
-				Sets the text for [param gutter] on [param line] to [param text].
+				Sets the text for [param gutter] on [param line] to [param text]. This only works when the gutter type is [constant GUTTER_TYPE_STRING] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_overtype_mode_enabled">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], sets the user into overtype mode. When the user types in this mode, it will override existing text.
+				If [code]true[/code], enables overtype mode. In this mode, typing overrides existing text instead of inserting text. The [member ProjectSettings.input/ui_text_toggle_insert_mode] action toggles overtype mode. See [method is_overtype_mode_enabled].
 			</description>
 		</method>
 		<method name="set_search_flags">
@@ -1037,11 +1206,28 @@
 		<method name="set_selection_mode">
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="TextEdit.SelectionMode" />
-			<param index="1" name="line" type="int" default="-1" />
-			<param index="2" name="column" type="int" default="-1" />
-			<param index="3" name="caret_index" type="int" default="0" />
 			<description>
 				Sets the current selection mode.
+			</description>
+		</method>
+		<method name="set_selection_origin_column">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="caret_index" type="int" default="0" />
+			<description>
+				Sets the selection origin column to the [param column] for the given [param caret_index]. If the selection origin is moved to the caret position, the selection will deselect.
+			</description>
+		</method>
+		<method name="set_selection_origin_line">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="can_be_hidden" type="bool" default="true" />
+			<param index="2" name="wrap_index" type="int" default="-1" />
+			<param index="3" name="caret_index" type="int" default="0" />
+			<description>
+				Sets the selection origin line to the [param line] for the given [param caret_index]. If the selection origin is moved to the caret position, the selection will deselect.
+				If [param can_be_hidden] is [code]false[/code], The line will be set to the nearest unhidden line below or above.
+				If [param wrap_index] is [code]-1[/code], the selection origin column will be clamped to the [param line]'s length. If [param wrap_index] is greater than [code]-1[/code], the column will be moved to attempt to match the visual x position on the line's [param wrap_index] to the position from the last time [method set_selection_origin_column] or [method select] was called.
 			</description>
 		</method>
 		<method name="set_tab_size">
@@ -1058,6 +1244,12 @@
 				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
 			</description>
 		</method>
+		<method name="skip_selection_for_next_occurrence">
+			<return type="void" />
+			<description>
+				Moves a selection and a caret for the next occurrence of the current selection. If there is no active selection, moves to the next occurrence of the word under caret.
+			</description>
+		</method>
 		<method name="start_action">
 			<return type="void" />
 			<param index="0" name="action" type="int" enum="TextEdit.EditAction" />
@@ -1071,7 +1263,7 @@
 			<param index="0" name="from_line" type="int" />
 			<param index="1" name="to_line" type="int" />
 			<description>
-				Swaps the two lines.
+				Swaps the two lines. Carets will be swapped with the lines.
 			</description>
 		</method>
 		<method name="tag_saved_version">
@@ -1089,7 +1281,10 @@
 	</methods>
 	<members>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
-			If [member wrap_mode] is set to [constant LINE_WRAPPING_BOUNDARY], sets text wrapping mode. To see how each mode behaves, see [enum TextServer.AutowrapMode].
+			If [member wrap_mode] is set to [constant LINE_WRAPPING_BOUNDARY], sets text wrapping mode.
+		</member>
+		<member name="backspace_deletes_composite_character_enabled" type="bool" setter="set_backspace_deletes_composite_character_enabled" getter="is_backspace_deletes_composite_character_enabled" default="false">
+			If [code]true[/code] and [member caret_mid_grapheme] is [code]false[/code], backspace deletes an entire composite character such as ❤️‍🩹, instead of deleting part of the composite character.
 		</member>
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			If [code]true[/code], makes the caret blink.
@@ -1106,10 +1301,10 @@
 		</member>
 		<member name="caret_move_on_right_click" type="bool" setter="set_move_caret_on_right_click_enabled" getter="is_move_caret_on_right_click_enabled" default="true">
 			If [code]true[/code], a right-click moves the caret at the mouse position before displaying the context menu.
-			If [code]false[/code], the context menu disregards mouse location.
+			If [code]false[/code], the context menu ignores mouse location.
 		</member>
 		<member name="caret_multiple" type="bool" setter="set_multiple_carets_enabled" getter="is_multiple_carets_enabled" default="true">
-			Sets if multiple carets are allowed.
+			If [code]true[/code], multiple carets are allowed. Left-clicking with [kbd]Alt[/kbd] adds a new caret. See [method add_caret] and [method get_caret_count].
 		</member>
 		<member name="caret_type" type="int" setter="set_caret_type" getter="get_caret_type" enum="TextEdit.CaretType" default="0">
 			Set the type of caret to draw.
@@ -1117,11 +1312,14 @@
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
+		<member name="custom_word_separators" type="String" setter="set_custom_word_separators" getter="get_custom_word_separators" default="&quot;&quot;">
+			The characters to consider as word delimiters if [member use_custom_word_separators] is [code]true[/code]. The characters should be defined without separation, for example [code]#_![/code].
+		</member>
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
 		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
-			If [code]true[/code], allow drag and drop of selected text.
+			If [code]true[/code], allow drag and drop of selected text. Text can still be dropped from other sources.
 		</member>
 		<member name="draw_control_chars" type="bool" setter="set_draw_control_chars" getter="get_draw_control_chars" default="false">
 			If [code]true[/code], control characters are displayed.
@@ -1132,8 +1330,14 @@
 		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs" default="false">
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
+		</member>
+		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
+			If [code]true[/code], "Emoji and Symbols" menu is enabled.
+		</member>
+		<member name="empty_selection_clipboard_enabled" type="bool" setter="set_empty_selection_clipboard_enabled" getter="is_empty_selection_clipboard_enabled" default="true">
+			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled" default="false">
@@ -1142,15 +1346,18 @@
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
+		<member name="indent_wrapped_lines" type="bool" setter="set_indent_wrapped_lines" getter="is_indent_wrapped_lines" default="false">
+			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
 			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
 			[b]Note:[/b] This method is only implemented on Linux.
 		</member>
 		<member name="minimap_draw" type="bool" setter="set_draw_minimap" getter="is_drawing_minimap" default="false">
-			If [code]true[/code], a minimap is shown, providing an outline of your source code.
+			If [code]true[/code], a minimap is shown, providing an outline of your source code. The minimap uses a fixed-width text size.
 		</member>
 		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
 			The width, in pixels, of the minimap.
@@ -1160,7 +1367,10 @@
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
 		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines.
+			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines. When both this property and [member scroll_fit_content_width] are [code]true[/code], no scrollbars will be displayed.
+		</member>
+		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
+			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
@@ -1191,7 +1401,11 @@
 			Set additional options for BiDi override.
 		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
-			Sets the [SyntaxHighlighter] to use.
+			The syntax highlighter to use.
+			[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
+		</member>
+		<member name="tab_input_mode" type="bool" setter="set_tab_input_mode" getter="get_tab_input_mode" default="true">
+			If [code]true[/code], [member ProjectSettings.input/ui_text_indent] input [code]Tab[/code] character, otherwise it moves keyboard focus to the next [Control] in the scene.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [TextEdit].
@@ -1199,8 +1413,17 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
 		</member>
+		<member name="use_custom_word_separators" type="bool" setter="set_use_custom_word_separators" getter="is_custom_word_separators_enabled" default="false">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will use the behavior of [member use_default_word_separators]. If [code]true[/code], it will also stop the caret if a character within [member custom_word_separators] is detected. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
+		</member>
+		<member name="use_default_word_separators" type="bool" setter="set_use_default_word_separators" getter="is_default_word_separators_enabled" default="true">
+			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will stop moving caret only if a space or punctuation is detected. If [code]true[/code], it will also stop the caret if a character is part of [code]!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, or the Unicode CJK Punctuation table. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
+		</member>
 		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
-			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
+			If [code]true[/code], the native virtual keyboard is enabled on platforms that support it.
+		</member>
+		<member name="virtual_keyboard_show_on_focus" type="bool" setter="set_virtual_keyboard_show_on_focus" getter="get_virtual_keyboard_show_on_focus" default="true">
+			If [code]true[/code], the native virtual keyboard is shown on focus events on platforms that support it.
 		</member>
 		<member name="wrap_mode" type="int" setter="set_line_wrapping_mode" getter="get_line_wrapping_mode" enum="TextEdit.LineWrappingMode" default="0">
 			Sets the line wrapping mode to use.
@@ -1209,7 +1432,7 @@
 	<signals>
 		<signal name="caret_changed">
 			<description>
-				Emitted when the caret changes position.
+				Emitted when any caret changes position.
 			</description>
 		</signal>
 		<signal name="gutter_added">
@@ -1339,7 +1562,10 @@
 		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
 			Inserts soft hyphen (SHY) character.
 		</constant>
-		<constant name="MENU_MAX" value="30" enum="MenuItems">
+		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
+			Opens system emoji and symbol picker.
+		</constant>
+		<constant name="MENU_MAX" value="31" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="ACTION_NONE" value="0" enum="EditAction">
@@ -1391,17 +1617,17 @@
 			Line wrapping occurs at the control boundary, beyond what would normally be visible.
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
-			Draw a string.
+			When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
 		</constant>
 		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
-			Draw an icon.
+			When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
 		</constant>
 		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
-			Custom draw.
+			When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)" deprecated="Assign a [StyleBoxFlat] to [theme_item normal] instead, and set [member StyleBoxFlat.bg_color] to the desired background color.">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
@@ -1416,7 +1642,7 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the [TextEdit].
 		</theme_item>
 		<theme_item name="font_placeholder_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.6)">
@@ -1444,11 +1670,14 @@
 			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size. If set to [code]0[/code] or lower, the caret width is automatically set to 1 pixel and multiplied by the display scaling factor.
 		</theme_item>
 		<theme_item name="line_spacing" data_type="constant" type="int" default="4">
-			Sets the spacing between the lines.
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="wrap_offset" data_type="constant" type="int" default="10">
+			Sets an additional margin for line wrapping width.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			Sets the default [Font].
@@ -1468,7 +1697,7 @@
 		<theme_item name="normal" data_type="style" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
-		<theme_item name="read_only" data_type="style" type="StyleBox">
+		<theme_item name="read_only" data_type="style" type="StyleBox" keywords="enabled, disabled, editable">
 			Sets the [StyleBox] of this [TextEdit] when [member editable] is disabled.
 		</theme_item>
 	</theme_items>

@@ -48,11 +48,20 @@ Error ZIPPacker::close() {
 
 	Error err = zipClose(zf, nullptr) == ZIP_OK ? OK : FAILED;
 	if (err == OK) {
-		DEV_ASSERT(fa == nullptr);
+		DEV_ASSERT(fa.is_null());
 		zf = nullptr;
 	}
 
 	return err;
+}
+
+void ZIPPacker::set_compression_level(int p_compression_level) {
+	ERR_FAIL_COND_MSG(p_compression_level < Z_DEFAULT_COMPRESSION || p_compression_level > Z_BEST_COMPRESSION, "Invalid compression level.");
+	compression_level = p_compression_level;
+}
+
+int ZIPPacker::get_compression_level() const {
+	return compression_level;
 }
 
 Error ZIPPacker::start_file(const String &p_path) {
@@ -72,7 +81,24 @@ Error ZIPPacker::start_file(const String &p_path) {
 	zipfi.internal_fa = 0;
 	zipfi.external_fa = 0;
 
-	int err = zipOpenNewFileInZip(zf, p_path.utf8().get_data(), &zipfi, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+	int err = zipOpenNewFileInZip4(zf,
+			p_path.utf8().get_data(),
+			&zipfi,
+			nullptr,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			Z_DEFLATED,
+			compression_level,
+			0,
+			-MAX_WBITS,
+			DEF_MEM_LEVEL,
+			Z_DEFAULT_STRATEGY,
+			nullptr,
+			0,
+			0, // "version made by", indicates the compatibility of the file attribute information (the `external_fa` field above).
+			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
 	return err == ZIP_OK ? OK : FAILED;
 }
 
@@ -90,6 +116,9 @@ Error ZIPPacker::close_file() {
 
 void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZIPPacker::open, DEFVAL(Variant(APPEND_CREATE)));
+	ClassDB::bind_method(D_METHOD("set_compression_level", "compression_level"), &ZIPPacker::set_compression_level);
+	ClassDB::bind_method(D_METHOD("get_compression_level"), &ZIPPacker::get_compression_level);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_level"), "set_compression_level", "get_compression_level");
 	ClassDB::bind_method(D_METHOD("start_file", "path"), &ZIPPacker::start_file);
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
 	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
@@ -98,9 +127,15 @@ void ZIPPacker::_bind_methods() {
 	BIND_ENUM_CONSTANT(APPEND_CREATE);
 	BIND_ENUM_CONSTANT(APPEND_CREATEAFTER);
 	BIND_ENUM_CONSTANT(APPEND_ADDINZIP);
+
+	BIND_ENUM_CONSTANT(COMPRESSION_DEFAULT);
+	BIND_ENUM_CONSTANT(COMPRESSION_NONE);
+	BIND_ENUM_CONSTANT(COMPRESSION_FAST);
+	BIND_ENUM_CONSTANT(COMPRESSION_BEST);
 }
 
-ZIPPacker::ZIPPacker() {}
+ZIPPacker::ZIPPacker() {
+}
 
 ZIPPacker::~ZIPPacker() {
 	if (fa.is_valid()) {

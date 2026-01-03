@@ -28,10 +28,12 @@
 #include "hb.hh"
 #include "hb-face.hh"
 #include "hb-font.hh"
+#include "hb-geometry.hh"
 
 #define HB_PAINT_FUNCS_IMPLEMENT_CALLBACKS \
   HB_PAINT_FUNC_IMPLEMENT (push_transform) \
   HB_PAINT_FUNC_IMPLEMENT (pop_transform) \
+  HB_PAINT_FUNC_IMPLEMENT (color_glyph) \
   HB_PAINT_FUNC_IMPLEMENT (push_clip_glyph) \
   HB_PAINT_FUNC_IMPLEMENT (push_clip_rectangle) \
   HB_PAINT_FUNC_IMPLEMENT (pop_clip) \
@@ -71,12 +73,23 @@ struct hb_paint_funcs_t
                        float xx, float yx,
                        float xy, float yy,
                        float dx, float dy)
-  { func.push_transform (this, paint_data,
+  {
+    // Handle -0.f to avoid -0.f == 0.f in the transform matrix.
+    if (dx == -0.f) dx = 0.f;
+    if (dy == -0.f) dy = 0.f;
+    func.push_transform (this, paint_data,
                          xx, yx, xy, yy, dx, dy,
                          !user_data ? nullptr : user_data->push_transform); }
   void pop_transform (void *paint_data)
   { func.pop_transform (this, paint_data,
                         !user_data ? nullptr : user_data->pop_transform); }
+  bool color_glyph (void *paint_data,
+                    hb_codepoint_t glyph,
+                    hb_font_t *font)
+  { return func.color_glyph (this, paint_data,
+                             glyph,
+                             font,
+                             !user_data ? nullptr : user_data->push_clip_glyph); }
   void push_clip_glyph (void *paint_data,
                         hb_codepoint_t glyph,
                         hb_font_t *font)
@@ -149,77 +162,84 @@ struct hb_paint_funcs_t
 
   /* Internal specializations. */
 
-  void push_root_transform (void *paint_data,
+  void push_font_transform (void *paint_data,
                             const hb_font_t *font)
   {
     float upem = font->face->get_upem ();
     int xscale = font->x_scale, yscale = font->y_scale;
-    float slant = font->slant_xy;
 
     push_transform (paint_data,
-		    xscale/upem, 0, slant * yscale/upem, yscale/upem, 0, 0);
+		    xscale/upem, 0,
+		    0, yscale/upem,
+		    0, 0);
   }
 
-  void push_inverse_root_transform (void *paint_data,
-                                    hb_font_t *font)
+  void push_inverse_font_transform (void *paint_data,
+                                    const hb_font_t *font)
   {
     float upem = font->face->get_upem ();
     int xscale = font->x_scale ? font->x_scale : upem;
     int yscale = font->y_scale ? font->y_scale : upem;
-    float slant = font->slant_xy;
 
     push_transform (paint_data,
-		    upem/xscale, 0, -slant * upem/xscale, upem/yscale, 0, 0);
+		    upem/xscale, 0,
+		    0, upem/yscale,
+		    0, 0);
   }
 
-  HB_NODISCARD
-  bool push_translate (void *paint_data,
+  void push_transform (void *paint_data, hb_transform_t<float> t)
+  {
+    push_transform (paint_data, t.xx, t.yx, t.xy, t.yy, t.x0, t.y0);
+  }
+
+  void push_translate (void *paint_data,
                        float dx, float dy)
   {
-    if (!dx && !dy)
-      return false;
-
     push_transform (paint_data,
-		    1.f, 0.f, 0.f, 1.f, dx, dy);
-    return true;
+		    hb_transform_t<float>::translation (dx, dy));
   }
 
-  HB_NODISCARD
-  bool push_scale (void *paint_data,
+  void push_scale (void *paint_data,
                    float sx, float sy)
   {
-    if (sx == 1.f && sy == 1.f)
-      return false;
-
     push_transform (paint_data,
-		    sx, 0.f, 0.f, sy, 0.f, 0.f);
-    return true;
+		    hb_transform_t<float>::scaling (sx, sy));
+  }
+  void push_scale_around_center (void *paint_data,
+				 float sx, float sy,
+				 float cx, float cy)
+  {
+    push_transform (paint_data,
+		    hb_transform_t<float>::scaling_around_center (sx, sy, cx, cy));
   }
 
-  HB_NODISCARD
-  bool push_rotate (void *paint_data,
+  void push_rotate (void *paint_data,
                     float a)
   {
-    if (!a)
-      return false;
-
-    float cc = cosf (a * HB_PI);
-    float ss = sinf (a * HB_PI);
-    push_transform (paint_data, cc, ss, -ss, cc, 0.f, 0.f);
-    return true;
+    push_transform (paint_data,
+		    hb_transform_t<float>::rotation (a * HB_PI));
   }
 
-  HB_NODISCARD
-  bool push_skew (void *paint_data,
+  void push_rotate_around_center (void *paint_data,
+				  float a,
+				  float cx, float cy)
+  {
+    push_transform (paint_data,
+		    hb_transform_t<float>::rotation_around_center (a * HB_PI, cx, cy));
+  }
+
+  void push_skew (void *paint_data,
                   float sx, float sy)
   {
-    if (!sx && !sy)
-      return false;
-
-    float x = tanf (-sx * HB_PI);
-    float y = tanf (+sy * HB_PI);
-    push_transform (paint_data, 1.f, y, x, 1.f, 0.f, 0.f);
-    return true;
+    push_transform (paint_data,
+		    hb_transform_t<float>::skewing (-sx * HB_PI, sy * HB_PI));
+  }
+  void push_skew_around_center (void *paint_data,
+				float sx, float sy,
+				float cx, float cy)
+  {
+    push_transform (paint_data,
+		    hb_transform_t<float>::skewing_around_center (-sx * HB_PI, sy * HB_PI, cx, cy));
   }
 };
 DECLARE_NULL_INSTANCE (hb_paint_funcs_t);

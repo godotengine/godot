@@ -14,3 +14,6 @@ func test():
 			print("This won't match")
 		_:
 			print("This will match")
+
+	match 0:
+		pass

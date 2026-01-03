@@ -30,27 +30,25 @@
 
 #include "atlas_texture.h"
 
-#include "core/core_string_names.h"
-
 int AtlasTexture::get_width() const {
-	if (region.size.width == 0) {
+	if (rounded_region.size.width == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_width();
 		}
 		return 1;
 	} else {
-		return region.size.width + margin.size.width;
+		return rounded_region.size.width + margin.size.width;
 	}
 }
 
 int AtlasTexture::get_height() const {
-	if (region.size.height == 0) {
+	if (rounded_region.size.height == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_height();
 		}
 		return 1;
 	} else {
-		return region.size.height + margin.size.height;
+		return rounded_region.size.height + margin.size.height;
 	}
 }
 
@@ -96,6 +94,7 @@ void AtlasTexture::set_region(const Rect2 &p_region) {
 		return;
 	}
 	region = p_region;
+	rounded_region = Rect2(p_region.position, p_region.size.floor());
 	emit_changed();
 }
 
@@ -124,6 +123,19 @@ bool AtlasTexture::has_filter_clip() const {
 	return filter_clip;
 }
 
+Rect2 AtlasTexture::_get_region_rect() const {
+	Rect2 rc = rounded_region;
+	if (atlas.is_valid()) {
+		if (rc.size.width == 0) {
+			rc.size.width = atlas->get_width();
+		}
+		if (rc.size.height == 0) {
+			rc.size.height = atlas->get_height();
+		}
+	}
+	return rc;
+}
+
 void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_atlas", "atlas"), &AtlasTexture::set_atlas);
 	ClassDB::bind_method(D_METHOD("get_atlas"), &AtlasTexture::get_atlas);
@@ -144,70 +156,56 @@ void AtlasTexture::_bind_methods() {
 }
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
-	if (!atlas.is_valid()) {
+	if (atlas.is_null()) {
 		return;
 	}
-
-	Rect2 rc = region;
-
-	if (rc.size.width == 0) {
-		rc.size.width = atlas->get_width();
-	}
-
-	if (rc.size.height == 0) {
-		rc.size.height = atlas->get_height();
-	}
-
+	const Rect2 rc = _get_region_rect();
 	atlas->draw_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose, filter_clip);
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
-	if (!atlas.is_valid()) {
+	if (atlas.is_null()) {
 		return;
 	}
 
-	Rect2 rc = region;
+	Rect2 src_rect = Rect2(0, 0, get_width(), get_height());
 
-	if (rc.size.width == 0) {
-		rc.size.width = atlas->get_width();
+	Rect2 dr;
+	Rect2 src_c;
+	if (get_rect_region(p_rect, src_rect, dr, src_c)) {
+		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
 	}
-
-	if (rc.size.height == 0) {
-		rc.size.height = atlas->get_height();
-	}
-
-	Vector2 scale = p_rect.size / (region.size + margin.size);
-	Rect2 dr(p_rect.position + margin.position * scale, rc.size * scale);
-
-	atlas->draw_rect_region(p_canvas_item, dr, rc, p_modulate, p_transpose, filter_clip);
 }
 
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
-	//this might not necessarily work well if using a rect, needs to be fixed properly
-	if (!atlas.is_valid()) {
+	// This might not necessarily work well if using a rect, needs to be fixed properly.
+	if (atlas.is_null()) {
 		return;
 	}
 
 	Rect2 dr;
 	Rect2 src_c;
-	get_rect_region(p_rect, p_src_rect, dr, src_c);
-
-	atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+	if (get_rect_region(p_rect, p_src_rect, dr, src_c)) {
+		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+	}
 }
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
-	if (!atlas.is_valid()) {
+	if (atlas.is_null()) {
 		return false;
 	}
 
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
-		src.size = region.size;
+		src.size = rounded_region.size;
+	}
+	if (src.size == Size2() && atlas.is_valid()) {
+		src.size = atlas->get_size();
 	}
 	Vector2 scale = p_rect.size / src.size;
 
-	src.position += (region.position - margin.position);
-	Rect2 src_clipped = region.intersection(src);
+	src.position += (rounded_region.position - margin.position);
+	Rect2 src_clipped = _get_region_rect().intersection(src);
 	if (src_clipped.size == Size2()) {
 		return false;
 	}
@@ -226,14 +224,14 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
-	if (!atlas.is_valid()) {
+	if (atlas.is_null()) {
 		return true;
 	}
 
-	int x = p_x + region.position.x - margin.position.x;
-	int y = p_y + region.position.y - margin.position.y;
+	int x = p_x + rounded_region.position.x - margin.position.x;
+	int y = p_y + rounded_region.position.y - margin.position.y;
 
-	// margin edge may outside of atlas
+	// Margin edge may outside of atlas.
 	if (x < 0 || x >= atlas->get_width()) {
 		return false;
 	}
@@ -245,16 +243,14 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 }
 
 Ref<Image> AtlasTexture::get_image() const {
-	if (atlas.is_null() || region.size.x <= 0 || region.size.y <= 0) {
+	if (atlas.is_null()) {
 		return Ref<Image>();
 	}
 
-	Ref<Image> atlas_image = atlas->get_image();
+	const Ref<Image> &atlas_image = atlas->get_image();
 	if (atlas_image.is_null()) {
 		return Ref<Image>();
 	}
 
-	return atlas_image->get_region(region);
+	return atlas_image->get_region(_get_region_rect());
 }
-
-AtlasTexture::AtlasTexture() {}

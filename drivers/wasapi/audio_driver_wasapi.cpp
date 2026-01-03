@@ -35,9 +35,10 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <stdint.h> // INT32_MAX
-
 #include <functiondiscoverykeys.h>
+
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
 
 // Define IAudioClient3 if not already defined by MinGW headers
 #if defined __MINGW32__ || defined __MINGW64__
@@ -52,6 +53,7 @@ typedef interface IAudioClient3 IAudioClient3;
 #ifndef __IAudioClient3_INTERFACE_DEFINED__
 #define __IAudioClient3_INTERFACE_DEFINED__
 
+// clang-format off
 MIDL_INTERFACE("7ED4EE07-8E67-4CD4-8C1A-2B7A5987AD42")
 IAudioClient3 : public IAudioClient2 {
 public:
@@ -83,13 +85,14 @@ public:
 			/* [annotation][in] */
 			_In_opt_ LPCGUID AudioSessionGuid) = 0;
 };
+// clang-format on
 __CRT_UUID_DECL(IAudioClient3, 0x7ED4EE07, 0x8E67, 0x4CD4, 0x8C, 0x1A, 0x2B, 0x7A, 0x59, 0x87, 0xAD, 0x42)
 
 #endif // __IAudioClient3_INTERFACE_DEFINED__
 
 #endif // __MINGW32__ || __MINGW64__
 
-#ifndef PKEY_Device_FriendlyName
+#ifndef PKEY_Device_FriendlyNameGodot
 
 #undef DEFINE_PROPERTYKEY
 /* clang-format off */
@@ -97,7 +100,7 @@ __CRT_UUID_DECL(IAudioClient3, 0x7ED4EE07, 0x8E67, 0x4CD4, 0x8C, 0x1A, 0x2B, 0x7
 	const PROPERTYKEY id = { { a, b, c, { d, e, f, g, h, i, j, k, } }, l };
 /* clang-format on */
 
-DEFINE_PROPERTYKEY(PKEY_Device_FriendlyName, 0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14);
+DEFINE_PROPERTYKEY(PKEY_Device_FriendlyNameGodot, 0xa45c254e, 0xdf1c, 0x4efd, 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0, 14);
 #endif
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
@@ -120,25 +123,19 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 static bool default_output_device_changed = false;
 static bool default_input_device_changed = false;
+static int output_reinit_countdown = 0;
+static int input_reinit_countdown = 0;
 
-// Silence warning due to a COM API weirdness (GH-35194).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness (GH-35194).
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
-	IMMDeviceEnumerator *_pEnumerator = nullptr;
 
 public:
+	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
+
 	CMMNotificationClient() {}
-	virtual ~CMMNotificationClient() {
-		if ((_pEnumerator) != nullptr) {
-			(_pEnumerator)->Release();
-			(_pEnumerator) = nullptr;
-		}
-	}
+	virtual ~CMMNotificationClient() {}
 
 	ULONG STDMETHODCALLTYPE AddRef() {
 		return InterlockedIncrement(&_cRef);
@@ -195,16 +192,17 @@ public:
 	}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
 Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_input, bool p_reinit, bool p_no_audio_client_3) {
+	// This function can be called recursively, so clean up before starting:
+	audio_device_finish(p_device);
+
 	WAVEFORMATEX *pwfex;
-	IMMDeviceEnumerator *enumerator = nullptr;
-	IMMDevice *output_device = nullptr;
+	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
+	ComPtr<IMMDevice> output_device = nullptr;
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -212,7 +210,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	if (p_device->device_name == "Default") {
 		hr = enumerator->GetDefaultAudioEndpoint(p_input ? eCapture : eRender, eConsole, &output_device);
 	} else {
-		IMMDeviceCollection *devices = nullptr;
+		ComPtr<IMMDeviceCollection> devices = nullptr;
 
 		hr = enumerator->EnumAudioEndpoints(p_input ? eCapture : eRender, DEVICE_STATE_ACTIVE, &devices);
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -225,31 +223,33 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 		for (ULONG i = 0; i < count && !found; i++) {
-			IMMDevice *tmp_device = nullptr;
+			ComPtr<IMMDevice> tmp_device = nullptr;
 
 			hr = devices->Item(i, &tmp_device);
-			ERR_BREAK(hr != S_OK);
+			ERR_BREAK_MSG(hr != S_OK, "Cannot get devices item.");
 
-			IPropertyStore *props = nullptr;
+			ComPtr<IPropertyStore> props = nullptr;
 			hr = tmp_device->OpenPropertyStore(STGM_READ, &props);
-			ERR_BREAK(hr != S_OK);
+			ERR_BREAK_MSG(hr != S_OK, "Cannot open property store.");
 
 			PROPVARIANT propvar;
 			PropVariantInit(&propvar);
 
-			hr = props->GetValue(PKEY_Device_FriendlyName, &propvar);
-			ERR_BREAK(hr != S_OK);
+			hr = props->GetValue(PKEY_Device_FriendlyNameGodot, &propvar);
+			ERR_BREAK_MSG(hr != S_OK, "Cannot get value.");
 
 			if (p_device->device_name == String(propvar.pwszVal)) {
 				hr = tmp_device->GetId(&strId);
-				ERR_BREAK(hr != S_OK);
+				if (unlikely(hr != S_OK)) {
+					PropVariantClear(&propvar);
+					ERR_PRINT("Cannot get device ID string.");
+					break;
+				}
 
 				found = true;
 			}
 
 			PropVariantClear(&propvar);
-			props->Release();
-			tmp_device->Release();
 		}
 
 		if (found) {
@@ -275,10 +275,14 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 	}
 
+	if (notif_client.enumerator != nullptr) {
+		notif_client.enumerator->UnregisterEndpointNotificationCallback(&notif_client);
+		notif_client.enumerator = nullptr;
+	}
 	hr = enumerator->RegisterEndpointNotificationCallback(&notif_client);
-	SAFE_RELEASE(enumerator)
-
-	if (hr != S_OK) {
+	if (hr == S_OK) {
+		notif_client.enumerator = enumerator;
+	} else {
 		ERR_PRINT("WASAPI: RegisterEndpointNotificationCallback error");
 	}
 
@@ -303,8 +307,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		hr = output_device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
 	}
 
-	SAFE_RELEASE(output_device)
-
 	if (p_reinit) {
 		if (hr != S_OK) {
 			return ERR_CANT_OPEN;
@@ -325,6 +327,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 
 	hr = p_device->audio_client->GetMixFormat(&pwfex);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	// From this point onward, CoTaskMemFree(pwfex) must be called before returning or pwfex will leak!
 
 	print_verbose("WASAPI: wFormatTag = " + itos(pwfex->wFormatTag));
 	print_verbose("WASAPI: nChannels = " + itos(pwfex->nChannels));
@@ -348,6 +351,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			print_verbose("WASAPI: closest->cbSize = " + itos(closest->cbSize));
 
 			WARN_PRINT("WASAPI: Using closest match instead");
+			CoTaskMemFree(pwfex);
 			pwfex = closest;
 		}
 	}
@@ -367,11 +371,13 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			p_device->format_tag = WAVE_FORMAT_IEEE_FLOAT;
 		} else {
 			ERR_PRINT("WASAPI: Format not supported");
+			CoTaskMemFree(pwfex);
 			ERR_FAIL_V(ERR_CANT_OPEN);
 		}
 	} else {
 		if (p_device->format_tag != WAVE_FORMAT_PCM && p_device->format_tag != WAVE_FORMAT_IEEE_FLOAT) {
 			ERR_PRINT("WASAPI: Format not supported");
+			CoTaskMemFree(pwfex);
 			ERR_FAIL_V(ERR_CANT_OPEN);
 		}
 	}
@@ -384,10 +390,28 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 		}
 		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
-		ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+
+		if (p_reinit) {
+			// In case we're trying to re-initialize the device, prevent throwing this error on the console,
+			// otherwise if there is currently no device available this will spam the console.
+			if (hr != S_OK) {
+				print_verbose("WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+				CoTaskMemFree(pwfex);
+				return ERR_CANT_OPEN;
+			}
+		} else {
+			if (unlikely(hr != S_OK)) {
+				CoTaskMemFree(pwfex);
+				ERR_FAIL_V_MSG(ERR_CANT_OPEN, "WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16) + ".");
+			}
+		}
+
 		UINT32 max_frames;
 		hr = p_device->audio_client->GetBufferSize(&max_frames);
-		ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+		if (unlikely(hr != S_OK)) {
+			CoTaskMemFree(pwfex);
+			ERR_FAIL_V(ERR_CANT_OPEN);
+		}
 
 		// Due to WASAPI Shared Mode we have no control of the buffer size
 		if (!p_input) {
@@ -419,7 +443,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		if (hr != S_OK) {
 			print_verbose("WASAPI: GetSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
 			CoTaskMemFree(pwfex);
-			SAFE_RELEASE(output_device)
 			return audio_device_init(p_device, p_input, p_reinit, true);
 		}
 
@@ -427,7 +450,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// so we need to select the closest multiple to the user-specified latency.
 		UINT32 desired_period_frames = target_latency_ms * mix_rate / 1000;
 		UINT32 period_frames = (desired_period_frames / fundamental_period_frames) * fundamental_period_frames;
-		if (ABS((int64_t)period_frames - (int64_t)desired_period_frames) > ABS((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
+		if (Math::abs((int64_t)period_frames - (int64_t)desired_period_frames) > Math::abs((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
 			period_frames = period_frames + fundamental_period_frames;
 		}
 		period_frames = CLAMP(period_frames, min_period_frames, max_period_frames);
@@ -441,7 +464,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		if (hr != S_OK) {
 			print_verbose("WASAPI: InitializeSharedAudioStream failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
 			CoTaskMemFree(pwfex);
-			SAFE_RELEASE(output_device);
 			return audio_device_init(p_device, p_input, p_reinit, true);
 		} else {
 			uint32_t output_latency_in_frames;
@@ -453,7 +475,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 			} else {
 				print_verbose("WASAPI: GetCurrentSharedModeEnginePeriod failed with error 0x" + String::num_uint64(hr, 16) + ", falling back to IAudioClient.");
 				CoTaskMemFree(pwfex);
-				SAFE_RELEASE(output_device);
 				return audio_device_init(p_device, p_input, p_reinit, true);
 			}
 		}
@@ -464,11 +485,13 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	} else {
 		hr = p_device->audio_client->GetService(IID_IAudioRenderClient, (void **)&p_device->render_client);
 	}
-	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
+	if (unlikely(hr != S_OK)) {
+		CoTaskMemFree(pwfex);
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
 
 	// Free memory
 	CoTaskMemFree(pwfex);
-	SAFE_RELEASE(output_device)
 
 	return OK;
 }
@@ -476,6 +499,11 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	Error err = audio_device_init(&audio_output, false, p_reinit);
 	if (err != OK) {
+		// We've tried to init the device, but have failed. Time to clean up.
+		Error finish_err = finish_output_device();
+		if (finish_err != OK) {
+			ERR_PRINT("WASAPI: finish_output_device error after failed output audio_device_init");
+		}
 		return err;
 	}
 
@@ -514,8 +542,17 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 }
 
 Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
+	if (audio_input.active.is_set()) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
+		// We've tried to init the device, but have failed. Time to clean up.
+		Error finish_err = finish_input_device();
+		if (finish_err != OK) {
+			ERR_PRINT("WASAPI: finish_input_device error after failed input audio_device_init");
+		}
 		return err;
 	}
 
@@ -557,12 +594,10 @@ Error AudioDriverWASAPI::init() {
 
 	target_latency_ms = Engine::get_singleton()->get_audio_output_latency();
 
-	Error err = init_output_device();
-	if (err != OK) {
-		ERR_PRINT("WASAPI: init_output_device error");
-	}
-
 	exit_thread.clear();
+
+	Error err = init_output_device();
+	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_output_device error.");
 
 	thread.start(thread_func, this);
 
@@ -583,8 +618,8 @@ AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 
 PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 	PackedStringArray list;
-	IMMDeviceCollection *devices = nullptr;
-	IMMDeviceEnumerator *enumerator = nullptr;
+	ComPtr<IMMDeviceCollection> devices = nullptr;
+	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 
 	list.push_back(String("Default"));
 
@@ -599,30 +634,26 @@ PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	for (ULONG i = 0; i < count; i++) {
-		IMMDevice *output_device = nullptr;
+		ComPtr<IMMDevice> output_device = nullptr;
 
 		hr = devices->Item(i, &output_device);
 		ERR_BREAK(hr != S_OK);
 
-		IPropertyStore *props = nullptr;
+		ComPtr<IPropertyStore> props = nullptr;
 		hr = output_device->OpenPropertyStore(STGM_READ, &props);
 		ERR_BREAK(hr != S_OK);
 
 		PROPVARIANT propvar;
 		PropVariantInit(&propvar);
 
-		hr = props->GetValue(PKEY_Device_FriendlyName, &propvar);
+		hr = props->GetValue(PKEY_Device_FriendlyNameGodot, &propvar);
 		ERR_BREAK(hr != S_OK);
 
 		list.push_back(String(propvar.pwszVal));
 
 		PropVariantClear(&propvar);
-		props->Release();
-		output_device->Release();
 	}
 
-	devices->Release();
-	enumerator->Release();
 	return list;
 }
 
@@ -739,12 +770,17 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->start_counting_ticks();
 
 		if (avail_frames > 0 && ad->audio_output.audio_client) {
+			UINT32 buffer_size;
 			UINT32 cur_frames;
 			bool invalidated = false;
-			HRESULT hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
+			HRESULT hr = ad->audio_output.audio_client->GetBufferSize(&buffer_size);
+			if (hr != S_OK) {
+				ERR_PRINT("WASAPI: GetBufferSize error");
+			}
+			hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
 				// Check how much frames are available on the WASAPI buffer
-				UINT32 write_frames = MIN(ad->buffer_frames - cur_frames, avail_frames);
+				UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
 				if (write_frames > 0) {
 					BYTE *buffer = nullptr;
 					hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
@@ -839,9 +875,15 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		}
 
 		if (!ad->audio_output.audio_client) {
-			Error err = ad->init_output_device(true);
-			if (err == OK) {
-				ad->start();
+			if (output_reinit_countdown < 1) {
+				Error err = ad->init_output_device(true);
+				if (err == OK) {
+					ad->start();
+				} else {
+					output_reinit_countdown = 1000;
+				}
+			} else {
+				output_reinit_countdown--;
 			}
 
 			avail_frames = 0;
@@ -912,9 +954,15 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			}
 
 			if (!ad->audio_input.audio_client) {
-				Error err = ad->init_input_device(true);
-				if (err == OK) {
-					ad->input_start();
+				if (input_reinit_countdown < 1) {
+					Error err = ad->init_input_device(true);
+					if (err == OK) {
+						ad->input_start();
+					} else {
+						input_reinit_countdown = 1000;
+					}
+				} else {
+					input_reinit_countdown--;
 				}
 			}
 		}
@@ -979,11 +1027,9 @@ Error AudioDriverWASAPI::input_stop() {
 	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
 		audio_input.active.clear();
-
-		return OK;
 	}
 
-	return FAILED;
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {

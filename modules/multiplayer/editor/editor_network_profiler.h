@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NETWORK_PROFILER_H
-#define EDITOR_NETWORK_PROFILER_H
+#pragma once
 
 #include "../multiplayer_debugger.h"
 
@@ -39,6 +38,8 @@
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
+
+class Timer;
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
@@ -69,6 +70,12 @@ private:
 	LineEdit *outgoing_bandwidth_text = nullptr;
 	Tree *replication_display = nullptr;
 
+	Label *up_label = nullptr;
+	Label *down_label = nullptr;
+
+	int incoming_bandwidth = 0;
+	int outgoing_bandwidth = 0;
+
 	HashMap<ObjectID, RPCNodeInfo> rpc_data;
 	HashMap<ObjectID, SyncInfo> sync_data;
 	HashMap<ObjectID, NodeInfo> node_data;
@@ -92,7 +99,9 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_toggled(bool p_toggled_on);
 	void _refresh();
+	void _update_button_text();
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
 
 protected:
@@ -112,7 +121,9 @@ public:
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();
 
+	void set_profiling(bool p_pressed);
+	void started();
+	void stopped();
+
 	EditorNetworkProfiler();
 };
-
-#endif // EDITOR_NETWORK_PROFILER_H

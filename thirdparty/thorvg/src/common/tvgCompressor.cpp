@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,7 @@
 
 
 
+#include <cstdlib>
 #include <string>
 #include <memory.h>
 #include "tvgCompressor.h"
@@ -458,18 +459,35 @@ size_t b64Decode(const char* encoded, const size_t len, char** decoded)
         auto value2 = B64_INDEX[(size_t)encoded[1]];
         output[idx++] = (value1 << 2) + ((value2 & 0x30) >> 4);
 
-        if (!encoded[2] || encoded[2] == '=' || encoded[2] == '.') break;
+        if (!encoded[2] || encoded[3] < 0 || encoded[2] == '=' || encoded[2] == '.') break;
         auto value3 = B64_INDEX[(size_t)encoded[2]];
         output[idx++] = ((value2 & 0x0f) << 4) + ((value3 & 0x3c) >> 2);
 
-        if (!encoded[3] || encoded[3] == '=' || encoded[3] == '.') break;
+        if (!encoded[3] || encoded[3] < 0 || encoded[3] == '=' || encoded[3] == '.') break;
         auto value4 = B64_INDEX[(size_t)encoded[3]];
         output[idx++] = ((value3 & 0x03) << 6) + value4;
         encoded += 4;
     }
     *decoded = output;
-    return reserved;
+    return idx;
 }
 
+
+/************************************************************************/
+/* DJB2 Implementation                                                   */
+/************************************************************************/
+
+unsigned long djb2Encode(const char* str)
+{
+    if (!str) return 0;
+
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+    }
+    return hash;
+}
 
 }

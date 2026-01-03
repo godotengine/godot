@@ -31,6 +31,7 @@
 #include "property_utils.h"
 
 #include "core/config/engine.h"
+#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/packed_scene.h"
@@ -39,16 +40,40 @@
 #include "editor/editor_node.h"
 #endif // TOOLS_ENABLED
 
-bool PropertyUtils::is_property_value_different(const Variant &p_a, const Variant &p_b) {
+bool PropertyUtils::is_property_value_different(const Object *p_object, const Variant &p_a, const Variant &p_b) {
 	if (p_a.get_type() == Variant::FLOAT && p_b.get_type() == Variant::FLOAT) {
-		//this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		// This must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error.
 		return !Math::is_equal_approx((float)p_a, (float)p_b);
-	} else {
-		// For our purposes, treating null object as NIL is the right thing to do
-		const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
-		const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
-		return a != b;
+	} else if (p_a.get_type() == Variant::NODE_PATH && p_b.get_type() == Variant::OBJECT) {
+		// With properties of type Node, left side is NodePath, while right side is Node.
+		const Node *base_node = Object::cast_to<Node>(p_object);
+		const Node *target_node = Object::cast_to<Node>(p_b);
+		if (base_node && target_node) {
+			return p_a != base_node->get_path_to(target_node);
+		}
 	}
+
+	if (p_a.get_type() == Variant::ARRAY && p_b.get_type() == Variant::ARRAY) {
+		const Node *base_node = Object::cast_to<Node>(p_object);
+		Array array1 = p_a;
+		Array array2 = p_b;
+
+		if (base_node && !array1.is_empty() && array2.size() == array1.size() && array1[0].get_type() == Variant::NODE_PATH && array2[0].get_type() == Variant::OBJECT) {
+			// Like above, but NodePaths/Nodes are inside arrays.
+			for (int i = 0; i < array1.size(); i++) {
+				const Node *target_node = Object::cast_to<Node>(array2[i]);
+				if (!target_node || array1[i] != base_node->get_path_to(target_node)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	// For our purposes, treating null object as NIL is the right thing to do
+	const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
+	const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
+	return a != b;
 }
 
 Variant PropertyUtils::get_property_default_value(const Object *p_object, const StringName &p_property, bool *r_is_valid, const Vector<SceneState::PackState> *p_states_stack_cache, bool p_update_exports, const Node *p_owner, bool *r_is_class_default) {
@@ -65,6 +90,16 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		*r_is_valid = false;
 	}
 
+	// Handle special case "script" property, where the default value is either null or the custom type script.
+	// Do this only if there's no states stack cache to trace for default values.
+	if (!p_states_stack_cache && p_property == CoreStringName(script) && p_object->has_meta(SceneStringName(_custom_type_script))) {
+		Ref<Script> ct_scr = get_custom_type_script(p_object);
+		if (r_is_valid) {
+			*r_is_valid = true;
+		}
+		return ct_scr;
+	}
+
 	Ref<Script> topmost_script;
 
 	if (const Node *node = Object::cast_to<Node>(p_object)) {
@@ -73,16 +108,37 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 		for (int i = 0; i < states_stack.size(); ++i) {
 			const SceneState::PackState &ia = states_stack[i];
 			bool found = false;
-			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found);
+			bool node_deferred = false;
+			Variant value_in_ancestor = ia.state->get_property_value(ia.node, p_property, found, node_deferred);
 			if (found) {
 				if (r_is_valid) {
 					*r_is_valid = true;
+				}
+				// Replace properties stored as NodePaths with actual Nodes.
+				// Otherwise, the property value would be considered as overridden.
+				if (node_deferred) {
+					if (value_in_ancestor.get_type() == Variant::ARRAY) {
+						Array paths = value_in_ancestor;
+
+						bool valid = false;
+						Array array = node->get(p_property, &valid);
+						ERR_CONTINUE(!valid);
+						array = array.duplicate();
+
+						array.resize(paths.size());
+						for (int j = 0; j < array.size(); j++) {
+							array.set(j, node->get_node_or_null(paths[j]));
+						}
+						value_in_ancestor = array;
+					} else {
+						value_in_ancestor = node->get_node_or_null(value_in_ancestor);
+					}
 				}
 				return value_in_ancestor;
 			}
 			// Save script for later
 			bool has_script = false;
-			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script);
+			Variant script = ia.state->get_property_value(ia.node, SNAME("script"), has_script, node_deferred);
 			if (has_script) {
 				Ref<Script> scr = script;
 				if (scr.is_valid()) {
@@ -127,7 +183,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 			// Heuristically check if this is a synthetic property (whatever/0, whatever/1, etc.)
 			// because they are not in the class DB yet must have a default (null).
 			String prop_str = String(p_property);
-			int p = prop_str.rfind("/");
+			int p = prop_str.rfind_char('/');
 			if (p != -1 && p < prop_str.length() - 1) {
 				bool all_digits = true;
 				for (int i = p + 1; i < prop_str.length(); i++) {
@@ -203,7 +259,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 					}
 				}
 				break;
-			} else if (!n->get_scene_file_path().is_empty()) {
+			} else if (n->is_instance()) {
 				const Ref<SceneState> &state = n->get_scene_instance_state();
 				_collect_inheritance_chain(state, n->get_path_to(p_node), states_stack);
 			}
@@ -226,4 +282,37 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 		}
 	}
 	return states_stack_ret;
+}
+
+void PropertyUtils::assign_custom_type_script(Object *p_object, const Ref<Script> &p_script) {
+	ERR_FAIL_NULL(p_object);
+	ERR_FAIL_COND(p_script.is_null());
+
+	const String &path = p_script->get_path();
+	ERR_FAIL_COND(!path.is_resource_file());
+
+	ResourceUID::ID script_uid = ResourceLoader::get_resource_uid(path);
+	if (script_uid != ResourceUID::INVALID_ID) {
+		p_object->set_meta(SceneStringName(_custom_type_script), ResourceUID::get_singleton()->id_to_text(script_uid));
+	}
+}
+
+Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
+	Variant custom_script = p_object->get_meta(SceneStringName(_custom_type_script));
+#ifndef DISABLE_DEPRECATED
+	if (custom_script.get_type() == Variant::OBJECT) {
+		// Convert old script meta.
+		Ref<Script> script_object(custom_script);
+		assign_custom_type_script(const_cast<Object *>(p_object), script_object);
+		return script_object;
+	}
+#endif
+	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
+	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
+		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));
+		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script.operator String()));
+	} else {
+		custom_script = ResourceUID::get_singleton()->get_id_path(id);
+	}
+	return ResourceLoader::load(custom_script);
 }

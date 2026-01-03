@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPathQueryResult2D" inherits="RefCounted" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPathQueryResult2D" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Represents the result of a 2D pathfinding query.
 	</brief_description>
@@ -20,6 +20,9 @@
 	<members>
 		<member name="path" type="PackedVector2Array" setter="set_path" getter="get_path" default="PackedVector2Array()">
 			The resulting path array from the navigation query. All path array positions are in global coordinates. Without customized query parameters this is the same path as returned by [method NavigationServer2D.map_get_path].
+		</member>
+		<member name="path_length" type="float" setter="set_path_length" getter="get_path_length" default="0.0">
+			Returns the length of the path.
 		</member>
 		<member name="path_owner_ids" type="PackedInt64Array" setter="set_path_owner_ids" getter="get_path_owner_ids" default="PackedInt64Array()">
 			The [code]ObjectID[/code]s of the [Object]s which manage the regions and links each point of the path goes through.

@@ -65,12 +65,28 @@ Vector4i Vector4i::clamp(const Vector4i &p_min, const Vector4i &p_max) const {
 			CLAMP(w, p_min.w, p_max.w));
 }
 
+Vector4i Vector4i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector4i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max),
+			CLAMP(w, p_min, p_max));
+}
+
 Vector4i Vector4i::snapped(const Vector4i &p_step) const {
 	return Vector4i(
 			Math::snapped(x, p_step.x),
 			Math::snapped(y, p_step.y),
 			Math::snapped(z, p_step.z),
 			Math::snapped(w, p_step.w));
+}
+
+Vector4i Vector4i::snappedi(int32_t p_step) const {
+	return Vector4i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step),
+			Math::snapped(z, p_step),
+			Math::snapped(w, p_step));
 }
 
 Vector4i::operator String() const {

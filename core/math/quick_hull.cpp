@@ -30,7 +30,8 @@
 
 #include "quick_hull.h"
 
-#include "core/templates/rb_map.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
@@ -55,7 +56,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 	HashSet<Vector3> valid_cache;
 
 	for (int i = 0; i < p_points.size(); i++) {
-		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));
+		Vector3 sp = p_points[i].snappedf(0.0001);
 		if (valid_cache.has(sp)) {
 			valid_points.write[i] = false;
 		} else {
@@ -322,7 +323,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_
 
 		for (List<Face>::Element *&E : new_faces) {
 			Face &f2 = E->get();
-			if (f2.points_over.size() == 0) {
+			if (f2.points_over.is_empty()) {
 				faces.move_to_front(E);
 			}
 		}

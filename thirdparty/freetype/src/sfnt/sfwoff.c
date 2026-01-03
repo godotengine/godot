@@ -4,7 +4,7 @@
  *
  *   WOFF format management (base).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -18,6 +18,7 @@
 
 #include "sfwoff.h"
 #include <freetype/tttags.h>
+#include <freetype/internal/ftcalc.h>
 #include <freetype/internal/ftdebug.h>
 #include <freetype/internal/ftstream.h>
 #include <freetype/ftgzip.h>
@@ -149,6 +150,7 @@
     /* Miscellaneous checks. */
     if ( woff.length != stream->size                              ||
          woff.num_tables == 0                                     ||
+         woff.num_tables >  0xFFFU                                ||
          44 + woff.num_tables * 20UL >= woff.length               ||
          12 + woff.num_tables * 16UL >= woff.totalSfntSize        ||
          ( woff.totalSfntSize & 3 ) != 0                          ||
@@ -169,20 +171,10 @@
 
     /* Write sfnt header. */
     {
-      FT_UInt  searchRange, entrySelector, rangeShift, x;
+      FT_Int  entrySelector = FT_MSB( woff.num_tables );
+      FT_Int  searchRange   = ( 1 << entrySelector ) * 16;
+      FT_Int  rangeShift    = woff.num_tables * 16 - searchRange;
 
-
-      x             = woff.num_tables;
-      entrySelector = 0;
-      while ( x )
-      {
-        x            >>= 1;
-        entrySelector += 1;
-      }
-      entrySelector--;
-
-      searchRange = ( 1 << entrySelector ) * 16;
-      rangeShift  = woff.num_tables * 16 - searchRange;
 
       WRITE_ULONG ( sfnt_header, woff.flavor );
       WRITE_USHORT( sfnt_header, woff.num_tables );

@@ -28,28 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_H
-#define TRANSLATION_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
+
+class PluralRules;
 
 class Translation : public Resource {
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
 
+public:
+	struct MessageKey {
+		StringName msgctxt;
+		StringName msgid;
+
+		// Required to use this struct as a key in HashMap.
+		static uint32_t hash(const MessageKey &p_key) {
+			uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_key.msgctxt));
+			return hash_fmix32(hash_murmur3_one_32(HashMapHasherDefault::hash(p_key.msgid), h));
+		}
+		bool operator==(const MessageKey &p_key) const {
+			return msgctxt == p_key.msgctxt && msgid == p_key.msgid;
+		}
+	};
+
+private:
 	String locale = "en";
-	HashMap<StringName, StringName> translation_map;
+
+	HashMap<MessageKey, Vector<StringName>, MessageKey> translation_map;
+
+	mutable PluralRules *plural_rules_cache = nullptr;
+	String plural_rules_override;
 
 	virtual Vector<String> _get_message_list() const;
+
+	// For data storage.
 	virtual Dictionary _get_messages() const;
 	virtual void _set_messages(const Dictionary &p_messages);
 
-	void _notify_translation_changed_if_applies();
-
 protected:
 	static void _bind_methods();
+
+	PluralRules *_get_plural_rules() const;
 
 	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
 	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
@@ -67,125 +90,11 @@ public:
 	virtual int get_message_count() const;
 	virtual Vector<String> get_translated_message_list() const;
 
-	Translation() {}
+	void set_plural_rules_override(const String &p_rules);
+	String get_plural_rules_override() const;
+
+	// This method is not exposed to scripting intentionally. It is only used by TranslationLoaderPO and tests.
+	int get_nplurals() const;
+
+	~Translation();
 };
-
-class TranslationServer : public Object {
-	GDCLASS(TranslationServer, Object);
-
-	String locale = "en";
-	String fallback;
-
-	HashSet<Ref<Translation>> translations;
-	Ref<Translation> tool_translation;
-	Ref<Translation> doc_translation;
-	Ref<Translation> property_translation;
-
-	bool enabled = true;
-
-	bool pseudolocalization_enabled = false;
-	bool pseudolocalization_accents_enabled = false;
-	bool pseudolocalization_double_vowels_enabled = false;
-	bool pseudolocalization_fake_bidi_enabled = false;
-	bool pseudolocalization_override_enabled = false;
-	bool pseudolocalization_skip_placeholders_enabled = false;
-	bool editor_pseudolocalization = false;
-	float expansion_ratio = 0.0;
-	String pseudolocalization_prefix;
-	String pseudolocalization_suffix;
-
-	StringName tool_pseudolocalize(const StringName &p_message) const;
-	String get_override_string(String &p_message) const;
-	String double_vowels(String &p_message) const;
-	String replace_with_accented_string(String &p_message) const;
-	String wrap_with_fakebidi_characters(String &p_message) const;
-	String add_padding(const String &p_message, int p_length) const;
-	const char32_t *get_accented_version(char32_t p_character) const;
-	bool is_placeholder(String &p_message, int p_index) const;
-
-	static TranslationServer *singleton;
-	bool _load_translations(const String &p_from);
-	String _standardize_locale(const String &p_locale, bool p_add_defaults) const;
-
-	StringName _get_message_from_translations(const StringName &p_message, const StringName &p_context, const String &p_locale, bool plural, const String &p_message_plural = "", int p_n = 0) const;
-
-	static void _bind_methods();
-
-	struct LocaleScriptInfo {
-		String name;
-		String script;
-		String default_country;
-		HashSet<String> supported_countries;
-	};
-	static Vector<LocaleScriptInfo> locale_script_info;
-
-	static HashMap<String, String> language_map;
-	static HashMap<String, String> script_map;
-	static HashMap<String, String> locale_rename_map;
-	static HashMap<String, String> country_name_map;
-	static HashMap<String, String> country_rename_map;
-	static HashMap<String, String> variant_map;
-
-	void init_locale_info();
-
-public:
-	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
-
-	void set_enabled(bool p_enabled) { enabled = p_enabled; }
-	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
-
-	void set_locale(const String &p_locale);
-	String get_locale() const;
-	Ref<Translation> get_translation_object(const String &p_locale);
-
-	Vector<String> get_all_languages() const;
-	String get_language_name(const String &p_language) const;
-
-	Vector<String> get_all_scripts() const;
-	String get_script_name(const String &p_script) const;
-
-	Vector<String> get_all_countries() const;
-	String get_country_name(const String &p_country) const;
-
-	String get_locale_name(const String &p_locale) const;
-
-	PackedStringArray get_loaded_locales() const;
-
-	void add_translation(const Ref<Translation> &p_translation);
-	void remove_translation(const Ref<Translation> &p_translation);
-
-	StringName translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-
-	StringName pseudolocalize(const StringName &p_message) const;
-
-	bool is_pseudolocalization_enabled() const;
-	void set_pseudolocalization_enabled(bool p_enabled);
-	void set_editor_pseudolocalization(bool p_enabled);
-	void reload_pseudolocalization();
-
-	String standardize_locale(const String &p_locale) const;
-
-	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
-
-	String get_tool_locale();
-	void set_tool_translation(const Ref<Translation> &p_translation);
-	Ref<Translation> get_tool_translation() const;
-	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_doc_translation(const Ref<Translation> &p_translation);
-	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
-	void set_property_translation(const Ref<Translation> &p_translation);
-	StringName property_translate(const StringName &p_message) const;
-
-	void setup();
-
-	void clear();
-
-	void load_translations();
-
-	TranslationServer();
-};
-
-#endif // TRANSLATION_H

@@ -16,7 +16,7 @@ namespace embree
       typedef LineMi<M> Primitive;
       typedef CurvePrecalculations1 Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& line)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive& line)
       {
         STAT3(normal.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -27,7 +27,7 @@ namespace embree
         ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& line)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive& line)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -51,7 +51,7 @@ namespace embree
       typedef LineMi<M> Primitive;
       typedef CurvePrecalculations1 Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive& line)
+      static __forceinline void intersect(const Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive& line)
       {
         STAT3(normal.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -62,7 +62,7 @@ namespace embree
         ConeCurveIntersector1<M>::intersect(valid,ray,context,geom,pre,v0,v1,cL,cR,Intersect1EpilogM<M,filter>(ray,context,line.geomID(),line.primID()));
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive& line)
+      static __forceinline bool occluded(const Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive& line)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -86,7 +86,7 @@ namespace embree
       typedef LineMi<M> Primitive;
       typedef CurvePrecalculationsK<K> Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive& line)
+      static __forceinline void intersect(const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive& line)
       {
         STAT3(normal.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -97,7 +97,7 @@ namespace embree
         ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& line)
+      static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& line)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -115,7 +115,7 @@ namespace embree
       typedef LineMi<M> Primitive;
       typedef CurvePrecalculationsK<K> Precalculations;
 
-      static __forceinline void intersect(const Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context,  const Primitive& line)
+      static __forceinline void intersect(const Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context,  const Primitive& line)
       {
         STAT3(normal.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());
@@ -126,7 +126,7 @@ namespace embree
         ConeCurveIntersectorK<M,K>::intersect(valid,ray,k,context,geom,pre,v0,v1,cL,cR,Intersect1KEpilogM<M,K,filter>(ray,k,context,line.geomID(),line.primID()));
       }
 
-      static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive& line)
+      static __forceinline bool occluded(const Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive& line)
       {
         STAT3(shadow.trav_prims,1,1,1);
         const LineSegments* geom = context->scene->get<LineSegments>(line.geomID());

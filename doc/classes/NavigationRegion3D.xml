@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationRegion3D" inherits="Node3D" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationRegion3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A traversable 3D region that [NavigationAgent3D]s can use for pathfinding.
 	</brief_description>
@@ -23,6 +23,12 @@
 				Bakes the [NavigationMesh]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread. Baking on separate thread is useful because navigation baking is not a cheap operation. When it is completed, it automatically sets the new [NavigationMesh]. Please note that baking on separate thread may be very slow if geometry is parsed from meshes as async access to each mesh involves heavy synchronization. Also, please note that baking on a separate thread is automatically disabled on operating systems that cannot use threads (such as Web with threads disabled).
 			</description>
 		</method>
+		<method name="get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<description>
+				Returns the axis-aligned bounding box for the region's transformed navigation mesh.
+			</description>
+		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -36,10 +42,22 @@
 				Returns the current navigation map [RID] used by this region.
 			</description>
 		</method>
-		<method name="get_region_rid" qualifiers="const">
+		<method name="get_region_rid" qualifiers="const" deprecated="Use [method get_rid] instead.">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this region on the [NavigationServer3D].
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
 				Returns the [RID] of this region on the [NavigationServer3D]. Combined with [method NavigationServer3D.map_get_closest_point_owner] can be used to identify the [NavigationRegion3D] closest to a point on the merged navigation map.
+			</description>
+		</method>
+		<method name="is_baking" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the [NavigationMesh] is being baked on a background thread.
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">

@@ -6,12 +6,11 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
@@ -22,7 +21,7 @@
   The values are Q12 fixed-point and spaced at 5 degree intervals.
   These decisions are somewhat arbitrary, but sufficient for the 2nd order
    Bessel follower below.
-  Values of x larger than 85 degrees are extrapolated from the last inteval,
+  Values of x larger than 85 degrees are extrapolated from the last interval,
    which is way off, but "good enough".*/
 static unsigned short OC_ROUGH_TAN_LOOKUP[18]={
       0,  358,  722, 1098, 1491, 1910,
@@ -49,7 +48,7 @@ static int oc_warp_alpha(int _alpha){
   This does not alter the x/y state, but changes the reaction time of the
    filter.
   Altering the time constant of a reactive filter without alterning internal
-   state is something that has to be done carefuly, but our design operates at
+   state is something that has to be done carefully, but our design operates at
    high enough delays and with small enough time constant changes to make it
    safe.*/
 static void oc_iir_filter_reinit(oc_iir_filter *_f,int _delay){

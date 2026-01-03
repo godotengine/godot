@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRHandModifier3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for driving hand meshes from [XRHandTracker] data.
+	</brief_description>
+	<description>
+		This node uses hand tracking data from an [XRHandTracker] to pose the skeleton of a hand mesh.
+		Positioning of hands is performed by creating an [XRNode3D] ancestor of the hand mesh driven by the same [XRHandTracker].
+		The hand tracking position-data is scaled by [member Skeleton3D.motion_scale] when applied to the skeleton, which can be used to adjust the tracked hand to match the scale of the hand model.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<members>
+		<member name="bone_update" type="int" setter="set_bone_update" getter="get_bone_update" enum="XRHandModifier3D.BoneUpdate" default="0">
+			Specifies the type of updates to perform on the bones.
+		</member>
+		<member name="hand_tracker" type="StringName" setter="set_hand_tracker" getter="get_hand_tracker" default="&amp;&quot;/user/hand_tracker/left&quot;">
+			The name of the [XRHandTracker] registered with [XRServer] to obtain the hand tracking data from.
+		</member>
+	</members>
+	<constants>
+		<constant name="BONE_UPDATE_FULL" value="0" enum="BoneUpdate">
+			The skeleton's bones are fully updated (both position and rotation) to match the tracked bones.
+		</constant>
+		<constant name="BONE_UPDATE_ROTATION_ONLY" value="1" enum="BoneUpdate">
+			The skeleton's bones are only rotated to align with the tracked bones, preserving bone length.
+		</constant>
+		<constant name="BONE_UPDATE_MAX" value="2" enum="BoneUpdate">
+			Represents the size of the [enum BoneUpdate] enum.
+		</constant>
+	</constants>
+</class>

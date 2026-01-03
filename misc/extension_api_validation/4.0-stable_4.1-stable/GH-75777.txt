@@ -1,0 +1,6 @@
+GH-75777
+--------
+Validate extension JSON: Error: Hash changed for 'classes/SyntaxHighlighter/methods/get_text_edit', from 8248B40D to 70D54D11. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/SyntaxHighlighter/methods/get_text_edit': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.

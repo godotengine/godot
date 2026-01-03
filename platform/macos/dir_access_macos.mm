@@ -28,22 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "dir_access_macos.h"
-
-#include "core/config/project_settings.h"
+#import "dir_access_macos.h"
 
 #if defined(UNIX_ENABLED)
 
-#include <errno.h>
+#include "core/config/project_settings.h"
+
+#include <sys/mount.h>
+#include <cerrno>
 
 #import <AppKit/NSWorkspace.h>
 #import <Foundation/Foundation.h>
 
+String DirAccessMacOS::get_filesystem_type() const {
+	struct statfs fs;
+	if (statfs(current_dir.utf8().get_data(), &fs) != 0) {
+		return "";
+	}
+	return String::utf8(fs.f_fstypename).to_upper();
+}
+
 String DirAccessMacOS::fix_unicode_name(const char *p_name) const {
 	String fname;
-	NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
-
-	fname.parse_utf8([nsstr UTF8String]);
+	if (p_name != nullptr) {
+		NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
+		fname.append_utf8([nsstr UTF8String]);
+	}
 
 	return fname;
 }
@@ -65,7 +75,7 @@ String DirAccessMacOS::get_drive(int p_drive) {
 	String volname;
 	NSString *path = [vols[p_drive] path];
 
-	volname.parse_utf8([path UTF8String]);
+	volname.append_utf8([path UTF8String]);
 
 	return volname;
 }
@@ -93,6 +103,16 @@ bool DirAccessMacOS::is_case_sensitive(const String &p_path) const {
 		return false;
 	}
 	return [cs boolValue];
+}
+
+bool DirAccessMacOS::is_bundle(const String &p_file) const {
+	String f = p_file;
+	if (!f.is_absolute_path()) {
+		f = get_current_dir().path_join(f);
+	}
+	f = fix_path(f);
+
+	return [[NSWorkspace sharedWorkspace] isFilePackageAtPath:[NSString stringWithUTF8String:f.utf8().get_data()]];
 }
 
 #endif // UNIX_ENABLED

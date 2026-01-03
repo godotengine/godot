@@ -101,7 +101,7 @@ struct MarkLigPosFormat1_2
 
     /* Now we search backwards for a non-mark glyph */
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
 
     if (c->last_base_until > buffer->idx)
@@ -169,7 +169,7 @@ struct MarkLigPosFormat1_2
   {
     TRACE_SUBSET (this);
     const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
+    const hb_map_t &glyph_map = c->plan->glyph_map_gsub;
 
     auto *out = c->serializer->start_embed (*this);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
@@ -195,23 +195,18 @@ struct MarkLigPosFormat1_2
     if (!out->markCoverage.serialize_serialize (c->serializer, new_mark_coverage))
       return_trace (false);
 
-    out->markArray.serialize_subset (c, markArray, this,
-                                     (this+markCoverage).iter (),
-                                     &klass_mapping);
-
-    auto new_ligature_coverage =
-    + hb_iter (this + ligatureCoverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    ;
-
-    if (!out->ligatureCoverage.serialize_serialize (c->serializer, new_ligature_coverage))
+    if (unlikely (!out->markArray.serialize_subset (c, markArray, this,
+						    (this+markCoverage).iter (),
+						    &klass_mapping)))
       return_trace (false);
 
-    out->ligatureArray.serialize_subset (c, ligatureArray, this,
-                                         hb_iter (this+ligatureCoverage), classCount, &klass_mapping);
+    hb_sorted_vector_t<hb_codepoint_t> new_lig_coverage;
+    if (!out->ligatureArray.serialize_subset (c, ligatureArray, this,
+					      hb_iter (this+ligatureCoverage),
+					      classCount, &klass_mapping, new_lig_coverage))
+      return_trace (false);
 
-    return_trace (true);
+    return_trace (out->ligatureCoverage.serialize_serialize (c->serializer, new_lig_coverage.iter ()));
   }
 
 };

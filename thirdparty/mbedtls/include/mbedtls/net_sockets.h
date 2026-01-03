@@ -21,28 +21,13 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_NET_SOCKETS_H
 #define MBEDTLS_NET_SOCKETS_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/ssl.h"
 
@@ -96,7 +81,13 @@ extern "C" {
  * structures for hand-made UDP demultiplexing).
  */
 typedef struct mbedtls_net_context {
-    int fd;             /**< The underlying file descriptor                 */
+    /** The underlying file descriptor.
+     *
+     * This field is only guaranteed to be present on POSIX/Unix-like platforms.
+     * On other platforms, it may have a different type, have a different
+     * meaning, or be absent altogether.
+     */
+    int fd;
 }
 mbedtls_net_context;
 
@@ -152,7 +143,7 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
  * \param client_ctx Will contain the connected client socket
  * \param client_ip Will contain the client IP address, can be NULL
  * \param buf_size  Size of the client_ip buffer
- * \param ip_len    Will receive the size of the client IP written,
+ * \param cip_len   Will receive the size of the client IP written,
  *                  can be NULL if client_ip is null
  *
  * \return          0 if successful, or
@@ -165,7 +156,7 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
                        mbedtls_net_context *client_ctx,
-                       void *client_ip, size_t buf_size, size_t *ip_len);
+                       void *client_ip, size_t buf_size, size_t *cip_len);
 
 /**
  * \brief          Check and wait for the context to be ready for read/write
@@ -238,7 +229,7 @@ int mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len);
 
 /**
  * \brief          Write at most 'len' characters. If no error occurs,
- *                 the actual amount read is returned.
+ *                 the actual amount written is returned.
  *
  * \param ctx      Socket
  * \param buf      The buffer to read from

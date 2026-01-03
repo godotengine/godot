@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="GraphElement" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphNode" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container with connection ports, representing a node in a [GraphEdit].
 	</brief_description>
@@ -116,6 +116,34 @@
 				Returns the right (output) [Color] of the slot with the given [param slot_index].
 			</description>
 		</method>
+		<method name="get_slot_custom_icon_left" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_custom_icon_right" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_metadata_left" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the left (input) metadata of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_metadata_right" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the right (output) metadata of the slot with the given [param slot_index].
+			</description>
+		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="slot_index" type="int" />
@@ -140,7 +168,7 @@
 			<return type="bool" />
 			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns true if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
+				Returns [code]true[/code] if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
@@ -195,6 +223,22 @@
 				Sets the [Color] of the right (output) side of the slot with the given [param slot_index] to [param color].
 			</description>
 		</method>
+		<method name="set_slot_custom_icon_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the left (input) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
+		<method name="set_slot_custom_icon_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="custom_icon" type="Texture2D" />
+			<description>
+				Sets the custom [Texture2D] of the right (output) side of the slot with the given [param slot_index] to [param custom_icon].
+			</description>
+		</method>
 		<method name="set_slot_draw_stylebox">
 			<return type="void" />
 			<param index="0" name="slot_index" type="int" />
@@ -219,6 +263,22 @@
 				Toggles the right (output) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
 			</description>
 		</method>
+		<method name="set_slot_metadata_left">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the custom metadata for the left (input) side of the slot with the given [param slot_index] to [param value].
+			</description>
+		</method>
+		<method name="set_slot_metadata_right">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the custom metadata for the right (output) side of the slot with the given [param slot_index] to [param value].
+			</description>
+		</method>
 		<method name="set_slot_type_left">
 			<return type="void" />
 			<param index="0" name="slot_index" type="int" />
@@ -237,12 +297,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
+		<member name="ignore_invalid_connection_type" type="bool" setter="set_ignore_invalid_connection_type" getter="is_ignoring_valid_connection_type" default="false">
+			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
+		<member name="slots_focus_mode" type="int" setter="set_slots_focus_mode" getter="get_slots_focus_mode" enum="Control.FocusMode" default="3">
+			Determines how connection slots can be focused.
+			- If set to [constant Control.FOCUS_CLICK], connections can only be made with the mouse.
+			- If set to [constant Control.FOCUS_ALL], slots can also be focused using the [member ProjectSettings.input/ui_up] and [member ProjectSettings.input/ui_down] and connected using [member ProjectSettings.input/ui_left] and [member ProjectSettings.input/ui_right] input actions.
+			- If set to [constant Control.FOCUS_ACCESSIBILITY], slot input actions are only enabled when the screen reader is active.
+		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the GraphNode's title bar.
 		</member>
 	</members>
 	<signals>
+		<signal name="slot_sizes_changed">
+			<description>
+				Emitted when any slot's size might have changed.
+			</description>
+		</signal>
 		<signal name="slot_updated">
 			<param index="0" name="slot_index" type="int" />
 			<description>
@@ -266,11 +341,17 @@
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The default background for the slot area of the [GraphNode].
 		</theme_item>
+		<theme_item name="panel_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [GraphNode] is focused (when used with assistive apps).
+		</theme_item>
 		<theme_item name="panel_selected" data_type="style" type="StyleBox">
 			The [StyleBox] used for the slot area when selected.
 		</theme_item>
 		<theme_item name="slot" data_type="style" type="StyleBox">
 			The [StyleBox] used for each slot of the [GraphNode].
+		</theme_item>
+		<theme_item name="slot_selected" data_type="style" type="StyleBox">
+			[StyleBox] used when the slot is focused (when used with assistive apps).
 		</theme_item>
 		<theme_item name="titlebar" data_type="style" type="StyleBox">
 			The [StyleBox] used for the title bar of the [GraphNode].

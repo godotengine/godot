@@ -28,38 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TRANSLATION_SERVER_H
-#define TEST_TRANSLATION_SERVER_H
+#pragma once
 
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 
 #include "tests/test_macros.h"
 
 namespace TestTranslationServer {
 TEST_CASE("[TranslationServer] Translation operations") {
-	Ref<Translation> t = memnew(Translation);
-	t->set_locale("uk");
-	t->add_message("Good Morning", String::utf8("Добрий ранок"));
+	Ref<TranslationDomain> td = TranslationServer::get_singleton()->get_or_add_domain("godot.test");
+	CHECK(td->get_translations().is_empty());
 
-	TranslationServer *ts = TranslationServer::get_singleton();
+	Ref<Translation> t1 = memnew(Translation);
+	t1->set_locale("uk"); // Ukrainian.
+	t1->add_message("Good Morning", String(U"Добрий ранок"));
+	td->add_translation(t1);
+	CHECK(td->get_translations().size() == 1);
+	CHECK(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK_FALSE(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", false).size() == 1);
+	CHECK(td->find_translations("uk", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 1);
+	CHECK(td->find_translations("uk_UA", true).size() == 0);
 
-	int l_count_before = ts->get_loaded_locales().size();
-	ts->add_translation(t);
-	int l_count_after = ts->get_loaded_locales().size();
-	// Newly created Translation object should be added to the list, so the counter should increase, too.
-	CHECK(l_count_after > l_count_before);
+	Ref<Translation> t2 = memnew(Translation);
+	t2->set_locale("uk_UA"); // Ukrainian in Ukraine.
+	t2->add_message("Hello Godot", String(U"Привіт, Годо."));
+	td->add_translation(t2);
+	CHECK(td->get_translations().size() == 2);
+	CHECK(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", false).size() == 2);
+	CHECK(td->find_translations("uk", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 2);
+	CHECK(td->find_translations("uk_UA", true).size() == 1);
 
-	Ref<Translation> trans = ts->get_translation_object("uk");
-	CHECK(trans.is_valid());
+	td->set_locale_override("uk");
+	CHECK(td->translate("Good Morning", StringName()) == String::utf8("Добрий ранок"));
 
-	ts->set_locale("uk");
-	CHECK(ts->translate("Good Morning") == String::utf8("Добрий ранок"));
+	td->remove_translation(t1);
+	CHECK(td->get_translations().size() == 1);
+	CHECK_FALSE(td->has_translation_for_locale("uk", true));
+	CHECK(td->has_translation_for_locale("uk", false));
+	CHECK(td->has_translation_for_locale("uk_UA", true));
+	CHECK(td->has_translation_for_locale("uk_UA", false));
+	CHECK(td->find_translations("uk", true).size() == 0);
+	CHECK(td->find_translations("uk", false).size() == 1);
+	CHECK(td->find_translations("uk_UA", true).size() == 1);
+	CHECK(td->find_translations("uk_UA", false).size() == 1);
 
-	ts->remove_translation(t);
-	trans = ts->get_translation_object("uk");
-	CHECK(trans.is_null());
 	// If no suitable Translation object has been found - the original message should be returned.
-	CHECK(ts->translate("Good Morning") == "Good Morning");
+	CHECK(td->translate("Good Morning", StringName()) == "Good Morning");
+
+	TranslationServer::get_singleton()->remove_domain("godot.test");
 }
 
 TEST_CASE("[TranslationServer] Locale operations") {
@@ -94,6 +119,36 @@ TEST_CASE("[TranslationServer] Locale operations") {
 	res = ts->standardize_locale(loc);
 
 	CHECK(res == "de_DE");
+
+	// No added defaults.
+	loc = "es_ES";
+	res = ts->standardize_locale(loc, true);
+
+	CHECK(res == "es_ES");
+
+	// Add default script.
+	loc = "az_AZ";
+	res = ts->standardize_locale(loc, true);
+
+	CHECK(res == "az_Latn_AZ");
+
+	// Add default country.
+	loc = "pa_Arab";
+	res = ts->standardize_locale(loc, true);
+
+	CHECK(res == "pa_Arab_PK");
+
+	// Add default script and country.
+	loc = "zh";
+	res = ts->standardize_locale(loc, true);
+
+	CHECK(res == "zh_Hans_CN");
+
+	// Explicitly don't add defaults.
+	loc = "zh";
+	res = ts->standardize_locale(loc, false);
+
+	CHECK(res == "zh");
 }
 
 TEST_CASE("[TranslationServer] Comparing locales") {
@@ -110,18 +165,50 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	locale_a = "sr-Latn-CS";
 	locale_b = "sr-Latn-RS";
 
-	// Two elements from locales match.
+	// Script matches (+1) but country doesn't (-1).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 2);
+	CHECK(res == 5);
 
 	locale_a = "uz-Cyrl-UZ";
 	locale_b = "uz-Latn-UZ";
 
-	// Two elements match, but they are not sequentual.
+	// Country matches (+1) but script doesn't (-1).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 2);
+	CHECK(res == 5);
+
+	locale_a = "aa-Latn-ER";
+	locale_b = "aa-Latn-ER-saaho";
+
+	// Script and country match (+2) with variant on one locale (+0).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 7);
+
+	locale_a = "uz-Cyrl-UZ";
+	locale_b = "uz-Latn-KG";
+
+	// Both script and country mismatched (-2).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 3);
+
+	locale_a = "es-ES";
+	locale_b = "es-AR";
+
+	// Mismatched country (-1).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 4);
+
+	locale_a = "es";
+	locale_b = "es-AR";
+
+	// No country for one locale (+0).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 5);
 
 	locale_a = "es-EC";
 	locale_b = "fr-LU";
@@ -130,7 +217,23 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	res = ts->compare_locales(locale_a, locale_b);
 
 	CHECK(res == 0);
+
+	locale_a = "zh-HK";
+	locale_b = "zh";
+
+	// In full standardization, zh-HK becomes zh_Hant_HK and zh becomes
+	// zh_Hans_CN. Both script and country mismatch (-2).
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 3);
+
+	locale_a = "zh-CN";
+	locale_b = "zh";
+
+	// In full standardization, zh and zh-CN both become zh_Hans_CN for an
+	// exact match.
+	res = ts->compare_locales(locale_a, locale_b);
+
+	CHECK(res == 10);
 }
 } // namespace TestTranslationServer
-
-#endif // TEST_TRANSLATION_SERVER_H

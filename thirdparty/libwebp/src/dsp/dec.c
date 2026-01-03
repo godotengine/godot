@@ -12,10 +12,15 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <stddef.h>
+#include <string.h>
 
-#include "src/dsp/dsp.h"
+#include "src/dec/common_dec.h"
 #include "src/dec/vp8i_dec.h"
+#include "src/dsp/cpu.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/utils.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 
@@ -37,19 +42,19 @@ static WEBP_INLINE uint8_t clip_8b(int v) {
   STORE(3, y, DC - (d));            \
 } while (0)
 
-#define MUL1(a) ((((a) * 20091) >> 16) + (a))
-#define MUL2(a) (((a) * 35468) >> 16)
-
 #if !WEBP_NEON_OMIT_C_CODE
-static void TransformOne_C(const int16_t* in, uint8_t* dst) {
+static void TransformOne_C(const int16_t* WEBP_RESTRICT in,
+                           uint8_t* WEBP_RESTRICT dst) {
   int C[4 * 4], *tmp;
   int i;
   tmp = C;
   for (i = 0; i < 4; ++i) {    // vertical pass
     const int a = in[0] + in[8];    // [-4096, 4094]
     const int b = in[0] - in[8];    // [-4095, 4095]
-    const int c = MUL2(in[4]) - MUL1(in[12]);   // [-3783, 3783]
-    const int d = MUL1(in[4]) + MUL2(in[12]);   // [-3785, 3781]
+    const int c = WEBP_TRANSFORM_AC3_MUL2(in[4]) -
+                  WEBP_TRANSFORM_AC3_MUL1(in[12]);  // [-3783, 3783]
+    const int d = WEBP_TRANSFORM_AC3_MUL1(in[4]) +
+                  WEBP_TRANSFORM_AC3_MUL2(in[12]);  // [-3785, 3781]
     tmp[0] = a + d;   // [-7881, 7875]
     tmp[1] = b + c;   // [-7878, 7878]
     tmp[2] = b - c;   // [-7878, 7878]
@@ -69,8 +74,10 @@ static void TransformOne_C(const int16_t* in, uint8_t* dst) {
     const int dc = tmp[0] + 4;
     const int a =  dc +  tmp[8];
     const int b =  dc -  tmp[8];
-    const int c = MUL2(tmp[4]) - MUL1(tmp[12]);
-    const int d = MUL1(tmp[4]) + MUL2(tmp[12]);
+    const int c =
+        WEBP_TRANSFORM_AC3_MUL2(tmp[4]) - WEBP_TRANSFORM_AC3_MUL1(tmp[12]);
+    const int d =
+        WEBP_TRANSFORM_AC3_MUL1(tmp[4]) + WEBP_TRANSFORM_AC3_MUL2(tmp[12]);
     STORE(0, 0, a + d);
     STORE(1, 0, b + c);
     STORE(2, 0, b - c);
@@ -81,22 +88,22 @@ static void TransformOne_C(const int16_t* in, uint8_t* dst) {
 }
 
 // Simplified transform when only in[0], in[1] and in[4] are non-zero
-static void TransformAC3_C(const int16_t* in, uint8_t* dst) {
+static void TransformAC3_C(const int16_t* WEBP_RESTRICT in,
+                           uint8_t* WEBP_RESTRICT dst) {
   const int a = in[0] + 4;
-  const int c4 = MUL2(in[4]);
-  const int d4 = MUL1(in[4]);
-  const int c1 = MUL2(in[1]);
-  const int d1 = MUL1(in[1]);
+  const int c4 = WEBP_TRANSFORM_AC3_MUL2(in[4]);
+  const int d4 = WEBP_TRANSFORM_AC3_MUL1(in[4]);
+  const int c1 = WEBP_TRANSFORM_AC3_MUL2(in[1]);
+  const int d1 = WEBP_TRANSFORM_AC3_MUL1(in[1]);
   STORE2(0, a + d4, d1, c1);
   STORE2(1, a + c4, d1, c1);
   STORE2(2, a - c4, d1, c1);
   STORE2(3, a - d4, d1, c1);
 }
-#undef MUL1
-#undef MUL2
 #undef STORE2
 
-static void TransformTwo_C(const int16_t* in, uint8_t* dst, int do_two) {
+static void TransformTwo_C(const int16_t* WEBP_RESTRICT in,
+                           uint8_t* WEBP_RESTRICT dst, int do_two) {
   TransformOne_C(in, dst);
   if (do_two) {
     TransformOne_C(in + 16, dst + 4);
@@ -104,13 +111,15 @@ static void TransformTwo_C(const int16_t* in, uint8_t* dst, int do_two) {
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
-static void TransformUV_C(const int16_t* in, uint8_t* dst) {
+static void TransformUV_C(const int16_t* WEBP_RESTRICT in,
+                          uint8_t* WEBP_RESTRICT dst) {
   VP8Transform(in + 0 * 16, dst, 1);
   VP8Transform(in + 2 * 16, dst + 4 * BPS, 1);
 }
 
 #if !WEBP_NEON_OMIT_C_CODE
-static void TransformDC_C(const int16_t* in, uint8_t* dst) {
+static void TransformDC_C(const int16_t* WEBP_RESTRICT in,
+                          uint8_t* WEBP_RESTRICT dst) {
   const int DC = in[0] + 4;
   int i, j;
   for (j = 0; j < 4; ++j) {
@@ -121,7 +130,8 @@ static void TransformDC_C(const int16_t* in, uint8_t* dst) {
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
-static void TransformDCUV_C(const int16_t* in, uint8_t* dst) {
+static void TransformDCUV_C(const int16_t* WEBP_RESTRICT in,
+                            uint8_t* WEBP_RESTRICT dst) {
   if (in[0 * 16]) VP8TransformDC(in + 0 * 16, dst);
   if (in[1 * 16]) VP8TransformDC(in + 1 * 16, dst + 4);
   if (in[2 * 16]) VP8TransformDC(in + 2 * 16, dst + 4 * BPS);
@@ -134,7 +144,8 @@ static void TransformDCUV_C(const int16_t* in, uint8_t* dst) {
 // Paragraph 14.3
 
 #if !WEBP_NEON_OMIT_C_CODE
-static void TransformWHT_C(const int16_t* in, int16_t* out) {
+static void TransformWHT_C(const int16_t* WEBP_RESTRICT in,
+                           int16_t* WEBP_RESTRICT out) {
   int tmp[16];
   int i;
   for (i = 0; i < 4; ++i) {
@@ -162,7 +173,7 @@ static void TransformWHT_C(const int16_t* in, int16_t* out) {
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
-void (*VP8TransformWHT)(const int16_t* in, int16_t* out);
+VP8WHT VP8TransformWHT;
 
 //------------------------------------------------------------------------------
 // Intra predictions
@@ -662,32 +673,32 @@ static void HFilter16i_C(uint8_t* p, int stride,
 
 #if !WEBP_NEON_OMIT_C_CODE
 // 8-pixels wide variant, for chroma filtering
-static void VFilter8_C(uint8_t* u, uint8_t* v, int stride,
-                       int thresh, int ithresh, int hev_thresh) {
+static void VFilter8_C(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                       int stride, int thresh, int ithresh, int hev_thresh) {
   FilterLoop26_C(u, stride, 1, 8, thresh, ithresh, hev_thresh);
   FilterLoop26_C(v, stride, 1, 8, thresh, ithresh, hev_thresh);
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
 #if !WEBP_NEON_OMIT_C_CODE || WEBP_NEON_WORK_AROUND_GCC
-static void HFilter8_C(uint8_t* u, uint8_t* v, int stride,
-                       int thresh, int ithresh, int hev_thresh) {
+static void HFilter8_C(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                       int stride, int thresh, int ithresh, int hev_thresh) {
   FilterLoop26_C(u, 1, stride, 8, thresh, ithresh, hev_thresh);
   FilterLoop26_C(v, 1, stride, 8, thresh, ithresh, hev_thresh);
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE || WEBP_NEON_WORK_AROUND_GCC
 
 #if !WEBP_NEON_OMIT_C_CODE
-static void VFilter8i_C(uint8_t* u, uint8_t* v, int stride,
-                        int thresh, int ithresh, int hev_thresh) {
+static void VFilter8i_C(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                        int stride, int thresh, int ithresh, int hev_thresh) {
   FilterLoop24_C(u + 4 * stride, stride, 1, 8, thresh, ithresh, hev_thresh);
   FilterLoop24_C(v + 4 * stride, stride, 1, 8, thresh, ithresh, hev_thresh);
 }
 #endif  // !WEBP_NEON_OMIT_C_CODE
 
 #if !WEBP_NEON_OMIT_C_CODE || WEBP_NEON_WORK_AROUND_GCC
-static void HFilter8i_C(uint8_t* u, uint8_t* v, int stride,
-                        int thresh, int ithresh, int hev_thresh) {
+static void HFilter8i_C(uint8_t* WEBP_RESTRICT u, uint8_t* WEBP_RESTRICT v,
+                        int stride, int thresh, int ithresh, int hev_thresh) {
   FilterLoop24_C(u + 4, 1, stride, 8, thresh, ithresh, hev_thresh);
   FilterLoop24_C(v + 4, 1, stride, 8, thresh, ithresh, hev_thresh);
 }
@@ -695,8 +706,8 @@ static void HFilter8i_C(uint8_t* u, uint8_t* v, int stride,
 
 //------------------------------------------------------------------------------
 
-static void DitherCombine8x8_C(const uint8_t* dither, uint8_t* dst,
-                               int dst_stride) {
+static void DitherCombine8x8_C(const uint8_t* WEBP_RESTRICT dither,
+                               uint8_t* WEBP_RESTRICT dst, int dst_stride) {
   int i, j;
   for (j = 0; j < 8; ++j) {
     for (i = 0; i < 8; ++i) {
@@ -731,8 +742,8 @@ VP8SimpleFilterFunc VP8SimpleHFilter16;
 VP8SimpleFilterFunc VP8SimpleVFilter16i;
 VP8SimpleFilterFunc VP8SimpleHFilter16i;
 
-void (*VP8DitherCombine8x8)(const uint8_t* dither, uint8_t* dst,
-                            int dst_stride);
+void (*VP8DitherCombine8x8)(const uint8_t* WEBP_RESTRICT dither,
+                            uint8_t* WEBP_RESTRICT dst, int dst_stride);
 
 extern VP8CPUInfo VP8GetCPUInfo;
 extern void VP8DspInitSSE2(void);

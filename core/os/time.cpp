@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "time.h"
+#include "time.h" // NOLINT(modernize-deprecated-headers) False positive with C-Header of the same name.
 
 #include "core/os/os.h"
 
@@ -36,6 +36,33 @@
 #define SECONDS_PER_DAY (24 * 60 * 60) // 86400
 #define IS_LEAP_YEAR(year) (!((year) % 4) && (((year) % 100) || !((year) % 400)))
 #define YEAR_SIZE(year) (IS_LEAP_YEAR(year) ? 366 : 365)
+
+static constexpr int64_t total_leap_days(int64_t p_year) {
+	if (p_year > 0) {
+		--p_year;
+		return 1 + (p_year / 4 - p_year / 100 + p_year / 400);
+	}
+
+	return p_year / 4 - p_year / 100 + p_year / 400;
+}
+
+static constexpr int64_t year_to_days(int64_t p_year) {
+	return p_year * 365 + total_leap_days(p_year);
+}
+
+static constexpr int64_t days_to_year(int64_t p_days) {
+	int64_t year = 400 * p_days / year_to_days(400);
+	if (year < 0) {
+		--year;
+	}
+	if (year_to_days(year) > p_days) {
+		--year;
+	}
+	if (year_to_days(year + 1) <= p_days) {
+		++year;
+	}
+	return year;
+}
 
 #define YEAR_KEY "year"
 #define MONTH_KEY "month"
@@ -72,16 +99,10 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	int64_t day_number = Math::floor(p_unix_time_val / (double)SECONDS_PER_DAY);            \
 	{                                                                                       \
 		int64_t day_number_copy = day_number;                                               \
-		year = UNIX_EPOCH_YEAR_AD;                                                          \
+		day_number_copy += year_to_days(UNIX_EPOCH_YEAR_AD);                                \
+		year = days_to_year(day_number_copy);                                               \
+		day_number_copy -= year_to_days(year);                                              \
 		uint8_t month_zero_index = 0;                                                       \
-		while (day_number_copy >= YEAR_SIZE(year)) {                                        \
-			day_number_copy -= YEAR_SIZE(year);                                             \
-			year++;                                                                         \
-		}                                                                                   \
-		while (day_number_copy < 0) {                                                       \
-			year--;                                                                         \
-			day_number_copy += YEAR_SIZE(year);                                             \
-		}                                                                                   \
 		/* After the above, day_number now represents the day of the year (0-index). */     \
 		while (day_number_copy >= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index]) { \
 			day_number_copy -= MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month_zero_index];      \
@@ -116,15 +137,8 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 		day_number += MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][i];                      \
 	}                                                                               \
 	/* Add the days in the years to day_number. */                                  \
-	if (year >= UNIX_EPOCH_YEAR_AD) {                                               \
-		for (int64_t iyear = UNIX_EPOCH_YEAR_AD; iyear < year; iyear++) {           \
-			day_number += YEAR_SIZE(iyear);                                         \
-		}                                                                           \
-	} else {                                                                        \
-		for (int64_t iyear = UNIX_EPOCH_YEAR_AD - 1; iyear >= year; iyear--) {      \
-			day_number -= YEAR_SIZE(iyear);                                         \
-		}                                                                           \
-	}
+	day_number += year_to_days(year);                                               \
+	day_number -= year_to_days(UNIX_EPOCH_YEAR_AD);
 
 #define PARSE_ISO8601_STRING(ret)                                                             \
 	int64_t year = UNIX_EPOCH_YEAR_AD;                                                        \
@@ -189,9 +203,6 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 Time *Time::singleton = nullptr;
 
 Time *Time::get_singleton() {
-	if (!singleton) {
-		memnew(Time);
-	}
 	return singleton;
 }
 
@@ -236,15 +247,8 @@ Dictionary Time::get_time_dict_from_unix_time(int64_t p_unix_time_val) const {
 String Time::get_datetime_string_from_unix_time(int64_t p_unix_time_val, bool p_use_space) const {
 	UNIX_TIME_TO_HMS
 	UNIX_TIME_TO_YMD
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", year, (uint8_t)month, day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, hour, minute, second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, hour, minute, second);
-	}
-
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, year, (uint8_t)month, day, hour, minute, second);
 }
 
 String Time::get_date_string_from_unix_time(int64_t p_unix_time_val) const {
@@ -258,7 +262,7 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 	return vformat("%02d:%02d:%02d", hour, minute, second);
 }
 
-Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday) const {
+Dictionary Time::get_datetime_dict_from_datetime_string(const String &p_datetime, bool p_weekday) const {
 	PARSE_ISO8601_STRING(Dictionary())
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
@@ -276,21 +280,15 @@ Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool 
 	return dict;
 }
 
-String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
+String Time::get_datetime_string_from_datetime_dict(const Dictionary &p_datetime, bool p_use_space) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS("")
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", year, (uint8_t)month, day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, hour, minute, second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, hour, minute, second);
-	}
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, year, (uint8_t)month, day, hour, minute, second);
 }
 
-int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_dict(const Dictionary &p_datetime) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
 	VALIDATE_YMDHMS(0)
@@ -298,7 +296,7 @@ int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) cons
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
 
-int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
+int64_t Time::get_unix_time_from_datetime_string(const String &p_datetime) const {
 	PARSE_ISO8601_STRING(-1)
 	VALIDATE_YMDHMS(0)
 	YMD_TO_DAY_NUMBER
@@ -355,15 +353,8 @@ Dictionary Time::get_time_dict_from_system(bool p_utc) const {
 
 String Time::get_datetime_string_from_system(bool p_utc, bool p_use_space) const {
 	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
-	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
-	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
-	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
-	}
-
-	return timestamp;
+	const String format_string = p_use_space ? "%04d-%02d-%02d %02d:%02d:%02d" : "%04d-%02d-%02dT%02d:%02d:%02d";
+	return vformat(format_string, dt.year, (uint8_t)dt.month, dt.day, dt.hour, dt.minute, dt.second);
 }
 
 String Time::get_date_string_from_system(bool p_utc) const {

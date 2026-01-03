@@ -31,14 +31,15 @@
 #include "navigation_mesh.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	RWLockWrite write_lock(rwlock);
 	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = Vector<Vector3>();
-	clear_polygons();
+	polygons.clear();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
@@ -50,7 +51,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0) {
+		if (varr.is_empty() || iarr.is_empty()) {
 			WARN_PRINT("A mesh surface was skipped when creating a NavigationMesh due to an empty vertex or index array.");
 			continue;
 		}
@@ -60,14 +61,13 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		int rlen = iarr.size();
 		const int *r = iarr.ptr();
 
+		Vector<int> polygon;
 		for (int j = 0; j < rlen; j += 3) {
-			Vector<int> vi;
-			vi.resize(3);
-			vi.write[0] = r[j + 0] + from;
-			vi.write[1] = r[j + 1] + from;
-			vi.write[2] = r[j + 2] + from;
-
-			add_polygon(vi);
+			polygon.resize(3);
+			polygon.write[0] = r[j + 0] + from;
+			polygon.write[1] = r[j + 1] + from;
+			polygon.write[2] = r[j + 2] + from;
+			polygons.push_back(polygon);
 		}
 	}
 }
@@ -127,7 +127,7 @@ NavigationMesh::SourceGeometryMode NavigationMesh::get_source_geometry_mode() co
 	return source_geometry_mode;
 }
 
-void NavigationMesh::set_source_group_name(StringName p_group_name) {
+void NavigationMesh::set_source_group_name(const StringName &p_group_name) {
 	source_group_name = p_group_name;
 }
 
@@ -151,6 +151,15 @@ void NavigationMesh::set_cell_height(float p_value) {
 
 float NavigationMesh::get_cell_height() const {
 	return cell_height;
+}
+
+void NavigationMesh::set_border_size(float p_value) {
+	ERR_FAIL_COND(p_value < 0);
+	border_size = p_value;
+}
+
+float NavigationMesh::get_border_size() const {
+	return border_size;
 }
 
 void NavigationMesh::set_agent_height(float p_value) {
@@ -295,55 +304,85 @@ Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
 }
 
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
+	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
 	notify_property_list_changed();
 }
 
 Vector<Vector3> NavigationMesh::get_vertices() const {
+	RWLockRead read_lock(rwlock);
 	return vertices;
 }
 
 void NavigationMesh::_set_polygons(const Array &p_array) {
+	RWLockWrite write_lock(rwlock);
 	polygons.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
-		polygons.write[i].indices = p_array[i];
+		polygons.write[i] = p_array[i];
 	}
 	notify_property_list_changed();
 }
 
 Array NavigationMesh::_get_polygons() const {
+	RWLockRead read_lock(rwlock);
 	Array ret;
 	ret.resize(polygons.size());
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i] = polygons[i].indices;
+		ret[i] = polygons[i];
 	}
 
 	return ret;
 }
 
+void NavigationMesh::set_polygons(const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	polygons = p_polygons;
+	notify_property_list_changed();
+}
+
+Vector<Vector<int>> NavigationMesh::get_polygons() const {
+	RWLockRead read_lock(rwlock);
+	return polygons;
+}
+
 void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
-	Polygon polygon;
-	polygon.indices = p_polygon;
-	polygons.push_back(polygon);
+	RWLockWrite write_lock(rwlock);
+	polygons.push_back(p_polygon);
 	notify_property_list_changed();
 }
 
 int NavigationMesh::get_polygon_count() const {
+	RWLockRead read_lock(rwlock);
 	return polygons.size();
 }
 
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
+	RWLockRead read_lock(rwlock);
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
-	return polygons[p_idx].indices;
+	return polygons[p_idx];
 }
 
 void NavigationMesh::clear_polygons() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 }
 
 void NavigationMesh::clear() {
+	RWLockWrite write_lock(rwlock);
 	polygons.clear();
 	vertices.clear();
+}
+
+void NavigationMesh::set_data(const Vector<Vector3> &p_vertices, const Vector<Vector<int>> &p_polygons) {
+	RWLockWrite write_lock(rwlock);
+	vertices = p_vertices;
+	polygons = p_polygons;
+}
+
+void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &r_polygons) {
+	RWLockRead read_lock(rwlock);
+	r_vertices = vertices;
+	r_polygons = polygons;
 }
 
 #ifdef DEBUG_ENABLED
@@ -353,15 +392,17 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		return debug_mesh;
 	}
 
-	if (!debug_mesh.is_valid()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_mesh.is_null()) {
+		debug_mesh.instantiate();
 	} else {
 		debug_mesh->clear_surfaces();
 	}
 
-	if (vertices.size() == 0) {
+	if (vertices.is_empty()) {
 		return debug_mesh;
 	}
+
+	RWLockRead read_lock(rwlock);
 
 	int polygon_count = get_polygon_count();
 
@@ -464,6 +505,9 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_height", "cell_height"), &NavigationMesh::set_cell_height);
 	ClassDB::bind_method(D_METHOD("get_cell_height"), &NavigationMesh::get_cell_height);
 
+	ClassDB::bind_method(D_METHOD("set_border_size", "border_size"), &NavigationMesh::set_border_size);
+	ClassDB::bind_method(D_METHOD("get_border_size"), &NavigationMesh::get_border_size);
+
 	ClassDB::bind_method(D_METHOD("set_agent_height", "agent_height"), &NavigationMesh::set_agent_height);
 	ClassDB::bind_method(D_METHOD("get_agent_height"), &NavigationMesh::get_agent_height);
 
@@ -537,9 +581,10 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
-	ADD_GROUP("Cells", "cell_");
+	ADD_GROUP("Cells", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "border_size", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_border_size", "get_border_size");
 	ADD_GROUP("Agents", "agent_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_height", "get_agent_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_radius", PROPERTY_HINT_RANGE, "0.0,500.0,0.01,or_greater,suffix:m"), "set_agent_radius", "get_agent_radius");
@@ -612,5 +657,3 @@ bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 #endif // DISABLE_DEPRECATED
-
-NavigationMesh::NavigationMesh() {}

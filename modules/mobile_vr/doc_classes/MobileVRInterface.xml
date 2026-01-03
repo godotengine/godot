@@ -10,8 +10,9 @@
 		[codeblock]
 		var interface = XRServer.find_interface("Native mobile")
 		if interface and interface.initialize():
-		    get_viewport().xr = true
+			get_viewport().use_xr = true
 		[/codeblock]
+		[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer], [member ProjectSettings.input_devices/sensors/enable_gravity], [member ProjectSettings.input_devices/sensors/enable_gyroscope] and [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,8 +35,19 @@
 		<member name="k2" type="float" setter="set_k2" getter="get_k2" default="0.215">
 			The k2 lens factor, see k1.
 		</member>
+		<member name="offset_rect" type="Rect2" setter="set_offset_rect" getter="get_offset_rect" default="Rect2(0, 0, 1, 1)">
+			Set the offset rect relative to the area being rendered. A length of 1 represents the whole rendering area on that axis.
+		</member>
 		<member name="oversample" type="float" setter="set_oversample" getter="get_oversample" default="1.5">
 			The oversample setting. Because of the lens distortion we have to render our buffers at a higher resolution then the screen can natively handle. A value between 1.5 and 2.0 often provides good results but at the cost of performance.
+		</member>
+		<member name="vrs_min_radius" type="float" setter="set_vrs_min_radius" getter="get_vrs_min_radius" default="20.0">
+			The minimum radius around the focal point where full quality is guaranteed if VRS is used as a percentage of screen size.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
+		</member>
+		<member name="vrs_strength" type="float" setter="set_vrs_strength" getter="get_vrs_strength" default="1.0">
+			The strength used to calculate the VRS density map. The greater this value, the more noticeable VRS is. This improves performance at the cost of quality.
+			[b]Note:[/b] Mobile and Forward+ renderers only. Requires [member Viewport.vrs_mode] to be set to [constant Viewport.VRS_XR].
 		</member>
 		<member name="xr_play_area_mode" type="int" setter="set_play_area_mode" getter="get_play_area_mode" overrides="XRInterface" enum="XRInterface.PlayAreaMode" default="1" />
 	</members>

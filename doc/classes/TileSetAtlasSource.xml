@@ -52,7 +52,7 @@
 		<method name="get_runtime_texture" qualifiers="const">
 			<return type="Texture2D" />
 			<description>
-				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns and internal [ImageTexture] created that includes the padding.
+				If [member use_texture_padding] is [code]false[/code], returns [member texture]. Otherwise, returns an internal [ImageTexture] created that includes the padding.
 			</description>
 		</method>
 		<method name="get_runtime_tile_texture_region" qualifiers="const">
@@ -90,7 +90,7 @@
 			<return type="int" enum="TileSetAtlasSource.TileAnimationMode" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
-				Returns the [enum TileAnimationMode] of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
+				Returns the tile animation mode of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
 			</description>
 		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
@@ -239,7 +239,7 @@
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<param index="1" name="mode" type="int" enum="TileSetAtlasSource.TileAnimationMode" />
 			<description>
-				Sets the [enum TileAnimationMode] of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
+				Sets the tile animation mode of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
 			</description>
 		</method>
 		<method name="set_tile_animation_separation">
@@ -270,7 +270,7 @@
 			The atlas texture.
 		</member>
 		<member name="texture_region_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
-			The base tile size in the texture (in pixel). This size must be bigger than the TileSet's [code]tile_size[/code] value.
+			The base tile size in the texture (in pixel). This size must be bigger than or equal to the TileSet's [code]tile_size[/code] value.
 		</member>
 		<member name="use_texture_padding" type="bool" setter="set_use_texture_padding" getter="get_use_texture_padding" default="true">
 			If [code]true[/code], generates an internal texture with an additional one pixel padding around each tile. Texture padding avoids a common artifact where lines appear between tiles.
@@ -288,12 +288,21 @@
 			Represents the size of the [enum TileAnimationMode] enum.
 		</constant>
 		<constant name="TRANSFORM_FLIP_H" value="4096">
-			Represents cell's horizontal flip flag. Should be used directly with [TileMap] to flip placed tiles by altering their alternative IDs.
+			Represents cell's horizontal flip flag. Should be used directly with [TileMapLayer] to flip placed tiles by altering their alternative IDs.
 			[codeblock]
-			var alternate_id = $TileMap.get_cell_alternative_tile(0, Vector2i(2, 2))
+			var alternate_id = $TileMapLayer.get_cell_alternative_tile(Vector2i(2, 2))
 			if not alternate_id &amp; TileSetAtlasSource.TRANSFORM_FLIP_H:
-			    # If tile is not already flipped, flip it.
-			    $TileMap.set_cell(0, Vector2i(2, 2), source_id, atlas_coords, alternate_id | TileSetAtlasSource.TRANSFORM_FLIP_H)
+				# If tile is not already flipped, flip it.
+				$TileMapLayer.set_cell(Vector2i(2, 2), source_id, atlas_coords, alternate_id | TileSetAtlasSource.TRANSFORM_FLIP_H)
+			[/codeblock]
+			[b]Note:[/b] These transformations can be combined to do the equivalent of 0, 90, 180, and 270 degree rotations, as shown below:
+			[codeblock]
+			enum TileTransform {
+				ROTATE_0 = 0,
+				ROTATE_90 = TileSetAtlasSource.TRANSFORM_TRANSPOSE | TileSetAtlasSource.TRANSFORM_FLIP_H,
+				ROTATE_180 = TileSetAtlasSource.TRANSFORM_FLIP_H | TileSetAtlasSource.TRANSFORM_FLIP_V,
+				ROTATE_270 = TileSetAtlasSource.TRANSFORM_TRANSPOSE | TileSetAtlasSource.TRANSFORM_FLIP_V,
+			}
 			[/codeblock]
 		</constant>
 		<constant name="TRANSFORM_FLIP_V" value="8192">

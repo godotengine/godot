@@ -2,24 +2,13 @@
  *  Generic ASN.1 parsing
  *
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
 #include "common.h"
 
-#if defined(MBEDTLS_ASN1_PARSE_C)
+#if defined(MBEDTLS_ASN1_PARSE_C) || defined(MBEDTLS_X509_CREATE_C) || \
+    defined(MBEDTLS_PSA_UTIL_HAVE_ECDSA)
 
 #include "mbedtls/asn1.h"
 #include "mbedtls/platform_util.h"
@@ -47,47 +36,18 @@ int mbedtls_asn1_get_len(unsigned char **p,
     if ((**p & 0x80) == 0) {
         *len = *(*p)++;
     } else {
-        switch (**p & 0x7F) {
-            case 1:
-                if ((end - *p) < 2) {
-                    return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
-                }
-
-                *len = (*p)[1];
-                (*p) += 2;
-                break;
-
-            case 2:
-                if ((end - *p) < 3) {
-                    return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
-                }
-
-                *len = ((size_t) (*p)[1] << 8) | (*p)[2];
-                (*p) += 3;
-                break;
-
-            case 3:
-                if ((end - *p) < 4) {
-                    return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
-                }
-
-                *len = ((size_t) (*p)[1] << 16) |
-                       ((size_t) (*p)[2] << 8) | (*p)[3];
-                (*p) += 4;
-                break;
-
-            case 4:
-                if ((end - *p) < 5) {
-                    return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
-                }
-
-                *len = ((size_t) (*p)[1] << 24) | ((size_t) (*p)[2] << 16) |
-                       ((size_t) (*p)[3] << 8) |           (*p)[4];
-                (*p) += 5;
-                break;
-
-            default:
-                return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        int n = (**p) & 0x7F;
+        if (n == 0 || n > 4) {
+            return MBEDTLS_ERR_ASN1_INVALID_LENGTH;
+        }
+        if ((end - *p) <= n) {
+            return MBEDTLS_ERR_ASN1_OUT_OF_DATA;
+        }
+        *len = 0;
+        (*p)++;
+        while (n--) {
+            *len = (*len << 8) | **p;
+            (*p)++;
         }
     }
 
@@ -114,7 +74,9 @@ int mbedtls_asn1_get_tag(unsigned char **p,
 
     return mbedtls_asn1_get_len(p, end, len);
 }
+#endif /* MBEDTLS_ASN1_PARSE_C || MBEDTLS_X509_CREATE_C || MBEDTLS_PSA_UTIL_HAVE_ECDSA */
 
+#if defined(MBEDTLS_ASN1_PARSE_C)
 int mbedtls_asn1_get_bool(unsigned char **p,
                           const unsigned char *end,
                           int *val)
@@ -332,7 +294,6 @@ void mbedtls_asn1_sequence_free(mbedtls_asn1_sequence *seq)
 {
     while (seq != NULL) {
         mbedtls_asn1_sequence *next = seq->next;
-        mbedtls_platform_zeroize(seq, sizeof(*seq));
         mbedtls_free(seq);
         seq = next;
     }
@@ -455,6 +416,7 @@ int mbedtls_asn1_get_alg_null(unsigned char **p,
     return 0;
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
 void mbedtls_asn1_free_named_data(mbedtls_asn1_named_data *cur)
 {
     if (cur == NULL) {
@@ -466,6 +428,7 @@ void mbedtls_asn1_free_named_data(mbedtls_asn1_named_data *cur)
 
     mbedtls_platform_zeroize(cur, sizeof(mbedtls_asn1_named_data));
 }
+#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 void mbedtls_asn1_free_named_data_list(mbedtls_asn1_named_data **head)
 {
@@ -473,13 +436,22 @@ void mbedtls_asn1_free_named_data_list(mbedtls_asn1_named_data **head)
 
     while ((cur = *head) != NULL) {
         *head = cur->next;
-        mbedtls_asn1_free_named_data(cur);
+        mbedtls_free(cur->oid.p);
+        mbedtls_free(cur->val.p);
         mbedtls_free(cur);
     }
 }
 
-mbedtls_asn1_named_data *mbedtls_asn1_find_named_data(mbedtls_asn1_named_data *list,
-                                                      const char *oid, size_t len)
+void mbedtls_asn1_free_named_data_list_shallow(mbedtls_asn1_named_data *name)
+{
+    for (mbedtls_asn1_named_data *next; name != NULL; name = next) {
+        next = name->next;
+        mbedtls_free(name);
+    }
+}
+
+const mbedtls_asn1_named_data *mbedtls_asn1_find_named_data(const mbedtls_asn1_named_data *list,
+                                                            const char *oid, size_t len)
 {
     while (list != NULL) {
         if (list->oid.len == len &&

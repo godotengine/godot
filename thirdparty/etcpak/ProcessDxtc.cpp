@@ -739,18 +739,8 @@ static etcpak_force_inline uint64_t ProcessRGB_SSE( __m128i px0, __m128i px1, __
     return uint64_t( ( uint64_t( to565( vmin ) ) << 16 ) | to565( vmax ) | ( uint64_t( vp ) << 32 ) );
 }
 
-static etcpak_force_inline uint64_t ProcessAlpha_SSE( __m128i px0, __m128i px1, __m128i px2, __m128i px3 )
+static etcpak_force_inline uint64_t ProcessOneChannel_SSE( __m128i a )
 {
-    __m128i mask = _mm_setr_epi32( 0x0f0b0703, -1, -1, -1 );
-
-    __m128i m0 = _mm_shuffle_epi8( px0, mask );
-    __m128i m1 = _mm_shuffle_epi8( px1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
-    __m128i m2 = _mm_shuffle_epi8( px2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
-    __m128i m3 = _mm_shuffle_epi8( px3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
-    __m128i m4 = _mm_or_si128( m0, m1 );
-    __m128i m5 = _mm_or_si128( m2, m3 );
-    __m128i a = _mm_or_si128( m4, m5 );
-
     __m128i solidCmp = _mm_shuffle_epi8( a, _mm_setzero_si128() );
     __m128i cmpRes = _mm_cmpeq_epi8( a, solidCmp );
     if( _mm_testc_si128( cmpRes, _mm_set1_epi32( -1 ) ) )
@@ -800,9 +790,24 @@ static etcpak_force_inline uint64_t ProcessAlpha_SSE( __m128i px0, __m128i px1, 
     }
     return (uint64_t)(uint16_t)_mm_cvtsi128_si32( minmax ) | ( data << 16 );
 }
+
+static etcpak_force_inline uint64_t ProcessAlpha_SSE( __m128i px0, __m128i px1, __m128i px2, __m128i px3 )
+{
+    __m128i mask = _mm_setr_epi32( 0x0f0b0703, -1, -1, -1 );
+
+    __m128i m0 = _mm_shuffle_epi8( px0, mask );
+    __m128i m1 = _mm_shuffle_epi8( px1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+    __m128i m2 = _mm_shuffle_epi8( px2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+    __m128i m3 = _mm_shuffle_epi8( px3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+    __m128i m4 = _mm_or_si128( m0, m1 );
+    __m128i m5 = _mm_or_si128( m2, m3 );
+    __m128i a = _mm_or_si128( m4, m5 );
+
+    return ProcessOneChannel_SSE( a );
+}
 #endif
 
-void CompressDxt1( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressBc1( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
 #ifdef __AVX2__
     if( width%8 == 0 )
@@ -862,7 +867,7 @@ void CompressDxt1( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t w
     }
 }
 
-void CompressDxt1Dither( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressBc1Dither( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
     uint32_t buf[4*4];
     int i = 0;
@@ -894,7 +899,7 @@ void CompressDxt1Dither( const uint32_t* src, uint64_t* dst, uint32_t blocks, si
     while( --blocks );
 }
 
-void CompressDxt5( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+void CompressBc3( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
 {
     int i = 0;
     auto ptr = dst;
@@ -953,4 +958,129 @@ void CompressDxt5( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t w
 #endif
     }
     while( --blocks );
+}
+
+void CompressBc4( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int i = 0;
+    auto ptr = dst;
+    do
+    {
+#ifdef __SSE4_1__
+        __m128i px0 = _mm_loadu_si128( (__m128i*)( src + width * 0 ) );
+        __m128i px1 = _mm_loadu_si128( (__m128i*)( src + width * 1 ) );
+        __m128i px2 = _mm_loadu_si128( (__m128i*)( src + width * 2 ) );
+        __m128i px3 = _mm_loadu_si128( (__m128i*)( src + width * 3 ) );
+
+        src += 4;
+        if( ++i == width/4 )
+        {
+            src += width * 3;
+            i = 0;
+        }
+
+        __m128i mask = _mm_setr_epi32( 0x0c080400, -1, -1, -1 );
+
+        __m128i m0 = _mm_shuffle_epi8( px0, mask );
+        __m128i m1 = _mm_shuffle_epi8( px1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i m2 = _mm_shuffle_epi8( px2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i m3 = _mm_shuffle_epi8( px3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+        __m128i m4 = _mm_or_si128( m0, m1 );
+        __m128i m5 = _mm_or_si128( m2, m3 );
+
+        *ptr++ = ProcessOneChannel_SSE( _mm_or_si128( m4, m5 ) );
+#else
+        uint8_t r[4*4];
+        auto rgba = src;
+        for( int i=0; i<4; i++ )
+        {
+            r[i*4] = rgba[0] & 0xff;
+            r[i*4+1] = rgba[1] & 0xff;
+            r[i*4+2] = rgba[2] & 0xff;
+            r[i*4+3] = rgba[3] & 0xff;
+
+            rgba += width;
+        }
+
+        src += 4;
+        if( ++i == width/4 )
+        {
+            src += width * 3;
+            i = 0;
+        }
+
+        *ptr++ = ProcessAlpha( r );
+#endif
+    } while( --blocks );
+}
+
+void CompressBc5( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t width )
+{
+    int i = 0;
+    auto ptr = dst;
+    do
+    {
+#ifdef __SSE4_1__
+        __m128i px0 = _mm_loadu_si128( (__m128i*)( src + width * 0 ) );
+        __m128i px1 = _mm_loadu_si128( (__m128i*)( src + width * 1 ) );
+        __m128i px2 = _mm_loadu_si128( (__m128i*)( src + width * 2 ) );
+        __m128i px3 = _mm_loadu_si128( (__m128i*)( src + width * 3 ) );
+
+        src += 4;
+        if( ++i == width/4 )
+        {
+            src += width*3;
+            i = 0;
+        }
+
+        __m128i mask = _mm_setr_epi32( 0x0c080400, -1, -1, -1 );
+
+        __m128i m0 = _mm_shuffle_epi8( px0, mask );
+        __m128i m1 = _mm_shuffle_epi8( px1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        __m128i m2 = _mm_shuffle_epi8( px2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        __m128i m3 = _mm_shuffle_epi8( px3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+        __m128i m4 = _mm_or_si128( m0, m1 );
+        __m128i m5 = _mm_or_si128( m2, m3 );
+
+        *ptr++ = ProcessOneChannel_SSE( _mm_or_si128( m4, m5 ) );
+
+        mask = _mm_setr_epi32( 0x0d090501, -1, -1, -1 );
+
+        m0 = _mm_shuffle_epi8( px0, mask );
+        m1 = _mm_shuffle_epi8( px1, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 3, 0, 3 ) ) );
+        m2 = _mm_shuffle_epi8( px2, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 3, 0, 3, 3 ) ) );
+        m3 = _mm_shuffle_epi8( px3, _mm_shuffle_epi32( mask, _MM_SHUFFLE( 0, 3, 3, 3 ) ) );
+        m4 = _mm_or_si128( m0, m1 );
+        m5 = _mm_or_si128( m2, m3 );
+
+        *ptr++ = ProcessOneChannel_SSE( _mm_or_si128( m4, m5 ) );
+#else
+        uint8_t rg[4*4*2];
+        auto rgba = src;
+        for( int i=0; i<4; i++ )
+        {
+            rg[i*4] = rgba[0] & 0xff;
+            rg[i*4+1] = rgba[1] & 0xff;
+            rg[i*4+2] = rgba[2] & 0xff;
+            rg[i*4+3] = rgba[3] & 0xff;
+
+            rg[16+i*4] = (rgba[0] & 0xff00) >> 8;
+            rg[16+i*4+1] = (rgba[1] & 0xff00) >> 8;
+            rg[16+i*4+2] = (rgba[2] & 0xff00) >> 8;
+            rg[16+i*4+3] = (rgba[3] & 0xff00) >> 8;
+
+            rgba += width;
+        }
+
+        src += 4;
+        if( ++i == width/4 )
+        {
+            src += width*3;
+            i = 0;
+        }
+
+        *ptr++ = ProcessAlpha( rg );
+        *ptr++ = ProcessAlpha( &rg[16] );
+#endif
+    } while( --blocks );
 }

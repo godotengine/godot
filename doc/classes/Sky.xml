@@ -10,11 +10,10 @@
 	</tutorials>
 	<members>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Sky.ProcessMode" default="0">
-			Sets the method for generating the radiance map from the sky. The radiance map is a cubemap with increasingly blurry versions of the sky corresponding to different levels of roughness. Radiance maps can be expensive to calculate. See [enum ProcessMode] for options.
+			The method for generating the radiance map from the sky. The radiance map is a cubemap with increasingly blurry versions of the sky corresponding to different levels of roughness. Radiance maps can be expensive to calculate.
 		</member>
 		<member name="radiance_size" type="int" setter="set_radiance_size" getter="get_radiance_size" enum="Sky.RadianceSize" default="3">
 			The [Sky]'s radiance map size. The higher the radiance map size, the more detailed the lighting from the [Sky] will be.
-			See [enum RadianceSize] constants for values.
 			[b]Note:[/b] Some hardware will have trouble with higher radiance sizes, especially [constant RADIANCE_SIZE_512] and above. Only use such high values on high-end hardware.
 		</member>
 		<member name="sky_material" type="Material" setter="set_material" getter="get_material">

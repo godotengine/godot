@@ -86,7 +86,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1.0;
-			real_t dot = ABS(normal.dot(axis));
+			real_t dot = Math::abs(normal.dot(axis));
 			if (i == 0 || dot > closest_dot) {
 				closest_axis = i;
 				closest_dot = dot;
@@ -136,7 +136,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 intersection;
 
 				if (!plane.intersects_segment(ray_from, ray_to, &intersection)) {
-					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
+					if (Math::abs(plane.distance_to(ray_from)) < Math::abs(plane.distance_to(ray_to))) {
 						intersection = plane.project(ray_from);
 					} else {
 						intersection = plane.project(ray_to);
@@ -312,11 +312,17 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 
 	for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 		Color c;
-		c.r = (r[i * 4 + 0] / 255.0) * p_color_mul.r + p_color_add.r;
-		c.g = (r[i * 4 + 1] / 255.0) * p_color_mul.g + p_color_add.g;
-		c.b = (r[i * 4 + 2] / 255.0) * p_color_mul.b + p_color_add.b;
+		Color src = Color(
+				r[i * 4 + 0] / 255.0,
+				r[i * 4 + 1] / 255.0,
+				r[i * 4 + 2] / 255.0,
+				r[i * 4 + 3] / 255.0);
+		src = src.srgb_to_linear();
 
-		c.a = r[i * 4 + 3] / 255.0;
+		c.r = src.r * p_color_mul.r + p_color_add.r;
+		c.g = src.g * p_color_mul.g + p_color_add.g;
+		c.b = src.b * p_color_mul.b + p_color_add.b;
+		c.a = src.a;
 
 		ret.write[i] = c;
 	}
@@ -342,16 +348,16 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
 			img_albedo = albedo_tex->get_image();
-			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
+			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo().srgb_to_linear(), Color(0, 0, 0)); // albedo texture, color is multiplicative
 		} else {
-			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo()); // no albedo texture, color is additive
+			mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), mat->get_albedo().srgb_to_linear()); // no albedo texture, color is additive
 		}
 		if (mat->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
-			Color emission_col = mat->get_emission();
+			Color emission_col = mat->get_emission().srgb_to_linear();
 			float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
-			if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 				emission_energy *= mat->get_emission_intensity();
 			}
 
@@ -382,7 +388,28 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) const {
+	int bake_total = 0;
+	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
+			continue; // Only triangles.
+		}
+		Array a = p_mesh->surface_get_arrays(i);
+		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		Vector<int> index = a[Mesh::ARRAY_INDEX];
+		bake_total += (index.size() > 0 ? index.size() : vertices.size()) / 3;
+	}
+	return bake_total;
+}
+
+Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_func) {
+	ERR_FAIL_COND_V_MSG(!p_xform.is_finite(), BAKE_RESULT_INVALID_PARAMETER, "Invalid mesh bake transform.");
+
+	// Precalculate for transforming vertex normals
+	Basis normal_xform = p_xform.basis.inverse().transposed();
+
+	int bake_total = get_bake_steps(p_mesh), bake_current = 0;
+
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -426,6 +453,13 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				Vector2 uvs[3];
 				Vector3 normal[3];
 
+				bake_current++;
+				if (p_bake_step_func != nullptr && (bake_current & 2047) == 1) {
+					if (p_bake_step_func(bake_current, bake_total)) {
+						return BAKE_RESULT_CANCELLED;
+					}
+				}
+
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[ir[j * 3 + k]]);
 				}
@@ -438,7 +472,7 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
-						normal[k] = nr[ir[j * 3 + k]];
+						normal[k] = normal_xform.xform(nr[ir[j * 3 + k]]).normalized();
 					}
 				}
 
@@ -457,6 +491,13 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
 				Vector3 normal[3];
+
+				bake_current++;
+				if (p_bake_step_func != nullptr && (bake_current & 2047) == 1) {
+					if (p_bake_step_func(bake_current, bake_total)) {
+						return BAKE_RESULT_CANCELLED;
+					}
+				}
 
 				for (int k = 0; k < 3; k++) {
 					vtxs[k] = p_xform.xform(vr[j * 3 + k]);
@@ -485,6 +526,8 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 	}
 
 	max_original_cells = bake_cells.size();
+
+	return BAKE_RESULT_OK;
 }
 
 void Voxelizer::_sort() {
@@ -779,7 +822,7 @@ Vector<int> Voxelizer::get_voxel_gi_level_cell_count() const {
 // https://prideout.net/blog/distance_fields/
 
 #define square(m_s) ((m_s) * (m_s))
-#define INF 1e20
+#define BIG_VAL 1e20
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
@@ -789,8 +832,8 @@ static void edt(float *f, int stride, int n) {
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -INF;
-	z[1] = +INF;
+	z[0] = -BIG_VAL;
+	z[1] = +BIG_VAL;
 	for (int q = 1; q <= n - 1; q++) {
 		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
@@ -801,7 +844,7 @@ static void edt(float *f, int stride, int n) {
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +INF;
+		z[k + 1] = +BIG_VAL;
 	}
 
 	k = 0;
@@ -819,13 +862,13 @@ static void edt(float *f, int stride, int n) {
 
 #undef square
 
-Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
+Voxelizer::BakeResult Voxelizer::get_sdf_3d_image(Vector<uint8_t> &r_image, BakeStepFunc p_bake_step_function) const {
 	Vector3i octree_size = get_voxel_gi_octree_size();
 
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = INF;
+		work_memory[i] = BIG_VAL;
 	}
 
 	uint32_t y_mult = octree_size.x;
@@ -837,7 +880,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		uint32_t cell_count = bake_cells.size();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-			if (cells[i].level < (cell_subdiv - 1)) {
+			if (cells[i].level < cell_subdiv) {
 				continue; //do not care about this level
 			}
 
@@ -847,9 +890,17 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	//process in each direction
 
+	int bake_total = octree_size.x * 2 + octree_size.y, bake_current = 0;
+
 	//xy->z
 
-	for (int i = 0; i < octree_size.x; i++) {
+	for (int i = 0; i < octree_size.x; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.y; j++) {
 			edt(&work_memory[i + j * y_mult], z_mult, octree_size.z);
 		}
@@ -857,23 +908,34 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	//xz->y
 
-	for (int i = 0; i < octree_size.x; i++) {
+	for (int i = 0; i < octree_size.x; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.z; j++) {
 			edt(&work_memory[i + j * z_mult], y_mult, octree_size.y);
 		}
 	}
 
 	//yz->x
-	for (int i = 0; i < octree_size.y; i++) {
+	for (int i = 0; i < octree_size.y; i++, bake_current++) {
+		if (p_bake_step_function) {
+			if (p_bake_step_function(bake_current, bake_total)) {
+				memdelete_arr(work_memory);
+				return BAKE_RESULT_CANCELLED;
+			}
+		}
 		for (int j = 0; j < octree_size.z; j++) {
 			edt(&work_memory[i * y_mult + j * z_mult], 1, octree_size.x);
 		}
 	}
 
-	Vector<uint8_t> image3d;
-	image3d.resize(float_count);
+	r_image.resize(float_count);
 	{
-		uint8_t *w = image3d.ptrw();
+		uint8_t *w = r_image.ptrw();
 		for (uint32_t i = 0; i < float_count; i++) {
 			uint32_t d = uint32_t(Math::sqrt(work_memory[i]));
 			if (d == 0) {
@@ -886,10 +948,10 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 
 	memdelete_arr(work_memory);
 
-	return image3d;
+	return BAKE_RESULT_OK;
 }
 
-#undef INF
+#undef BIG_VAL
 
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 	if (p_level == cell_subdiv - 1) {

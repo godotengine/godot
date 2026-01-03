@@ -28,17 +28,132 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTAINER_TYPE_VALIDATE_H
-#define CONTAINER_TYPE_VALIDATE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
+
+struct ContainerType {
+	Variant::Type builtin_type = Variant::NIL;
+	StringName class_name;
+	Ref<Script> script;
+};
 
 struct ContainerTypeValidate {
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
 	const char *where = "container";
+
+private:
+	// Coerces String and StringName into each other and int into float when needed.
+	_FORCE_INLINE_ bool _internal_validate(Variant &inout_variant, const char *p_operation, bool p_output_errors) const {
+		if (type == Variant::NIL) {
+			return true;
+		}
+
+		if (type != inout_variant.get_type()) {
+			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+				return true;
+			}
+			if (type == Variant::STRING && inout_variant.get_type() == Variant::STRING_NAME) {
+				inout_variant = String(inout_variant);
+				return true;
+			} else if (type == Variant::STRING_NAME && inout_variant.get_type() == Variant::STRING) {
+				inout_variant = StringName(inout_variant);
+				return true;
+			} else if (type == Variant::FLOAT && inout_variant.get_type() == Variant::INT) {
+				inout_variant = (float)inout_variant;
+				return true;
+			}
+
+			if (p_output_errors) {
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
+			} else {
+				return false;
+			}
+		}
+
+		if (type != Variant::OBJECT) {
+			return true;
+		}
+
+		return _internal_validate_object(inout_variant, p_operation, p_output_errors);
+	}
+
+	_FORCE_INLINE_ bool _internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
+
+#ifdef DEBUG_ENABLED
+		ObjectID object_id = p_variant;
+		if (object_id == ObjectID()) {
+			return true; // This is fine, it's null.
+		}
+		Object *object = ObjectDB::get_instance(object_id);
+		if (object == nullptr) {
+			if (p_output_errors) {
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an invalid (previously freed?) object instance into a '%s'.", String(p_operation), String(where)));
+			} else {
+				return false;
+			}
+		}
+#else
+		Object *object = p_variant;
+		if (object == nullptr) {
+			return true; //fine
+		}
+#endif
+		if (class_name == StringName()) {
+			return true; // All good, no class type requested.
+		}
+
+		const StringName &obj_class = object->get_class_name();
+		if (obj_class != class_name && !ClassDB::is_parent_class(obj_class, class_name)) {
+			if (p_output_errors) {
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
+			} else {
+				return false;
+			}
+		}
+
+		if (script.is_null()) {
+			return true; // All good, no script requested.
+		}
+
+		Ref<Script> other_script = object->get_script();
+
+		// Check base script..
+		if (other_script.is_null()) {
+			if (p_output_errors) {
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
+			} else {
+				return false;
+			}
+		}
+		if (!other_script->inherits_script(script)) {
+			if (p_output_errors) {
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s, that does not inherit from '%s'.", String(p_operation), String(where), String(script->get_class_name())));
+			} else {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+public:
+	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
+		return _internal_validate(inout_variant, p_operation, true);
+	}
+
+	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
+		return _internal_validate_object(p_variant, p_operation, true);
+	}
+
+	_FORCE_INLINE_ bool test_validate(const Variant &p_variant) const {
+		Variant tmp = p_variant;
+		return _internal_validate(tmp, "", false);
+	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
@@ -72,75 +187,4 @@ struct ContainerTypeValidate {
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
 		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
 	}
-
-	// Coerces String and StringName into each other and int into float when needed.
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
-		if (type == Variant::NIL) {
-			return true;
-		}
-
-		if (type != inout_variant.get_type()) {
-			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
-				return true;
-			}
-			if (type == Variant::STRING && inout_variant.get_type() == Variant::STRING_NAME) {
-				inout_variant = String(inout_variant);
-				return true;
-			} else if (type == Variant::STRING_NAME && inout_variant.get_type() == Variant::STRING) {
-				inout_variant = StringName(inout_variant);
-				return true;
-			} else if (type == Variant::FLOAT && inout_variant.get_type() == Variant::INT) {
-				inout_variant = (float)inout_variant;
-				return true;
-			}
-
-			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
-		}
-
-		if (type != Variant::OBJECT) {
-			return true;
-		}
-
-		return validate_object(inout_variant, p_operation);
-	}
-
-	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
-		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
-
-#ifdef DEBUG_ENABLED
-		ObjectID object_id = p_variant;
-		if (object_id == ObjectID()) {
-			return true; // This is fine, it's null.
-		}
-		Object *object = ObjectDB::get_instance(object_id);
-		ERR_FAIL_NULL_V_MSG(object, false, "Attempted to " + String(p_operation) + " an invalid (previously freed?) object instance into a '" + String(where) + ".");
-#else
-		Object *object = p_variant;
-		if (object == nullptr) {
-			return true; //fine
-		}
-#endif
-		if (class_name == StringName()) {
-			return true; // All good, no class type requested.
-		}
-
-		StringName obj_class = object->get_class_name();
-		if (obj_class != class_name) {
-			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, "Attempted to " + String(p_operation) + " an object of type '" + object->get_class() + "' into a " + where + ", which does not inherit from '" + String(class_name) + "'.");
-		}
-
-		if (script.is_null()) {
-			return true; // All good, no script requested.
-		}
-
-		Ref<Script> other_script = object->get_script();
-
-		// Check base script..
-		ERR_FAIL_COND_V_MSG(other_script.is_null(), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
-		ERR_FAIL_COND_V_MSG(!other_script->inherits_script(script), false, "Attempted to " + String(p_operation) + " an object into a " + String(where) + ", that does not inherit from '" + String(script->get_class_name()) + "'.");
-
-		return true;
-	}
 };
-
-#endif // CONTAINER_TYPE_VALIDATE_H

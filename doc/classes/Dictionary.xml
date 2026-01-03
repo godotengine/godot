@@ -14,27 +14,27 @@
 		var dict_variable_key = "Another key name"
 		var dict_variable_value = "value2"
 		var another_dict = {
-		    "Some key name": "value1",
-		    dict_variable_key: dict_variable_value,
+			"Some key name": "value1",
+			dict_variable_key: dict_variable_value,
 		}
 
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 
 		# Alternative Lua-style syntax.
 		# Doesn't require quotes around keys, but only string constants can be used as key names.
 		# Additionally, key names must start with a letter or an underscore.
 		# Here, `some_key` is a string literal, not a variable!
 		another_dict = {
-		    some_key = 42,
+			some_key = 42,
 		}
 		[/gdscript]
 		[csharp]
 		var myDict = new Godot.Collections.Dictionary(); // Creates an empty dictionary.
 		var pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 		[/csharp]
 		[/codeblocks]
@@ -42,24 +42,24 @@
 		[codeblocks]
 		[gdscript]
 		@export_enum("White", "Yellow", "Orange") var my_color: String
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 		func _ready():
-		    # We can't use dot syntax here as `my_color` is a variable.
-		    var points = points_dict[my_color]
+			# We can't use dot syntax here as `my_color` is a variable.
+			var points = points_dict[my_color]
 		[/gdscript]
 		[csharp]
 		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
 		public string MyColor { get; set; }
 		private Godot.Collections.Dictionary _pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 
 		public override void _Ready()
 		{
-		    int points = (int)_pointsDict[MyColor];
+			int points = (int)_pointsDict[MyColor];
 		}
 		[/csharp]
 		[/codeblocks]
@@ -68,69 +68,102 @@
 		[codeblocks]
 		[gdscript]
 		var my_dict = {
-		    "First Array": [1, 2, 3, 4] # Assigns an Array to a String key.
+			"First Array": [1, 2, 3, 4] # Assigns an Array to a String key.
 		}
 		[/gdscript]
 		[csharp]
 		var myDict = new Godot.Collections.Dictionary
 		{
-		    {"First Array", new Godot.Collections.Array{1, 2, 3, 4}}
+			{ "First Array", new Godot.Collections.Array { 1, 2, 3, 4 } }
 		};
 		[/csharp]
 		[/codeblocks]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
 		[codeblocks]
 		[gdscript]
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 		points_dict["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
 		[/gdscript]
 		[csharp]
 		var pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 		pointsDict["Blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
 		[/csharp]
 		[/codeblocks]
-		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		Finally, untyped dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblocks]
 		[gdscript]
 		# This is a valid dictionary.
 		# To access the string "Nested value" below, use `my_dict.sub_dict.sub_key` or `my_dict["sub_dict"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
 		var my_dict = {
-		    "String Key": 5,
-		    4: [1, 2, 3],
-		    7: "Hello",
-		    "sub_dict": {"sub_key": "Nested value"},
+			"String Key": 5,
+			4: [1, 2, 3],
+			7: "Hello",
+			"sub_dict": { "sub_key": "Nested value" },
 		}
 		[/gdscript]
 		[csharp]
 		// This is a valid dictionary.
 		// To access the string "Nested value" below, use `((Godot.Collections.Dictionary)myDict["sub_dict"])["sub_key"]`.
 		var myDict = new Godot.Collections.Dictionary {
-		    {"String Key", 5},
-		    {4, new Godot.Collections.Array{1,2,3}},
-		    {7, "Hello"},
-		    {"sub_dict", new Godot.Collections.Dictionary{{"sub_key", "Nested value"}}}
+			{ "String Key", 5 },
+			{ 4, new Godot.Collections.Array { 1, 2, 3 } },
+			{ 7, "Hello" },
+			{ "sub_dict", new Godot.Collections.Dictionary { { "sub_key", "Nested value" } } },
 		};
 		[/csharp]
 		[/codeblocks]
 		The keys of a dictionary can be iterated with the [code]for[/code] keyword:
 		[codeblocks]
 		[gdscript]
-		var groceries = {"Orange": 20, "Apple": 2, "Banana": 4}
+		var groceries = { "Orange": 20, "Apple": 2, "Banana": 4 }
 		for fruit in groceries:
-		    var amount = groceries[fruit]
+			var amount = groceries[fruit]
 		[/gdscript]
 		[csharp]
-		var groceries = new Godot.Collections.Dictionary{{"Orange", 20}, {"Apple", 2}, {"Banana", 4}};
+		var groceries = new Godot.Collections.Dictionary { { "Orange", 20 }, { "Apple", 2 }, { "Banana", 4 } };
 		foreach (var (fruit, amount) in groceries)
 		{
-		    // `fruit` is the key, `amount` is the value.
+			// `fruit` is the key, `amount` is the value.
 		}
+		[/csharp]
+		[/codeblocks]
+		To enforce a certain type for keys and values, you can create a [i]typed dictionary[/i]. Typed dictionaries can only contain keys and values of the given types, or that inherit from the given classes:
+		[codeblocks]
+		[gdscript]
+		# Creates a typed dictionary with String keys and int values.
+		# Attempting to use any other type for keys or values will result in an error.
+		var typed_dict: Dictionary[String, int] = {
+			"some_key": 1,
+			"some_other_key": 2,
+		}
+
+		# Creates a typed dictionary with String keys and values of any type.
+		# Attempting to use any other type for keys will result in an error.
+		var typed_dict_key_only: Dictionary[String, Variant] = {
+			"some_key": 12.34,
+			"some_other_key": "string",
+		}
+		[/gdscript]
+		[csharp]
+		// Creates a typed dictionary with String keys and int values.
+		// Attempting to use any other type for keys or values will result in an error.
+		var typedDict = new Godot.Collections.Dictionary&lt;String, int&gt; {
+			{"some_key", 1},
+			{"some_other_key", 2},
+		};
+
+		// Creates a typed dictionary with String keys and values of any type.
+		// Attempting to use any other type for keys will result in an error.
+		var typedDictKeyOnly = new Godot.Collections.Dictionary&lt;String, Variant&gt; {
+			{"some_key", 12.34},
+			{"some_other_key", "string"},
+		};
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
@@ -138,14 +171,27 @@
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Dictionary">
 			<return type="Dictionary" />
 			<description>
 				Constructs an empty [Dictionary].
+			</description>
+		</constructor>
+		<constructor name="Dictionary">
+			<return type="Dictionary" />
+			<param index="0" name="base" type="Dictionary" />
+			<param index="1" name="key_type" type="int" />
+			<param index="2" name="key_class_name" type="StringName" />
+			<param index="3" name="key_script" type="Variant" />
+			<param index="4" name="value_type" type="int" />
+			<param index="5" name="value_class_name" type="StringName" />
+			<param index="6" name="value_script" type="Variant" />
+			<description>
+				Creates a typed dictionary from the [param base] dictionary. A typed dictionary can only contain keys and values of the given types, or that inherit from the given classes, as described by this constructor's parameters.
 			</description>
 		</constructor>
 		<constructor name="Dictionary">
@@ -157,6 +203,13 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="assign">
+			<return type="void" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Assigns elements of another [param dictionary] into the dictionary. Resizes the dictionary to match [param dictionary]. Performs type conversions if the dictionary is typed.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -167,7 +220,17 @@
 			<return type="Dictionary" />
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
-				Creates and returns a new copy of the dictionary. If [param deep] is [code]true[/code], inner [Dictionary] and [Array] keys and values are also copied, recursively.
+				Returns a new copy of the dictionary.
+				By default, a [b]shallow[/b] copy is returned: all nested [Array], [Dictionary], and [Resource] keys and values are shared with the original dictionary. Modifying any of those in one dictionary will also affect them in the other.
+				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively). Any [Resource] is still shared with the original dictionary, though.
+			</description>
+		</method>
+		<method name="duplicate_deep" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="deep_subresources_mode" type="int" default="1" />
+			<description>
+				Duplicates this dictionary, deeply, like [method duplicate] when passing [code]true[/code], with extra control over how subresources are handled.
+				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
 		<method name="erase">
@@ -194,6 +257,50 @@
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
 			</description>
 		</method>
+		<method name="get_or_add">
+			<return type="Variant" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="default" type="Variant" default="null" />
+			<description>
+				Gets a value and ensures the key is set. If the [param key] exists in the dictionary, this behaves like [method get]. Otherwise, the [param default] value is inserted into the dictionary and returned.
+			</description>
+		</method>
+		<method name="get_typed_key_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the built-in [Variant] type of the typed dictionary's keys as a [enum Variant.Type] constant. If the keys are not typed, returns [constant TYPE_NIL]. See also [method is_typed_key].
+			</description>
+		</method>
+		<method name="get_typed_key_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the [b]built-in[/b] class name of the typed dictionary's keys, if the built-in [Variant] type is [constant TYPE_OBJECT]. Otherwise, returns an empty [StringName]. See also [method is_typed_key] and [method Object.get_class].
+			</description>
+		</method>
+		<method name="get_typed_key_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the [Script] instance associated with this typed dictionary's keys, or [code]null[/code] if it does not exist. See also [method is_typed_key].
+			</description>
+		</method>
+		<method name="get_typed_value_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the built-in [Variant] type of the typed dictionary's values as a [enum Variant.Type] constant. If the values are not typed, returns [constant TYPE_NIL]. See also [method is_typed_value].
+			</description>
+		</method>
+		<method name="get_typed_value_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the [b]built-in[/b] class name of the typed dictionary's values, if the built-in [Variant] type is [constant TYPE_OBJECT]. Otherwise, returns an empty [StringName]. See also [method is_typed_value] and [method Object.get_class].
+			</description>
+		</method>
+		<method name="get_typed_value_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the [Script] instance associated with this typed dictionary's values, or [code]null[/code] if it does not exist. See also [method is_typed_value].
+			</description>
+		</method>
 		<method name="has" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="key" type="Variant" />
@@ -202,8 +309,8 @@
 				[codeblocks]
 				[gdscript]
 				var my_dict = {
-				    "Godot" : 4,
-				    210 : null,
+					"Godot" : 4,
+					210 : null,
 				}
 
 				print(my_dict.has("Godot")) # Prints true
@@ -213,19 +320,19 @@
 				[csharp]
 				var myDict = new Godot.Collections.Dictionary
 				{
-				    { "Godot", 4 },
-				    { 210, default },
+					{ "Godot", 4 },
+					{ 210, default },
 				};
 
-				GD.Print(myDict.ContainsKey("Godot")); // Prints true
-				GD.Print(myDict.ContainsKey(210));     // Prints true
-				GD.Print(myDict.ContainsKey(4));       // Prints false
+				GD.Print(myDict.ContainsKey("Godot")); // Prints True
+				GD.Print(myDict.ContainsKey(210));     // Prints True
+				GD.Print(myDict.ContainsKey(4));       // Prints False
 				[/csharp]
 				[/codeblocks]
 				In GDScript, this is equivalent to the [code]in[/code] operator:
 				[codeblock]
-				if "Godot" in {"Godot": 4}:
-				    print("The key is here!") # Will be printed.
+				if "Godot" in { "Godot": 4 }:
+					print("The key is here!") # Will be printed.
 				[/codeblock]
 				[b]Note:[/b] This method returns [code]true[/code] as long as the [param key] exists, even if its corresponding value is [code]null[/code].
 			</description>
@@ -236,7 +343,7 @@
 			<description>
 				Returns [code]true[/code] if the dictionary contains all keys in the given [param keys] array.
 				[codeblock]
-				var data = {"width" : 10, "height" : 20}
+				var data = { "width": 10, "height": 20 }
 				data.has_all(["height", "width"]) # Returns true
 				[/codeblock]
 			</description>
@@ -247,17 +354,17 @@
 				Returns a hashed 32-bit integer value representing the dictionary contents.
 				[codeblocks]
 				[gdscript]
-				var dict1 = {"A": 10, "B": 2}
-				var dict2 = {"A": 10, "B": 2}
+				var dict1 = { "A": 10, "B": 2 }
+				var dict2 = { "A": 10, "B": 2 }
 
 				print(dict1.hash() == dict2.hash()) # Prints true
 				[/gdscript]
 				[csharp]
-				var dict1 = new Godot.Collections.Dictionary{{"A", 10}, {"B", 2}};
-				var dict2 = new Godot.Collections.Dictionary{{"A", 10}, {"B", 2}};
+				var dict1 = new Godot.Collections.Dictionary { { "A", 10 }, { "B", 2 } };
+				var dict2 = new Godot.Collections.Dictionary { { "A", 10 }, { "B", 2 } };
 
 				// Godot.Collections.Dictionary has no Hash() method. Use GD.Hash() instead.
-				GD.Print(GD.Hash(dict1) == GD.Hash(dict2)); // Prints true
+				GD.Print(GD.Hash(dict1) == GD.Hash(dict2)); // Prints True
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Dictionaries with the same entries but in a different order will not have the same hash.
@@ -274,6 +381,45 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the dictionary is read-only. See [method make_read_only]. Dictionaries are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary is typed the same as [param dictionary].
+			</description>
+		</method>
+		<method name="is_same_typed_key" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary's keys are typed the same as [param dictionary]'s keys.
+			</description>
+		</method>
+		<method name="is_same_typed_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary's values are typed the same as [param dictionary]'s values.
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary is typed. Typed dictionaries can only store keys/values of their associated type and provide type safety for the [code][][/code] operator. Methods of typed dictionary still return [Variant].
+			</description>
+		</method>
+		<method name="is_typed_key" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary's keys are typed.
+			</description>
+		</method>
+		<method name="is_typed_value" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary's values are typed.
 			</description>
 		</method>
 		<method name="keys" qualifiers="const">
@@ -294,12 +440,95 @@
 			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
 				Adds entries from [param dictionary] to this dictionary. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code].
+				[codeblocks]
+				[gdscript]
+				var dict = { "item": "sword", "quantity": 2 }
+				var other_dict = { "quantity": 15, "color": "silver" }
+
+				# Overwriting of existing keys is disabled by default.
+				dict.merge(other_dict)
+				print(dict)  # { "item": "sword", "quantity": 2, "color": "silver" }
+
+				# With overwriting of existing keys enabled.
+				dict.merge(other_dict, true)
+				print(dict)  # { "item": "sword", "quantity": 15, "color": "silver" }
+				[/gdscript]
+				[csharp]
+				var dict = new Godot.Collections.Dictionary
+				{
+					["item"] = "sword",
+					["quantity"] = 2,
+				};
+
+				var otherDict = new Godot.Collections.Dictionary
+				{
+					["quantity"] = 15,
+					["color"] = "silver",
+				};
+
+				// Overwriting of existing keys is disabled by default.
+				dict.Merge(otherDict);
+				GD.Print(dict); // { "item": "sword", "quantity": 2, "color": "silver" }
+
+				// With overwriting of existing keys enabled.
+				dict.Merge(otherDict, true);
+				GD.Print(dict); // { "item": "sword", "quantity": 15, "color": "silver" }
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] [method merge] is [i]not[/i] recursive. Nested dictionaries are considered as keys that can be overwritten or not depending on the value of [param overwrite], but they will never be merged together.
+			</description>
+		</method>
+		<method name="merged" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="overwrite" type="bool" default="false" />
+			<description>
+				Returns a copy of this dictionary merged with the other [param dictionary]. By default, duplicate keys are not copied over, unless [param overwrite] is [code]true[/code]. See also [method merge].
+				This method is useful for quickly making dictionaries with default values:
+				[codeblock]
+				var base = { "fruit": "apple", "vegetable": "potato" }
+				var extra = { "fruit": "orange", "dressing": "vinegar" }
+				# Prints { "fruit": "orange", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base))
+				# Prints { "fruit": "apple", "vegetable": "potato", "dressing": "vinegar" }
+				print(extra.merged(base, true))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="recursive_equal" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<param index="1" name="recursion_count" type="int" />
+			<description>
+				Returns [code]true[/code] if the two dictionaries contain the same keys and values, inner [Dictionary] and [Array] keys and values are compared recursively.
+			</description>
+		</method>
+		<method name="set">
+			<return type="bool" />
+			<param index="0" name="key" type="Variant" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of the element at the given [param key] to the given [param value]. Returns [code]true[/code] if the value is set successfully. Fails and returns [code]false[/code] if the dictionary is read-only, or if [param key] and [param value] don't match the dictionary's types. This is the same as using the [code][][/code] operator ([code]dict[key] = value[/code]).
 			</description>
 		</method>
 		<method name="size" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of entries in the dictionary. Empty dictionaries ([code]{ }[/code]) always return [code]0[/code]. See also [method is_empty].
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void" />
+			<description>
+				Sorts the dictionary in ascending order, by key. The final order is dependent on the "less than" ([code]&lt;[/code]) comparison between keys.
+				[codeblocks]
+				[gdscript]
+				var numbers = { "c": 2, "a": 0, "b": 1 }
+				numbers.sort()
+				print(numbers) # Prints { "a": 0, "b": 1, "c": 2 }
+				[/gdscript]
+				[/codeblocks]
+				This method ensures that the dictionary's entries are ordered consistently when [method keys] or [method values] are called, or when the dictionary needs to be converted to a string through [method @GlobalScope.str] or [method JSON.stringify].
 			</description>
 		</method>
 		<method name="values" qualifiers="const">

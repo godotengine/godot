@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,6 @@
  */
 
 #include "tvgSwCommon.h"
-
-
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
 
 
 /************************************************************************/
@@ -62,29 +57,21 @@ void mpoolRetStrokeOutline(SwMpool* mpool, unsigned idx)
 }
 
 
-SwOutline* mpoolReqDashOutline(SwMpool* mpool, unsigned idx)
+SwCellPool* mpoolReqCellPool(SwMpool* mpool, unsigned idx)
 {
-    return &mpool->dashOutline[idx];
+    return &mpool->cellPool[idx];
 }
 
 
-void mpoolRetDashOutline(SwMpool* mpool, unsigned idx)
-{
-    mpool->dashOutline[idx].pts.clear();
-    mpool->dashOutline[idx].cntrs.clear();
-    mpool->dashOutline[idx].types.clear();
-    mpool->dashOutline[idx].closed.clear();
-}
-
-
-SwMpool* mpoolInit(unsigned threads)
+SwMpool* mpoolInit(uint32_t threads)
 {
     auto allocSize = threads + 1;
 
-    auto mpool = static_cast<SwMpool*>(calloc(sizeof(SwMpool), 1));
+    auto mpool = static_cast<SwMpool*>(calloc(1, sizeof(SwMpool)));
     mpool->outline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
     mpool->strokeOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
-    mpool->dashOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
+    mpool->cellPool = new SwCellPool[allocSize];
+
     mpool->allocSize = allocSize;
 
     return mpool;
@@ -103,11 +90,6 @@ bool mpoolClear(SwMpool* mpool)
         mpool->strokeOutline[i].cntrs.reset();
         mpool->strokeOutline[i].types.reset();
         mpool->strokeOutline[i].closed.reset();
-
-        mpool->dashOutline[i].pts.reset();
-        mpool->dashOutline[i].cntrs.reset();
-        mpool->dashOutline[i].types.reset();
-        mpool->dashOutline[i].closed.reset();
     }
 
     return true;
@@ -122,7 +104,7 @@ bool mpoolTerm(SwMpool* mpool)
 
     free(mpool->outline);
     free(mpool->strokeOutline);
-    free(mpool->dashOutline);
+    delete[](mpool->cellPool);
     free(mpool);
 
     return true;

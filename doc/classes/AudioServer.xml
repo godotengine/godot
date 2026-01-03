@@ -8,9 +8,9 @@
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
-		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/525</link>
-		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+		<link title="Audio Device Changer Demo">https://godotengine.org/asset-library/asset/2758</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
 		<method name="add_bus">
@@ -110,11 +110,52 @@
 				Returns the volume of the bus at index [param bus_idx] in dB.
 			</description>
 		</method>
+		<method name="get_bus_volume_linear" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="bus_idx" type="int" />
+			<description>
+				Returns the volume of the bus at index [param bus_idx] as a linear value.
+				[b]Note:[/b] The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on the result of [method get_bus_volume_db].
+			</description>
+		</method>
+		<method name="get_driver_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the current audio driver. The default usually depends on the operating system, but may be overridden via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. [code]--headless[/code] also automatically sets the audio driver to [code]Dummy[/code]. See also [member ProjectSettings.audio/driver/driver].
+			</description>
+		</method>
+		<method name="get_input_buffer_length_frames" experimental="">
+			<return type="int" />
+			<description>
+				Returns the absolute size of the microphone input buffer. This is set to a multiple of the audio latency and can be used to estimate the minimum rate at which the frames need to be fetched.
+			</description>
+		</method>
 		<method name="get_input_device_list">
 			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
 				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+			</description>
+		</method>
+		<method name="get_input_frames" experimental="">
+			<return type="PackedVector2Array" />
+			<param index="0" name="frames" type="int" />
+			<description>
+				Returns a [PackedVector2Array] containing exactly [param frames] audio samples from the internal microphone buffer if available, otherwise returns an empty [PackedVector2Array].
+				The buffer is filled at the rate of [method get_input_mix_rate] frames per second when [method set_input_device_active] has successfully been set to [code]true[/code].
+				The samples are signed floating-point PCM values between [code]-1[/code] and [code]1[/code].
+			</description>
+		</method>
+		<method name="get_input_frames_available" experimental="">
+			<return type="int" />
+			<description>
+				Returns the number of frames available to read using [method get_input_frames].
+			</description>
+		</method>
+		<method name="get_input_mix_rate" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the sample rate at the input of the [AudioServer].
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -183,6 +224,14 @@
 				If [code]true[/code], the bus at index [param bus_idx] is in solo mode.
 			</description>
 		</method>
+		<method name="is_stream_registered_as_sample" experimental="">
+			<return type="bool" />
+			<param index="0" name="stream" type="AudioStream" />
+			<description>
+				If [code]true[/code], the stream is registered as a sample. The engine will not have to register it before playing the sample.
+				If [code]false[/code], the stream will have to be registered before playing it. To prevent lag spikes, register the stream as sample with [method register_stream_as_sample].
+			</description>
+		</method>
 		<method name="lock">
 			<return type="void" />
 			<description>
@@ -196,6 +245,14 @@
 			<param index="1" name="to_index" type="int" />
 			<description>
 				Moves the bus from index [param index] to index [param to_index].
+			</description>
+		</method>
+		<method name="register_stream_as_sample" experimental="">
+			<return type="void" />
+			<param index="0" name="stream" type="AudioStream" />
+			<description>
+				Forces the registration of a stream as a sample.
+				[b]Note:[/b] Lag spikes may occur when calling this method, especially on single-threaded builds. It is suggested to call this method while loading assets, where the lag spike could be masked, instead of registering the sample right before it needs to be played.
 			</description>
 		</method>
 		<method name="remove_bus">
@@ -274,13 +331,32 @@
 			<param index="0" name="bus_idx" type="int" />
 			<param index="1" name="volume_db" type="float" />
 			<description>
-				Sets the volume of the bus at index [param bus_idx] to [param volume_db].
+				Sets the volume in decibels of the bus at index [param bus_idx] to [param volume_db].
+			</description>
+		</method>
+		<method name="set_bus_volume_linear">
+			<return type="void" />
+			<param index="0" name="bus_idx" type="int" />
+			<param index="1" name="volume_linear" type="float" />
+			<description>
+				Sets the volume as a linear value of the bus at index [param bus_idx] to [param volume_linear].
+				[b]Note:[/b] Using this method is equivalent to calling [method set_bus_volume_db] with the result of [method @GlobalScope.linear_to_db] on a value.
 			</description>
 		</method>
 		<method name="set_enable_tagging_used_audio_streams">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				If set to [code]true[/code], all instances of [AudioStreamPlayback] will call [method AudioStreamPlayback._tag_used_streams] every mix step.
+				[b]Note:[/b] This is enabled by default in the editor, as it is used by editor plugins for the audio stream previews.
+			</description>
+		</method>
+		<method name="set_input_device_active" experimental="">
+			<return type="int" enum="Error" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				If [param active] is [code]true[/code], starts the microphone input stream specified by [member input_device] or returns an error if it failed.
+				If [param active] is [code]false[/code], stops the input stream if it is running.
 			</description>
 		</method>
 		<method name="swap_bus_effects">
@@ -311,7 +387,7 @@
 			Name of the current device for audio output (see [method get_output_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
 		</member>
 		<member name="playback_speed_scale" type="float" setter="set_playback_speed_scale" getter="get_playback_speed_scale" default="1.0">
-			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed).
+			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played at half its speed). See also [member Engine.time_scale] to affect the general simulation speed, which is independent from [member AudioServer.playback_speed_scale].
 		</member>
 	</members>
 	<signals>
@@ -341,6 +417,20 @@
 		</constant>
 		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
 			A 7.1 channel surround setup was detected.
+		</constant>
+		<constant name="PLAYBACK_TYPE_DEFAULT" value="0" enum="PlaybackType" experimental="">
+			The playback will be considered of the type declared at [member ProjectSettings.audio/general/default_playback_type].
+		</constant>
+		<constant name="PLAYBACK_TYPE_STREAM" value="1" enum="PlaybackType" experimental="">
+			Force the playback to be considered as a stream.
+		</constant>
+		<constant name="PLAYBACK_TYPE_SAMPLE" value="2" enum="PlaybackType" experimental="">
+			Force the playback to be considered as a sample. This can provide lower latency and more stable playback (with less risk of audio crackling), at the cost of having less flexibility.
+			[b]Note:[/b] Only currently supported on the web platform.
+			[b]Note:[/b] [AudioEffect]s are not supported when playback is considered as a sample.
+		</constant>
+		<constant name="PLAYBACK_TYPE_MAX" value="3" enum="PlaybackType" experimental="">
+			Represents the size of the [enum PlaybackType] enum.
 		</constant>
 	</constants>
 </class>

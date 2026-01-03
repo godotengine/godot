@@ -378,8 +378,6 @@ namespace {
     int op_cmpl(int a) { return ~a; }
     int op_not(int a) { return !a; }
 
-};
-
 struct TBinop {
     int token, precedence, (*op)(int, int);
 } binop[] = {
@@ -411,6 +409,8 @@ struct TUnop {
     { '~', op_cmpl },
     { '!', op_not },
 };
+
+} // anonymous namespace
 
 #define NUM_ELEMENTS(A) (sizeof(A) / sizeof(A[0]))
 
@@ -973,7 +973,8 @@ int TPpContext::readCPPline(TPpToken* ppToken)
             break;
         case PpAtomInclude:
             if(!parseContext.isReadingHLSL()) {
-                parseContext.ppRequireExtensions(ppToken->loc, 1, &E_GL_GOOGLE_include_directive, "#include");
+                const std::array exts = { E_GL_GOOGLE_include_directive, E_GL_ARB_shading_language_include };
+                parseContext.ppRequireExtensions(ppToken->loc, exts, "#include");
             }
             token = CPPinclude(ppToken);
             break;

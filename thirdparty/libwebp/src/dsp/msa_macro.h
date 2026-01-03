@@ -73,27 +73,25 @@
 #define ST_UW(...) ST_W(v4u32, __VA_ARGS__)
 #define ST_SW(...) ST_W(v4i32, __VA_ARGS__)
 
-#define MSA_LOAD_FUNC(TYPE, INSTR, FUNC_NAME)             \
-  static inline TYPE FUNC_NAME(const void* const psrc) {  \
-    const uint8_t* const psrc_m = (const uint8_t*)psrc;   \
-    TYPE val_m;                                           \
-    asm volatile (                                        \
-      "" #INSTR " %[val_m], %[psrc_m]  \n\t"              \
-      : [val_m] "=r" (val_m)                              \
-      : [psrc_m] "m" (*psrc_m));                          \
-    return val_m;                                         \
+#define MSA_LOAD_FUNC(TYPE, INSTR, FUNC_NAME)               \
+  static inline TYPE FUNC_NAME(const void* const psrc) {    \
+    const uint8_t* const psrc_m = (const uint8_t*)psrc;     \
+    TYPE val_m;                                             \
+    __asm__ volatile("" #INSTR " %[val_m], %[psrc_m]  \n\t" \
+                     : [val_m] "=r"(val_m)                  \
+                     : [psrc_m] "m"(*psrc_m));              \
+    return val_m;                                           \
   }
 
 #define MSA_LOAD(psrc, FUNC_NAME)  FUNC_NAME(psrc)
 
-#define MSA_STORE_FUNC(TYPE, INSTR, FUNC_NAME)               \
-  static inline void FUNC_NAME(TYPE val, void* const pdst) { \
-    uint8_t* const pdst_m = (uint8_t*)pdst;                  \
-    TYPE val_m = val;                                        \
-    asm volatile (                                           \
-      " " #INSTR "  %[val_m],  %[pdst_m]  \n\t"              \
-      : [pdst_m] "=m" (*pdst_m)                              \
-      : [val_m] "r" (val_m));                                \
+#define MSA_STORE_FUNC(TYPE, INSTR, FUNC_NAME)                 \
+  static inline void FUNC_NAME(TYPE val, void* const pdst) {   \
+    uint8_t* const pdst_m = (uint8_t*)pdst;                    \
+    TYPE val_m = val;                                          \
+    __asm__ volatile(" " #INSTR "  %[val_m],  %[pdst_m]  \n\t" \
+                     : [pdst_m] "=m"(*pdst_m)                  \
+                     : [val_m] "r"(val_m));                    \
   }
 
 #define MSA_STORE(val, pdst, FUNC_NAME)  FUNC_NAME(val, pdst)

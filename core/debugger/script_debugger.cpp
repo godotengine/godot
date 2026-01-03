@@ -32,9 +32,6 @@
 
 #include "core/debugger/engine_debugger.h"
 
-thread_local int ScriptDebugger::lines_left = -1;
-thread_local int ScriptDebugger::depth = -1;
-thread_local ScriptLanguage *ScriptDebugger::break_lang = nullptr;
 thread_local Vector<ScriptDebugger::StackInfo> ScriptDebugger::error_stack_info;
 
 void ScriptDebugger::set_lines_left(int p_left) {
@@ -58,7 +55,7 @@ void ScriptDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
 	}
 
 	breakpoints[p_line].erase(p_source);
-	if (breakpoints[p_line].size() == 0) {
+	if (breakpoints[p_line].is_empty()) {
 		breakpoints.erase(p_line);
 	}
 }
@@ -77,6 +74,14 @@ void ScriptDebugger::set_skip_breakpoints(bool p_skip_breakpoints) {
 
 bool ScriptDebugger::is_skipping_breakpoints() {
 	return skip_breakpoints;
+}
+
+void ScriptDebugger::set_ignore_error_breaks(bool p_ignore) {
+	ignore_error_breaks = p_ignore;
+}
+
+bool ScriptDebugger::is_ignoring_error_breaks() {
+	return ignore_error_breaks;
 }
 
 void ScriptDebugger::debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {

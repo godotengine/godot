@@ -30,16 +30,12 @@
 
 #include "crypto.h"
 
-#include "core/config/engine.h"
-#include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
-
 /// Resources
 
-CryptoKey *(*CryptoKey::_create)() = nullptr;
-CryptoKey *CryptoKey::create() {
+CryptoKey *(*CryptoKey::_create)(bool p_notify_postinitialize) = nullptr;
+CryptoKey *CryptoKey::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -52,10 +48,10 @@ void CryptoKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
-X509Certificate *(*X509Certificate::_create)() = nullptr;
-X509Certificate *X509Certificate::create() {
+X509Certificate *(*X509Certificate::_create)(bool p_notify_postinitialize) = nullptr;
+X509Certificate *X509Certificate::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -72,31 +68,26 @@ void X509Certificate::_bind_methods() {
 Ref<TLSOptions> TLSOptions::client(Ref<X509Certificate> p_trusted_chain, const String &p_common_name_override) {
 	Ref<TLSOptions> opts;
 	opts.instantiate();
+	opts->mode = MODE_CLIENT;
 	opts->trusted_ca_chain = p_trusted_chain;
 	opts->common_name = p_common_name_override;
-	opts->verify_mode = TLS_VERIFY_FULL;
 	return opts;
 }
 
 Ref<TLSOptions> TLSOptions::client_unsafe(Ref<X509Certificate> p_trusted_chain) {
 	Ref<TLSOptions> opts;
 	opts.instantiate();
+	opts->mode = MODE_CLIENT_UNSAFE;
 	opts->trusted_ca_chain = p_trusted_chain;
-	if (p_trusted_chain.is_null()) {
-		opts->verify_mode = TLS_VERIFY_NONE;
-	} else {
-		opts->verify_mode = TLS_VERIFY_CERT;
-	}
 	return opts;
 }
 
 Ref<TLSOptions> TLSOptions::server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate) {
 	Ref<TLSOptions> opts;
 	opts.instantiate();
-	opts->server_mode = true;
+	opts->mode = MODE_SERVER;
 	opts->own_certificate = p_own_certificate;
 	opts->private_key = p_own_key;
-	opts->verify_mode = TLS_VERIFY_NONE;
 	return opts;
 }
 
@@ -104,6 +95,13 @@ void TLSOptions::_bind_methods() {
 	ClassDB::bind_static_method("TLSOptions", D_METHOD("client", "trusted_chain", "common_name_override"), &TLSOptions::client, DEFVAL(Ref<X509Certificate>()), DEFVAL(String()));
 	ClassDB::bind_static_method("TLSOptions", D_METHOD("client_unsafe", "trusted_chain"), &TLSOptions::client_unsafe, DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_static_method("TLSOptions", D_METHOD("server", "key", "certificate"), &TLSOptions::server);
+
+	ClassDB::bind_method(D_METHOD("is_server"), &TLSOptions::is_server);
+	ClassDB::bind_method(D_METHOD("is_unsafe_client"), &TLSOptions::is_unsafe_client);
+	ClassDB::bind_method(D_METHOD("get_common_name_override"), &TLSOptions::get_common_name_override);
+	ClassDB::bind_method(D_METHOD("get_trusted_ca_chain"), &TLSOptions::get_trusted_ca_chain);
+	ClassDB::bind_method(D_METHOD("get_private_key"), &TLSOptions::get_private_key);
+	ClassDB::bind_method(D_METHOD("get_own_certificate"), &TLSOptions::get_own_certificate);
 }
 
 /// HMACContext
@@ -114,32 +112,32 @@ void HMACContext::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("finish"), &HMACContext::finish);
 }
 
-HMACContext *(*HMACContext::_create)() = nullptr;
-HMACContext *HMACContext::create() {
+HMACContext *(*HMACContext::_create)(bool p_notify_postinitialize) = nullptr;
+HMACContext *HMACContext::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "HMACContext is not available when the mbedtls module is disabled.");
 }
 
 /// Crypto
 
-void (*Crypto::_load_default_certificates)(String p_path) = nullptr;
-Crypto *(*Crypto::_create)() = nullptr;
-Crypto *Crypto::create() {
+void (*Crypto::_load_default_certificates)(const String &p_path) = nullptr;
+Crypto *(*Crypto::_create)(bool p_notify_postinitialize) = nullptr;
+Crypto *Crypto::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
 }
 
-void Crypto::load_default_certificates(String p_path) {
+void Crypto::load_default_certificates(const String &p_path) {
 	if (_load_default_certificates) {
 		_load_default_certificates(p_path);
 	}
 }
 
-PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, PackedByteArray p_key, PackedByteArray p_msg) {
+PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, const PackedByteArray &p_key, const PackedByteArray &p_msg) {
 	Ref<HMACContext> ctx = Ref<HMACContext>(HMACContext::create());
 	ERR_FAIL_COND_V_MSG(ctx.is_null(), PackedByteArray(), "HMAC is not available without mbedtls module.");
 	Error err = ctx->start(p_hash_type, p_key);
@@ -151,7 +149,7 @@ PackedByteArray Crypto::hmac_digest(HashingContext::HashType p_hash_type, Packed
 
 // Compares two HMACS for equality without leaking timing information in order to prevent timing attacks.
 // @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
-bool Crypto::constant_time_compare(PackedByteArray p_trusted, PackedByteArray p_received) {
+bool Crypto::constant_time_compare(const PackedByteArray &p_trusted, const PackedByteArray &p_received) {
 	const uint8_t *t = p_trusted.ptr();
 	const uint8_t *r = p_received.ptr();
 	int tlen = p_trusted.size();
@@ -233,12 +231,11 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	if (cert.is_valid()) {
 		err = cert->save(p_path);
 	} else if (key.is_valid()) {
-		String el = p_path.get_extension().to_lower();
-		err = key->save(p_path, el == "pub");
+		err = key->save(p_path, p_path.has_extension("pub"));
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Crypto resource to file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot save Crypto resource to file '%s'.", p_path));
 	return OK;
 }
 

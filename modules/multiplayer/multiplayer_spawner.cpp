@@ -30,10 +30,8 @@
 
 #include "multiplayer_spawner.h"
 
-#include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "scene/main/multiplayer_api.h"
-#include "scene/main/window.h"
-#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 /* This is editor only */
@@ -47,7 +45,7 @@ bool MultiplayerSpawner::_set(const StringName &p_name, const Variant &p_value) 
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
 			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
-			spawnable_scenes[index].path = p_value;
+			spawnable_scenes[index].path = ResourceUID::ensure_path(p_value);
 			return true;
 		}
 	}
@@ -63,7 +61,7 @@ bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
 			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
-			r_ret = spawnable_scenes[index].path;
+			r_ret = ResourceUID::path_to_uid(spawnable_scenes[index].path);
 			return true;
 		}
 	}
@@ -98,9 +96,9 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 
 void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
-	sc.path = p_path;
+	sc.path = ResourceUID::ensure_path(p_path);
 	if (Engine::get_singleton()->is_editor_hint()) {
-		ERR_FAIL_COND(!FileAccess::exists(p_path));
+		ERR_FAIL_COND(!ResourceLoader::exists(sc.path));
 	}
 	spawnable_scenes.push_back(sc);
 #ifdef TOOLS_ENABLED
@@ -140,7 +138,7 @@ Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
 	Vector<String> ss;
 	ss.resize(spawnable_scenes.size());
 	for (int i = 0; i < ss.size(); i++) {
-		ss.write[i] = spawnable_scenes[i].path;
+		ss.write[i] = ResourceUID::path_to_uid(spawnable_scenes[i].path);
 	}
 	return ss;
 }
@@ -188,7 +186,7 @@ void MultiplayerSpawner::_update_spawn_node() {
 	}
 #endif
 	if (spawn_node.is_valid()) {
-		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(spawn_node));
+		Node *node = ObjectDB::get_instance<Node>(spawn_node);
 		if (node && node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
 			node->disconnect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
@@ -214,9 +212,9 @@ void MultiplayerSpawner::_notification(int p_what) {
 			_update_spawn_node();
 
 			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
-				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
+				Node *node = ObjectDB::get_instance<Node>(E.key);
 				ERR_CONTINUE(!node);
-				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
+				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit));
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
@@ -251,13 +249,14 @@ NodePath MultiplayerSpawner::get_spawn_path() const {
 void MultiplayerSpawner::set_spawn_path(const NodePath &p_path) {
 	spawn_path = p_path;
 	_update_spawn_node();
+	update_configuration_warnings();
 }
 
 void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_scene_id) {
 	ObjectID oid = p_node->get_instance_id();
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
-		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
+		p_node->connect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
 		_spawn_notify(p_node->get_instance_id());
 	}
 }
@@ -267,7 +266,7 @@ void MultiplayerSpawner::_spawn_notify(ObjectID p_id) {
 }
 
 void MultiplayerSpawner::_node_exit(ObjectID p_id) {
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
+	Node *node = ObjectDB::get_instance<Node>(p_id);
 	ERR_FAIL_NULL(node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);

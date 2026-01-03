@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.godotengine.editor"
     android:installLocation="auto">
+
+    <queries>
+        <package android:name="org.godotengine.godot_gradle_build_environment" />
+    </queries>
 
     <supports-screens
         android:largeScreens="true"
@@ -13,66 +16,129 @@
     <uses-feature
         android:glEsVersion="0x00030000"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29"/>
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/icon"
-        android:label="@string/godot_editor_name_string"
-        tools:ignore="GoogleAppIndexingWarning"
-        android:theme="@style/GodotEditorTheme"
-        android:requestLegacyExternalStorage="true">
-
-        <activity
-            android:name=".GodotProjectManager"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:launchMode="singleInstance"
-            android:screenOrientation="userLandscape"
-            android:exported="true"
-            android:process=":GodotProjectManager">
-
-            <layout android:defaultHeight="@dimen/editor_default_window_height"
-                android:defaultWidth="@dimen/editor_default_window_width" />
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        android:icon="@mipmap/themed_icon"
+        android:label="${editorAppName}${editorBuildSuffix}"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/GodotEditorSplashScreenTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <profileable
+            android:shell="true"
+            android:enabled="true"
+            tools:targetApi="29" />
 
         <activity
             android:name=".GodotEditor"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:process=":GodotEditor"
-            android:launchMode="singleInstance"
-            android:screenOrientation="userLandscape"
-            android:exported="false">
-            <layout android:defaultHeight="@dimen/editor_default_window_height"
-                android:defaultWidth="@dimen/editor_default_window_width" />
-        </activity>
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:exported="false"
+            android:icon="@mipmap/themed_icon"
+            android:launchMode="singleTask"
+            android:screenOrientation="userLandscape">
+            <layout
+                android:defaultWidth="@dimen/editor_default_window_width"
+                android:defaultHeight="@dimen/editor_default_window_height" />
 
+            <!-- Intent filter used to intercept hybrid PANEL launch for the current editor project, and route it
+            properly through the editor 'run' logic (e.g: debugger setup) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.PANEL" />
+            </intent-filter>
+
+            <!-- Intent filter used to intercept hybrid IMMERSIVE launch for the current editor project, and route it
+            properly through the editor 'run' logic (e.g: debugger setup) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
+            </intent-filter>
+        </activity>
+        <activity-alias
+            android:name=".ProjectManager"
+            android:exported="true"
+            android:icon="@mipmap/themed_icon"
+            android:targetActivity=".GodotEditor">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name=".GodotGame"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:label="@string/godot_project_name_string"
-            android:process=":GodotGame"
-            android:launchMode="singleInstance"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="false"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:launchMode="singleTask"
+            android:process=":GodotGame"
+            android:autoRemoveFromRecents="true"
+            android:theme="@style/GodotGameTheme"
+            android:supportsPictureInPicture="true"
             android:screenOrientation="userLandscape">
-            <layout android:defaultHeight="@dimen/editor_default_window_height"
-                android:defaultWidth="@dimen/editor_default_window_width" />
+            <layout
+                android:defaultWidth="@dimen/editor_default_window_width"
+                android:defaultHeight="@dimen/editor_default_window_height" />
         </activity>
+        <activity
+            android:name=".embed.EmbeddedGodotGame"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:exported="false"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:theme="@style/GodotEmbeddedGameTheme"
+            android:taskAffinity=":embed"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:process=":EmbeddedGodotGame"
+            android:supportsPictureInPicture="true" />
+        <activity
+            android:name=".GodotXRGame"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:process=":GodotXRGame"
+            android:launchMode="singleTask"
+            android:taskAffinity=":xr"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:exported="false"
+            android:autoRemoveFromRecents="true"
+            android:screenOrientation="landscape"
+            android:resizeableActivity="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
 
+        <!--
+        We remove this meta-data originating from the vendors plugin as we only need the loader for
+        now since the project being edited provides its own version of the vendors plugin.
+
+        This needs to be removed once we start implementing the immersive version of the project
+        manager and editor windows.
+         -->
+        <meta-data
+            android:name="org.godotengine.plugin.v2.GodotOpenXR"
+            android:value="org.godotengine.openxr.vendors.GodotOpenXR"
+            tools:node="remove" />
     </application>
 
 </manifest>

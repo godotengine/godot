@@ -1,0 +1,326 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://godotengine.org/gdextension_interface.schema.json",
+    "title": "GDExtension Interface",
+    "type": "object",
+    "properties": {
+        "_copyright": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "format_version": {
+            "type": "number",
+            "const": 1
+        },
+        "$schema": {
+            "type": "string",
+            "const": "./gdextension_interface.schema.json"
+        },
+        "types": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": ["enum", "handle", "alias", "struct", "function"]
+                    },
+                    "description": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "deprecated": {
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
+                    }
+                },
+                "required": [
+                    "name",
+                    "kind"
+                ],
+                "unevaluatedProperties": false,
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "kind": { "const": "enum" }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "is_bitfield": {
+                                    "type": "boolean"
+                                },
+                                "values": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "number"
+                                            },
+                                            "description": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": [ "name", "value" ],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "required": ["name", "kind", "values"]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "kind": { "const": "handle" }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "parent": {
+                                    "type": "string"
+                                },
+                                "is_const": {
+                                    "type": "boolean"
+                                },
+                                "is_uninitialized": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "kind": { "const": "alias" }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["name", "kind", "type"]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "kind": { "const": "struct" }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "members": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": ["name", "type"],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "required": ["name", "kind", "members"]
+                        }
+                    },
+                    {
+                        "if": {
+                            "properties": {
+                                "kind": { "const": "function" }
+                            }
+                        },
+                        "then": {
+                            "properties": {
+                                "return_value": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": ["type"],
+                                    "additionalProperties": false
+                                },
+                                "arguments": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": ["type"],
+                                        "additionalProperties": false
+                                    }
+                                }
+                            },
+                            "required": ["name", "kind", "return_value", "arguments"]
+                        }
+                    }
+                ]
+            }
+        },
+        "interface": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "return_value": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "description": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["type"],
+                        "additionalProperties": false
+                    },
+                    "arguments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": ["type"],
+                            "additionalProperties": false
+                        }
+                    },
+                    "description": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "since": {
+                        "type": "string",
+                        "pattern": "4\\.[0-9]+"
+                    },
+                    "deprecated": {
+                        "type": "object",
+                        "properties": {
+                            "since": {
+                                "type": "string",
+                                "pattern": "4\\.[0-9]+"
+                            },
+                            "message": {
+                                "type": "string",
+                                "pattern": "\\.$"
+                            },
+                            "replace_with": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["since"],
+                        "additionalProperties": false
+                    },
+                    "see": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "legacy_type_name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "return_value",
+                    "arguments",
+                    "description",
+                    "since"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "_copyright",
+        "$schema",
+        "format_version",
+        "types",
+        "interface"
+    ],
+    "additionalProperties": false
+}

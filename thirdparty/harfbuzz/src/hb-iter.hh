@@ -324,6 +324,16 @@ struct hb_is_sink_of
 	(hb_is_source_of(Iter, Item) && Iter::is_sorted_iterator)
 
 
+struct
+{
+  template <typename Iterable,
+	    hb_requires (hb_is_iterable (Iterable))>
+  unsigned operator () (const Iterable &_) const { return hb_len (hb_iter (_)); }
+
+  unsigned operator () (unsigned _) const { return _; }
+}
+HB_FUNCOBJ (hb_len_of);
+
 /* Range-based 'for' for iterables. */
 
 template <typename Iterable,
@@ -762,8 +772,9 @@ struct hb_iota_iter_t :
   template <typename S2 = S>
   auto
   inc (hb_type_identity<S2> s, hb_priority<1>)
-    -> hb_void_t<decltype (hb_invoke (std::forward<S2> (s), hb_declval<T&> ()))>
-  { v = hb_invoke (std::forward<S2> (s), v); }
+    -> hb_void_t<decltype (hb_invoke (std::forward<hb_type_identity<S2>> (s),
+                                      hb_declval<T&> ()))>
+  { v = hb_invoke (std::forward<hb_type_identity<S2>> (s), v); }
 
   void
   inc (S s, hb_priority<0>)
@@ -962,7 +973,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (!hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (!hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }
@@ -979,7 +990,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return true;
     return false;
   }
@@ -996,7 +1007,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }

@@ -30,7 +30,6 @@
 
 #include "graph_element.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/theme/theme_db.h"
 
@@ -49,14 +48,10 @@ void GraphElement::_resort() {
 	Size2 size = get_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || !child->is_visible_in_tree()) {
+		Control *child = as_sortable_control(get_child(i));
+		if (!child) {
 			continue;
 		}
-		if (child->is_set_as_top_level()) {
-			continue;
-		}
-
 		fit_child_in_rect(child, Rect2(Point2(), size));
 	}
 }
@@ -64,18 +59,14 @@ void GraphElement::_resort() {
 Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
+		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
 		if (!child) {
-			continue;
-		}
-		if (child->is_set_as_top_level()) {
 			continue;
 		}
 
 		Size2i size = child->get_combined_minimum_size();
 
-		minsize.width = MAX(minsize.width, size.width);
-		minsize.height = MAX(minsize.height, size.height);
+		minsize = minsize.max(size);
 	}
 
 	return minsize;
@@ -97,7 +88,9 @@ void GraphElement::_notification(int p_what) {
 }
 
 void GraphElement::_validate_property(PropertyInfo &p_property) const {
-	Control::_validate_property(p_property);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
 		if (p_property.name == "position") {
@@ -167,7 +160,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-			resizing = false;
+			if (resizing) {
+				resizing = false;
+				emit_signal(SNAME("resize_end"), get_size());
+				return;
+			}
 		}
 	}
 
@@ -177,6 +174,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		Vector2 diff = mpos - resizing_from;
 
 		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
+	}
+
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph && has_focus()) {
+		graph->key_input(p_ev);
 	}
 }
 
@@ -211,6 +213,14 @@ bool GraphElement::is_selectable() {
 	return selectable;
 }
 
+void GraphElement::set_scaling_menus(bool p_scaling_menus) {
+	scaling_menus = p_scaling_menus;
+}
+
+bool GraphElement::is_scaling_menus() const {
+	return scaling_menus;
+}
+
 void GraphElement::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &GraphElement::set_resizable);
 	ClassDB::bind_method(D_METHOD("is_resizable"), &GraphElement::is_resizable);
@@ -224,6 +234,9 @@ void GraphElement::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected", "selected"), &GraphElement::set_selected);
 	ClassDB::bind_method(D_METHOD("is_selected"), &GraphElement::is_selected);
 
+	ClassDB::bind_method(D_METHOD("set_scaling_menus", "scaling_menus"), &GraphElement::set_scaling_menus);
+	ClassDB::bind_method(D_METHOD("is_scaling_menus"), &GraphElement::is_scaling_menus);
+
 	ClassDB::bind_method(D_METHOD("set_position_offset", "offset"), &GraphElement::set_position_offset);
 	ClassDB::bind_method(D_METHOD("get_position_offset"), &GraphElement::get_position_offset);
 
@@ -232,13 +245,15 @@ void GraphElement::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draggable"), "set_draggable", "is_draggable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scaling_menus"), "set_scaling_menus", "is_scaling_menus");
 
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_deselected"));
 
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));
-	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
+	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_size")));
+	ADD_SIGNAL(MethodInfo("resize_end", PropertyInfo(Variant::VECTOR2, "new_size")));
 
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));

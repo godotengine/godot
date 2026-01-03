@@ -1,5 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
+
+#nullable enable
 
 namespace Godot
 {
@@ -129,6 +133,47 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a new vector with all components clamped between the
+        /// <paramref name="min"/> and <paramref name="max"/> using
+        /// <see cref="Mathf.Clamp(int, int, int)"/>.
+        /// </summary>
+        /// <param name="min">The minimum allowed value.</param>
+        /// <param name="max">The maximum allowed value.</param>
+        /// <returns>The vector with all components clamped.</returns>
+        public readonly Vector3I Clamp(int min, int max)
+        {
+            return new Vector3I
+            (
+                Mathf.Clamp(X, min, max),
+                Mathf.Clamp(Y, min, max),
+                Mathf.Clamp(Z, min, max)
+            );
+        }
+
+        /// <summary>
+        /// Returns the squared distance between this vector and <paramref name="to"/>.
+        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
+        /// you need to compare vectors or need the squared distance for some formula.
+        /// </summary>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The squared distance between the two vectors.</returns>
+        public readonly int DistanceSquaredTo(Vector3I to)
+        {
+            return (to - this).LengthSquared();
+        }
+
+        /// <summary>
+        /// Returns the distance between this vector and <paramref name="to"/>.
+        /// </summary>
+        /// <seealso cref="DistanceSquaredTo(Vector3I)"/>
+        /// <param name="to">The other vector to use.</param>
+        /// <returns>The distance between the two vectors.</returns>
+        public readonly real_t DistanceTo(Vector3I to)
+        {
+            return (to - this).Length();
+        }
+
+        /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
@@ -155,6 +200,74 @@ namespace Godot
             int z2 = Z * Z;
 
             return x2 + y2 + z2;
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3I(Mathf.Max(X, with.X), Mathf.Max(Y, with.Y), Mathf.Max(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3I Max(Vector3I with)
+        {
+            return new Vector3I
+            (
+                Mathf.Max(X, with.X),
+                Mathf.Max(Y, with.Y),
+                Mathf.Max(Z, with.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise maximum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3I(Mathf.Max(X, with), Mathf.Max(Y, with), Mathf.Max(Z, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting maximum vector.</returns>
+        public readonly Vector3I Max(int with)
+        {
+            return new Vector3I
+            (
+                Mathf.Max(X, with),
+                Mathf.Max(Y, with),
+                Mathf.Max(Z, with)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3I(Mathf.Min(X, with.X), Mathf.Min(Y, with.Y), Mathf.Min(Z, with.Z))</c>.
+        /// </summary>
+        /// <param name="with">The other vector to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector3I Min(Vector3I with)
+        {
+            return new Vector3I
+            (
+                Mathf.Min(X, with.X),
+                Mathf.Min(Y, with.Y),
+                Mathf.Min(Z, with.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns the result of the component-wise minimum between
+        /// this vector and <paramref name="with"/>.
+        /// Equivalent to <c>new Vector3I(Mathf.Min(X, with), Mathf.Min(Y, with), Mathf.Min(Z, with))</c>.
+        /// </summary>
+        /// <param name="with">The other value to use.</param>
+        /// <returns>The resulting minimum vector.</returns>
+        public readonly Vector3I Min(int with)
+        {
+            return new Vector3I
+            (
+                Mathf.Min(X, with),
+                Mathf.Min(Y, with),
+                Mathf.Min(Z, with)
+            );
         }
 
         /// <summary>
@@ -192,9 +305,39 @@ namespace Godot
             return v;
         }
 
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of the corresponding component in <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector3I Snapped(Vector3I step)
+        {
+            return new Vector3I
+            (
+                (int)Mathf.Snapped((double)X, (double)step.X),
+                (int)Mathf.Snapped((double)Y, (double)step.Y),
+                (int)Mathf.Snapped((double)Z, (double)step.Z)
+            );
+        }
+
+        /// <summary>
+        /// Returns a new vector with each component snapped to the closest multiple of <paramref name="step"/>.
+        /// </summary>
+        /// <param name="step">The step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
+        public readonly Vector3I Snapped(int step)
+        {
+            return new Vector3I
+            (
+                (int)Mathf.Snapped((double)X, (double)step),
+                (int)Mathf.Snapped((double)Y, (double)step),
+                (int)Mathf.Snapped((double)Z, (double)step)
+            );
+        }
+
         // Constants
-        private static readonly Vector3I _min = new Vector3I(int.MinValue, int.MinValue, int.MinValue);
-        private static readonly Vector3I _max = new Vector3I(int.MaxValue, int.MaxValue, int.MaxValue);
+        private static readonly Vector3I _minValue = new Vector3I(int.MinValue, int.MinValue, int.MinValue);
+        private static readonly Vector3I _maxValue = new Vector3I(int.MaxValue, int.MaxValue, int.MaxValue);
 
         private static readonly Vector3I _zero = new Vector3I(0, 0, 0);
         private static readonly Vector3I _one = new Vector3I(1, 1, 1);
@@ -210,12 +353,12 @@ namespace Godot
         /// Min vector, a vector with all components equal to <see cref="int.MinValue"/>. Can be used as a negative integer equivalent of <see cref="Vector3.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector3I(int.MinValue, int.MinValue, int.MinValue)</c>.</value>
-        public static Vector3I Min { get { return _min; } }
+        public static Vector3I MinValue { get { return _minValue; } }
         /// <summary>
         /// Max vector, a vector with all components equal to <see cref="int.MaxValue"/>. Can be used as an integer equivalent of <see cref="Vector3.Inf"/>.
         /// </summary>
         /// <value>Equivalent to <c>new Vector3I(int.MaxValue, int.MaxValue, int.MaxValue)</c>.</value>
-        public static Vector3I Max { get { return _max; } }
+        public static Vector3I MaxValue { get { return _maxValue; } }
 
         /// <summary>
         /// Zero vector, a vector with all components set to <c>0</c>.
@@ -590,7 +733,7 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the vector and the object are equal.</returns>
-        public override readonly bool Equals(object obj)
+        public override readonly bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is Vector3I other && Equals(other);
         }
@@ -618,18 +761,15 @@ namespace Godot
         /// Converts this <see cref="Vector3I"/> to a string.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public override readonly string ToString()
-        {
-            return $"({X}, {Y}, {Z})";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Vector3I"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this vector.</returns>
-        public readonly string ToString(string format)
+        public readonly string ToString(string? format)
         {
-            return $"({X.ToString(format)}, {Y.ToString(format)}, {Z.ToString(format)})";
+            return $"({X.ToString(format, CultureInfo.InvariantCulture)}, {Y.ToString(format, CultureInfo.InvariantCulture)}, {Z.ToString(format, CultureInfo.InvariantCulture)})";
         }
     }
 }

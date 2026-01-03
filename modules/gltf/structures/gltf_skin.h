@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_SKIN_H
-#define GLTF_SKIN_H
+#pragma once
 
 #include "../gltf_defines.h"
 
 #include "core/io/resource.h"
+#include "scene/resources/3d/skin.h"
 
 template <typename T>
 class TypedArray;
@@ -41,6 +41,8 @@ class TypedArray;
 class GLTFSkin : public Resource {
 	GDCLASS(GLTFSkin, Resource);
 	friend class GLTFDocument;
+	friend class SkinTool;
+	friend class FBXDocument;
 
 private:
 	// The "skeleton" property defined in the gltf spec. -1 = Scene Root
@@ -84,31 +86,32 @@ public:
 	void set_skin_root(GLTFNodeIndex p_skin_root);
 
 	Vector<GLTFNodeIndex> get_joints_original();
-	void set_joints_original(Vector<GLTFNodeIndex> p_joints_original);
+	void set_joints_original(const Vector<GLTFNodeIndex> &p_joints_original);
 
 	TypedArray<Transform3D> get_inverse_binds();
-	void set_inverse_binds(TypedArray<Transform3D> p_inverse_binds);
+	void set_inverse_binds(const TypedArray<Transform3D> &p_inverse_binds);
 
 	Vector<GLTFNodeIndex> get_joints();
-	void set_joints(Vector<GLTFNodeIndex> p_joints);
+	void set_joints(const Vector<GLTFNodeIndex> &p_joints);
 
 	Vector<GLTFNodeIndex> get_non_joints();
-	void set_non_joints(Vector<GLTFNodeIndex> p_non_joints);
+	void set_non_joints(const Vector<GLTFNodeIndex> &p_non_joints);
 
 	Vector<GLTFNodeIndex> get_roots();
-	void set_roots(Vector<GLTFNodeIndex> p_roots);
+	void set_roots(const Vector<GLTFNodeIndex> &p_roots);
 
 	int get_skeleton();
 	void set_skeleton(int p_skeleton);
 
 	Dictionary get_joint_i_to_bone_i();
-	void set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i);
+	void set_joint_i_to_bone_i(const Dictionary &p_joint_i_to_bone_i);
 
 	Dictionary get_joint_i_to_name();
-	void set_joint_i_to_name(Dictionary p_joint_i_to_name);
+	void set_joint_i_to_name(const Dictionary &p_joint_i_to_name);
 
 	Ref<Skin> get_godot_skin();
-	void set_godot_skin(Ref<Skin> p_godot_skin);
-};
+	void set_godot_skin(const Ref<Skin> &p_godot_skin);
 
-#endif // GLTF_SKIN_H
+	Dictionary to_dictionary();
+	Error from_dictionary(const Dictionary &dict);
+};

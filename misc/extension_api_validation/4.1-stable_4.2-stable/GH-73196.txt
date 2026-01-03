@@ -1,0 +1,5 @@
+GH-73196
+--------
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/get_text_for_symbol_lookup': is_const changed value in new API, from false to true.
+
+Function was made `const`. No adjustments should be necessary.

@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TOKENIZER_H
-#define GDSCRIPT_TOKENIZER_H
+#pragma once
 
 #include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
@@ -47,6 +45,7 @@ public:
 	};
 
 	struct Token {
+		// If this enum changes, please increment the TOKENIZER_VERSION in gdscript_tokenizer_buffer.h
 		enum Type {
 			EMPTY,
 			// Basic
@@ -113,11 +112,11 @@ public:
 			BREAKPOINT,
 			CLASS,
 			CLASS_NAME,
-			CONST,
+			TK_CONST, // Conflict with WinAPI.
 			ENUM,
 			EXTENDS,
 			FUNC,
-			IN,
+			TK_IN, // Conflict with WinAPI.
 			IS,
 			NAMESPACE,
 			PRELOAD,
@@ -127,7 +126,7 @@ public:
 			SUPER,
 			TRAIT,
 			VAR,
-			VOID,
+			TK_VOID, // Conflict with WinAPI.
 			YIELD,
 			// Punctuation
 			BRACKET_OPEN,
@@ -140,6 +139,7 @@ public:
 			SEMICOLON,
 			PERIOD,
 			PERIOD_PERIOD,
+			PERIOD_PERIOD_PERIOD,
 			COLON,
 			DOLLAR,
 			FORWARD_ARROW,
@@ -166,23 +166,22 @@ public:
 		Type type = EMPTY;
 		Variant literal;
 		int start_line = 0, end_line = 0, start_column = 0, end_column = 0;
-		int leftmost_column = 0, rightmost_column = 0; // Column span for multiline tokens.
 		int cursor_position = -1;
 		CursorPlace cursor_place = CURSOR_NONE;
 		String source;
 
 		const char *get_name() const;
+		String get_debug_name() const;
 		bool can_precede_bin_op() const;
 		bool is_identifier() const;
 		bool is_node_name() const;
-		StringName get_identifier() const { return source; }
+		StringName get_identifier() const { return literal; }
 
 		Token(Type p_type) {
 			type = p_type;
 		}
 
-		Token() {
-		}
+		Token() {}
 	};
 
 #ifdef TOOLS_ENABLED
@@ -197,12 +196,32 @@ public:
 			new_line = p_new_line;
 		}
 	};
-	const HashMap<int, CommentData> &get_comments() const {
-		return comments;
-	}
+	virtual const HashMap<int, CommentData> &get_comments() const = 0;
 #endif // TOOLS_ENABLED
 
-private:
+	static String get_token_name(Token::Type p_token_type);
+
+#ifdef TOOLS_ENABLED
+	// This is a temporary solution, as Tokens are not able to store their position, only lines and columns.
+	virtual int get_current_position() const { return 0; }
+	virtual String get_source_code() const { return ""; }
+#endif // TOOLS_ENABLED
+
+	virtual int get_cursor_line() const = 0;
+	virtual int get_cursor_column() const = 0;
+	virtual void set_cursor_position(int p_line, int p_column) = 0;
+	virtual void set_multiline_mode(bool p_state) = 0;
+	virtual bool is_past_cursor() const = 0;
+	virtual void push_expression_indented_block() = 0; // For lambdas, or blocks inside expressions.
+	virtual void pop_expression_indented_block() = 0; // For lambdas, or blocks inside expressions.
+	virtual bool is_text() = 0;
+
+	virtual Token scan() = 0;
+
+	virtual ~GDScriptTokenizer() {}
+};
+
+class GDScriptTokenizerText : public GDScriptTokenizer {
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
@@ -213,7 +232,6 @@ private:
 	// Keep track of multichar tokens.
 	const char32_t *_start = nullptr;
 	int start_line = 0, start_column = 0;
-	int leftmost_column = 0, rightmost_column = 0;
 
 	// Info cache.
 	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
@@ -229,6 +247,7 @@ private:
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
+	Vector<int> continuation_lines;
 #ifdef DEBUG_ENABLED
 	Vector<String> keyword_list;
 #endif // DEBUG_ENABLED
@@ -269,20 +288,31 @@ private:
 	Token annotation();
 
 public:
-	Token scan();
-
 	void set_source_code(const String &p_source_code);
 
-	int get_cursor_line() const;
-	int get_cursor_column() const;
-	void set_cursor_position(int p_line, int p_column);
-	void set_multiline_mode(bool p_state);
-	bool is_past_cursor() const;
-	static String get_token_name(Token::Type p_token_type);
-	void push_expression_indented_block(); // For lambdas, or blocks inside expressions.
-	void pop_expression_indented_block(); // For lambdas, or blocks inside expressions.
+	const Vector<int> &get_continuation_lines() const { return continuation_lines; }
 
-	GDScriptTokenizer();
+#ifdef TOOLS_ENABLED
+	virtual int get_current_position() const override { return position; }
+	virtual String get_source_code() const override { return source; }
+#endif // TOOLS_ENABLED
+
+	virtual int get_cursor_line() const override;
+	virtual int get_cursor_column() const override;
+	virtual void set_cursor_position(int p_line, int p_column) override;
+	virtual void set_multiline_mode(bool p_state) override;
+	virtual bool is_past_cursor() const override;
+	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
+	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
+	virtual bool is_text() override { return true; }
+
+#ifdef TOOLS_ENABLED
+	virtual const HashMap<int, CommentData> &get_comments() const override {
+		return comments;
+	}
+#endif // TOOLS_ENABLED
+
+	virtual Token scan() override;
+
+	GDScriptTokenizerText();
 };
-
-#endif // GDSCRIPT_TOKENIZER_H

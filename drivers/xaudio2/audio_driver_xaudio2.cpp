@@ -48,9 +48,9 @@ Error AudioDriverXAudio2::init() {
 	int latency = Engine::get_singleton()->get_audio_output_latency();
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_size * channels);
+	samples_in = memnew_arr(int32_t, size_t(buffer_size) * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		samples_out[i] = memnew_arr(int16_t, buffer_size * channels);
+		samples_out[i] = memnew_arr(int16_t, size_t(buffer_size) * channels);
 		xaudio_buffer[i].AudioBytes = buffer_size * channels * sizeof(int16_t);
 		xaudio_buffer[i].pAudioData = (const BYTE *)(samples_out[i]);
 		xaudio_buffer[i].Flags = 0;

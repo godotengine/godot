@@ -46,13 +46,13 @@ namespace GodotTools.OpenVisualStudio
 
             if (dte == null)
             {
-                // Open a new instance
-                dte = TryVisualStudioLaunch("VisualStudio.DTE.17.0");
+                dte = TryVisualStudioLaunch("VisualStudio.DTE.18.0")   // Visual Studio 18 (2026).
+                    ?? TryVisualStudioLaunch("VisualStudio.DTE.17.0"); // Visual Studio 17 (2022).
 
                 if (dte == null)
                 {
-                    // Launch of VS 2022 failed, fallback to 2019
-                    dte = TryVisualStudioLaunch("VisualStudio.DTE.16.0");
+                    Console.Error.WriteLine("Could not find a supported Visual Studio version (VS 2026 or VS 2022).");
+                    return 1;
                 }
 
                 dte.UserControl = true;
@@ -129,7 +129,7 @@ namespace GodotTools.OpenVisualStudio
             {
                 var mainWindow = dte.MainWindow;
                 mainWindow.Activate();
-                SetForegroundWindow(new IntPtr(mainWindow.HWnd));
+                SetForegroundWindow(mainWindow.HWnd);
 
                 MessageFilter.Revoke();
             }
@@ -137,12 +137,12 @@ namespace GodotTools.OpenVisualStudio
             return 0;
         }
 
-        private static DTE TryVisualStudioLaunch(string version)
+        private static DTE? TryVisualStudioLaunch(string version)
         {
             try
             {
                 var visualStudioDteType = Type.GetTypeFromProgID(version, throwOnError: true);
-                var dte = (DTE)Activator.CreateInstance(visualStudioDteType);
+                var dte = (DTE?)Activator.CreateInstance(visualStudioDteType!);
 
                 return dte;
             }
@@ -152,7 +152,7 @@ namespace GodotTools.OpenVisualStudio
             }
         }
 
-        private static DTE FindInstanceEditingSolution(string solutionPath)
+        private static DTE? FindInstanceEditingSolution(string solutionPath)
         {
             if (GetRunningObjectTable(0, out IRunningObjectTable pprot) != 0)
                 return null;
@@ -182,8 +182,8 @@ namespace GodotTools.OpenVisualStudio
                     if (ppszDisplayName == null)
                         continue;
 
-                    // The digits after the colon are the process ID
-                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[6-7].0:[0-9]"))
+                    // The digits after the colon are the process ID.
+                    if (!Regex.IsMatch(ppszDisplayName, "!VisualStudio.DTE.1[7-8].0:[0-9]"))
                         continue;
 
                     if (pprot.GetObject(moniker[0], out object ppunkObject) == 0)
@@ -204,7 +204,7 @@ namespace GodotTools.OpenVisualStudio
             return null;
         }
 
-        static string NormalizePath(string path)
+        private static string NormalizePath(string path)
         {
             return new Uri(Path.GetFullPath(path)).LocalPath
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -218,7 +218,7 @@ namespace GodotTools.OpenVisualStudio
             // Class containing the IOleMessageFilter
             // thread error-handling functions
 
-            private static IOleMessageFilter _oldFilter;
+            private static IOleMessageFilter? _oldFilter;
 
             // Start the filter
             public static void Register()
@@ -268,20 +268,20 @@ namespace GodotTools.OpenVisualStudio
 
             // Implement the IOleMessageFilter interface
             [DllImport("ole32.dll")]
-            private static extern int CoRegisterMessageFilter(IOleMessageFilter newFilter, out IOleMessageFilter oldFilter);
+            private static extern int CoRegisterMessageFilter(IOleMessageFilter? newFilter, out IOleMessageFilter? oldFilter);
         }
 
         [ComImport(), Guid("00000016-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         private interface IOleMessageFilter
         {
             [PreserveSig]
-            int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
+            public int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
 
             [PreserveSig]
-            int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
+            public int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
 
             [PreserveSig]
-            int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
+            public int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
         }
 
         #endregion

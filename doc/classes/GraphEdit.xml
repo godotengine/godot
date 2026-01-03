@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphEdit" inherits="Control" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphEdit" inherits="Control" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An editor for graph-like structures, using [GraphNode]s.
 	</brief_description>
@@ -7,6 +7,7 @@
 		[GraphEdit] provides tools for creation, manipulation, and display of various graphs. Its main purpose in the engine is to power the visual programming systems, such as visual shaders, but it is also available for use in user projects.
 		[GraphEdit] by itself is only an empty container, representing an infinite grid where [GraphNode]s can be placed. Each [GraphNode] represents a node in the graph, a single unit of data in the connected scheme. [GraphEdit], in turn, helps to control various interactions with nodes and between nodes. When the user attempts to connect, disconnect, or delete a [GraphNode], a signal is emitted in the [GraphEdit], but no action is taken by default. It is the responsibility of the programmer utilizing this control to implement the necessary logic to determine how each request should be handled.
 		[b]Performance:[/b] It is greatly advised to enable low-processor usage mode (see [member OS.low_processor_usage_mode]) when using GraphEdits.
+		[b]Note:[/b] Keep in mind that [method Node.get_children] will also return the connection layer node named [code]_connection_layer[/code] due to technical limitations. This behavior may change in future releases.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,11 +31,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -48,11 +49,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-				    var port_size: Vector2 = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos: Vector2 = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -69,12 +70,12 @@
 				[codeblocks]
 				[gdscript]
 				func _is_node_hover_valid(from, from_port, to, to_port):
-				    return from != to
+					return from != to
 				[/gdscript]
 				[csharp]
 				public override bool _IsNodeHoverValid(StringName fromNode, int fromPort, StringName toNode, int toPort)
 				{
-				    return fromNode != toNode;
+					return fromNode != toNode;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -109,6 +110,14 @@
 				Rearranges selected nodes in a layout with minimum crossings between connections and uniform horizontal and vertical gap between nodes.
 			</description>
 		</method>
+		<method name="attach_graph_element_to_frame">
+			<return type="void" />
+			<param index="0" name="element" type="StringName" />
+			<param index="1" name="frame" type="StringName" />
+			<description>
+				Attaches the [param element] [GraphElement] to the [param frame] [GraphFrame].
+			</description>
+		</method>
 		<method name="clear_connections">
 			<return type="void" />
 			<description>
@@ -121,8 +130,17 @@
 			<param index="1" name="from_port" type="int" />
 			<param index="2" name="to_node" type="StringName" />
 			<param index="3" name="to_port" type="int" />
+			<param index="4" name="keep_alive" type="bool" default="false" />
 			<description>
 				Create a connection between the [param from_port] of the [param from_node] [GraphNode] and the [param to_port] of the [param to_node] [GraphNode]. If the connection already exists, no connection is created.
+				Connections with [param keep_alive] set to [code]false[/code] may be deleted automatically if invalid during a redraw.
+			</description>
+		</method>
+		<method name="detach_graph_element_from_frame">
+			<return type="void" />
+			<param index="0" name="element" type="StringName" />
+			<description>
+				Detaches the [param element] [GraphElement] from the [GraphFrame] it is currently attached to.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -143,7 +161,46 @@
 				[b]Note:[/b] This method suppresses any other connection request signals apart from [signal connection_drag_ended].
 			</description>
 		</method>
-		<method name="get_connection_line">
+		<method name="get_attached_nodes_of_frame">
+			<return type="StringName[]" />
+			<param index="0" name="frame" type="StringName" />
+			<description>
+				Returns an array of node names that are attached to the [GraphFrame] with the given name.
+			</description>
+		</method>
+		<method name="get_closest_connection_at_point" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="point" type="Vector2" />
+			<param index="1" name="max_distance" type="float" default="4.0" />
+			<description>
+				Returns the closest connection to the given point in screen space. If no connection is found within [param max_distance] pixels, an empty [Dictionary] is returned.
+				A connection is represented as a [Dictionary] in the form of:
+				[codeblock]
+				{
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
+				}
+				[/codeblock]
+				For example, getting a connection at a given mouse position can be achieved like this:
+				[codeblocks]
+				[gdscript]
+				var connection = get_closest_connection_at_point(mouse_event.get_position())
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_connection_count">
+			<return type="int" />
+			<param index="0" name="from_node" type="StringName" />
+			<param index="1" name="from_port" type="int" />
+			<description>
+				Returns the number of connections from [param from_port] of [param from_node].
+			</description>
+		</method>
+		<method name="get_connection_line" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_node" type="Vector2" />
 			<param index="1" name="to_node" type="Vector2" />
@@ -151,10 +208,64 @@
 				Returns the points which would make up a connection between [param from_node] and [param to_node].
 			</description>
 		</method>
-		<method name="get_connection_list" qualifiers="const">
+		<method name="get_connection_list_from_node" qualifiers="const">
 			<return type="Dictionary[]" />
+			<param index="0" name="node" type="StringName" />
 			<description>
-				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
+				Returns an [Array] containing a list of all connections for [param node].
+				A connection is represented as a [Dictionary] in the form of:
+				[codeblock]
+				{
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
+				}
+				[/codeblock]
+				[b]Example:[/b] Get all connections on a specific port:
+				[codeblock]
+				func get_connection_list_from_port(node, port):
+					var connections = get_connection_list_from_node(node)
+					var result = []
+					for connection in connections:
+						var dict = {}
+						if connection["from_node"] == node and connection["from_port"] == port:
+							dict["node"] = connection["to_node"]
+							dict["port"] = connection["to_port"]
+							dict["type"] = "left"
+							result.push_back(dict)
+						elif connection["to_node"] == node and connection["to_port"] == port:
+							dict["node"] = connection["from_node"]
+							dict["port"] = connection["from_port"]
+							dict["type"] = "right"
+							result.push_back(dict)
+					return result
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_connections_intersecting_with_rect" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Returns an [Array] containing the list of connections that intersect with the given [Rect2].
+				A connection is represented as a [Dictionary] in the form of:
+				[codeblock]
+				{
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="get_element_frame">
+			<return type="GraphFrame" />
+			<param index="0" name="element" type="StringName" />
+			<description>
+				Returns the [GraphFrame] that contains the [GraphElement] with the given name.
 			</description>
 		</method>
 		<method name="get_menu_hbox">
@@ -196,14 +307,14 @@
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_left_disconnect_type].
+				Disallows to disconnect nodes when dragging from the left port of the [GraphNode]'s slot if it has the specified type. Use this to disable a disconnection previously allowed with [method add_valid_left_disconnect_type].
 			</description>
 		</method>
 		<method name="remove_valid_right_disconnect_type">
 			<return type="void" />
 			<param index="0" name="type" type="int" />
 			<description>
-				Disallows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. Use this to disable disconnection previously allowed with [method add_valid_right_disconnect_type].
+				Disallows to disconnect nodes when dragging from the right port of the [GraphNode]'s slot if it has the specified type. Use this to disable a disconnection previously allowed with [method add_valid_right_disconnect_type].
 			</description>
 		</method>
 		<method name="set_connection_activity">
@@ -233,10 +344,27 @@
 		<member name="connection_lines_curvature" type="float" setter="set_connection_lines_curvature" getter="get_connection_lines_curvature" default="0.5">
 			The curvature of the lines between the nodes. 0 results in straight lines.
 		</member>
-		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="2.0">
+		<member name="connection_lines_thickness" type="float" setter="set_connection_lines_thickness" getter="get_connection_lines_thickness" default="4.0">
 			The thickness of the lines between the nodes.
 		</member>
+		<member name="connections" type="Dictionary[]" setter="set_connections" getter="get_connection_list" default="[]">
+			The connections between [GraphNode]s.
+			A connection is represented as a [Dictionary] in the form of:
+			[codeblock]
+			{
+				from_node: StringName,
+				from_port: int,
+				to_node: StringName,
+				to_port: int,
+				keep_alive: bool
+			}
+			[/codeblock]
+			Connections with [code]keep_alive[/code] set to [code]false[/code] may be deleted automatically if invalid during a redraw.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="grid_pattern" type="int" setter="set_grid_pattern" getter="get_grid_pattern" enum="GraphEdit.GridPattern" default="0">
+			The pattern used for drawing the grid.
+		</member>
 		<member name="minimap_enabled" type="bool" setter="set_minimap_enabled" getter="is_minimap_enabled" default="true">
 			If [code]true[/code], the minimap is visible.
 		</member>
@@ -282,13 +410,16 @@
 		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="true">
 			If [code]true[/code], enables snapping.
 		</member>
+		<member name="type_names" type="Dictionary" setter="set_type_names" getter="get_type_names" default="{}">
+			[Dictionary] of human-readable port type names.
+		</member>
 		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
 			The current zoom value.
 		</member>
-		<member name="zoom_max" type="float" setter="set_zoom_max" getter="get_zoom_max" default="2.0736">
+		<member name="zoom_max" type="float" setter="set_zoom_max" getter="get_zoom_max" default="2.0736003">
 			The upper zoom limit.
 		</member>
-		<member name="zoom_min" type="float" setter="set_zoom_min" getter="get_zoom_min" default="0.232568">
+		<member name="zoom_min" type="float" setter="set_zoom_min" getter="get_zoom_min" default="0.23256795">
 			The lower zoom limit.
 		</member>
 		<member name="zoom_step" type="float" setter="set_zoom_step" getter="get_zoom_step" default="1.2">
@@ -298,7 +429,7 @@
 	<signals>
 		<signal name="begin_node_move">
 			<description>
-				Emitted at the beginning of a GraphNode movement.
+				Emitted at the beginning of a [GraphElement]'s movement.
 			</description>
 		</signal>
 		<signal name="connection_drag_ended">
@@ -341,13 +472,19 @@
 		</signal>
 		<signal name="copy_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + C[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_copy[/code] action ([kbd]Ctrl + C[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be copied.
+			</description>
+		</signal>
+		<signal name="cut_nodes_request">
+			<description>
+				Emitted when this [GraphEdit] captures a [code]ui_cut[/code] action ([kbd]Ctrl + X[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be cut.
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<param index="0" name="nodes" type="StringName[]" />
 			<description>
-				Emitted when attempting to remove a GraphNode from the GraphEdit. Provides a list of node names to be removed (all selected nodes, excluding nodes without closing button).
+				Emitted when this [GraphEdit] captures a [code]ui_graph_delete[/code] action ([kbd]Delete[/kbd] by default).
+				[param nodes] is an array of node names that should be removed. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="disconnection_request">
@@ -361,34 +498,50 @@
 		</signal>
 		<signal name="duplicate_nodes_request">
 			<description>
-				Emitted when a GraphNode is attempted to be duplicated in the GraphEdit.
+				Emitted when this [GraphEdit] captures a [code]ui_graph_duplicate[/code] action ([kbd]Ctrl + D[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be duplicated.
 			</description>
 		</signal>
 		<signal name="end_node_move">
 			<description>
-				Emitted at the end of a GraphNode movement.
+				Emitted at the end of a [GraphElement]'s movement.
+			</description>
+		</signal>
+		<signal name="frame_rect_changed">
+			<param index="0" name="frame" type="GraphFrame" />
+			<param index="1" name="new_rect" type="Rect2" />
+			<description>
+				Emitted when the [GraphFrame] [param frame] is resized to [param new_rect].
+			</description>
+		</signal>
+		<signal name="graph_elements_linked_to_frame_request">
+			<param index="0" name="elements" type="Array" />
+			<param index="1" name="frame" type="StringName" />
+			<description>
+				Emitted when one or more [GraphElement]s are dropped onto the [GraphFrame] named [param frame], when they were not previously attached to any other one.
+				[param elements] is an array of [GraphElement]s to be attached.
 			</description>
 		</signal>
 		<signal name="node_deselected">
 			<param index="0" name="node" type="Node" />
 			<description>
+				Emitted when the given [GraphElement] node is deselected.
 			</description>
 		</signal>
 		<signal name="node_selected">
 			<param index="0" name="node" type="Node" />
 			<description>
-				Emitted when a GraphNode is selected.
+				Emitted when the given [GraphElement] node is selected.
 			</description>
 		</signal>
 		<signal name="paste_nodes_request">
 			<description>
-				Emitted when the user presses [kbd]Ctrl + V[/kbd].
+				Emitted when this [GraphEdit] captures a [code]ui_paste[/code] action ([kbd]Ctrl + V[/kbd] by default). In general, this signal indicates that previously copied [GraphElement]s should be pasted.
 			</description>
 		</signal>
 		<signal name="popup_request">
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="at_position" type="Vector2" />
 			<description>
-				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [param position] is the position of the mouse pointer when the signal is sent.
+				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [param at_position] is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">
@@ -405,22 +558,40 @@
 		<constant name="SCROLL_PANS" value="1" enum="PanningScheme">
 			[kbd]Mouse Wheel[/kbd] will move the view, [kbd]Ctrl + Mouse Wheel[/kbd] will zoom.
 		</constant>
+		<constant name="GRID_PATTERN_LINES" value="0" enum="GridPattern">
+			Draw the grid using solid lines.
+		</constant>
+		<constant name="GRID_PATTERN_DOTS" value="1" enum="GridPattern">
+			Draw the grid using dots.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			Color of the connection's activity (see [method set_connection_activity]).
+			Color the connection line is interpolated to based on the activity value of a connection (see [method set_connection_activity]).
+		</theme_item>
+		<theme_item name="connection_hover_tint_color" data_type="color" type="Color" default="Color(0, 0, 0, 0.3)">
+			Color which is blended with the connection line when the mouse is hovering over it.
+		</theme_item>
+		<theme_item name="connection_rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
+			Color of the rim around each connection line used for making intersecting lines more distinguishable.
+		</theme_item>
+		<theme_item name="connection_valid_target_tint_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.4)">
+			Color which is blended with the connection line when the currently dragged connection is hovering over a valid target port.
 		</theme_item>
 		<theme_item name="grid_major" data_type="color" type="Color" default="Color(1, 1, 1, 0.2)">
-			Color of major grid lines.
+			Color of major grid lines/dots.
 		</theme_item>
 		<theme_item name="grid_minor" data_type="color" type="Color" default="Color(1, 1, 1, 0.05)">
-			Color of minor grid lines.
+			Color of minor grid lines/dots.
 		</theme_item>
 		<theme_item name="selection_fill" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
 			The fill color of the selection rectangle.
 		</theme_item>
 		<theme_item name="selection_stroke" data_type="color" type="Color" default="Color(1, 1, 1, 0.8)">
 			The outline color of the selection rectangle.
+		</theme_item>
+		<theme_item name="connection_hover_thickness" data_type="constant" type="int" default="0">
+			Widens the line of a connection when the mouse is hovering over it by a percentage factor. A value of [code]0[/code] disables the highlight. A value of [code]100[/code] doubles the line width.
 		</theme_item>
 		<theme_item name="port_hotzone_inner_extent" data_type="constant" type="int" default="22">
 			The horizontal range within which a port can be grabbed (inner side).
@@ -453,6 +624,9 @@
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background drawn under the grid.
+		</theme_item>
+		<theme_item name="panel_focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [GraphEdit] is focused (when used with assistive apps).
 		</theme_item>
 	</theme_items>
 </class>

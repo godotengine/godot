@@ -31,6 +31,11 @@
 
 #ifdef HAVE_ICU
 
+#pragma GCC diagnostic push
+
+// https://github.com/harfbuzz/harfbuzz/issues/4915
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+
 #include "hb-icu.h"
 
 #include "hb-machinery.hh"
@@ -44,7 +49,6 @@
 /* ICU extra semicolon, fixed since 65, https://github.com/unicode-org/icu/commit/480bec3 */
 #if U_ICU_VERSION_MAJOR_NUM < 65 && (defined(__GNUC__) || defined(__clang__))
 #define HB_ICU_EXTRA_SEMI_IGNORED
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra-semi-stmt"
 #endif
 
@@ -93,15 +97,16 @@ hb_icu_script_to_script (UScriptCode script)
 UScriptCode
 hb_icu_script_from_script (hb_script_t script)
 {
+  UScriptCode out = USCRIPT_INVALID_CODE;
+
   if (unlikely (script == HB_SCRIPT_INVALID))
-    return USCRIPT_INVALID_CODE;
+    return out;
 
-  unsigned int numScriptCode = 1 + u_getIntPropertyMaxValue (UCHAR_SCRIPT);
-  for (unsigned int i = 0; i < numScriptCode; i++)
-    if (unlikely (hb_icu_script_to_script ((UScriptCode) i) == script))
-      return (UScriptCode) i;
+  UErrorCode icu_err = U_ZERO_ERROR;
+  const unsigned char buf[5] = {HB_UNTAG (script), 0};
+  uscript_getCode ((const char *) buf, &out, 1, &icu_err);
 
-  return USCRIPT_UNKNOWN;
+  return out;
 }
 
 
@@ -283,8 +288,6 @@ hb_icu_get_unicode_funcs ()
   return static_icu_funcs.get_unconst ();
 }
 
-#ifdef HB_ICU_EXTRA_SEMI_IGNORED
 #pragma GCC diagnostic pop
-#endif
 
 #endif

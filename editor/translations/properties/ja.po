@@ -18,7 +18,7 @@
 # sugusan <sugusan.development@gmail.com>, 2018, 2019, 2021.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2018.
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
-# nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021, 2022.
+# nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021, 2022, 2023.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
 # Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
 # Wataru Onuki <watonu@magadou.com>, 2019.
@@ -43,20 +43,31 @@
 # fadhliazhari <m.fadhliazhari@gmail.com>, 2022.
 # Chia-Hsiang Cheng <cche0109@student.monash.edu>, 2022.
 # meko <hirono.yoneyama@outlook.com>, 2022.
-# Fire Dingo <snowsable113@icloud.com>, 2022.
+# Fire Dingo <snowsable113@icloud.com>, 2022, 2024.
 # Narazaki Shuji <shujinarazaki@protonmail.com>, 2022.
 # ta ko <neji.cion@gmail.com>, 2022.
 # T K <kidaaam@gmail.com>, 2022, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # mieotoha <a7b8i06c49@gmail.com>, 2023.
+# matsu7089 <32781959+matsu7089@users.noreply.github.com>, 2023.
+# Koji Horaguchi <koji.horaguchi@gmail.com>, 2023.
+# ueshita <nalto32@gmail.com>, 2023, 2024.
+# Komaru Bomaru <ohmanhowwillithink@gmail.com>, 2023.
+# SonSui <sonsui37@gmail.com>, 2024.
+# Binnaga <polycharacter@gmail.com>, 2024.
+# rion <miyachikozin@gmail.com>, 2025.
+# Bagumeon <bagumelon@gmail.com>, 2025.
+# Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
+# Myeongjin <aranet100@gmail.com>, 2025.
+# johann carlo florin <join001re2@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-07-31 18:39+0000\n"
-"Last-Translator: mieotoha <a7b8i06c49@gmail.com>\n"
+"PO-Revision-Date: 2025-07-21 08:02+0000\n"
+"Last-Translator: johann carlo florin <join001re2@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -64,10 +75,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 msgid "Application"
-msgstr "アプリケーション"
+msgstr "アプリ"
 
 msgid "Config"
 msgstr "構成"
@@ -96,6 +107,12 @@ msgstr "stdoutを無効化"
 msgid "Disable stderr"
 msgstr "stderrを無効化"
 
+msgid "Print Header"
+msgstr "起動時にエンジン情報を出力"
+
+msgid "Enable Alt Space Menu"
+msgstr "Alt+Spaceメニューを有効"
+
 msgid "Use Hidden Project Data Directory"
 msgstr "非表示のプロジェクトデータディレクトリを使用"
 
@@ -115,7 +132,19 @@ msgid "Auto Accept Quit"
 msgstr "プログラム終了を自動的に受け入れる"
 
 msgid "Quit on Go Back"
-msgstr "「戻る」で終了"
+msgstr "戻るボタンで終了 (Android)"
+
+msgid "Accessibility"
+msgstr "アクセシビリティ"
+
+msgid "General"
+msgstr "一般"
+
+msgid "Accessibility Support"
+msgstr "アクセシビリティサポート"
+
+msgid "Updates per Second"
+msgstr "秒間更新数"
 
 msgid "Display"
 msgstr "表示"
@@ -162,6 +191,15 @@ msgstr "タイトルに拡張"
 msgid "No Focus"
 msgstr "フォーカスしない"
 
+msgid "Sharp Corners"
+msgstr "鋭角な角"
+
+msgid "Minimize Disabled"
+msgstr "最小化無効"
+
+msgid "Maximize Disabled"
+msgstr "最大化無効"
+
 msgid "Window Width Override"
 msgstr "ウィンドウ広さのオーバーライド"
 
@@ -174,6 +212,21 @@ msgstr "省エネルギー"
 msgid "Keep Screen On"
 msgstr "画面を常に点灯"
 
+msgid "Animation"
+msgstr "アニメーション"
+
+msgid "Warnings"
+msgstr "警告"
+
+msgid "Check Invalid Track Paths"
+msgstr "無効なトラックパスを確認"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "角度補間タイプの衝突を確認"
+
+msgid "Compatibility"
+msgstr "互換性"
+
 msgid "Audio"
 msgstr "オーディオ"
 
@@ -183,8 +236,11 @@ msgstr "バス"
 msgid "Default Bus Layout"
 msgstr "デフォルトのバスレイアウト"
 
-msgid "General"
-msgstr "一般"
+msgid "Default Playback Type"
+msgstr "デフォルトの Playback Type"
+
+msgid "Text to Speech"
+msgstr "テキストの音声スピーチ化"
 
 msgid "2D Panning Strength"
 msgstr "2D パンの強さ"
@@ -192,20 +248,29 @@ msgstr "2D パンの強さ"
 msgid "3D Panning Strength"
 msgstr "3D パンの強さ"
 
-msgid "Editor"
-msgstr "エディター"
+msgid "iOS"
+msgstr "iOS"
 
-msgid "Script"
-msgstr "スクリプト"
-
-msgid "Search in File Extensions"
-msgstr "ファイル拡張子で検索"
+msgid "Session Category"
+msgstr "セッションカテゴリー:"
 
 msgid "Subwindows"
 msgstr "サブウィンドウ"
 
 msgid "Embed Subwindows"
 msgstr "サブウィンドウを埋め込む"
+
+msgid "Frame Pacing"
+msgstr "フレームペーシング"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "フレームペーシングを有効にする"
+
+msgid "Swappy Mode"
+msgstr "スワッピーモード"
 
 msgid "Physics"
 msgstr "物理"
@@ -228,6 +293,9 @@ msgstr "アスペクト"
 msgid "Scale"
 msgstr "スケール"
 
+msgid "Scale Mode"
+msgstr "スケールモード"
+
 msgid "Debug"
 msgstr "デバッグ"
 
@@ -239,6 +307,9 @@ msgstr "プロファイラ"
 
 msgid "Max Functions"
 msgstr "関数の上限"
+
+msgid "Max Timestamp Query Elements"
+msgstr "タイムスタンプクエリ要素の最大数"
 
 msgid "Compression"
 msgstr "圧縮"
@@ -268,7 +339,7 @@ msgid "Crash Handler"
 msgstr "クラッシュハンドラー"
 
 msgid "Message"
-msgstr "メッセージ"
+msgstr "Message"
 
 msgid "Rendering"
 msgstr "レンダリング"
@@ -279,14 +350,8 @@ msgstr "オクルージョンカリング"
 msgid "BVH Build Quality"
 msgstr "BVH ビルド品質"
 
-msgid "Memory"
-msgstr "メモリー"
-
-msgid "Limits"
-msgstr "制限"
-
-msgid "Multithreaded Server"
-msgstr "マルチスレッドサーバー"
+msgid "Jitter Projection"
+msgstr "ジッター投影"
 
 msgid "Internationalization"
 msgstr "国際化"
@@ -297,11 +362,20 @@ msgstr "レイアウト方向を右から左に強制"
 msgid "Root Node Layout Direction"
 msgstr "ルートノードの配置方向"
 
+msgid "Root Node Auto Translate"
+msgstr "ルートノードの自動翻訳"
+
 msgid "GUI"
 msgstr "GUI"
 
 msgid "Timers"
 msgstr "タイマー"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "インクリメンタルサーチの最大間隔 (ミリ秒)"
+
+msgid "Tooltip Delay (sec)"
+msgstr "ツールチップの表示遅延 (秒)"
 
 msgid "Common"
 msgstr "一般"
@@ -321,6 +395,15 @@ msgstr "オーバーサンプリングを使用"
 msgid "Rendering Device"
 msgstr "レンダリングデバイス"
 
+msgid "V-Sync"
+msgstr "垂直同期"
+
+msgid "Frame Queue Size"
+msgstr "フレームキューのサイズ"
+
+msgid "Swapchain Image Count"
+msgstr "スワップチェインの画像枚数"
+
 msgid "Staging Buffer"
 msgstr "ステージングバッファ"
 
@@ -333,11 +416,29 @@ msgstr "最大サイズ(MB)"
 msgid "Texture Upload Region Size Px"
 msgstr "テクスチャアップロード領域サイズ px"
 
+msgid "Texture Download Region Size Px"
+msgstr "テクスチャダウンロード領域サイズ px"
+
+msgid "Pipeline Cache"
+msgstr "パイプラインキャッシュ"
+
+msgid "Enable"
+msgstr "有効"
+
+msgid "Save Chunk Size (MB)"
+msgstr "保存チャンク サイズ (MB)"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "プールあたりの最大記述子数"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Agility SDK Version"
+msgstr "Agility SDKバージョン"
 
 msgid "Textures"
 msgstr "テクスチャ"
@@ -357,8 +458,71 @@ msgstr "Collada"
 msgid "Use Ambient"
 msgstr "アンビエントを使用"
 
+msgid "Input Devices"
+msgstr "入力デバイス"
+
+msgid "Pointing"
+msgstr "ポインティング"
+
+msgid "Enable Long Press as Right Click"
+msgstr "長押しを右クリックとして有効にする"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "パンとスケールのジェスチャを有効にする"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "ロータリー入力のスクロール軸"
+
+msgid "Override Volume Buttons"
+msgstr "音量ボタンのオーバーライド"
+
+msgid "Disable Scroll Deadzone"
+msgstr "スクロールデッドゾーンを無効化"
+
+msgid "Navigation"
+msgstr "ナビゲーション"
+
+msgid "World"
+msgstr "ワールド"
+
+msgid "Avoidance"
+msgstr "障害物回避"
+
+msgid "Thread Model"
+msgstr "スレッドモデル"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "障害物回避にマルチスレッドを使用"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "回避処理に高優先度スレッドを使用する"
+
+msgid "Pathfinding"
+msgstr "経路探索"
+
+msgid "Max Threads"
+msgstr "最大スレッド数"
+
+msgid "Baking"
+msgstr "事前計算"
+
+msgid "Use Crash Prevention Checks"
+msgstr "クラッシュ防止チェックを有効にする"
+
+msgid "Baking Use Multiple Threads"
+msgstr "事前計算にマルチスレッドを使用"
+
+msgid "Baking Use High Priority Threads"
+msgstr "ベイク処理に高優先度スレッドを使用する"
+
 msgid "Low Processor Usage Mode"
 msgstr "プロセッサー低使用率モード"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "プロセッサー低使用率モードのスリープ時間 (マイクロ秒)"
+
+msgid "Delta Smoothing"
+msgstr "デルタ時間のスムージング"
 
 msgid "Print Error Messages"
 msgstr "エラーメッセージを表示"
@@ -384,8 +548,29 @@ msgstr "マウスモード"
 msgid "Use Accumulated Input"
 msgstr "蓄積された入力を使用"
 
-msgid "Input Devices"
-msgstr "入力デバイス"
+msgid "Emulate Mouse From Touch"
+msgstr "タッチでマウス操作をエミュレート"
+
+msgid "Emulate Touch From Mouse"
+msgstr "マウスでタッチ操作をエミュレート"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "従来の押したときの振る舞い"
+
+msgid "Sensors"
+msgstr "センサー"
+
+msgid "Enable Accelerometer"
+msgstr "加速度計を有効にする"
+
+msgid "Enable Gravity"
+msgstr "重力を有効にする"
+
+msgid "Enable Gyroscope"
+msgstr "ジャイロスコープを有効にする"
+
+msgid "Enable Magnetometer"
+msgstr "磁力計を有効にする"
 
 msgid "Device"
 msgstr "デバイス"
@@ -414,8 +599,17 @@ msgstr "押下"
 msgid "Keycode"
 msgstr "キーコード"
 
+msgid "Physical Keycode"
+msgstr "物理キーコード"
+
+msgid "Key Label"
+msgstr "キーラベル"
+
 msgid "Unicode"
 msgstr "Unicode"
+
+msgid "Location"
+msgstr "位置"
 
 msgid "Echo"
 msgstr "エコー"
@@ -435,6 +629,9 @@ msgstr "係数"
 msgid "Button Index"
 msgstr "ボタンのインデックス"
 
+msgid "Canceled"
+msgstr "キャンセル"
+
 msgid "Double Click"
 msgstr "ダブルクリック"
 
@@ -450,8 +647,14 @@ msgstr "ペン反転"
 msgid "Relative"
 msgstr "相対的"
 
+msgid "Screen Relative"
+msgstr "画面相対"
+
 msgid "Velocity"
 msgstr "ベロシティ"
+
+msgid "Screen Velocity"
+msgstr "画面ベロシティ"
 
 msgid "Axis"
 msgstr "軸"
@@ -462,11 +665,17 @@ msgstr "軸値"
 msgid "Index"
 msgstr "インデックス"
 
+msgid "Double Tap"
+msgstr "ダブルタップ"
+
 msgid "Action"
 msgstr "アクション(Action)"
 
 msgid "Strength"
 msgstr "強さ"
+
+msgid "Event Index"
+msgstr "イベントインデックス"
 
 msgid "Delta"
 msgstr "差分"
@@ -485,6 +694,18 @@ msgstr "コントローラー番号"
 
 msgid "Controller Value"
 msgstr "コントローラー値"
+
+msgid "Shortcut"
+msgstr "ショートカット"
+
+msgid "Events"
+msgstr "イベント"
+
+msgid "Include Navigational"
+msgstr "ナビゲーションを含める"
+
+msgid "Include Hidden"
+msgstr "隠しファイルを含める"
 
 msgid "Big Endian"
 msgstr "ビッグエンディアン"
@@ -513,6 +734,9 @@ msgstr "出力バッファの上限サイズ"
 msgid "Resource"
 msgstr "リソース"
 
+msgid "Local to Scene"
+msgstr "シーン固有"
+
 msgid "Path"
 msgstr "パス"
 
@@ -531,11 +755,38 @@ msgstr "オフセット"
 msgid "Cell Size"
 msgstr "セルサイズ"
 
+msgid "Cell Shape"
+msgstr "セル形状"
+
+msgid "Jumping Enabled"
+msgstr "ジャンプを有効にする"
+
+msgid "Default Compute Heuristic"
+msgstr "標準のヒューリスティック計算方式"
+
+msgid "Default Estimate Heuristic"
+msgstr "標準のヒューリスティック推定方式"
+
+msgid "Diagonal Mode"
+msgstr "斜め移動モード"
+
 msgid "Seed"
 msgstr "シード値"
 
 msgid "State"
 msgstr "状態"
+
+msgid "Memory"
+msgstr "メモリー"
+
+msgid "Limits"
+msgstr "制限"
+
+msgid "Message Queue"
+msgstr "メッセージキュー"
+
+msgid "Max Steps"
+msgstr "最大ステップ"
 
 msgid "Network"
 msgstr "ネットワーク"
@@ -543,14 +794,26 @@ msgstr "ネットワーク"
 msgid "TCP"
 msgstr "TCP"
 
+msgid "Connect Timeout Seconds"
+msgstr "接続タイムアウト秒数"
+
+msgid "Packet Peer Stream"
+msgstr "パケットピアストリーム"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "最大バッファサイズ（2の累乗）"
+
 msgid "TLS"
 msgstr "TLS"
 
+msgid "Certificate Bundle Override"
+msgstr "証明書バンドルの上書き"
+
+msgid "Threading"
+msgstr "スレッド"
+
 msgid "Worker Pool"
 msgstr "ワーカープール"
-
-msgid "Use System Threads for Low Priority Tasks"
-msgstr "優先度の低いタスクにシステムスレッドを使用"
 
 msgid "Low Priority Thread Ratio"
 msgstr "優先度の低いスレッドの比率"
@@ -564,11 +827,32 @@ msgstr "テスト"
 msgid "Fallback"
 msgstr "フォールバック"
 
+msgid "Pseudolocalization"
+msgstr "疑似ローカライズ"
+
+msgid "Use Pseudolocalization"
+msgstr "疑似ローカライズを有効化"
+
+msgid "Double Vowels"
+msgstr "文字列の母音を2倍にする"
+
 msgid "Fake BiDi"
-msgstr "偽のBiDi"
+msgstr "偽の双方向テキスト (右から左)"
 
 msgid "Override"
-msgstr "上書き"
+msgstr "文字をアスタリスク(*)に置き換え"
+
+msgid "Expansion Ratio"
+msgstr "文字列の拡張率"
+
+msgid "Prefix"
+msgstr "プレフィックス"
+
+msgid "Suffix"
+msgstr "サフィックス"
+
+msgid "Skip Placeholders"
+msgstr "プレースホルダ(%%sなど)のスキップ"
 
 msgid "Rotation"
 msgstr "回転"
@@ -585,6 +869,15 @@ msgstr "引数"
 msgid "Type"
 msgstr "タイプ(型)"
 
+msgid "In Handle"
+msgstr "インハンドル"
+
+msgid "Out Handle"
+msgstr "アウトハンドル"
+
+msgid "Handle Mode"
+msgstr "ハンドルモード"
+
 msgid "Stream"
 msgstr "ストリーム"
 
@@ -594,38 +887,131 @@ msgstr "始点オフセット"
 msgid "End Offset"
 msgstr "終点オフセット"
 
-msgid "Animation"
-msgstr "アニメーション"
-
 msgid "Easing"
 msgstr "イージング"
+
+msgid "Asset Library"
+msgstr "アセットライブラリ"
+
+msgid "Available URLs"
+msgstr "有効なURL"
+
+msgid "Debug Adapter"
+msgstr "デバッグアダプター"
 
 msgid "Remote Port"
 msgstr "リモートポート"
 
-msgid "FileSystem"
-msgstr "ファイルシステム"
+msgid "Request Timeout"
+msgstr "リクエスト失敗、タイムアウト"
 
-msgid "File Server"
-msgstr "ファイルサーバー"
+msgid "Sync Breakpoints"
+msgstr "ブレークポイントの同期"
 
-msgid "Port"
-msgstr "ポート"
+msgid "Title"
+msgstr "タイトル"
 
-msgid "Password"
-msgstr "パスワード"
+msgid "Title Color"
+msgstr "タイトルの色"
 
-msgid "Default Feature Profile"
-msgstr "デフォルト機能プロファイル"
+msgid "Distraction Free Mode"
+msgstr "集中モード"
 
-msgid "Text Editor"
-msgstr "テキストエディター"
+msgid "Movie Maker Enabled"
+msgstr "ムービーメーカーを有効にする"
 
-msgid "Help"
-msgstr "ヘルプ"
+msgid "Custom Template"
+msgstr "カスタムテンプレート"
 
-msgid "Sort Functions Alphabetically"
-msgstr "関数をアルファベット順にソート"
+msgid "Release"
+msgstr "リリース"
+
+msgid "Architectures"
+msgstr "アーキテクチャ"
+
+msgid "App Store Team ID"
+msgstr "App StoreチームID"
+
+msgid "Code Sign Identity Debug"
+msgstr "コード署名 ID（デバッグ用）"
+
+msgid "Code Sign Identity Release"
+msgstr "コード署名 ID（リリース用）"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "プロビジョニングプロファイル UUID（デバッグ用）"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "署名プロファイル UUID（リリース用）"
+
+msgid "Signature"
+msgstr "署名"
+
+msgid "Additional Plist Content"
+msgstr "追加Plistコンテンツ"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "古いエクスポートファイルを常に削除"
+
+msgid "Plugins"
+msgstr "プラグイン"
+
+msgid "Increased Memory Limit"
+msgstr "メモリ上限を引き上げる"
+
+msgid "Push Notifications"
+msgstr "プッシュ通知"
+
+msgid "Access Wi-Fi"
+msgstr "Wi-Fiのアクセス"
+
+msgid "Performance Gaming Tier"
+msgstr "ゲーミング性能ランク"
+
+msgid "Shader Baker"
+msgstr "シェーダーベイカー"
+
+msgid "Enabled"
+msgstr "有効"
+
+msgid "User Data"
+msgstr "ユーザーデータ"
+
+msgid "Accessible From Files App"
+msgstr "外部ファイルブラウザからのアクセスを許可"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "iTunes のファイル共有機能を有効にする"
+
+msgid "Tracking Enabled"
+msgstr "トラッキング有効"
+
+msgid "Icons"
+msgstr "アイコン"
+
+msgid "Icon 1024 X 1024"
+msgstr "アイコン (1024 x 1024)"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "色付きアイコン（1024×1024）"
+
+msgid "Binary Format"
+msgstr "バイナリフォーマット"
+
+msgid "Embed PCK"
+msgstr "組み込みPCK"
+
+msgid "Texture Format"
+msgstr "テクスチャ形式"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
+msgid "Export Path"
+msgstr "エクスポート先のパス"
 
 msgid "Label"
 msgstr "ラベル"
@@ -633,35 +1019,804 @@ msgstr "ラベル"
 msgid "Read Only"
 msgstr "読み取り専用"
 
+msgid "Flat"
+msgstr "フラット"
+
+msgid "Hide Slider"
+msgstr "スライダーを隠す"
+
+msgid "Editing Integer"
+msgstr "整数を編集中"
+
+msgid "Zoom"
+msgstr "ズーム"
+
+msgid "Retarget"
+msgstr "リターゲット"
+
+msgid "Bone Renamer"
+msgstr "ボーン名変更"
+
+msgid "Rename Bones"
+msgstr "ボーン名を変更"
+
+msgid "Unique Node"
+msgstr "ユニークノード"
+
+msgid "Make Unique"
+msgstr "ユニーク化"
+
+msgid "Skeleton Name"
+msgstr "スケルトン名"
+
+msgid "Rest Fixer"
+msgstr "レストを修正"
+
+msgid "Apply Node Transforms"
+msgstr "ノード変換を適用"
+
+msgid "Normalize Position Tracks"
+msgstr "位置トラックを正規化"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "インポート後にすべてのボーンポーズを初期化"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "残り部分にグローバルレストを維持"
+
+msgid "Use Global Pose"
+msgstr "グローバルポーズを使用"
+
+msgid "Original Skeleton Name"
+msgstr "元スケルトン名"
+
+msgid "Fix Silhouette"
+msgstr "シルエットを直す"
+
+msgid "Filter"
+msgstr "フィルター"
+
+msgid "Threshold"
+msgstr "しきい値"
+
+msgid "Base Height Adjustment"
+msgstr "ベースの高さの調整"
+
+msgid "Remove Tracks"
+msgstr "トラックを削除"
+
+msgid "Except Bone Transform"
+msgstr "ボーントランスフォームを除外"
+
+msgid "Unimportant Positions"
+msgstr "重要でない位置"
+
+msgid "Unmapped Bones"
+msgstr "未割り当てのボーン"
+
+msgid "Generate Tangents"
+msgstr "接線を生成"
+
+msgid "Generate LODs"
+msgstr "LODを生成"
+
+msgid "Generate Shadow Mesh"
+msgstr "シャドウメッシュを生成"
+
+msgid "Generate Lightmap UV2"
+msgstr "ライトマップUV2を生成"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "ライトマップUV2のテクセルサイズを生成"
+
+msgid "Scale Mesh"
+msgstr "スケールメッシュ"
+
+msgid "Offset Mesh"
+msgstr "メッシュのオフセット"
+
+msgid "Force Disable Mesh Compression"
+msgstr "メッシュ圧縮を無効化"
+
+msgid "Node"
+msgstr "ノード"
+
+msgid "Script"
+msgstr "スクリプト"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Skip Import"
+msgstr "インポートしない"
+
+msgid "Generate"
+msgstr "生成する"
+
+msgid "NavMesh"
+msgstr "ナビメッシュ"
+
+msgid "Body Type"
+msgstr "ボディタイプ"
+
+msgid "Shape Type"
+msgstr "シェイプタイプ"
+
+msgid "Physics Material Override"
+msgstr "物理マテリアルのオーバーライド"
+
+msgid "Layer"
+msgstr "レイヤー"
+
+msgid "Mask"
+msgstr "マスク"
+
+msgid "Mesh Instance"
+msgstr "メッシュインスタンス"
+
+msgid "Layers"
+msgstr "レイヤー"
+
+msgid "Visibility Range Begin"
+msgstr "可視範囲の開始距離"
+
+msgid "Visibility Range Begin Margin"
+msgstr "可視範囲の開始マージン"
+
+msgid "Visibility Range End"
+msgstr "可視範囲の終了距離"
+
+msgid "Visibility Range End Margin"
+msgstr "可視範囲の終了マージン"
+
+msgid "Visibility Range Fade Mode"
+msgstr "可視範囲のフェードモード"
+
+msgid "Cast Shadow"
+msgstr "影を落とす"
+
+msgid "Advanced"
+msgstr "高度な設定"
+
+msgid "Precision"
+msgstr "精度"
+
+msgid "Max Concavity"
+msgstr "最大凹面"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "対称平面のクリッピング補正"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "回転軸のクリッピング補正"
+
+msgid "Min Volume per Convex Hull"
+msgstr "凸形状を生成した場合の最小体積しきい値"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "凸形状あたりの上限頂点数"
+
+msgid "Plane Downsampling"
+msgstr "平面ダウンサンプリング"
+
+msgid "Convexhull Downsampling"
+msgstr "凸包ダウンサンプリング"
+
+msgid "Normalize Mesh"
+msgstr "メッシュを正規化"
+
+msgid "Convexhull Approximation"
+msgstr "凸包近似"
+
+msgid "Max Convex Hulls"
+msgstr "最大凸包数"
+
+msgid "Project Hull Vertices"
+msgstr "凸包頂点を投影"
+
+msgid "Primitive"
+msgstr "プリミティブ"
+
+msgid "Height"
+msgstr "高さ"
+
+msgid "Radius"
+msgstr "半径"
+
+msgid "Occluder"
+msgstr "オクルーダー"
+
+msgid "Simplification Distance"
+msgstr "簡略化距離:"
+
+msgid "Save to File"
+msgstr "ファイルへ保存"
+
+msgid "Shadow Meshes"
+msgstr "シャドウメッシュ"
+
+msgid "Lightmap UV"
+msgstr "ライトマップUV"
+
+msgid "LODs"
+msgstr "LOD"
+
+msgid "Normal Merge Angle"
+msgstr "法線統合角度"
+
+msgid "Use External"
+msgstr "外部を使用"
+
+msgid "Loop Mode"
+msgstr "ループモード"
+
+msgid "Keep Custom Tracks"
+msgstr "カスタムトラックを保持"
+
+msgid "Slices"
+msgstr "スライス"
+
+msgid "Amount"
+msgstr "量"
+
+msgid "Optimizer"
+msgstr "オプティマイザー(Optimizer)"
+
+msgid "Max Velocity Error"
+msgstr "最大速度誤差"
+
+msgid "Max Angular Error"
+msgstr "最大角度誤差"
+
+msgid "Max Precision Error"
+msgstr "最大制度誤差"
+
+msgid "Page Size"
+msgstr "ページサイズ"
+
+msgid "Import Tracks"
+msgstr "トラックのインポート"
+
+msgid "Rest Pose"
+msgstr "レストポーズ"
+
+msgid "Load Pose"
+msgstr "ポーズを読み込む"
+
+msgid "External Animation Library"
+msgstr "外部アニメーションライブラリ"
+
+msgid "Selected Animation"
+msgstr "選択中のアニメーション"
+
+msgid "Selected Timestamp"
+msgstr "選択中のタイムスタンプ"
+
+msgid "Bone Map"
+msgstr "ボーンマップ"
+
+msgid "Nodes"
+msgstr "ノード"
+
+msgid "Root Type"
+msgstr "ルートの型"
+
+msgid "Root Name"
+msgstr "ルートの名前"
+
+msgid "Apply Root Scale"
+msgstr "ルートスケールを適用"
+
+msgid "Root Scale"
+msgstr "ルートスケール"
+
+msgid "Import as Skeleton Bones"
+msgstr "スケルトンのボーンとしてインポート"
+
+msgid "Use Name Suffixes"
+msgstr "名前サフィックスを使用"
+
+msgid "Use Node Type Suffixes"
+msgstr "ノードタイプサフィックスを使用"
+
+msgid "Meshes"
+msgstr "メッシュ"
+
+msgid "Ensure Tangents"
+msgstr "接線の確保"
+
+msgid "Create Shadow Meshes"
+msgstr "シャドウメッシュの作成"
+
+msgid "Light Baking"
+msgstr "ライト焼き込み"
+
+msgid "Lightmap Texel Size"
+msgstr "ライトマップのテクセルサイズ"
+
+msgid "Force Disable Compression"
+msgstr "圧縮を無効にする"
+
+msgid "Skins"
+msgstr "スキン"
+
+msgid "Use Named Skins"
+msgstr "名前付きスキンの使用"
+
+msgid "FPS"
+msgstr "フレームレート(FPS)"
+
+msgid "Trimming"
+msgstr "前後のトリミング"
+
+msgid "Remove Immutable Tracks"
+msgstr "不変トラックの削除"
+
+msgid "Import Rest as Reset"
+msgstr "レストをRESETとしてインポートする"
+
+msgid "Import Script"
+msgstr "インポートスクリプト"
+
+msgid "Materials"
+msgstr "マテリアル"
+
+msgid "Antialiasing"
+msgstr "アンチエイリアス"
+
+msgid "Generate Mipmaps"
+msgstr "ミップマップ生成"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "埋込ビットマップの無効化"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "マルチチャンネル符号付き距離フィールド"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF ピクセル範囲"
+
+msgid "MSDF Size"
+msgstr "MSDF サイズ"
+
+msgid "Allow System Fallback"
+msgstr "システムフォントのフォールバックを許可"
+
+msgid "Force Autohinter"
+msgstr "微調整を行う"
+
+msgid "Hinting"
+msgstr "微調整モード"
+
+msgid "Subpixel Positioning"
+msgstr "サブピクセルの配置"
+
+msgid "Oversampling"
+msgstr "オーバーサンプリング"
+
+msgid "Metadata Overrides"
+msgstr "メタデータの上書き"
+
+msgid "Language Support"
+msgstr "言語サポート"
+
+msgid "Script Support"
+msgstr "スクリプトサポート"
+
+msgid "Fallbacks"
+msgstr "フォールバック"
+
+msgid "Compress"
+msgstr "圧縮"
+
+msgid "Language"
+msgstr "言語:"
+
+msgid "Outline Size"
+msgstr "アウトラインのサイズ"
+
+msgid "OpenType"
+msgstr "オープンタイプ"
+
+msgid "Embolden"
+msgstr "太字"
+
+msgid "Transform"
+msgstr "トランスフォーム"
+
+msgid "Create From"
+msgstr "用途"
+
+msgid "Scaling Mode"
+msgstr "スケールモード"
+
+msgid "Delimiter"
+msgstr "区切り文字"
+
+msgid "Character Ranges"
+msgstr "文字の範囲"
+
+msgid "Columns"
+msgstr "列"
+
+msgid "Rows"
+msgstr "行"
+
+msgid "Image Margin"
+msgstr "画像マージン"
+
+msgid "Character Margin"
+msgstr "文字マージン"
+
+msgid "High Quality"
+msgstr "高品質"
+
+msgid "Lossy Quality"
+msgstr "非可逆品質"
+
+msgid "HDR Compression"
+msgstr "HDR圧縮"
+
+msgid "Channel Pack"
+msgstr "チャンネルパック"
+
+msgid "Mipmaps"
+msgstr "ミップマップ"
+
+msgid "Limit"
+msgstr "制限値"
+
+msgid "Horizontal"
+msgstr "水平"
+
+msgid "Vertical"
+msgstr "垂直"
+
+msgid "Layout"
+msgstr "レイアウト"
+
+msgid "Normal Map"
+msgstr "法線マップ"
+
+msgid "Roughness"
+msgstr "ラフネス"
+
+msgid "Src Normal"
+msgstr "ラフネス用の法線マップ"
+
+msgid "Process"
+msgstr "インポートプロセス"
+
+msgid "Channel Remap"
+msgstr "チャンネル再マップ"
+
+msgid "Red"
+msgstr "赤"
+
+msgid "Green"
+msgstr "緑"
+
+msgid "Blue"
+msgstr "青"
+
+msgid "Alpha"
+msgstr "アルファ"
+
+msgid "Fix Alpha Border"
+msgstr "アルファ境界を修正"
+
+msgid "Premult Alpha"
+msgstr "乗算済みアルファ"
+
+msgid "Normal Map Invert Y"
+msgstr "法線マップのYを反転"
+
+msgid "HDR as sRGB"
+msgstr "HDRをsRGBとして処理"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDRの明るさ上限処理"
+
+msgid "Size Limit"
+msgstr "サイズ制限"
+
+msgid "Detect 3D"
+msgstr "3D検出時"
+
+msgid "Compress To"
+msgstr "圧縮モードの変更"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "エディター"
+
+msgid "Atlas File"
+msgstr "アトラスファイル"
+
+msgid "Import Mode"
+msgstr "インポートモード"
+
+msgid "Crop to Region"
+msgstr "領域にあわせて切り出す"
+
+msgid "Trim Alpha Border From Region"
+msgstr "領域からアルファ境界をトリミング"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "強制設定"
+
+msgid "8 Bit"
+msgstr "8ビット化"
+
+msgid "Mono"
+msgstr "モノラル化"
+
+msgid "Max Rate"
+msgstr "最大レート適用"
+
+msgid "Max Rate Hz"
+msgstr "最大レート(Hz)"
+
+msgid "Edit"
+msgstr "編集"
+
+msgid "Trim"
+msgstr "前後のトリム"
+
+msgid "Normalize"
+msgstr "ノーマライズ"
+
+msgid "Loop Begin"
+msgstr "ループの開始"
+
+msgid "Loop End"
+msgstr "ループの終了"
+
+msgid "Draw Label"
+msgstr "ラベルを描画"
+
+msgid "Draw Background"
+msgstr "背景を描画"
+
 msgid "Checkable"
 msgstr "チェック可能"
 
 msgid "Checked"
 msgstr "チェック済み"
 
+msgid "Draw Warning"
+msgstr "描画に関する警告"
+
 msgid "Keying"
 msgstr "キーイング"
 
-msgid "Distraction Free Mode"
-msgstr "集中モード"
+msgid "Deletable"
+msgstr "削除可能"
+
+msgid "Selectable"
+msgstr "選択可能"
+
+msgid "Base Type"
+msgstr "基底型"
+
+msgid "Editable"
+msgstr "編集可能"
+
+msgid "Toggle Mode"
+msgstr "モード切り替え"
+
+msgid "Main Run Args"
+msgstr "メイン実行引数"
+
+msgid "Naming"
+msgstr "命名規則"
+
+msgid "Default Signal Callback Name"
+msgstr "シグナルコールバックのデフォルト名"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "シグナルコールバックのデフォルト名 (Self版)"
+
+msgid "Scene Name Casing"
+msgstr "シーン名の命名規則"
+
+msgid "Script Name Casing"
+msgstr "スクリプト名の命名規則"
+
+msgid "Reimport Missing Imported Files"
+msgstr "見つからないインポート済みファイルを再インポートする"
+
+msgid "Use Multiple Threads"
+msgstr "マルチスレッドでインポート処理を行う"
+
+msgid "Atlas Max Width"
+msgstr "アトラステクスチャの最大サイズ"
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Convert Text Resources to Binary"
+msgstr "エクスポート時にテキストリソースをバイナリに変換"
+
+msgid "Version Control"
+msgstr "バージョンコントロール"
+
+msgid "Plugin Name"
+msgstr "プラグイン名"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "テクスチャ"
+
+msgid "Margins"
+msgstr "マージン"
+
+msgid "Separation"
+msgstr "分離"
+
+msgid "Alternative ID"
+msgstr "代替ID"
+
+msgid "Speed"
+msgstr "速さ"
+
+msgid "Frames Count"
+msgstr "フレーム数"
+
+msgid "Editors"
+msgstr "エディター"
+
+msgid "3D Gizmos"
+msgstr "3Dギズモ"
+
+msgid "Gizmo Colors"
+msgstr "ギズモの色"
+
+msgid "Particles Emission Shape"
+msgstr "パーティクル放出シェイプ"
 
 msgid "Interface"
 msgstr "インターフェース"
 
-msgid "Show Update Spinner"
-msgstr "アップデートスピナーを表示"
+msgid "Editor Language"
+msgstr "エディターの言語"
 
-msgid "Update Continuously"
-msgstr "継続的に更新"
+msgid "Use Threads"
+msgstr "スレッドを使用"
 
 msgid "Localize Settings"
 msgstr "ローカライズの設定"
 
-msgid "Scene Tabs"
-msgstr "シーンタブ"
+msgid "Dock Tab Style"
+msgstr "ドックタブのスタイル"
+
+msgid "UI Layout Direction"
+msgstr "UIレイアウトの方向"
+
+msgid "Display Scale"
+msgstr "表示スケール"
+
+msgid "Custom Display Scale"
+msgstr "カスタムの表示スケール"
+
+msgid "Editor Screen"
+msgstr "エディター画面"
+
+msgid "Tablet Driver"
+msgstr "タブレットドライバー"
+
+msgid "Project Manager Screen"
+msgstr "プロジェクトマネージャー"
+
+msgid "Check for Updates"
+msgstr "アップデートを確認"
+
+msgid "Use Embedded Menu"
+msgstr "埋め込みメニューを使用"
+
+msgid "Use Native File Dialogs"
+msgstr "ネイティブのファイルダイアログを使用"
+
+msgid "Expand to Title"
+msgstr "タイトルまで展開"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "コードフォントコンテキスト合字"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "コードフォントカスタムOpenType機能"
+
+msgid "Code Font Custom Variations"
+msgstr "コードフォントのカスタマイズ設定"
+
+msgid "Font Subpixel Positioning"
+msgstr "フォントサブピクセルの配置"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "フォントの組み込みビットマップを無効"
+
+msgid "Font Allow MSDF"
+msgstr "MSDF フォントを許可"
+
+msgid "Main Font"
+msgstr "メインのフォント"
+
+msgid "Main Font Bold"
+msgstr "メインの太字フォント"
+
+msgid "Code Font"
+msgstr "コードのフォント"
+
+msgid "Separate Distraction Mode"
+msgstr "集中モードを分離する"
+
+msgid "Automatically Open Screenshots"
+msgstr "自動的にスクリーンショットを開く"
+
+msgid "Single Window Mode"
+msgstr "シングルウインドウモード"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "マウスの追加ボタンで履歴を表示"
+
+msgid "Save Each Scene on Quit"
+msgstr "終了時に各シーンを保存"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "確認ダイアログキャンセルOKボタン"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Toast通知に内部エラーを表示"
+
+msgid "Show Update Spinner"
+msgstr "アップデートスピナーを表示"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "省エネモードスリープ時間 (マイクロ秒)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "非フォーカス時の省エネモードスリープ時間 (マイクロ秒)"
+
+msgid "Import Resources When Unfocused"
+msgstr "非アクティブ時もリソースをインポート"
+
+msgid "V-Sync Mode"
+msgstr "垂直同期モード"
+
+msgid "Update Continuously"
+msgstr "継続的に更新"
+
+msgid "Collapse Main Menu"
+msgstr "メインメニューを折りたたむ"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "シーンツリーのルート選択対象を表示"
+
+msgid "Derive Script Globals by Name"
+msgstr "名前からスクリプト内のグローバルスコープを推論する"
+
+msgid "Docks"
+msgstr "ドック"
+
+msgid "Scene Tree"
+msgstr "シーンツリー"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "ユニーク名を無効にする前に確認する"
 
 msgid "Inspector"
 msgstr "インスペクター"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "配列・辞書の1ページあたりの最大項目数"
+
+msgid "Show Low Level OpenType Features"
+msgstr "低レベルのOpenType機能を表示"
 
 msgid "Default Property Name Style"
 msgstr "デフォルトのプロパティ名のスタイル"
@@ -681,83 +1836,32 @@ msgstr "水平ベクトル2編集"
 msgid "Horizontal Vector Types Editing"
 msgstr "水平ベクトルタイプ編集"
 
+msgid "Open Resources in Current Inspector"
+msgstr "リソースを現在のインスペクターで開く"
+
+msgid "Resources to Open in New Inspector"
+msgstr "新規インスペクターでリソースを開く"
+
 msgid "Default Color Picker Mode"
-msgstr "デフォルトのカラーピッカーモード"
+msgstr "デフォルトカラーピッカーモード"
 
-msgid "Base Type"
-msgstr "基底型"
+msgid "Default Color Picker Shape"
+msgstr "デフォルトカラーピッカー形状"
 
-msgid "Editable"
-msgstr "編集可能"
-
-msgid "Toggle Mode"
-msgstr "モード切り替え"
-
-msgid "Editor Language"
-msgstr "エディターの言語"
-
-msgid "Display Scale"
-msgstr "表示スケール"
-
-msgid "Enable Pseudolocalization"
-msgstr "擬似ローカライズの有効化"
-
-msgid "Use Embedded Menu"
-msgstr "埋め込みメニューを使用"
-
-msgid "Custom Display Scale"
-msgstr "カスタムの表示スケール"
-
-msgid "Main Font Size"
-msgstr "メインのフォントサイズ"
-
-msgid "Code Font Size"
-msgstr "コードのフォントサイズ"
-
-msgid "Code Font Contextual Ligatures"
-msgstr "コードフォントコンテキスト合字"
-
-msgid "Code Font Custom OpenType Features"
-msgstr "コードフォントカスタムOpenType機能"
-
-msgid "Font Hinting"
-msgstr "フォントのヒンティング"
-
-msgid "Font Subpixel Positioning"
-msgstr "フォントサブピクセルの配置"
-
-msgid "Main Font"
-msgstr "メインのフォント"
-
-msgid "Main Font Bold"
-msgstr "メインの太字フォント"
-
-msgid "Code Font"
-msgstr "コードのフォント"
-
-msgid "Separate Distraction Mode"
-msgstr "集中モードを分離する"
-
-msgid "Automatically Open Screenshots"
-msgstr "自動的にスクリーンショットを開く"
-
-msgid "Mouse Extra Buttons Navigate History"
-msgstr "マウスの追加ボタンで履歴を表示"
-
-msgid "Accept Dialog Cancel OK Buttons"
-msgstr "確認ダイアログキャンセルOKボタン"
-
-msgid "Show Internal Errors in Toast Notifications"
-msgstr "Toast通知に内部エラーを表示"
-
-msgid "Show Low Level OpenType Features"
-msgstr "低レベルのOpenType機能を表示"
+msgid "Color Picker Show Intensity"
+msgstr "カラーピッカーで明度を表示"
 
 msgid "Theme"
 msgstr "テーマ"
 
-msgid "Preset"
-msgstr "プリセット"
+msgid "Follow System Theme"
+msgstr "システムのテーマに合わせる"
+
+msgid "Spacing Preset"
+msgstr "間隔プリセット"
+
+msgid "Icon and Font Color"
+msgstr "アイコンとフォントのカラー"
 
 msgid "Base Color"
 msgstr "ベースカラー"
@@ -765,11 +1869,17 @@ msgstr "ベースカラー"
 msgid "Accent Color"
 msgstr "アクセントカラー"
 
+msgid "Use System Accent Color"
+msgstr "システムのアクセントカラーを使用"
+
 msgid "Contrast"
 msgstr "コントラスト"
 
 msgid "Draw Extra Borders"
 msgstr "エクストラボーダーを描画"
+
+msgid "Icon Saturation"
+msgstr "アイコンの彩度"
 
 msgid "Relationship Line Opacity"
 msgstr "関係線の不透明度"
@@ -777,20 +1887,80 @@ msgstr "関係線の不透明度"
 msgid "Border Size"
 msgstr "ボーダーサイズ"
 
+msgid "Corner Radius"
+msgstr "コーナー半径"
+
+msgid "Base Spacing"
+msgstr "ベース間隔"
+
 msgid "Additional Spacing"
 msgstr "追加の間隔"
 
 msgid "Custom Theme"
 msgstr "カスタムテーマ"
 
+msgid "Touchscreen"
+msgstr "タッチスクリーン"
+
+msgid "Enable Touch Optimizations"
+msgstr "タッチ最適化を有効化"
+
+msgid "Scale Gizmo Handles"
+msgstr "スケールのギズモハンドル"
+
+msgid "Touch Actions Panel"
+msgstr "タッチ操作パネル"
+
+msgid "Scene Tabs"
+msgstr "シーンタブ"
+
+msgid "Display Close Button"
+msgstr "閉じるボタンを表示"
+
+msgid "Show Thumbnail on Hover"
+msgstr "マウスホバー時にサムネイルを表示"
+
+msgid "Maximum Width"
+msgstr "最大幅"
+
 msgid "Show Script Button"
 msgstr "スクリプトボタンを表示"
 
-msgid "Enable"
-msgstr "有効"
+msgid "Restore Scenes on Load"
+msgstr "ロード時にシーンを復元"
+
+msgid "Multi Window"
+msgstr "マルチウィンドウ"
+
+msgid "Restore Windows on Load"
+msgstr "ロード時にウィンドウを復元"
+
+msgid "Maximize Window"
+msgstr "ウィンドウを最大化"
+
+msgid "FileSystem"
+msgstr "ファイルシステム"
+
+msgid "External Programs"
+msgstr "外部のプログラム"
+
+msgid "Raster Image Editor"
+msgstr "ラスター画像エディター"
 
 msgid "Vector Image Editor"
-msgstr "ベクター画像エディタ"
+msgstr "ベクター画像エディター"
+
+msgid "Audio Editor"
+msgstr "オーディオエディター"
+
+msgid "3D Model Editor"
+msgstr "3Dモデルエディター"
+
+msgid "Terminal Emulator"
+msgstr "ターミナルエミュレータ"
+
+msgid "Terminal Emulator Flags"
+msgstr "ターミナルエミュレータのフラグ"
 
 msgid "Directories"
 msgstr "ディレクトリ"
@@ -807,6 +1977,18 @@ msgstr "保存時"
 msgid "Compress Binary Resources"
 msgstr "バイナリリソースの圧縮"
 
+msgid "Safe Save on Backup then Rename"
+msgstr "バックアップ時に安全に保存してから名前を変更する"
+
+msgid "File Server"
+msgstr "ファイルサーバー"
+
+msgid "Port"
+msgstr "ポート"
+
+msgid "Password"
+msgstr "パスワード"
+
 msgid "File Dialog"
 msgstr "ファイルダイアログ"
 
@@ -819,23 +2001,59 @@ msgstr "表示モード"
 msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
 
-msgid "Import"
-msgstr "インポート"
+msgid "Max Results"
+msgstr "最大表示件数"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "Blender Path"
+msgstr "Blenderのパス"
+
+msgid "RPC Port"
+msgstr "RPCポート"
+
+msgid "RPC Server Uptime"
+msgstr "RPCサーバーの稼働時間"
 
 msgid "FBX"
 msgstr "FBX"
 
-msgid "Docks"
-msgstr "ドック"
+msgid "FBX2glTF Path"
+msgstr "FBX2glTFのパス"
 
-msgid "Scene Tree"
-msgstr "シーンツリー"
+msgid "Tools"
+msgstr "ツール"
+
+msgid "OIDN"
+msgstr "Oidn"
+
+msgid "OIDN Denoise Path"
+msgstr "Oidnデノイザーのパス"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "関連するアニメーショントラックを削除する時に確認をする"
 
 msgid "Start Create Dialog Fully Expanded"
 msgstr "新規作成ダイアログの開始時にすべてを展開する"
 
+msgid "Auto Expand to Selected"
+msgstr "選択対象へ自動拡張"
+
+msgid "Center Node on Reparent"
+msgstr "親ノード変更時にノードを中央に配置"
+
+msgid "Hide Filtered Out Parents"
+msgstr "除外された親ノードを表示しない"
+
+msgid "Accessibility Warnings"
+msgstr "アクセシビリティに関する警告"
+
 msgid "Always Show Folders"
 msgstr "常にフォルダーを表示"
+
+msgid "TextFile Extensions"
+msgstr "テキストファイルの拡張子"
 
 msgid "Property Editor"
 msgstr "プロパティエディター"
@@ -846,17 +2064,41 @@ msgstr "自動リフレッシュの間隔"
 msgid "Subresource Hue Tint"
 msgstr "サブリソースの色相・色合い"
 
+msgid "Text Editor"
+msgstr "テキストエディター"
+
 msgid "Color Theme"
 msgstr "カラーテーマ"
 
+msgid "Highlighting"
+msgstr "ハイライト"
+
+msgid "Comment Markers"
+msgstr "コメントマーカー"
+
+msgid "Critical List"
+msgstr "致命的マーカーのタグ"
+
+msgid "Warning List"
+msgstr "警告マーカーのタグ"
+
+msgid "Notice List"
+msgstr "情報マーカーのタグ"
+
 msgid "Appearance"
 msgstr "外観"
+
+msgid "Enable Inline Color Picker"
+msgstr "コード内のカラーピッカーを有効にする"
 
 msgid "Caret"
 msgstr "キャレット"
 
 msgid "Caret Blink"
 msgstr "キャレットの点滅"
+
+msgid "Caret Blink Interval"
+msgstr "キャレットの点滅間隔"
 
 msgid "Highlight Current Line"
 msgstr "現在の行をハイライトする"
@@ -875,6 +2117,9 @@ msgstr "行の長さのソフトガイドライン"
 
 msgid "Line Length Guideline Hard Column"
 msgstr "行の長さのハードガイドライン"
+
+msgid "Gutters"
+msgstr "ガター"
 
 msgid "Show Line Numbers"
 msgstr "行番号を表示"
@@ -897,11 +2142,17 @@ msgstr "ミニマップを表示"
 msgid "Minimap Width"
 msgstr "ミニマップの幅"
 
+msgid "Lines"
+msgstr "ライン"
+
 msgid "Code Folding"
 msgstr "コードの折りたたみ"
 
 msgid "Word Wrap"
-msgstr "ワードラップ"
+msgstr "自動折り返し"
+
+msgid "Autowrap Mode"
+msgstr "自動折り返しモード"
 
 msgid "Whitespace"
 msgstr "空白"
@@ -918,11 +2169,11 @@ msgstr "行間隔"
 msgid "Behavior"
 msgstr "ビヘイビア"
 
-msgid "Navigation"
-msgstr "ナビゲーション"
-
 msgid "Move Caret on Right Click"
 msgstr "右クリックでキャレットを移動"
+
+msgid "Scroll Past End of File"
+msgstr "ファイルの末尾を越えたスクロール"
 
 msgid "Smooth Scrolling"
 msgstr "スムーズスクロール"
@@ -930,17 +2181,62 @@ msgstr "スムーズスクロール"
 msgid "V Scroll Speed"
 msgstr "垂直スクロールの速度"
 
+msgid "Drag and Drop Selection"
+msgstr "選択範囲のドラッグ＆ドロップ移動"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "ノード選択時にスクリプトエディターにとどまる"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "シグナル接続時にスクリプトメソッドにジャンプ"
+
+msgid "Use Default Word Separators"
+msgstr "標準の単語区切り文字を使う"
+
 msgid "Indent"
 msgstr "インデント"
 
 msgid "Auto Indent"
 msgstr "自動インデント"
 
+msgid "Indent Wrapped Lines"
+msgstr "折り返された行をインデントする"
+
 msgid "Files"
 msgstr "ファイル"
 
+msgid "Trim Trailing Whitespace on Save"
+msgstr "保存時に末尾の空白を取り除く"
+
+msgid "Trim Final Newlines on Save"
+msgstr "保存時に末尾の改行を取り除く"
+
 msgid "Autosave Interval Secs"
 msgstr "自動保存する間隔の秒数"
+
+msgid "Restore Scripts on Load"
+msgstr "読み込み時にスクリプトを復元"
+
+msgid "Convert Indent on Save"
+msgstr "インデントを保存時に変換"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "外部変更時にスクリプトを自動再読み込み"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "スクリプト保存時に自動で再読み込みと構文チェックを行う"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "シーンを変更したとき、そのシーンにアタッチしたスクリプトを開く"
+
+msgid "Drop Preload Resources as UID"
+msgstr "プリロードリソースをUIDとしてドロップ"
+
+msgid "Documentation"
+msgstr "ドキュメント"
+
+msgid "Enable Tooltips"
+msgstr "ツールチップを有効化"
 
 msgid "Script List"
 msgstr "スクリプト一覧"
@@ -951,6 +2247,27 @@ msgstr "クラスメンバーの概要を表示"
 msgid "Sort Members Outline Alphabetically"
 msgstr "クラスメンバーの概要をアルファベット順に並べる"
 
+msgid "Script Temperature Enabled"
+msgstr "スクリプトのヒートマップを有効にする"
+
+msgid "Script Temperature History Size"
+msgstr "スクリプトのヒートマップ履歴のサイズ"
+
+msgid "Group Help Pages"
+msgstr "ヘルプページをグループ化"
+
+msgid "Sort Scripts By"
+msgstr "スクリプトを次でソート"
+
+msgid "External"
+msgstr "外部"
+
+msgid "Exec Path"
+msgstr "実行パス"
+
+msgid "Exec Flags"
+msgstr "実行フラグ"
+
 msgid "Completion"
 msgstr "自動補完"
 
@@ -959,6 +2276,9 @@ msgstr "アイドル時の解析の遅延"
 
 msgid "Auto Brace Complete"
 msgstr "波括弧の自動補完"
+
+msgid "Code Complete Enabled"
+msgstr "コード補完の有効化"
 
 msgid "Code Complete Delay"
 msgstr "コード補完の遅延"
@@ -972,23 +2292,29 @@ msgstr "ファイルパスの補完"
 msgid "Add Type Hints"
 msgstr "型ヒントを追加"
 
+msgid "Add String Name Literals"
+msgstr "StringNameリテラルを追加"
+
+msgid "Add Node Path Literals"
+msgstr "NodePathリテラルを追加"
+
 msgid "Use Single Quotes"
 msgstr "シングルクォートを使用"
+
+msgid "Colorize Suggestions"
+msgstr "提案内容の色付け"
+
+msgid "Use External Editor"
+msgstr "外部エディターを使用"
+
+msgid "Help"
+msgstr "ヘルプ"
 
 msgid "Show Help Index"
 msgstr "ヘルプのインデックスを表示"
 
-msgid "Help Font Size"
-msgstr "ヘルプのフォントサイズ"
-
-msgid "Help Source Font Size"
-msgstr "ヘルプのソースのフォントサイズ"
-
-msgid "Help Title Font Size"
-msgstr "ヘルプのタイトルのフォントサイズ"
-
-msgid "Editors"
-msgstr "エディター"
+msgid "Sort Functions Alphabetically"
+msgstr "関数をアルファベット順にソート"
 
 msgid "Grid Map"
 msgstr "グリッドマップ"
@@ -996,32 +2322,92 @@ msgstr "グリッドマップ"
 msgid "Pick Distance"
 msgstr "距離を選択"
 
-msgid "Primary Grid Color"
-msgstr "グリッドのプライマリの色"
-
-msgid "Secondary Grid Color"
-msgstr "グリッドのセカンダリの色"
-
 msgid "Selection Box Color"
 msgstr "選択ボックスの色"
 
-msgid "3D Gizmos"
-msgstr "3Dギズモ"
-
-msgid "Gizmo Colors"
-msgstr "ギズモの色"
+msgid "Instantiated"
+msgstr "インスタンス化されたノード"
 
 msgid "Joint"
 msgstr "ジョイント"
 
-msgid "Shape"
-msgstr "シェイプ"
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Stream Player 3D"
+msgstr "ストリームプレイヤー3D"
+
+msgid "Camera"
+msgstr "カメラ"
+
+msgid "Decal"
+msgstr "デカール"
+
+msgid "Fog Volume"
+msgstr "フォグボリューム"
+
+msgid "Particles"
+msgstr "パーティクル"
+
+msgid "Particle Attractor"
+msgstr "パーティクルアトラクター"
+
+msgid "Particle Collision"
+msgstr "パーティクルコリジョン"
+
+msgid "Joint Body A"
+msgstr "ジョイント ボディA"
+
+msgid "Joint Body B"
+msgstr "ジョイント ボディB"
+
+msgid "Lightmap Lines"
+msgstr "ライトマップの線"
+
+msgid "Lightprobe Lines"
+msgstr "ライトプローブの線"
+
+msgid "Reflection Probe"
+msgstr "リフレクションプローブ"
+
+msgid "Visibility Notifier"
+msgstr "可視性通知"
+
+msgid "Voxel GI"
+msgstr "ボクセルGI"
+
+msgid "Path Tilt"
+msgstr "パスの傾き"
+
+msgid "Skeleton"
+msgstr "スケルトン"
+
+msgid "Selected Bone"
+msgstr "選択中のボーン"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Spring Bone Joint"
+msgstr "スプリングボーンのジョイント"
+
+msgid "Spring Bone Collision"
+msgstr "スプリングボーンのコリジョン"
+
+msgid "Spring Bone Inside Collision"
+msgstr "スプリングボーンの内側衝突判定"
+
+msgid "Gizmo Settings"
+msgstr "ギズモの設定"
+
+msgid "Bone Axis Length"
+msgstr "ボーン軸の長さ"
+
+msgid "Bone Shape"
+msgstr "ボーン形状"
 
 msgid "Primary Grid Steps"
-msgstr "プライマリグリッドのステップ数"
-
-msgid "Grid Size"
-msgstr "グリッドのサイズ"
+msgstr "基本グリッドの分割数"
 
 msgid "Grid Division Level Max"
 msgstr "グリッドの分割の最大レベル"
@@ -1042,13 +2428,13 @@ msgid "Grid YZ Plane"
 msgstr "グリッドのYZ平面"
 
 msgid "Default FOV"
-msgstr "デフォルトの視野角"
+msgstr "デフォルトFOV"
 
 msgid "Default Z Near"
-msgstr "デフォルトのZ Near"
+msgstr "デフォルトZ近"
 
 msgid "Default Z Far"
-msgstr "デフォルトのZ Far"
+msgstr "デフォルトZ遠"
 
 msgid "Invert X Axis"
 msgstr "X軸を反転"
@@ -1056,32 +2442,23 @@ msgstr "X軸を反転"
 msgid "Invert Y Axis"
 msgstr "Y軸を反転"
 
-msgid "Navigation Scheme"
-msgstr "ナビゲーションの方式"
-
-msgid "Zoom Style"
-msgstr "ズームスタイル"
-
 msgid "Emulate Numpad"
 msgstr "テンキーをエミュレート"
 
 msgid "Emulate 3 Button Mouse"
 msgstr "3ボタンマウスをエミュレート"
 
-msgid "Orbit Modifier"
-msgstr "オービット操作の修飾キー"
-
-msgid "Pan Modifier"
-msgstr "パン操作の修飾キー"
-
-msgid "Zoom Modifier"
-msgstr "ズーム操作の修飾キー"
+msgid "Warped Mouse Panning"
+msgstr "マウスのパン使用時、画面端でワープする"
 
 msgid "Navigation Feel"
 msgstr "ナビゲーション感度"
 
 msgid "Orbit Sensitivity"
 msgstr "オービット感度"
+
+msgid "Translation Sensitivity"
+msgstr "移動の感度"
 
 msgid "Orbit Inertia"
 msgstr "オービット慣性"
@@ -1092,11 +2469,14 @@ msgstr "移動の慣性"
 msgid "Zoom Inertia"
 msgstr "ズームの慣性"
 
+msgid "Show Viewport Rotation Gizmo"
+msgstr "ビューポートの回転ギズモを表示"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "ビューポートのナビゲーションギズモを表示"
+
 msgid "Freelook"
 msgstr "フリールック"
-
-msgid "Freelook Navigation Scheme"
-msgstr "フリールックナビゲーション方式"
 
 msgid "Freelook Sensitivity"
 msgstr "フリールックの感度"
@@ -1104,14 +2484,17 @@ msgstr "フリールックの感度"
 msgid "Freelook Inertia"
 msgstr "フリールックの慣性"
 
-msgid "Freelook Base Speed"
-msgstr "フリールックの基本速度"
-
 msgid "Freelook Activation Modifier"
-msgstr "フリールック有効化の修飾キー"
+msgstr "自由視点の有効化キー"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "フリールックの速度をズーム値にリンク"
+
+msgid "Manipulator Gizmo Size"
+msgstr "操作ギズモの大きさ"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "操作ギズモの不透明度"
 
 msgid "Grid Color"
 msgstr "グリッドの色"
@@ -1146,17 +2529,44 @@ msgstr "ボーンのアウトラインのサイズ"
 msgid "Viewport Border Color"
 msgstr "ビューポートのボーダーの色"
 
-msgid "Sub Editors Panning Scheme"
-msgstr "サブエディターのパンニングスキーム"
+msgid "Use Integer Zoom by Default"
+msgstr "デフォルトで整数倍ズームを使用する"
 
-msgid "Animation Editors Panning Scheme"
-msgstr "アニメーションエディタのパンニングスキーム"
+msgid "Bone Mapper"
+msgstr "ボーン変換機能"
+
+msgid "Handle Colors"
+msgstr "操作ハンドルの色"
+
+msgid "Unset"
+msgstr "未設定"
+
+msgid "Set"
+msgstr "設定"
+
+msgid "Missing"
+msgstr "欠落"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "Panning"
+msgstr "パンニング"
 
 msgid "Simple Panning"
 msgstr "簡易パンニング操作"
 
+msgid "2D Editor Pan Speed"
+msgstr "2Dエディターのパンニング速度"
+
+msgid "Tiles Editor"
+msgstr "タイルエディター"
+
 msgid "Display Grid"
 msgstr "グリッドを表示"
+
+msgid "Polygon Editor"
+msgstr "ポリゴンエディター"
 
 msgid "Point Grab Radius"
 msgstr "ポイントの選択半径"
@@ -1166,6 +2576,9 @@ msgstr "前のアウトラインを表示する"
 
 msgid "Autorename Animation Tracks"
 msgstr "アニメーションのトラック名を自動変更"
+
+msgid "Confirm Insert Track"
+msgstr "トラック挿入時の確認"
 
 msgid "Default Create Bezier Tracks"
 msgstr "デフォルトでベジェトラックを作成"
@@ -1179,11 +2592,26 @@ msgstr "オニオンレイヤー過去の色"
 msgid "Onion Layers Future Color"
 msgstr "オニオンレイヤー将来の色"
 
+msgid "Shader Editor"
+msgstr "シェーダーエディター"
+
+msgid "Restore Shaders on Load"
+msgstr "ロード時にシェーダーを再読み込みする"
+
 msgid "Visual Editors"
 msgstr "ビジュアルエディター"
 
 msgid "Minimap Opacity"
 msgstr "ミニマップの不透明度"
+
+msgid "Lines Curvature"
+msgstr "線の曲がり具合"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
 
 msgid "Window Placement"
 msgstr "ウィンドウの配置"
@@ -1209,11 +2637,38 @@ msgstr "出力"
 msgid "Font Size"
 msgstr "フォントサイズ"
 
+msgid "Platforms"
+msgstr "プラットフォーム"
+
+msgid "Linux/*BSD"
+msgstr "Linux および BSD系"
+
+msgid "Prefer Wayland"
+msgstr "Wayland を優先して使用"
+
+msgid "Network Mode"
+msgstr "ネットワークモード"
+
+msgid "HTTP Proxy"
+msgstr "HTTPプロキシ"
+
+msgid "Host"
+msgstr "ホスト"
+
+msgid "Editor TLS Certificates"
+msgstr "エディターのTLS証明書"
+
 msgid "Remote Host"
 msgstr "リモートホスト"
 
 msgid "Debugger"
 msgstr "デバッガー"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "自動でリモートシーンツリーに切り替え"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "自動でスタックトレースに切り替え"
 
 msgid "Profiler Frame History Size"
 msgstr "プロファイラーフレームの履歴サイズ"
@@ -1227,467 +2682,8 @@ msgstr "リモートシーンツリーの更新間隔"
 msgid "Remote Inspect Refresh Interval"
 msgstr "リモートインスペクトのリフレッシュ間隔"
 
-msgid "HTTP Proxy"
-msgstr "HTTPプロキシ"
-
-msgid "Host"
-msgstr "ホスト"
-
-msgid "Project Manager"
-msgstr "プロジェクトマネージャー"
-
-msgid "Sorting Order"
-msgstr "ソート順"
-
-msgid "Highlighting"
-msgstr "ハイライト"
-
-msgid "Symbol Color"
-msgstr "シンボルの色"
-
-msgid "Keyword Color"
-msgstr "キーワードの色"
-
-msgid "Control Flow Keyword Color"
-msgstr "制御フローのキーワードの色"
-
-msgid "Base Type Color"
-msgstr "基底型の色"
-
-msgid "Engine Type Color"
-msgstr "エンジンの型の色"
-
-msgid "User Type Color"
-msgstr "ユーザーの型の色"
-
-msgid "Comment Color"
-msgstr "コメントの色"
-
-msgid "String Color"
-msgstr "文字列の色"
-
-msgid "Background Color"
-msgstr "背景色"
-
-msgid "Completion Background Color"
-msgstr "補完の背景色"
-
-msgid "Completion Selected Color"
-msgstr "補完の選択中の色"
-
-msgid "Completion Existing Color"
-msgstr "既に補完されている箇所の色"
-
-msgid "Completion Scroll Color"
-msgstr "補完ウインドウのスクロール色"
-
-msgid "Completion Font Color"
-msgstr "補完のフォント色"
-
-msgid "Text Color"
-msgstr "テキストの色"
-
-msgid "Line Number Color"
-msgstr "行番号の色"
-
-msgid "Safe Line Number Color"
-msgstr "安全な行番号の色"
-
-msgid "Caret Color"
-msgstr "キャレットの色"
-
-msgid "Caret Background Color"
-msgstr "キャレットの背景色"
-
-msgid "Text Selected Color"
-msgstr "選択されたテキストの色"
-
-msgid "Selection Color"
-msgstr "選択色"
-
-msgid "Brace Mismatch Color"
-msgstr "波括弧ミスマッチの色"
-
-msgid "Current Line Color"
-msgstr "現在の行の色"
-
-msgid "Line Length Guideline Color"
-msgstr "行の長さのガイド線の色"
-
-msgid "Word Highlighted Color"
-msgstr "ハイライトされた単語の色"
-
-msgid "Number Color"
-msgstr "番号の色"
-
-msgid "Function Color"
-msgstr "関数の色"
-
-msgid "Member Variable Color"
-msgstr "メンバー変数の色"
-
-msgid "Mark Color"
-msgstr "マークの色"
-
-msgid "Bookmark Color"
-msgstr "ブックマークの色"
-
-msgid "Breakpoint Color"
-msgstr "ブレークポイントの色"
-
-msgid "Executing Line Color"
-msgstr "実行中の行の色"
-
-msgid "Code Folding Color"
-msgstr "コード折りたたみの色"
-
-msgid "Search Result Color"
-msgstr "検索結果の色"
-
-msgid "Search Result Border Color"
-msgstr "検索結果のボーダーの色"
-
-msgid "Custom Template"
-msgstr "カスタムテンプレート"
-
-msgid "Release"
-msgstr "リリース"
-
-msgid "Binary Format"
-msgstr "バイナリフォーマット"
-
-msgid "Embed PCK"
-msgstr "組み込みPCK"
-
-msgid "Texture Format"
-msgstr "テクスチャ形式"
-
-msgid "BPTC"
-msgstr "BPTC"
-
-msgid "S3TC"
-msgstr "S3TC"
-
-msgid "ETC"
-msgstr "ETC"
-
-msgid "ETC2"
-msgstr "ETC2"
-
-msgid "Export"
-msgstr "エクスポート"
-
-msgid "Export Path"
-msgstr "エクスポート先のパス"
-
-msgid "Access"
-msgstr "アクセス"
-
-msgid "Filters"
-msgstr "フィルター"
-
-msgid "Disable Overwrite Warning"
-msgstr "上書きの警告を無効化"
-
-msgid "Flat"
-msgstr "フラット"
-
-msgid "Hide Slider"
-msgstr "スライダーを隠す"
-
-msgid "Zoom"
-msgstr "ズーム"
-
-msgid "Multichannel Signed Distance Field"
-msgstr "マルチチャンネル符号付き距離フィールド"
-
-msgid "MSDF Pixel Range"
-msgstr "MSDF ピクセル範囲"
-
-msgid "Hinting"
-msgstr "微調整"
-
-msgid "Subpixel Positioning"
-msgstr "サブピクセルの配置"
-
-msgid "Oversampling"
-msgstr "オーバーサンプリング"
-
-msgid "Compress"
-msgstr "圧縮"
-
-msgid "Language"
-msgstr "言語:"
-
-msgid "Transform"
-msgstr "トランスフォーム"
-
-msgid "Make Unique"
-msgstr "ユニーク化"
-
-msgid "Filter"
-msgstr "フィルター"
-
-msgid "Threshold"
-msgstr "しきい値"
-
-msgid "Except Bone Transform"
-msgstr "ボーントランスフォームを除外"
-
-msgid "Create From"
-msgstr "作成元"
-
-msgid "Delimiter"
-msgstr "区切り文字"
-
-msgid "Lossy Quality"
-msgstr "非可逆品質"
-
-msgid "Mipmaps"
-msgstr "ミップマップ"
-
-msgid "Limit"
-msgstr "制限"
-
-msgid "Slices"
-msgstr "スライス"
-
-msgid "Horizontal"
-msgstr "水平"
-
-msgid "Vertical"
-msgstr "垂直"
-
-msgid "Layout"
-msgstr "レイアウト"
-
-msgid "Amount"
-msgstr "量"
-
-msgid "Generate Tangents"
-msgstr "接線を生成"
-
-msgid "Scale Mesh"
-msgstr "スケールメッシュ"
-
-msgid "Offset Mesh"
-msgstr "メッシュのオフセット"
-
-msgid "Physics Material Override"
-msgstr "物理マテリアルのオーバーライド"
-
-msgid "Layer"
-msgstr "レイヤー"
-
-msgid "Mask"
-msgstr "マスク"
-
-msgid "Layers"
-msgstr "レイヤー"
-
-msgid "Advanced"
-msgstr "高度な設定"
-
-msgid "Precision"
-msgstr "精度"
-
-msgid "Height"
-msgstr "高さ"
-
-msgid "Radius"
-msgstr "半径"
-
-msgid "Occluder"
-msgstr "オクルーダー"
-
-msgid "Enabled"
-msgstr "有効"
-
-msgid "Loop Mode"
-msgstr "ループモード"
-
-msgid "Keep Custom Tracks"
-msgstr "カスタムトラックを保持"
-
-msgid "Optimizer"
-msgstr "オプティマイザー(Optimizer)"
-
-msgid "Max Angular Error"
-msgstr "最大角度エラー"
-
-msgid "Page Size"
-msgstr "ページサイズ"
-
-msgid "Nodes"
-msgstr "ノード"
-
-msgid "Root Type"
-msgstr "ルートの型"
-
-msgid "Root Name"
-msgstr "ルートの名前"
-
-msgid "Root Scale"
-msgstr "ルートのスケール"
-
-msgid "Meshes"
-msgstr "メッシュ"
-
-msgid "Ensure Tangents"
-msgstr "接線の確保"
-
-msgid "Light Baking"
-msgstr "ライトベーキング(Light Baking)"
-
-msgid "Lightmap Texel Size"
-msgstr "ライトマップのテクセルサイズ"
-
-msgid "Skins"
-msgstr "スキン"
-
-msgid "Use Named Skins"
-msgstr "名前付きスキンの使用"
-
-msgid "FPS"
-msgstr "フレームレート(FPS)"
-
-msgid "Normal Map"
-msgstr "法線マップ"
-
-msgid "Process"
-msgstr "プロセス"
-
-msgid "Fix Alpha Border"
-msgstr "アルファボーダーを修正"
-
-msgid "Premult Alpha"
-msgstr "乗算済みアルファ"
-
-msgid "Normal Map Invert Y"
-msgstr "法線マップのYを反転"
-
-msgid "Size Limit"
-msgstr "サイズ制限"
-
-msgid "Detect 3D"
-msgstr "3Dを検出"
-
-msgid "SVG"
-msgstr "SVG"
-
-msgid "Atlas File"
-msgstr "アトラスファイル"
-
-msgid "Import Mode"
-msgstr "インポートモード"
-
-msgid "Trim Alpha Border From Region"
-msgstr "領域からアルファボーダーをトリミング"
-
-msgid "Force"
-msgstr "強制"
-
-msgid "8 Bit"
-msgstr "8ビット"
-
-msgid "Mono"
-msgstr "Mono"
-
-msgid "Max Rate"
-msgstr "最大レート"
-
-msgid "Max Rate Hz"
-msgstr "最大レート(Hz)"
-
-msgid "Edit"
-msgstr "編集"
-
-msgid "Trim"
-msgstr "トリム"
-
-msgid "Normalize"
-msgstr "ノーマライズ"
-
-msgid "Loop Begin"
-msgstr "ループの開始"
-
-msgid "Loop End"
-msgstr "ループの終了"
-
-msgid "Asset Library"
-msgstr "アセットライブラリ"
-
-msgid "Use Threads"
-msgstr "スレッドを使用"
-
-msgid "Available URLs"
-msgstr "有効なURL"
-
-msgid "Unset"
-msgstr "未設定"
-
-msgid "Error"
-msgstr "エラー"
-
-msgid "Stream Player 3D"
-msgstr "ストリームプレイヤー3D"
-
-msgid "Camera"
-msgstr "カメラ"
-
-msgid "Decal"
-msgstr "デカール"
-
-msgid "Particles"
-msgstr "パーティクル"
-
-msgid "Joint Body A"
-msgstr "ジョイント ボディA"
-
-msgid "Joint Body B"
-msgstr "ジョイント ボディB"
-
-msgid "Reflection Probe"
-msgstr "リフレクションプローブ"
-
-msgid "Visibility Notifier"
-msgstr "可視性通知"
-
-msgid "External"
-msgstr "外部"
-
-msgid "Use External Editor"
-msgstr "外部エディターを使用"
-
-msgid "Exec Path"
-msgstr "実行パス"
-
-msgid "Group Help Pages"
-msgstr "ヘルプページをグループ化"
-
-msgid "Sort Scripts By"
-msgstr "スクリプトを次でソート"
-
-msgid "Exec Flags"
-msgstr "実行フラグ"
-
-msgid "Skeleton"
-msgstr "スケルトン"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "テクスチャ"
-
-msgid "Separation"
-msgstr "分離"
-
-msgid "Speed"
-msgstr "速さ"
-
-msgid "Version Control"
-msgstr "バージョンコントロール"
+msgid "Profile Native Calls"
+msgstr "ネイティブ関数を計測する"
 
 msgid "Username"
 msgstr "ユーザー名"
@@ -1698,17 +2694,116 @@ msgstr "SSH 公開鍵パス"
 msgid "SSH Private Key Path"
 msgstr "SSH 秘密鍵パス"
 
-msgid "Main Run Args"
-msgstr "メイン実行引数"
+msgid "Input"
+msgstr "入力"
 
-msgid "Reimport Missing Imported Files"
-msgstr "見つからないインポート済みファイルを再インポートする"
+msgid "Buffering"
+msgstr "バッファリング"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "シーンツリーのルート選択対象を表示"
+msgid "Agile Event Flushing"
+msgstr "即座にイベントフラッシュ"
 
-msgid "Use Favorites Root Selection"
-msgstr "お気に入りのルート選択対象を使用"
+msgid "Project Manager"
+msgstr "プロジェクトマネージャー"
+
+msgid "Sorting Order"
+msgstr "ソート順"
+
+msgid "Directory Naming Convention"
+msgstr "ディレクトリの命名規則"
+
+msgid "Default Renderer"
+msgstr "デフォルトのレンダラー"
+
+msgid "Connection Colors"
+msgstr "コネクションの色"
+
+msgid "Scalar Color"
+msgstr "スカラー型の色"
+
+msgid "Vector2 Color"
+msgstr "Vector2型の色"
+
+msgid "Vector 3 Color"
+msgstr "Vector3型の色"
+
+msgid "Vector 4 Color"
+msgstr "Vector4型の色"
+
+msgid "Boolean Color"
+msgstr "Boolean型の色"
+
+msgid "Transform Color"
+msgstr "Transform型の色"
+
+msgid "Sampler Color"
+msgstr "Sampler型の色"
+
+msgid "Category Colors"
+msgstr "カテゴリの色"
+
+msgid "Output Color"
+msgstr "Output系の色"
+
+msgid "Color Color"
+msgstr "Color系の色"
+
+msgid "Conditional Color"
+msgstr "Conditional系の色"
+
+msgid "Input Color"
+msgstr "Input系の色"
+
+msgid "Textures Color"
+msgstr "Texture系の色"
+
+msgid "Utility Color"
+msgstr "Utility系の色"
+
+msgid "Vector Color"
+msgstr "Vector系の色"
+
+msgid "Special Color"
+msgstr "Spacial系の色"
+
+msgid "Particle Color"
+msgstr "Particle系の色"
+
+msgid "Flush stdout on Print"
+msgstr "Print時にstdoutをフラッシュ"
+
+msgid "Low Processor Mode"
+msgstr "低プロセッサモード"
+
+msgid "stdout"
+msgstr "標準出力"
+
+msgid "Print FPS"
+msgstr "FPSを表示する"
+
+msgid "Print GPU Profile"
+msgstr "GPUプロファイルを表示する"
+
+msgid "Verbose stdout"
+msgstr "冗長な標準出力"
+
+msgid "Physics Interpolation"
+msgstr "物理補間"
+
+msgid "Enable Warnings"
+msgstr "警告を有効化"
+
+msgid "Max Chars per Second"
+msgstr "1秒あたりの最大文字数"
+
+msgid "Max Queued Messages"
+msgstr "キューに入るメッセージの最大数"
+
+msgid "Max Errors per Second"
+msgstr "1秒あたりの最大エラー数"
+
+msgid "Max Warnings per Second"
+msgstr "1秒あたりの最大警告数"
 
 msgid "File Logging"
 msgstr "ファイルロギング"
@@ -1717,10 +2812,43 @@ msgid "Enable File Logging"
 msgstr "ファイルロギングを有効化"
 
 msgid "Log Path"
-msgstr "ログのパス"
+msgstr "ログファイルのパス"
+
+msgid "Max Log Files"
+msgstr "ログファイルの最大数"
 
 msgid "Driver"
 msgstr "ドライバー"
+
+msgid "Fallback to Vulkan"
+msgstr "Vulkanへフォールバックする"
+
+msgid "Fallback to D3D12"
+msgstr "D3D12へフォールバックする"
+
+msgid "Fallback to OpenGL 3"
+msgstr "OpenGL 3 へフォールバックする"
+
+msgid "GL Compatibility"
+msgstr "GL互換"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "NVIDIAのスレッド最適化の無効化"
+
+msgid "Fallback to Angle"
+msgstr "Angleへフォールバックする"
+
+msgid "Fallback to Native"
+msgstr "Nativeへフォールバックする"
+
+msgid "Force Angle on Devices"
+msgstr "Angleへ強制フォールバックするデバイス"
+
+msgid "Renderer"
+msgstr "レンダラー"
+
+msgid "Rendering Method"
+msgstr "レンダリングメソッド"
 
 msgid "DPI"
 msgstr "DPI"
@@ -1737,8 +2865,8 @@ msgstr "許可"
 msgid "Threads"
 msgstr "スレッド"
 
-msgid "Thread Model"
-msgstr "スレッドモデル"
+msgid "Display Server"
+msgstr "ディスプレイサーバー"
 
 msgid "Handheld"
 msgstr "ポータブル"
@@ -1746,32 +2874,44 @@ msgstr "ポータブル"
 msgid "Orientation"
 msgstr "方向"
 
-msgid "V-Sync"
-msgstr "垂直同期"
-
 msgid "Output Latency"
 msgstr "出力レイテンシー"
 
-msgid "stdout"
-msgstr "stdout"
+msgid "Frame Delay Msec"
+msgstr "フレーム遅延 (ミリ秒)"
 
-msgid "Print FPS"
-msgstr "FPSを表示する"
-
-msgid "Verbose stdout"
-msgstr "冗長なstdout"
-
-msgid "Low Processor Mode"
-msgstr "低プロセッサモード"
-
-msgid "iOS"
-msgstr "iOS"
+msgid "Allow High Refresh Rate"
+msgstr "高リフレッシュレートを許可する"
 
 msgid "Hide Home Indicator"
 msgstr "ホームインジケーターを隠す"
 
+msgid "Hide Status Bar"
+msgstr "ステータスバーを隠す"
+
+msgid "Suppress UI Gesture"
+msgstr "UIジェスチャーを抑制する"
+
 msgid "XR"
 msgstr "XR"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "Default Action Map"
+msgstr "デフォルトのアクションマップ"
+
+msgid "Environment Blend Mode"
+msgstr "環境ブレンドモード"
+
+msgid "Foveation Level"
+msgstr "フォベーションレベル"
+
+msgid "Foveation Dynamic"
+msgstr "動的フォベーション"
+
+msgid "Hand Tracking"
+msgstr "ハンドトラッキング"
 
 msgid "Boot Splash"
 msgstr "ブートスプラッシュ"
@@ -1779,50 +2919,59 @@ msgstr "ブートスプラッシュ"
 msgid "BG Color"
 msgstr "背景色"
 
+msgid "Pen Tablet"
+msgstr "ペンタブレット"
+
 msgid "Environment"
 msgstr "環境"
 
+msgid "Defaults"
+msgstr "デフォルト"
+
 msgid "Default Clear Color"
-msgstr "デフォルトのクリアー色"
-
-msgid "Show Image"
-msgstr "画像を表示"
-
-msgid "Image"
-msgstr "画像"
-
-msgid "Fullsize"
-msgstr "フルサイズ"
-
-msgid "Use Filter"
-msgstr "フィルターを使用"
+msgstr "デフォルトのクリア色"
 
 msgid "Icon"
 msgstr "アイコン"
 
-msgid "Buffering"
-msgstr "バッファリング"
+msgid "macOS Native Icon"
+msgstr "macOSアイコン"
 
-msgid "Agile Event Flushing"
-msgstr "即座にイベントフラッシュ"
+msgid "Windows Native Icon"
+msgstr "Windowsアイコン"
 
-msgid "Pointing"
-msgstr "ポインティング"
+msgid "Text Driver"
+msgstr "テキストドライバー"
 
-msgid "Emulate Touch From Mouse"
-msgstr "マウスでタッチ操作をエミュレート"
-
-msgid "Emulate Mouse From Touch"
-msgstr "タッチでマウス操作をエミュレート"
+msgid "Search in File Extensions"
+msgstr "ファイル拡張子で検索"
 
 msgid "Mouse Cursor"
 msgstr "マウスカーソル"
+
+msgid "Custom Image"
+msgstr "カスタムイメージ"
 
 msgid "Custom Image Hotspot"
 msgstr "カスタムイメージホットスポット"
 
 msgid "Tooltip Position Offset"
 msgstr "ツールチップ位置のオフセット"
+
+msgid "Show Image"
+msgstr "画像を表示"
+
+msgid "Use Filter"
+msgstr "フィルターを使用"
+
+msgid "Image"
+msgstr "画像"
+
+msgid "Minimum Display Time"
+msgstr "最小表示時間"
+
+msgid "Dotnet"
+msgstr ".NET"
 
 msgid "Project"
 msgstr "プロジェクト"
@@ -1833,11 +2982,23 @@ msgstr "アセンブリ名"
 msgid "Solution Directory"
 msgstr "ソリューションのディレクトリ"
 
+msgid "Assembly Reload Attempts"
+msgstr "アセンブリのリロード試行"
+
+msgid "Time"
+msgstr "時間"
+
+msgid "Polygons"
+msgstr "ポリゴン"
+
+msgid "Navigation 2D"
+msgstr "ナビゲーション(2D)"
+
+msgid "Navigation 3D"
+msgstr "ナビゲーション(3D)"
+
 msgid "Operation"
 msgstr "操作"
-
-msgid "Snap"
-msgstr "スナップ"
 
 msgid "Calculate Tangents"
 msgstr "接線を計算"
@@ -1875,23 +3036,29 @@ msgstr "ポリゴン"
 msgid "Depth"
 msgstr "Depth(深度/奥行)"
 
-msgid "CSG"
-msgstr "CSG"
+msgid "Path Interval"
+msgstr "パス合間"
+
+msgid "Path Simplify Angle"
+msgstr "パスの角度を容易にする"
+
+msgid "Importer"
+msgstr "インポーター"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "ジオメトリヘルパーノードを許可"
+
+msgid "Embedded Image Handling"
+msgstr "埋め込み画像の処理"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
 
 msgid "GDScript"
 msgstr "GDScript"
 
-msgid "Function Definition Color"
-msgstr "関数定義の色"
-
-msgid "Node Path Color"
-msgstr "ノードパスの色"
-
-msgid "Warnings"
-msgstr "警告"
-
-msgid "Exclude Addons"
-msgstr "アドオンを除外"
+msgid "Max Call Stack"
+msgstr "最大コールスタック数"
 
 msgid "Language Server"
 msgstr "言語サーバー"
@@ -1902,20 +3069,53 @@ msgstr "Smart Resolveを有効化"
 msgid "Use Thread"
 msgstr "スレッドを使用"
 
+msgid "Copyright"
+msgstr "著作権"
+
+msgid "glTF"
+msgstr "glTF"
+
 msgid "Color"
 msgstr "色"
 
 msgid "Intensity"
 msgstr "強度"
 
+msgid "Light Type"
+msgstr "ライトタイプ"
+
 msgid "Range"
 msgstr "範囲"
+
+msgid "Inner Cone Angle"
+msgstr "コーン内側角度"
+
+msgid "Outer Cone Angle"
+msgstr "コーン外側角度"
+
+msgid "Diffuse Factor"
+msgstr "拡散反射係数"
+
+msgid "Gloss Factor"
+msgstr "光沢係数"
 
 msgid "Specular Factor"
 msgstr "鏡面反射係数"
 
 msgid "Mass"
 msgstr "質量"
+
+msgid "Linear Velocity"
+msgstr "線形速度"
+
+msgid "Angular Velocity"
+msgstr "角速度"
+
+msgid "Center of Mass"
+msgstr "重心"
+
+msgid "Inertia Tensor"
+msgstr "慣性テンソル"
 
 msgid "Json"
 msgstr "JSON"
@@ -1932,11 +3132,20 @@ msgstr "GLBデータ"
 msgid "Buffers"
 msgstr "バッファ"
 
-msgid "Materials"
-msgstr "マテリアル"
+msgid "Scene Name"
+msgstr "シーン名"
+
+msgid "Base Path"
+msgstr "ベースパス"
+
+msgid "Filename"
+msgstr "ファイル名"
 
 msgid "Root Nodes"
 msgstr "ルートノード"
+
+msgid "Texture Samplers"
+msgstr "テクスチャサンプラー"
 
 msgid "Images"
 msgstr "画像"
@@ -1968,6 +3177,9 @@ msgstr "コンポーネントの型"
 msgid "Normalized"
 msgstr "正規化"
 
+msgid "Count"
+msgstr "カウント"
+
 msgid "Min"
 msgstr "最小"
 
@@ -1983,11 +3195,29 @@ msgstr "ループ"
 msgid "Buffer"
 msgstr "バッファ"
 
+msgid "Byte Length"
+msgstr "バイト長"
+
+msgid "Byte Stride"
+msgstr "バイト間隔"
+
+msgid "Indices"
+msgstr "インデックス"
+
 msgid "Perspective"
 msgstr "透視投影"
 
 msgid "FOV"
 msgstr "視野角"
+
+msgid "Size Mag"
+msgstr "サイズ:"
+
+msgid "Depth Far"
+msgstr "Far深度"
+
+msgid "Depth Near"
+msgstr "Near深度"
 
 msgid "Blend Weights"
 msgstr "ブレンドウエイト"
@@ -1998,8 +3228,14 @@ msgstr "マテリアルインスタンス"
 msgid "Parent"
 msgstr "親"
 
+msgid "Xform"
+msgstr "トランスフォーム"
+
 msgid "Skin"
 msgstr "皮膚"
+
+msgid "Children"
+msgstr "子"
 
 msgid "Light"
 msgstr "ライト"
@@ -2007,17 +3243,32 @@ msgstr "ライト"
 msgid "Joints"
 msgstr "ジョイント"
 
+msgid "Roots"
+msgstr "ルート"
+
+msgid "Godot Bone Node"
+msgstr "ボーンノード"
+
 msgid "Skin Root"
 msgstr "スキンのルート"
 
+msgid "Src Image"
+msgstr "ソース画像"
+
 msgid "Sampler"
-msgstr "Sampler"
+msgstr "サンプラー"
 
-msgid "Palette Min Width"
-msgstr "パレットの最小幅"
+msgid "Mag Filter"
+msgstr "拡大フィルタ"
 
-msgid "Preview Size"
-msgstr "プレビューサイズ"
+msgid "Min Filter"
+msgstr "縮小フィルタ"
+
+msgid "Wrap S"
+msgstr "横のラップ"
+
+msgid "Wrap T"
+msgstr "縦のラップ"
 
 msgid "Mesh Library"
 msgstr "メッシュライブラリ"
@@ -2031,20 +3282,62 @@ msgstr "セル"
 msgid "Priority"
 msgstr "優先順位"
 
+msgid "World Node"
+msgstr "ワールドノード"
+
+msgid "World Boundary Shape Size"
+msgstr "ワールド境界シェイプのサイズ"
+
 msgid "Lightmapping"
 msgstr "ライトマップ"
 
-msgid "Loop Offset"
-msgstr "ループのオフセット"
+msgid "Bake Quality"
+msgstr "ベイク品質"
+
+msgid "Bake Performance"
+msgstr "ベイク性能"
+
+msgid "Denoising"
+msgstr "ノイズ除去"
+
+msgid "Denoiser"
+msgstr "デノイザー"
+
+msgid "Eye Height"
+msgstr "目の高さ"
 
 msgid "IOD"
 msgstr "IOD"
+
+msgid "Display Width"
+msgstr "表示幅"
+
+msgid "Oversample"
+msgstr "オーバーサンプル"
 
 msgid "K1"
 msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
+
+msgid "Vulkan VRS"
+msgstr "Vulkan VRS"
+
+msgid "Min Radius"
+msgstr "最小半径"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Beat Count"
+msgstr "拍の回数"
+
+msgid "Bar Beats"
+msgstr "1小節中の拍"
+
+msgid "Loop Offset"
+msgstr "ループのオフセット"
 
 msgid "Allow Object Decoding"
 msgstr "オブジェクトのデコードを許可"
@@ -2058,17 +3351,26 @@ msgstr "サーバーリレー"
 msgid "Octaves"
 msgstr "オクターブ"
 
+msgid "Jitter"
+msgstr "ジッター"
+
 msgid "Return Type"
 msgstr "戻り値の型"
 
 msgid "Width"
 msgstr "幅"
 
-msgid "Invert"
-msgstr "反転"
+msgid "Noise"
+msgstr "ノイズ"
 
 msgid "Seamless"
 msgstr "シームレス"
+
+msgid "Invert"
+msgstr "反転"
+
+msgid "In 3D Space"
+msgstr "3D空間内"
 
 msgid "As Normal Map"
 msgstr "法線マップとして"
@@ -2076,8 +3378,47 @@ msgstr "法線マップとして"
 msgid "Bump Strength"
 msgstr "バンプ強度"
 
-msgid "Noise"
-msgstr "ノイズ"
+msgid "Display Refresh Rate"
+msgstr "ディスプレイリフレッシュレート"
+
+msgid "Render Target Size Multiplier"
+msgstr "レンダーターゲットサイズ倍率"
+
+msgid "Next"
+msgstr "次"
+
+msgid "Layer Viewport"
+msgstr "レイヤービューポート"
+
+msgid "Alpha Blend"
+msgstr "アルファブレンド"
+
+msgid "Mipmap Mode"
+msgstr "ミップマップモード"
+
+msgid "Horizontal Wrap"
+msgstr "水平ラップ"
+
+msgid "Vertical Wrap"
+msgstr "垂直ラップ"
+
+msgid "Red Swizzle"
+msgstr "赤スウィズル"
+
+msgid "Green Swizzle"
+msgstr "緑スウィズル"
+
+msgid "Blue Swizzle"
+msgstr "青スウィズル"
+
+msgid "Alpha Swizzle"
+msgstr "アルファスウィズル"
+
+msgid "Max Anisotropy"
+msgstr "最大異方性"
+
+msgid "Bone Update"
+msgstr "ボーン更新"
 
 msgid "Names"
 msgstr "名前"
@@ -2103,20 +3444,50 @@ msgstr "必須機能"
 msgid "Optional Features"
 msgstr "オプションの機能"
 
+msgid "Enabled Features"
+msgstr "有効な機能"
+
 msgid "Visibility State"
 msgstr "可視性の状態"
 
-msgid "Android"
-msgstr "Android"
+msgid "Java SDK Path"
+msgstr "Java SDKパス"
+
+msgid "Android SDK Path"
+msgstr "Android SDKパス"
+
+msgid "Launcher Icons"
+msgstr "ランチャーアイコン"
+
+msgid "Main 192 X 192"
+msgstr "メイン (192x192)"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "適応的前景 (432x432)"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "適応的背景 (432x432)"
+
+msgid "Adaptive Monochrome 432 X 432"
+msgstr "適応的モノクロ (432x432)"
+
+msgid "Gradle Build"
+msgstr "Gradleビルド"
+
+msgid "Use Gradle Build"
+msgstr "Gradleビルドを使用"
+
+msgid "Gradle Build Directory"
+msgstr "Gradleビルドディレクトリ"
 
 msgid "Export Format"
 msgstr "エクスポート形式"
 
+msgid "Min SDK"
+msgstr "最小SDK"
+
 msgid "Target SDK"
 msgstr "ターゲットSDK"
-
-msgid "Plugins"
-msgstr "プラグイン"
 
 msgid "Code"
 msgstr "コード"
@@ -2130,8 +3501,41 @@ msgstr "固有名"
 msgid "Signed"
 msgstr "署名付き"
 
+msgid "OpenGL Debug"
+msgstr "OpenGLデバッグ"
+
+msgid "XR Features"
+msgstr "XR機能"
+
 msgid "XR Mode"
 msgstr "XRモード"
+
+msgid "Gesture"
+msgstr "ジェスチャー"
+
+msgid "Swipe to Dismiss"
+msgstr "スワイプで閉じる"
+
+msgid "Immersive Mode"
+msgstr "没入モード"
+
+msgid "Support Small"
+msgstr "小サイズ対応"
+
+msgid "Support Normal"
+msgstr "標準サイズ対応"
+
+msgid "Support Large"
+msgstr "大サイズ対応"
+
+msgid "Support Xlarge"
+msgstr "特大サイズ対応"
+
+msgid "Background Color"
+msgstr "背景色"
+
+msgid "User Data Backup"
+msgstr "ユーザーデータのバックアップ"
 
 msgid "Command Line"
 msgstr "コマンドライン"
@@ -2154,8 +3558,11 @@ msgstr "権限"
 msgid "Custom Permissions"
 msgstr "カスタムの権限"
 
-msgid "Icons"
-msgstr "アイコン"
+msgid "Spotlight 80 X 80"
+msgstr "Spotlight 80 x 80"
+
+msgid "Spotlight 120 X 120"
+msgstr "Spotlight 120 x 120"
 
 msgid "iPhone 120 X 120"
 msgstr "iPhone 120 x 120"
@@ -2163,68 +3570,38 @@ msgstr "iPhone 120 x 120"
 msgid "iPhone 180 X 180"
 msgstr "iPhone 180 x 180"
 
-msgid "iPad 76 X 76"
-msgstr "iPad 76 x 76"
+msgid "iPad 167 X 167"
+msgstr "iPad 167 x 167"
 
 msgid "iPad 152 X 152"
 msgstr "iPad 152 x 152"
 
-msgid "iPad 167 X 167"
-msgstr "iPad 167 x 167"
+msgid "iOS 128 X 128"
+msgstr "iOS 128 x 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 x 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 x 136"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 x 1024"
-
-msgid "Spotlight 40 X 40"
-msgstr "Spotlight 40 x 40"
-
-msgid "Spotlight 80 X 80"
-msgstr "Spotlight 80 x 80"
-
-msgid "iPhone 2436 X 1125"
-msgstr "iPhone 2436 x 1125"
-
-msgid "iPhone 2208 X 1242"
-msgstr "iPhone 2208 x 1242"
-
-msgid "iPad 1024 X 768"
-msgstr "iPad 1024 x 768"
-
-msgid "iPad 2048 X 1536"
-msgstr "iPad 2048 x 1536"
-
-msgid "iPhone 640 X 960"
-msgstr "iPhone 640 x 960"
-
-msgid "iPhone 640 X 1136"
-msgstr "iPhone 640 x 1136"
-
-msgid "iPhone 750 X 1334"
-msgstr "iPhone 750 x 1334"
-
-msgid "iPhone 1125 X 2436"
-msgstr "iPhone 1125 x 2436"
-
-msgid "iPad 768 X 1024"
-msgstr "iPad 768 x 1024"
-
-msgid "iPad 1536 X 2048"
-msgstr "iPad 1536 x 2048"
-
-msgid "iPhone 1242 X 2208"
-msgstr "iPhone 1242 x 2208"
-
-msgid "App Store Team ID"
-msgstr "App Store Team ID"
-
-msgid "User Data"
-msgstr "ユーザーデータ"
 
 msgid "Architecture"
 msgstr "アーキテクチャ"
 
 msgid "macOS"
 msgstr "macOS"
+
+msgid "Xcode"
+msgstr "Xcode"
+
+msgid "SDK Version"
+msgstr "SDKバージョン"
+
+msgid "SDK Build"
+msgstr "SDKビルド"
 
 msgid "Codesign"
 msgstr "コード署名"
@@ -2235,11 +3612,110 @@ msgstr "識別子"
 msgid "Provisioning Profile"
 msgstr "プロビジョニングプロファイル"
 
-msgid "Location"
-msgstr "位置"
+msgid "Network Server"
+msgstr "ネットワークサーバー"
+
+msgid "Network Client"
+msgstr "ネットワーククライアント"
+
+msgid "Device USB"
+msgstr "USBデバイス"
+
+msgid "Device Bluetooth"
+msgstr "Bluetoothデバイス"
+
+msgid "Files Downloads"
+msgstr "ダウンロードファイル"
+
+msgid "Files Pictures"
+msgstr "ピクチャファイル"
+
+msgid "Files Music"
+msgstr "ミュージックファイル"
+
+msgid "Files Movies"
+msgstr "ムービーファイル"
+
+msgid "Files User Selected"
+msgstr "ユーザー選択ファイル"
+
+msgid "Helper Executables"
+msgstr "ヘルパー実行ファイル"
+
+msgid "Custom Options"
+msgstr "カスタムオプション"
 
 msgid "Notarization"
 msgstr "公証"
+
+msgid "Apple ID Name"
+msgstr "Apple ID名"
+
+msgid "Apple ID Password"
+msgstr "Apple IDパスワード"
+
+msgid "API UUID"
+msgstr "API UUID"
+
+msgid "API Key"
+msgstr "APIキー"
+
+msgid "API Key ID"
+msgstr "APIキーID"
+
+msgid "Location Usage Description"
+msgstr "位置情報利用説明"
+
+msgid "Location Usage Description Localized"
+msgstr "位置情報利用説明(ローカライズ)"
+
+msgid "Address Book Usage Description"
+msgstr "アドレス帳利用説明"
+
+msgid "Address Book Usage Description Localized"
+msgstr "アドレス帳利用説明(ローカライズ)"
+
+msgid "Calendar Usage Description"
+msgstr "カレンダー利用説明"
+
+msgid "Calendar Usage Description Localized"
+msgstr "カレンダー利用説明(ローカライズ)"
+
+msgid "Photos Library Usage Description"
+msgstr "写真ライブラリ利用説明"
+
+msgid "Photos Library Usage Description Localized"
+msgstr "写真ライブラリ利用説明(ローカライズ)"
+
+msgid "Desktop Folder Usage Description"
+msgstr "デスクトップフォルダ利用説明"
+
+msgid "Desktop Folder Usage Description Localized"
+msgstr "デスクトップフォルダ利用説明(ローカライズ)"
+
+msgid "Documents Folder Usage Description"
+msgstr "書類フォルダ利用説明"
+
+msgid "Documents Folder Usage Description Localized"
+msgstr "書類フォルダ利用説明(ローカライズ)"
+
+msgid "Downloads Folder Usage Description"
+msgstr "ダウンロードフォルダ利用説明"
+
+msgid "Downloads Folder Usage Description Localized"
+msgstr "ダウンロードフォルダ利用説明(ローカライズ)"
+
+msgid "Network Volumes Usage Description"
+msgstr "ネットワークボリューム利用説明"
+
+msgid "Network Volumes Usage Description Localized"
+msgstr "ネットワークボリューム利用説明(ローカライズ)"
+
+msgid "Removable Volumes Usage Description"
+msgstr "リムーバブルボリューム利用説明"
+
+msgid "Removable Volumes Usage Description Localized"
+msgstr "リムーバブルボリューム利用説明(ローカライズ)"
 
 msgid "Web"
 msgstr "Web"
@@ -2249,6 +3725,15 @@ msgstr "HTTPホスト"
 
 msgid "HTTP Port"
 msgstr "HTTPポート"
+
+msgid "Use TLS"
+msgstr "TLSを使用"
+
+msgid "TLS Key"
+msgstr "TLSキー"
+
+msgid "TLS Certificate"
+msgstr "TLS証明書"
 
 msgid "Variant"
 msgstr "バリアント"
@@ -2265,11 +3750,23 @@ msgstr "モバイル向け"
 msgid "HTML"
 msgstr "HTML"
 
-msgid "Windows"
-msgstr "Windows"
+msgid "Export Icon"
+msgstr "アイコンをエクスポート"
+
+msgid "Icon 144 X 144"
+msgstr "アイコン (144x144)"
+
+msgid "Icon 180 X 180"
+msgstr "アイコン (180x180)"
+
+msgid "Icon 512 X 512"
+msgstr "アイコン (512x512)"
 
 msgid "Identity Type"
 msgstr "識別子タイプ"
+
+msgid "Timestamp"
+msgstr "タイムスタンプ"
 
 msgid "Timestamp Server URL"
 msgstr "タイムスタンプサーバーURL"
@@ -2298,6 +3795,9 @@ msgstr "ファイルの説明"
 msgid "Trademarks"
 msgstr "商標"
 
+msgid "Export D3D12"
+msgstr "D3D12エクスポート"
+
 msgid "Frame"
 msgstr "フレーム"
 
@@ -2305,37 +3805,13 @@ msgid "Speed Scale"
 msgstr "スピードスケール"
 
 msgid "Centered"
-msgstr "中央揃え"
+msgstr "中央"
 
 msgid "Flip H"
 msgstr "水平反転"
 
 msgid "Flip V"
 msgstr "垂直反転"
-
-msgid "Monitoring"
-msgstr "モニタリング"
-
-msgid "Monitorable"
-msgstr "モニター可能"
-
-msgid "Gravity"
-msgstr "重力"
-
-msgid "Space Override"
-msgstr "領域のオーバーライド"
-
-msgid "Point"
-msgstr "点"
-
-msgid "Linear Damp"
-msgstr "線形減衰"
-
-msgid "Angular Damp"
-msgstr "角度減衰"
-
-msgid "Audio Bus"
-msgstr "オーディオバス"
 
 msgid "Current"
 msgstr "現在"
@@ -2397,18 +3873,6 @@ msgstr "限界を描画する"
 msgid "Draw Drag Margin"
 msgstr "ドラッグマージンを描画する"
 
-msgid "Input"
-msgstr "入力"
-
-msgid "Pickable"
-msgstr "ピック可能"
-
-msgid "Build Mode"
-msgstr "ビルドモード"
-
-msgid "Time"
-msgstr "時間"
-
 msgid "Lifetime"
 msgstr "生存時間"
 
@@ -2427,14 +3891,29 @@ msgstr "ランダム性"
 msgid "Lifetime Randomness"
 msgstr "生存時間のランダム性"
 
+msgid "Emission Shape"
+msgstr "放出シェイプ"
+
+msgid "Shape"
+msgstr "シェイプ"
+
 msgid "Points"
 msgstr "点"
 
 msgid "Colors"
 msgstr "カラー"
 
+msgid "Ring Inner Radius"
+msgstr "リングの内半径"
+
+msgid "Ring Radius"
+msgstr "リングの半径"
+
 msgid "Spread"
 msgstr "広がり"
+
+msgid "Gravity"
+msgstr "重力"
 
 msgid "Initial Velocity"
 msgstr "初期速度"
@@ -2463,18 +3942,6 @@ msgstr "オフセット曲線"
 msgid "Visibility Rect"
 msgstr "可視領域矩形(Visibility Rect)"
 
-msgid "Node A"
-msgstr "ノード A"
-
-msgid "Node B"
-msgstr "ノード B"
-
-msgid "Bias"
-msgstr "バイアス"
-
-msgid "Length"
-msgstr "長さ"
-
 msgid "Editor Only"
 msgstr "エディターのみ"
 
@@ -2502,14 +3969,152 @@ msgstr "ボーダー"
 msgid "Round Precision"
 msgstr "丸め精度"
 
+msgid "Antialiased"
+msgstr "アンチエイリアス"
+
+msgid "Repeat"
+msgstr "繰り返し"
+
+msgid "Autoscroll"
+msgstr "自動スクロール"
+
+msgid "End"
+msgstr "End"
+
+msgid "Scroll"
+msgstr "スクロール"
+
 msgid "Ignore Camera Zoom"
 msgstr "カメラのズームを無視"
+
+msgid "Motion"
+msgstr "運動"
+
+msgid "Mirroring"
+msgstr "ミラーリング"
+
+msgid "Curve"
+msgstr "カーブ"
+
+msgid "Progress"
+msgstr "進捗"
+
+msgid "Progress Ratio"
+msgstr "進行比率"
 
 msgid "H Offset"
 msgstr "水平オフセット"
 
 msgid "V Offset"
 msgstr "垂直オフセット"
+
+msgid "Monitoring"
+msgstr "モニタリング"
+
+msgid "Monitorable"
+msgstr "モニター可能"
+
+msgid "Space Override"
+msgstr "領域のオーバーライド"
+
+msgid "Point"
+msgstr "点"
+
+msgid "Linear Damp"
+msgstr "線形減衰"
+
+msgid "Angular Damp"
+msgstr "角度減衰"
+
+msgid "Audio Bus"
+msgstr "オーディオバス"
+
+msgid "Motion Mode"
+msgstr "移動モード"
+
+msgid "Up Direction"
+msgstr "上方方向"
+
+msgid "Slide on Ceiling"
+msgstr "天井スライド"
+
+msgid "Wall Min Slide Angle"
+msgstr "壁最小スライド角度"
+
+msgid "Floor"
+msgstr "床"
+
+msgid "Stop on Slope"
+msgstr "斜面で停止"
+
+msgid "Constant Speed"
+msgstr "等速"
+
+msgid "Block on Wall"
+msgstr "壁衝突ブロック"
+
+msgid "Max Angle"
+msgstr "最大角度"
+
+msgid "Moving Platform"
+msgstr "移動プラットフォーム"
+
+msgid "On Leave"
+msgstr "離脱時"
+
+msgid "Floor Layers"
+msgstr "床レイヤー"
+
+msgid "Wall Layers"
+msgstr "壁レイヤー"
+
+msgid "Safe Margin"
+msgstr "セーフマージン"
+
+msgid "Disable Mode"
+msgstr "無効化モード"
+
+msgid "Pickable"
+msgstr "ピック可能"
+
+msgid "Build Mode"
+msgstr "ビルドモード"
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "One Way Collision"
+msgstr "一方向コリジョン"
+
+msgid "Margin"
+msgstr "マージン"
+
+msgid "Length"
+msgstr "長さ"
+
+msgid "Stiffness"
+msgstr "硬さ"
+
+msgid "Initial Offset"
+msgstr "初期オフセット"
+
+msgid "Node A"
+msgstr "ノード A"
+
+msgid "Node B"
+msgstr "ノード B"
+
+msgid "Bias"
+msgstr "バイアス"
+
+msgid "Disable Collision"
+msgstr "コリジョンを無効化"
+
+msgid "Softness"
+msgstr "柔らかさ"
+
+msgid "Angular Limit"
+msgstr "角度制限"
 
 msgid "Inertia"
 msgstr "慣性"
@@ -2526,35 +4131,74 @@ msgstr "連続的衝突判定"
 msgid "Linear"
 msgstr "リニア"
 
+msgid "Damp Mode"
+msgstr "減衰モード"
+
+msgid "Damp"
+msgstr "減衰"
+
+msgid "Angular"
+msgstr "角度"
+
 msgid "Torque"
 msgstr "トルク"
-
-msgid "Max Angle"
-msgstr "最大角度"
-
-msgid "Safe Margin"
-msgstr "セーフマージン"
-
-msgid "UV"
-msgstr "UV"
-
-msgid "Polygons"
-msgstr "ポリゴン"
-
-msgid "Update"
-msgstr "更新"
-
-msgid "Editor Settings"
-msgstr "エディター設定"
-
-msgid "Tile Set"
-msgstr "タイルセット"
 
 msgid "Bitmask"
 msgstr "ビットマスク"
 
+msgid "UV"
+msgstr "UV"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Bone Angle"
+msgstr "ボーンの角度"
+
+msgid "Editor Settings"
+msgstr "エディター設定"
+
+msgid "Show Bone Gizmo"
+msgstr "ボーンのギズモを表示する"
+
+msgid "Rest"
+msgstr "レスト"
+
+msgid "Hframes"
+msgstr "横フレーム数"
+
+msgid "Vframes"
+msgstr "縦フレーム数"
+
+msgid "Tile Set"
+msgstr "タイルセット"
+
+msgid "Y Sort Origin"
+msgstr "Yソート原点"
+
+msgid "Enabling"
+msgstr "有効化"
+
+msgid "Node Path"
+msgstr "ノードのパス"
+
+msgid "Doppler Tracking"
+msgstr "ドップラートラッキング"
+
 msgid "Max dB"
 msgstr "最大dB"
+
+msgid "Emission Angle"
+msgstr "放出角度"
+
+msgid "Degrees"
+msgstr "度"
+
+msgid "Filter Attenuation dB"
+msgstr "減衰フィルタdB"
+
+msgid "Attenuation Filter"
+msgstr "減衰フィルタ"
 
 msgid "Cutoff Hz"
 msgstr "カットオフ周波数"
@@ -2568,14 +4212,75 @@ msgstr "ドップラー"
 msgid "Tracking"
 msgstr "トラッキング"
 
+msgid "Bone Name"
+msgstr "ボーン名"
+
+msgid "Override Pose"
+msgstr "ポーズのオーバーライド"
+
+msgid "Use External Skeleton"
+msgstr "外部スケルトンを使用"
+
+msgid "External Skeleton"
+msgstr "外部スケルトン"
+
 msgid "Cull Mask"
 msgstr "カリングマスク"
+
+msgid "Attributes"
+msgstr "属性"
+
+msgid "Compositor"
+msgstr "コンポジター"
+
+msgid "Projection"
+msgstr "投影"
+
+msgid "Frustum Offset"
+msgstr "視錐台オフセット"
+
+msgid "Near"
+msgstr "近"
+
+msgid "Far"
+msgstr "遠"
+
+msgid "Ring Axis"
+msgstr "リング軸"
+
+msgid "Ring Height"
+msgstr "リングの高さ"
+
+msgid "Ring Cone Angle"
+msgstr "リング円錐角度"
+
+msgid "Disable Z"
+msgstr "Zを無効化"
+
+msgid "Albedo"
+msgstr "アルベド"
+
+msgctxt "Geometry"
+msgid "Normal"
+msgstr "法線"
+
+msgid "Emission"
+msgstr "発光"
 
 msgid "Parameters"
 msgstr "パラメーター"
 
-msgid "End"
-msgstr "End"
+msgid "Emission Energy"
+msgstr "発光エネルギー"
+
+msgid "Modulate"
+msgstr "変調"
+
+msgid "Albedo Mix"
+msgstr "アルベドミックス"
+
+msgid "Deterministic"
+msgstr "決定的"
 
 msgid "Flags"
 msgstr "フラグ"
@@ -2586,6 +4291,30 @@ msgstr "テキスト"
 msgid "Uppercase"
 msgstr "大文字"
 
+msgid "BiDi"
+msgstr "BiDi"
+
+msgid "Intensity Lumens"
+msgstr "強度(ルーメン)"
+
+msgid "Intensity Lux"
+msgstr "強度(ルクス)"
+
+msgid "Temperature"
+msgstr "色温度"
+
+msgid "Indirect Energy"
+msgstr "間接エネルギー"
+
+msgid "Volumetric Fog Energy"
+msgstr "ボリュームフォグのエネルギー"
+
+msgid "Negative"
+msgstr "ネガティブ"
+
+msgid "Specular"
+msgstr "スペキュラ"
+
 msgid "Bake Mode"
 msgstr "ベイクモード"
 
@@ -2594,6 +4323,15 @@ msgstr "不透明度"
 
 msgid "Blur"
 msgstr "ブラー"
+
+msgid "Split 1"
+msgstr "分割1"
+
+msgid "Split 2"
+msgstr "分割2"
+
+msgid "Split 3"
+msgstr "分割3"
 
 msgid "Shadow Mode"
 msgstr "シャドウモード"
@@ -2607,8 +4345,62 @@ msgstr "品質"
 msgid "Use Denoiser"
 msgstr "ノイズ除去を使用"
 
+msgid "Texel Scale"
+msgstr "テクセルのスケール"
+
+msgid "Max Texture Size"
+msgstr "最大テクスチャサイズ"
+
+msgid "Surface Material Override"
+msgstr "サーフェスマテリアルのオーバーライド"
+
 msgid "Visibility"
 msgstr "可視性"
+
+msgid "Bake"
+msgstr "ベイクする"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Linear Damping"
+msgstr "線形減衰"
+
+msgid "Angular Damping"
+msgstr "角減衰"
+
+msgid "Friction"
+msgstr "摩擦"
+
+msgid "Bounce"
+msgstr "反発"
+
+msgid "Linear Damp Mode"
+msgstr "線形減衰モード"
+
+msgid "Angular Damp Mode"
+msgstr "角減衰モード"
+
+msgid "Axis Lock"
+msgstr "軸ロック"
+
+msgid "Linear X"
+msgstr "リニアX"
+
+msgid "Linear Y"
+msgstr "リニアY"
+
+msgid "Linear Z"
+msgstr "リニアZ"
 
 msgid "Angular X"
 msgstr "角度X"
@@ -2618,18 +4410,6 @@ msgstr "角度Y"
 
 msgid "Angular Z"
 msgstr "角度Z"
-
-msgid "Friction"
-msgstr "摩擦"
-
-msgid "Enable Shadows"
-msgstr "シャドウを有効化"
-
-msgid "Bones"
-msgstr "ボーン"
-
-msgid "Target"
-msgstr "ターゲット"
 
 msgid "Simulation Precision"
 msgstr "シミュレーション精度"
@@ -2649,26 +4429,92 @@ msgstr "ホイール"
 msgid "Travel"
 msgstr "トラベル"
 
+msgid "Enable Shadows"
+msgstr "シャドウを有効化"
+
+msgid "Profile"
+msgstr "プロファイル"
+
+msgid "Show Rest Only"
+msgstr "レストのみを表示"
+
+msgid "Target"
+msgstr "ターゲット"
+
 msgid "Track Physics Step"
 msgstr "物理ステップの追跡"
 
 msgid "Sorting"
 msgstr "ソート"
 
-msgid "Use AABB Center"
-msgstr "AABBセンターを使用"
+msgid "Custom AABB"
+msgstr "カスタムAABB"
+
+msgid "Global Illumination"
+msgstr "グローバルイルミネーション"
 
 msgid "Pose"
 msgstr "ポーズ"
 
+msgid "Show When Tracked"
+msgstr "トラッキング時に表示"
+
+msgid "World Scale"
+msgstr "ワールドスケール"
+
 msgid "Sync"
 msgstr "同期"
+
+msgid "Mix Mode"
+msgstr "ミックスモード"
+
+msgid "Fadein Time"
+msgstr "フェードイン時間"
+
+msgid "Fadein Curve"
+msgstr "フェードインカーブ"
+
+msgid "Fadeout Time"
+msgstr "フェードアウト時間"
+
+msgid "Fadeout Curve"
+msgstr "フェードアウトカーブ"
+
+msgid "Xfade Time"
+msgstr "クロスフェード時間"
+
+msgid "Xfade Curve"
+msgstr "クロスフェードカーブ"
 
 msgid "Request"
 msgstr "リクエスト"
 
+msgid "Current State"
+msgstr "現在のステート"
+
+msgid "Reset on Save"
+msgstr "保存時リセット"
+
 msgid "Root Node"
 msgstr "ルートノード"
+
+msgid "Root Motion"
+msgstr "ルートモーション"
+
+msgid "Track"
+msgstr "トラック"
+
+msgid "Local"
+msgstr "ローカル"
+
+msgid "Callback Mode"
+msgstr "コールバックモード"
+
+msgid "Method"
+msgstr "メソッド"
+
+msgid "Discrete"
+msgstr "離散"
 
 msgid "Reset"
 msgstr "リセット"
@@ -2676,11 +4522,50 @@ msgstr "リセット"
 msgid "Switch"
 msgstr "スイッチ"
 
+msgid "Switch Mode"
+msgstr "スイッチモード"
+
+msgid "Advance"
+msgstr "進行"
+
 msgid "Condition"
 msgstr "条件"
 
 msgid "Expression"
 msgstr "式"
+
+msgid "Current Animation"
+msgstr "現在のアニメーション"
+
+msgid "Playback Options"
+msgstr "再生オプション"
+
+msgid "Auto Capture"
+msgstr "自動キャプチャー"
+
+msgid "Auto Capture Duration"
+msgstr "自動キャプチャー時間"
+
+msgid "Auto Capture Transition Type"
+msgstr "自動キャプチャー遷移タイプ"
+
+msgid "Auto Capture Ease Type"
+msgstr "自動キャプチャーイージングタイプ"
+
+msgid "Default Blend Time"
+msgstr "デフォルトブレンド時間"
+
+msgid "Movie Quit on Finish"
+msgstr "終了時にムービーを終了"
+
+msgid "Tree Root"
+msgstr "ツリールート"
+
+msgid "Anim Player"
+msgstr "アニメーションプレーヤー"
+
+msgid "Animation Path"
+msgstr "アニメーションパス"
 
 msgid "Button Pressed"
 msgstr "ボタン押下"
@@ -2691,20 +4576,62 @@ msgstr "ボタングループ"
 msgid "Indentation"
 msgstr "インデント"
 
+msgid "Theme Overrides"
+msgstr "テーマのオーバーライド"
+
 msgid "Localization"
 msgstr "ローカライズ"
+
+msgid "Tooltip"
+msgstr "ツールチップ"
 
 msgid "Focus"
 msgstr "フォーカス"
 
-msgid "Next"
-msgstr "次"
-
 msgid "Previous"
 msgstr "前"
 
+msgid "Mouse"
+msgstr "マウス"
+
 msgid "Default Cursor Shape"
 msgstr "デフォルトのカーソル形状"
+
+msgid "File Mode"
+msgstr "ファイルモード"
+
+msgid "Access"
+msgstr "アクセス"
+
+msgid "Filters"
+msgstr "フィルター"
+
+msgid "Options"
+msgstr "オプション"
+
+msgid "Title Position"
+msgstr "タイトルの位置"
+
+msgid "Zoom Min"
+msgstr "最小ズーム"
+
+msgid "Zoom Max"
+msgstr "最大ズーム"
+
+msgid "Zoom Step"
+msgstr "ズームステップ"
+
+msgid "Toolbar Menu"
+msgstr "ツールバーメニュー"
+
+msgid "Show Menu"
+msgstr "メニューを表示する"
+
+msgid "Draggable"
+msgstr "ドラッグ可能"
+
+msgid "Selected"
+msgstr "選択中"
 
 msgid "Select Mode"
 msgstr "選択モード"
@@ -2715,8 +4642,35 @@ msgstr "アイテム"
 msgid "Icon Mode"
 msgstr "アイコンモード"
 
+msgid "Icon Scale"
+msgstr "アイコンスケール"
+
+msgid "Label Settings"
+msgstr "ラベル設定"
+
 msgid "Max Length"
 msgstr "最大長"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Fill Mode"
+msgstr "充填方向"
+
+msgid "Show Percentage"
+msgstr "割合を表示"
+
+msgid "Indeterminate"
+msgstr "不定表示"
+
+msgid "Preview Indeterminate"
+msgstr "不定表示をプレビュー"
+
+msgid "Min Value"
+msgstr "最小値"
+
+msgid "Max Value"
+msgstr "最大値"
 
 msgid "Step"
 msgstr "ステップ"
@@ -2724,14 +4678,56 @@ msgstr "ステップ"
 msgid "Page"
 msgstr "ページ"
 
+msgid "Exp Edit"
+msgstr "指数的編集"
+
+msgid "Rounded"
+msgstr "四捨五入"
+
+msgid "Allow Greater"
+msgstr "最大値以上を許可"
+
+msgid "Allow Lesser"
+msgstr "最小値以下を許可"
+
+msgid "Outline"
+msgstr "アウトライン"
+
+msgid "Tab Size"
+msgstr "タブサイズ"
+
 msgid "Progress Bar Delay"
 msgstr "プログレスバーのディレイ"
+
+msgid "Scrollable"
+msgstr "スクロール可能"
+
+msgid "Update on Text Changed"
+msgstr "テキスト変更時の更新"
+
+msgid "Current Tab"
+msgstr "現在のタブ"
+
+msgid "Scrolling Enabled"
+msgstr "スクロール有効"
 
 msgid "Drag to Rearrange Enabled"
 msgstr "ドラッグして再配置可能"
 
+msgid "Tabs"
+msgstr "タブ"
+
+msgid "Tabs Position"
+msgstr "タブの位置"
+
 msgid "Syntax Highlighter"
 msgstr "シンタックスハイライト"
+
+msgid "Auto Tooltip"
+msgstr "自動ツールチップ"
+
+msgid "Audio Track"
+msgstr "オーディオトラック"
 
 msgid "Expand"
 msgstr "拡大"
@@ -2739,14 +4735,14 @@ msgstr "拡大"
 msgid "Z Index"
 msgstr "Zインデックス"
 
-msgid "Repeat"
-msgstr "繰り返し"
-
 msgid "Use Parent Material"
 msgstr "親のマテリアルを使用"
 
 msgid "NormalMap"
 msgstr "法線マップ"
+
+msgid "Download File"
+msgstr "ダウンロードファイル"
 
 msgid "Timeout"
 msgstr "タイムアウト"
@@ -2757,14 +4753,92 @@ msgstr "転送モード"
 msgid "Transfer Channel"
 msgstr "転送チャンネル"
 
+msgid "Node Name Num Separator"
+msgstr "ノード名と番号の区切り"
+
+msgid "Node Name Casing"
+msgstr "ノード名の命名規則"
+
+msgid "Group"
+msgstr "グループ"
+
+msgid "Shapes"
+msgstr "シェイプ"
+
+msgid "Shape Color"
+msgstr "シェイプ色"
+
+msgid "Viewport"
+msgstr "ビューポート"
+
+msgid "Anti Aliasing"
+msgstr "アンチエイリアス"
+
 msgid "Screen Space AA"
 msgstr "スクリーンスペースAA"
+
+msgid "Use TAA"
+msgstr "TAAを使用"
+
+msgid "Use Occlusion Culling"
+msgstr "オクルージョンカリングを使用"
+
+msgid "Mesh LOD"
+msgstr "メッシュLOD"
+
+msgid "LOD Change"
+msgstr "LOD変更"
+
+msgid "Snap"
+msgstr "スナップ"
+
+msgid "VRS"
+msgstr "VRS"
+
+msgid "Lights and Shadows"
+msgstr "ライトとシャドウ"
 
 msgid "SDF"
 msgstr "SDF"
 
+msgid "Menu"
+msgstr "メニュー"
+
 msgid "Wait Time"
 msgstr "待機時間"
+
+msgid "Autostart"
+msgstr "自動スタート"
+
+msgid "Viewport Path"
+msgstr "ビューポートパス"
+
+msgid "Disable 3D"
+msgstr "3Dを無効化"
+
+msgid "Use XR"
+msgstr "XRを使用"
+
+msgid "World 3D"
+msgstr "ワールド 3D"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
+
+msgid "Use Debanding"
+msgstr "デバンディングを使用"
+
+msgid "Use HDR 2D"
+msgstr "HDR 2D を使用"
+
+msgid "Scaling 3D"
+msgstr "3Dスケーリング"
+
+msgid "Canvas Items"
+msgstr "CanvasItem"
 
 msgid "Audio Listener"
 msgstr "オーディオリスナー"
@@ -2781,14 +4855,143 @@ msgstr "入力無効化"
 msgid "Current Screen"
 msgstr "現在の画面"
 
+msgid "Min Size"
+msgstr "最小サイズ"
+
+msgid "Max Size"
+msgstr "最大サイズ"
+
+msgid "Layer Names"
+msgstr "レイヤー名"
+
+msgid "2D Render"
+msgstr "2Dレンダリング"
+
+msgid "3D Render"
+msgstr "3Dレンダリング"
+
 msgid "2D Physics"
 msgstr "2D物理"
+
+msgid "2D Navigation"
+msgstr "2Dナビゲーション"
 
 msgid "3D Physics"
 msgstr "3D物理"
 
+msgid "3D Navigation"
+msgstr "3Dナビゲーション"
+
+msgid "Parsed Geometry Type"
+msgstr "解析されたジオメトリ型"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Use Gravity"
+msgstr "重力を使用"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "カスタムデータ"
+
+msgid "Tile Size"
+msgstr "タイルサイズ"
+
+msgid "Physics Layers"
+msgstr "物理レイヤー"
+
+msgid "Scene"
+msgstr "シーン"
+
+msgid "Polygons Count"
+msgstr "ポリゴン数"
+
+msgid "Transpose"
+msgstr "行列(縦横)入れ替え"
+
+msgid "Texture Origin"
+msgstr "テクスチャの原点"
+
+msgid "Probability"
+msgstr "確率"
+
+msgid "Distance"
+msgstr "距離"
+
+msgid "Item"
+msgstr "アイテム"
+
+msgid "Preview"
+msgstr "プレビュー"
+
+msgid "Add UV2"
+msgstr "UV2を追加"
+
+msgid "Sky"
+msgstr "空"
+
+msgid "Top Color"
+msgstr "上空の色"
+
+msgid "Horizon Color"
+msgstr "地平線の色"
+
+msgid "Energy Multiplier"
+msgstr "エネルギーの乗数"
+
+msgid "Cover"
+msgstr "カバー"
+
+msgid "Cover Modulate"
+msgstr "カバー変調"
+
+msgid "Ground"
+msgstr "地面"
+
+msgid "Bottom Color"
+msgstr "地面側の色"
+
+msgid "Sun"
+msgstr "太陽"
+
+msgid "Panorama"
+msgstr "パノラマ"
+
+msgid "Rayleigh"
+msgstr "レイリー散乱"
+
+msgid "Coefficient"
+msgstr "係数"
+
+msgid "Mie"
+msgstr "ミー散乱"
+
+msgid "Eccentricity"
+msgstr "離心率"
+
+msgid "Turbidity"
+msgstr "大気混濁度"
+
+msgid "Sun Disk Scale"
+msgstr "太陽ディスクのスケール"
+
+msgid "Ground Color"
+msgstr "地面の色"
+
+msgid "Night Sky"
+msgstr "夜空"
+
 msgid "Frames"
 msgstr "フレーム"
+
+msgid "Pause"
+msgstr "一時停止"
 
 msgid "Atlas"
 msgstr "アトラス"
@@ -2796,14 +4999,65 @@ msgstr "アトラス"
 msgid "Format"
 msgstr "フォーマット"
 
+msgid "Exposure"
+msgstr "露出"
+
+msgid "Sensitivity"
+msgstr "感度"
+
+msgid "Multiplier"
+msgstr "乗数"
+
+msgid "Auto Exposure"
+msgstr "自動露出"
+
+msgid "DOF Blur"
+msgstr "被写界深度ブラー"
+
+msgid "Far Enabled"
+msgstr "遠方ブラー有効"
+
+msgid "Far Distance"
+msgstr "遠方ブラー開始距離"
+
+msgid "Far Transition"
+msgstr "遠方ブラー遷移"
+
+msgid "Near Enabled"
+msgstr "近接ブラー有効"
+
+msgid "Near Distance"
+msgstr "近接ブラー開始距離"
+
+msgid "Near Transition"
+msgstr "近接ブラー遷移"
+
+msgid "Min Sensitivity"
+msgstr "最小感度"
+
+msgid "Max Sensitivity"
+msgstr "最大感度"
+
+msgid "Frustum"
+msgstr "視錐台"
+
+msgid "Focus Distance"
+msgstr "焦点距離"
+
+msgid "Focal Length"
+msgstr "レンズ焦点距離"
+
+msgid "Aperture"
+msgstr "F値"
+
 msgid "Light Mode"
 msgstr "ライトモード"
 
 msgid "Background"
 msgstr "背景"
 
-msgid "Sky"
-msgstr "空"
+msgid "Ambient Light"
+msgstr "環境光"
 
 msgid "Source"
 msgstr "ソース"
@@ -2811,17 +5065,41 @@ msgstr "ソース"
 msgid "Tonemap"
 msgstr "トーンマップ"
 
+msgid "SSR"
+msgstr "SSR"
+
 msgid "SSAO"
 msgstr "SSAO"
 
 msgid "SSIL"
 msgstr "SSIL"
 
+msgid "SDFGI"
+msgstr "SDFGI"
+
 msgid "Glow"
 msgstr "Glow(にじみ/発光)"
 
+msgid "1"
+msgstr "1"
+
 msgid "2"
 msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
 
 msgid "Mix"
 msgstr "ミックス"
@@ -2829,8 +5107,29 @@ msgstr "ミックス"
 msgid "Bloom"
 msgstr "ブルーム"
 
+msgid "HDR Threshold"
+msgstr "HDRしきい値"
+
+msgid "HDR Scale"
+msgstr "HDRスケール"
+
+msgid "HDR Luminance Cap"
+msgstr "HDR輝度上限"
+
 msgid "Fog"
 msgstr "フォグ"
+
+msgid "Light Color"
+msgstr "ライトの色"
+
+msgid "Light Energy"
+msgstr "ライトのエネルギー"
+
+msgid "Volumetric Fog"
+msgstr "ボリュームフォグ"
+
+msgid "Anisotropy"
+msgstr "異方性"
 
 msgid "Color Correction"
 msgstr "色補正"
@@ -2847,56 +5146,227 @@ msgstr "オフセット"
 msgid "Use HDR"
 msgstr "HDRを使用"
 
+msgid "Next Pass"
+msgstr "次のレンダーパス"
+
 msgid "Shader"
 msgstr "シェーダー"
+
+msgid "Depth Draw Mode"
+msgstr "深度描画モード"
+
+msgid "Shading"
+msgstr "シェーディング"
+
+msgid "Shading Mode"
+msgstr "シェーディングモード"
+
+msgid "Diffuse Mode"
+msgstr "拡散モード"
+
+msgid "Specular Mode"
+msgstr "スペキュラモード"
+
+msgid "Disable Ambient Light"
+msgstr "環境光無効化"
+
+msgid "Disable Fog"
+msgstr "フォグ無効"
+
+msgid "Disable Specular Occlusion"
+msgstr "スペキュラオクルージョン無効化"
+
+msgid "Vertex Color"
+msgstr "頂点カラー"
+
+msgid "Use as Albedo"
+msgstr "アルベドとして使用"
+
+msgid "Is sRGB"
+msgstr "sRGBとして扱う"
+
+msgid "Texture Force sRGB"
+msgstr "テクスチャをsRGBに強制"
+
+msgid "Texture MSDF"
+msgstr "テクスチャMSDF"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "メタリック"
+
+msgid "Texture Channel"
+msgstr "テクスチャチャンネル"
 
 msgid "Operator"
 msgstr "演算子"
 
+msgid "Bent Normal Map"
+msgstr "ベント法線マップ"
+
+msgid "Rim"
+msgstr "リム効果"
+
+msgid "Clearcoat"
+msgstr "クリアコート"
+
 msgid "Ambient Occlusion"
 msgstr "アンビエントオクルージョン"
 
-msgid "Subsurface Scattering"
-msgstr "サブサーフェススキャタリング"
+msgid "Min Layers"
+msgstr "最小レイヤー数"
+
+msgid "Max Layers"
+msgstr "最大レイヤー数"
+
+msgid "Flip Tangent"
+msgstr "接線反転"
+
+msgid "Flip Texture"
+msgstr "テクスチャ反転"
+
+msgid "Subsurf Scatter"
+msgstr "表面下散乱"
+
+msgid "Skin Mode"
+msgstr "肌モード"
+
+msgid "Transmittance"
+msgstr "透過率"
+
+msgid "Refraction"
+msgstr "屈折"
+
+msgid "UV Layer"
+msgstr "UVレイヤー"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "UV2"
+msgstr "UV2"
 
 msgid "Shadows"
 msgstr "シャドウ"
 
+msgid "H Frames"
+msgstr "横フレーム数"
+
+msgid "V Frames"
+msgstr "縦フレーム数"
+
+msgid "Grow"
+msgstr "拡大"
+
 msgid "MSDF"
 msgstr "MSDF"
 
-msgid "Item"
-msgstr "アイテム"
+msgid "Blend Shape Mode"
+msgstr "ブレンドシェイプモード"
 
-msgid "Preview"
-msgstr "プレビュー"
+msgid "Image Size"
+msgstr "画像サイズ"
 
 msgid "Transform Format"
 msgstr "変換形式"
 
-msgid "Parsed Geometry Type"
-msgstr "解析されたジオメトリ型"
+msgid "Max Error"
+msgstr "最大エラー"
 
-msgid "B"
-msgstr "B"
+msgid "Baking AABB"
+msgstr "AABBベイク"
+
+msgid "Baking AABB Offset"
+msgstr "AABBベイクオフセット"
+
+msgid "Spawn"
+msgstr "生成"
+
+msgid "Emission Shape Offset"
+msgstr "放出シェイプのオフセット"
+
+msgid "Emission Shape Scale"
+msgstr "放出シェイプのスケール"
+
+msgid "Emission Sphere Radius"
+msgstr "放出球形の半径"
+
+msgid "Emission Point Texture"
+msgstr "放出点のテクスチャ"
+
+msgid "Emission Normal Texture"
+msgstr "放出の法線マップ"
+
+msgid "Emission Color Texture"
+msgstr "放出カラーテクスチャ"
+
+msgid "Emission Point Count"
+msgstr "放出点数"
+
+msgid "Emission Ring Axis"
+msgstr "放出リング軸"
+
+msgid "Emission Ring Height"
+msgstr "放出リングの高さ"
+
+msgid "Emission Ring Radius"
+msgstr "放出リングの半径"
+
+msgid "Emission Ring Inner Radius"
+msgstr "放出リングの内半径"
+
+msgid "Emission Ring Cone Angle"
+msgstr "放出リング円錐角度"
+
+msgid "Inherit Velocity Ratio"
+msgstr "速度比の継承"
+
+msgid "Velocity Pivot"
+msgstr "速度ピボット"
+
+msgid "Animated Velocity"
+msgstr "アニメーション速度"
+
+msgid "Velocity Limit"
+msgstr "速度制限"
+
+msgid "Directional Velocity"
+msgstr "方向性速度"
+
+msgid "Radial Velocity"
+msgstr "放射状速度"
+
+msgid "Velocity Limit Curve"
+msgstr "速度制限カーブ"
+
+msgid "Turbulence"
+msgstr "乱流"
+
+msgid "Noise Strength"
+msgstr "ノイズ強度"
+
+msgid "Noise Scale"
+msgstr "ノイズスケール"
+
+msgid "Noise Speed"
+msgstr "ノイズ速度"
+
+msgid "Noise Speed Random"
+msgstr "ランダムノイズ速度"
+
+msgid "Use Scale"
+msgstr "スケールを使用"
+
+msgid "Group Size"
+msgstr "グループサイズ"
+
+msgid "Bone Size"
+msgstr "ボーンサイズ"
 
 msgid "Process Mode"
 msgstr "処理モード"
-
-msgid "Ground"
-msgstr "地面"
-
-msgid "Sun"
-msgstr "太陽"
-
-msgid "Panorama"
-msgstr "パノラマ"
-
-msgid "Rayleigh"
-msgstr "レイリー"
-
-msgid "Ground Color"
-msgstr "地面の色"
 
 msgid "Blend"
 msgstr "ブレンド"
@@ -2913,20 +5383,17 @@ msgstr "右下"
 msgid "Bottom Left"
 msgstr "左下"
 
-msgid "Terrains"
-msgstr "地形"
+msgid "Number Color"
+msgstr "番号の色"
 
-msgid "Custom Data"
-msgstr "カスタムデータ"
+msgid "Symbol Color"
+msgstr "シンボルの色"
 
-msgid "Transpose"
-msgstr "行列(縦横)入れ替え"
+msgid "Function Color"
+msgstr "関数の色"
 
-msgid "Texture Origin"
-msgstr "テクスチャの原点"
-
-msgid "Probability"
-msgstr "確率"
+msgid "Member Variable Color"
+msgstr "メンバー変数の色"
 
 msgid "File"
 msgstr "ファイル"
@@ -2937,17 +5404,32 @@ msgstr "コンスタント"
 msgid "Function"
 msgstr "関数"
 
+msgid "Use All Surfaces"
+msgstr "すべてのサーフェスを使用する"
+
+msgid "Surface Index"
+msgstr "サーフェスインデックス"
+
 msgid "Degrees Mode"
 msgstr "角度モード"
 
 msgid "Font Pressed Color"
 msgstr "フォントの押下色"
 
+msgid "Font Hover Color"
+msgstr "フォントのホバー色"
+
 msgid "Font Hover Pressed Color"
 msgstr "フォントのホバー押下色"
 
+msgid "Font Outline Color"
+msgstr "フォントのアウトラインの色"
+
 msgid "Icon Pressed Color"
 msgstr "アイコンの押下色"
+
+msgid "Icon Hover Color"
+msgstr "アイコンのホバー色"
 
 msgid "Icon Hover Pressed Color"
 msgstr "アイコンのホバー押下色"
@@ -2961,8 +5443,86 @@ msgstr "シャドウのオフセットX"
 msgid "Shadow Offset Y"
 msgstr "シャドウのオフセットY"
 
+msgid "Caret Color"
+msgstr "キャレットの色"
+
+msgid "Selection Color"
+msgstr "選択色"
+
 msgid "Clear"
 msgstr "クリア"
+
+msgid "Tab"
+msgstr "タブ"
+
+msgid "Current Line Color"
+msgstr "現在の行の色"
+
+msgid "Caret Background Color"
+msgstr "キャレットの背景色"
+
+msgid "Word Highlighted Color"
+msgstr "ハイライトされた単語の色"
+
+msgid "Search Result Color"
+msgstr "検索結果の色"
+
+msgid "Search Result Border Color"
+msgstr "検索結果のボーダーの色"
+
+msgid "Completion Background Color"
+msgstr "補完の背景色"
+
+msgid "Completion Selected Color"
+msgstr "補完の選択中の色"
+
+msgid "Completion Existing Color"
+msgstr "既に補完されている箇所の色"
+
+msgid "Completion Scroll Color"
+msgstr "補完ウインドウのスクロールの色"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "補完ウインドウのスクロールのホバー色"
+
+msgid "Bookmark Color"
+msgstr "ブックマークの色"
+
+msgid "Breakpoint Color"
+msgstr "ブレークポイントの色"
+
+msgid "Executing Line Color"
+msgstr "実行中の行の色"
+
+msgid "Code Folding Color"
+msgstr "折り畳まれたコードの色"
+
+msgid "Folded Code Region Color"
+msgstr "折り畳まれたコード領域の色"
+
+msgid "Brace Mismatch Color"
+msgstr "波括弧ミスマッチの色"
+
+msgid "Line Number Color"
+msgstr "行番号の色"
+
+msgid "Line Length Guideline Color"
+msgstr "行の長さのガイド線の色"
+
+msgid "Title Font"
+msgstr "タイトルのフォント"
+
+msgid "Title Font Size"
+msgstr "タイトルのフォントサイズ"
+
+msgid "Title Outline Modulate"
+msgstr "タイトルのアウトライン変調"
+
+msgid "Title Outline Size"
+msgstr "タイトルのアウトラインサイズ"
+
+msgid "Title Height"
+msgstr "タイトルの高さ"
 
 msgid "Close"
 msgstr "閉じる"
@@ -2970,8 +5530,26 @@ msgstr "閉じる"
 msgid "Close Pressed"
 msgstr "閉じる押下"
 
+msgid "Load"
+msgstr "読み込む"
+
+msgid "Save"
+msgstr "保存"
+
 msgid "Reload"
 msgstr "再読み込み"
+
+msgid "Favorite"
+msgstr "お気に入り"
+
+msgid "Toggle Hidden"
+msgstr "非表示の切り替え"
+
+msgid "Folder"
+msgstr "フォルダー"
+
+msgid "Thumbnail Mode"
+msgstr "サムネイルモード"
 
 msgid "Separator"
 msgstr "セパレーター"
@@ -2982,17 +5560,80 @@ msgstr "サブメニュー"
 msgid "Font Separator"
 msgstr "フォントセパレータ"
 
+msgid "Titlebar"
+msgstr "タイトルバー"
+
 msgid "Cursor"
 msgstr "カーソル"
 
 msgid "Screen Picker"
 msgstr "スクリーンピッカー"
 
-msgid "Node"
-msgstr "ノード"
+msgid "Autohide"
+msgstr "自動非表示"
+
+msgid "Menu Panel"
+msgstr "メニューパネル"
+
+msgid "Title Panel"
+msgstr "タイトルパネル"
+
+msgid "Default Theme Scale"
+msgstr "デフォルトのテーマスケール"
 
 msgid "Custom"
 msgstr "カスタム"
+
+msgid "Custom Font"
+msgstr "カスタムフォント"
+
+msgid "Enable Input"
+msgstr "音声入力を有効にする"
+
+msgid "Channel Disable Threshold dB"
+msgstr "チャンネルを無効にする音量 (dB)のしきい値"
+
+msgid "Channel Disable Time"
+msgstr "チャンネルを無効にするまでの時間"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "ビデオ再生のオーディオ遅延 (ミリ秒)"
+
+msgid "Bus Count"
+msgstr "バスの数"
+
+msgid "Output Device"
+msgstr "出力デバイス"
+
+msgid "Input Device"
+msgstr "入力デバイス"
+
+msgid "Playback Speed Scale"
+msgstr "再生スピードスケール"
+
+msgid "Playback Mode"
+msgstr "再生モード"
+
+msgid "Random Volume Offset dB"
+msgstr "ランダム音量オフセット (dB)"
+
+msgid "Buffer Length"
+msgstr "バッファサイズ"
+
+msgid "Dry"
+msgstr "ドライ"
+
+msgid "Wet"
+msgstr "ウェット"
+
+msgid "Delay (ms)"
+msgstr "ディレイ(ミリ秒)"
+
+msgid "Rate Hz"
+msgstr "レート (Hz)"
+
+msgid "Level dB"
+msgstr "レベル (dB)"
 
 msgid "Pan"
 msgstr "パン"
@@ -3045,11 +5686,47 @@ msgstr "タイムプルアウト(ミリ秒)"
 msgid "Surround"
 msgstr "サラウンド"
 
-msgid "Channel Disable Threshold dB"
-msgstr "チャンネルを無効にする音量 (dB)のしきい値"
+msgid "Feed"
+msgstr "フィード"
+
+msgid "Is Active"
+msgstr "アクティブ"
+
+msgid "Movie Writer"
+msgstr "ムービーライター"
+
+msgid "Speaker Mode"
+msgstr "スピーカーモード"
+
+msgid "Movie File"
+msgstr "ムービーファイル"
+
+msgid "Disable V-Sync"
+msgstr "垂直同期を無効"
+
+msgid "Total Angular Damp"
+msgstr "総角減衰"
+
+msgid "Total Linear Damp"
+msgstr "総直線減衰"
+
+msgid "Total Gravity"
+msgstr "総重力"
+
+msgid "Center of Mass Local"
+msgstr "局所重心"
+
+msgid "Default Gravity"
+msgstr "デフォルト重力"
+
+msgid "Default Gravity Vector"
+msgstr "デフォルト重力ベクトル"
 
 msgid "Physics Engine"
 msgstr "物理エンジン"
+
+msgid "Max Collisions"
+msgstr "最大コリジョン数"
 
 msgid "Vertex"
 msgstr "頂点"
@@ -3057,20 +5734,14 @@ msgstr "頂点"
 msgid "Fragment"
 msgstr "フラグメント"
 
-msgid "Cull"
-msgstr "カリング"
-
-msgid "Unshaded"
-msgstr "シェーディングなしで"
-
-msgid "Ensure Correct Normals"
-msgstr "正しい法線を確保"
-
-msgid "Vertex Lighting"
-msgstr "頂点ライティング"
-
 msgid "VRAM Compression"
 msgstr "VRAM圧縮"
+
+msgid "Import S3TC BPTC"
+msgstr "S3TC BPTC をインポート"
+
+msgid "Import ETC2 ASTC"
+msgstr "ETC2 ASTC をインポート"
 
 msgid "Lossless Compression"
 msgstr "ロスレス圧縮"
@@ -3078,11 +5749,38 @@ msgstr "ロスレス圧縮"
 msgid "Force PNG"
 msgstr "PNGを強制する"
 
+msgid "WebP Compression"
+msgstr "WebP圧縮"
+
+msgid "Compression Method"
+msgstr "圧縮方式"
+
+msgid "Lossless Compression Factor"
+msgstr "ロスレス圧縮係数"
+
+msgid "Atlas 16 Bits"
+msgstr "アトラス16ビット"
+
 msgid "Shadow Atlas"
 msgstr "シャドウアトラス"
 
+msgid "Shader Compiler"
+msgstr "シェーダーコンパイラ"
+
+msgid "Shader Cache"
+msgstr "シェーダーキャッシュ"
+
+msgid "Use Zstd Compression"
+msgstr "Zstd圧縮を行う"
+
+msgid "Strip Debug"
+msgstr "デバッグ情報の除去"
+
 msgid "Reflections"
 msgstr "反射"
+
+msgid "Specular Occlusion"
+msgstr "スペキュラオクルージョン"
 
 msgid "GI"
 msgstr "GI"
@@ -3096,11 +5794,116 @@ msgstr "頂点シェーディングを強制"
 msgid "Depth Prepass"
 msgstr "深度プレパス"
 
+msgid "Depth of Field"
+msgstr "被写界深度"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "被写界深度のぼかし形状"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "被写界深度のぼかし品質"
+
+msgid "Depth of Field Use Jitter"
+msgstr "被写界深度のジッター"
+
+msgid "Half Size"
+msgstr "半解像度で処理"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
 msgid "Decals"
-msgstr "アップリケ"
+msgstr "デカール"
+
+msgid "Screen Space Reflection"
+msgstr "スクリーンスペース反射"
+
+msgid "Subsurface Scattering"
+msgstr "サブサーフェススキャタリング"
+
+msgid "Subsurface Scattering Quality"
+msgstr "サブサーフェススキャタリング品質"
+
+msgid "Subsurface Scattering Scale"
+msgstr "サブサーフェススキャタリングのスケール"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "サブサーフェススキャタリング深度スケール"
+
+msgid "Buffer Size"
+msgstr "バッファサイズ"
+
+msgid "Update Speed"
+msgstr "更新速度"
+
+msgid "Texel Size"
+msgstr "テクセルサイズ"
+
+msgid "Lightmap GI"
+msgstr "ライトマップGI"
+
+msgid "Frames to Update Lights"
+msgstr "ライト更新フレーム数"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "シェーダー"
 
-msgid "Property"
-msgstr "プロパティ"
+msgid "Shader Language"
+msgstr "シェーダー言語"
+
+msgid "Treat Warnings as Errors"
+msgstr "警告をエラーとして扱う"
+
+msgid "Cull"
+msgstr "カリング"
+
+msgid "Unshaded"
+msgstr "シェーディングなしで"
+
+msgid "Wireframe"
+msgstr "ワイヤーフレーム"
+
+msgid "Ensure Correct Normals"
+msgstr "正しい法線を確保"
+
+msgid "Vertex Lighting"
+msgstr "頂点ライティング"
+
+msgid "Fog Disabled"
+msgstr "フォグ無効"
+
+msgid "Light Only"
+msgstr "ライトのみ"
+
+msgid "Include Text Server Data"
+msgstr "テキストサーバーデータを含める"
+
+msgid "Has Tracking Data"
+msgstr "トラッキングデータあり"
+
+msgid "Blend Shapes"
+msgstr "ブレンドシェイプ"
+
+msgid "Is Primary"
+msgstr "プライマリ"
+
+msgid "Play Area Mode"
+msgstr "プレイエリアモード"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "アンカー検出を有効にする"
+
+msgid "World Origin"
+msgstr "ワールド原点"
+
+msgid "Camera Locked to Origin"
+msgstr "カメラを原点にロック"
+
+msgid "Primary Interface"
+msgstr "プライマリインターフェース"

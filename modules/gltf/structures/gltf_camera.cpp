@@ -30,6 +30,7 @@
 
 #include "gltf_camera.h"
 
+#include "gltf_object_model_property.h"
 #include "scene/3d/camera_3d.h"
 
 void GLTFCamera::_bind_methods() {
@@ -57,14 +58,29 @@ void GLTFCamera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
 }
 
+void GLTFCamera::set_fov_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop) {
+	// Expression to convert glTF yfov in radians to Godot fov in degrees.
+	Ref<Expression> gltf_to_godot_expr;
+	gltf_to_godot_expr.instantiate();
+	PackedStringArray gltf_to_godot_args = { "yfov_rad" };
+	gltf_to_godot_expr->parse("rad_to_deg(yfov_rad)", gltf_to_godot_args);
+	r_obj_model_prop->set_gltf_to_godot_expression(gltf_to_godot_expr);
+	// Expression to convert Godot fov in degrees to glTF yfov in radians.
+	Ref<Expression> godot_to_gltf_expr;
+	godot_to_gltf_expr.instantiate();
+	PackedStringArray godot_to_gltf_args = { "fov_deg" };
+	godot_to_gltf_expr->parse("deg_to_rad(fov_deg)", godot_to_gltf_args);
+	r_obj_model_prop->set_godot_to_gltf_expression(godot_to_gltf_expr);
+}
+
 Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {
 	Ref<GLTFCamera> c;
 	c.instantiate();
 	ERR_FAIL_NULL_V_MSG(p_camera, c, "Tried to create a GLTFCamera from a Camera3D node, but the given node was null.");
 	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	// glTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
 	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	// glTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
 	c->set_size_mag(p_camera->get_size() * 0.5f);
 	c->set_depth_far(p_camera->get_far());
 	c->set_depth_near(p_camera->get_near());
@@ -74,17 +90,17 @@ Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {
 Camera3D *GLTFCamera::to_node() const {
 	Camera3D *camera = memnew(Camera3D);
 	camera->set_projection(perspective ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	// glTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
 	camera->set_fov(Math::rad_to_deg(fov));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	// glTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
 	camera->set_size(size_mag * 2.0f);
 	camera->set_near(depth_near);
 	camera->set_far(depth_far);
 	return camera;
 }
 
-Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
-	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse GLTF camera, missing required field 'type'.");
+Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary &p_dictionary) {
+	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse glTF camera, missing required field 'type'.");
 	Ref<GLTFCamera> camera;
 	camera.instantiate();
 	const String &type = p_dictionary["type"];
@@ -107,7 +123,7 @@ Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary p_dictionary) {
 			camera->set_depth_near(ortho["znear"]);
 		}
 	} else {
-		ERR_PRINT("Error parsing GLTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
+		ERR_PRINT("Error parsing glTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
 	}
 	return camera;
 }

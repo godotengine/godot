@@ -1,25 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProjectGuid>{8FBEC238-D944-4074-8548-B3B524305905}</ProjectGuid>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
     <OutputPath>bin/$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>10</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <Description>Godot C# Editor API.</Description>
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharpEditor</PackageId>
-    <Version>4.2.0</Version>
+    <Version>4.6.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharpEditor</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright (c) Godot Engine contributors</Copyright>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -35,7 +36,7 @@
     </ProjectReference>
   </ItemGroup>
   <!-- Compat Sources -->
-  <ItemGroup>
+  <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
   </ItemGroup>
   <!--
@@ -44,5 +45,5 @@
   We can't use wildcards as there may be undesired old files still hanging around.
   Fortunately code completion, go to definition and such still work.
   -->
-  <Import Project="Generated\GeneratedIncludes.props" />
+  <Import Condition=" '$(GodotSkipGenerated)' == '' " Project="Generated\GeneratedIncludes.props" />
 </Project>

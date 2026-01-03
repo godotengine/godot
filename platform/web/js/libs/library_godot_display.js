@@ -30,7 +30,7 @@
 
 const GodotDisplayVK = {
 
-	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners'],
+	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInput'],
 	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); });',
 	$GodotDisplayVK: {
 		textinput: null,
@@ -61,6 +61,17 @@ const GodotDisplayVK = {
 					input_cb(c_str, elem.selectionEnd);
 					GodotRuntime.free(c_str);
 				}, false);
+				if (what === 'input') {
+					// Handling the "Enter" key.
+					const onKey = (pEvent, pEventName) => {
+						if (pEvent.key !== 'Enter') {
+							return;
+						}
+						GodotInput.onKeyEvent(pEventName === 'keydown', pEvent);
+					};
+					GodotEventListeners.add(elem, 'keydown', (pEvent) => onKey(pEvent, 'keydown'), false);
+					GodotEventListeners.add(elem, 'keyup', (pEvent) => onKey(pEvent, 'keyup'), false);
+				}
 				GodotEventListeners.add(elem, 'blur', function (evt) {
 					elem.style.display = 'none';
 					elem.readonly = true;
@@ -279,7 +290,7 @@ const GodotDisplayScreen = {
 			return 0;
 		},
 		_updateGL: function () {
-			const gl_context_handle = _emscripten_webgl_get_current_context(); // eslint-disable-line no-undef
+			const gl_context_handle = _emscripten_webgl_get_current_context();
 			const gl = GL.getContext(gl_context_handle);
 			if (gl) {
 				GL.resizeOffscreenFramebuffer(gl);
@@ -306,11 +317,11 @@ const GodotDisplayScreen = {
 			const scale = GodotDisplayScreen.getPixelRatio();
 			if (isFullscreen || wantsFullWindow) {
 				// We need to match screen size.
-				width = window.innerWidth * scale;
-				height = window.innerHeight * scale;
+				width = Math.floor(window.innerWidth * scale);
+				height = Math.floor(window.innerHeight * scale);
 			}
-			const csw = `${width / scale}px`;
-			const csh = `${height / scale}px`;
+			const csw = `${Math.floor(width / scale)}px`;
+			const csh = `${Math.floor(height / scale)}px`;
 			if (canvas.style.width !== csw || canvas.style.height !== csh || canvas.width !== width || canvas.height !== height) {
 				// Size doesn't match.
 				// Resize canvas, set correct CSS pixel size, update GL.
@@ -392,19 +403,19 @@ const GodotDisplay = {
 		const func = GodotRuntime.get_func(p_callback);
 
 		function listener_end(evt) {
-			evt.currentTarget.cb(1 /*TTS_UTTERANCE_ENDED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(1 /* TTS_UTTERANCE_ENDED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_start(evt) {
-			evt.currentTarget.cb(0 /*TTS_UTTERANCE_STARTED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(0 /* TTS_UTTERANCE_STARTED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_error(evt) {
-			evt.currentTarget.cb(2 /*TTS_UTTERANCE_CANCELED*/, evt.currentTarget.id, 0);
+			evt.currentTarget.cb(2 /* TTS_UTTERANCE_CANCELED */, evt.currentTarget.id, 0);
 		}
 
 		function listener_bound(evt) {
-			evt.currentTarget.cb(3 /*TTS_UTTERANCE_BOUNDARY*/, evt.currentTarget.id, evt.charIndex);
+			evt.currentTarget.cb(3 /* TTS_UTTERANCE_BOUNDARY */, evt.currentTarget.id, evt.charIndex);
 		}
 
 		const utterance = new SpeechSynthesisUtterance(GodotRuntime.parseString(p_text));

@@ -1,7 +1,3 @@
-import os
-import os.path
-
-
 def is_desktop(platform):
     return platform in ["windows", "macos", "linuxbsd"]
 

@@ -4,21 +4,10 @@
 
 #VERSION_DEFINES
 
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
+#if defined(USE_MULTIVIEW)
 #extension GL_EXT_multiview : enable
-#endif
-
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
+#endif // USE_MULTIVIEW
 
 #ifdef USE_MULTIVIEW
 layout(location = 0) out vec3 uv_interp;
@@ -30,7 +19,7 @@ void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
 	uv_interp.xy = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
-#ifdef MULTIVIEW
+#ifdef USE_MULTIVIEW
 	uv_interp.z = ViewIndex;
 #endif
 }
@@ -40,22 +29,6 @@ void main() {
 #version 450
 
 #VERSION_DEFINES
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
-
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
 
 #ifdef USE_MULTIVIEW
 layout(location = 0) in vec3 uv_interp;

@@ -30,8 +30,6 @@
 
 #include "option_button.h"
 
-#include "core/os/keyboard.h"
-#include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
 
 static const int NONE_SELECTED = -1;
@@ -60,7 +58,7 @@ Size2 OptionButton::get_minimum_size() const {
 	}
 
 	if (has_theme_icon(SNAME("arrow"))) {
-		const Size2 padding = theme_cache.normal->get_minimum_size();
+		const Size2 padding = _get_largest_stylebox_size();
 		const Size2 arrow_size = theme_cache.arrow_icon->get_size();
 
 		Size2 content_size = minsize - padding;
@@ -75,6 +73,14 @@ Size2 OptionButton::get_minimum_size() const {
 
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_LIST);
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
@@ -108,7 +114,7 @@ void OptionButton::_notification(int p_what) {
 						clr = theme_cache.font_disabled_color;
 						break;
 					default:
-						if (has_focus()) {
+						if (has_focus(true)) {
 							clr = theme_cache.font_focus_color;
 						} else {
 							clr = theme_cache.font_color;
@@ -127,10 +133,7 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			popup->set_auto_translate(is_auto_translating());
-			[[fallthrough]];
-		}
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
@@ -157,23 +160,20 @@ void OptionButton::_notification(int p_what) {
 }
 
 bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
-		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
-			return false;
-		}
+	int index;
+	const String sname = p_name;
 
+	if (property_helper.is_property_valid(sname, &index)) {
 		bool valid;
-		popup->set(String(p_name).trim_prefix("popup/"), p_value, &valid);
+		popup->set(sname.trim_prefix("popup/"), p_value, &valid);
 
-		int idx = components[1].get_slice("_", 1).to_int();
-		if (idx == current) {
+		if (index == current) {
 			// Force refreshing currently displayed item.
 			current = NONE_SELECTED;
-			_select(idx, false);
+			_select(index, false);
 		}
 
+		const String property = sname.get_slicec('/', 2);
 		if (property == "text" || property == "icon") {
 			_queue_update_size_cache();
 		}
@@ -183,44 +183,8 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 
-bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> components = String(p_name).split("/", true, 2);
-	if (components.size() >= 2 && components[0] == "popup") {
-		String property = components[2];
-		if (property != "text" && property != "icon" && property != "id" && property != "disabled" && property != "separator") {
-			return false;
-		}
-
-		bool valid;
-		r_ret = popup->get(String(p_name).trim_prefix("popup/"), &valid);
-		return valid;
-	}
-	return false;
-}
-
-void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < popup->get_item_count(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
-
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("popup/item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
-		pi.usage &= ~(popup->get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::INT, vformat("popup/item_%d/id", i), PROPERTY_HINT_RANGE, "0,10,1,or_greater");
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/disabled", i));
-		pi.usage &= ~(!popup->is_item_disabled(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-
-		pi = PropertyInfo(Variant::BOOL, vformat("popup/item_%d/separator", i));
-		pi.usage &= ~(!popup->is_item_separator(i) ? PROPERTY_USAGE_STORAGE : 0);
-		p_list->push_back(pi);
-	}
-}
-
 void OptionButton::_focused(int p_which) {
-	emit_signal(SNAME("item_focused"), p_which);
+	emit_signal(SNAME("item_focused"), popup->get_item_index(p_which));
 }
 
 void OptionButton::_selected(int p_which) {
@@ -267,7 +231,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
-		set_icon(p_icon);
+		set_button_icon(p_icon);
 	}
 	_queue_update_size_cache();
 }
@@ -282,6 +246,21 @@ void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
 
 void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	popup->set_item_tooltip(p_idx, p_tooltip);
+}
+
+void OptionButton::set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	if (popup->get_item_auto_translate_mode(p_idx) == p_mode) {
+		return;
+	}
+	popup->set_item_auto_translate_mode(p_idx, p_mode);
+
+	if (current == p_idx) {
+		set_text(popup->get_item_text(p_idx));
+	}
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
@@ -316,6 +295,10 @@ String OptionButton::get_item_tooltip(int p_idx) const {
 	return popup->get_item_tooltip(p_idx);
 }
 
+Node::AutoTranslateMode OptionButton::get_item_auto_translate_mode(int p_idx) const {
+	return popup->get_item_auto_translate_mode(p_idx);
+}
+
 bool OptionButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
 }
@@ -331,12 +314,23 @@ void OptionButton::set_item_count(int p_count) {
 		return;
 	}
 
+	if (current > p_count - 1) {
+		_select(p_count - 1, false);
+	}
+
 	popup->set_item_count(p_count);
 
 	if (p_count > count_old) {
 		for (int i = count_old; i < p_count; i++) {
 			popup->set_item_as_radio_checkable(i, true);
 		}
+	}
+
+	if (!initialized) {
+		if (queued_current != current) {
+			current = queued_current;
+		}
+		initialized = true;
 	}
 
 	_refresh_size_cache();
@@ -400,6 +394,7 @@ void OptionButton::add_separator(const String &p_text) {
 void OptionButton::clear() {
 	popup->clear();
 	set_text("");
+	set_button_icon(Ref<Texture2D>());
 	current = NONE_SELECTED;
 	_refresh_size_cache();
 }
@@ -416,7 +411,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_icon(nullptr);
+		set_button_icon(Ref<Texture2D>());
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -426,16 +421,22 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = p_which;
 		set_text(popup->get_item_text(current));
-		set_icon(popup->get_item_icon(current));
+		set_button_icon(popup->get_item_icon(current));
 	}
 
 	if (is_inside_tree() && p_emit) {
-		emit_signal(SNAME("item_selected"), current);
+		emit_signal(SceneStringName(item_selected), current);
 	}
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
+	if (p_which < NONE_SELECTED) {
+		return;
+	}
+	if (p_which >= popup->get_item_count()) {
+		if (!initialized) {
+			queued_current = p_which;
+		}
 		return;
 	}
 	_select(p_which, false);
@@ -460,6 +461,25 @@ void OptionButton::_queue_update_size_cache() {
 	cache_refresh_pending = true;
 
 	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferred();
+}
+
+String OptionButton::_get_translated_text(const String &p_text) const {
+	if (0 <= current && current < popup->get_item_count()) {
+		AutoTranslateMode mode = popup->get_item_auto_translate_mode(current);
+		switch (mode) {
+			case AUTO_TRANSLATE_MODE_INHERIT: {
+				return atr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_ALWAYS: {
+				return tr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_DISABLED: {
+				return p_text;
+			} break;
+		}
+		ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(mode));
+	}
+	return atr(p_text);
 }
 
 void OptionButton::select(int p_idx) {
@@ -499,12 +519,6 @@ void OptionButton::show_popup() {
 		return;
 	}
 
-	Rect2 rect = get_screen_rect();
-	rect.position.y += rect.size.height;
-	rect.size.height = 0;
-	popup->set_position(rect.position);
-	popup->set_size(rect.size);
-
 	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
 	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
 		if (!_was_pressed_by_mouse()) {
@@ -526,7 +540,14 @@ void OptionButton::show_popup() {
 		}
 	}
 
-	popup->popup();
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
+		Transform2D xform = get_viewport()->get_popup_base_transform_native();
+		rect = xform.xform(rect);
+	}
+	rect.size.height = 0;
+	popup->popup(rect);
 }
 
 void OptionButton::_validate_property(PropertyInfo &p_property) const {
@@ -544,12 +565,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &OptionButton::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
@@ -574,11 +597,10 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &OptionButton::set_disable_shortcuts);
 
-	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
@@ -597,11 +619,32 @@ void OptionButton::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
+
+	PopupMenu::Item defaults(true);
+
+	base_property_helper.set_prefix("popup/item_");
+	base_property_helper.set_array_length_getter(&OptionButton::get_item_count);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &OptionButton::_dummy_setter, &OptionButton::get_item_text);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &OptionButton::_dummy_setter, &OptionButton::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0,10,1,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL), defaults.id, &OptionButton::_dummy_setter, &OptionButton::get_item_id);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
+	PropertyListHelper::register_base_helper(&base_property_helper);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
+
+#ifdef TOOLS_ENABLED
+PackedStringArray OptionButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Button::get_configuration_warnings();
+	warnings.append_array(popup->get_configuration_warnings());
+	return warnings;
+}
+#endif
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
@@ -616,6 +659,8 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
+
+	property_helper.setup_for_instance(base_property_helper, this);
 }
 
 OptionButton::~OptionButton() {

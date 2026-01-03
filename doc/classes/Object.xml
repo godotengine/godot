@@ -22,9 +22,10 @@
 		Lastly, every object can also contain metadata (data about data). [method set_meta] can be useful to store information that the object itself does not depend on. To keep your code clean, making excessive use of metadata is discouraged.
 		[b]Note:[/b] Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].
 		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
+		[b]Note:[/b] In a boolean context, an [Object] will evaluate to [code]false[/code] if it is equal to [code]null[/code] or it has been freed. Otherwise, an [Object] will always evaluate to [code]true[/code]. See also [method @GlobalScope.is_instance_valid].
 	</description>
 	<tutorials>
-		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
+		<link title="Object class introduction">$DOCS_URL/engine_details/architecture/object_class.html</link>
 		<link title="When and how to avoid using nodes for everything">$DOCS_URL/tutorials/best_practices/node_alternatives.html</link>
 		<link title="Object notifications">$DOCS_URL/tutorials/best_practices/godot_notifications.html</link>
 	</tutorials>
@@ -34,126 +35,158 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Override this method to customize the behavior of [method get]. Should return the given [param property]'s value, or [code]null[/code] if the [param property] should be handled normally.
-				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property must be present in [method get_property_list], otherwise this method will not be called.
+				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
+				[b]Note:[/b] This method is not called when getting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
 				func _get(property):
-				    if property == "fake_property":
-				        print("Getting my property!")
-				        return 4
+					if property == "fake_property":
+						print("Getting my property!")
+						return 4
 
 				func _get_property_list():
-				    return [
-				        { "name": "fake_property", "type": TYPE_INT }
-				    ]
+					return [
+						{ "name": "fake_property", "type": TYPE_INT }
+					]
 				[/gdscript]
 				[csharp]
 				public override Variant _Get(StringName property)
 				{
-				    if (property == "FakeProperty")
-				    {
-				        GD.Print("Getting my property!");
-				        return 4;
-				    }
-				    return default;
+					if (property == "FakeProperty")
+					{
+						GD.Print("Getting my property!");
+						return 4;
+					}
+					return default;
 				}
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
-				    {
-				        new Godot.Collections.Dictionary()
-				        {
-				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
-				        }
-				    };
+					return
+					[
+						new Godot.Collections.Dictionary()
+						{
+							{ "name", "FakeProperty" },
+							{ "type", (int)Variant.Type.Int },
+						},
+					];
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
 			<return type="Dictionary[]" />
 			<description>
-				Override this method to customize how script properties should be handled by the engine.
+				Override this method to provide a custom list of additional properties to handle by the engine.
 				Should return a property list, as an [Array] of dictionaries. The result is added to the array of [method get_property_list], and should be formatted in the same way. Each [Dictionary] must at least contain the [code]name[/code] and [code]type[/code] entries.
-				The example below displays [code]hammer_type[/code] in the Inspector dock, only if [code]holding_hammer[/code] is [code]true[/code]:
+				You can use [method _property_can_revert] and [method _property_get_revert] to customize the default values of the properties added by this method.
+				The example below displays a list of numbers shown as words going from [code]ZERO[/code] to [code]FIVE[/code], with [code]number_count[/code] controlling the size of the list:
 				[codeblocks]
 				[gdscript]
 				@tool
-				extends Node2D
+				extends Node
 
-				@export var holding_hammer = false:
-				    set(value):
-				        holding_hammer = value
-				        notify_property_list_changed()
-				var hammer_type = 0
+				@export var number_count = 3:
+					set(nc):
+						number_count = nc
+						numbers.resize(number_count)
+						notify_property_list_changed()
+
+				var numbers = PackedInt32Array([0, 0, 0])
 
 				func _get_property_list():
-				    # By default, `hammer_type` is not visible in the editor.
-				    var property_usage = PROPERTY_USAGE_NO_EDITOR
+					var properties = []
 
-				    if holding_hammer:
-				        property_usage = PROPERTY_USAGE_DEFAULT
+					for i in range(number_count):
+						properties.append({
+							"name": "number_%d" % i,
+							"type": TYPE_INT,
+							"hint": PROPERTY_HINT_ENUM,
+							"hint_string": "ZERO,ONE,TWO,THREE,FOUR,FIVE",
+						})
 
-				    var properties = []
-				    properties.append({
-				        "name": "hammer_type",
-				        "type": TYPE_INT,
-				        "usage": property_usage, # See above assignment.
-				        "hint": PROPERTY_HINT_ENUM,
-				        "hint_string": "Wooden,Iron,Golden,Enchanted"
-				    })
+					return properties
 
-				    return properties
+				func _get(property):
+					if property.begins_with("number_"):
+						var index = property.get_slice("_", 1).to_int()
+						return numbers[index]
+
+				func _set(property, value):
+					if property.begins_with("number_"):
+						var index = property.get_slice("_", 1).to_int()
+						numbers[index] = value
+						return true
+					return false
 				[/gdscript]
 				[csharp]
 				[Tool]
-				public partial class MyNode2D : Node2D
+				public partial class MyNode : Node
 				{
-				    private bool _holdingHammer;
+					private int _numberCount;
 
-				    [Export]
-				    public bool HoldingHammer
-				    {
-				        get =&gt; _holdingHammer;
-				        set
-				        {
-				            _holdingHammer = value;
-				            NotifyPropertyListChanged();
-				        }
-				    }
+					[Export]
+					public int NumberCount
+					{
+						get =&gt; _numberCount;
+						set
+						{
+							_numberCount = value;
+							_numbers.Resize(_numberCount);
+							NotifyPropertyListChanged();
+						}
+					}
 
-				    public int HammerType { get; set; }
+					private Godot.Collections.Array&lt;int&gt; _numbers = [];
 
-				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
-				    {
-				        // By default, `HammerType` is not visible in the editor.
-				        var propertyUsage = PropertyUsageFlags.NoEditor;
+					public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
+					{
+						Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; properties = [];
 
-				        if (HoldingHammer)
-				        {
-				            propertyUsage = PropertyUsageFlags.Default;
-				        }
+						for (int i = 0; i &lt; _numberCount; i++)
+						{
+							properties.Add(new Godot.Collections.Dictionary()
+							{
+								{ "name", $"number_{i}" },
+								{ "type", (int)Variant.Type.Int },
+								{ "hint", (int)PropertyHint.Enum },
+								{ "hint_string", "Zero,One,Two,Three,Four,Five" },
+							});
+						}
 
-				        var properties = new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;();
-				        properties.Add(new Godot.Collections.Dictionary()
-				        {
-				            { "name", "HammerType" },
-				            { "type", (int)Variant.Type.Int },
-				            { "usage", (int)propertyUsage }, // See above assignment.
-				            { "hint", (int)PropertyHint.Enum },
-				            { "hint_string", "Wooden,Iron,Golden,Enchanted" }
-				        });
+						return properties;
+					}
 
-				        return properties;
-				    }
+					public override Variant _Get(StringName property)
+					{
+						string propertyName = property.ToString();
+						if (propertyName.StartsWith("number_"))
+						{
+							int index = int.Parse(propertyName.Substring("number_".Length));
+							return _numbers[index];
+						}
+						return default;
+					}
+
+					public override bool _Set(StringName property, Variant value)
+					{
+						string propertyName = property.ToString();
+						if (propertyName.StartsWith("number_"))
+						{
+							int index = int.Parse(propertyName.Substring("number_".Length));
+							_numbers[index] = value.As&lt;int&gt;();
+							return true;
+						}
+						return false;
+					}
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.
+				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc. If you want to customize exported properties, use [method _validate_property].
 				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy.
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
@@ -161,6 +194,55 @@
 			<description>
 				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new GodotObject[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
 				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
+			</description>
+		</method>
+		<method name="_iter_get" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="iter" type="Variant" />
+			<description>
+				Returns the current iterable value. [param iter] stores the iteration state, but unlike [method _iter_init] and [method _iter_next] the state is supposed to be read-only, so there is no [Array] wrapper.
+				[b]Tip:[/b] In GDScript, you can use a subtype of [Variant] as the return type for [method _iter_get]. The specified type will be used to set the type of the iterator variable in [code]for[/code] loops, enhancing type safety.
+			</description>
+		</method>
+		<method name="_iter_init" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				[codeblock]
+				class MyRange:
+					var _from
+					var _to
+
+					func _init(from, to):
+						assert(from &lt;= to)
+						_from = from
+						_to = to
+
+					func _iter_init(iter):
+						iter[0] = _from
+						return iter[0] &lt; _to
+
+					func _iter_next(iter):
+						iter[0] += 1
+						return iter[0] &lt; _to
+
+					func _iter_get(iter):
+						return iter
+
+				func _ready():
+					var my_range = MyRange.new(2, 5)
+					for x in my_range:
+						print(x) # Prints 2, 3, 4.
+				[/codeblock]
+				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+			</description>
+		</method>
+		<method name="_iter_next" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -171,28 +253,30 @@
 				[codeblocks]
 				[gdscript]
 				func _notification(what):
-				    if what == NOTIFICATION_PREDELETE:
-				        print("Goodbye!")
+					if what == NOTIFICATION_PREDELETE:
+						print("Goodbye!")
 				[/gdscript]
 				[csharp]
 				public override void _Notification(int what)
 				{
-				    if (what == NotificationPredelete)
-				    {
-				        GD.Print("Goodbye!");
-				    }
+					if (what == NotificationPredelete)
+					{
+						GD.Print("Goodbye!");
+					}
 				}
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. Call order depends on the [code]reversed[/code] argument of [method notification] and varies between different notifications. Most notifications are sent in the forward order (i.e. Object class first, most derived class last).
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] can be reverted in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
+				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] has a custom default value and is revertible in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
 				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_property_get_revert" qualifiers="virtual">
@@ -201,6 +285,7 @@
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return the default value for the [param property]. If the default value differs from the [param property]'s current value, a revert icon is displayed in the Inspector dock.
 				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns a non-[code]null[/code] value.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -209,51 +294,53 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Override this method to customize the behavior of [method set]. Should set the [param property] to [param value] and return [code]true[/code], or [code]false[/code] if the [param property] should be handled normally. The [i]exact[/i] way to set the [param property] is up to this method's implementation.
-				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property [i]must[/i] be present in [method get_property_list], otherwise this method will not be called.
+				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
+				[b]Note:[/b] This method is not called when setting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
 				var internal_data = {}
 
 				func _set(property, value):
-				    if property == "fake_property":
-				        # Storing the value in the fake property.
-				        internal_data["fake_property"] = value
-				        return true
-				    return false
+					if property == "fake_property":
+						# Storing the value in the fake property.
+						internal_data["fake_property"] = value
+						return true
+					return false
 
 				func _get_property_list():
-				    return [
-				        { "name": "fake_property", "type": TYPE_INT }
-				    ]
+					return [
+						{ "name": "fake_property", "type": TYPE_INT }
+					]
 				[/gdscript]
 				[csharp]
 				private Godot.Collections.Dictionary _internalData = new Godot.Collections.Dictionary();
 
 				public override bool _Set(StringName property, Variant value)
 				{
-				    if (property == "FakeProperty")
-				    {
-				        // Storing the value in the fake property.
-				        _internalData["FakeProperty"] = value;
-				        return true;
-				    }
+					if (property == "FakeProperty")
+					{
+						// Storing the value in the fake property.
+						_internalData["FakeProperty"] = value;
+						return true;
+					}
 
-				    return false;
+					return false;
 				}
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
-				    {
-				        new Godot.Collections.Dictionary()
-				        {
-				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
-				        }
-				    };
+					return
+					[
+						new Godot.Collections.Dictionary()
+						{
+							{ "name", "FakeProperty" },
+							{ "type", (int)Variant.Type.Int },
+						},
+					];
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages. The bottom-most sub-class will be called first, with subsequent calls ascending the class hierarchy. The call chain will stop on the first class that returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">
@@ -262,11 +349,11 @@
 				Override this method to customize the return value of [method to_string], and therefore the object's representation as a [String].
 				[codeblock]
 				func _to_string():
-				    return "Welcome to Godot 4!"
+					return "Welcome to Godot 4!"
 
 				func _init():
-				    print(self)       # Prints Welcome to Godot 4!"
-				    var a = str(self) # a is "Welcome to Godot 4!"
+					print(self)       # Prints "Welcome to Godot 4!"
+					var a = str(self) # a is "Welcome to Godot 4!"
 				[/codeblock]
 			</description>
 		</method>
@@ -274,50 +361,50 @@
 			<return type="void" />
 			<param index="0" name="property" type="Dictionary" />
 			<description>
-				Override this method to customize existing properties. Every property info goes through this method. The dictionary contents is the same as in [method _get_property_list].
+				Override this method to customize existing properties. Every property info goes through this method, except properties added with [method _get_property_list]. The dictionary contents is the same as in [method _get_property_list].
 				[codeblocks]
 				[gdscript]
 				@tool
 				extends Node
 
 				@export var is_number_editable: bool:
-				    set(value):
-				        is_number_editable = value
-				        notify_property_list_changed()
+					set(value):
+						is_number_editable = value
+						notify_property_list_changed()
 				@export var number: int
 
 				func _validate_property(property: Dictionary):
-				    if property.name == "number" and not is_number_editable:
-				        property.usage |= PROPERTY_USAGE_READ_ONLY
+					if property.name == "number" and not is_number_editable:
+						property.usage |= PROPERTY_USAGE_READ_ONLY
 				[/gdscript]
 				[csharp]
 				[Tool]
 				public partial class MyNode : Node
 				{
-				    private bool _isNumberEditable;
+					private bool _isNumberEditable;
 
-				    [Export]
-				    public bool IsNumberEditable
-				    {
-				        get =&gt; _isNumberEditable;
-				        set
-				        {
-				            _isNumberEditable = value;
-				            NotifyPropertyListChanged();
-				        }
-				    }
+					[Export]
+					public bool IsNumberEditable
+					{
+						get =&gt; _isNumberEditable;
+						set
+						{
+							_isNumberEditable = value;
+							NotifyPropertyListChanged();
+						}
+					}
 
-				    [Export]
-				    public int Number { get; set; }
+					[Export]
+					public int Number { get; set; }
 
-				    public override void _ValidateProperty(Godot.Collections.Dictionary property)
-				    {
-				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; IsNumberEditable)
-				        {
-				            var usage = property["usage"].As&gt;PropertyUsageFlags&lt;() | PropertyUsageFlags.ReadOnly;
-				            property["usage"] = (int)usage;
-				        }
-				    }
+					public override void _ValidateProperty(Godot.Collections.Dictionary property)
+					{
+						if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; !IsNumberEditable)
+						{
+							var usage = property["usage"].As&lt;PropertyUsageFlags&gt;() | PropertyUsageFlags.ReadOnly;
+							property["usage"] = (int)usage;
+						}
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -328,28 +415,28 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal].
+				Adds a user-defined signal named [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal] and [method remove_user_signal].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
-				    { "name": "damage", "type": TYPE_INT },
-				    { "name": "source", "type": TYPE_OBJECT }
+					{ "name": "damage", "type": TYPE_INT },
+					{ "name": "source", "type": TYPE_OBJECT }
 				])
 				[/gdscript]
 				[csharp]
-				AddUserSignal("Hurt", new Godot.Collections.Array()
-				{
-				    new Godot.Collections.Dictionary()
-				    {
-				        { "name", "damage" },
-				        { "type", (int)Variant.Type.Int }
-				    },
-				    new Godot.Collections.Dictionary()
-				    {
-				        { "name", "source" },
-				        { "type", (int)Variant.Type.Object }
-				    }
-				});
+				AddUserSignal("Hurt",
+				[
+					new Godot.Collections.Dictionary()
+					{
+						{ "name", "damage" },
+						{ "type", (int)Variant.Type.Int },
+					},
+					new Godot.Collections.Dictionary()
+					{
+						{ "name", "source" },
+						{ "type", (int)Variant.Type.Object },
+					},
+				]);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -376,8 +463,8 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
-				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. If not done carefully, this can result in infinite recursion without causing a stack overflow, which will hang the game similarly to an infinite loop.
+				Calls the [param method] on the object during idle time. Always returns [code]null[/code], [b]not[/b] the method's result.
+				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
@@ -389,6 +476,7 @@
 				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				For methods that are deferred from the same thread, the order of execution at idle time is identical to the order in which [code skip-lint]call_deferred[/code] was called.
 				See also [method Callable.call_deferred].
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
@@ -415,7 +503,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Callv(Node3D.MethodName.Rotate, new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
+				node.Callv(Node3D.MethodName.Rotate, [new Vector3(1f, 0f, 0f), 1.571f]);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -440,131 +528,10 @@
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
 				Connects a [param signal] by name to a [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum ConnectFlags] constants).
-				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and pushes an error message, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
-				If the [param callable]'s object is freed, the connection will be lost.
-				[b]Examples with recommended syntax:[/b]
-				Connecting signals is one of the most common operations in Godot and the API gives many options to do so, which are described further down. The code block below shows the recommended approach.
-				[codeblocks]
-				[gdscript]
-				func _ready():
-				    var button = Button.new()
-				    # `button_down` here is a Signal variant type, and we thus call the Signal.connect() method, not Object.connect().
-				    # See discussion below for a more in-depth overview of the API.
-				    button.button_down.connect(_on_button_down)
-
-				    # This assumes that a `Player` class exists, which defines a `hit` signal.
-				    var player = Player.new()
-				    # We use Signal.connect() again, and we also use the Callable.bind() method,
-				    # which returns a new Callable with the parameter binds.
-				    player.hit.connect(_on_player_hit.bind("sword", 100))
-
-				func _on_button_down():
-				    print("Button down!")
-
-				func _on_player_hit(weapon_type, damage):
-				    print("Hit with weapon %s for %d damage." % [weapon_type, damage])
-				[/gdscript]
-				[csharp]
-				public override void _Ready()
-				{
-				    var button = new Button();
-				    // C# supports passing signals as events, so we can use this idiomatic construct:
-				    button.ButtonDown += OnButtonDown;
-
-				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
-				    var player = new Player();
-				    // We can use lambdas when we need to bind additional parameters.
-				    player.Hit += () =&gt; OnPlayerHit("sword", 100);
-				}
-
-				private void OnButtonDown()
-				{
-				    GD.Print("Button down!");
-				}
-
-				private void OnPlayerHit(string weaponType, int damage)
-				{
-				    GD.Print($"Hit with weapon {weaponType} for {damage} damage.");
-				}
-				[/csharp]
-				[/codeblocks]
-				[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
-				As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
-				[codeblocks]
-				[gdscript]
-				func _ready():
-				    var button = Button.new()
-				    # Option 1: Object.connect() with an implicit Callable for the defined function.
-				    button.connect("button_down", _on_button_down)
-				    # Option 2: Object.connect() with a constructed Callable using a target object and method name.
-				    button.connect("button_down", Callable(self, "_on_button_down"))
-				    # Option 3: Signal.connect() with an implicit Callable for the defined function.
-				    button.button_down.connect(_on_button_down)
-				    # Option 4: Signal.connect() with a constructed Callable using a target object and method name.
-				    button.button_down.connect(Callable(self, "_on_button_down"))
-
-				func _on_button_down():
-				    print("Button down!")
-				[/gdscript]
-				[csharp]
-				public override void _Ready()
-				{
-				    var button = new Button();
-				    // Option 1: In C#, we can use signals as events and connect with this idiomatic syntax:
-				    button.ButtonDown += OnButtonDown;
-				    // Option 2: GodotObject.Connect() with a constructed Callable from a method group.
-				    button.Connect(Button.SignalName.ButtonDown, Callable.From(OnButtonDown));
-				    // Option 3: GodotObject.Connect() with a constructed Callable using a target object and method name.
-				    button.Connect(Button.SignalName.ButtonDown, new Callable(this, MethodName.OnButtonDown));
-				}
-
-				private void OnButtonDown()
-				{
-				    GD.Print("Button down!");
-				}
-				[/csharp]
-				[/codeblocks]
-				While all options have the same outcome ([code]button[/code]'s [signal BaseButton.button_down] signal will be connected to [code]_on_button_down[/code]), [b]option 3[/b] offers the best validation: it will print a compile-time error if either the [code]button_down[/code] [Signal] or the [code]_on_button_down[/code] [Callable] are not defined. On the other hand, [b]option 2[/b] only relies on string names and will only be able to validate either names at runtime: it will print a runtime error if [code]"button_down"[/code] doesn't correspond to a signal, or if [code]"_on_button_down"[/code] is not a registered method in the object [code]self[/code]. The main reason for using options 1, 2, or 4 would be if you actually need to use strings (e.g. to connect signals programmatically based on strings read from a configuration file). Otherwise, option 3 is the recommended (and fastest) method.
-				[b]Binding and passing parameters:[/b]
-				The syntax to bind parameters is through [method Callable.bind], which returns a copy of the [Callable] with its parameters bound.
-				When calling [method emit_signal], the signal parameters can be also passed. The examples below show the relationship between these signal parameters and bound parameters.
-				[codeblocks]
-				[gdscript]
-				func _ready():
-				    # This assumes that a `Player` class exists, which defines a `hit` signal.
-				    var player = Player.new()
-				    # Using Callable.bind().
-				    player.hit.connect(_on_player_hit.bind("sword", 100))
-
-				    # Parameters added when emitting the signal are passed first.
-				    player.emit_signal("hit", "Dark lord", 5)
-
-				# We pass two arguments when emitting (`hit_by`, `level`),
-				# and bind two more arguments when connecting (`weapon_type`, `damage`).
-				func _on_player_hit(hit_by, level, weapon_type, damage):
-				    print("Hit by %s (level %d) with weapon %s for %d damage." % [hit_by, level, weapon_type, damage])
-				[/gdscript]
-				[csharp]
-				public override void _Ready()
-				{
-				    // This assumes that a `Player` class exists, which defines a `Hit` signal.
-				    var player = new Player();
-				    // Using lambda expressions that create a closure that captures the additional parameters.
-				    // The lambda only receives the parameters defined by the signal's delegate.
-				    player.Hit += (hitBy, level) =&gt; OnPlayerHit(hitBy, level, "sword", 100);
-
-				    // Parameters added when emitting the signal are passed first.
-				    player.EmitSignal(SignalName.Hit, "Dark lord", 5);
-				}
-
-				// We pass two arguments when emitting (`hit_by`, `level`),
-				// and bind two more arguments when connecting (`weapon_type`, `damage`).
-				private void OnPlayerHit(string hitBy, int level, string weaponType, int damage)
-				{
-				    GD.Print($"Hit by {hitBy} (level {level}) with weapon {weaponType} for {damage} damage.");
-				}
-				[/csharp]
-				[/codeblocks]
+				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
+				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
+				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
+				[b]Note:[/b] This method, and all other signal-related methods, are thread-safe.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -594,10 +561,10 @@
 				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
-		<method name="free">
+		<method name="free" keywords="delete, remove, kill, die">
 			<return type="void" />
 			<description>
-				Deletes the object from memory. Pre-existing references to the object become invalid, and any attempt to access them will result in a run-time error. Checking the references with [method @GlobalScope.is_instance_valid] will return [code]false[/code].
+				Deletes the object from memory. Pre-existing references to the object become invalid, and any attempt to access them will result in a runtime error. Checking the references with [method @GlobalScope.is_instance_valid] will return [code]false[/code]. This is equivalent to the [code]memdelete[/code] function in GDExtension C++.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
@@ -614,7 +581,7 @@
 				[csharp]
 				var node = new Node2D();
 				node.Rotation = 1.5f;
-				var a = node.Get("rotation"); // a is 1.5
+				var a = node.Get(Node2D.PropertyName.Rotation); // a is 1.5
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -664,6 +631,7 @@
 			<return type="int" />
 			<description>
 				Returns the object's unique instance ID. This ID can be saved in [EncodedObjectAsID], and can be used to retrieve this object instance with [method @GlobalScope.instance_from_id].
+				[b]Note:[/b] This ID is only useful during the current session. It won't correspond to a similar object if the ID is sent over a network, or loaded from a file at a later time.
 			</description>
 		</method>
 		<method name="get_meta" qualifiers="const">
@@ -679,7 +647,15 @@
 		<method name="get_meta_list" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
-				Returns the object's metadata entry names as a [PackedStringArray].
+				Returns the object's metadata entry names as an [Array] of [StringName]s.
+			</description>
+		</method>
+		<method name="get_method_argument_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns the number of arguments of the given [param method] by name.
+				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
@@ -728,7 +704,21 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
-				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+				[b]Note:[/b] Due to the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+			</description>
+		</method>
+		<method name="get_translation_domain" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Returns [code]true[/code] if any connection exists on the given [param signal] name.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_meta" qualifiers="const">
@@ -753,14 +743,14 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param signal] name exists in the object.
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included.
+				Returns [code]true[/code] if the given user-defined [param signal] name exists. Only signals added with [method add_user_signal] are included. See also [method remove_user_signal].
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
@@ -797,7 +787,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -868,6 +858,13 @@
 				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
+		<method name="remove_user_signal">
+			<return type="void" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Removes the given user signal [param signal] from the object. See also [method add_user_signal] and [method has_user_signal].
+			</description>
+		</method>
 		<method name="set">
 			<return type="void" />
 			<param index="0" name="property" type="StringName" />
@@ -878,12 +875,12 @@
 				[gdscript]
 				var node = Node2D.new()
 				node.set("global_scale", Vector2(8, 2.5))
-				print(node.global_scale) # Prints (8, 2.5)
+				print(node.global_scale) # Prints (8.0, 2.5)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Set("global_scale", new Vector2(8, 2.5));
-				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
+				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5f));
+				GD.Print(node.GlobalScale); // Prints (8, 2.5)
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -907,21 +904,21 @@
 				var node = Node2D.new()
 				add_child(node)
 
-				node.rotation = 45.0
-				node.set_deferred("rotation", 90.0)
-				print(node.rotation) # Prints 45.0
+				node.rotation = 1.5
+				node.set_deferred("rotation", 3.0)
+				print(node.rotation) # Prints 1.5
 
 				await get_tree().process_frame
-				print(node.rotation) # Prints 90.0
+				print(node.rotation) # Prints 3.0
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Rotation = 45f;
-				node.SetDeferred("rotation", 90f);
-				GD.Print(node.Rotation); // Prints 45.0
+				node.Rotation = 1.5f;
+				node.SetDeferred(Node2D.PropertyName.Rotation, 3f);
+				GD.Print(node.Rotation); // Prints 1.5
 
 				await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-				GD.Print(node.Rotation); // Prints 90.0
+				GD.Print(node.Rotation); // Prints 3.0
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -938,7 +935,7 @@
 				var node = Node2D.new()
 				node.set_indexed("position", Vector2(42, 0))
 				node.set_indexed("position:y", -10)
-				print(node.position) # Prints (42, -10)
+				print(node.position) # Prints (42.0, -10.0)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
@@ -976,6 +973,13 @@
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
 			</description>
 		</method>
+		<method name="set_translation_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>
@@ -985,11 +989,12 @@
 		<method name="tr" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
-				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
+				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
+				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate].
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
@@ -997,13 +1002,14 @@
 			<param index="0" name="message" type="StringName" />
 			<param index="1" name="plural_message" type="StringName" />
 			<param index="2" name="n" type="int" />
-			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method set_message_translation].
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
-				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended handling these cases with [method tr].
+				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method tr].
+				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate_plural].
 			</description>
 		</method>
 	</methods>
@@ -1025,19 +1031,27 @@
 			Notification received when the object is initialized, before its script is attached. Used internally.
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
+			This notification is sent in reversed order.
+		</constant>
+		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
+			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.
 		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
 			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
-			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Node dock are always persisting.
+			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Signals dock are always persisting.
+			[b]Note:[/b] Connections to lambda functions (that is, when the function code is embedded in the [method connect] call) cannot be made persistent.
 		</constant>
 		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
 			One-shot connections disconnect themselves after emission.
 		</constant>
 		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
+		</constant>
+		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
+			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
 		</constant>
 	</constants>
 </class>

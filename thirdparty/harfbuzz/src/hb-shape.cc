@@ -91,8 +91,10 @@ void free_static_shaper_list ()
  *
  * Retrieves the list of shapers supported by HarfBuzz.
  *
- * Return value: (transfer none) (array zero-terminated=1): an array of
- *    constant strings
+ * Return value: (transfer none) (array zero-terminated=1): a
+ *    `NULL`-terminated array of supported shapers constant string.
+ *    The returned array is owned by HarfBuzz and should not be
+ *    modified or freed.
  *
  * Since: 0.9.2
  **/
@@ -147,14 +149,11 @@ hb_shape_full (hb_font_t          *font,
 
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
 
-  if (buffer->max_ops <= 0)
-    buffer->shaping_failed = true;
-
   hb_shape_plan_destroy (shape_plan);
 
   if (text_buffer)
   {
-    if (res && buffer->successful && !buffer->shaping_failed
+    if (res && buffer->successful
 	    && text_buffer->successful
 	    && !buffer->verify (text_buffer,
 				font,
@@ -197,6 +196,7 @@ hb_shape (hb_font_t           *font,
 
 
 #ifdef HB_EXPERIMENTAL_API
+#ifndef HB_NO_VAR
 
 static float
 buffer_advance (hb_buffer_t *buffer)
@@ -438,7 +438,7 @@ hb_shape_justify (hb_font_t          *font,
 
   return true;
 }
-
+#endif
 #endif
 
 

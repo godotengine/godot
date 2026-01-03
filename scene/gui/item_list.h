@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ITEM_LIST_H
-#define ITEM_LIST_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/text_paragraph.h"
 
 class ItemList : public Control {
@@ -46,20 +46,33 @@ public:
 
 	enum SelectMode {
 		SELECT_SINGLE,
-		SELECT_MULTI
+		SELECT_MULTI,
+		SELECT_TOGGLE,
+	};
+
+	enum ScrollHintMode {
+		SCROLL_HINT_MODE_DISABLED,
+		SCROLL_HINT_MODE_BOTH,
+		SCROLL_HINT_MODE_TOP,
+		SCROLL_HINT_MODE_BOTTOM,
 	};
 
 private:
 	struct Item {
+		mutable RID accessibility_item_element;
+		mutable bool accessibility_item_dirty = true;
+
 		Ref<Texture2D> icon;
 		bool icon_transposed = false;
 		Rect2i icon_region;
 		Color icon_modulate = Color(1, 1, 1, 1);
 		Ref<Texture2D> tag_icon;
 		String text;
+		String xl_text;
 		Ref<TextParagraph> text_buf;
 		String language;
 		TextDirection text_direction = TEXT_DIRECTION_AUTO;
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool selectable = true;
 		bool selected = false;
@@ -81,10 +94,18 @@ private:
 		Item() {
 			text_buf.instantiate();
 		}
+
+		Item(bool p_dummy) {}
 	};
+	RID accessibility_scroll_element;
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
 
 	int current = -1;
 	int hovered = -1;
+	int prev_hovered = -1;
+	int shift_anchor = -1;
 
 	bool shape_changed = true;
 
@@ -92,16 +113,25 @@ private:
 	bool same_column_width = false;
 	bool allow_search = true;
 
+	bool auto_width = false;
+	float auto_width_value = 0.0;
+
 	bool auto_height = false;
 	float auto_height_value = 0.0;
+
+	bool wraparound_items = true;
 
 	Vector<Item> items;
 	Vector<int> separators;
 
 	SelectMode select_mode = SELECT_SINGLE;
 	IconMode icon_mode = ICON_MODE_LEFT;
-	VScrollBar *scroll_bar = nullptr;
+	VScrollBar *scroll_bar_v = nullptr;
+	HScrollBar *scroll_bar_h = nullptr;
 	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
+
+	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
+	bool tile_scroll_hint = false;
 
 	uint64_t search_time_msec = 0;
 	String search_string;
@@ -112,7 +142,7 @@ private:
 	int max_columns = 1;
 
 	Size2 fixed_icon_size;
-	Size2 max_item_size_cache;
+	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
 	bool allow_rmb_select = false;
@@ -122,6 +152,14 @@ private:
 
 	bool do_autoscroll_to_bottom = false;
 
+	void _scroll_changed(double);
+	void _shape_text(int p_idx);
+	void _mouse_exited();
+	void _shift_range_select(int p_from, int p_to);
+
+	String _atr(int p_idx, const String &p_text) const;
+
+protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
@@ -133,6 +171,7 @@ private:
 		int font_size = 0;
 		Color font_color;
 		Color font_hovered_color;
+		Color font_hovered_selected_color;
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
@@ -140,25 +179,37 @@ private:
 		int line_separation = 0;
 		int icon_margin = 0;
 		Ref<StyleBox> hovered_style;
+		Ref<StyleBox> hovered_selected_style;
+		Ref<StyleBox> hovered_selected_focus_style;
 		Ref<StyleBox> selected_style;
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
 		Color guide_color;
+
+		Ref<Texture2D> scroll_hint;
 	} theme_cache;
 
-	void _scroll_changed(double);
-	void _shape_text(int p_idx);
-	void _mouse_exited();
-
-protected:
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
+	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
+	void _accessibility_action_scroll_set(const Variant &p_data);
+	void _accessibility_action_scroll_up(const Variant &p_data);
+	void _accessibility_action_scroll_down(const Variant &p_data);
+	void _accessibility_action_scroll_left(const Variant &p_data);
+	void _accessibility_action_scroll_right(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
+	void _accessibility_action_focus(const Variant &p_data, int p_index);
+	void _accessibility_action_blur(const Variant &p_data, int p_index);
+
 public:
+	virtual RID get_focused_accessibility_element() const override;
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
@@ -172,6 +223,9 @@ public:
 
 	void set_item_language(int p_idx, const String &p_language);
 	String get_item_language(int p_idx) const;
+
+	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
+	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -252,6 +306,8 @@ public:
 	void set_fixed_icon_size(const Size2i &p_size);
 	Size2i get_fixed_icon_size() const;
 
+	void set_fixed_tag_icon_size(const Size2i &p_size);
+
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
 
@@ -273,8 +329,14 @@ public:
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;
 
+	void set_auto_width(bool p_enable);
+	bool has_auto_width() const;
+
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
+
+	void set_wraparound_items(bool p_enable);
+	bool has_wraparound_items() const;
 
 	Size2 get_minimum_size() const override;
 
@@ -282,7 +344,14 @@ public:
 
 	void force_update_list_size();
 
-	VScrollBar *get_v_scroll_bar() { return scroll_bar; }
+	VScrollBar *get_v_scroll_bar() { return scroll_bar_v; }
+	HScrollBar *get_h_scroll_bar() { return scroll_bar_h; }
+
+	void set_scroll_hint_mode(ScrollHintMode p_mode);
+	ScrollHintMode get_scroll_hint_mode() const;
+
+	void set_tile_scroll_hint(bool p_enable);
+	bool is_scroll_hint_tiled();
 
 	ItemList();
 	~ItemList();
@@ -290,5 +359,4 @@ public:
 
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
-
-#endif // ITEM_LIST_H
+VARIANT_ENUM_CAST(ItemList::ScrollHintMode);

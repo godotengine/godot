@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMeshInstance2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiMeshInstance2D" inherits="Node2D" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node that instances a [MultiMesh] in 2D.
 	</brief_description>
 	<description>
-		[MultiMeshInstance2D] is a specialized node to instance a [MultiMesh] resource in 2D.
+		[MultiMeshInstance2D] is a specialized node to instance a [MultiMesh] resource in 2D. This can be faster to render compared to displaying many [Sprite2D] nodes with large transparent areas, especially if the nodes take up a lot of space on screen at high viewport resolutions. This is because using a mesh designed to fit the sprites' opaque areas will reduce GPU fill rate utilization (at the cost of increased vertex processing utilization).
 		Usage is the same as [MultiMeshInstance3D].
 	</description>
 	<tutorials>

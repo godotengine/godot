@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_H
-#define DIR_ACCESS_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
@@ -40,7 +39,7 @@ class DirAccess : public RefCounted {
 	GDCLASS(DirAccess, RefCounted);
 
 public:
-	enum AccessType {
+	enum AccessType : int32_t {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM,
@@ -54,12 +53,19 @@ private:
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
 	static Ref<DirAccess> _open(const String &p_path);
 
-	Error _copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links);
 	PackedStringArray _get_contents(bool p_directories);
 
-	thread_local static Error last_dir_open_error;
+	static inline thread_local Error last_dir_open_error = OK;
 	bool include_navigational = false;
 	bool include_hidden = false;
+
+	bool _is_temp = false;
+	bool _temp_keep_after_free = false;
+	String _temp_path;
+	void _delete_temp();
+
+	static Ref<DirAccess> _create_temp(const String &p_prefix = "", bool p_keep = false);
 
 protected:
 	static void _bind_methods();
@@ -68,9 +74,9 @@ protected:
 	virtual String _get_root_string() const;
 
 	AccessType get_access_type() const;
-	virtual String fix_path(String p_path) const;
+	virtual String fix_path(const String &p_path) const;
 
-	template <class T>
+	template <typename T>
 	static Ref<DirAccess> _create_builtin() {
 		return memnew(T);
 	}
@@ -91,18 +97,18 @@ public:
 	virtual Error change_dir(String p_dir) = 0; ///< can be relative or absolute, return false on success
 	virtual String get_current_dir(bool p_include_drive = true) const = 0; ///< return current dir location
 	virtual Error make_dir(String p_dir) = 0;
-	virtual Error make_dir_recursive(String p_dir);
+	virtual Error make_dir_recursive(const String &p_dir);
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
 
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;
-	virtual bool is_readable(String p_dir) { return true; };
-	virtual bool is_writable(String p_dir) { return true; };
-	static bool exists(String p_dir);
+	virtual bool is_readable(String p_dir) { return true; }
+	virtual bool is_writable(String p_dir) { return true; }
+	static bool exists(const String &p_dir);
 	virtual uint64_t get_space_left() = 0;
 
-	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
-	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
+	Error copy_dir(const String &p_from, String p_to, int p_chmod_flags = -1, bool p_copy_links = false);
+	virtual Error copy(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
 
@@ -112,14 +118,14 @@ public:
 
 	// Meant for editor code when we want to quickly remove a file without custom
 	// handling (e.g. removing a cache file).
-	static void remove_file_or_error(String p_path) {
+	static void remove_file_or_error(const String &p_path) {
 		Ref<DirAccess> da = create(ACCESS_FILESYSTEM);
 		if (da->file_exists(p_path)) {
 			if (da->remove(p_path) != OK) {
-				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+				ERR_FAIL_MSG(vformat("Cannot remove file or directory: '%s'.", p_path));
 			}
 		} else {
-			ERR_FAIL_MSG("Cannot remove non-existent file or directory: " + p_path);
+			ERR_FAIL_MSG(vformat("Cannot remove non-existent file or directory: '%s'.", p_path));
 		}
 	}
 
@@ -130,12 +136,13 @@ public:
 	static Ref<DirAccess> create(AccessType p_access);
 	static Error get_open_error();
 
-	template <class T>
+	template <typename T>
 	static void make_default(AccessType p_access) {
 		create_func[p_access] = _create_builtin<T>;
 	}
 
 	static Ref<DirAccess> open(const String &p_path, Error *r_error = nullptr);
+	static Ref<DirAccess> create_temp(const String &p_prefix = "", bool p_keep = false, Error *r_error = nullptr);
 
 	static int _get_drive_count();
 	static String get_drive_name(int p_idx);
@@ -160,9 +167,9 @@ public:
 	bool get_include_hidden() const;
 
 	virtual bool is_case_sensitive(const String &p_path) const;
+	virtual bool is_bundle(const String &p_file) const { return false; }
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const;
 
-	DirAccess() {}
-	virtual ~DirAccess() {}
+public:
+	virtual ~DirAccess();
 };
-
-#endif // DIR_ACCESS_H

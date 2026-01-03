@@ -27,9 +27,6 @@
 
 #include "hb.h"
 
-HB_BEGIN_DECLS
-HB_END_DECLS
-
 #ifdef __cplusplus
 
 #include <functional>
@@ -56,15 +53,15 @@ struct shared_ptr
 
   explicit shared_ptr (T *p = nullptr) : p (p) {}
   shared_ptr (const shared_ptr &o) : p (v::reference (o.p)) {}
-  shared_ptr (shared_ptr &&o) : p (o.p) { o.p = nullptr; }
+  shared_ptr (shared_ptr &&o)  noexcept : p (o.p) { o.p = nullptr; }
   shared_ptr& operator = (const shared_ptr &o) { if (p != o.p) { destroy (); p = o.p; reference (); } return *this; }
-  shared_ptr& operator = (shared_ptr &&o) { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
+  shared_ptr& operator = (shared_ptr &&o)  noexcept { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
   ~shared_ptr () { v::destroy (p); p = nullptr; }
 
   T* get() const { return p; }
 
-  void swap (shared_ptr &o) { std::swap (p, o.p); }
-  friend void swap (shared_ptr &a, shared_ptr &b) { std::swap (a.p, b.p); }
+  void swap (shared_ptr &o)  noexcept { std::swap (p, o.p); }
+  friend void swap (shared_ptr &a, shared_ptr &b)  noexcept { std::swap (a.p, b.p); }
 
   operator T * () const { return p; }
   T& operator * () const { return *get (); }
@@ -98,16 +95,16 @@ struct unique_ptr
 
   explicit unique_ptr (T *p = nullptr) : p (p) {}
   unique_ptr (const unique_ptr &o) = delete;
-  unique_ptr (unique_ptr &&o) : p (o.p) { o.p = nullptr; }
+  unique_ptr (unique_ptr &&o)  noexcept : p (o.p) { o.p = nullptr; }
   unique_ptr& operator = (const unique_ptr &o) = delete;
-  unique_ptr& operator = (unique_ptr &&o) { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
+  unique_ptr& operator = (unique_ptr &&o)  noexcept { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
   ~unique_ptr () { v::destroy (p); p = nullptr; }
 
   T* get() const { return p; }
   T* release () { T* v = p; p = nullptr; return v; }
 
-  void swap (unique_ptr &o) { std::swap (p, o.p); }
-  friend void swap (unique_ptr &a, unique_ptr &b) { std::swap (a.p, b.p); }
+  void swap (unique_ptr &o)  noexcept { std::swap (p, o.p); }
+  friend void swap (unique_ptr &a, unique_ptr &b)  noexcept { std::swap (a.p, b.p); }
 
   operator T * () const { return p; }
   T& operator * () const { return *get (); }

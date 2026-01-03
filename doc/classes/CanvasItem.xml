@@ -8,11 +8,12 @@
 		Any [CanvasItem] can draw. For this, [method queue_redraw] is called by the engine, then [constant NOTIFICATION_DRAW] will be received on idle time to request a redraw. Because of this, canvas items don't need to be redrawn on every frame, improving the performance significantly. Several functions for drawing on the [CanvasItem] are provided (see [code]draw_*[/code] functions). However, they can only be used inside [method _draw], its corresponding [method Object._notification] or methods connected to the [signal draw] signal.
 		Canvas items are drawn in tree order on their canvas layer. By default, children are on top of their parents, so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can be hidden, which will also hide its children. By adjusting various other properties of a [CanvasItem], you can also modulate its color (via [member modulate] or [member self_modulate]), change its Z-index, blend mode, and more.
+		Note that properties like transform, modulation, and visibility are only propagated to [i]direct[/i] [CanvasItem] child nodes. If there is a non-[CanvasItem] node in between, like [Node] or [AnimationPlayer], the [CanvasItem] nodes below will have an independent position and [member modulate] chain. See also [member top_level].
 	</description>
 	<tutorials>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
 		<link title="Custom drawing in 2D">$DOCS_URL/tutorials/2d/custom_drawing_in_2d.html</link>
-		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
+		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
@@ -43,8 +44,8 @@
 			<param index="6" name="width" type="float" default="-1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
-				If [param width] is negative, then the arc is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				Draws an unfilled arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. [param center] is defined in local space. For elliptical arcs, see [method draw_ellipse_arc]. See also [method draw_circle].
+				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
 		</method>
@@ -55,8 +56,9 @@
 			<param index="2" name="char" type="String" />
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character using a custom font.
+				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -67,8 +69,9 @@
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="size" type="int" default="-1" />
 			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character outline using a custom font.
+				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used. [param pos] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_circle">
@@ -76,8 +79,15 @@
 			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="radius" type="float" />
 			<param index="2" name="color" type="Color" />
+			<param index="3" name="filled" type="bool" default="true" />
+			<param index="4" name="width" type="float" default="-1.0" />
+			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a colored, filled circle. See also [method draw_arc], [method draw_polyline] and [method draw_polygon].
+				Draws a circle, with [param position] defined in local space. See also [method draw_ellipse], [method draw_arc], [method draw_polyline], and [method draw_polygon].
+				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_colored_polygon">
@@ -87,7 +97,8 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a colored polygon of any number of points, convex or concave. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
+				Draws a colored polygon of any number of points, convex or concave. The points in the [param points] array are defined in local space. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
+				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
 			</description>
 		</method>
 		<method name="draw_dashed_line">
@@ -98,9 +109,47 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="dash" type="float" default="2.0" />
 			<param index="5" name="aligned" type="bool" default="true" />
+			<param index="6" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+				Draws a dashed line from a 2D point to another, with a given color and width. The [param from] and [param to] positions are defined in local space. See also [method draw_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[param dash] is the length of each dash in pixels, with the gap between each dash being the same length. If [param aligned] is [code]true[/code], the length of the first and last dashes may be shortened or lengthened to allow the line to begin and end at the precise points defined by [param from] and [param to]. Both ends are always symmetrical when [param aligned] is [code]true[/code]. If [param aligned] is [code]false[/code], all dashes will have the same length, but the line may appear incomplete at the end due to the dash length not dividing evenly into the line length. Only full dashes are drawn when [param aligned] is [code]false[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
+			</description>
+		</method>
+		<method name="draw_ellipse">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="color" type="Color" />
+			<param index="4" name="filled" type="bool" default="true" />
+			<param index="5" name="width" type="float" default="-1.0" />
+			<param index="6" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor]. See also [method draw_circle], [method draw_ellipse_arc], [method draw_polyline], and [method draw_polygon].
+				If [param filled] is [code]true[/code], the ellipse will be filled with the [param color] specified. If [param filled] is [code]false[/code], the ellipse will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
+			</description>
+		</method>
+		<method name="draw_ellipse_arc">
+			<return type="void" />
+			<param index="0" name="center" type="Vector2" />
+			<param index="1" name="major" type="float" />
+			<param index="2" name="minor" type="float" />
+			<param index="3" name="start_angle" type="float" />
+			<param index="4" name="end_angle" type="float" />
+			<param index="5" name="point_count" type="int" />
+			<param index="6" name="color" type="Color" />
+			<param index="7" name="width" type="float" default="-1.0" />
+			<param index="8" name="antialiased" type="bool" default="false" />
+			<description>
+				Draws an unfilled elliptical arc between the given angles with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The larger the value of [param point_count], the smoother the curve. For circular arcs, see [method draw_arc]. See also [method draw_ellipse].
+				If [param width] is negative, it will be ignored and the arc will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the arc will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full ellipse is drawn (i.e. arc will not overlap itself).
 			</description>
 		</method>
 		<method name="draw_end_animation">
@@ -116,7 +165,7 @@
 			<param index="2" name="src_rect" type="Rect2" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color.
+				Draws a textured rectangle region of the font texture with LCD subpixel anti-aliasing at a given position, optionally modulated by a color. The [param rect] is defined in local space.
 				Texture is drawn using the following blend operation, blend mode of the [CanvasItemMaterial] is ignored:
 				[codeblock]
 				dst.r = texture.r * modulate.r * modulate.a + dst.r * (1.0 - texture.r * modulate.a);
@@ -134,7 +183,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
+				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. The [param from] and [param to] positions are defined in local space. See also [method draw_dashed_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -145,7 +194,7 @@
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
+				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation. The [param transform] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_msdf_texture_rect_region">
@@ -158,7 +207,7 @@
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<param index="6" name="scale" type="float" default="1.0" />
 			<description>
-				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
+				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
 				Value of the [param pixel_range] should the same that was used during distance field texture generation.
 			</description>
@@ -168,9 +217,11 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="width" type="float" default="-1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array in local space, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
@@ -178,9 +229,11 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="width" type="float" default="-1.0" />
+			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array in local space and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -197,8 +250,9 @@
 			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="12" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
@@ -216,8 +270,9 @@
 			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="13" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -235,7 +290,8 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
+				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. The [param points] array is defined in local space. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
+				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -245,8 +301,8 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
-				If [param width] is negative, the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				Draws interconnected line segments with a uniform [param color] and [param width] and optional antialiasing (supported only for positive [param width]). The [param points] array is defined in local space. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline] instead. See also [method draw_polygon].
+				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_polyline_colors">
@@ -256,8 +312,8 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
-				If [param width] is negative, then the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. The [param points] array is defined in local space. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				If [param width] is negative, it will be ignored and the polyline will be drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_primitive">
@@ -267,7 +323,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
+				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. The [param points] array is defined in local space. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -276,9 +332,11 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="-1.0" />
+			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
+				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. The [param rect] is specified in local space. See also [method draw_texture_rect].
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
 			</description>
@@ -289,7 +347,7 @@
 			<param index="1" name="rotation" type="float" default="0.0" />
 			<param index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
 			<description>
-				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
+				Sets a custom local transform for drawing via components. Anything drawn afterwards will be transformed by this.
 				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 			</description>
 		</method>
@@ -297,7 +355,7 @@
 			<return type="void" />
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
-				Sets a custom transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
+				Sets a custom local transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
 			</description>
 		</method>
 		<method name="draw_string" qualifiers="const">
@@ -312,25 +370,16 @@
 			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="10" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
-				[b]Example using the default project font:[/b]
+				Draws [param text] using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
-				# If using this method in a script that redraws constantly, move the
-				# `default_font` declaration to a member variable assigned in `_ready()`
-				# so the Control is only created once.
-				var default_font = ThemeDB.fallback_font
-				var default_font_size = ThemeDB.fallback_font_size
-				draw_string(default_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, default_font_size)
+				draw_string(ThemeDB.fallback_font, Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, ThemeDB.fallback_font_size)
 				[/gdscript]
 				[csharp]
-				// If using this method in a script that redraws constantly, move the
-				// `default_font` declaration to a member variable assigned in `_Ready()`
-				// so the Control is only created once.
-				Font defaultFont = ThemeDB.FallbackFont;
-				int defaultFontSize = ThemeDB.FallbackFontSize;
-				DrawString(defaultFont, new Vector2(64, 64), "Hello world", HORIZONTAL_ALIGNMENT_LEFT, -1, defaultFontSize);
+				DrawString(ThemeDB.FallbackFont, new Vector2(64, 64), "Hello world", HorizontalAlignment.Left, -1, ThemeDB.FallbackFontSize);
 				[/csharp]
 				[/codeblocks]
 				See also [method Font.draw_string].
@@ -349,8 +398,9 @@
 			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="11" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] outline using the specified [param font] at the [param pos] in local space (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -358,7 +408,7 @@
 			<param index="0" name="style_box" type="StyleBox" />
 			<param index="1" name="rect" type="Rect2" />
 			<description>
-				Draws a styled rectangle.
+				Draws a styled rectangle. The [param rect] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_texture">
@@ -367,7 +417,7 @@
 			<param index="1" name="position" type="Vector2" />
 			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
-				Draws a texture at a given position.
+				Draws a texture at a given position. The [param position] is defined in local space.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
@@ -378,7 +428,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
+				Draws a textured rectangle at a given position, optionally modulated by a color. The [param rect] is defined in local space. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -390,37 +440,44 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position in local space, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">
 			<return type="void" />
 			<description>
-				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
+				Forces the node's transform to update. Fails if the node is not inside the tree. See also [method get_transform].
+				[b]Note:[/b] For performance reasons, transform changes are usually accumulated and applied [i]once[/i] at the end of the frame. The update propagates through [CanvasItem] children, as well. Therefore, use this method only when you need an up-to-date transform (such as during physics operations).
 			</description>
 		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the [World2D] canvas where this item is in.
+				Returns the [RID] of the [World2D] canvas where this node is registered to, used by the [RenderingServer].
 			</description>
 		</method>
 		<method name="get_canvas_item" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the canvas item RID used by [RenderingServer] for this item.
+				Returns the internal canvas item [RID] used by the [RenderingServer] for this node.
+			</description>
+		</method>
+		<method name="get_canvas_layer_node" qualifiers="const">
+			<return type="CanvasLayer" />
+			<description>
+				Returns the [CanvasLayer] that contains this node, or [code]null[/code] if the node is not in any [CanvasLayer].
 			</description>
 		</method>
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system.
+				Returns the transform of this node, converted from its registered canvas's coordinate system to its viewport's coordinate system. See also [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
+				Returns mouse cursor's global position relative to the [CanvasLayer] that contains this node.
 				[b]Note:[/b] For screen-space coordinates (e.g. when using a non-embedded [Popup]), you can use [method DisplayServer.mouse_get_position].
 			</description>
 		</method>
@@ -436,6 +493,13 @@
 				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
 			</description>
 		</method>
+		<method name="get_instance_shader_parameter" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Get the value of a shader parameter as set on this instance.
+			</description>
+		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
@@ -446,38 +510,39 @@
 			<return type="Transform2D" />
 			<description>
 				Returns the transform of this [CanvasItem] in global screen coordinates (i.e. taking window position into account). Mostly useful for editor plugins.
-				Equals to [method get_global_transform] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
+				Equivalent to [method get_global_transform_with_canvas] if the window is embedded (see [member Viewport.gui_embed_subwindows]).
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item.
+				Returns the transform matrix of this [CanvasItem].
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the viewport's boundaries as a [Rect2].
+				Returns this node's viewport boundaries as a [Rect2]. See also [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
+				Returns the transform of this node, converted from its registered canvas's coordinate system to its viewport embedder's coordinate system. See also [method Viewport.get_final_transform] and [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_visibility_layer_bit" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns an individual bit on the rendering visibility layer.
+				Returns [code]true[/code] if the layer at the given index is set in [member visibility_layer].
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D" />
 			<description>
-				Returns the [World2D] where this item is in.
+				Returns the [World2D] this node is registered to.
+				Usually, this is the same as this node's viewport (see [method Node.get_viewport] and [method Viewport.find_world_2d]).
 			</description>
 		</method>
 		<method name="hide">
@@ -489,40 +554,45 @@
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if local transform notifications are communicated to children.
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes. This is enabled with [method set_notify_local_transform].
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if global transform notifications are communicated to children.
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes. This is enabled with [method set_notify_transform].
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is therefore not drawn (see [method _draw]).
+				Visibility is checked only in parent nodes that inherit from [CanvasItem], [CanvasLayer], and [Window]. If the parent is of any other type (such as [Node], [AnimationPlayer], or [Node3D]), it is assumed to be visible.
+				[b]Note:[/b] This method does not take [member visibility_layer] into account, so even if this method returns [code]true[/code], the node might end up not being rendered.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
 			<return type="Vector2" />
-			<param index="0" name="screen_point" type="Vector2" />
+			<param index="0" name="viewport_point" type="Vector2" />
 			<description>
-				Assigns [param screen_point] as this node's new local transform.
+				Transforms [param viewport_point] from the viewport's coordinates to this node's local coordinates.
+				For the opposite operation, use [method get_global_transform_with_canvas].
+				[codeblock]
+				var viewport_point = get_global_transform_with_canvas() * local_point
+				[/codeblock]
 			</description>
 		</method>
 		<method name="make_input_local" qualifiers="const">
 			<return type="InputEvent" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Transformations issued by [param event]'s inputs are applied in local space instead of global space.
+				Returns a copy of the given [param event] with its coordinates converted from global space to this [CanvasItem]'s local space. If not possible, returns the same [InputEvent] unchanged.
 			</description>
 		</method>
 		<method name="move_to_front">
 			<return type="void" />
 			<description>
-				Moves this node to display on top of its siblings.
-				Internally, the node is moved to the bottom of parent's children list. The method has no effect on nodes without a parent.
+				Moves this node below its siblings, usually causing the node to draw on top of its siblings. Does nothing if this node does not have a parent. See also [method Node.move_child].
 			</description>
 		</method>
 		<method name="queue_redraw">
@@ -531,18 +601,30 @@
 				Queues the [CanvasItem] to redraw. During idle time, if [CanvasItem] is visible, [constant NOTIFICATION_DRAW] is sent and [method _draw] is called. This only occurs [b]once[/b] per frame, even if this method has been called multiple times.
 			</description>
 		</method>
+		<method name="set_instance_shader_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Set the value of a shader uniform for this instance only ([url=$DOCS_URL/tutorials/shaders/shader_reference/shading_language.html#per-instance-uniforms]per-instance uniform[/url]). See also [method ShaderMaterial.set_shader_parameter] to assign a uniform on all instances using the same [ShaderMaterial].
+				[b]Note:[/b] For a shader uniform to be assignable on a per-instance basis, it [i]must[/i] be defined with [code]instance uniform ...[/code] rather than [code]uniform ...[/code] in the shader code.
+				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
+			</description>
+		</method>
 		<method name="set_notify_local_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes.
+				[b]Note:[/b] Many canvas items such as [Bone2D] or [CollisionShape2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes.
+				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
 		<method name="set_visibility_layer_bit">
@@ -556,13 +638,15 @@
 		<method name="show">
 			<return type="void" />
 			<description>
-				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code].
+				[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip children nodes, essentially acting as a mask.
+			The mode in which this node clips its children, acting as a mask.
+			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -570,45 +654,49 @@
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material applied to this [CanvasItem].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			The color applied to this [CanvasItem]. This property does affect child [CanvasItem]s, unlike [member self_modulate] which only affects the node itself.
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
 			The color applied to this [CanvasItem]. This property does [b]not[/b] affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.
-			[b]Note:[/b] Internal children (e.g. sliders in [ColorPicker] or tab bar in [TabContainer]) are also not affected by this property (see [code]include_internal[/code] parameter of [method Node.get_child] and other similar methods).
+			[b]Note:[/b] Internal children are also not affected by this property (see the [code]include_internal[/code] parameter in [method Node.add_child]). For built-in nodes this includes sliders in [ColorPicker], and the tab bar in [TabContainer].
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
-			If [code]true[/code], the object draws behind its parent.
+			If [code]true[/code], this node draws behind its parent.
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
-			The texture filtering mode to use on this [CanvasItem].
+			The filtering mode used to render this [CanvasItem]'s texture(s).
 		</member>
 		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
-			The texture repeating mode to use on this [CanvasItem].
+			The repeating mode used to render this [CanvasItem]'s texture(s). It affects what happens when the texture is sampled outside its extents, for example by setting a [member Sprite2D.region_rect] that is larger than the texture or assigning [Polygon2D] UV points outside the texture.
+			[b]Note:[/b] [TextureRect] is not affected by [member texture_repeat], as it uses its own texture repeating implementation.
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], this [CanvasItem] will [i]not[/i] inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that do not have [member top_level] set to [code]true[/code]. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
-			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
+			If [code]true[/code], the parent [CanvasItem]'s [member material] is used as this node's material.
 		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. This means that if a parent [CanvasItem] does not have all the same layers as its child, the child may not be visible even if both the parent and child have [member visible] set to [code]true[/code]. For example, if a parent has layer 1 and a child has layer 2, the child will not be visible in a [Viewport] with the canvas cull mask set to layer 1 or 2 (see [member Viewport.canvas_cull_mask]). To ensure that both the parent and child are visible, the parent must have both layers 1 and 2, or the child must have [member top_level] set to [code]true[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			If [code]true[/code], this [CanvasItem] may be drawn. Whether this [CanvasItem] is actually drawn depends on the visibility of all of its [CanvasItem] ancestors. In other words: this [CanvasItem] will be drawn when [method is_visible_in_tree] returns [code]true[/code] and all [CanvasItem] ancestors share at least one [member visibility_layer] with this [CanvasItem].
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
-			If [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled. Y-sorting only affects children that inherit from [CanvasItem].
-			You can nest nodes with Y-sorting. Child Y-sorted nodes are sorted in the same space as the parent Y-sort. This feature allows you to organize a scene better or divide it into multiple ones without changing your scene tree.
+			If [code]true[/code], this and child [CanvasItem] nodes with a higher Y position are rendered in front of nodes with a lower Y position. If [code]false[/code], this and child [CanvasItem] nodes are rendered normally in scene tree order.
+			With Y-sorting enabled on a parent node ('A') but disabled on a child node ('B'), the child node ('B') is sorted but its children ('C1', 'C2', etc.) render together on the same Y position as the child node ('B'). This allows you to organize the render order of a scene without changing the scene tree.
+			Nodes sort relative to each other only if they are on the same [member z_index].
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
-			If [code]true[/code], the node's Z index is relative to its parent's Z index. If this node's Z index is 2 and its parent's effective Z index is 3, then this node's effective Z index will be 2 + 3 = 5.
+			If [code]true[/code], this node's final Z index is relative to its parent's Z index.
+			For example, if [member z_index] is [code]2[/code] and its parent's final Z index is [code]3[/code], then this node's final Z index will be [code]5[/code] ([code]2 + 3[/code]).
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
-			Z index. Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
-			[b]Note:[/b] Changing the Z index of a [Control] only affects the drawing order, not the order in which input events are handled. This can be useful to implement certain UI animations, e.g. a menu where hovered items are scaled and should overlap others.
+			The order in which this node is drawn. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
+			[b]Note:[/b] The Z index does [b]not[/b] affect the order in which [CanvasItem] nodes are processed or the way input events are handled. This is especially important to keep in mind for [Control] nodes.
 		</member>
 	</members>
 	<signals>
@@ -620,64 +708,71 @@
 		</signal>
 		<signal name="hidden">
 			<description>
-				Emitted when becoming hidden.
+				Emitted when this node becomes hidden, i.e. it's no longer visible in the tree (see [method is_visible_in_tree]).
 			</description>
 		</signal>
 		<signal name="item_rect_changed">
 			<description>
-				Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite2D.texture]).
+				Emitted when the [CanvasItem]'s boundaries (position or size) change, or when an action took place that may have affected these boundaries (e.g. changing [member Sprite2D.texture]).
 			</description>
 		</signal>
 		<signal name="visibility_changed">
 			<description>
-				Emitted when the visibility (hidden/visible) changes.
+				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
+				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_VISIBILITY_CHANGED] notification.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_transform].
+			Notification received when this node's global transform changes, if [method is_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_transform] and [method get_transform].
+			[b]Note:[/b] Many canvas items such as [Camera2D] or [CollisionObject2D] automatically enable this in order to function correctly.
 		</constant>
 		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="35">
-			The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform].
+			Notification received when this node's transform changes, if [method is_local_transform_notification_enabled] is [code]true[/code]. This is not received when a parent [Node2D]'s transform changes. See also [method set_notify_local_transform].
+			[b]Note:[/b] Many canvas items such as [Camera2D] or [CollisionShape2D] automatically enable this in order to function correctly.
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			The [CanvasItem] is requested to draw (see [method _draw]).
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31">
-			The [CanvasItem]'s visibility has changed.
+			Notification received when this node's visibility changes (see [member visible] and [method is_visible_in_tree]).
+			This notification is received [i]before[/i] the related [signal visibility_changed] signal.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_CANVAS" value="32">
 			The [CanvasItem] has entered the canvas.
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
-			The [CanvasItem]'s active [World2D] changed.
+			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="1" enum="TextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering. Useful for pixel art.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="2" enum="TextureFilter">
-			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="TextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. This is the fastest way to read from textures with mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
-			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate.
+			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate.
+			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="7" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.
@@ -686,25 +781,25 @@
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
-			Texture will not repeat.
+			The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.
 		</constant>
 		<constant name="TEXTURE_REPEAT_ENABLED" value="2" enum="TextureRepeat">
-			Texture will repeat normally.
+			The texture repeats when exceeding the texture's size.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			Texture will repeat in a 2x2 tiled mode, where elements at even positions are mirrored.
+			The texture repeats when the exceeding the texture's size in a "2×2 tiled mode". Repeated textures at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.
 		</constant>
 		<constant name="CLIP_CHILDREN_DISABLED" value="0" enum="ClipChildrenMode">
-			Child draws over parent and is not clipped.
+			Children are drawn over this node and are not clipped.
 		</constant>
 		<constant name="CLIP_CHILDREN_ONLY" value="1" enum="ClipChildrenMode">
-			Parent is used for the purposes of clipping only. Child is clipped to the parent's visible area, parent is not drawn.
+			This node is used as a mask and is [b]not[/b] drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to this node's drawn area.
 		</constant>
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
-			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
+			This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
 		</constant>
 		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.

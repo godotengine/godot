@@ -34,10 +34,10 @@
 #include "../gdscript_analyzer.h"
 #include "../gdscript_compiler.h"
 #include "../gdscript_parser.h"
+#include "../gdscript_tokenizer_buffer.h"
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
-#include "core/core_string_names.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
@@ -76,33 +76,32 @@ void init_autoloads() {
 			// Cache the scene reference before loading it (for cyclic references)
 			Ref<PackedScene> scn;
 			scn.instantiate();
-			scn->set_path(info.path);
+			scn->set_path(ResourceUID::ensure_path(info.path));
 			scn->reload_from_file();
-			ERR_CONTINUE_MSG(!scn.is_valid(), vformat("Can't autoload: %s.", info.path));
+			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
 			if (scn.is_valid()) {
 				n = scn->instantiate();
 			}
 		} else {
 			Ref<Resource> res = ResourceLoader::load(info.path);
-			ERR_CONTINUE_MSG(res.is_null(), vformat("Can't autoload: %s.", info.path));
+			ERR_CONTINUE_MSG(res.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
 			Ref<Script> scr = res;
 			if (scr.is_valid()) {
 				StringName ibt = scr->get_instance_base_type();
 				bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-				ERR_CONTINUE_MSG(!valid_type, vformat("Script does not inherit from Node: %s.", info.path));
+				ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", info.path));
 
 				Object *obj = ClassDB::instantiate(ibt);
-
-				ERR_CONTINUE_MSG(!obj, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+				ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate '%s'.", ibt));
 
 				n = Object::cast_to<Node>(obj);
 				n->set_script(scr);
 			}
 		}
 
-		ERR_CONTINUE_MSG(!n, vformat("Path in autoload not a node or script: %s.", info.path));
+		ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", info.path));
 		n->set_name(info.name);
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -132,10 +131,11 @@ void finish_language() {
 
 StringName GDScriptTestRunner::test_function_name;
 
-GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames) {
-	test_function_name = StaticCString::create("test");
+GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames, bool p_use_binary_tokens) {
+	test_function_name = StringName("test");
 	do_init_languages = p_init_language;
 	print_filenames = p_print_filenames;
+	binary_tokens = p_use_binary_tokens;
 
 	source_dir = p_source_dir;
 	if (!source_dir.ends_with("/")) {
@@ -145,6 +145,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	if (do_init_languages) {
 		init_language(p_source_dir);
 	}
+
 #ifdef DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
@@ -153,12 +154,16 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
 			continue;
 		}
-		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
-		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
+		const String setting_path = GDScriptWarning::get_setting_path_from_code((GDScriptWarning::Code)i);
+		ProjectSettings::get_singleton()->set_setting(setting_path, (int)GDScriptWarning::WARN);
 	}
-#endif
 
-	// Enable printing to show results
+	// Force the call, since the language is initialized **before** applying project settings
+	// and the `settings_changed` signal is emitted with `call_deferred()`.
+	GDScriptParser::update_project_settings();
+#endif // DEBUG_ENABLED
+
+	// Enable printing to show results.
 	CoreGlobals::print_line_enabled = true;
 	CoreGlobals::print_error_enabled = true;
 }
@@ -176,7 +181,7 @@ static String strip_warnings(const String &p_expected) {
 	// so it doesn't fail just because of difference in warnings.
 	String expected_no_warnings;
 	for (String line : p_expected.split("\n")) {
-		if (line.begins_with(">> ")) {
+		if (line.begins_with("~~ ")) {
 			continue;
 		}
 		expected_no_warnings += line + "\n";
@@ -267,7 +272,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 
 	while (!next.is_empty()) {
 		if (dir->current_is_dir()) {
-			if (next == "." || next == "..") {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
 				next = dir->get_next();
 				continue;
 			}
@@ -275,10 +280,14 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				return false;
 			}
 		} else {
+			// `*.notest.gd` files are skipped.
 			if (next.ends_with(".notest.gd")) {
 				next = dir->get_next();
 				continue;
-			} else if (next.get_extension().to_lower() == "gd") {
+			} else if (binary_tokens && next.ends_with(".textonly.gd")) {
+				next = dir->get_next();
+				continue;
+			} else if (next.has_extension("gd")) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
@@ -296,11 +305,23 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 #endif
 
 				String out_file = next.get_basename() + ".out";
-				if (!is_generating && !dir->file_exists(out_file)) {
-					ERR_FAIL_V_MSG(false, "Could not find output file for " + next);
+				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
+
+				if (next.ends_with(".bin.gd")) {
+					// Test text mode first.
+					GDScriptTest text_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					tests.push_back(text_test);
+					// Test binary mode even without `--use-binary-tokens`.
+					GDScriptTest bin_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					bin_test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
+					tests.push_back(bin_test);
+				} else {
+					GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					if (binary_tokens) {
+						test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
+					}
+					tests.push_back(test);
 				}
-				GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
-				tests.push_back(test);
 			}
 		}
 
@@ -322,22 +343,65 @@ bool GDScriptTestRunner::make_tests() {
 	return make_tests_for_dir(dir->get_current_dir());
 }
 
-bool GDScriptTestRunner::generate_class_index() {
-	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
-	for (int i = 0; i < tests.size(); i++) {
-		GDScriptTest test = tests[i];
-		String base_type;
+static bool generate_class_index_recursive(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(p_dir, &err));
 
-		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
-		if (class_name.is_empty()) {
-			continue;
-		}
-		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
-				"Class name '" + class_name + "' from " + test.get_source_file() + " is already used in " + ScriptServer::get_global_class_path(class_name));
-
-		ScriptServer::add_global_class(class_name, base_type, gdscript_name, test.get_source_file());
+	if (err != OK) {
+		return false;
 	}
+
+	String current_dir = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	StringName gdscript_name = GDScriptLanguage::get_singleton()->get_name();
+	while (!next.is_empty()) {
+		if (dir->current_is_dir()) {
+			if (next == "." || next == ".." || next == "completion" || next == "lsp") {
+				next = dir->get_next();
+				continue;
+			}
+			if (!generate_class_index_recursive(current_dir.path_join(next))) {
+				return false;
+			}
+		} else {
+			if (!next.ends_with(".gd")) {
+				next = dir->get_next();
+				continue;
+			}
+			String base_type;
+			String source_file = current_dir.path_join(next);
+			bool is_abstract = false;
+			bool is_tool = false;
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
+			if (class_name.is_empty()) {
+				next = dir->get_next();
+				continue;
+			}
+			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
+					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
+
+			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
+		}
+
+		next = dir->get_next();
+	}
+
+	dir->list_dir_end();
+
 	return true;
+}
+
+bool GDScriptTestRunner::generate_class_index() {
+	Error err = OK;
+	Ref<DirAccess> dir(DirAccess::open(source_dir, &err));
+
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Could not open specified test directory.");
+
+	source_dir = dir->get_current_dir() + "/"; // Make it absolute path.
+	return generate_class_index_recursive(dir->get_current_dir());
 }
 
 GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_path, const String &p_base_dir) {
@@ -394,47 +458,24 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	result->status = GDTEST_RUNTIME_ERROR;
 
-	StringBuilder builder;
-	builder.append(">> ");
-	// Only include the function, file and line for script errors, otherwise the
-	// test outputs changes based on the platform/compiler.
-	bool include_source_info = false;
-	switch (p_type) {
-		case ERR_HANDLER_ERROR:
-			builder.append("ERROR");
-			break;
-		case ERR_HANDLER_WARNING:
-			builder.append("WARNING");
-			break;
-		case ERR_HANDLER_SCRIPT:
-			builder.append("SCRIPT ERROR");
-			include_source_info = true;
-			break;
-		case ERR_HANDLER_SHADER:
-			builder.append("SHADER ERROR");
-			break;
-		default:
-			builder.append("Unknown error type");
-			break;
+	String header = _error_handler_type_string(p_type);
+
+	// Only include the file, line, and function for script errors,
+	// otherwise the test outputs changes based on the platform/compiler.
+	if (p_type == ERR_HANDLER_SCRIPT) {
+		header += vformat(" at %s:%d on %s()",
+				String::utf8(p_file).trim_prefix(self->base_dir).replace_char('\\', '/'),
+				p_line,
+				String::utf8(p_function));
 	}
 
-	if (include_source_info) {
-		builder.append("\n>> on function: ");
-		builder.append(String::utf8(p_function));
-		builder.append("()\n>> ");
-		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"));
-		builder.append("\n>> ");
-		builder.append(itos(p_line));
-	}
-	builder.append("\n>> ");
-	builder.append(String::utf8(p_error));
+	StringBuilder error_string;
+	error_string.append(vformat(">> %s: %s\n", header, String::utf8(p_error)));
 	if (strlen(p_explanation) > 0) {
-		builder.append("\n>> ");
-		builder.append(String::utf8(p_explanation));
+		error_string.append(vformat(">>   %s\n", String::utf8(p_explanation)));
 	}
-	builder.append("\n");
 
-	result->output = builder.as_string();
+	result->output += error_string.as_string();
 }
 
 bool GDScriptTest::check_output(const String &p_output) const {
@@ -485,7 +526,15 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(source_file);
-	err = script->load_source_code(source_file);
+	if (tokenizer_mode == TOKENIZER_TEXT) {
+		err = script->load_source_code(source_file);
+	} else {
+		String code = FileAccess::get_file_as_string(source_file, &err);
+		if (!err) {
+			Vector<uint8_t> buffer = GDScriptTokenizerBuffer::parse_code_string(code, GDScriptTokenizerBuffer::COMPRESS_ZSTD);
+			script->set_binary_tokens_source(buffer);
+		}
+	}
 	if (err != OK) {
 		enable_stdout();
 		result.status = GDTEST_LOAD_ERROR;
@@ -495,7 +544,11 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 	// Test parsing.
 	GDScriptParser parser;
-	err = parser.parse(script->get_source_code(), source_file, false);
+	if (tokenizer_mode == TOKENIZER_TEXT) {
+		err = parser.parse(script->get_source_code(), source_file, false);
+	} else {
+		err = parser.parse_binary(script->get_binary_tokens_source(), source_file);
+	}
 	if (err != OK) {
 		enable_stdout();
 		result.status = GDTEST_PARSER_ERROR;
@@ -504,7 +557,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		if (!errors.is_empty()) {
 			// Only the first error since the following might be cascading.
-			result.output += errors[0].message + "\n"; // TODO: line, column?
+			result.output += errors.front()->get().message + "\n"; // TODO: line, column?
 		}
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
@@ -520,11 +573,11 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.status = GDTEST_ANALYZER_ERROR;
 		result.output = get_text_for_status(result.status) + "\n";
 
-		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		if (!errors.is_empty()) {
-			// Only the first error since the following might be cascading.
-			result.output += errors[0].message + "\n"; // TODO: line, column?
+		StringBuilder error_string;
+		for (const GDScriptParser::ParserError &error : parser.get_errors()) {
+			error_string.append(vformat(">> ERROR at line %d: %s\n", error.line, error.message));
 		}
+		result.output += error_string.as_string();
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
 		}
@@ -533,16 +586,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 
 #ifdef DEBUG_ENABLED
 	StringBuilder warning_string;
-	for (const GDScriptWarning &E : parser.get_warnings()) {
-		const GDScriptWarning warning = E;
-		warning_string.append(">> WARNING");
-		warning_string.append("\n>> Line: ");
-		warning_string.append(itos(warning.start_line));
-		warning_string.append("\n>> ");
-		warning_string.append(warning.get_name());
-		warning_string.append("\n>> ");
-		warning_string.append(warning.get_message());
-		warning_string.append("\n");
+	for (const GDScriptWarning &warning : parser.get_warnings()) {
+		warning_string.append(vformat("~~ WARNING at line %d: (%s) %s\n", warning.start_line, warning.get_name(), warning.get_message()));
 	}
 	result.output += warning_string.as_string();
 #endif
@@ -554,18 +599,24 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		enable_stdout();
 		result.status = GDTEST_COMPILER_ERROR;
 		result.output = get_text_for_status(result.status) + "\n";
-		result.output = compiler.get_error();
+		result.output += compiler.get_error() + "\n";
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
 		}
 		return result;
 	}
-	// Script files matching this pattern are allowed to not contain a test() function.
-	if (source_file.match("*.notest.gd")) {
+
+	// `*.norun.gd` files are allowed to not contain a `test()` function (no runtime testing).
+	if (source_file.ends_with(".norun.gd")) {
 		enable_stdout();
-		result.passed = check_output(result.output);
+		result.status = GDTEST_OK;
+		result.output = get_text_for_status(result.status) + "\n" + result.output;
+		if (!p_is_generating) {
+			result.passed = check_output(result.output);
+		}
 		return result;
 	}
+
 	// Test running.
 	const HashMap<StringName, GDScriptFunction *>::ConstIterator test_function_element = script->get_member_functions().find(GDScriptTestRunner::test_function_name);
 	if (!test_function_element) {
@@ -584,7 +635,16 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	add_print_handler(&_print_handler);
 	add_error_handler(&_error_handler);
 
-	script->reload();
+	err = script->reload();
+	if (err) {
+		enable_stdout();
+		result.status = GDTEST_LOAD_ERROR;
+		result.output = "";
+		result.passed = false;
+		remove_print_handler(&_print_handler);
+		remove_error_handler(&_error_handler);
+		ERR_FAIL_V_MSG(result, "\nCould not reload script: '" + source_file + "'");
+	}
 
 	// Create object instance for test.
 	Object *obj = ClassDB::instantiate(script->get_native()->get_name());

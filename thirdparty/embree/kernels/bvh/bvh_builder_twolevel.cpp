@@ -1,6 +1,10 @@
 // Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+#if !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "bvh_builder_twolevel.h"
 #include "bvh_statistics.h"
 #include "../builders/bvh_builder_sah.h"
@@ -333,6 +337,12 @@ namespace embree
     }
 #endif
 
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+    Builder* BVH4BuilderTwoLevelInstanceArraySAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype, bool useMortonBuilder) {
+      return new BVHNBuilderTwoLevel<4,InstanceArray,InstanceArrayPrimitive>((BVH4*)bvh,scene,gtype,useMortonBuilder);
+    }
+#endif
+
 #if defined(__AVX__)
 #if defined(EMBREE_GEOMETRY_TRIANGLE)
     Builder* BVH8BuilderTwoLevelTriangle4MeshSAH (void* bvh, Scene* scene, bool useMortonBuilder) {
@@ -361,6 +371,12 @@ namespace embree
 #if defined(EMBREE_GEOMETRY_INSTANCE)
     Builder* BVH8BuilderTwoLevelInstanceSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype, bool useMortonBuilder) {
       return new BVHNBuilderTwoLevel<8,Instance,InstancePrimitive>((BVH8*)bvh,scene,gtype,useMortonBuilder);
+    }
+#endif
+
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+    Builder* BVH8BuilderTwoLevelInstanceArraySAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype, bool useMortonBuilder) {
+      return new BVHNBuilderTwoLevel<8,InstanceArray,InstanceArrayPrimitive>((BVH8*)bvh,scene,gtype,useMortonBuilder);
     }
 #endif
 

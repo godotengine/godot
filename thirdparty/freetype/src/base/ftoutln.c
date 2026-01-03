@@ -4,7 +4,7 @@
  *
  *   FreeType outline management (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -53,7 +53,7 @@
 
     FT_Vector*  point;
     FT_Vector*  limit;
-    char*       tags;
+    FT_Byte*    tags;
 
     FT_Error    error;
 
@@ -332,8 +332,8 @@
          FT_NEW_ARRAY( anoutline->contours, numContours ) )
       goto Fail;
 
-    anoutline->n_points    = (FT_Short)numPoints;
-    anoutline->n_contours  = (FT_Short)numContours;
+    anoutline->n_points    = (FT_UShort)numPoints;
+    anoutline->n_contours  = (FT_UShort)numContours;
     anoutline->flags      |= FT_OUTLINE_OWNER;
 
     return FT_Err_Ok;
@@ -359,12 +359,14 @@
       FT_Int  n;
 
 
+      FT_TRACE5(( "FT_Outline_Check: contours = %d, points = %d\n",
+                  n_contours, n_points ));
       /* empty glyph? */
       if ( n_points == 0 && n_contours == 0 )
         return FT_Err_Ok;
 
       /* check point and contour counts */
-      if ( n_points <= 0 || n_contours <= 0 )
+      if ( n_points == 0 || n_contours == 0 )
         goto Bad;
 
       end0 = -1;
@@ -576,13 +578,13 @@
 
       /* reverse tags table */
       {
-        char*  p = outline->tags + first;
-        char*  q = outline->tags + last;
+        FT_Byte*  p = outline->tags + first;
+        FT_Byte*  q = outline->tags + last;
 
 
         while ( p < q )
         {
-          char  swap;
+          FT_Byte  swap;
 
 
           swap = *p;

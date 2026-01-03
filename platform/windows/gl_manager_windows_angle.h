@@ -28,16 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_WINDOWS_ANGLE_H
-#define GL_MANAGER_WINDOWS_ANGLE_H
+#pragma once
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "drivers/egl/egl_manager.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <windows.h>
 
@@ -50,12 +48,10 @@ private:
 	virtual Vector<EGLint> _get_platform_context_attribs() const override;
 
 public:
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
-	GLManagerANGLE_Windows(){};
-	~GLManagerANGLE_Windows(){};
+	GLManagerANGLE_Windows() {}
+	~GLManagerANGLE_Windows() {}
 };
 
 #endif // WINDOWS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_WINDOWS_ANGLE_H

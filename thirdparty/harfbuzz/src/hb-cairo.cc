@@ -166,6 +166,32 @@ hb_cairo_pop_transform (hb_paint_funcs_t *pfuncs HB_UNUSED,
   cairo_restore (cr);
 }
 
+static hb_bool_t
+hb_cairo_paint_color_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
+			    void *paint_data,
+			    hb_codepoint_t glyph,
+			    hb_font_t *font,
+			    void *user_data HB_UNUSED)
+{
+  hb_cairo_context_t *c = (hb_cairo_context_t *) paint_data;
+  cairo_t *cr = c->cr;
+
+  cairo_save (cr);
+
+  hb_position_t x_scale, y_scale;
+  hb_font_get_scale (font, &x_scale, &y_scale);
+  cairo_scale (cr, x_scale, -y_scale);
+
+  cairo_glyph_t cairo_glyph = { glyph, 0, 0 };
+  cairo_set_scaled_font (cr, c->scaled_font);
+  cairo_set_font_size (cr, 1);
+  cairo_show_glyphs (cr, &cairo_glyph, 1);
+
+  cairo_restore (cr);
+
+  return true;
+}
+
 static void
 hb_cairo_push_clip_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 			  void *paint_data,
@@ -178,7 +204,9 @@ hb_cairo_push_clip_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   cairo_save (cr);
   cairo_new_path (cr);
+
   hb_font_draw_glyph (font, glyph, hb_cairo_draw_get_funcs (), cr);
+
   cairo_close_path (cr);
   cairo_clip (cr);
 }
@@ -397,6 +425,7 @@ static struct hb_cairo_paint_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_t<
 
     hb_paint_funcs_set_push_transform_func (funcs, hb_cairo_push_transform, nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func (funcs, hb_cairo_pop_transform, nullptr, nullptr);
+    hb_paint_funcs_set_color_glyph_func (funcs, hb_cairo_paint_color_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func (funcs, hb_cairo_push_clip_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_rectangle_func (funcs, hb_cairo_push_clip_rectangle, nullptr, nullptr);
     hb_paint_funcs_set_pop_clip_func (funcs, hb_cairo_pop_clip, nullptr, nullptr);
@@ -455,7 +484,7 @@ hb_cairo_init_scaled_font (cairo_scaled_font_t  *scaled_font,
 								   &hb_cairo_face_user_data_key);
     font = hb_font_create (face);
 
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1,16,0)
+#if !defined(HB_NO_VAR) && CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1,16,0)
     cairo_font_options_t *font_options = cairo_font_options_create ();
 
     // Set variations
@@ -545,9 +574,12 @@ hb_cairo_text_to_glyphs (cairo_scaled_font_t        *scaled_font,
   hb_buffer_guess_segment_properties (buffer);
   hb_shape (font, buffer, nullptr, 0);
 
+  int x_scale, y_scale;
+  hb_font_get_scale (font, &x_scale, &y_scale);
+
   hb_cairo_glyphs_from_buffer (buffer,
 			       true,
-			       font->x_scale, font->y_scale,
+			       x_scale, y_scale,
 			       0., 0.,
 			       utf8, utf8_len,
 			       glyphs, (unsigned *) num_glyphs,
@@ -570,12 +602,15 @@ hb_cairo_render_glyph (cairo_scaled_font_t  *scaled_font,
 
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
-  cairo_scale (cr, +1./x_scale, -1./y_scale);
+  cairo_scale (cr,
+	       +1. / (x_scale ? x_scale : 1),
+	       -1. / (y_scale ? y_scale : 1));
 
-  hb_font_draw_glyph (font, glyph, hb_cairo_draw_get_funcs (), cr);
+  if (hb_font_draw_glyph_or_fail (font, glyph, hb_cairo_draw_get_funcs (), cr))
+    cairo_fill (cr);
 
-  cairo_fill (cr);
-
+  // If draw fails, we still return SUCCESS, as we want empty drawing, not
+  // setting the cairo object into error.
   return CAIRO_STATUS_SUCCESS;
 }
 
@@ -601,15 +636,17 @@ hb_cairo_render_color_glyph (cairo_scaled_font_t  *scaled_font,
   hb_color_t color = HB_COLOR (0, 0, 0, 255);
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
-  cairo_scale (cr, +1./x_scale, -1./y_scale);
+  cairo_scale (cr,
+	       +1. / (x_scale ? x_scale : 1),
+	       -1. / (y_scale ? y_scale : 1));
 
   hb_cairo_context_t c;
   c.scaled_font = scaled_font;
   c.cr = cr;
   c.color_cache = (hb_map_t *) cairo_scaled_font_get_user_data (scaled_font, &color_cache_key);
 
-  hb_font_paint_glyph (font, glyph, hb_cairo_paint_get_funcs (), &c, palette, color);
-
+  if (!hb_font_paint_glyph_or_fail (font, glyph, hb_cairo_paint_get_funcs (), &c, palette, color))
+    return CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED;
 
   return CAIRO_STATUS_SUCCESS;
 }
@@ -626,8 +663,7 @@ user_font_face_create (hb_face_t *face)
   cairo_user_font_face_set_text_to_glyphs_func (cairo_face, hb_cairo_text_to_glyphs);
   cairo_user_font_face_set_render_glyph_func (cairo_face, hb_cairo_render_glyph);
 #ifdef HAVE_CAIRO_USER_FONT_FACE_SET_RENDER_COLOR_GLYPH_FUNC
-  if (hb_ot_color_has_png (face) || hb_ot_color_has_layers (face) || hb_ot_color_has_paint (face))
-    cairo_user_font_face_set_render_color_glyph_func (cairo_face, hb_cairo_render_color_glyph);
+  cairo_user_font_face_set_render_color_glyph_func (cairo_face, hb_cairo_render_color_glyph);
 #endif
 
   if (unlikely (CAIRO_STATUS_SUCCESS != cairo_font_face_set_user_data (cairo_face,
@@ -658,7 +694,8 @@ hb_cairo_font_face_create_for_font (hb_font_t *font)
 {
   hb_font_make_immutable (font);
 
-  auto *cairo_face =  user_font_face_create (font->face);
+  auto *hb_face = hb_font_get_face (font);
+  auto *cairo_face =  user_font_face_create (hb_face);
 
   if (unlikely (CAIRO_STATUS_SUCCESS != cairo_font_face_set_user_data (cairo_face,
 								       &hb_cairo_font_user_data_key,
@@ -973,6 +1010,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 	    end = start + hb_glyph[i].cluster - hb_glyph[i+1].cluster;
 	  else
 	    end = (const char *) hb_utf_offset_to_pointer<hb_utf8_t> ((const uint8_t *) start,
+								      (const uint8_t *) utf8, utf8_len,
 								      (signed) (hb_glyph[i].cluster - hb_glyph[i+1].cluster));
 	  (*clusters)[cluster].num_bytes = end - start;
 	  start = end;
@@ -993,6 +1031,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 	    end = start + hb_glyph[i].cluster - hb_glyph[i-1].cluster;
 	  else
 	    end = (const char *) hb_utf_offset_to_pointer<hb_utf8_t> ((const uint8_t *) start,
+								      (const uint8_t *) utf8, utf8_len,
 								      (signed) (hb_glyph[i].cluster - hb_glyph[i-1].cluster));
 	  (*clusters)[cluster].num_bytes = end - start;
 	  start = end;

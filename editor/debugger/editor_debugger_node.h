@@ -28,34 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_NODE_H
-#define EDITOR_DEBUGGER_NODE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
-#include "scene/gui/margin_container.h"
+#include "editor/docks/editor_dock.h"
 
 class Button;
 class DebugAdapterParser;
 class EditorDebuggerPlugin;
 class EditorDebuggerTree;
-class EditorDebuggerRemoteObject;
+class EditorDebuggerRemoteObjects;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
 class UndoRedo;
 
-class EditorDebuggerNode : public MarginContainer {
-	GDCLASS(EditorDebuggerNode, MarginContainer);
+class EditorDebuggerNode : public EditorDock {
+	GDCLASS(EditorDebuggerNode, EditorDock);
 
 public:
 	enum CameraOverride {
 		OVERRIDE_NONE,
-		OVERRIDE_2D,
-		OVERRIDE_3D_1, // 3D Viewport 1
-		OVERRIDE_3D_2, // 3D Viewport 2
-		OVERRIDE_3D_3, // 3D Viewport 3
-		OVERRIDE_3D_4 // 3D Viewport 4
+		OVERRIDE_INGAME,
+		OVERRIDE_EDITORS,
 	};
 
 private:
@@ -97,21 +93,26 @@ private:
 
 	Ref<EditorDebuggerServer> server;
 	TabContainer *tabs = nullptr;
-	Button *debugger_button = nullptr;
 	MenuButton *script_menu = nullptr;
 
 	Ref<Script> stack_script; // Why?!?
 
+	bool initializing = true;
 	int last_error_count = 0;
 	int last_warning_count = 0;
 
+	bool inspect_edited_object_wait = false;
 	float inspect_edited_object_timeout = 0;
 	EditorDebuggerTree *remote_scene_tree = nullptr;
+	bool remote_scene_tree_wait = false;
 	float remote_scene_tree_timeout = 0.0;
+	bool remote_scene_tree_clear_msg = true;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
 	bool keep_open = false;
 	String current_uri;
+
+	bool debug_mute_audio = false;
 
 	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
@@ -119,8 +120,8 @@ private:
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
-	EditorDebuggerRemoteObject *get_inspected_remote_object();
 	void _update_errors();
+	void _update_margins();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
@@ -131,11 +132,15 @@ protected:
 	void _debugger_stopped(int p_id);
 	void _debugger_wants_stop(int p_id);
 	void _debugger_changed(int p_tab);
+	void _debug_data(const String &p_msg, const Array &p_data, int p_debugger);
+	void _remote_tree_select_requested(const TypedArray<int64_t> &p_ids, int p_debugger);
+	void _remote_tree_clear_selection_requested(int p_debugger);
 	void _remote_tree_updated(int p_debugger);
 	void _remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _remote_object_updated(ObjectID p_id, int p_debugger);
+	void _remote_objects_updated(EditorDebuggerRemoteObjects *p_objs, int p_debugger);
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property, int p_debugger);
-	void _remote_object_requested(ObjectID p_id, int p_debugger);
+	void _remote_objects_requested(const TypedArray<uint64_t> &p_ids, int p_debugger);
+	void _remote_selection_cleared(int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
 	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
@@ -149,7 +154,7 @@ protected:
 	void _text_editor_stack_clear(const ScriptEditorDebugger *p_debugger);
 	void _stack_frame_selected(int p_debugger);
 	void _error_selected(const String &p_file, int p_line, int p_debugger);
-	void _breaked(bool p_breaked, bool p_can_debug, String p_message, bool p_has_stackdump, int p_debugger);
+	void _breaked(bool p_breaked, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_debugger);
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
@@ -175,24 +180,26 @@ public:
 
 	void set_script_debug_button(MenuButton *p_button);
 
-	void set_tool_button(Button *p_button) {
-		debugger_button = p_button;
-	}
-
 	String get_var_value(const String &p_var) const;
 	Ref<Script> get_dump_stack_script() const { return stack_script; } // Why do we need this?
 
 	bool get_debug_with_external_editor() { return debug_with_external_editor; }
 
 	bool is_skip_breakpoints() const;
+	bool is_ignore_error_breaks() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
-	void set_breakpoints(const String &p_path, Array p_lines);
-	void reload_scripts();
+	void set_breakpoints(const String &p_path, const Array &p_lines);
+	void reload_all_scripts();
+	void reload_scripts(const Vector<String> &p_script_paths);
 
 	// Remote inspector/edit.
 	void request_remote_tree();
-	static void _method_changeds(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
-	static void _property_changeds(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
+	void set_remote_selection(const TypedArray<int64_t> &p_ids);
+	void clear_remote_tree_selection();
+	void stop_waiting_inspection();
+	bool match_remote_selection(const TypedArray<uint64_t> &p_ids) const;
+	static void _methods_changed(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
+	static void _properties_changed(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	// LiveDebug
 	void set_live_debugging(bool p_enabled);
@@ -204,6 +211,9 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	void set_debug_mute_audio(bool p_mute);
+	bool get_debug_mute_audio() const;
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
@@ -218,5 +228,3 @@ public:
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 };
-
-#endif // EDITOR_DEBUGGER_NODE_H

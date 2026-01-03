@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,21 @@
  */
 
 #include "tvgIteratorAccessor.h"
+#include "tvgCompressor.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static bool accessChildren(Iterator* it, function<bool(const Paint* paint)> func)
+static bool accessChildren(Iterator* it, function<bool(const Paint* paint, void* data)> func, void* data)
 {
     while (auto child = it->next()) {
         //Access the child
-        if (!func(child)) return false;
+        if (!func(child, data)) return false;
 
         //Access the children of the child
         if (auto it2 = IteratorAccessor::iterator(child)) {
-            if (!accessChildren(it2, func)) {
+            if (!accessChildren(it2, func, data)) {
                 delete(it2);
                 return false;
             }
@@ -44,26 +45,46 @@ static bool accessChildren(Iterator* it, function<bool(const Paint* paint)> func
     return true;
 }
 
+
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-unique_ptr<Picture> Accessor::set(unique_ptr<Picture> picture, function<bool(const Paint* paint)> func) noexcept
+TVG_DEPRECATED unique_ptr<Picture> Accessor::set(unique_ptr<Picture> picture, function<bool(const Paint* paint)> func) noexcept
 {
-    auto p = picture.get();
-    if (!p || !func) return picture;
+    auto backward = [](const tvg::Paint* paint, void* data) -> bool
+    {
+        auto func = reinterpret_cast<function<bool(const Paint* paint)>*>(data);
+        if (!(*func)(paint)) return false;
+        return true;
+    };
 
-    //Use the Preorder Tree-Search
+    set(picture.get(), backward, reinterpret_cast<void*>(&func));
+    return picture;
+}
+
+
+Result Accessor::set(Paint* paint, function<bool(const Paint* paint, void* data)> func, void* data) noexcept
+{
+    if (!paint || !func) return Result::InvalidArguments;
+
+    //Use the Preorder Tree-Searc
 
     //Root
-    if (!func(p)) return picture;
+    if (!func(paint, data)) return Result::Success;
 
     //Children
-    if (auto it = IteratorAccessor::iterator(p)) {
-        accessChildren(it, func);
+    if (auto it = IteratorAccessor::iterator(paint)) {
+        accessChildren(it, func, data);
         delete(it);
     }
-    return picture;
+    return Result::Success;
+}
+
+
+uint32_t Accessor::id(const char* name) noexcept
+{
+    return djb2Encode(name);
 }
 
 

@@ -12,7 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_default_texture_parameter" qualifiers="const">
-			<return type="Texture2D" />
+			<return type="Texture" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="index" type="int" default="0" />
 			<description>
@@ -31,14 +31,20 @@
 			<return type="Array" />
 			<param index="0" name="get_groups" type="bool" default="false" />
 			<description>
-				Get the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
-				If argument [param get_groups] is true, parameter grouping hints will be provided.
+				Returns the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
+				If argument [param get_groups] is [code]true[/code], parameter grouping hints are also included in the list.
+			</description>
+		</method>
+		<method name="inspect_native_shader_code">
+			<return type="void" />
+			<description>
+				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Material.inspect_native_shader_code].
 			</description>
 		</method>
 		<method name="set_default_texture_parameter">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="texture" type="Texture2D" />
+			<param index="1" name="texture" type="Texture" />
 			<param index="2" name="index" type="int" default="0" />
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].

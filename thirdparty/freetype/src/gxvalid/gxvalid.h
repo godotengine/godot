@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT table validation (specification only).
  *
- * Copyright (C) 2005-2023 by
+ * Copyright (C) 2005-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

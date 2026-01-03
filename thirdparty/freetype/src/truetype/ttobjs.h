@@ -4,7 +4,7 @@
  *
  *   Objects manager (specification).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -53,6 +53,8 @@ FT_BEGIN_HEADER
   typedef FT_GlyphSlot  TT_GlyphSlot;
 
 
+#ifdef TT_USE_BYTECODE_INTERPRETER
+
   /**************************************************************************
    *
    * @Struct:
@@ -67,21 +69,27 @@ FT_BEGIN_HEADER
     FT_UShort      rp1;
     FT_UShort      rp2;
 
+    FT_UShort      gep0;
+    FT_UShort      gep1;
+    FT_UShort      gep2;
+
     FT_UnitVector  dualVector;
     FT_UnitVector  projVector;
     FT_UnitVector  freeVector;
 
     FT_Long        loop;
-    FT_F26Dot6     minimum_distance;
     FT_Int         round_state;
+    FT_F26Dot6     compensation[4];   /* device-specific compensations  */
 
-    FT_Bool        auto_flip;
+    /* default values below can be modified by 'fpgm' and 'prep' */
+    FT_F26Dot6     minimum_distance;
     FT_F26Dot6     control_value_cutin;
     FT_F26Dot6     single_width_cutin;
     FT_F26Dot6     single_width_value;
     FT_UShort      delta_base;
     FT_UShort      delta_shift;
 
+    FT_Bool        auto_flip;
     FT_Byte        instruct_control;
     /* According to Greg Hitchcock from Microsoft, the `scan_control'     */
     /* variable as documented in the TrueType specification is a 32-bit   */
@@ -90,93 +98,21 @@ FT_BEGIN_HEADER
     FT_Bool        scan_control;
     FT_Int         scan_type;
 
-    FT_UShort      gep0;
-    FT_UShort      gep1;
-    FT_UShort      gep2;
-
   } TT_GraphicsState;
 
 
-#ifdef TT_USE_BYTECODE_INTERPRETER
-
   FT_LOCAL( void )
-  tt_glyphzone_done( TT_GlyphZone  zone );
+  tt_glyphzone_done( FT_Memory     memory,
+                     TT_GlyphZone  zone );
 
   FT_LOCAL( FT_Error )
   tt_glyphzone_new( FT_Memory     memory,
                     FT_UShort     maxPoints,
-                    FT_Short      maxContours,
+                    FT_UShort     maxContours,
                     TT_GlyphZone  zone );
 
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
-
-
-  /**************************************************************************
-   *
-   * EXECUTION SUBTABLES
-   *
-   * These sub-tables relate to instruction execution.
-   *
-   */
-
-
-#define TT_MAX_CODE_RANGES  3
-
-
-  /**************************************************************************
-   *
-   * There can only be 3 active code ranges at once:
-   *   - the Font Program
-   *   - the CVT Program
-   *   - a glyph's instructions set
-   */
-  typedef enum  TT_CodeRange_Tag_
-  {
-    tt_coderange_none = 0,
-    tt_coderange_font,
-    tt_coderange_cvt,
-    tt_coderange_glyph
-
-  } TT_CodeRange_Tag;
-
-
-  typedef struct  TT_CodeRange_
-  {
-    FT_Byte*  base;
-    FT_Long   size;
-
-  } TT_CodeRange;
-
-  typedef TT_CodeRange  TT_CodeRangeTable[TT_MAX_CODE_RANGES];
-
-
-  /**************************************************************************
-   *
-   * Defines a function/instruction definition record.
-   */
-  typedef struct  TT_DefRecord_
-  {
-    FT_Int    range;          /* in which code range is it located?     */
-    FT_Long   start;          /* where does it start?                   */
-    FT_Long   end;            /* where does it end?                     */
-    FT_UInt   opc;            /* function #, or instruction code        */
-    FT_Bool   active;         /* is it active?                          */
-
-  } TT_DefRecord, *TT_DefArray;
-
-
-  /**************************************************************************
-   *
-   * Subglyph transformation record.
-   */
-  typedef struct  TT_Transform_
-  {
-    FT_Fixed    xx, xy;     /* transformation matrix coefficients */
-    FT_Fixed    yx, yy;
-    FT_F26Dot6  ox, oy;     /* offsets                            */
-
-  } TT_Transform;
 
 
   /**************************************************************************
@@ -251,13 +187,9 @@ FT_BEGIN_HEADER
     FT_Long     x_ratio;
     FT_Long     y_ratio;
 
-    FT_UShort   ppem;               /* maximum ppem size              */
     FT_Long     ratio;              /* current ratio                  */
     FT_Fixed    scale;
-
-    FT_F26Dot6  compensations[4];   /* device-specific compensations  */
-
-    FT_Bool     valid;
+    FT_UShort   ppem;               /* maximum ppem size              */
 
     FT_Bool     rotated;            /* `is the glyph rotated?'-flag   */
     FT_Bool     stretched;          /* `is the glyph stretched?'-flag */
@@ -288,26 +220,7 @@ FT_BEGIN_HEADER
 
     FT_Long            point_size;    /* for the `MPS' bytecode instruction */
 
-    FT_UInt            num_function_defs; /* number of function definitions */
-    FT_UInt            max_function_defs;
-    TT_DefArray        function_defs;     /* table of function definitions  */
-
-    FT_UInt            num_instruction_defs;  /* number of ins. definitions */
-    FT_UInt            max_instruction_defs;
-    TT_DefArray        instruction_defs;      /* table of ins. definitions  */
-
-    FT_UInt            max_func;
-    FT_UInt            max_ins;
-
-    TT_CodeRangeTable  codeRangeTable;
-
     TT_GraphicsState   GS;
-
-    FT_ULong           cvt_size;      /* the scaled control value table */
-    FT_Long*           cvt;
-
-    FT_UShort          storage_size; /* The storage area is now part of */
-    FT_Long*           storage;      /* the instance                    */
 
     TT_GlyphZoneRec    twilight;     /* The instance's twilight zone    */
 
@@ -375,20 +288,18 @@ FT_BEGIN_HEADER
 #ifdef TT_USE_BYTECODE_INTERPRETER
 
   FT_LOCAL( FT_Error )
-  tt_size_run_fpgm( TT_Size  size,
-                    FT_Bool  pedantic );
+  tt_size_run_fpgm( TT_Size  size );
 
   FT_LOCAL( FT_Error )
-  tt_size_run_prep( TT_Size  size,
-                    FT_Bool  pedantic );
+  tt_size_run_prep( TT_Size  size );
 
   FT_LOCAL( FT_Error )
-  tt_size_ready_bytecode( TT_Size  size,
-                          FT_Bool  pedantic );
+  tt_size_init_bytecode( TT_Size  size,
+                         FT_Bool  pedantic );
 
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
-  FT_LOCAL( FT_Error )
+  FT_LOCAL( void )
   tt_size_reset_height( FT_Size  size );
 
   FT_LOCAL( FT_Error )

@@ -28,88 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EXTENSION_WRAPPER_EXTENSION_H
-#define OPENXR_EXTENSION_WRAPPER_EXTENSION_H
+#pragma once
 
-#include "../openxr_api_extension.h"
 #include "openxr_extension_wrapper.h"
 
-#include "core/object/ref_counted.h"
-#include "core/os/os.h"
-#include "core/os/thread_safe.h"
-#include "core/variant/native_ptr.h"
-
-class OpenXRExtensionWrapperExtension : public Object, OpenXRExtensionWrapper {
-	GDCLASS(OpenXRExtensionWrapperExtension, Object);
-
-protected:
-	_THREAD_SAFE_CLASS_
-
-	static void _bind_methods();
-
-	Ref<OpenXRAPIExtension> openxr_api;
-
-public:
-	virtual HashMap<String, bool *> get_requested_extensions() override;
-
-	GDVIRTUAL0R(Dictionary, _get_requested_extensions);
-
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) override;
-	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
-	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
-	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) override;
-
-	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
-	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
-	GDVIRTUAL1R(uint64_t, _set_instance_create_info_and_get_next_pointer, GDExtensionPtr<void>);
-	GDVIRTUAL1R(uint64_t, _set_session_create_and_get_next_pointer, GDExtensionPtr<void>);
-	GDVIRTUAL1R(uint64_t, _set_swapchain_create_info_and_get_next_pointer, GDExtensionPtr<void>);
-
-	virtual void on_register_metadata() override;
-	virtual void on_before_instance_created() override;
-	virtual void on_instance_created(const XrInstance p_instance) override;
-	virtual void on_instance_destroyed() override;
-	virtual void on_session_created(const XrSession p_session) override;
-	virtual void on_process() override;
-	virtual void on_pre_render() override;
-	virtual void on_session_destroyed() override;
-
-	GDVIRTUAL0(_on_register_metadata);
-	GDVIRTUAL0(_on_before_instance_created);
-	GDVIRTUAL1(_on_instance_created, uint64_t);
-	GDVIRTUAL0(_on_instance_destroyed);
-	GDVIRTUAL1(_on_session_created, uint64_t);
-	GDVIRTUAL0(_on_process);
-	GDVIRTUAL0(_on_pre_render);
-	GDVIRTUAL0(_on_session_destroyed);
-
-	virtual void on_state_idle() override;
-	virtual void on_state_ready() override;
-	virtual void on_state_synchronized() override;
-	virtual void on_state_visible() override;
-	virtual void on_state_focused() override;
-	virtual void on_state_stopping() override;
-	virtual void on_state_loss_pending() override;
-	virtual void on_state_exiting() override;
-
-	GDVIRTUAL0(_on_state_idle);
-	GDVIRTUAL0(_on_state_ready);
-	GDVIRTUAL0(_on_state_synchronized);
-	GDVIRTUAL0(_on_state_visible);
-	GDVIRTUAL0(_on_state_focused);
-	GDVIRTUAL0(_on_state_stopping);
-	GDVIRTUAL0(_on_state_loss_pending);
-	GDVIRTUAL0(_on_state_exiting);
-
-	virtual bool on_event_polled(const XrEventDataBuffer &p_event) override;
-
-	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
-
-	Ref<OpenXRAPIExtension> get_openxr_api();
-
-	void register_extension_wrapper();
-
-	OpenXRExtensionWrapperExtension();
+class OpenXRExtensionWrapperExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRExtensionWrapperExtension, OpenXRExtensionWrapper);
 };
-
-#endif // OPENXR_EXTENSION_WRAPPER_EXTENSION_H

@@ -32,14 +32,14 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/extension/gdextension_compat_hashes.h"
+#include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -59,6 +59,9 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	}
 	if (p_info.type == Variant::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
 		return String("typedarray::") + p_info.hint_string;
+	}
+	if (p_info.type == Variant::DICTIONARY && (p_info.hint == PROPERTY_HINT_DICTIONARY_TYPE)) {
+		return String("typeddictionary::") + p_info.hint_string;
 	}
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
@@ -85,7 +88,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 }
 
 static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
-	static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
+	static const char *argmeta[14] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32", "required" };
 	return argmeta[metadata];
 }
 
@@ -93,8 +96,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.replace("\t", "")
-			.replace("\r", "")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -104,16 +106,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	{
 		//header
 		Dictionary header;
-		header["version_major"] = VERSION_MAJOR;
-		header["version_minor"] = VERSION_MINOR;
-#if VERSION_PATCH
-		header["version_patch"] = VERSION_PATCH;
+		header["version_major"] = GODOT_VERSION_MAJOR;
+		header["version_minor"] = GODOT_VERSION_MINOR;
+#if GODOT_VERSION_PATCH
+		header["version_patch"] = GODOT_VERSION_PATCH;
 #else
 		header["version_patch"] = 0;
 #endif
-		header["version_status"] = VERSION_STATUS;
-		header["version_build"] = VERSION_BUILD;
-		header["version_full_name"] = VERSION_FULL_NAME;
+		header["version_status"] = GODOT_VERSION_STATUS;
+		header["version_build"] = GODOT_VERSION_BUILD;
+		header["version_full_name"] = GODOT_VERSION_FULL_NAME;
+
+#if REAL_T_IS_DOUBLE
+		header["precision"] = "double";
+#else
+		header["precision"] = "single";
+#endif
 
 		api_dump["header"] = header;
 	}
@@ -189,6 +197,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{ Variant::PACKED_VECTOR2_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_VECTOR3_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::PACKED_COLOR_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
+			{ Variant::PACKED_VECTOR4_ARRAY, ptrsize_32 * 2, ptrsize_64 * 2, ptrsize_32 * 2, ptrsize_64 * 2 },
 			{ Variant::VARIANT_MAX, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(float) * 4, sizeof(uint64_t) + sizeof(double) * 4, sizeof(uint64_t) + sizeof(double) * 4 },
 		};
 
@@ -230,6 +239,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		static_assert(type_size_array[Variant::PACKED_VECTOR2_ARRAY][sizeof(void *)] == sizeof(PackedVector2Array), "Size of PackedVector2Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_VECTOR3_ARRAY][sizeof(void *)] == sizeof(PackedVector3Array), "Size of PackedVector3Array mismatch");
 		static_assert(type_size_array[Variant::PACKED_COLOR_ARRAY][sizeof(void *)] == sizeof(PackedColorArray), "Size of PackedColorArray mismatch");
+		static_assert(type_size_array[Variant::PACKED_VECTOR4_ARRAY][sizeof(void *)] == sizeof(PackedVector4Array), "Size of PackedVector4Array mismatch");
 		static_assert(type_size_array[Variant::VARIANT_MAX][sizeof(void *)] == sizeof(Variant), "Size of Variant mismatch");
 
 		Array core_type_sizes;
@@ -273,43 +283,43 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 #define REAL_MEMBER_OFFSET(type, member) \
 	{                                    \
 		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+		member,                          \
+		"float",                         \
+		sizeof(float),                   \
+		"float",                         \
+		sizeof(float),                   \
+		"double",                        \
+		sizeof(double),                  \
+		"double",                        \
+		sizeof(double),                  \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
 	{                                     \
 		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+		member,                           \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
 	{                                                                              \
 		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+		member,                                                                    \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
@@ -742,14 +752,19 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 							Dictionary d2;
 							String operator_name = Variant::get_operator_name(Variant::Operator(k));
 							d2["name"] = operator_name;
-							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
-								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
+
+							String right_type_name = get_builtin_or_variant_type_name(Variant::Type(j));
+							bool is_unary = k == Variant::OP_NEGATE || k == Variant::OP_POSITIVE || k == Variant::OP_NOT || k == Variant::OP_BIT_NEGATE;
+							if (!is_unary) {
+								d2["right_type"] = right_type_name;
 							}
+
 							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
 
 							if (p_include_docs && builtin_doc != nullptr) {
 								for (const DocData::MethodDoc &operator_doc : builtin_doc->operators) {
-									if (operator_doc.name == "operator " + operator_name) {
+									if (operator_doc.name == "operator " + operator_name &&
+											(is_unary || operator_doc.arguments[0].type == right_type_name)) {
 										d2["description"] = fix_doc_description(operator_doc.description);
 										break;
 									}
@@ -781,6 +796,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					d2["is_const"] = Variant::is_builtin_method_const(type, method_name);
 					d2["is_static"] = Variant::is_builtin_method_static(type, method_name);
 					d2["hash"] = Variant::get_builtin_method_hash(type, method_name);
+
+					Vector<uint32_t> compat_hashes = Variant::get_builtin_method_compatibility_hashes(type, method_name);
+					Array compatibility;
+					if (compat_hashes.size()) {
+						for (int j = 0; j < compat_hashes.size(); j++) {
+							compatibility.push_back(compat_hashes[j]);
+						}
+					}
+					if (compatibility.size() > 0) {
+						d2["hash_compatibility"] = compatibility;
+					}
 
 					Vector<Variant> default_args = Variant::get_builtin_method_default_arguments(type, method_name);
 
@@ -885,11 +911,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// classes
 		Array classes;
 
-		List<StringName> class_list;
+		LocalVector<StringName> class_list;
 
-		ClassDB::get_class_list(&class_list);
-
-		class_list.sort_custom<StringName::AlphCompare>();
+		ClassDB::get_class_list(class_list);
 
 		for (const StringName &class_name : class_list) {
 			if (!ClassDB::is_class_exposed(class_name)) {
@@ -960,14 +984,14 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					Array values;
 					List<StringName> enum_constant_list;
 					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
-					for (List<StringName>::Element *G = enum_constant_list.front(); G; G = G->next()) {
+					for (const StringName &enum_constant : enum_constant_list) {
 						Dictionary d3;
-						d3["name"] = String(G->get());
-						d3["value"] = ClassDB::get_integer_constant(class_name, G->get());
+						d3["name"] = String(enum_constant);
+						d3["value"] = ClassDB::get_integer_constant(class_name, enum_constant);
 
 						if (p_include_docs) {
 							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
-								if (constant_doc.name == G->get()) {
+								if (constant_doc.name == enum_constant) {
 									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
@@ -1007,18 +1031,42 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
+						d2["is_required"] = (F.flags & METHOD_FLAG_VIRTUAL_REQUIRED) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
-						// virtual functions have no hash since no MethodBind is involved
+						d2["hash"] = mi.get_compatibility_hash();
+
+						Vector<uint32_t> compat_hashes = ClassDB::get_virtual_method_compatibility_hashes(class_name, method_name);
+						Array compatibility;
+						if (compat_hashes.size()) {
+							for (int i = 0; i < compat_hashes.size(); i++) {
+								compatibility.push_back(compat_hashes[i]);
+							}
+						}
+						if (compatibility.size() > 0) {
+							d2["hash_compatibility"] = compatibility;
+						}
+
 						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
-						Array arguments;
-						for (int i = (has_return ? -1 : 0); i < mi.arguments.size(); i++) {
-							PropertyInfo pinfo = i == -1 ? mi.return_val : mi.arguments[i];
+						if (has_return) {
+							PropertyInfo pinfo = mi.return_val;
 							Dictionary d3;
 
-							if (i >= 0) {
-								d3["name"] = pinfo.name;
+							d3["type"] = get_property_info_type_name(pinfo);
+
+							if (mi.get_argument_meta(-1) > 0) {
+								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(-1));
 							}
+
+							d2["return_value"] = d3;
+						}
+
+						Array arguments;
+						for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+							const PropertyInfo &pinfo = mi.arguments[i];
+							Dictionary d3;
+
+							d3["name"] = pinfo.name;
 
 							d3["type"] = get_property_info_type_name(pinfo);
 
@@ -1026,11 +1074,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(i));
 							}
 
-							if (i == -1) {
-								d2["return_value"] = d3;
-							} else {
-								arguments.push_back(d3);
-							}
+							arguments.push_back(d3);
 						}
 
 						if (arguments.size()) {
@@ -1075,7 +1119,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 
 #ifndef DISABLE_DEPRECATED
-						GDExtensionCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
+						GDExtensionSpecialCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
 #endif
 
 						if (compatibility.size() > 0) {
@@ -1144,7 +1188,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 					Array arguments;
 
-					for (int i = 0; i < F.arguments.size(); i++) {
+					for (int64_t i = 0; i < F.arguments.size(); ++i) {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
 						d3["type"] = get_property_info_type_name(F.arguments[i]);
@@ -1185,7 +1229,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (F.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					if (F.name.find("/") >= 0) {
+					if (F.name.contains_char('/')) {
 						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 						continue;
 					}
@@ -1308,24 +1352,20 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		Array old_keys = old_dict.keys();
-		for (int i = 0; i < old_keys.size(); i++) {
-			Variant key = old_keys[i];
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}
-		Array new_keys = old_dict.keys();
-		for (int i = 0; i < new_keys.size(); i++) {
-			Variant key = new_keys[i];
+		for (const Variant &key : old_dict.keys()) {
 			if (!old_dict.has(key)) {
 				failed = true;
 				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was added with value %s.", p_path, key, new_dict[key]));
@@ -1347,14 +1387,17 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		return true; // May just not have this array and its still good. Probably added recently.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, vformat("New API lacks base array: %s", p_base_array));
 	Array new_api = p_new_api[p_base_array];
 	HashMap<String, Dictionary> new_api_assoc;
 
-	for (int i = 0; i < new_api.size(); i++) {
-		Dictionary elem = new_api[i];
+	for (const Variant &var : new_api) {
+		Dictionary elem = var;
 		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
 		String name = elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && elem.has("right_type")) {
 			name += " " + String(elem["right_type"]);
 		}
@@ -1362,14 +1405,17 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 	}
 
 	Array old_api = p_old_api[p_base_array];
-	for (int i = 0; i < old_api.size(); i++) {
-		Dictionary old_elem = old_api[i];
+	for (const Variant &var : old_api) {
+		Dictionary old_elem = var;
 		if (!old_elem.has(p_name_field)) {
 			failed = true;
 			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", base_array, p_name_field));
 			continue;
 		}
 		String name = old_elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && old_elem.has("right_type")) {
 			name += " " + String(old_elem["right_type"]);
 		}
@@ -1386,25 +1432,25 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 			bool optional = field.begins_with("*");
 			if (optional) {
 				// This is an optional field, but if exists it has to exist in both.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool added = field.begins_with("+");
 			if (added) {
 				// Meaning this field must either exist or contents may not exist.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool enum_values = field.begins_with("$");
 			if (enum_values) {
 				// Meaning this field is a list of enum values.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			bool allow_name_change = field.begins_with("@");
 			if (allow_name_change) {
 				// Meaning that when structurally comparing the old and new value, the dictionary entry 'name' may change.
-				field = field.substr(1, field.length());
+				field = field.substr(1);
 			}
 
 			Variant old_value;
@@ -1451,8 +1497,8 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 
 		if (p_compare_hashes) {
 			if (!old_elem.has("hash")) {
-				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !new_elem.has("hash")) {
-					continue; // No hash for virtual methods, go on.
+				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !old_elem.has("hash")) {
+					continue; // Virtual methods didn't use to have hashes, so skip check if it's missing in the old file.
 				}
 
 				failed = true;
@@ -1499,20 +1545,20 @@ static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered
 		return true; // May just not have this array and its still good. Probably added recently or optional.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, vformat("New API lacks base array: %s", p_outer));
 	Array new_api = p_new_api[p_outer];
 	HashMap<String, Dictionary> new_api_assoc;
 
-	for (int i = 0; i < new_api.size(); i++) {
-		Dictionary elem = new_api[i];
+	for (const Variant &var : new_api) {
+		Dictionary elem = var;
 		ERR_FAIL_COND_V_MSG(!elem.has(p_outer_name), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", p_outer, p_outer_name));
 		new_api_assoc.insert(elem[p_outer_name], elem);
 	}
 
 	Array old_api = p_old_api[p_outer];
 
-	for (int i = 0; i < old_api.size(); i++) {
-		Dictionary old_elem = old_api[i];
+	for (const Variant &var : old_api) {
+		Dictionary old_elem = var;
 		if (!old_elem.has(p_outer_name)) {
 			failed = true;
 			print_error(vformat("Validate extension JSON: JSON file: element of base array '%s' is missing the field: '%s'.", p_outer, p_outer_name));
@@ -1564,8 +1610,8 @@ Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
 		int major = header["version_major"];
 		int minor = header["version_minor"];
 
-		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, VERSION_MAJOR));
-		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
+		ERR_FAIL_COND_V_MSG(major != GODOT_VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, GODOT_VERSION_MAJOR));
+		ERR_FAIL_COND_V_MSG(minor > GODOT_VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
 	}
 
 	bool failed = false;

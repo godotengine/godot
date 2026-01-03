@@ -5,12 +5,16 @@
 	</brief_description>
 	<description>
 		[Popup] is a base class for contextual windows and panels with fixed position. It's a modal by default (see [member Window.popup_window]) and provides methods for implementing custom popup behavior.
+		[b]Note:[/b] [Popup] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
+		<member name="popup_wm_hint" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" overrides="Window" default="true" />
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" overrides="Window" default="true" />
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" overrides="Window" default="false" />
@@ -23,9 +27,4 @@
 			</description>
 		</signal>
 	</signals>
-	<theme_items>
-		<theme_item name="panel" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [Popup].
-		</theme_item>
-	</theme_items>
 </class>

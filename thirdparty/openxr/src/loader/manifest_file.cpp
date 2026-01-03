@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -18,7 +18,9 @@
 #endif  // OPENXR_HAVE_COMMON_CONFIG
 
 #include "filesystem_utils.hpp"
+#include "loader_init_data.hpp"
 #include "loader_platform.hpp"
+#include "loader_properties.hpp"
 #include "platform_utils.hpp"
 #include "loader_logger.hpp"
 #include "unique_asset.h"
@@ -51,7 +53,7 @@
 #define SYSCONFDIR "/etc"
 #endif  // !SYSCONFDIR
 
-#ifdef XR_USE_PLATFORM_ANDROID
+#if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
 #include <android/asset_manager.h>
 #endif
 
@@ -74,11 +76,12 @@ static inline bool StringEndsWith(const std::string &value, const std::string &e
 }
 
 // If the file found is a manifest file name, add it to the out_files manifest list.
-static void AddIfJson(const std::string &full_file, std::vector<std::string> &manifest_files) {
+static bool AddIfJson(const std::string &full_file, std::vector<std::string> &manifest_files) {
     if (full_file.empty() || !StringEndsWith(full_file, ".json")) {
-        return;
+        return false;
     }
     manifest_files.push_back(full_file);
+    return true;
 }
 
 // Check the current path for any manifest files.  If the provided search_path is a directory, look for
@@ -190,7 +193,7 @@ static void ReadDataFilesInSearchPaths(const std::string &override_env_var, cons
         }
 #endif
         if (permit_override) {
-            override_path = PlatformUtilsGetSecureEnv(override_env_var.c_str());
+            override_path = LoaderProperty::GetSecure(override_env_var);
         }
     }
 
@@ -204,10 +207,10 @@ static void ReadDataFilesInSearchPaths(const std::string &override_env_var, cons
 
         // Determine how much space is needed to generate the full search path
         // for the current manifest files.
-        std::string xdg_conf_dirs = PlatformUtilsGetSecureEnv("XDG_CONFIG_DIRS");
-        std::string xdg_data_dirs = PlatformUtilsGetSecureEnv("XDG_DATA_DIRS");
-        std::string xdg_data_home = PlatformUtilsGetSecureEnv("XDG_DATA_HOME");
-        std::string home = PlatformUtilsGetSecureEnv("HOME");
+        std::string xdg_conf_dirs = LoaderProperty::GetSecure("XDG_CONFIG_DIRS");
+        std::string xdg_data_dirs = LoaderProperty::GetSecure("XDG_DATA_DIRS");
+        std::string xdg_data_home = LoaderProperty::GetSecure("XDG_DATA_HOME");
+        std::string home = LoaderProperty::GetSecure("HOME");
 
         if (xdg_conf_dirs.empty()) {
             CopyIncludedPaths(true, FALLBACK_CONFIG_DIRS, relative_path, search_path);
@@ -252,11 +255,11 @@ static void ReadDataFilesInSearchPaths(const std::string &override_env_var, cons
 
 // Get an XDG environment variable with a $HOME-relative default
 static std::string GetXDGEnvHome(const char *name, const char *fallback_path) {
-    std::string result = PlatformUtilsGetSecureEnv(name);
+    std::string result = LoaderProperty::GetSecure(name);
     if (!result.empty()) {
         return result;
     }
-    result = PlatformUtilsGetSecureEnv("HOME");
+    result = LoaderProperty::GetSecure("HOME");
     if (result.empty()) {
         return result;
     }
@@ -267,7 +270,7 @@ static std::string GetXDGEnvHome(const char *name, const char *fallback_path) {
 
 // Get an XDG environment variable with absolute defaults
 static std::string GetXDGEnvAbsolute(const char *name, const char *fallback_paths) {
-    std::string result = PlatformUtilsGetSecureEnv(name);
+    std::string result = LoaderProperty::GetSecure(name);
     if (!result.empty()) {
         return result;
     }
@@ -308,6 +311,7 @@ static bool FindEitherActiveRuntimeFilename(const char *prefix_desc, const std::
 // precedence order.
 static bool FindXDGConfigFile(const char *relative_dir, uint16_t major_version, std::string &out) {
     const std::string message{"Looking for active_runtime." XR_ARCH_ABI ".json or active_runtime.json"};
+    LoaderLogger::LogInfoMessage("", message);
     std::string dir_prefix = GetXDGEnvHome("XDG_CONFIG_HOME", ".config");
     if (!dir_prefix.empty()) {
         dir_prefix += "/";
@@ -380,7 +384,6 @@ static void ReadRuntimeDataFilesInRegistry(const std::string &runtime_registry_l
     if (ERROR_SUCCESS != open_value) {
         LoaderLogger::LogWarningMessage("",
                                         "ReadRuntimeDataFilesInRegistry - failed to open registry key " + full_registry_location);
-
         return;
     }
 
@@ -390,7 +393,23 @@ static void ReadRuntimeDataFilesInRegistry(const std::string &runtime_registry_l
         LoaderLogger::LogWarningMessage(
             "", "ReadRuntimeDataFilesInRegistry - failed to read registry value " + default_runtime_value_name);
     } else {
-        AddFilesInPath(wide_to_utf8(value_w), false, manifest_files);
+        // Not using AddFilesInPath here (as only api_layer manifest paths allow multiple
+        // separated paths)
+        // Small time-of-check vs time-of-use issue here but it mainly only affects the error message.
+        // It does not introduce a security defect.
+        std::string activeRuntimePath = wide_to_utf8(value_w);
+        if (FileSysUtilsIsRegularFile(activeRuntimePath)) {
+            // If the file exists, try to add it
+            std::string absolute_path;
+            FileSysUtilsGetAbsolutePath(activeRuntimePath, absolute_path);
+            if (!AddIfJson(absolute_path, manifest_files)) {
+                LoaderLogger::LogErrorMessage(
+                    "", "ReadRuntimeDataFilesInRegistry - registry runtime path is not json " + activeRuntimePath);
+            }
+        } else {
+            LoaderLogger::LogErrorMessage(
+                "", "ReadRuntimeDataFilesInRegistry - registry runtime path does not exist " + activeRuntimePath);
+        }
     }
 
     RegCloseKey(hkey);
@@ -495,7 +514,7 @@ void ManifestFile::GetInstanceExtensionProperties(std::vector<XrExtensionPropert
     GetExtensionProperties(_instance_extensions, props);
 }
 
-const std::string &ManifestFile::GetFunctionName(const std::string &func_name) const {
+std::string ManifestFile::GetFunctionName(const std::string &func_name) const {
     if (!_functions_renamed.empty()) {
         auto found = _functions_renamed.find(func_name);
         if (found != _functions_renamed.end()) {
@@ -599,14 +618,8 @@ void RuntimeManifestFile::CreateIfValid(const Json::Value &root_node, const std:
     // If the library_path variable has no directory symbol, it's just a file name and should be accessible on the
     // global library path.
     if (lib_path.find('\\') != std::string::npos || lib_path.find('/') != std::string::npos) {
-        // If the library_path is an absolute path, just use that if it exists
-        if (FileSysUtilsIsAbsolutePath(lib_path)) {
-            if (!FileSysUtilsPathExists(lib_path)) {
-                error_ss << filename << " library " << lib_path << " does not appear to exist";
-                LoaderLogger::LogErrorMessage("", error_ss.str());
-                return;
-            }
-        } else {
+        // If the library_path is an absolute path, just use that as-is.
+        if (!FileSysUtilsIsAbsolutePath(lib_path)) {
             // Otherwise, treat the library path as a relative path based on the JSON file.
             std::string canonical_path;
             std::string combined_path;
@@ -617,8 +630,8 @@ void RuntimeManifestFile::CreateIfValid(const Json::Value &root_node, const std:
                 canonical_path = filename;
             }
             if (!FileSysUtilsGetParentPath(canonical_path, file_parent) ||
-                !FileSysUtilsCombinePaths(file_parent, lib_path, combined_path) || !FileSysUtilsPathExists(combined_path)) {
-                error_ss << filename << " library " << combined_path << " does not appear to exist";
+                !FileSysUtilsCombinePaths(file_parent, lib_path, combined_path)) {
+                error_ss << filename << " filesystem operations failed for path  " << canonical_path;
                 LoaderLogger::LogErrorMessage("", error_ss.str());
                 return;
             }
@@ -635,53 +648,59 @@ void RuntimeManifestFile::CreateIfValid(const Json::Value &root_node, const std:
 }
 
 // Find all manifest files in the appropriate search paths/registries for the given type.
-XrResult RuntimeManifestFile::FindManifestFiles(std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files) {
+XrResult RuntimeManifestFile::FindManifestFiles(const std::string &openxr_command,
+                                                std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files) {
     XrResult result = XR_SUCCESS;
-    std::string filename = PlatformUtilsGetSecureEnv(OPENXR_RUNTIME_JSON_ENV_VAR);
+    std::string filename = LoaderProperty::GetSecure(OPENXR_RUNTIME_JSON_ENV_VAR);
     if (!filename.empty()) {
         LoaderLogger::LogInfoMessage(
-            "", "RuntimeManifestFile::FindManifestFiles - using environment variable override runtime file " + filename);
+            openxr_command,
+            "RuntimeManifestFile::FindManifestFiles - using environment variable override runtime file " + filename);
     } else {
 #ifdef XR_OS_WINDOWS
         std::vector<std::string> filenames;
         ReadRuntimeDataFilesInRegistry("", "ActiveRuntime", filenames);
         if (filenames.size() == 0) {
             LoaderLogger::LogErrorMessage(
-                "", "RuntimeManifestFile::FindManifestFiles - failed to find active runtime file in registry");
+                openxr_command, "RuntimeManifestFile::FindManifestFiles - failed to find active runtime file in registry");
             return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
         if (filenames.size() > 1) {
             LoaderLogger::LogWarningMessage(
-                "", "RuntimeManifestFile::FindManifestFiles - found too many default runtime files in registry");
+                openxr_command, "RuntimeManifestFile::FindManifestFiles - found too many default runtime files in registry");
         }
         filename = filenames[0];
-        LoaderLogger::LogInfoMessage("",
+        LoaderLogger::LogInfoMessage(openxr_command,
                                      "RuntimeManifestFile::FindManifestFiles - using registry-specified runtime file " + filename);
 #elif defined(XR_OS_LINUX)
 
         if (!FindXDGConfigFile("openxr/", XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
             LoaderLogger::LogErrorMessage(
-                "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
+                openxr_command,
+                "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
             return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
-#else
+#else  // !defined(XR_OS_WINDOWS) && !defined(XR_OS_LINUX)
 
-#if defined(XR_KHR_LOADER_INIT_SUPPORT)
+#if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
         Json::Value virtualManifest;
         result = GetPlatformRuntimeVirtualManifest(virtualManifest);
         if (XR_SUCCESS == result) {
             RuntimeManifestFile::CreateIfValid(virtualManifest, "", manifest_files);
             return result;
         }
-#endif  // defined(XR_KHR_LOADER_INIT_SUPPORT)
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
+
         if (!PlatformGetGlobalRuntimeFileName(XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), filename)) {
             LoaderLogger::LogErrorMessage(
-                "", "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
+                openxr_command,
+                "RuntimeManifestFile::FindManifestFiles - failed to determine active runtime file path for this environment");
             return XR_ERROR_RUNTIME_UNAVAILABLE;
         }
         result = XR_SUCCESS;
-        LoaderLogger::LogInfoMessage("", "RuntimeManifestFile::FindManifestFiles - using global runtime file " + filename);
-#endif
+        LoaderLogger::LogInfoMessage(openxr_command,
+                                     "RuntimeManifestFile::FindManifestFiles - using global runtime file " + filename);
+#endif  // !defined(XR_OS_WINDOWS) && !defined(XR_OS_LINUX)
     }
     RuntimeManifestFile::CreateIfValid(filename, manifest_files);
 
@@ -697,10 +716,18 @@ ApiLayerManifestFile::ApiLayerManifestFile(ManifestFileType type, const std::str
       _description(description),
       _implementation_version(implementation_version) {}
 
-#ifdef XR_USE_PLATFORM_ANDROID
-void ApiLayerManifestFile::AddManifestFilesAndroid(ManifestFileType type,
+#if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
+void ApiLayerManifestFile::AddManifestFilesAndroid(const std::string &openxr_command, ManifestFileType type,
                                                    std::vector<std::unique_ptr<ApiLayerManifestFile>> &manifest_files) {
-    AAssetManager *assetManager = (AAssetManager *)Android_Get_Asset_Manager();
+    if (!LoaderInitData::instance().initialized()) {
+        // This will happen for applications that do not call xrInitializeLoaderKHR
+        LoaderLogger::LogWarningMessage(
+            openxr_command,
+            "ApiLayerManifestFile::AddManifestFilesAndroid unable to add manifest files LoaderInitData not initialized.");
+        return;
+    }
+
+    AAssetManager *assetManager = (AAssetManager *)GetAndroidAssetManager();
     std::vector<std::string> filenames;
     {
         std::string search_path = "";
@@ -735,7 +762,7 @@ void ApiLayerManifestFile::AddManifestFilesAndroid(ManifestFileType type,
         UniqueAsset asset{AAssetManager_open(assetManager, filename.c_str(), AASSET_MODE_BUFFER)};
         if (!asset) {
             LoaderLogger::LogWarningMessage(
-                "", "ApiLayerManifestFile::AddManifestFilesAndroid unable to open asset " + filename + ", skipping");
+                openxr_command, "ApiLayerManifestFile::AddManifestFilesAndroid unable to open asset " + filename + ", skipping");
 
             continue;
         }
@@ -743,17 +770,16 @@ void ApiLayerManifestFile::AddManifestFilesAndroid(ManifestFileType type,
         const char *buf = reinterpret_cast<const char *>(AAsset_getBuffer(asset.get()));
         if (!buf) {
             LoaderLogger::LogWarningMessage(
-                "", "ApiLayerManifestFile::AddManifestFilesAndroid unable to access asset" + filename + ", skipping");
+                openxr_command, "ApiLayerManifestFile::AddManifestFilesAndroid unable to access asset" + filename + ", skipping");
 
             continue;
         }
         std::istringstream json_stream(std::string{buf, length});
 
-        CreateIfValid(ManifestFileType::MANIFEST_TYPE_EXPLICIT_API_LAYER, filename, json_stream,
-                      &ApiLayerManifestFile::LocateLibraryInAssets, manifest_files);
+        CreateIfValid(type, filename, json_stream, &ApiLayerManifestFile::LocateLibraryInAssets, manifest_files);
     }
 }
-#endif  // XR_USE_PLATFORM_ANDROID
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
 
 void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::string &filename, std::istream &json_stream,
                                          LibraryLocator locate_library,
@@ -802,14 +828,14 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
         if (!layer_root_node["enable_environment"].isNull() && layer_root_node["enable_environment"].isString()) {
             std::string env_var = layer_root_node["enable_environment"].asString();
             // If it's not set in the environment, disable the layer
-            if (!PlatformUtilsGetEnvSet(env_var.c_str())) {
+            if (!LoaderProperty::IsSet(env_var)) {
                 enabled = false;
             }
         }
         // Check for the disable environment variable, which must be provided in the JSON
         std::string env_var = layer_root_node["disable_environment"].asString();
         // If the env var is set, disable the layer. Disable env var overrides enable above
-        if (PlatformUtilsGetEnvSet(env_var.c_str())) {
+        if (LoaderProperty::IsSet(env_var)) {
             enabled = false;
         }
 
@@ -897,7 +923,7 @@ bool ApiLayerManifestFile::LocateLibraryRelativeToJson(
     return true;
 }
 
-#ifdef XR_USE_PLATFORM_ANDROID
+#if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
 bool ApiLayerManifestFile::LocateLibraryInAssets(const std::string & /* json_filename */, const std::string &library_path,
                                                  std::string &out_combined_path) {
     std::string combined_path;
@@ -909,7 +935,7 @@ bool ApiLayerManifestFile::LocateLibraryInAssets(const std::string & /* json_fil
     out_combined_path = combined_path;
     return true;
 }
-#endif
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
 
 void ApiLayerManifestFile::PopulateApiLayerProperties(XrApiLayerProperties &props) const {
     props.layerVersion = _implementation_version;
@@ -925,11 +951,13 @@ void ApiLayerManifestFile::PopulateApiLayerProperties(XrApiLayerProperties &prop
 }
 
 // Find all layer manifest files in the appropriate search paths/registries for the given type.
-XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
+XrResult ApiLayerManifestFile::FindManifestFiles(const std::string &openxr_command, ManifestFileType type,
                                                  std::vector<std::unique_ptr<ApiLayerManifestFile>> &manifest_files) {
     std::string relative_path;
     std::string override_env_var;
+#ifdef XR_OS_WINDOWS
     std::string registry_location;
+#endif
 
     // Add the appropriate top-level folders for the relative path.  These should be
     // the string "openxr/" followed by the API major version as a string.
@@ -951,8 +979,11 @@ XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
             registry_location = OPENXR_EXPLICIT_API_LAYER_REGISTRY_LOCATION;
 #endif
             break;
+        case MANIFEST_TYPE_UNDEFINED:
+        case MANIFEST_TYPE_RUNTIME:
         default:
-            LoaderLogger::LogErrorMessage("", "ApiLayerManifestFile::FindManifestFiles - unknown manifest file requested");
+            LoaderLogger::LogErrorMessage(openxr_command,
+                                          "ApiLayerManifestFile::FindManifestFiles - unknown manifest file requested");
             return XR_ERROR_FILE_ACCESS_ERROR;
     }
 
@@ -971,9 +1002,9 @@ XrResult ApiLayerManifestFile::FindManifestFiles(ManifestFileType type,
         ApiLayerManifestFile::CreateIfValid(type, cur_file, manifest_files);
     }
 
-#ifdef XR_USE_PLATFORM_ANDROID
-    ApiLayerManifestFile::AddManifestFilesAndroid(type, manifest_files);
-#endif  // XR_USE_PLATFORM_ANDROID
+#if defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
+    ApiLayerManifestFile::AddManifestFilesAndroid(openxr_command, type, manifest_files);
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)
 
     return XR_SUCCESS;
 }

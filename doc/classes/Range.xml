@@ -45,7 +45,7 @@
 			If [code]true[/code], [member value] may be less than [member min_value].
 		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp" default="false">
-			If [code]true[/code], and [member min_value] is greater than 0, [member value] will be represented exponentially rather than linearly.
+			If [code]true[/code], and [member min_value] is greater or equal to [code]0[/code], [member value] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max" default="100.0">
 			Maximum value. Range is clamped if [member value] is greater than [member max_value].
@@ -54,7 +54,7 @@
 			Minimum value. Range is clamped if [member value] is less than [member min_value].
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page" default="0.0">
-			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [member page] over the difference between [member min_value] and [member max_value].
+			Page size. Used mainly for [ScrollBar]. A [ScrollBar]'s grabber length is the [ScrollBar]'s size multiplied by [member page] over the difference between [member min_value] and [member max_value].
 		</member>
 		<member name="ratio" type="float" setter="set_as_ratio" getter="get_as_ratio">
 			The value mapped between 0 and 1.
@@ -64,7 +64,7 @@
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="0" />
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.01">
-			If greater than 0, [member value] will always be rounded to a multiple of this property's value. If [member rounded] is also [code]true[/code], [member value] will first be rounded to a multiple of this property's value, then rounded to the nearest integer.
+			If greater than [code]0.0[/code], [member value] will always be rounded to a multiple of this property's value above [member min_value]. For example, if [member min_value] is [code]0.1[/code] and step is [code]0.2[/code], then [member value] is limited to [code]0.1[/code], [code]0.3[/code], [code]0.5[/code], and so on. If [member rounded] is also [code]true[/code], [member value] will first be rounded to a multiple of this property's value, then rounded to the nearest integer.
 		</member>
 		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
 			Range's current value. Changing this property (even via code) will trigger [signal value_changed] signal. Use [method set_value_no_signal] if you want to avoid it.

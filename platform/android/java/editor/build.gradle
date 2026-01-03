@@ -2,14 +2,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-}
-
-dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
-    implementation project(":lib")
-
-    implementation "androidx.window:window:1.0.0"
+    id 'base'
 }
 
 ext {
@@ -20,7 +13,7 @@ ext {
         String versionStatus = System.getenv("GODOT_VERSION_STATUS")
         if (versionStatus != null && !versionStatus.isEmpty()) {
             try {
-                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""));
+                buildNumber = Integer.parseInt(versionStatus.replaceAll("[^0-9]", ""))
             } catch (NumberFormatException ignored) {
                 buildNumber = 0
             }
@@ -34,7 +27,7 @@ ext {
     // Return the keystore file used for signing the release build.
     getGodotKeystoreFile = { ->
         def keyStore = System.getenv("GODOT_ANDROID_SIGN_KEYSTORE")
-        if (keyStore == null) {
+        if (keyStore == null || keyStore.isEmpty()) {
             return null
         }
         return file(keyStore)
@@ -81,6 +74,8 @@ android {
     buildToolsVersion versions.buildTools
     ndkVersion versions.ndkVersion
 
+    namespace = "org.godotengine.editor"
+
     defaultConfig {
         // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
         applicationId "org.godotengine.editor.v4"
@@ -90,7 +85,27 @@ android {
         targetSdkVersion versions.targetSdk
 
         missingDimensionStrategy 'products', 'editor'
-        setProperty("archivesBaseName", "android_editor")
+        manifestPlaceholders += [
+            editorAppName: "Godot Engine 4",
+            editorBuildSuffix: ""
+        ]
+
+        ndk { debugSymbolLevel 'NONE' }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+    }
+
+    base {
+        archivesName = "android_editor"
     }
 
     compileOptions {
@@ -111,15 +126,21 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         dev {
             initWith debug
             applicationIdSuffix ".dev"
+            manifestPlaceholders += [editorBuildSuffix: " (dev)"]
         }
 
         debug {
             initWith release
             applicationIdSuffix ".debug"
+            manifestPlaceholders += [editorBuildSuffix: " (debug)"]
             signingConfig signingConfigs.debug
         }
 
@@ -131,9 +152,93 @@ android {
     }
 
     packagingOptions {
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
+        }
+    }
+
+    flavorDimensions = ["android_distribution"]
+    productFlavors {
+        android {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+        }
+        horizonos {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".meta"
+            versionNameSuffix "-meta"
+            targetSdkVersion 32
+        }
+        picoos {
+            dimension "android_distribution"
+            missingDimensionStrategy 'products', 'editor'
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".pico"
+            versionNameSuffix "-pico"
+            minSdkVersion 29
+            targetSdkVersion 32
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+
+    implementation "androidx.fragment:fragment:$versions.fragmentVersion"
+    implementation project(":lib")
+
+    implementation "androidx.window:window:1.3.0"
+    implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.2.1"
+    implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
+
+    implementation "org.khronos.openxr:openxr_loader_for_android:$versions.openxrLoaderVersion"
+
+    // Android XR dependencies
+    androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"
+    // Meta dependencies
+    horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"
+    // Pico dependencies
+    picoosImplementation "org.godotengine:godot-openxr-vendors-pico:$versions.openxrVendorsVersion"
+
+    // Android instrumented test dependencies
+    androidTestImplementation "androidx.test.ext:junit:$versions.junitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$versions.espressoCoreVersion"
+    androidTestImplementation "org.jetbrains.kotlin:kotlin-test:$versions.kotlinTestVersion"
+    androidTestImplementation "androidx.test:runner:$versions.testRunnerVersion"
+    androidTestUtil "androidx.test:orchestrator:$versions.testOrchestratorVersion"
+}
+
+/*
+ * Older versions of our vendor plugin include a loader that we no longer need.
+ * This code ensures those are removed.
+ */
+tasks.withType( com.android.build.gradle.internal.tasks.MergeNativeLibsTask) {
+    doFirst {
+        externalLibNativeLibs.each { jniDir ->
+            if (jniDir.getCanonicalPath().contains("godot-openxr-") || jniDir.getCanonicalPath().contains("godotopenxr")) {
+                // Delete the 'libopenxr_loader.so' files from the vendors plugin so we only use the version from the
+                // openxr loader dependency.
+                File armFile = new File(jniDir, "arm64-v8a/libopenxr_loader.so")
+                if (armFile.exists()) {
+                    armFile.delete()
+                }
+                File x86File = new File(jniDir, "x86_64/libopenxr_loader.so")
+                if (x86File.exists()) {
+                    x86File.delete()
+                }
+            }
         }
     }
 }

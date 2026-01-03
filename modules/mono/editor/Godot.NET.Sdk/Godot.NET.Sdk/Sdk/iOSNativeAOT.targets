@@ -11,11 +11,16 @@
     <XCodePath Condition=" '$(XCodePath)' == '' ">/Applications/Xcode.app/Contents/Developer</XCodePath>
     <XCodePath>$([MSBuild]::EnsureTrailingSlash('$(XCodePath)'))</XCodePath>
   </PropertyGroup>
-  
+
   <Target Name="PrepareBeforeIlcCompile"
           BeforeTargets="IlcCompile">
-    
-    <Copy SourceFiles="%(ResolvedRuntimePack.PackageDirectory)/runtimes/$(RuntimeIdentifier)/native/icudt.dat" DestinationFolder="$(PublishDir)"/>
+
+    <PropertyGroup>
+      <IcuTargetDir>%(ResolvedRuntimePack.PackageDirectory)/runtimes/$(RuntimeIdentifier)/native/icudt.dat</IcuTargetDir>
+      <IcuEnabled Condition="Exists('$(IcuTargetDir)')">true</IcuEnabled>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(IcuTargetDir)" DestinationFolder="$(PublishDir)" Condition=" '$(IcuEnabled)' == 'true' "/>
 
     <!-- We need to find the path to Xcode so we can set manual linker args to the correct SDKs
         Once https://github.com/dotnet/runtime/issues/88737 is released, we can take this out
@@ -29,13 +34,13 @@
       <XCodePath>$(XcodeSelect)</XCodePath>
       <XCodePath>$([MSBuild]::EnsureTrailingSlash('$(XCodePath)'))</XCodePath>
     </PropertyGroup>
-    
+
     <Message Importance="normal" Text="Found XCode at $(XcodeSelect)"  Condition=" '$(FindXCode)' == 'true' "/>
-    
+
     <ItemGroup>
-      <LinkerArg Include="-isysroot %22$(XCodePath)Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk%22"
+      <LinkerArg Include="-mios-simulator-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk%22"
                  Condition=" $(RuntimeIdentifier.Contains('simulator')) "/>
-      <LinkerArg Include="-isysroot %22$(XCodePath)Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk%22"
+      <LinkerArg Include="-miphoneos-version-min=12.0 -isysroot %22$(XCodePath)Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk%22"
                  Condition=" !$(RuntimeIdentifier.Contains('simulator')) "/>
     </ItemGroup>
 
@@ -54,5 +59,5 @@
     </ItemGroup>
     <Copy SourceFiles="@(SymbolFiles)" DestinationFolder="$(PublishDir)$(TargetName).framework.dSYM"/>
   </Target>
-  
+
 </Project>

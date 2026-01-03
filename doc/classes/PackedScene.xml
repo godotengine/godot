@@ -7,7 +7,7 @@
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
 		Can be used to save a node to a file. When saving, the node as well as all the nodes it owns get saved (see [member Node.owner] property).
 		[b]Note:[/b] The node doesn't need to own itself.
-		[b]Example of loading a saved scene:[/b]
+		[b]Example:[/b] Load a saved scene:
 		[codeblocks]
 		[gdscript]
 		# Use load() instead of preload() if the path isn't known at compile-time.
@@ -22,7 +22,7 @@
 		AddChild(scene);
 		[/csharp]
 		[/codeblocks]
-		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [Node2D] ([code]node[/code]), [RigidBody2D] ([code]body[/code]) and [CollisionObject2D] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [method pack] will therefore only save those two nodes, but not [code]collision[/code].
+		[b]Example:[/b] Save a node with different owners. The following example creates 3 objects: [Node2D] ([code]node[/code]), [RigidBody2D] ([code]body[/code]) and [CollisionObject2D] ([code]collision[/code]). [code]collision[/code] is a child of [code]body[/code] which is a child of [code]node[/code]. Only [code]body[/code] is owned by [code]node[/code] and [method pack] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblocks]
 		[gdscript]
 		# Create the objects.
@@ -41,9 +41,9 @@
 		# Only `node` and `body` are now packed.
 		var result = scene.pack(node)
 		if result == OK:
-		    var error = ResourceSaver.save(scene, "res://path/name.tscn")  # Or "user://..."
-		    if error != OK:
-		        push_error("An error occurred while saving the scene to disk.")
+			var error = ResourceSaver.save(scene, "res://path/name.tscn")  # Or "user://..."
+			if error != OK:
+				push_error("An error occurred while saving the scene to disk.")
 		[/gdscript]
 		[csharp]
 		// Create the objects.
@@ -63,17 +63,17 @@
 		Error result = scene.Pack(node);
 		if (result == Error.Ok)
 		{
-		    Error error = ResourceSaver.Save(scene, "res://path/name.tscn"); // Or "user://..."
-		    if (error != Error.Ok)
-		    {
-		        GD.PushError("An error occurred while saving the scene to disk.");
-		    }
+			Error error = ResourceSaver.Save(scene, "res://path/name.tscn"); // Or "user://..."
+			if (error != Error.Ok)
+			{
+				GD.PushError("An error occurred while saving the scene to disk.");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
 	</tutorials>
 	<methods>
 		<method name="can_instantiate" qualifiers="const">
@@ -88,7 +88,7 @@
 				Returns the [SceneState] representing the scene file contents.
 			</description>
 		</method>
-		<method name="instantiate" qualifiers="const">
+		<method name="instantiate" qualifiers="const" keywords="create, make, spawn, new">
 			<return type="Node" />
 			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
 			<description>
@@ -99,16 +99,10 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="Node" />
 			<description>
-				Pack will ignore any sub-nodes not owned by given node. See [member Node.owner].
+				Packs the [param path] node, and all owned sub-nodes, into this [PackedScene]. Any existing data will be cleared. See [member Node.owner].
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{ &quot;conn_count&quot;: 0, &quot;conns&quot;: PackedInt32Array(), &quot;editable_instances&quot;: [], &quot;names&quot;: PackedStringArray(), &quot;node_count&quot;: 0, &quot;node_paths&quot;: [], &quot;nodes&quot;: PackedInt32Array(), &quot;variants&quot;: [], &quot;version&quot;: 3 }">
-			A dictionary representation of the scene contents.
-			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
-		</member>
-	</members>
 	<constants>
 		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
 			If passed to [method instantiate], blocks edits to the scene state.

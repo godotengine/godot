@@ -55,7 +55,7 @@
 			IGD service type.
 		</member>
 		<member name="igd_status" type="int" setter="set_igd_status" getter="get_igd_status" enum="UPNPDevice.IGDStatus" default="9">
-			IGD status. See [enum IGDStatus].
+			IGD status.
 		</member>
 		<member name="service_type" type="String" setter="set_service_type" getter="get_service_type" default="&quot;&quot;">
 			Service type.
@@ -71,7 +71,7 @@
 		<constant name="IGD_STATUS_HTTP_EMPTY" value="2" enum="IGDStatus">
 			Empty HTTP response.
 		</constant>
-		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus">
+		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus" deprecated="This value is no longer used.">
 			Returned response contained no URLs.
 		</constant>
 		<constant name="IGD_STATUS_NO_IGD" value="4" enum="IGDStatus">
@@ -86,7 +86,7 @@
 		<constant name="IGD_STATUS_INVALID_CONTROL" value="7" enum="IGDStatus">
 			Invalid control.
 		</constant>
-		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus">
+		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus" deprecated="This value is no longer used.">
 			Memory allocation error.
 		</constant>
 		<constant name="IGD_STATUS_UNKNOWN_ERROR" value="9" enum="IGDStatus">

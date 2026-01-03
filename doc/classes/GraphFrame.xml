@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphFrame" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		GraphFrame is a special [GraphElement] that can be used to organize other [GraphElement]s inside a [GraphEdit].
+	</brief_description>
+	<description>
+		GraphFrame is a special [GraphElement] to which other [GraphElement]s can be attached. It can be configured to automatically resize to enclose all attached [GraphElement]s. If the frame is moved, all the attached [GraphElement]s inside it will be moved as well.
+		A GraphFrame is always kept behind the connection layer and other [GraphElement]s inside a [GraphEdit].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_titlebar_hbox">
+			<return type="HBoxContainer" />
+			<description>
+				Returns the [HBoxContainer] used for the title bar, only containing a [Label] for displaying the title by default.
+				This can be used to add custom controls to the title bar such as option or close buttons.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autoshrink_enabled" type="bool" setter="set_autoshrink_enabled" getter="is_autoshrink_enabled" default="true">
+			If [code]true[/code], the frame's rect will be adjusted automatically to enclose all attached [GraphElement]s.
+		</member>
+		<member name="autoshrink_margin" type="int" setter="set_autoshrink_margin" getter="get_autoshrink_margin" default="40">
+			The margin around the attached nodes that is used to calculate the size of the frame when [member autoshrink_enabled] is [code]true[/code].
+		</member>
+		<member name="drag_margin" type="int" setter="set_drag_margin" getter="get_drag_margin" default="16">
+			The margin inside the frame that can be used to drag the frame.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
+		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.3, 0.3, 0.3, 0.75)">
+			The color of the frame when [member tint_color_enabled] is [code]true[/code].
+		</member>
+		<member name="tint_color_enabled" type="bool" setter="set_tint_color_enabled" getter="is_tint_color_enabled" default="false">
+			If [code]true[/code], the tint color will be used to tint the frame.
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+			Title of the frame.
+		</member>
+	</members>
+	<signals>
+		<signal name="autoshrink_changed">
+			<description>
+				Emitted when [member autoshrink_enabled] or [member autoshrink_margin] changes.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="resizer_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			The color modulation applied to the resizer icon.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The default [StyleBox] used for the background of the [GraphFrame].
+		</theme_item>
+		<theme_item name="panel_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the background of the [GraphFrame] when it is selected.
+		</theme_item>
+		<theme_item name="titlebar" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphFrame].
+		</theme_item>
+		<theme_item name="titlebar_selected" data_type="style" type="StyleBox">
+			The [StyleBox] used for the title bar of the [GraphFrame] when it is selected.
+		</theme_item>
+	</theme_items>
+</class>

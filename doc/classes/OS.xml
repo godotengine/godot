@@ -4,33 +4,41 @@
 		Provides access to common operating system functionalities.
 	</brief_description>
 	<description>
-		This class wraps the most common functionalities for communicating with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
-		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
+		The [OS] class wraps the most common functionalities for communicating with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
+		[b]Note:[/b] In Godot 4, [OS] functions related to window management, clipboard, and TTS were moved to the [DisplayServer] singleton (and the [Window] class). Functions related to time were removed and are only available in the [Time] class.
 	</description>
 	<tutorials>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
+		<method name="add_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Add a custom logger to intercept the internal message stream.
+			</description>
+		</method>
 		<method name="alert">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
 			<param index="1" name="title" type="String" default="&quot;Alert!&quot;" />
 			<description>
-				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
+				Displays a modal dialog box using the host platform's implementation. The engine execution is blocked until the dialog is closed.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
 			<return type="void" />
 			<description>
-				Shuts down system MIDI driver.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_midi_inputs] and [method get_connected_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
 			</description>
 		</method>
 		<method name="crash">
 			<return type="void" />
 			<param index="0" name="message" type="String" />
 			<description>
-				Crashes the engine (or the editor if called within a [code]@tool[/code] script). This should [i]only[/i] be used for testing the system's crash handler, not for any other purpose. For general error reporting, use (in order of preference) [method @GDScript.assert], [method @GlobalScope.push_error] or [method alert]. See also [method kill].
+				Crashes the engine (or the editor if called within a [code]@tool[/code] script). See also [method kill].
+				[b]Note:[/b] This method should [i]only[/i] be used for testing the system's crash handler, not for any other purpose. For general error reporting, use (in order of preference) [method @GDScript.assert], [method @GlobalScope.push_error], or [method alert].
 			</description>
 		</method>
 		<method name="create_instance">
@@ -38,8 +46,9 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
+				See [method create_process] if you wish to run a different process.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="create_process">
@@ -48,20 +57,20 @@
 			<param index="1" name="arguments" type="PackedStringArray" />
 			<param index="2" name="open_console" type="bool" default="false" />
 			<description>
-				Creates a new process that runs independently of Godot. It will not terminate if Godot terminates. The path specified in [param path] must exist and be executable file or macOS .app bundle. Platform path resolution will be used. The [param arguments] are used in the given order and separated by a space.
-				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
-				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
-				For example, running another instance of the project:
+				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
+				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
+				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
+				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
 				var pid = OS.create_process(OS.get_executable_path(), [])
 				[/gdscript]
 				[csharp]
-				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), []);
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
@@ -69,8 +78,8 @@
 			<return type="void" />
 			<param index="0" name="msec" type="int" />
 			<description>
-				Delays execution of the current thread by [param msec] milliseconds. [param msec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				Delays execution of the current thread by [param msec] milliseconds. [param msec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] does nothing and prints an error message.
+				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, you may use [method SceneTree.create_timer]. Awaiting with [SceneTreeTimer] delays the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
@@ -78,8 +87,8 @@
 			<return type="void" />
 			<param index="0" name="usec" type="int" />
 			<description>
-				Delays execution of the current thread by [param usec] microseconds. [param usec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
+				Delays execution of the current thread by [param usec] microseconds. [param usec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] does nothing and prints an error message.
+				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, you may use [method SceneTree.create_timer]. Awaiting with a [SceneTreeTimer] delays the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
 				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
@@ -91,10 +100,11 @@
 			<param index="3" name="read_stderr" type="bool" default="false" />
 			<param index="4" name="open_console" type="bool" default="false" />
 			<description>
-				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
-				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
-				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
-				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
+				Executes the given process in a [i]blocking[/i] way. The file specified in [param path] must exist and be executable. The system path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes.
+				If an [param output] array is provided, the complete shell output of the process is appended to [param output] as a single [String] element. If [param read_stderr] is [code]true[/code], the output to the standard error stream is also appended to the array.
+				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window is opened.
+				This method returns the exit code of the command, or [code]-1[/code] if the process fails to execute.
+				[b]Note:[/b] The main thread will be blocked until the executed command terminates. Use [Thread] to create a separate thread that will not block the main thread, or use [method create_process] to create a completely independent process.
 				For example, to retrieve a list of the working directory's contents:
 				[codeblocks]
 				[gdscript]
@@ -102,8 +112,8 @@
 				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				Godot.Collections.Array output = [];
+				int exitCode = OS.Execute("ls", ["-l", "/tmp"], output);
 				[/csharp]
 				[/codeblocks]
 				If you wish to access a shell built-in or execute a composite command, a platform-specific shell can be invoked. For example:
@@ -113,154 +123,223 @@
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				Godot.Collections.Array output = [];
+				OS.Execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
 				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[b]Note:[/b] On Android, system commands such as [code]dumpsys[/code] can only be run on a rooted device.
+			</description>
+		</method>
+		<method name="execute_with_pipe">
+			<return type="Dictionary" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="arguments" type="PackedStringArray" />
+			<param index="2" name="blocking" type="bool" default="true" />
+			<description>
+				Creates a new process that runs independently of Godot with redirected IO. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
+				If [param blocking] is [code]false[/code], created pipes work in non-blocking mode, i.e. read and write operations will return immediately. Use [method FileAccess.get_error] to check if the last read/write operation was successful.
+				If the process cannot be created, this method returns an empty [Dictionary]. Otherwise, this method returns a [Dictionary] with the following keys:
+				- [code]"stdio"[/code] - [FileAccess] to access the process stdin and stdout pipes (read/write).
+				- [code]"stderr"[/code] - [FileAccess] to access the process stderr pipe (read only).
+				- [code]"pid"[/code] - Process ID as an [int], which you can use to monitor the process (and potentially terminate it with [method kill]).
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
+				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
+				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
 			<return type="int" enum="Key" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Returns the keycode of the given string (e.g. "Escape").
+				Finds the keycode for the given string. The returned values are equivalent to the [enum Key] constants.
+				[codeblocks]
+				[gdscript]
+				print(OS.find_keycode_from_string("C"))         # Prints 67 (KEY_C)
+				print(OS.find_keycode_from_string("Escape"))    # Prints 4194305 (KEY_ESCAPE)
+				print(OS.find_keycode_from_string("Shift+Tab")) # Prints 37748738 (KEY_MASK_SHIFT | KEY_TAB)
+				print(OS.find_keycode_from_string("Unknown"))   # Prints 0 (KEY_NONE)
+				[/gdscript]
+				[csharp]
+				GD.Print(OS.FindKeycodeFromString("C"));         // Prints C (Key.C)
+				GD.Print(OS.FindKeycodeFromString("Escape"));    // Prints Escape (Key.Escape)
+				GD.Print(OS.FindKeycodeFromString("Shift+Tab")); // Prints 37748738 (KeyModifierMask.MaskShift | Key.Tab)
+				GD.Print(OS.FindKeycodeFromString("Unknown"));   // Prints None (Key.None)
+				[/csharp]
+				[/codeblocks]
+				See also [method get_keycode_string].
 			</description>
 		</method>
 		<method name="get_cache_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] cache data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
+				Returns the [i]global[/i] cache data directory according to the operating system's standards.
+				On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CACHE_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_config_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_cmdline_args">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the command-line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine, excluding arguments processed by the engine, such as [code]--headless[/code] and [code]--fullscreen[/code].
+				[codeblock]
+				# Godot has been executed with the following command:
+				# godot --headless --verbose --scene my_scene.tscn --custom
+				OS.get_cmdline_args() # Returns ["--scene", "my_scene.tscn", "--custom"]
+				[/codeblock]
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
-				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
+				[b]Example:[/b] Parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
-				    if argument.find("=") &gt; -1:
-				        var key_value = argument.split("=")
-				        arguments[key_value[0].lstrip("--")] = key_value[1]
-				    else:
-				        # Options without an argument will be present in the dictionary,
-				        # with the value set to an empty string.
-				        arguments[argument.lstrip("--")] = ""
+					if argument.contains("="):
+						var key_value = argument.split("=")
+						arguments[key_value[0].trim_prefix("--")] = key_value[1]
+					else:
+						# Options without an argument will be present in the dictionary,
+						# with the value set to an empty string.
+						arguments[argument.trim_prefix("--")] = ""
 				[/gdscript]
 				[csharp]
-				var arguments = new Godot.Collections.Dictionary();
+				var arguments = new Dictionary&lt;string, string&gt;();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
-				    if (argument.Find("=") &gt; -1)
-				    {
-				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
-				    }
-				    else
-				    {
-				        // Options without an argument will be present in the dictionary,
-				        // with the value set to an empty string.
-				        arguments[keyValue[0].LStrip("--")] = "";
-				    }
+					if (argument.Contains('='))
+					{
+						string[] keyValue = argument.Split("=");
+						arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
+					}
+					else
+					{
+						// Options without an argument will be present in the dictionary,
+						// with the value set to an empty string.
+						arguments[argument.TrimPrefix("--")] = "";
+					}
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Passing custom user arguments directly is not recommended, as the engine may discard or modify them. Instead, the best way is to use the standard UNIX double dash ([code]--[/code]) and then pass custom arguments, which the engine itself will ignore. These can be read via [method get_cmdline_user_args].
+				[b]Note:[/b] Passing custom user arguments directly is not recommended, as the engine may discard or modify them. Instead, pass the standard UNIX double dash ([code]--[/code]) and then the custom arguments, which the engine will ignore by design. These can be read via [method get_cmdline_user_args].
 			</description>
 		</method>
 		<method name="get_cmdline_user_args">
 			<return type="PackedStringArray" />
 			<description>
-				Similar to [method get_cmdline_args], but this returns the user arguments (any argument passed after the double dash [code]--[/code] or double plus [code]++[/code] argument). These are left untouched by Godot for the user. [code]++[/code] can be used in situations where [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
-				For example, in the command line below, [code]--fullscreen[/code] will not be returned in [method get_cmdline_user_args] and [code]--level 1[/code] will only be returned in [method get_cmdline_user_args]:
+				Returns the command-line user arguments passed to the engine. User arguments are ignored by the engine and reserved for the user. They are passed after the double dash [code]--[/code] argument. [code]++[/code] may be used when [code]--[/code] is intercepted by another program (such as [code]startx[/code]).
 				[codeblock]
-				godot --fullscreen -- --level 1
-				# Or:
-				godot --fullscreen ++ --level 1
+				# Godot has been executed with the following command:
+				# godot --fullscreen --custom -- --level=2 --hardcore
+
+				OS.get_cmdline_args()      # Returns ["--custom"]
+				OS.get_cmdline_user_args() # Returns ["--level=2", "--hardcore"]
 				[/codeblock]
+				To get arguments passed before [code]--[/code] or [code]++[/code], use [method get_cmdline_args].
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user configuration directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
+				Returns the [i]global[/i] user configuration directory according to the operating system's standards.
+				On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_CONFIG_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_data_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
 			<return type="PackedStringArray" />
 			<description>
-				Returns an array of MIDI device names.
-				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the [i]global[/i] user data directory according to the operating system's standards. On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
+				Returns the [i]global[/i] user data directory according to the operating system's standards.
+				On the Linux/BSD platform, this path can be overridden by setting the [code]XDG_DATA_HOME[/code] environment variable before starting the project. See [url=$DOCS_URL/tutorials/io/data_paths.html]File paths in Godot projects[/url] in the documentation for more information. See also [method get_cache_dir] and [method get_config_dir].
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
 		<method name="get_distribution_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the distribution for Linux and BSD platforms (e.g. Ubuntu, Manjaro, OpenBSD, etc.).
-				Returns the same value as [method get_name] for stock Android ROMs, but attempts to return the custom ROM name for popular Android derivatives such as LineageOS.
+				Returns the name of the distribution for Linux and BSD platforms (e.g. "Ubuntu", "Manjaro", "OpenBSD", etc.).
+				Returns the same value as [method get_name] for stock Android ROMs, but attempts to return the custom ROM name for popular Android derivatives such as "LineageOS".
 				Returns the same value as [method get_name] for other platforms.
-				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
+			</description>
+		</method>
+		<method name="get_entropy">
+			<return type="PackedByteArray" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Generates a [PackedByteArray] of cryptographically secure random bytes with given [param size].
+				[b]Note:[/b] Generating large quantities of bytes using this method can result in locking and entropy of lower quality on most platforms. Using [method Crypto.generate_random_bytes] is preferred in most cases.
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="variable" type="String" />
 			<description>
-				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
+				Returns the value of the given environment variable, or an empty string if [param variable] doesn't exist.
 				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[b]Note:[/b] On macOS, applications do not have access to shell environment variables.
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the path to the current engine executable.
-				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
+				Returns the file path to the current engine executable.
+				[b]Note:[/b] On macOS, if you want to launch another instance of Godot, always use [method create_instance] instead of relying on the executable path.
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				On Android devices: With this function, you can get the list of dangerous permissions that have been granted.
-				On macOS (sandboxed applications only): This function returns the list of user selected folders accessible to the application. Use native file dialog to request folder access permission.
+				On Android devices: Returns the list of dangerous permissions that have been granted.
+				On macOS: Returns the list of granted permissions and user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On iOS, visionOS: Returns the list of granted permissions.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="code" type="int" enum="Key" />
 			<description>
-				Returns the given keycode as a string (e.g. Return values: [code]"Escape"[/code], [code]"Shift+Escape"[/code]).
-				See also [member InputEventKey.keycode] and [method InputEventKey.get_keycode_with_modifiers].
+				Returns the given keycode as a [String].
+				[codeblocks]
+				[gdscript]
+				print(OS.get_keycode_string(KEY_C))                    # Prints "C"
+				print(OS.get_keycode_string(KEY_ESCAPE))               # Prints "Escape"
+				print(OS.get_keycode_string(KEY_MASK_SHIFT | KEY_TAB)) # Prints "Shift+Tab"
+				[/gdscript]
+				[csharp]
+				GD.Print(OS.GetKeycodeString(Key.C));                                    // Prints "C"
+				GD.Print(OS.GetKeycodeString(Key.Escape));                               // Prints "Escape"
+				GD.Print(OS.GetKeycodeString((Key)KeyModifierMask.MaskShift | Key.Tab)); // Prints "Shift+Tab"
+				[/csharp]
+				[/codeblocks]
+				See also [method find_keycode_from_string], [member InputEventKey.keycode], and [method InputEventKey.get_keycode_with_modifiers].
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the host OS locale as a string of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
-				[code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
-				[code skip-lint]Script[/code] - optional, 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
-				[code]COUNTRY[/code] - optional, 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
-				[code]VARIANT[/code] - optional, language variant, region and sort order. Variant can have any number of underscored keywords.
-				[code]extra[/code] - optional, semicolon separated list of additional key words. Currency, calendar, sort order and numbering system information.
+				Returns the host OS locale as a [String] of the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. Every substring after [code]language[/code] is optional and may not exist.
+				- [code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				- [code skip-lint]Script[/code] - 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				- [code]COUNTRY[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				- [code]VARIANT[/code] - language variant, region and sort order. The variant can have any number of underscored keywords.
+				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order and numbering system information.
+				If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 			</description>
 		</method>
 		<method name="get_locale_language" qualifiers="const">
@@ -280,83 +359,95 @@
 		<method name="get_memory_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the [Dictionary] with the following keys:
-				[code]"physical"[/code] - total amount of usable physical memory, in bytes or [code]-1[/code] if unknown. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by kernel and devices.
-				[code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operation, in bytes or [code]-1[/code] if unknown. The process might be able to allocate more physical memory, but such allocation will require moving inactive pages to disk and can take some time.
-				[code]"available"[/code] - amount of memory, that can be allocated without extending the swap file(s), in bytes or [code]-1[/code] if unknown. This value include both physical memory and swap.
-				[code]"stack"[/code] - size of the current thread stack, in bytes or [code]-1[/code] if unknown.
+				Returns a [Dictionary] containing information about the current memory with the following entries:
+				- [code]"physical"[/code] - total amount of usable physical memory in bytes. This value can be slightly less than the actual physical memory amount, since it does not include memory reserved by the kernel and devices.
+				- [code]"free"[/code] - amount of physical memory, that can be immediately allocated without disk access or other costly operations, in bytes. The process might be able to allocate more physical memory, but this action will require moving inactive pages to disk, which can be expensive.
+				- [code]"available"[/code] - amount of memory that can be allocated without extending the swap file(s), in bytes. This value includes both physical memory and swap.
+				- [code]"stack"[/code] - size of the current thread stack in bytes.
+				[b]Note:[/b] Each entry's value may be [code]-1[/code] if it is unknown.
 			</description>
 		</method>
 		<method name="get_model_name" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the model name of the current device.
-				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, and Windows. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the host OS.
-				On Windows, this is [code]"Windows"[/code].
-				On macOS, this is [code]"macOS"[/code].
-				On Linux-based operating systems, this is [code]"Linux"[/code].
-				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
-				On Android, this is [code]"Android"[/code].
-				On iOS, this is [code]"iOS"[/code].
-				On the web, this is [code]"Web"[/code].
-				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, yielding other return values.
+				Returns the name of the host platform.
+				- On Windows, this is [code]"Windows"[/code].
+				- On macOS, this is [code]"macOS"[/code].
+				- On Linux-based operating systems, this is [code]"Linux"[/code].
+				- On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
+				- On Android, this is [code]"Android"[/code].
+				- On iOS, this is [code]"iOS"[/code].
+				- On Web, this is [code]"Web"[/code].
+				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, possibly returning other names.
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows":
-				        print("Windows")
-				    "macOS":
-				        print("macOS")
-				    "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
-				        print("Linux/BSD")
-				    "Android":
-				        print("Android")
-				    "iOS":
-				        print("iOS")
-				    "Web":
-				        print("Web")
+					"Windows":
+						print("Welcome to Windows!")
+					"macOS":
+						print("Welcome to macOS!")
+					"Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+						print("Welcome to Linux/BSD!")
+					"Android":
+						print("Welcome to Android!")
+					"iOS":
+						print("Welcome to iOS!")
+					"Web":
+						print("Welcome to the Web!")
 				[/gdscript]
 				[csharp]
 				switch (OS.GetName())
 				{
-				    case "Windows":
-				        GD.Print("Windows");
-				        break;
-				    case "macOS":
-				        GD.Print("macOS");
-				        break;
-				    case "Linux":
-				    case "FreeBSD":
-				    case "NetBSD":
-				    case "OpenBSD":
-				    case "BSD":
-				        GD.Print("Linux/BSD");
-				        break;
-				    case "Android":
-				        GD.Print("Android");
-				        break;
-				    case "iOS":
-				        GD.Print("iOS");
-				        break;
-				    case "Web":
-				        GD.Print("Web");
-				        break;
+					case "Windows":
+						GD.Print("Welcome to Windows");
+						break;
+					case "macOS":
+						GD.Print("Welcome to macOS!");
+						break;
+					case "Linux":
+					case "FreeBSD":
+					case "NetBSD":
+					case "OpenBSD":
+					case "BSD":
+						GD.Print("Welcome to Linux/BSD!");
+						break;
+					case "Android":
+						GD.Print("Welcome to Android!");
+						break;
+					case "iOS":
+						GD.Print("Welcome to iOS!");
+						break;
+					case "Web":
+						GD.Print("Welcome to the Web!");
+						break;
 				}
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] On Web platforms, it is still possible to determine the host platform's OS with feature tags. See [method has_feature].
+			</description>
+		</method>
+		<method name="get_process_exit_code" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="pid" type="int" />
+			<description>
+				Returns the exit code of a spawned process once it has finished running (see [method is_process_running]).
+				Returns [code]-1[/code] if the [param pid] is not a PID of a spawned child process, the process is still running, or the method is not implemented for the current platform.
+				[b]Note:[/b] Returns [code]-1[/code] if the [param pid] is a macOS bundled app process.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the project's process ID.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				Returns the number used by the host machine to uniquely identify this application.
+				[b]Note:[/b] On Web, this method always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -368,7 +459,7 @@
 		<method name="get_processor_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
+				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]).
 				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
@@ -381,13 +472,41 @@
 		<method name="get_static_memory_peak_usage" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the maximum amount of static memory used (only works in debug).
+				Returns the maximum amount of static memory used. Only works in debug builds.
 			</description>
 		</method>
 		<method name="get_static_memory_usage" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of static memory being used by the program in bytes (only works in debug).
+				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
+			</description>
+		</method>
+		<method name="get_stderr_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns the type of the standard error device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="get_stdin_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns the type of the standard input device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the standard input. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
+			</description>
+		</method>
+		<method name="get_stdout_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns the type of the standard output device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+			</description>
+		</method>
+		<method name="get_system_ca_certificates">
+			<return type="String" />
+			<description>
+				Returns the list of certification authorities trusted by the operating system as a string of concatenated certificates in PEM format.
 			</description>
 		</method>
 		<method name="get_system_dir" qualifiers="const">
@@ -395,9 +514,9 @@
 			<param index="0" name="dir" type="int" enum="OS.SystemDir" />
 			<param index="1" name="shared_storage" type="bool" default="true" />
 			<description>
-				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
+				Returns the path to commonly used folders across different platforms, as defined by [param dir]. See the [enum SystemDir] constants for available locations.
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
-				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
+				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories, if [param shared_storage] is [code]true[/code]. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
 		<method name="get_system_font_path" qualifiers="const">
@@ -407,7 +526,7 @@
 			<param index="2" name="stretch" type="int" default="100" />
 			<param index="3" name="italic" type="bool" default="false" />
 			<description>
-				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
+				Returns the path to the system font file with [param font_name] and style. Returns an empty string if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
 				[b]Note:[/b] Returned font might have different style if the requested style is not available.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
@@ -423,7 +542,7 @@
 			<param index="5" name="stretch" type="int" default="100" />
 			<param index="6" name="italic" type="bool" default="false" />
 			<description>
-				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
+				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale, and script. Returns an empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
 				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
@@ -433,8 +552,14 @@
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns list of font family names available.
+				Returns the list of font family names available.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="get_temp_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] temporary data directory according to the operating system's standards.
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
@@ -448,19 +573,19 @@
 			<return type="String" />
 			<description>
 				Returns a string that is unique to the device.
-				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string and prints an error on Web, as this method cannot be implemented on this platform.
+				[b]Note:[/b] This string may change without notice if the user reinstalls their operating system, upgrades it, or modifies their hardware. This means it should generally not be used to encrypt persistent data, as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by this method for security purposes.
+				[b]Note:[/b] On Web, returns an empty string and generates an error, as this method cannot be implemented for security reasons.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the absolute directory path where user data is written ([code]user://[/code]).
-				On Windows, this is [code]%AppData%\Godot\app_userdata\[project_name][/code], or [code]%AppData%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%AppData%[/code] expands to [code]%UserProfile%\AppData\Roaming[/code].
-				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Linux and BSD, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Android and iOS, this is a sandboxed directory in either internal or external storage, depending on the user's configuration.
-				On the web, this is a virtual directory managed by the browser.
+				Returns the absolute directory path where user data is written (the [code]user://[/code] directory in Godot). The path depends on the project name and [member ProjectSettings.application/config/use_custom_user_dir].
+				- On Windows, this is [code]%AppData%\Godot\app_userdata\[project_name][/code], or [code]%AppData%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%AppData%[/code] expands to [code]%UserProfile%\AppData\Roaming[/code].
+				- On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				- On Linux and BSD, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				- On Android and iOS, this is a sandboxed directory in either internal or external storage, depending on the user's configuration.
+				- On Web, this is a virtual directory managed by the browser.
 				If the project name is empty, [code][project_name][/code] falls back to [code][unnamed project][/code].
 				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user home directory.
 			</description>
@@ -469,20 +594,47 @@
 			<return type="String" />
 			<description>
 				Returns the exact production and build version of the operating system. This is different from the branded version used in marketing. This helps to distinguish between different releases of operating systems, including minor versions, and insider and custom builds.
-				For Windows, the major and minor version are returned, as well as the build number. For example, the returned string can look like [code]10.0.9926[/code] for a build of Windows 10, and it can look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
-				For rolling distributions, such as Arch Linux, an empty string is returned.
-				For macOS and iOS, the major and minor version are returned, as well as the patch number.
-				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
-				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+				- For Windows, the major and minor version are returned, as well as the build number. For example, the returned string may look like [code]10.0.9926[/code] for a build of Windows 10.
+				- For rolling distributions, such as Arch Linux, an empty string is returned.
+				- For macOS and iOS, the major and minor version are returned, as well as the patch number.
+				- For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
+				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
+			</description>
+		</method>
+		<method name="get_version_alias" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the branded version used in marketing, followed by the build number (on Windows), the version number (on macOS), or the SDK version and incremental build number (on Android). Examples include [code]11 (build 22000)[/code], [code]Sequoia (15.0.0)[/code], and [code]15 (SDK 35 build abc528-11988f)[/code].
+				This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				[b]Note:[/b] This method is only supported on Windows, macOS, and Android. On other operating systems, it returns the same value as [method get_version].
 			</description>
 		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns the video adapter driver name and version for the user's currently active graphics card. See also [method RenderingServer.get_video_adapter_api_version].
+				Returns the video adapter driver name and version for the user's currently active graphics card, as a [PackedStringArray]. See also [method RenderingServer.get_video_adapter_api_version].
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
-				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
-				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
+				The second element holds the driver version. For example, on the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on Linux/BSD and Windows when not running in headless mode. On other platforms, it returns an empty array.
+				[b]Note:[/b] This method will run slowly the first time it is called in a session; it can take several seconds depending on the operating system and hardware. It is blocking if called on the main thread, so it's recommended to call it on a separate thread using [Thread]. This allows the engine to keep running while the information is being retrieved. However, [method get_video_adapter_driver_info] is [i]not[/i] thread-safe, so it should not be called from multiple threads at the same time.
+				[codeblocks]
+				[gdscript]
+				var thread = Thread.new()
+
+				func _ready():
+					thread.start(
+						func():
+							var driver_info = OS.get_video_adapter_driver_info()
+							if not driver_info.is_empty():
+								print("Driver: %s %s" % [driver_info[0], driver_info[1]])
+							else:
+								print("Driver: (unknown)")
+					)
+
+				func _exit_tree():
+					thread.wait_to_finish()
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -499,7 +651,7 @@
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
-				[b]Note:[/b] On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
+				[b]Note:[/b] On the Web platform, one of the following additional tags is defined to indicate the host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -507,23 +659,36 @@
 			<description>
 				Returns [code]true[/code] if the Godot binary used to run the project is a [i]debug[/i] export template, or when running in the editor.
 				Returns [code]false[/code] if the Godot binary used to run the project is a [i]release[/i] export template.
-				To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("template")[/code] instead.
+				[b]Note:[/b] To check whether the Godot binary used to run the project is an export template (debug or release), use [code]OS.has_feature("template")[/code] instead.
 			</description>
 		</method>
 		<method name="is_keycode_unicode" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="code" type="int" />
 			<description>
-				Returns [code]true[/code] if the input keycode corresponds to a Unicode character.
+				Returns [code]true[/code] if the input keycode corresponds to a Unicode character. For a list of codes, see the [enum Key] constants.
+				[codeblocks]
+				[gdscript]
+				print(OS.is_keycode_unicode(KEY_G))      # Prints true
+				print(OS.is_keycode_unicode(KEY_KP_4))   # Prints true
+				print(OS.is_keycode_unicode(KEY_TAB))    # Prints false
+				print(OS.is_keycode_unicode(KEY_ESCAPE)) # Prints false
+				[/gdscript]
+				[csharp]
+				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints False
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints False
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_process_running" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="pid" type="int" />
 			<description>
-				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated.
-				Must be a valid ID generated from [method create_process].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated. [param pid] must be a valid ID generated from [method create_process].
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="is_restart_on_exit_set" qualifiers="const">
@@ -535,8 +700,8 @@
 		<method name="is_sandboxed" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if application is running in the sandbox.
-				[b]Note:[/b] This method is implemented on macOS and Linux.
+				Returns [code]true[/code] if the application is running in the sandbox.
+				[b]Note:[/b] This method is only implemented on macOS and Linux.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
@@ -548,15 +713,15 @@
 		<method name="is_userfs_persistent" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the Web platform, where this persistence may be unavailable.
+				Returns [code]true[/code] if the [code]user://[/code] file system is persistent, that is, its state is the same after a player quits and starts the game again. Relevant to the Web platform, where this persistence may be unavailable.
 			</description>
 		</method>
 		<method name="kill">
 			<return type="int" enum="Error" />
 			<param index="0" name="pid" type="int" />
 			<description>
-				Kill (terminate) the process identified by the given process ID ([param pid]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
-				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
+				Kill (terminate) the process identified by the given process ID ([param pid]), such as the ID returned by [method execute] in non-blocking mode. See also [method crash].
+				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the engine.
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -564,9 +729,9 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Moves the file or directory to the system's recycle bin. See also [method DirAccess.remove].
+				Moves the file or directory at the given [param path] to the system's recycle bin. See also [method DirAccess.remove].
 				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported projects.
-				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
+				Returns [constant FAILED] if the file or directory cannot be found, or the system does not support this method.
 				[codeblocks]
 				[gdscript]
 				var file_to_remove = "user://slot1.save"
@@ -577,34 +742,81 @@
 				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 			</description>
 		</method>
 		<method name="open_midi_inputs">
 			<return type="void" />
 			<description>
-				Initializes the singleton for the system MIDI driver.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_midi_inputs] and [method close_midi_inputs].
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+		<method name="open_with_program">
+			<return type="int" enum="Error" />
+			<param index="0" name="program_path" type="String" />
+			<param index="1" name="paths" type="PackedStringArray" />
+			<description>
+				Opens one or more files/directories with the specified application. The [param program_path] specifies the path to the application to use for opening the files, and [param paths] contains an array of file/directory paths to open.
+				[b]Note:[/b] This method is mostly only relevant for macOS, where opening files using [method create_process] might fail. On other platforms, this falls back to using [method create_process].
+				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to a [code].app[/code] bundle.
+			</description>
+		</method>
+		<method name="read_buffer_from_stdin">
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer_size" type="int" default="1024" />
+			<description>
+				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_buffer_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
+			<param index="0" name="buffer_size" type="int" default="1024" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				Reads a user input as a UTF-8 encoded string from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method automatically replaces [code]\r\n[/code] line breaks with [code]\n[/code] and removes them from the end of the string. Use [method read_buffer_from_stdin] to read the unprocessed data.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
+			</description>
+		</method>
+		<method name="remove_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Remove a custom logger added by [method add_logger].
 			</description>
 		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
+				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
+				The [param name] must be the full permission name. For example:
+				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
+				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
+				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
+				[b]Note:[/b] On Android, permission must be checked during export.
+				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
 			</description>
 		</method>
 		<method name="request_permissions">
 			<return type="bool" />
 			<description>
-				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
-				[b]Note:[/b] This method is implemented only on Android.
+				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have already been granted. See also [signal MainLoop.on_request_permissions_result].
+				[b]Note:[/b] Permissions must be checked during export.
+				[b]Note:[/b] This method is only implemented on Android. Normal permissions are automatically granted at install time in Android applications.
 			</description>
 		</method>
 		<method name="revoke_granted_permissions">
@@ -627,8 +839,8 @@
 			<param index="0" name="restart" type="bool" />
 			<param index="1" name="arguments" type="PackedStringArray" default="PackedStringArray()" />
 			<description>
-				If [param restart] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_CLOSE_REQUEST]. Command line [param arguments] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [param arguments].
-				[method set_restart_on_exit] can be used to apply setting changes that require a restart. See also [method is_restart_on_exit_set] and [method get_restart_on_exit_arguments].
+				If [param restart] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_CLOSE_REQUEST]. Command-line [param arguments] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [param arguments].
+				This method can be used to apply setting changes that require a restart. See also [method is_restart_on_exit_set] and [method get_restart_on_exit_arguments].
 				[b]Note:[/b] This method is only effective on desktop platforms, and only when the project isn't started from the editor. It will have no effect on mobile and Web platforms, or when the project is started from the editor.
 				[b]Note:[/b] If the project process crashes or is [i]killed[/i] by the user (by sending [code]SIGKILL[/code] instead of the usual [code]SIGTERM[/code]), the project won't restart automatically.
 			</description>
@@ -637,25 +849,27 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the name of the current thread.
+				Assigns the given name to the current thread. Returns [constant ERR_UNAVAILABLE] if unavailable on the current platform.
 			</description>
 		</method>
 		<method name="set_use_file_access_save_and_swap">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
-				Enables backup saves if [param enabled] is [code]true[/code].
+				If [param enabled] is [code]true[/code], when opening a file for writing, a temporary file is used in its place. When closed, it is automatically applied to the target file.
+				This can useful when files may be opened by other applications, such as antiviruses, text editors, or even the Godot editor itself.
 			</description>
 		</method>
 		<method name="shell_open">
 			<return type="int" enum="Error" />
 			<param index="0" name="uri" type="String" />
 			<description>
-				Requests the OS to open a resource with the most appropriate program. For example:
-				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				Requests the OS to open a resource identified by [param uri] with the most appropriate program. For example:
+				- [code]OS.shell_open("C:\\Users\\name\\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("C:/Users/name/Downloads")[/code] also works on Windows and opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
-				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path for use with this method.
 				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
 			</description>
@@ -665,30 +879,33 @@
 			<param index="0" name="file_or_dir_path" type="String" />
 			<param index="1" name="open_folder" type="bool" default="true" />
 			<description>
-				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
-				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
-				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
-				[b]Note:[/b] Currently this method is only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] with prefix [code]file://[/code].
+				Requests the OS to open the file manager, navigate to the given [param file_or_dir_path] and select the target file or folder.
+				If [param open_folder] is [code]true[/code] and [param file_or_dir_path] is a valid directory path, the OS will open the file manager and navigate to the target folder without selecting anything.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path to use with this method.
+				[b]Note:[/b] This method is currently only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] prefixed with [code]file://[/code].
 			</description>
 		</method>
 		<method name="unset_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />
 			<description>
-				Removes the environment [param variable] from the current environment, if it exists. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.
+				Removes the given environment variable from the current environment, if it exists. The [param variable] name cannot be empty or include the [code]=[/code] character. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="delta_smoothing" type="bool" setter="set_delta_smoothing" getter="is_delta_smoothing_enabled" default="true">
-			If [code]true[/code], the engine filters the time delta measured between each frame, and attempts to compensate for random variation. This will only operate on systems where V-Sync is active.
+			If [code]true[/code], the engine filters the time delta measured between each frame, and attempts to compensate for random variation. This only works on systems where V-Sync is active.
+			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/delta_smoothing].
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode].
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
-			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+			The amount of sleeping between frames when the low-processor usage mode is enabled, in microseconds. Higher values will result in lower CPU usage. See also [member low_processor_usage_mode].
+			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode_sleep_usec].
 		</member>
 	</members>
 	<constants>
@@ -698,29 +915,50 @@
 		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
+		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
+			The Direct3D 12 rendering driver.
+		</constant>
+		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
+			The Metal rendering driver.
+		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
-			Desktop directory path.
+			Refers to the Desktop directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DCIM" value="1" enum="SystemDir">
-			DCIM (Digital Camera Images) directory path.
+			Refers to the DCIM (Digital Camera Images) directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DOCUMENTS" value="2" enum="SystemDir">
-			Documents directory path.
+			Refers to the Documents directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_DOWNLOADS" value="3" enum="SystemDir">
-			Downloads directory path.
+			Refers to the Downloads directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_MOVIES" value="4" enum="SystemDir">
-			Movies directory path.
+			Refers to the Movies (or Videos) directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_MUSIC" value="5" enum="SystemDir">
-			Music directory path.
+			Refers to the Music directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_PICTURES" value="6" enum="SystemDir">
-			Pictures directory path.
+			Refers to the Pictures directory path.
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
-			Ringtones directory path.
+			Refers to the Ringtones directory path.
+		</constant>
+		<constant name="STD_HANDLE_INVALID" value="0" enum="StdHandleType">
+			Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
+		</constant>
+		<constant name="STD_HANDLE_CONSOLE" value="1" enum="StdHandleType">
+			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
+		</constant>
+		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
+			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+		</constant>
+		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
+			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
+		</constant>
+		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
+			Standard I/O device type is unknown.
 		</constant>
 	</constants>
 </class>

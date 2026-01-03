@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRAndroidThreadSettingsExtension" inherits="OpenXRExtensionWrapper" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Wraps the [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_KHR_android_thread_settings]XR_KHR_android_thread_settings[/url] extension.
+	</brief_description>
+	<description>
+		For XR to be comfortable, it is important for applications to deliver frames quickly and consistently. In order to make sure the important application threads get their full share of time, these threads must be identified to the system, which will adjust their scheduling priority accordingly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_application_thread_type">
+			<return type="bool" />
+			<param index="0" name="thread_type" type="int" enum="OpenXRAndroidThreadSettingsExtension.ThreadType" />
+			<param index="1" name="thread_id" type="int" default="0" />
+			<description>
+				Sets the thread type of the given thread, so that the XR runtime can adjust its scheduling priority accordingly.
+				[param thread_id] refers to the OS thread id (ie from [code]gettid()[/code]). When [param thread_id] is [code]0[/code], it will set the thread type of the current thread.
+				[b]NOTE:[/b] The id returned by [method Thread.get_id] is incompatible with [param thread_id].
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="THREAD_TYPE_APPLICATION_MAIN" value="0" enum="ThreadType">
+			Hints to the XR runtime that the thread is doing time critical CPU tasks.
+		</constant>
+		<constant name="THREAD_TYPE_APPLICATION_WORKER" value="1" enum="ThreadType">
+			Hints to the XR runtime that the thread is doing background CPU tasks.
+		</constant>
+		<constant name="THREAD_TYPE_RENDERER_MAIN" value="2" enum="ThreadType">
+			Hints to the XR runtime that the thread is doing time critical graphics device tasks.
+		</constant>
+		<constant name="THREAD_TYPE_RENDERER_WORKER" value="3" enum="ThreadType">
+			Hints to the XR runtime that the thread is doing background graphics device tasks.
+		</constant>
+	</constants>
+</class>

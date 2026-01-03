@@ -15,6 +15,14 @@
 		mesh.surface_add_vertex(Vector3.ZERO)
 		mesh.surface_end()
 		[/gdscript]
+		[csharp]
+		var mesh = new ImmediateMesh();
+		mesh.SurfaceBegin(Mesh.PrimitiveType.Triangles);
+		mesh.SurfaceAddVertex(Vector3.Left);
+		mesh.SurfaceAddVertex(Vector3.Forward);
+		mesh.SurfaceAddVertex(Vector3.Zero);
+		mesh.SurfaceEnd();
+		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
 	</description>
@@ -75,6 +83,7 @@
 			<param index="0" name="tangent" type="Plane" />
 			<description>
 				Set the tangent attribute that will be pushed with the next vertex.
+				[b]Note:[/b] Even though [param tangent] is a [Plane], it does not directly represent the tangent plane. Its [member Plane.x], [member Plane.y], and [member Plane.z] represent the tangent vector and [member Plane.d] should be either [code]-1[/code] or [code]1[/code]. See also [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="surface_set_uv">

@@ -179,6 +179,48 @@ namespace embree
       bounds1 = b1;
     }
 
+     /*! calculates the linear bounds for target_time_range of primitive with it's time_range_in and bounds */
+    __forceinline LBBox(const BBox1f& time_range_in, const LBBox<T> lbounds, const BBox1f& target_time_range)
+    {
+      const BBox3f bounds0 = lbounds.bounds0;
+      const BBox3f bounds1 = lbounds.bounds1;
+      
+      /* normalize global target_time_range to local time_range_in */
+      const BBox1f time_range((target_time_range.lower-time_range_in.lower)/time_range_in.size(),
+                              (target_time_range.upper-time_range_in.lower)/time_range_in.size());
+
+      const BBox1f clipped_time_range(max(0.0f,time_range.lower), min(1.0f,time_range.upper));
+
+      /* compute bounds at begin and end of clipped time range */
+      BBox<T> b0 = lerp(bounds0,bounds1,clipped_time_range.lower);
+      BBox<T> b1 = lerp(bounds0,bounds1,clipped_time_range.upper);
+
+      /* make sure that b0 is properly bounded at time_range_in.lower */
+      {
+        const BBox<T> bt = lerp(b0, b1, (0.0f - time_range.lower) / time_range.size());
+        const T dlower = min(bounds0.lower-bt.lower, T(zero));
+        const T dupper = max(bounds0.upper-bt.upper, T(zero));
+        b0.lower += dlower; b1.lower += dlower;
+        b0.upper += dupper; b1.upper += dupper;
+      }
+
+      /* make sure that b1 is properly bounded at time_range_in.upper */
+      {
+        const BBox<T> bt = lerp(b0, b1, (1.0f - time_range.lower) / time_range.size());
+        const T dlower = min(bounds1.lower-bt.lower, T(zero));
+        const T dupper = max(bounds1.upper-bt.upper, T(zero));
+        b0.lower += dlower; b1.lower += dlower;
+        b0.upper += dupper; b1.upper += dupper;
+      }
+      
+      this->bounds0 = b0;
+      this->bounds1 = b1;
+    }
+
+    /*! calculates the linear bounds for target_time_range of primitive with it's time_range_in and bounds */
+    __forceinline LBBox(const BBox1f& time_range_in, const BBox<T>& bounds0, const BBox<T>& bounds1, const BBox1f& target_time_range)
+      : LBBox(time_range_in,LBBox(bounds0,bounds1),target_time_range) {}
+
   public:
 
     __forceinline bool empty() const {

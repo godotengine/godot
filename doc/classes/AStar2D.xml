@@ -8,6 +8,7 @@
 		See [AStar3D] for a more thorough explanation on how to use this class. [AStar2D] is a wrapper for [AStar3D] that enforces 2D coordinates.
 	</description>
 	<tutorials>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
 	</tutorials>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual const">
@@ -22,9 +23,18 @@
 		<method name="_estimate_cost" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="from_id" type="int" />
-			<param index="1" name="to_id" type="int" />
+			<param index="1" name="end_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
+				Note that this function is hidden in the default [AStar2D] class.
+			</description>
+		</method>
+		<method name="_filter_neighbor" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="neighbor_id" type="int" />
+			<description>
+				Called when neighboring enters processing and if [member neighbor_filter_enabled] is [code]true[/code]. If [code]true[/code] is returned the point will not be processed.
 				Note that this function is hidden in the default [AStar2D] class.
 			</description>
 		</method>
@@ -139,8 +149,12 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the IDs of the points that form the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
+				If [param from_id] point is disabled, returns an empty array (even if [code]from_id == to_id[/code]).
+				If [param from_id] point is not disabled, there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] When [param allow_partial_path] is [code]true[/code] and [param to_id] is disabled the search may take an unusually long time to finish.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar2D.new()
@@ -167,7 +181,7 @@
 				astar.ConnectPoints(2, 3, false);
 				astar.ConnectPoints(4, 3, false);
 				astar.ConnectPoints(1, 4, false);
-				int[] res = astar.GetIdPath(1, 3); // Returns [1, 2, 3]
+				long[] res = astar.GetIdPath(1, 3); // Returns [1, 2, 3]
 				[/csharp]
 				[/codeblocks]
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
@@ -207,7 +221,7 @@
 				astar.ConnectPoints(1, 2, true);
 				astar.ConnectPoints(1, 3, true);
 
-				int[] neighbors = astar.GetPointConnections(1); // Returns [2, 3]
+				long[] neighbors = astar.GetPointConnections(1); // Returns [2, 3]
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -228,9 +242,13 @@
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_id" type="int" />
 			<param index="1" name="to_id" type="int" />
+			<param index="2" name="allow_partial_path" type="bool" default="false" />
 			<description>
 				Returns an array with the points that are in the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector2Array] and will print an error message.
+				If [param from_id] point is disabled, returns an empty array (even if [code]from_id == to_id[/code]).
+				If [param from_id] point is not disabled, there is no valid path to the target, and [param allow_partial_path] is [code]true[/code], returns a path to the point closest to the target that can be reached.
+				[b]Note:[/b] This method is not thread-safe; it can only be used from a single [Thread] at a given time. Consider using [Mutex] to ensure exclusive access to one thread to avoid race conditions.
+				Additionally, when [param allow_partial_path] is [code]true[/code] and [param to_id] is disabled the search may take an unusually long time to finish.
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -272,7 +290,7 @@
 			<return type="void" />
 			<param index="0" name="num_nodes" type="int" />
 			<description>
-				Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, such as points on a grid. New capacity must be greater or equals to old capacity.
+				Reserves space internally for [param num_nodes] points. Useful if you're adding a known large number of points at once, such as points on a grid.
 			</description>
 		</method>
 		<method name="set_point_disabled">
@@ -300,4 +318,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="neighbor_filter_enabled" type="bool" setter="set_neighbor_filter_enabled" getter="is_neighbor_filter_enabled" default="false">
+			If [code]true[/code] enables the filtering of neighbors via [method _filter_neighbor].
+		</member>
+	</members>
 </class>

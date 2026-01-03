@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_UTILITY_FUNCTIONS_H
-#define GDSCRIPT_UTILITY_FUNCTIONS_H
+#pragma once
 
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
@@ -46,7 +45,7 @@ public:
 	static Variant::Type get_function_return_type(const StringName &p_function);
 	static StringName get_function_return_class(const StringName &p_function);
 	static Variant::Type get_function_argument_type(const StringName &p_function, int p_arg);
-	static int get_function_argument_count(const StringName &p_function, int p_arg);
+	static int get_function_argument_count(const StringName &p_function);
 	static bool is_function_vararg(const StringName &p_function);
 	static bool is_function_constant(const StringName &p_function);
 
@@ -57,5 +56,3 @@ public:
 	static void register_functions();
 	static void unregister_functions();
 };
-
-#endif // GDSCRIPT_UTILITY_FUNCTIONS_H

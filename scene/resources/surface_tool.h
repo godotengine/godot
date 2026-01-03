@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SURFACE_TOOL_H
-#define SURFACE_TOOL_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
@@ -43,21 +42,25 @@ class SurfaceTool : public RefCounted {
 
 public:
 	struct Vertex {
-		Vector3 vertex;
+		// Trivial data for which the hash is computed using hash_buffer.
+		// ----------------------------------------------------------------
+		uint32_t smooth_group = 0; // Must be first.
+
 		Color color;
-		Vector3 normal; // normal, binormal, tangent
+		Vector3 normal; // normal, binormal, tangent.
 		Vector3 binormal;
 		Vector3 tangent;
 		Vector2 uv;
 		Vector2 uv2;
+		Color custom[RS::ARRAY_CUSTOM_COUNT];
+
+		Vector3 vertex; // Must be last.
+		// ----------------------------------------------------------------
+
 		Vector<int> bones;
 		Vector<float> weights;
-		Color custom[RS::ARRAY_CUSTOM_COUNT];
-		uint32_t smooth_group = 0;
 
 		bool operator==(const Vertex &p_vertex) const;
-
-		Vertex() {}
 	};
 
 	enum CustomFormat {
@@ -80,18 +83,28 @@ public:
 	enum {
 		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
 		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+		/* Improve simplification performance assuming input indices are a sparse subset of the mesh. Note that error becomes relative to subset extents. */
+		SIMPLIFY_SPARSE = 1 << 1, // From meshopt_SimplifySparse
+		/* Treat error limit and resulting error as absolute instead of relative to mesh extents. */
+		SIMPLIFY_ERROR_ABSOLUTE = 1 << 2, // From meshopt_SimplifyErrorAbsolute
+		/* Remove disconnected parts of the mesh during simplification incrementally, regardless of the topological restrictions inside components. */
+		SIMPLIFY_PRUNE = 1 << 3, // From meshopt_SimplifyPrune
+		/* Produce more regular triangle sizes and shapes during simplification, at some cost to geometric quality. */
+		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
+		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
+		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
+	typedef size_t (*OptimizeVertexFetchRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
+	static OptimizeVertexFetchRemapFunc optimize_vertex_fetch_remap_func;
 	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, unsigned int options, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, const unsigned char *vertex_lock, size_t target_index_count, float target_error, unsigned int options, float *result_error);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
-	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
-	static SimplifySloppyFunc simplify_sloppy_func;
 	typedef size_t (*GenerateRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const void *vertices, size_t vertex_count, size_t vertex_size);
 	static GenerateRemapFunc generate_remap_func;
 	typedef void (*RemapVertexFunc)(void *destination, const void *vertices, size_t vertex_count, size_t vertex_size, const unsigned int *remap);
@@ -113,7 +126,7 @@ private:
 		SmoothGroupVertex(const Vertex &p_vertex) {
 			vertex = p_vertex.vertex;
 			smooth_group = p_vertex.smooth_group;
-		};
+		}
 	};
 
 	struct SmoothGroupVertexHasher {
@@ -216,10 +229,13 @@ public:
 
 	void clear();
 
-	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
+	LocalVector<Vertex> &get_vertex_array() {
+		return vertex_array;
+	}
 
 	void create_from_triangle_arrays(const Array &p_arrays);
-	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint64_t *r_format = nullptr);
+	void create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type = Mesh::PRIMITIVE_TRIANGLES);
+	static void create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint64_t *r_format = nullptr);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
@@ -231,5 +247,3 @@ public:
 
 VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
 VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
-
-#endif // SURFACE_TOOL_H

@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		A deformable 3D physics mesh. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
-		[b]Note:[/b] There are many known bugs in [SoftBody3D]. Therefore, it's not recommended to use them for things that can affect gameplay (such as trampolines).
+		Additionally, [SoftBody3D] is subject to wind forces defined in [Area3D] (see [member Area3D.wind_source_path], [member Area3D.wind_force_magnitude], and [member Area3D.wind_attenuation_factor]).
+		[b]Note:[/b] It's recommended to use Jolt Physics when using [SoftBody3D] instead of the default GodotPhysics3D, as Jolt Physics' soft body implementation is faster and more reliable. You can switch the physics engine using the [member ProjectSettings.physics/3d/physics_engine] project setting.
 	</description>
 	<tutorials>
 		<link title="SoftBody">$DOCS_URL/tutorials/physics/soft_body.html</link>
@@ -16,6 +17,38 @@
 			<param index="0" name="body" type="Node" />
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="apply_central_force">
+			<return type="void" />
+			<param index="0" name="force" type="Vector3" />
+			<description>
+				Distributes and applies a force to all points. A force is time dependent and meant to be applied every physics update.
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector3" />
+			<description>
+				Distributes and applies an impulse to all points.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+			</description>
+		</method>
+		<method name="apply_force">
+			<return type="void" />
+			<param index="0" name="point_index" type="int" />
+			<param index="1" name="force" type="Vector3" />
+			<description>
+				Applies a force to a point. A force is time dependent and meant to be applied every physics update.
+			</description>
+		</method>
+		<method name="apply_impulse">
+			<return type="void" />
+			<param index="0" name="point_index" type="int" />
+			<param index="1" name="impulse" type="Vector3" />
+			<description>
+				Applies an impulse to a point.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="get_collision_exceptions">
@@ -41,6 +74,7 @@
 		<method name="get_physics_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
+				Returns the internal [RID] used by the [PhysicsServer3D] for this body.
 			</description>
 		</method>
 		<method name="get_point_transform">
@@ -85,6 +119,7 @@
 			<param index="0" name="point_index" type="int" />
 			<param index="1" name="pinned" type="bool" />
 			<param index="2" name="attachment_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="3" name="insert_at" type="int" default="-1" />
 			<description>
 				Sets the pinned state of a surface vertex. When set to [code]true[/code], the optional [param attachment_path] can define a [Node3D] the pinned vertex will be attached to.
 			</description>
@@ -100,11 +135,14 @@
 			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="damping_coefficient" type="float" setter="set_damping_coefficient" getter="get_damping_coefficient" default="0.01">
+			The body's damping coefficient. Higher values will slow down the body more noticeably when forces are applied.
 		</member>
 		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="SoftBody3D.DisableMode" default="0">
-			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
+			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED].
 		</member>
 		<member name="drag_coefficient" type="float" setter="set_drag_coefficient" getter="get_drag_coefficient" default="0.0">
+			The body's drag coefficient. Higher values increase this body's air resistance.
+			[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
 		</member>
 		<member name="linear_stiffness" type="float" setter="set_linear_stiffness" getter="get_linear_stiffness" default="0.5">
 			Higher values will result in a stiffer body, while lower values will increase the body's ability to bend. The value can be between [code]0.0[/code] and [code]1.0[/code] (inclusive).
@@ -113,9 +151,14 @@
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
 		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
+			The pressure coefficient of this soft body. Simulate pressure build-up from inside this body. Higher values increase the strength of this effect.
 		</member>
 		<member name="ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
 			If [code]true[/code], the [SoftBody3D] will respond to [RayCast3D]s.
+		</member>
+		<member name="shrinking_factor" type="float" setter="set_shrinking_factor" getter="get_shrinking_factor" default="0.0">
+			Scales the rest lengths of [SoftBody3D]'s edge constraints. Positive values shrink the mesh, while negative values expand it. For example, a value of [code]0.1[/code] shortens the edges of the mesh by 10%, while [code]-0.1[/code] expands the edges by 10%.
+			[b]Note:[/b] [member shrinking_factor] is best used on surface meshes with pinned points.
 		</member>
 		<member name="simulation_precision" type="int" setter="set_simulation_precision" getter="get_simulation_precision" default="5">
 			Increasing this value will improve the resulting simulation, but can affect performance. Use with care.

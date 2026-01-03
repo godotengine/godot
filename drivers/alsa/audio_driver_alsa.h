@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_ALSA_H
-#define AUDIO_DRIVER_ALSA_H
+#pragma once
 
 #ifdef ALSA_ENABLED
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "asound-so_wrap.h"
@@ -95,5 +94,3 @@ public:
 };
 
 #endif // ALSA_ENABLED
-
-#endif // AUDIO_DRIVER_ALSA_H

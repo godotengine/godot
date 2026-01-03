@@ -5,15 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using JetBrains.Annotations;
 using OS = GodotTools.Utils.OS;
 
 namespace GodotTools.Build
 {
     public static class DotNetFinder
     {
-        [CanBeNull]
-        public static string FindDotNetExe()
+        public static string? FindDotNetExe()
         {
             // In the future, this method may do more than just search in PATH. We could look in
             // known locations or use Godot's linked nethost to search from the hostfxr location.
@@ -40,14 +38,14 @@ namespace GodotTools.Build
 
         public static bool TryFindDotNetSdk(
             Version expectedVersion,
-            [NotNullWhen(true)] out Version version,
-            [NotNullWhen(true)] out string path
+            [NotNullWhen(true)] out Version? version,
+            [NotNullWhen(true)] out string? path
         )
         {
             version = null;
             path = null;
 
-            string dotNetExe = FindDotNetExe();
+            string? dotNetExe = FindDotNetExe();
 
             if (string.IsNullOrEmpty(dotNetExe))
                 return false;
@@ -86,8 +84,8 @@ namespace GodotTools.Build
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            Version latestVersionMatch = null;
-            string matchPath = null;
+            Version? latestVersionMatch = null;
+            string? matchPath = null;
 
             foreach (var line in lines)
             {

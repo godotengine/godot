@@ -17,6 +17,7 @@
 			The LightOccluder2D's occluder light mask. The LightOccluder2D will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
 		<member name="sdf_collision" type="bool" setter="set_as_sdf_collision" getter="is_set_as_sdf_collision" default="true">
+			If enabled, the occluder will be part of a real-time generated signed distance field that can be used in custom shaders.
 		</member>
 	</members>
 </class>

@@ -16,73 +16,77 @@
 		var vr_supported = false
 
 		func _ready():
-		    # We assume this node has a button as a child.
-		    # This button is for the user to consent to entering immersive VR mode.
-		    $Button.pressed.connect(self._on_button_pressed)
+			# We assume this node has a button as a child.
+			# This button is for the user to consent to entering immersive VR mode.
+			$Button.pressed.connect(self._on_button_pressed)
 
-		    webxr_interface = XRServer.find_interface("WebXR")
-		    if webxr_interface:
-		        # WebXR uses a lot of asynchronous callbacks, so we connect to various
-		        # signals in order to receive them.
-		        webxr_interface.session_supported.connect(self._webxr_session_supported)
-		        webxr_interface.session_started.connect(self._webxr_session_started)
-		        webxr_interface.session_ended.connect(self._webxr_session_ended)
-		        webxr_interface.session_failed.connect(self._webxr_session_failed)
+			webxr_interface = XRServer.find_interface("WebXR")
+			if webxr_interface:
+				# WebXR uses a lot of asynchronous callbacks, so we connect to various
+				# signals in order to receive them.
+				webxr_interface.session_supported.connect(self._webxr_session_supported)
+				webxr_interface.session_started.connect(self._webxr_session_started)
+				webxr_interface.session_ended.connect(self._webxr_session_ended)
+				webxr_interface.session_failed.connect(self._webxr_session_failed)
 
-		        # This returns immediately - our _webxr_session_supported() method
-		        # (which we connected to the "session_supported" signal above) will
-		        # be called sometime later to let us know if it's supported or not.
-		        webxr_interface.is_session_supported("immersive-vr")
+				# This returns immediately - our _webxr_session_supported() method
+				# (which we connected to the "session_supported" signal above) will
+				# be called sometime later to let us know if it's supported or not.
+				webxr_interface.is_session_supported("immersive-vr")
 
 		func _webxr_session_supported(session_mode, supported):
-		    if session_mode == 'immersive-vr':
-		        vr_supported = supported
+			if session_mode == 'immersive-vr':
+				vr_supported = supported
 
 		func _on_button_pressed():
-		    if not vr_supported:
-		        OS.alert("Your browser doesn't support VR")
-		        return
+			if not vr_supported:
+				OS.alert("Your browser doesn't support VR")
+				return
 
-		    # We want an immersive VR session, as opposed to AR ('immersive-ar') or a
-		    # simple 3DoF viewer ('viewer').
-		    webxr_interface.session_mode = 'immersive-vr'
-		    # 'bounded-floor' is room scale, 'local-floor' is a standing or sitting
-		    # experience (it puts you 1.6m above the ground if you have 3DoF headset),
-		    # whereas as 'local' puts you down at the XROrigin.
-		    # This list means it'll first try to request 'bounded-floor', then
-		    # fallback on 'local-floor' and ultimately 'local', if nothing else is
-		    # supported.
-		    webxr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
-		    # In order to use 'local-floor' or 'bounded-floor' we must also
-		    # mark the features as required or optional.
-		    webxr_interface.required_features = 'local-floor'
-		    webxr_interface.optional_features = 'bounded-floor'
+			# We want an immersive VR session, as opposed to AR ('immersive-ar') or a
+			# simple 3DoF viewer ('viewer').
+			webxr_interface.session_mode = 'immersive-vr'
+			# 'bounded-floor' is room scale, 'local-floor' is a standing or sitting
+			# experience (it puts you 1.6m above the ground if you have 3DoF headset),
+			# whereas as 'local' puts you down at the XROrigin.
+			# This list means it'll first try to request 'bounded-floor', then
+			# fallback on 'local-floor' and ultimately 'local', if nothing else is
+			# supported.
+			webxr_interface.requested_reference_space_types = 'bounded-floor, local-floor, local'
+			# In order to use 'local-floor' or 'bounded-floor' we must also
+			# mark the features as required or optional. By including 'hand-tracking'
+			# as an optional feature, it will be enabled if supported.
+			webxr_interface.required_features = 'local-floor'
+			webxr_interface.optional_features = 'bounded-floor, hand-tracking'
 
-		    # This will return false if we're unable to even request the session,
-		    # however, it can still fail asynchronously later in the process, so we
-		    # only know if it's really succeeded or failed when our
-		    # _webxr_session_started() or _webxr_session_failed() methods are called.
-		    if not webxr_interface.initialize():
-		        OS.alert("Failed to initialize")
-		        return
+			# This will return false if we're unable to even request the session,
+			# however, it can still fail asynchronously later in the process, so we
+			# only know if it's really succeeded or failed when our
+			# _webxr_session_started() or _webxr_session_failed() methods are called.
+			if not webxr_interface.initialize():
+				OS.alert("Failed to initialize")
+				return
 
 		func _webxr_session_started():
-		    $Button.visible = false
-		    # This tells Godot to start rendering to the headset.
-		    get_viewport().use_xr = true
-		    # This will be the reference space type you ultimately got, out of the
-		    # types that you requested above. This is useful if you want the game to
-		    # work a little differently in 'bounded-floor' versus 'local-floor'.
-		    print ("Reference space type: " + webxr_interface.reference_space_type)
+			$Button.visible = false
+			# This tells Godot to start rendering to the headset.
+			get_viewport().use_xr = true
+			# This will be the reference space type you ultimately got, out of the
+			# types that you requested above. This is useful if you want the game to
+			# work a little differently in 'bounded-floor' versus 'local-floor'.
+			print("Reference space type: ", webxr_interface.reference_space_type)
+			# This will be the list of features that were successfully enabled
+			# (except on browsers that don't support this property).
+			print("Enabled features: ", webxr_interface.enabled_features)
 
 		func _webxr_session_ended():
-		    $Button.visible = true
-		    # If the user exits immersive mode, then we tell Godot to render to the web
-		    # page again.
-		    get_viewport().use_xr = false
+			$Button.visible = true
+			# If the user exits immersive mode, then we tell Godot to render to the web
+			# page again.
+			get_viewport().use_xr = false
 
 		func _webxr_session_failed(message):
-		    OS.alert("Failed to initialize: " + message)
+			OS.alert("Failed to initialize: " + message)
 		[/codeblock]
 		There are a couple ways to handle "controller" input:
 		- Using [XRController3D] nodes and their [signal XRController3D.button_pressed] and [signal XRController3D.button_released] signals. This is how controllers are typically handled in XR apps in Godot, however, this will only work with advanced VR controllers like the Oculus Touch or Index controllers, for example.
@@ -114,10 +118,10 @@
 			</description>
 		</method>
 		<method name="get_input_source_tracker" qualifiers="const">
-			<return type="XRPositionalTracker" />
+			<return type="XRControllerTracker" />
 			<param index="0" name="input_source_id" type="int" />
 			<description>
-				Gets an [XRPositionalTracker] for the given [param input_source_id].
+				Gets an [XRControllerTracker] for the given [param input_source_id].
 				In the context of WebXR, an input source can be an advanced VR controller like the Oculus Touch or Index controllers, or even a tap on the screen, a spoken voice command or a button press on the device itself. When a non-traditional input source is used, interpret the position and orientation of the [XRPositionalTracker] as a ray pointing at the object the user wishes to interact with.
 				Use this method to get information about the input source that triggered one of these signals:
 				- [signal selectstart]
@@ -153,11 +157,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
+			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
+			This may include features requested by setting [member required_features] and [member optional_features], and will only be available after [signal session_started] has been emitted.
+			[b]Note:[/b] This may not be support by all web browsers, in which case it will be an empty string.
+		</member>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
 			A comma-seperated list of optional features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will continue, but you won't be able to use the requested feature.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+			See the MDN documentation on [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSystem/requestSession#session_features]WebXR's session features[/url] for a list of possible values.
 		</member>
 		<member name="reference_space_type" type="String" setter="" getter="get_reference_space_type">
 			The reference space type (from the list of requested types set in the [member requested_reference_space_types] property), that was ultimately used by [method XRInterface.initialize] when setting up the WebXR session.
@@ -165,7 +174,7 @@
 		</member>
 		<member name="requested_reference_space_types" type="String" setter="set_requested_reference_space_types" getter="get_requested_reference_space_types">
 			A comma-seperated list of reference space types used by [method XRInterface.initialize] when setting up the WebXR session.
-			The reference space types are requested in order, and the first one supported by the users device or browser will be used. The [member reference_space_type] property contains the reference space type that was ultimately selected.
+			The reference space types are requested in order, and the first one supported by the user's device or browser will be used. The [member reference_space_type] property contains the reference space type that was ultimately selected.
 			This doesn't have any effect on the interface when already initialized.
 			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
 		</member>
@@ -173,7 +182,7 @@
 			A comma-seperated list of required features used by [method XRInterface.initialize] when setting up the WebXR session.
 			If a user's browser or device doesn't support one of the given features, initialization will fail and [signal session_failed] will be emitted.
 			This doesn't have any effect on the interface when already initialized.
-			Possible values come from [url=https://developer.mozilla.org/en-US/docs/Web/API/XRReferenceSpaceType]WebXR's XRReferenceSpaceType[/url]. If you want to use a particular reference space type, it must be listed in either [member required_features] or [member optional_features].
+			See the MDN documentation on [url=https://developer.mozilla.org/en-US/docs/Web/API/XRSystem/requestSession#session_features]WebXR's session features[/url] for a list of possible values.
 		</member>
 		<member name="session_mode" type="String" setter="set_session_mode" getter="get_session_mode">
 			The session mode used by [method XRInterface.initialize] when setting up the WebXR session.
@@ -274,7 +283,7 @@
 	</signals>
 	<constants>
 		<constant name="TARGET_RAY_MODE_UNKNOWN" value="0" enum="TargetRayMode">
-			We don't know the the target ray mode.
+			We don't know the target ray mode.
 		</constant>
 		<constant name="TARGET_RAY_MODE_GAZE" value="1" enum="TargetRayMode">
 			Target ray originates at the viewer's eyes and points in the direction they are looking.

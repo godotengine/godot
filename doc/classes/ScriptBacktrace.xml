@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptBacktrace" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A captured backtrace of a specific script language.
+	</brief_description>
+	<description>
+		[ScriptBacktrace] holds an already captured backtrace of a specific script language, such as GDScript or C#, which are captured using [method Engine.capture_script_backtraces].
+		See [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks] and [member ProjectSettings.debug/settings/gdscript/always_track_local_variables] for ways of controlling the contents of this class.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="format" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="indent_all" type="int" default="0" />
+			<param index="1" name="indent_frames" type="int" default="4" />
+			<description>
+				Converts the backtrace to a [String], where the entire string will be indented by [param indent_all] number of spaces, and the individual stack frames will be additionally indented by [param indent_frames] number of spaces.
+				[b]Note:[/b] Calling [method Object.to_string] on a [ScriptBacktrace] will produce the same output as calling [method format] with all parameters left at their default values.
+			</description>
+		</method>
+		<method name="get_frame_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of stack frames in the backtrace.
+			</description>
+		</method>
+		<method name="get_frame_file" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the file name of the call site represented by the stack frame at the specified index.
+			</description>
+		</method>
+		<method name="get_frame_function" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the name of the function called at the stack frame at the specified index.
+			</description>
+		</method>
+		<method name="get_frame_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the line number of the call site represented by the stack frame at the specified index.
+			</description>
+		</method>
+		<method name="get_global_variable_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of global variables (e.g. autoload singletons) in the backtrace.
+				[b]Note:[/b] This will be non-zero only if the [code]include_variables[/code] parameter was [code]true[/code] when capturing the backtrace with [method Engine.capture_script_backtraces].
+			</description>
+		</method>
+		<method name="get_global_variable_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="variable_index" type="int" />
+			<description>
+				Returns the name of the global variable at the specified index.
+			</description>
+		</method>
+		<method name="get_global_variable_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="variable_index" type="int" />
+			<description>
+				Returns the value of the global variable at the specified index.
+				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
+		<method name="get_language_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the script language that this backtrace was captured from.
+			</description>
+		</method>
+		<method name="get_local_variable_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="frame_index" type="int" />
+			<description>
+				Returns the number of local variables in the stack frame at the specified index.
+				[b]Note:[/b] This will be non-zero only if the [code]include_variables[/code] parameter was [code]true[/code] when capturing the backtrace with [method Engine.capture_script_backtraces].
+			</description>
+		</method>
+		<method name="get_local_variable_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="frame_index" type="int" />
+			<param index="1" name="variable_index" type="int" />
+			<description>
+				Returns the name of the local variable at the specified [param variable_index] in the stack frame at the specified [param frame_index].
+			</description>
+		</method>
+		<method name="get_local_variable_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="frame_index" type="int" />
+			<param index="1" name="variable_index" type="int" />
+			<description>
+				Returns the value of the local variable at the specified [param variable_index] in the stack frame at the specified [param frame_index].
+				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
+		<method name="get_member_variable_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="frame_index" type="int" />
+			<description>
+				Returns the number of member variables in the stack frame at the specified index.
+				[b]Note:[/b] This will be non-zero only if the [code]include_variables[/code] parameter was [code]true[/code] when capturing the backtrace with [method Engine.capture_script_backtraces].
+			</description>
+		</method>
+		<method name="get_member_variable_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="frame_index" type="int" />
+			<param index="1" name="variable_index" type="int" />
+			<description>
+				Returns the name of the member variable at the specified [param variable_index] in the stack frame at the specified [param frame_index].
+			</description>
+		</method>
+		<method name="get_member_variable_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="frame_index" type="int" />
+			<param index="1" name="variable_index" type="int" />
+			<description>
+				Returns the value of the member variable at the specified [param variable_index] in the stack frame at the specified [param frame_index].
+				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the backtrace has no stack frames.
+			</description>
+		</method>
+	</methods>
+</class>

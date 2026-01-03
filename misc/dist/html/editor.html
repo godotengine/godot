@@ -23,7 +23,7 @@
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="favicon.png">
 		<link rel="apple-touch-icon" type="image/png" href="favicon.png">
 		<link rel="manifest" href="manifest.json">
-		<title>Godot Engine Web Editor (@GODOT_VERSION@)</title>
+		<title>Godot Engine Web Editor (___GODOT_VERSION___)</title>
 		<style>
 *:focus {
 	/* More visible outline for better keyboard navigation. */
@@ -227,7 +227,6 @@ a:active {
 	line-height: 1.3;
 	visibility: visible;
 	padding: 4px 6px;
-	visibility: visible;
 }
 		</style>
 	</head>
@@ -294,7 +293,7 @@ a:active {
 					<br >
 					<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: min(85%, 50vh); max-height: 250px">
 					<br >
-					@GODOT_VERSION@
+					___GODOT_VERSION___
 					<br >
 					<a href="releases/">Need an old version?</a>
 					<br >
@@ -364,27 +363,33 @@ window.addEventListener('load', () => {
 		btn.style.display = '';
 	}
 	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('service.worker.js').then(function (reg) {
-			if (reg.waiting) {
-				notifyUpdate(reg.waiting);
-			}
-			reg.addEventListener('updatefound', function () {
-				const update = reg.installing;
-				update.addEventListener('statechange', function () {
-					if (update.state === 'installed') {
-						// It's a new install, claim and perform aggressive caching.
-						if (!reg.active) {
-							update.postMessage('claim');
-						} else {
-							notifyUpdate(update);
+		try {
+			navigator.serviceWorker.register('service.worker.js').then(function (reg) {
+				if (reg.waiting) {
+					notifyUpdate(reg.waiting);
+				}
+				reg.addEventListener('updatefound', function () {
+					const update = reg.installing;
+					update.addEventListener('statechange', function () {
+						if (update.state === 'installed') {
+							// It's a new install, claim and perform aggressive caching.
+							if (!reg.active) {
+								update.postMessage('claim');
+							} else {
+								notifyUpdate(update);
+							}
 						}
-					}
+					});
 				});
 			});
-		});
+		} catch (e) {
+			console.error('Error while registering service worker:', e);
+		}
 	}
 
-	const missing = Engine.getMissingFeatures();
+	const missing = Engine.getMissingFeatures({
+		threads: ___GODOT_THREADS_ENABLED___,
+	});
 	if (missing.length) {
 		// Display error dialog as threading support is required for the editor.
 		document.getElementById('startButton').disabled = 'disabled';
@@ -669,6 +674,10 @@ function startEditor(zip) {
 		}
 	}
 
+	const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+	// We need at least 6 free threads from the pool to start the editor.
+	// At least 4 more will be reserved for the godot thread pool (3 is the bare minimum with the multithreaded variant of the servers).
+	const concurrency = clamp(navigator.hardwareConcurrency ?? 1, 12, 24);
 	const editorConfig = {
 		'unloadAfterInit': false,
 		'onProgress': function progressFunction(current, total) {
@@ -695,13 +704,20 @@ function startEditor(zip) {
 		},
 		'onExecute': Execute,
 		'persistentPaths': persistentPaths,
+		'emscriptenPoolSize': concurrency,
+		'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
 	};
 	editor = new Engine(editorConfig);
 
 	function displayFailureNotice(err) {
-		const msg = err.message || err;
-		console.error(msg);
-		setStatusNotice(msg);
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
 		setStatusMode('notice');
 		initializing = false;
 	}

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_CONVERTERS_H
-#define VARIANT_CONVERTERS_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/variant/array.h"
@@ -239,14 +238,15 @@ inline bool is_convertible_array(Variant::Type type) {
 	return type == Variant::ARRAY ||
 			type == Variant::PACKED_VECTOR2_ARRAY ||
 			type == Variant::PACKED_VECTOR3_ARRAY ||
-			type == Variant::PACKED_COLOR_ARRAY;
+			type == Variant::PACKED_COLOR_ARRAY ||
+			type == Variant::PACKED_VECTOR4_ARRAY;
 }
 
-template <class, class = void>
-struct is_vector_type : std::false_type {};
+template <typename, typename = void>
+inline constexpr bool is_vector_type_v = false;
 
-template <class T>
-struct is_vector_type<T, std::void_t<decltype(T::AXIS_COUNT)>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_vector_type_v<T, std::void_t<decltype(T::AXIS_COUNT)>> = true;
 
 template <typename T, typename P>
 void convert_item_std140(const T &p_item, P *p_write, bool p_compact = false) {
@@ -274,7 +274,7 @@ Vector<P> convert_array_std140(const Variant &p_variant, [[maybe_unused]] bool p
 			const Variant &item = array.get(i);
 			P *offset = write + (i * elements);
 
-			if constexpr (is_vector_type<T>::value) {
+			if constexpr (is_vector_type_v<T>) {
 				const T &vec = convert_to_vector<T>(item, p_linear_color);
 				convert_item_std140<T, P>(vec, offset, true);
 			} else {
@@ -318,5 +318,3 @@ void write_array_std140(const Vector<From> &p_values, To *p_write, int p_array_s
 		}
 	}
 }
-
-#endif // VARIANT_CONVERTERS_H

@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (body).
  *
- * Copyright (C) 2001-2023 by
+ * Copyright (C) 2001-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -100,7 +100,7 @@
 
     if ( idx >= table->max_hints )
     {
-      FT_TRACE0(( "psh_hint_table_record: invalid hint index %d\n", idx ));
+      FT_TRACE0(( "psh_hint_table_record: invalid hint index %u\n", idx ));
       return;
     }
 
@@ -1118,7 +1118,7 @@
     FT_UInt     n;
     PSH_Point   point = glyph->points;
     FT_Vector*  vec   = glyph->outline->points;
-    char*       tags  = glyph->outline->tags;
+    FT_Byte*    tags  = glyph->outline->tags;
 
 
     for ( n = 0; n < glyph->num_points; n++ )
@@ -1171,8 +1171,8 @@
          FT_QNEW_ARRAY( glyph->contours, outline->n_contours ) )
       goto Exit;
 
-    glyph->num_points   = (FT_UInt)outline->n_points;
-    glyph->num_contours = (FT_UInt)outline->n_contours;
+    glyph->num_points   = outline->n_points;
+    glyph->num_contours = outline->n_contours;
 
     {
       FT_UInt      first = 0, next, n;
@@ -1186,7 +1186,7 @@
         PSH_Point  point;
 
 
-        next  = (FT_UInt)outline->contours[n] + 1;
+        next  = outline->contours[n] + 1;
         count = next - first;
 
         contour->start = points + first;

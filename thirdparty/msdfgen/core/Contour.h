@@ -19,11 +19,11 @@ public:
     void addEdge(EdgeHolder &&edge);
 #endif
     /// Creates a new edge in the contour and returns its reference.
-    EdgeHolder & addEdge();
+    EdgeHolder &addEdge();
     /// Adjusts the bounding box to fit the contour.
-    void bound(double &l, double &b, double &r, double &t) const;
+    void bound(double &xMin, double &yMin, double &xMax, double &yMax) const;
     /// Adjusts the bounding box to fit the contour border's mitered corners.
-    void boundMiters(double &l, double &b, double &r, double &t, double border, double miterLimit, int polarity) const;
+    void boundMiters(double &xMin, double &yMin, double &xMax, double &yMax, double border, double miterLimit, int polarity) const;
     /// Computes the winding of the contour. Returns 1 if positive, -1 if negative.
     int winding() const;
     /// Reverses the sequence of edges on the contour.

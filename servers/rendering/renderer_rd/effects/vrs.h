@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VRS_RD_H
-#define VRS_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/vrs.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering_server.h"
 
 namespace RendererRD {
 
@@ -44,14 +40,17 @@ private:
 	enum VRSMode {
 		VRS_DEFAULT,
 		VRS_MULTIVIEW,
+		VRS_RG,
+		VRS_RG_MULTIVIEW,
 		VRS_MAX,
 	};
 
-	/* we have no push constant here (yet)
 	struct VRSPushConstant {
-
+		float max_texel_factor; // 4x8, 8x4 and 8x8 are only available on some GPUs.
+		float res1;
+		float res2;
+		float res3;
 	};
-	*/
 
 	struct VRSShader {
 		// VRSPushConstant push_constant;
@@ -71,5 +70,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // VRS_RD_H

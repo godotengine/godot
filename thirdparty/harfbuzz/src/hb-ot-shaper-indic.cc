@@ -301,7 +301,7 @@ struct indic_shape_plan_t
 #else
   static constexpr bool uniscribe_bug_compatible = false;
 #endif
-  mutable hb_atomic_int_t virama_glyph;
+  mutable hb_atomic_t<hb_codepoint_t> virama_glyph;
 
   hb_indic_would_substitute_feature_t rphf;
   hb_indic_would_substitute_feature_t pref;

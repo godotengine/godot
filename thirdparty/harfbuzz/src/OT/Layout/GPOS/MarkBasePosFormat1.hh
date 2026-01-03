@@ -119,7 +119,7 @@ struct MarkBasePosFormat1_2
     /* Now we search backwards for a non-mark glyph.
      * We don't use skippy_iter.prev() to avoid O(n^2) behavior. */
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.set_lookup_props (LookupFlag::IgnoreMarks);
 
     if (c->last_base_until > buffer->idx)
@@ -197,9 +197,10 @@ struct MarkBasePosFormat1_2
     if (!out->markCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
       return_trace (false);
 
-    out->markArray.serialize_subset (c, markArray, this,
-                                     (this+markCoverage).iter (),
-                                     &klass_mapping);
+    if (unlikely (!out->markArray.serialize_subset (c, markArray, this,
+						    (this+markCoverage).iter (),
+						    &klass_mapping)))
+      return_trace (false);
 
     unsigned basecount = (this+baseArray).rows;
     auto base_iter =
@@ -208,19 +209,22 @@ struct MarkBasePosFormat1_2
     ;
 
     new_coverage.reset ();
-    + base_iter
-    | hb_map (hb_first)
-    | hb_map (glyph_map)
-    | hb_sink (new_coverage)
-    ;
-
-    if (!out->baseCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
-      return_trace (false);
-
     hb_sorted_vector_t<unsigned> base_indexes;
-    for (const unsigned row : + base_iter
-                              | hb_map (hb_second))
+    auto &base_array = (this+baseArray);
+    for (const auto _ : + base_iter)
     {
+      unsigned row = _.second;
+      bool non_empty = + hb_range ((unsigned) classCount)
+                       | hb_filter (klass_mapping)
+                       | hb_map ([&] (const unsigned col) { return !base_array.offset_is_null (row, col, (unsigned) classCount); })
+                       | hb_any
+                       ;
+
+      if (!non_empty) continue;
+      
+      hb_codepoint_t new_g = glyph_map.get ( _.first);
+      new_coverage.push (new_g);
+
       + hb_range ((unsigned) classCount)
       | hb_filter (klass_mapping)
       | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
@@ -228,11 +232,13 @@ struct MarkBasePosFormat1_2
       ;
     }
 
-    out->baseArray.serialize_subset (c, baseArray, this,
-                                     base_iter.len (),
-                                     base_indexes.iter ());
+    if (!new_coverage) return_trace (false);
+    if (!out->baseCoverage.serialize_serialize (c->serializer, new_coverage.iter ()))
+      return_trace (false);
 
-    return_trace (true);
+    return_trace (out->baseArray.serialize_subset (c, baseArray, this,
+						   new_coverage.length,
+						   base_indexes.iter ()));
   }
 };
 

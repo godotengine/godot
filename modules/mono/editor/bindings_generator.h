@@ -28,26 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BINDINGS_GENERATOR_H
-#define BINDINGS_GENERATOR_H
+#pragma once
 
-#include "core/typedefs.h" // DEBUG_METHODS_ENABLED
-
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_help.h"
+#include "core/typedefs.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 
 class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
 		int64_t value = 0;
-		const DocData::ConstantDoc *const_doc;
+		const DocData::ConstantDoc *const_doc = nullptr;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 
 		ConstantInterface() {}
 
@@ -85,7 +86,18 @@ class BindingsGenerator {
 		StringName setter;
 		StringName getter;
 
+		/**
+		 * Determines if the property will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for propertyies that have the PROPERTY_USAGE_INTERNAL flag, because they are not meant
+		 * to be exposed to scripting but we can't remove them to prevent breaking compatibility.
+		 */
+		bool is_hidden = false;
+
 		const DocData::PropertyDoc *prop_doc;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 	};
 
 	struct TypeReference {
@@ -174,6 +186,14 @@ class BindingsGenerator {
 		bool is_internal = false;
 
 		/**
+		 * Determines if the method will be hidden with the [EditorBrowsable(EditorBrowsableState.Never)]
+		 * attribute.
+		 * We do this for methods that we don't want to expose but need to be public to prevent breaking
+		 * compat (i.e: methods with 'is_compat' set to true.)
+		 */
+		bool is_hidden = false;
+
+		/**
 		 * Determines if the method is a compatibility method added to avoid breaking binary compatibility.
 		 * These methods will be generated but hidden and are considered deprecated.
 		 */
@@ -243,6 +263,7 @@ class BindingsGenerator {
 		bool is_singleton = false;
 		bool is_singleton_instance = false;
 		bool is_ref_counted = false;
+		bool is_span_compatible = false;
 
 		/**
 		 * Class is a singleton, but can't be declared as a static class as that would
@@ -426,6 +447,9 @@ class BindingsGenerator {
 		String cs_managed_to_variant;
 
 		const DocData::ClassDoc *class_doc = nullptr;
+
+		bool is_deprecated = false;
+		String deprecation_message;
 
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
@@ -643,44 +667,44 @@ class BindingsGenerator {
 	void _initialize_compat_singletons();
 
 	struct NameCache {
-		StringName type_void = StaticCString::create("void");
-		StringName type_Variant = StaticCString::create("Variant");
-		StringName type_VarArg = StaticCString::create("VarArg");
-		StringName type_Object = StaticCString::create("Object");
-		StringName type_RefCounted = StaticCString::create("RefCounted");
-		StringName type_RID = StaticCString::create("RID");
-		StringName type_Callable = StaticCString::create("Callable");
-		StringName type_Signal = StaticCString::create("Signal");
-		StringName type_String = StaticCString::create("String");
-		StringName type_StringName = StaticCString::create("StringName");
-		StringName type_NodePath = StaticCString::create("NodePath");
-		StringName type_Array_generic = StaticCString::create("Array_@generic");
-		StringName type_Dictionary_generic = StaticCString::create("Dictionary_@generic");
-		StringName type_at_GlobalScope = StaticCString::create("@GlobalScope");
-		StringName enum_Error = StaticCString::create("Error");
+		StringName type_void = "void";
+		StringName type_Variant = "Variant";
+		StringName type_VarArg = "VarArg";
+		StringName type_Object = "Object";
+		StringName type_RefCounted = "RefCounted";
+		StringName type_RID = "RID";
+		StringName type_Callable = "Callable";
+		StringName type_Signal = "Signal";
+		StringName type_String = "String";
+		StringName type_StringName = "StringName";
+		StringName type_NodePath = "NodePath";
+		StringName type_Array_generic = "Array_@generic";
+		StringName type_Dictionary_generic = "Dictionary_@generic";
+		StringName type_at_GlobalScope = "@GlobalScope";
+		StringName enum_Error = "Error";
 
-		StringName type_sbyte = StaticCString::create("sbyte");
-		StringName type_short = StaticCString::create("short");
-		StringName type_int = StaticCString::create("int");
-		StringName type_byte = StaticCString::create("byte");
-		StringName type_ushort = StaticCString::create("ushort");
-		StringName type_uint = StaticCString::create("uint");
-		StringName type_long = StaticCString::create("long");
-		StringName type_ulong = StaticCString::create("ulong");
+		StringName type_sbyte = "sbyte";
+		StringName type_short = "short";
+		StringName type_int = "int";
+		StringName type_byte = "byte";
+		StringName type_ushort = "ushort";
+		StringName type_uint = "uint";
+		StringName type_long = "long";
+		StringName type_ulong = "ulong";
 
-		StringName type_bool = StaticCString::create("bool");
-		StringName type_float = StaticCString::create("float");
-		StringName type_double = StaticCString::create("double");
+		StringName type_bool = "bool";
+		StringName type_float = "float";
+		StringName type_double = "double";
 
-		StringName type_Vector2 = StaticCString::create("Vector2");
-		StringName type_Rect2 = StaticCString::create("Rect2");
-		StringName type_Vector3 = StaticCString::create("Vector3");
-		StringName type_Vector3i = StaticCString::create("Vector3i");
-		StringName type_Vector4 = StaticCString::create("Vector4");
-		StringName type_Vector4i = StaticCString::create("Vector4i");
+		StringName type_Vector2 = "Vector2";
+		StringName type_Rect2 = "Rect2";
+		StringName type_Vector3 = "Vector3";
+		StringName type_Vector3i = "Vector3i";
+		StringName type_Vector4 = "Vector4";
+		StringName type_Vector4i = "Vector4i";
 
 		// Object not included as it must be checked for all derived classes
-		static constexpr int nullable_types_count = 18;
+		static constexpr int nullable_types_count = 19;
 		StringName nullable_types[nullable_types_count] = {
 			type_String,
 			type_StringName,
@@ -688,20 +712,21 @@ class BindingsGenerator {
 
 			type_Array_generic,
 			type_Dictionary_generic,
-			StaticCString::create(_STR(Array)),
-			StaticCString::create(_STR(Dictionary)),
-			StaticCString::create(_STR(Callable)),
-			StaticCString::create(_STR(Signal)),
+			StringName(_STR(Array)),
+			StringName(_STR(Dictionary)),
+			StringName(_STR(Callable)),
+			StringName(_STR(Signal)),
 
-			StaticCString::create(_STR(PackedByteArray)),
-			StaticCString::create(_STR(PackedInt32Array)),
-			StaticCString::create(_STR(PackedInt64Array)),
-			StaticCString::create(_STR(PackedFloat32Array)),
-			StaticCString::create(_STR(PackedFloat64Array)),
-			StaticCString::create(_STR(PackedStringArray)),
-			StaticCString::create(_STR(PackedVector2Array)),
-			StaticCString::create(_STR(PackedVector3Array)),
-			StaticCString::create(_STR(PackedColorArray)),
+			StringName(_STR(PackedByteArray)),
+			StringName(_STR(PackedInt32Array)),
+			StringName(_STR(PackedInt64Array)),
+			StringName(_STR(PackedFloat32Array)),
+			StringName(_STR(PackedFloat64Array)),
+			StringName(_STR(PackedStringArray)),
+			StringName(_STR(PackedVector2Array)),
+			StringName(_STR(PackedVector3Array)),
+			StringName(_STR(PackedColorArray)),
+			StringName(_STR(PackedVector4Array)),
 		};
 
 		bool is_nullable_type(const StringName &p_type) const {
@@ -765,16 +790,28 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
+	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
 
-	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target);
+	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
+	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
+
+	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
 	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
 	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
 	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
+
+	bool _validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
@@ -804,7 +841,7 @@ class BindingsGenerator {
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
 	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
-	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
+	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span);
 	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
 
 	Error _generate_cs_native_calls(const InternalCall &p_icall, StringBuilder &r_output);
@@ -835,6 +872,4 @@ public:
 	}
 };
 
-#endif
-
-#endif // BINDINGS_GENERATOR_H
+#endif // DEBUG_ENABLED

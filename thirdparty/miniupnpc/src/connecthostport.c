@@ -1,8 +1,9 @@
-/* $Id: connecthostport.c,v 1.24 2020/11/09 19:26:53 nanard Exp $ */
+/* $Id: connecthostport.c,v 1.25 2025/05/24 15:59:08 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
+ * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
- * Copyright (c) 2010-2020 Thomas Bernard
+ * Copyright (c) 2010-2025 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
@@ -15,6 +16,7 @@
 #include <string.h>
 #include <stdio.h>
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
@@ -123,8 +125,12 @@ SOCKET connecthostport(const char * host, unsigned short port,
 #else
 		n = select(s + 1, NULL, &wset, NULL, NULL);
 #endif
-		if(n == -1 && errno == EINTR)
-			continue;
+		if(n < 0) {
+			if (errno == EINTR)
+				continue;	/* try again */
+			else
+				break;	/* EBADF, EFAULT, EINVAL */
+		}
 #ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
 		if(n == 0) {
 			errno = ETIMEDOUT;
@@ -132,8 +138,6 @@ SOCKET connecthostport(const char * host, unsigned short port,
 			break;
 		}
 #endif
-		/*len = 0;*/
-		/*n = getpeername(s, NULL, &len);*/
 		len = sizeof(err);
 		if(getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &len) < 0) {
 			PRINT_SOCKET_ERROR("getsockopt");
@@ -240,8 +244,12 @@ SOCKET connecthostport(const char * host, unsigned short port,
 #else
 			n = select(s + 1, NULL, &wset, NULL, NULL);
 #endif
-			if(n == -1 && errno == EINTR)
-				continue;
+			if(n < 0) {
+				if (errno == EINTR)
+					continue;	/* try again */
+				else
+					break; /* EBADF, EFAULT, EINVAL */
+			}
 #ifdef MINIUPNPC_SET_SOCKET_TIMEOUT
 			if(n == 0) {
 				errno = ETIMEDOUT;
@@ -249,8 +257,6 @@ SOCKET connecthostport(const char * host, unsigned short port,
 				break;
 			}
 #endif
-			/*len = 0;*/
-			/*n = getpeername(s, NULL, &len);*/
 			len = sizeof(err);
 			if(getsockopt(s, SOL_SOCKET, SO_ERROR, &err, &len) < 0) {
 				PRINT_SOCKET_ERROR("getsockopt");

@@ -1,0 +1,5 @@
+GH-99455
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/multimesh_allocate_data/arguments': size changed value in new API, from 5 to 6.
+
+Optional argument added to allow setting indirect draw mode on Multimesh. Compatibility method registered.

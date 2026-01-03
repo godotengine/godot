@@ -47,15 +47,15 @@ Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_
 	Ref<PacketPeerMbedDTLS> out;
 
 	ERR_FAIL_COND_V(tls_options.is_null(), out);
-	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
+	ERR_FAIL_COND_V(p_udp_peer.is_null(), out);
 
 	out.instantiate();
 	out->accept_peer(p_udp_peer, tls_options, cookies);
 	return out;
 }
 
-DTLSServer *DTLSServerMbedTLS::_create_func() {
-	return memnew(DTLSServerMbedTLS);
+DTLSServer *DTLSServerMbedTLS::_create_func(bool p_notify_postinitialize) {
+	return static_cast<DTLSServer *>(ClassDB::creator<DTLSServerMbedTLS>(p_notify_postinitialize));
 }
 
 void DTLSServerMbedTLS::initialize() {

@@ -29,32 +29,48 @@
 /**************************************************************************/
 
 #include "resolve.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 
-Resolve::Resolve() {
-	Vector<String> resolve_modes;
-	resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n");
-	resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n#define VOXEL_GI_RESOLVE\n");
-	resolve_modes.push_back("\n#define MODE_RESOLVE_DEPTH\n");
+Resolve::Resolve(bool p_prefer_raster_effects) {
+	prefer_raster_effects = p_prefer_raster_effects;
 
-	resolve.shader.initialize(resolve_modes);
+	if (prefer_raster_effects) {
+		Vector<String> resolve_modes;
+		resolve_modes.push_back("");
 
-	resolve.shader_version = resolve.shader.version_create();
+		resolve_raster.shader.initialize(resolve_modes);
+		resolve_raster.shader_version = resolve_raster.shader.version_create();
+		resolve_raster.pipeline.setup(resolve_raster.shader.version_get_shader(resolve_raster.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+	} else {
+		Vector<String> resolve_modes;
+		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n");
+		resolve_modes.push_back("\n#define MODE_RESOLVE_GI\n#define VOXEL_GI_RESOLVE\n");
+		resolve_modes.push_back("\n#define MODE_RESOLVE_DEPTH\n");
 
-	for (int i = 0; i < RESOLVE_MODE_MAX; i++) {
-		resolve.pipelines[i] = RD::get_singleton()->compute_pipeline_create(resolve.shader.version_get_shader(resolve.shader_version, i));
+		resolve.shader.initialize(resolve_modes);
+
+		resolve.shader_version = resolve.shader.version_create();
+
+		for (int i = 0; i < RESOLVE_MODE_MAX; i++) {
+			resolve.pipelines[i] = RD::get_singleton()->compute_pipeline_create(resolve.shader.version_get_shader(resolve.shader_version, i));
+		}
 	}
 }
 
 Resolve::~Resolve() {
-	resolve.shader.version_free(resolve.shader_version);
+	if (prefer_raster_effects) {
+		resolve_raster.shader.version_free(resolve_raster.shader_version);
+	} else {
+		resolve.shader.version_free(resolve.shader_version);
+	}
 }
 
-void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
+void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, Vector2i p_screen_size, int p_samples) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute shader resolve with the mobile renderer.");
+
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -93,10 +109,12 @@ void Resolve::resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID 
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.x, p_screen_size.y, 1);
 
-	RD::get_singleton()->compute_list_end(p_barrier);
+	RD::get_singleton()->compute_list_end();
 }
 
-void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples, uint32_t p_barrier) {
+void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples) {
+	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use the compute shader resolve with the mobile renderer.");
+
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -126,5 +144,29 @@ void Resolve::resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_scr
 
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_screen_size.x, p_screen_size.y, 1);
 
-	RD::get_singleton()->compute_list_end(p_barrier);
+	RD::get_singleton()->compute_list_end();
+}
+
+void Resolve::resolve_depth_raster(RID p_source_rd_texture, RID p_dest_framebuffer, int p_samples) {
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+
+	memset(&resolve_raster.push_constant, 0, sizeof(ResolvePushConstant));
+	resolve_raster.push_constant.samples = p_samples;
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
+
+	RID shader = resolve_raster.shader.version_get_shader(resolve_raster.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, resolve_raster.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &resolve_raster.push_constant, sizeof(ResolvePushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+	RD::get_singleton()->draw_list_end();
 }

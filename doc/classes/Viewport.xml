@@ -4,7 +4,7 @@
 		Abstract base class for viewports. Encapsulates drawing and interaction with a game world.
 	</brief_description>
 	<description>
-		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
+		A [Viewport] creates a different view into the screen, or a sub-view inside another viewport. Child 2D nodes will display on it, and child Camera3D 3D nodes will render on it too.
 		Optionally, a viewport can have its own 2D or 3D world, so it doesn't share what it draws with other viewports.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
@@ -13,12 +13,12 @@
 	<tutorials>
 		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
 		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
-		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
-		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
-		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
-		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
-		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
-		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
+		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/2808</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/2806</link>
+		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
 	</tutorials>
 	<methods>
 		<method name="find_world_2d" qualifiers="const">
@@ -33,16 +33,30 @@
 				Returns the first valid [World3D] for this viewport, searching the [member world_3d] property of itself and any Viewport ancestor.
 			</description>
 		</method>
+		<method name="get_audio_listener_2d" qualifiers="const">
+			<return type="AudioListener2D" />
+			<description>
+				Returns the currently active 2D audio listener. Returns [code]null[/code] if there are no active 2D audio listeners, in which case the active 2D camera will be treated as listener.
+			</description>
+		</method>
+		<method name="get_audio_listener_3d" qualifiers="const">
+			<return type="AudioListener3D" />
+			<description>
+				Returns the currently active 3D audio listener. Returns [code]null[/code] if there are no active 3D audio listeners, in which case the active 3D camera will be treated as listener.
+			</description>
+		</method>
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
-				Returns the currently active 2D camera. Returns null if there are no active cameras.
+				Returns the currently active 2D camera. Returns [code]null[/code] if there are no active cameras.
+				[b]Note:[/b] If called while the [i]Camera Override[/i] system is active in editor, this will return the internally managed override camera. It is therefore advised to avoid caching the return value, or to check that the cached value is still a valid instance and is the current camera before use. See [method @GlobalScope.is_instance_valid] and [method Camera2D.is_current].
 			</description>
 		</method>
 		<method name="get_camera_3d" qualifiers="const">
 			<return type="Camera3D" />
 			<description>
-				Returns the currently active 3D camera.
+				Returns the currently active 3D camera. Returns [code]null[/code] if there are no active cameras.
+				[b]Note:[/b] If called while the [i]Camera Override[/i] system is active in editor, this will return the internally managed override camera. It is therefore advised to avoid caching the return value, or to check that the cached value is a valid instance and is the current camera before use. See [method @GlobalScope.is_instance_valid] and [member Camera3D.current].
 			</description>
 		</method>
 		<method name="get_canvas_cull_mask_bit" qualifiers="const">
@@ -71,11 +85,17 @@
 				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
+		<method name="get_oversampling" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns viewport oversampling factor.
+			</description>
+		</method>
 		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<param index="0" name="quadrant" type="int" />
 			<description>
-				Returns the [enum PositionalShadowAtlasQuadrantSubdiv] of the specified quadrant.
+				Returns the positional shadow atlas quadrant subdivision of the specified quadrant.
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -83,7 +103,7 @@
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
-				Returns rendering statistics of the given type. See [enum RenderInfoType] and [enum RenderInfo] for options.
+				Returns rendering statistics of the given type.
 			</description>
 		</method>
 		<method name="get_screen_transform" qualifiers="const">
@@ -92,16 +112,34 @@
 				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
 			</description>
 		</method>
+		<method name="get_stretch_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the automatically computed 2D stretch transform, taking the [Viewport]'s stretch settings into account. The final value is multiplied by [member Window.content_scale_factor], but only for the root viewport. If this method is called on a [SubViewport] (e.g., in a scene tree with [SubViewportContainer] and [SubViewport]), the scale factor of the root window will not be applied. Using [method Transform2D.get_scale] on the returned value, this can be used to compensate for scaling when zooming a [Camera2D] node, or to scale down a [TextureRect] to be pixel-perfect regardless of the automatically computed scale factor.
+				[b]Note:[/b] Due to how pixel scaling works, the returned transform's X and Y scale may differ slightly, even when [member Window.content_scale_aspect] is set to a mode that preserves the pixels' aspect ratio. If [member Window.content_scale_aspect] is [constant Window.CONTENT_SCALE_ASPECT_IGNORE], the X and Y scale may differ [i]significantly[/i].
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    await RenderingServer.frame_post_draw
 				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public async override void _Ready()
+				{
+				    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				    var viewport = GetNode&lt;Viewport&gt;("Viewport");
+				    viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
+				}
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image using linear encoding.
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
@@ -116,16 +154,35 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="gui_cancel_drag">
+			<return type="void" />
+			<description>
+				Cancels the drag operation that was previously started through [method Control._get_drag_data] or forced with [method Control.force_drag].
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant" />
 			<description>
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
+		<method name="gui_get_drag_description" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the human-readable description of the drag data, used for assistive apps.
+			</description>
+		</method>
 		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+				Returns the currently focused [Control] within this viewport. If no [Control] is focused, returns [code]null[/code].
+			</description>
+		</method>
+		<method name="gui_get_hovered_control" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns [code]null[/code].
+				Typically the leaf [Control] node or deepest level of the subtree which claims hover. This is very useful when used together with [method Node.is_ancestor_of] to find if the mouse is within a control tree.
 			</description>
 		</method>
 		<method name="gui_is_drag_successful" qualifiers="const">
@@ -137,7 +194,7 @@
 		<method name="gui_is_dragging" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the viewport is currently performing a drag operation.
+				Returns [code]true[/code] if a drag operation is currently ongoing and where the drop action could happen in this viewport.
 				Alternative to [constant Node.NOTIFICATION_DRAG_BEGIN] and [constant Node.NOTIFICATION_DRAG_END] when you prefer polling the value.
 			</description>
 		</method>
@@ -147,12 +204,33 @@
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
 		</method>
+		<method name="gui_set_drag_description">
+			<return type="void" />
+			<param index="0" name="description" type="String" />
+			<description>
+				Sets the human-readable description of the drag data to [param description], used for assistive apps.
+			</description>
+		</method>
 		<method name="is_input_handled" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns whether the current [InputEvent] has been handled. Input events are not handled until [method set_input_as_handled] has been called during the lifetime of an [InputEvent].
 				This is usually done as part of input handling methods like [method Node._input], [method Control._gui_input] or others, as well as in corresponding signal handlers.
 				If [member handle_input_locally] is set to [code]false[/code], this method will try finding the first parent viewport that is set to handle input locally, and return its value for [method is_input_handled] instead.
+			</description>
+		</method>
+		<method name="notify_mouse_entered">
+			<return type="void" />
+			<description>
+				Inform the Viewport that the mouse has entered its area. Use this function before sending an [InputEventMouseButton] or [InputEventMouseMotion] to the [Viewport] with [method Viewport.push_input]. See also [method notify_mouse_exited].
+				[b]Note:[/b] In most cases, it is not necessary to call this function because [SubViewport] nodes that are children of [SubViewportContainer] are notified automatically. This is only necessary when interacting with viewports in non-default ways, for example as textures in [TextureRect] or with an [Area3D] that forwards input events.
+			</description>
+		</method>
+		<method name="notify_mouse_exited">
+			<return type="void" />
+			<description>
+				Inform the Viewport that the mouse has left its area. Use this function when the node that displays the viewport notices the mouse has left the area of the displayed viewport. See also [method notify_mouse_entered].
+				[b]Note:[/b] In most cases, it is not necessary to call this function because [SubViewport] nodes that are children of [SubViewportContainer] are notified automatically. This is only necessary when interacting with viewports in non-default ways, for example as textures in [TextureRect] or with an [Area3D] that forwards input events.
 			</description>
 		</method>
 		<method name="push_input">
@@ -180,14 +258,13 @@
 				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
 		</method>
-		<method name="push_unhandled_input" is_deprecated="true">
+		<method name="push_unhandled_input" deprecated="Use [method push_input] instead.">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
-				Triggers the given [InputEvent] in this [Viewport]. This can be used to pass input events between viewports, or to locally apply inputs that were sent over the network or saved to a file.
+				Triggers the given [param event] in this [Viewport]. This can be used to pass an [InputEvent] between viewports, or to locally apply inputs that were sent over the network or saved to a file.
 				If [param in_local_coords] is [code]false[/code], the event's position is in the embedder's coordinates and will be converted to viewport coordinates. If [param in_local_coords] is [code]true[/code], the event's position is in viewport coordinates.
-				While this method serves a similar purpose as [method Input.parse_input_event], it does not remap the specified [param event] based on project settings like [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 				Calling this method will propagate calls to child nodes for following methods in the given order:
 				- [method Node._shortcut_input]
 				- [method Node._unhandled_key_input]
@@ -195,7 +272,6 @@
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 				[b]Note:[/b] This method doesn't propagate input events to embedded [Window]s or [SubViewport]s.
-				[i]Deprecated.[/i] Use [method push_input] instead.
 			</description>
 		</method>
 		<method name="set_canvas_cull_mask_bit">
@@ -209,7 +285,7 @@
 		<method name="set_input_as_handled">
 			<return type="void" />
 			<description>
-				Stops the input from propagating further down the [SceneTree].
+				Stops the input from propagating further up the [SceneTree].
 				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>
@@ -237,6 +313,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="anisotropic_filtering_level" type="int" setter="set_anisotropic_filtering_level" getter="get_anisotropic_filtering_level" enum="Viewport.AnisotropicFiltering" default="2">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member ProjectSettings.rendering/textures/decals/filter] and [member ProjectSettings.rendering/textures/light_projectors/filter].
+			[b]Note:[/b] In 3D, for this setting to have an effect, set [member BaseMaterial3D.texture_filter] to [constant BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on materials.
+			[b]Note:[/b] In 2D, for this setting to have an effect, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
+		</member>
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
@@ -245,12 +327,13 @@
 		</member>
 		<member name="canvas_cull_mask" type="int" setter="set_canvas_cull_mask" getter="get_canvas_cull_mask" default="4294967295">
 			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
+			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. See [member CanvasItem.visibility_layer]'s description for details.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
-			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.
+			The default filter mode used by [CanvasItem] nodes in this viewport.
 		</member>
 		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
-			Sets the default repeat mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureRepeat] for options.
+			The default repeat mode used by [CanvasItem] nodes in this viewport.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
@@ -258,11 +341,8 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
-		<member name="disable_2d" type="bool" setter="set_disable_2d" getter="is_2d_disabled" default="false">
-			If [code]true[/code], disables 2D rendering while keeping 3D rendering. See also [member disable_3d].
-		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
-			If [code]true[/code], disables 3D rendering while keeping 2D rendering. See also [member disable_2d].
+			Disable 3D rendering (but keep 2D rendering).
 		</member>
 		<member name="fsr_sharpness" type="float" setter="set_fsr_sharpness" getter="get_fsr_sharpness" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
@@ -273,6 +353,9 @@
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
 			If [code]true[/code], the viewport will not receive input events.
+		</member>
+		<member name="gui_drag_threshold" type="int" setter="set_drag_threshold" getter="get_drag_threshold" default="10">
+			The minimum distance the mouse cursor must move while pressed before a drag operation begins.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
 			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.
@@ -291,17 +374,31 @@
 			[b]Note:[/b] [member mesh_lod_threshold] does not affect [GeometryInstance3D] visibility ranges (also known as "manual" LOD or hierarchical LOD).
 		</member>
 		<member name="msaa_2d" type="int" setter="set_msaa_2d" getter="get_msaa_2d" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode for 2D/Canvas rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. This has no effect on shader-induced aliasing or texture aliasing.
+			The multisample antialiasing mode for 2D/Canvas rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. This has no effect on shader-induced aliasing or texture aliasing.
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d] and [method RenderingServer.viewport_set_msaa_2d].
 		</member>
 		<member name="msaa_3d" type="int" setter="set_msaa_3d" getter="get_msaa_3d" enum="Viewport.MSAA" default="0">
-			The multisample anti-aliasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of 2 or 4 is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			The multisample antialiasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. See also bilinear scaling 3D [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
+		</member>
+		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
+			If [code]true[/code] and one of the following conditions are true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [DPITexture] oversampling are enabled.
+		</member>
+		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
+			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
 			If [code]true[/code], the viewport will use a unique copy of the [World3D] defined in [member world_3d].
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="1" />
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 			[b]Note:[/b] The number of simultaneously pickable objects is limited to 64 and they are selected in a non-deterministic order, which can be different in each picking process.
+		</member>
+		<member name="physics_object_picking_first_only" type="bool" setter="set_physics_object_picking_first_only" getter="get_physics_object_picking_first_only" default="false">
+			If [code]true[/code], the input_event signal will only be sent to one physics object in the mouse picking process. If you want to get the top object only, you must also enable [member physics_object_picking_sort].
+			If [code]false[/code], an input_event signal will be sent to all physics objects in the mouse picking process.
+			This applies to 2D CanvasItem object picking only.
 		</member>
 		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
 			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.
@@ -328,7 +425,7 @@
 			[b]Note:[/b] If this is set to [code]0[/code], no positional shadows will be visible at all. This can improve performance significantly on low-end systems by reducing both the CPU and GPU load (as fewer draw calls are needed to draw the scene without shadows).
 		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
-			Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			Sets scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/mode] project setting.
 		</member>
 		<member name="scaling_3d_scale" type="float" setter="set_scaling_3d_scale" getter="get_scaling_3d_scale" default="1.0">
@@ -338,14 +435,20 @@
 		</member>
 		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
 			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/screen_space_aa] and [method RenderingServer.viewport_set_screen_space_aa].
 		</member>
 		<member name="sdf_oversize" type="int" setter="set_sdf_oversize" getter="get_sdf_oversize" enum="Viewport.SDFOversize" default="1">
+			Controls how much of the original viewport's size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is also used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
+			The percentage is added on each axis and on both sides. For example, with the default [constant SDF_OVERSIZE_120_PERCENT], the signed distance field will cover 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).
 		</member>
 		<member name="sdf_scale" type="int" setter="set_sdf_scale" getter="get_sdf_scale" enum="Viewport.SDFScale" default="1">
+			The resolution scale to use for the 2D signed distance field. Higher values lead to a more precise and more stable signed distance field as the camera moves, at the cost of performance.
 		</member>
 		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
+			If [code]true[/code], [CanvasItem] nodes will internally snap to full pixels. Their position can still be sub-pixel, but the decimals will not have effect. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
 		</member>
 		<member name="snap_2d_vertices_to_pixel" type="bool" setter="set_snap_2d_vertices_to_pixel" getter="is_snap_2d_vertices_to_pixel_enabled" default="false">
+			If [code]true[/code], vertices of [CanvasItem] nodes will snap to full pixels. Only affects the final vertex positions, not the transforms. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled.
 		</member>
 		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close).
@@ -355,14 +458,16 @@
 		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
+			[b]Note:[/b] Due to technical limitations, certain rendering features are disabled when a viewport has a transparent background. This currently applies to screen-space reflections, subsurface scattering, and depth of field.
 		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
-			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+			When using the Mobile or Forward+ renderers, set [member use_debanding] to enable or disable the debanding feature of this [Viewport]. If [member use_hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member use_hdr_2d] is [code]true[/code], debanding will only be applied if this is the root [Viewport] and will affect all 2D and 3D rendering, including canvas items.
+			[member use_debanding] has no effect when using the Compatibility rendering method. The Mobile renderer can also use material debanding, which can be set with [method RenderingServer.material_set_use_debanding] or configured with [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding], [method RenderingServer.material_set_use_debanding], and [method RenderingServer.viewport_set_use_debanding].
 		</member>
 		<member name="use_hdr_2d" type="bool" setter="set_use_hdr_2d" getter="is_using_hdr_2d" default="false">
-			If [code]true[/code], 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be a [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be a [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
-			[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) [code]RGBA16[/code] format framebuffer. Additionally, 2D rendering will be performed on linear values and will be converted using the appropriate transfer function immediately before blitting to the screen (if the Viewport is attached to the screen).
+			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -370,8 +475,9 @@
 			[b]Note:[/b] Due to memory constraints, occlusion culling is not supported by default in Web export templates. It can be enabled by compiling custom Web export templates with [code]module_raycast_enabled=yes[/code].
 		</member>
 		<member name="use_taa" type="bool" setter="set_use_taa" getter="is_using_taa" default="false">
-			Enables Temporal Anti-Aliasing for this viewport. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion.
+			Enables temporal antialiasing for this viewport. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion.
 			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
+			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_taa] and [method RenderingServer.viewport_set_use_taa].
 		</member>
 		<member name="use_xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
 			If [code]true[/code], the viewport will use the primary XR interface to render XR output. When applicable this can result in a stereoscopic image and the resulting render being output to a headset.
@@ -382,18 +488,21 @@
 		<member name="vrs_texture" type="Texture2D" setter="set_vrs_texture" getter="get_vrs_texture">
 			Texture to use when [member vrs_mode] is set to [constant Viewport.VRS_TEXTURE].
 			The texture [i]must[/i] use a lossless compression format so that colors can be matched precisely. The following VRS densities are mapped to various colors, with brighter colors representing a lower level of shading precision:
-			[codeblock]
-			- 1x1 = rgb(0, 0, 0)     - #000000
-			- 1x2 = rgb(0, 85, 0)    - #005500
-			- 2x1 = rgb(85, 0, 0)    - #550000
-			- 2x2 = rgb(85, 85, 0)   - #555500
-			- 2x4 = rgb(85, 170, 0)  - #55aa00
-			- 4x2 = rgb(170, 85, 0)  - #aa5500
-			- 4x4 = rgb(170, 170, 0) - #aaaa00
-			- 4x8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
-			- 8x4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
-			- 8x8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
+			[codeblock lang=text]
+			- 1×1 = rgb(0, 0, 0)     - #000000
+			- 1×2 = rgb(0, 85, 0)    - #005500
+			- 2×1 = rgb(85, 0, 0)    - #550000
+			- 2×2 = rgb(85, 85, 0)   - #555500
+			- 2×4 = rgb(85, 170, 0)  - #55aa00
+			- 4×2 = rgb(170, 85, 0)  - #aa5500
+			- 4×4 = rgb(170, 170, 0) - #aaaa00
+			- 4×8 = rgb(170, 255, 0) - #aaff00 - Not supported on most hardware
+			- 8×4 = rgb(255, 170, 0) - #ffaa00 - Not supported on most hardware
+			- 8×8 = rgb(255, 255, 0) - #ffff00 - Not supported on most hardware
 			[/codeblock]
+		</member>
+		<member name="vrs_update_mode" type="int" setter="set_vrs_update_mode" getter="get_vrs_update_mode" enum="Viewport.VRSUpdateMode" default="1">
+			Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
@@ -407,6 +516,7 @@
 			<param index="0" name="node" type="Control" />
 			<description>
 				Emitted when a Control node grabs keyboard focus.
+				[b]Note:[/b] A Control node losing focus doesn't cause this signal to be emitted.
 			</description>
 		</signal>
 		<signal name="size_changed">
@@ -444,12 +554,26 @@
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_FSR2" value="2" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
 		</constant>
-		<constant name="SCALING_3D_MODE_MAX" value="3" enum="Scaling3DMode">
+		<constant name="SCALING_3D_MODE_METALFX_SPATIAL" value="3" enum="Scaling3DMode">
+			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxspatialscaler#overview]MetalFX spatial upscaler[/url] for the viewport's 3D buffer.
+			The amount of scaling can be set using [member scaling_3d_scale].
+			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="SCALING_3D_MODE_METALFX_TEMPORAL" value="4" enum="Scaling3DMode">
+			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxtemporalscaler#overview]MetalFX temporal upscaler[/url] for the viewport's 3D buffer.
+			The amount of scaling can be set using [member scaling_3d_scale]. To determine the minimum input scale, use the [method RenderingDevice.limit_get] method with [constant RenderingDevice.LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE].
+			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
+			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="SCALING_3D_MODE_MAX" value="5" enum="Scaling3DMode">
 			Represents the size of the [enum Scaling3DMode] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
@@ -467,13 +591,34 @@
 		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
 		</constant>
+		<constant name="ANISOTROPY_DISABLED" value="0" enum="AnisotropicFiltering">
+			Anisotropic filtering is disabled.
+		</constant>
+		<constant name="ANISOTROPY_2X" value="1" enum="AnisotropicFiltering">
+			Use 2× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_4X" value="2" enum="AnisotropicFiltering">
+			Use 4× anisotropic filtering. This is the default value.
+		</constant>
+		<constant name="ANISOTROPY_8X" value="3" enum="AnisotropicFiltering">
+			Use 8× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_16X" value="4" enum="AnisotropicFiltering">
+			Use 16× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_MAX" value="5" enum="AnisotropicFiltering">
+			Represents the size of the [enum AnisotropicFiltering] enum.
+		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
 			Do not perform any antialiasing in the full screen post-process.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
 			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
-		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
+		<constant name="SCREEN_SPACE_AA_SMAA" value="2" enum="ScreenSpaceAA">
+			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_MAX" value="3" enum="ScreenSpaceAA">
 			Represents the size of the [enum ScreenSpaceAA] enum.
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
@@ -489,10 +634,16 @@
 			Represents the size of the [enum RenderInfo] enum.
 		</constant>
 		<constant name="RENDER_INFO_TYPE_VISIBLE" value="0" enum="RenderInfoType">
+			Visible render pass (excluding shadows).
 		</constant>
 		<constant name="RENDER_INFO_TYPE_SHADOW" value="1" enum="RenderInfoType">
+			Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
 		</constant>
-		<constant name="RENDER_INFO_TYPE_MAX" value="2" enum="RenderInfoType">
+		<constant name="RENDER_INFO_TYPE_CANVAS" value="2" enum="RenderInfoType">
+			Canvas item rendering. This includes all 2D rendering.
+		</constant>
+		<constant name="RENDER_INFO_TYPE_MAX" value="3" enum="RenderInfoType">
+			Represents the size of the [enum RenderInfoType] enum.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
 			Objects are displayed normally.
@@ -501,23 +652,32 @@
 			Objects are displayed without light information.
 		</constant>
 		<constant name="DEBUG_DRAW_LIGHTING" value="2" enum="DebugDraw">
+			Objects are displayed without textures and only with lighting information.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
 		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="3" enum="DebugDraw">
 			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
-			Objects are displayed in wireframe style.
+			Objects are displayed as wireframe models.
+			[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
+			Objects are displayed without lighting information and their textures replaced by normal mapping.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="DebugDraw">
-			Objects are displayed with only the albedo value from [VoxelGI]s.
+			Objects are displayed with only the albedo value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="DebugDraw">
-			Objects are displayed with only the lighting value from [VoxelGI]s.
+			Objects are displayed with only the lighting value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="DebugDraw">
-			Objects are displayed with only the emission color from [VoxelGI]s.
+			Objects are displayed with only the emission color from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
@@ -526,56 +686,88 @@
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="DebugDraw">
+			Draws the scene luminance buffer (if available) in the upper left quadrant of the [Viewport].
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_SSAO" value="12" enum="DebugDraw">
 			Draws the screen-space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_SSIL" value="13" enum="DebugDraw">
 			Draws the screen-space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14" enum="DebugDraw">
-			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order, they will be colored red, green, blue, and yellow.
+			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order (from closest to furthest from the camera), they are colored red, green, blue, and yellow.
+			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_SDFGI" value="16" enum="DebugDraw">
+			Draws the cascades used to render signed distance field global illumination (SDFGI).
+			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
+			Draws the probes used for signed distance field global illumination (SDFGI).
+			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
+			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
+			Draws the buffer used for global illumination from [VoxelGI] or SDFGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or SDFGI ([member Environment.sdfgi_enabled]) to be enabled to have a visible effect.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_DISABLE_LOD" value="19" enum="DebugDraw">
+			Draws all of the objects at their highest polycount regardless of their distance from the camera. No low level of detail (LOD) is applied.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="DebugDraw">
+			Draws the cluster used by [OmniLight3D] nodes to optimize light rendering.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="DebugDraw">
+			Draws the cluster used by [SpotLight3D] nodes to optimize light rendering.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="DebugDraw">
+			Draws the cluster used by [Decal] nodes to optimize decal rendering.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
+			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
+			Draws the buffer used for occlusion culling.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25" enum="DebugDraw">
+			Draws vector lines over the viewport to indicate the movement of pixels between frames.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
-			Draws the internal resolution buffer of the scene before post-processing is applied.
+			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
+			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
+			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
+			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="4" enum="DefaultCanvasItemTextureFilter">
-			Max value for [enum DefaultCanvasItemTextureFilter] enum.
+			Represents the size of the [enum DefaultCanvasItemTextureFilter] enum.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="0" enum="DefaultCanvasItemTextureRepeat">
 			Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
@@ -587,37 +779,58 @@
 			Flip the texture when repeating so that the edge lines up instead of abruptly changing.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
-			Max value for [enum DefaultCanvasItemTextureRepeat] enum.
+			Represents the size of the [enum DefaultCanvasItemTextureRepeat] enum.
 		</constant>
 		<constant name="SDF_OVERSIZE_100_PERCENT" value="0" enum="SDFOversize">
+			The signed distance field only covers the viewport's own rectangle.
 		</constant>
 		<constant name="SDF_OVERSIZE_120_PERCENT" value="1" enum="SDFOversize">
+			The signed distance field is expanded to cover 20% of the viewport's size around the borders.
 		</constant>
 		<constant name="SDF_OVERSIZE_150_PERCENT" value="2" enum="SDFOversize">
+			The signed distance field is expanded to cover 50% of the viewport's size around the borders.
 		</constant>
 		<constant name="SDF_OVERSIZE_200_PERCENT" value="3" enum="SDFOversize">
+			The signed distance field is expanded to cover 100% (double) of the viewport's size around the borders.
 		</constant>
 		<constant name="SDF_OVERSIZE_MAX" value="4" enum="SDFOversize">
+			Represents the size of the [enum SDFOversize] enum.
 		</constant>
 		<constant name="SDF_SCALE_100_PERCENT" value="0" enum="SDFScale">
+			The signed distance field is rendered at full resolution.
 		</constant>
 		<constant name="SDF_SCALE_50_PERCENT" value="1" enum="SDFScale">
+			The signed distance field is rendered at half the resolution of this viewport.
 		</constant>
 		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
+			The signed distance field is rendered at a quarter the resolution of this viewport.
 		</constant>
 		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
+			Represents the size of the [enum SDFScale] enum.
 		</constant>
 		<constant name="VRS_DISABLED" value="0" enum="VRSMode">
-			VRS is disabled.
+			Variable Rate Shading is disabled.
 		</constant>
 		<constant name="VRS_TEXTURE" value="1" enum="VRSMode">
-			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+			Variable Rate Shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
 		</constant>
 		<constant name="VRS_XR" value="2" enum="VRSMode">
-			VRS texture is supplied by the primary [XRInterface].
+			Variable Rate Shading's texture is supplied by the primary [XRInterface].
 		</constant>
 		<constant name="VRS_MAX" value="3" enum="VRSMode">
 			Represents the size of the [enum VRSMode] enum.
+		</constant>
+		<constant name="VRS_UPDATE_DISABLED" value="0" enum="VRSUpdateMode">
+			The input texture for variable rate shading will not be processed.
+		</constant>
+		<constant name="VRS_UPDATE_ONCE" value="1" enum="VRSUpdateMode">
+			The input texture for variable rate shading will be processed once.
+		</constant>
+		<constant name="VRS_UPDATE_ALWAYS" value="2" enum="VRSUpdateMode">
+			The input texture for variable rate shading will be processed each frame.
+		</constant>
+		<constant name="VRS_UPDATE_MAX" value="3" enum="VRSUpdateMode">
+			Represents the size of the [enum VRSUpdateMode] enum.
 		</constant>
 	</constants>
 </class>

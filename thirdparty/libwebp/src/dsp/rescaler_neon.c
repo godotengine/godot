@@ -32,7 +32,7 @@
 #define STORE_32x8(SRC0, SRC1, DST) do {                              \
     vst1q_u32((DST) + 0, SRC0);                                       \
     vst1q_u32((DST) + 4, SRC1);                                       \
-} while (0);
+} while (0)
 
 #if (WEBP_RESCALER_RFIX == 32)
 #define MAKE_HALF_CST(C) vdupq_n_s32((int32_t)((C) >> 1))
@@ -45,8 +45,8 @@
 #error "MULT_FIX/WEBP_RESCALER_RFIX need some more work"
 #endif
 
-static uint32x4_t Interpolate_NEON(const rescaler_t* const frow,
-                                   const rescaler_t* const irow,
+static uint32x4_t Interpolate_NEON(const rescaler_t* WEBP_RESTRICT const frow,
+                                   const rescaler_t* WEBP_RESTRICT const irow,
                                    uint32_t A, uint32_t B) {
   LOAD_32x4(frow, A0);
   LOAD_32x4(irow, B0);

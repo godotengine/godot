@@ -30,14 +30,11 @@
 
 #include "editor_debugger_server_websocket.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../remote_debugger_peer_websocket.h"
 
-#include "core/config/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 void EditorDebuggerServerWebSocket::poll() {
 	if (pending_peer.is_null() && tcp_server->is_connection_available()) {
@@ -77,8 +74,8 @@ Error EditorDebuggerServerWebSocket::start(const String &p_uri) {
 
 	// Optionally override
 	if (!p_uri.is_empty() && p_uri != "ws://") {
-		String scheme, path;
-		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
+		String scheme, path, fragment;
+		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path, fragment);
 		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);
 		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
 	}
@@ -136,5 +133,3 @@ EditorDebuggerServer *EditorDebuggerServerWebSocket::create(const String &p_prot
 	ERR_FAIL_COND_V(p_protocol != "ws://", nullptr);
 	return memnew(EditorDebuggerServerWebSocket);
 }
-
-#endif // TOOLS_ENABLED

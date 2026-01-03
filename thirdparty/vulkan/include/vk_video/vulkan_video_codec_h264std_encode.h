@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H264STD_ENCODE_H_ 1
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -22,10 +22,10 @@ extern "C" {
 // vulkan_video_codec_h264std_encode is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_h264std_encode 1
 #include "vulkan_video_codec_h264std.h"
-// Vulkan 0.9 provisional Vulkan video H.264 encode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_10 VK_MAKE_VIDEO_STD_VERSION(0, 9, 10)
 
-#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_0_9_10
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
+
+#define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h264_encode"
 typedef struct StdVideoEncodeH264WeightTableFlags {
     uint32_t    luma_weight_l0_flag;
@@ -81,7 +81,7 @@ typedef struct StdVideoEncodeH264RefListModEntry {
 } StdVideoEncodeH264RefListModEntry;
 
 typedef struct StdVideoEncodeH264RefPicMarkingEntry {
-    StdVideoH264MemMgmtControlOp    operation;
+    StdVideoH264MemMgmtControlOp    memory_management_control_operation;
     uint16_t                        difference_of_pic_nums_minus1;
     uint16_t                        long_term_pic_num;
     uint16_t                        long_term_frame_idx;
@@ -132,7 +132,8 @@ typedef struct StdVideoEncodeH264SliceHeader {
     StdVideoH264SliceType                     slice_type;
     int8_t                                    slice_alpha_c0_offset_div2;
     int8_t                                    slice_beta_offset_div2;
-    uint16_t                                  reserved1;
+    int8_t                                    slice_qp_delta;
+    uint8_t                                   reserved1;
     StdVideoH264CabacInitIdc                  cabac_init_idc;
     StdVideoH264DisableDeblockingFilterIdc    disable_deblocking_filter_idc;
     const StdVideoEncodeH264WeightTable*      pWeightTable;

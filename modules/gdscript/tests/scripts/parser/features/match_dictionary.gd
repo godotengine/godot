@@ -26,6 +26,24 @@ func bar(x):
 		_:
 			print("wildcard")
 
+func baz(x):
+	match x:
+		{
+			"key1": "value1"
+		}:
+			print('multiline {"key1": "value1"}')
+		{
+			"key2": "value2",
+		}:
+			print('multiline {"key2": "value2",}')
+		{
+			"key3": {
+				"key1",
+				..,
+			},
+		}:
+			print('multiline {"key3": {"key1", ..,},}')
+
 func test():
 	foo({"key1": "value1", "key2": "value2"})
 	foo({"key1": "value1", "key2": ""})
@@ -41,3 +59,6 @@ func test():
 	bar({1: "1"})
 	bar({2: "2"})
 	bar({3: "3"})
+	baz({"key1": "value1"})
+	baz({"key2": "value2"})
+	baz({"key3": {"key1": "value1", "key2": "value2"}})

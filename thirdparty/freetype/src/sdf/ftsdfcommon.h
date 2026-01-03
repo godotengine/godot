@@ -4,7 +4,7 @@
  *
  *   Auxiliary data for Signed Distance Field support (specification).
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -122,8 +122,7 @@ FT_BEGIN_HEADER
   typedef FT_BBox   FT_CBox;       /* control box of a curve            */
 
 
-  FT_LOCAL( FT_16D16 )
-  square_root( FT_16D16  val );
+#define square_root( x )  (FT_16D16)FT_SqrtFixed( (FT_UInt32)( x ) )
 
   FT_LOCAL( FT_SDFFormat )
   map_fixed_to_sdf( FT_16D16  dist,

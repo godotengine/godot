@@ -1,5 +1,5 @@
 // basis_file_headers.h
-// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ namespace basist
 		basisu::packed_uint<2> m_orig_width;	// The original image width (may not be a multiple of 4 pixels)
 		basisu::packed_uint<2> m_orig_height;  // The original image height (may not be a multiple of 4 pixels)
 
-		basisu::packed_uint<2> m_num_blocks_x;	// The slice's block X dimensions. Each block is 4x4 pixels. The slice's pixel resolution may or may not be a power of 2.
+		basisu::packed_uint<2> m_num_blocks_x;	// The slice's block X dimensions. Each block is 4x4 or 6x6 pixels. The slice's pixel resolution may or may not be a power of 2.
 		basisu::packed_uint<2> m_num_blocks_y;	// The slice's block Y dimensions. 
 
 		basisu::packed_uint<4> m_file_ofs;		// Offset from the start of the file to the start of the slice's data
@@ -72,9 +72,9 @@ namespace basist
 	// We do make sure the various constraints are followed (2DArray/cubemap/videoframes/volume implies that each image has the same resolution and # of mipmap levels, etc., cubemap implies that the # of image slices is a multiple of 6)
 	enum basis_texture_type
 	{
-		cBASISTexType2D = 0,					// An arbitrary array of 2D RGB or RGBA images with optional mipmaps, array size = # images, each image may have a different resolution and # of mipmap levels
+		cBASISTexType2D = 0,				// An arbitrary array of 2D RGB or RGBA images with optional mipmaps, array size = # images, each image may have a different resolution and # of mipmap levels
 		cBASISTexType2DArray = 1,			// An array of 2D RGB or RGBA images with optional mipmaps, array size = # images, each image has the same resolution and mipmap levels
-		cBASISTexTypeCubemapArray = 2,	// an array of cubemap levels, total # of images must be divisable by 6, in X+, X-, Y+, Y-, Z+, Z- order, with optional mipmaps
+		cBASISTexTypeCubemapArray = 2,		// an array of cubemap levels, total # of images must be divisable by 6, in X+, X-, Y+, Y-, Z+, Z- order, with optional mipmaps
 		cBASISTexTypeVideoFrames = 3,		// An array of 2D video frames, with optional mipmaps, # frames = # images, each image has the same resolution and # of mipmap levels
 		cBASISTexTypeVolume = 4,			// A 3D texture with optional mipmaps, Z dimension = # images, each image has the same resolution and # of mipmap levels
 
@@ -89,7 +89,11 @@ namespace basist
 	enum class basis_tex_format
 	{
 		cETC1S = 0,
-		cUASTC4x4 = 1
+		cUASTC4x4 = 1,
+		cUASTC_HDR_4x4 = 2,
+		cASTC_HDR_6x6 = 3,
+		cASTC_HDR_6x6_INTERMEDIATE = 4,
+		cTotalFormats
 	};
 
 	struct basis_file_header

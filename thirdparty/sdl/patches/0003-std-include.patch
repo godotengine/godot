@@ -1,0 +1,13 @@
+diff --git a/thirdparty/sdl/joystick/SDL_sysjoystick.h b/thirdparty/sdl/joystick/SDL_sysjoystick.h
+index 041ebc3b50..9b6ea65e9c 100644
+--- a/thirdparty/sdl/joystick/SDL_sysjoystick.h
++++ b/thirdparty/sdl/joystick/SDL_sysjoystick.h
+@@ -26,6 +26,8 @@
+ // This is the system specific header for the SDL joystick API
+ #include "SDL_joystick_c.h"
+ 
++#include <stdlib.h>
++
+ // Set up for C function definitions, even when using C++
+ #ifdef __cplusplus
+ extern "C" {

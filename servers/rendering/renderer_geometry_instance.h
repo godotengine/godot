@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_GEOMETRY_INSTANCE_H
-#define RENDERER_GEOMETRY_INSTANCE_H
+#pragma once
 
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
-#include "core/math/vector3.h"
 #include "core/templates/rid.h"
 #include "storage/utilities.h"
 
@@ -62,6 +60,8 @@ public:
 	virtual void set_lightmap_capture(const Color *p_sh9) = 0;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) = 0;
 	virtual void set_cast_double_sided_shadows(bool p_enable) = 0;
+
+	virtual void reset_motion_vectors() = 0;
 
 	virtual Transform3D get_transform() = 0;
 	virtual AABB get_aabb() = 0;
@@ -147,8 +147,8 @@ public:
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) override;
 	virtual void set_cast_double_sided_shadows(bool p_enable) override;
 
+	virtual void reset_motion_vectors() override;
+
 	virtual Transform3D get_transform() override;
 	virtual AABB get_aabb() override;
 };
-
-#endif // RENDERER_GEOMETRY_INSTANCE_H

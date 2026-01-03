@@ -14,7 +14,7 @@
 
 #include <brotli/port.h>
 #include <brotli/shared_dictionary.h>
-#include <brotli/types.h>
+#include <brotli/types.h>  /* IWYU pragma: export */
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -357,7 +357,7 @@ BROTLI_DEC_API const char* BrotliDecoderErrorString(BrotliDecoderErrorCode c);
 /**
  * Gets a decoder library version.
  *
- * Look at BROTLI_VERSION for more information.
+ * Look at BROTLI_MAKE_HEX_VERSION for more information.
  */
 BROTLI_DEC_API uint32_t BrotliDecoderVersion(void);
 

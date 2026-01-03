@@ -28,6 +28,11 @@
 
 #include "hb-draw.hh"
 
+#include "hb-geometry.hh"
+
+#include "hb-machinery.hh"
+
+
 /**
  * SECTION:hb-draw
  * @title: hb-draw
@@ -58,14 +63,14 @@ hb_draw_quadratic_to_nil (hb_draw_funcs_t *dfuncs, void *draw_data,
 			  float to_x, float to_y,
 			  void *user_data HB_UNUSED)
 {
-#define HB_ONE_THIRD 0.33333333f
+#define HB_TWO_THIRD 0.66666666666666666666666667f
   dfuncs->emit_cubic_to (draw_data, *st,
-			 (st->current_x + 2.f * control_x) * HB_ONE_THIRD,
-			 (st->current_y + 2.f * control_y) * HB_ONE_THIRD,
-			 (to_x + 2.f * control_x) * HB_ONE_THIRD,
-			 (to_y + 2.f * control_y) * HB_ONE_THIRD,
+			 st->current_x + (control_x - st->current_x) * HB_TWO_THIRD,
+			 st->current_y + (control_y - st->current_y) * HB_TWO_THIRD,
+			 to_x + (control_x - to_x) * HB_TWO_THIRD,
+			 to_y + (control_y - to_y) * HB_TWO_THIRD,
 			 to_x, to_y);
-#undef HB_ONE_THIRD
+#undef HB_TWO_THIRD
 }
 
 static void
@@ -272,7 +277,7 @@ hb_draw_funcs_destroy (hb_draw_funcs_t *dfuncs)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified draw-functions structure. 
+ * Attaches a user-data key/data pair to the specified draw-functions structure.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -452,6 +457,94 @@ hb_draw_close_path (hb_draw_funcs_t *dfuncs, void *draw_data,
 		    hb_draw_state_t *st)
 {
   dfuncs->close_path (draw_data, *st);
+}
+
+
+static void
+hb_draw_extents_move_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
+			 void *data,
+			 hb_draw_state_t *st,
+			 float to_x, float to_y,
+			 void *user_data HB_UNUSED)
+{
+  hb_extents_t<> *extents = (hb_extents_t<> *) data;
+
+  extents->add_point (to_x, to_y);
+}
+
+static void
+hb_draw_extents_line_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
+			 void *data,
+			 hb_draw_state_t *st,
+			 float to_x, float to_y,
+			 void *user_data HB_UNUSED)
+{
+  hb_extents_t<> *extents = (hb_extents_t<> *) data;
+
+  extents->add_point (to_x, to_y);
+}
+
+static void
+hb_draw_extents_quadratic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
+			      void *data,
+			      hb_draw_state_t *st,
+			      float control_x, float control_y,
+			      float to_x, float to_y,
+			      void *user_data HB_UNUSED)
+{
+  hb_extents_t<> *extents = (hb_extents_t<> *) data;
+
+  extents->add_point (control_x, control_y);
+  extents->add_point (to_x, to_y);
+}
+
+static void
+hb_draw_extents_cubic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
+			  void *data,
+			  hb_draw_state_t *st,
+			  float control1_x, float control1_y,
+			  float control2_x, float control2_y,
+			  float to_x, float to_y,
+			  void *user_data HB_UNUSED)
+{
+  hb_extents_t<> *extents = (hb_extents_t<> *) data;
+
+  extents->add_point (control1_x, control1_y);
+  extents->add_point (control2_x, control2_y);
+  extents->add_point (to_x, to_y);
+}
+
+static inline void free_static_draw_extents_funcs ();
+
+static struct hb_draw_extents_funcs_lazy_loader_t : hb_draw_funcs_lazy_loader_t<hb_draw_extents_funcs_lazy_loader_t>
+{
+  static hb_draw_funcs_t *create ()
+  {
+    hb_draw_funcs_t *funcs = hb_draw_funcs_create ();
+
+    hb_draw_funcs_set_move_to_func (funcs, hb_draw_extents_move_to, nullptr, nullptr);
+    hb_draw_funcs_set_line_to_func (funcs, hb_draw_extents_line_to, nullptr, nullptr);
+    hb_draw_funcs_set_quadratic_to_func (funcs, hb_draw_extents_quadratic_to, nullptr, nullptr);
+    hb_draw_funcs_set_cubic_to_func (funcs, hb_draw_extents_cubic_to, nullptr, nullptr);
+
+    hb_draw_funcs_make_immutable (funcs);
+
+    hb_atexit (free_static_draw_extents_funcs);
+
+    return funcs;
+  }
+} static_draw_extents_funcs;
+
+static inline
+void free_static_draw_extents_funcs ()
+{
+  static_draw_extents_funcs.free_instance ();
+}
+
+hb_draw_funcs_t *
+hb_draw_extents_get_funcs ()
+{
+  return static_draw_extents_funcs.get_unconst ();
 }
 
 

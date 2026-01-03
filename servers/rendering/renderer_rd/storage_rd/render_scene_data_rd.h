@@ -28,25 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_DATA_RD_H
-#define RENDER_SCENE_DATA_RD_H
+#pragma once
 
-#include "render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/storage/render_scene_data.h"
 
 // This is a container for data related to rendering a single frame of a viewport where we load this data into a UBO
 // that can be used by the main scene shader but also by various effects.
 
-class RenderSceneDataRD {
+class RenderSceneDataRD : public RenderSceneData {
+	GDCLASS(RenderSceneDataRD, RenderSceneData);
+
 public:
 	bool calculate_motion_vectors = false;
 
 	Transform3D cam_transform;
 	Projection cam_projection;
 	Vector2 taa_jitter;
+	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
+	bool cam_frustum = false;
+	bool flip_y = false;
+
+	// For billboards to cast correct shadows.
+	Transform3D main_cam_transform;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -69,30 +75,62 @@ public:
 	float opaque_prepass_threshold = 0.0;
 	bool material_uv2_mode = false;
 	float emissive_exposure_normalization = 0.0;
+	bool shadow_pass = false;
 
 	Size2 shadow_atlas_pixel_size;
 	Size2 directional_shadow_pixel_size;
 
+	float radiance_pixel_size;
+	float radiance_border_size;
+	Size2 reflection_atlas_border_size;
+
 	float time;
 	float time_step;
 
+	virtual Transform3D get_cam_transform() const override;
+	virtual Projection get_cam_projection() const override;
+
+	virtual uint32_t get_view_count() const override;
+	virtual Vector3 get_view_eye_offset(uint32_t p_view) const override;
+	virtual Projection get_view_projection(uint32_t p_view) const override;
+
 	RID create_uniform_buffer();
-	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
-	RID get_uniform_buffer();
+	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
+	virtual RID get_uniform_buffer() const override;
+
+	static uint32_t get_uniform_buffer_size_bytes() { return sizeof(UBODATA); }
 
 private:
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
+
+	enum SceneDataFlags {
+		SCENE_DATA_FLAGS_USE_AMBIENT_LIGHT = 1 << 0,
+		SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP = 1 << 1,
+		SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP = 1 << 2,
+		SCENE_DATA_FLAGS_USE_ROUGHNESS_LIMITER = 1 << 3,
+		SCENE_DATA_FLAGS_USE_FOG = 1 << 4,
+		SCENE_DATA_FLAGS_USE_UV2_MATERIAL = 1 << 5,
+		SCENE_DATA_FLAGS_USE_PANCAKE_SHADOWS = 1 << 6,
+		SCENE_DATA_FLAGS_IN_SHADOW_PASS = 1 << 7, // Only used by Forward+ renderer.
+		SCENE_DATA_FLAGS_MAX
+	};
 
 	// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
 	struct UBO {
 		float projection_matrix[16];
 		float inv_projection_matrix[16];
-		float inv_view_matrix[16];
-		float view_matrix[16];
+		float inv_view_matrix[12];
+		float view_matrix[12];
+
+#ifdef REAL_T_IS_DOUBLE
+		float inv_view_precision[4];
+#endif
 
 		float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 		float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 		float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+
+		float main_cam_inv_view_matrix[16];
 
 		float viewport_size[2];
 		float screen_pixel_size[2];
@@ -102,50 +140,48 @@ private:
 		float penumbra_shadow_kernel[128];
 		float soft_shadow_kernel[128];
 
-		float radiance_inverse_xform[12];
-
-		float ambient_light_color_energy[4];
-
-		float ambient_color_sky_mix;
-		uint32_t use_ambient_light;
-		uint32_t use_ambient_cubemap;
-		uint32_t use_reflection_cubemap;
-
 		float shadow_atlas_pixel_size[2];
 		float directional_shadow_pixel_size[2];
+
+		float radiance_pixel_size;
+		float radiance_border_size;
+		float reflection_atlas_border_size[2];
 
 		uint32_t directional_light_count;
 		float dual_paraboloid_side;
 		float z_far;
 		float z_near;
 
-		uint32_t roughness_limiter_enabled;
 		float roughness_limiter_amount;
 		float roughness_limiter_limit;
 		float opaque_prepass_threshold;
+		uint32_t flags;
 
-		// Fog
-		uint32_t fog_enabled;
+		float radiance_inverse_xform[12];
+
+		float ambient_light_color_energy[4];
+
+		float ambient_color_sky_mix;
 		float fog_density;
 		float fog_height;
 		float fog_height_density;
 
-		float fog_light_color[3];
+		float fog_depth_curve;
+		float fog_depth_begin;
+		float fog_depth_end;
 		float fog_sun_scatter;
 
+		float fog_light_color[3];
 		float fog_aerial_perspective;
-		float time;
-		float reflection_multiplier;
-		uint32_t material_uv2_mode;
 
+		float time;
+		float taa_frame_count; // Used to add break up samples over multiple frames. Value is an integer from 0 to taa_phase_count -1.
 		float taa_jitter[2];
+
 		float emissive_exposure_normalization; // Needed to normalize emissive when using physical units.
 		float IBL_exposure_normalization; // Adjusts for baked exposure.
-
-		uint32_t pancake_shadows;
 		uint32_t camera_visible_layers;
 		float pass_alpha_multiplier;
-		uint32_t pad3;
 	};
 
 	struct UBODATA {
@@ -153,5 +189,3 @@ private:
 		UBO prev_ubo;
 	};
 };
-
-#endif // RENDER_SCENE_DATA_RD_H

@@ -46,14 +46,12 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	uint32_t bool_index = 0;
 	uint32_t bool_specializations = p_bool_specializations;
 	while (bool_specializations) {
-		if (bool_specializations & (1 << bool_index)) {
-			RD::PipelineSpecializationConstant sc;
-			sc.bool_value = true;
-			sc.constant_id = bool_index;
-			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-			specialization_constants.push_back(sc);
-			bool_specializations &= ~(1 << bool_index);
-		}
+		RD::PipelineSpecializationConstant sc;
+		sc.bool_value = bool(bool_specializations & (1 << bool_index));
+		sc.constant_id = bool_index;
+		sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+		specialization_constants.push_back(sc);
+		bool_specializations &= ~(1 << bool_index);
 		bool_index++;
 	}
 
@@ -76,7 +74,7 @@ void PipelineCacheRD::_clear() {
 		for (uint32_t i = 0; i < version_count; i++) {
 			//shader may be gone, so this may not be valid
 			if (RD::get_singleton()->render_pipeline_is_valid(versions[i].pipeline)) {
-				RD::get_singleton()->free(versions[i].pipeline);
+				RD::get_singleton()->free_rid(versions[i].pipeline);
 			}
 		}
 		version_count = 0;
@@ -89,7 +87,6 @@ void PipelineCacheRD::setup(RID p_shader, RD::RenderPrimitive p_primitive, const
 	ERR_FAIL_COND(p_shader.is_null());
 	_clear();
 	shader = p_shader;
-	input_mask = 0;
 	render_primitive = p_primitive;
 	rasterization_state = p_rasterization_state;
 	multisample_state = p_multisample;
@@ -112,13 +109,11 @@ void PipelineCacheRD::update_shader(RID p_shader) {
 void PipelineCacheRD::clear() {
 	_clear();
 	shader = RID(); //clear shader
-	input_mask = 0;
 }
 
 PipelineCacheRD::PipelineCacheRD() {
 	version_count = 0;
 	versions = nullptr;
-	input_mask = 0;
 }
 
 PipelineCacheRD::~PipelineCacheRD() {

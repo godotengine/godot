@@ -1350,7 +1350,7 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
             error(infoSink, "At least one shader must specify a layout(max_vertices = value)");
         if (primitives == TQualifier::layoutNotSet)
             error(infoSink, "At least one shader must specify a layout(max_primitives = value)");
-        // fall through
+        [[fallthrough]];
     case EShLangTask:
         if (numTaskNVBlocks > 1)
             error(infoSink, "Only one taskNV interface block is allowed per shader");
@@ -1689,7 +1689,7 @@ int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& typ
         // First range:
         TRange locationRange(qualifier.layoutLocation, qualifier.layoutLocation);
         TRange componentRange(0, 3);
-        TIoRange range(locationRange, componentRange, type.getBasicType(), 0);
+        TIoRange range(locationRange, componentRange, type.getBasicType(), 0, qualifier.centroid, qualifier.smooth, qualifier.flat);
 
         // check for collisions
         collision = checkLocationRange(set, range, type, typeCollision);
@@ -1699,7 +1699,7 @@ int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& typ
             // Second range:
             TRange locationRange2(qualifier.layoutLocation + 1, qualifier.layoutLocation + 1);
             TRange componentRange2(0, 1);
-            TIoRange range2(locationRange2, componentRange2, type.getBasicType(), 0);
+            TIoRange range2(locationRange2, componentRange2, type.getBasicType(), 0, qualifier.centroid, qualifier.smooth, qualifier.flat);
 
             // check for collisions
             collision = checkLocationRange(set, range2, type, typeCollision);
@@ -1725,7 +1725,7 @@ int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& typ
     TBasicType basicTy = type.getBasicType();
     if (basicTy == EbtSampler && type.getSampler().isAttachmentEXT())
         basicTy = type.getSampler().type;
-    TIoRange range(locationRange, componentRange, basicTy, qualifier.hasIndex() ? qualifier.getIndex() : 0);
+    TIoRange range(locationRange, componentRange, basicTy, qualifier.hasIndex() ? qualifier.getIndex() : 0, qualifier.centroid, qualifier.smooth, qualifier.flat);
 
     // check for collisions, except for vertex inputs on desktop targeting OpenGL
     if (! (!isEsProfile() && language == EShLangVertex && qualifier.isPipeInput()) || spvVersion.vulkan > 0)
@@ -1748,7 +1748,11 @@ int TIntermediate::checkLocationRange(int set, const TIoRange& range, const TTyp
         if (range.overlap(usedIo[set][r])) {
             // there is a collision; pick one
             return std::max(range.location.start, usedIo[set][r].location.start);
-        } else if (range.location.overlap(usedIo[set][r].location) && type.getBasicType() != usedIo[set][r].basicType) {
+        } else if (range.location.overlap(usedIo[set][r].location) &&
+                   (type.getBasicType() != usedIo[set][r].basicType ||
+                    type.getQualifier().centroid != usedIo[set][r].centroid ||
+                    type.getQualifier().smooth != usedIo[set][r].smooth ||
+                    type.getQualifier().flat != usedIo[set][r].flat)) {
             // aliased-type mismatch
             typeCollision = true;
             return std::max(range.location.start, usedIo[set][r].location.start);
@@ -2217,9 +2221,9 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, T
 }
 
 // To aid the basic HLSL rule about crossing vec4 boundaries.
-bool TIntermediate::improperStraddle(const TType& type, int size, int offset)
+bool TIntermediate::improperStraddle(const TType& type, int size, int offset, bool vectorLike)
 {
-    if (! type.isVector() || type.isArray())
+    if (! vectorLike || type.isArray())
         return false;
 
     return size <= 16 ? offset / 16 != (offset + size - 1) / 16

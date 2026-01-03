@@ -1,0 +1,119 @@
+diff --git a/thirdparty/sdl/core/linux/SDL_dbus.c b/thirdparty/sdl/core/linux/SDL_dbus.c
+index 9a2fc1ea531..9dc5c266732 100644
+--- a/thirdparty/sdl/core/linux/SDL_dbus.c
++++ b/thirdparty/sdl/core/linux/SDL_dbus.c
+@@ -97,15 +97,18 @@ static bool LoadDBUSSyms(void)
+ 
+ static void UnloadDBUSLibrary(void)
+ {
++#ifdef SOWRAP_ENABLED // Godot build system constant
+     if (dbus_handle) {
+         SDL_UnloadObject(dbus_handle);
+         dbus_handle = NULL;
+     }
++#endif
+ }
+ 
+ static bool LoadDBUSLibrary(void)
+ {
+     bool result = true;
++#ifdef SOWRAP_ENABLED // Godot build system constant
+     if (!dbus_handle) {
+         dbus_handle = SDL_LoadObject(dbus_library);
+         if (!dbus_handle) {
+@@ -118,6 +121,9 @@ static bool LoadDBUSLibrary(void)
+             }
+         }
+     }
++#else
++    result = LoadDBUSSyms();
++#endif
+     return result;
+ }
+ 
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.c b/thirdparty/sdl/core/linux/SDL_udev.c
+index 907c34c7f66..fbf2ff04440 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.c
++++ b/thirdparty/sdl/core/linux/SDL_udev.c
+@@ -38,7 +38,8 @@
+ 
+ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
+ 
+-static SDL_UDEV_PrivateData *_this = NULL;
++SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this = NULL;
++#define _this SDL_UDEV_PrivateData_this
+ 
+ static bool SDL_UDEV_load_sym(const char *fn, void **addr);
+ static bool SDL_UDEV_load_syms(void);
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.h b/thirdparty/sdl/core/linux/SDL_udev.h
+index 738f4bafe3f..50bed36248e 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.h
++++ b/thirdparty/sdl/core/linux/SDL_udev.h
+@@ -30,7 +30,8 @@
+ #define SDL_USE_LIBUDEV 1
+ #endif
+ 
+-#include <libudev.h>
++//#include <libudev.h>
++#include "thirdparty/linuxbsd_headers/udev/libudev.h"
+ #include <sys/time.h>
+ #include <sys/types.h>
+ 
+diff --git a/thirdparty/sdl/hidapi/linux/hid.c b/thirdparty/sdl/hidapi/linux/hid.c
+index dbbb3277854..51a32ef892f 100644
+--- a/thirdparty/sdl/hidapi/linux/hid.c
++++ b/thirdparty/sdl/hidapi/linux/hid.c
+@@ -40,7 +40,37 @@
+ #include <linux/hidraw.h>
+ #include <linux/version.h>
+ #include <linux/input.h>
+-#include <libudev.h>
++//#include <libudev.h>
++#include "SDL_udev.h"
++extern SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this;
++#define udev_device_get_action (SDL_UDEV_PrivateData_this->syms.udev_device_get_action)
++#define udev_device_get_devnode (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnode)
++#define udev_device_get_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_get_syspath)
++#define udev_device_get_subsystem (SDL_UDEV_PrivateData_this->syms.udev_device_get_subsystem)
++#define udev_device_get_parent_with_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_device_get_parent_with_subsystem_devtype)
++#define udev_device_get_property_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_property_value)
++#define udev_device_get_sysattr_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_sysattr_value)
++#define udev_device_new_from_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_syspath)
++#define udev_device_unref (SDL_UDEV_PrivateData_this->syms.udev_device_unref)
++#define udev_enumerate_add_match_property (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_property)
++#define udev_enumerate_add_match_subsystem (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_subsystem)
++#define udev_enumerate_get_list_entry (SDL_UDEV_PrivateData_this->syms.udev_enumerate_get_list_entry)
++#define udev_enumerate_new (SDL_UDEV_PrivateData_this->syms.udev_enumerate_new)
++#define udev_enumerate_scan_devices (SDL_UDEV_PrivateData_this->syms.udev_enumerate_scan_devices)
++#define udev_enumerate_unref (SDL_UDEV_PrivateData_this->syms.udev_enumerate_unref)
++#define udev_list_entry_get_name (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_name)
++#define udev_list_entry_get_next (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_next)
++#define udev_monitor_enable_receiving (SDL_UDEV_PrivateData_this->syms.udev_monitor_enable_receiving)
++#define udev_monitor_filter_add_match_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_monitor_filter_add_match_subsystem_devtype)
++#define udev_monitor_get_fd (SDL_UDEV_PrivateData_this->syms.udev_monitor_get_fd)
++#define udev_monitor_new_from_netlink (SDL_UDEV_PrivateData_this->syms.udev_monitor_new_from_netlink)
++#define udev_monitor_receive_device (SDL_UDEV_PrivateData_this->syms.udev_monitor_receive_device)
++#define udev_monitor_unref (SDL_UDEV_PrivateData_this->syms.udev_monitor_unref)
++#define udev_new (SDL_UDEV_PrivateData_this->syms.udev_new)
++#define udev_unref (SDL_UDEV_PrivateData_this->syms.udev_unref)
++#define udev_device_new_from_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_devnum)
++#define udev_device_get_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnum)
++#undef SDL_UDEV_SYM
+ 
+ #include "../hidapi/hidapi.h"
+ 
+diff --git a/thirdparty/sdl/loadso/dlopen/SDL_sysloadso.c b/thirdparty/sdl/loadso/dlopen/SDL_sysloadso.c
+index c84d1a1b5f9..e09c09080cd 100644
+--- a/thirdparty/sdl/loadso/dlopen/SDL_sysloadso.c
++++ b/thirdparty/sdl/loadso/dlopen/SDL_sysloadso.c
+@@ -65,8 +65,8 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
+         symbol = dlsym(handle, _name);
+         SDL_small_free(_name, isstack);
+         if (!symbol) {
+-            SDL_SetError("Failed loading %s: %s", name,
+-                         (const char *)dlerror());
++            //SDL_SetError("Failed loading %s: %s", name,
++            //             (const char *)dlerror());
+         }
+     }
+     return symbol;

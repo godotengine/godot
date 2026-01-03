@@ -31,6 +31,7 @@
 #include "camera_texture.h"
 
 #include "servers/camera/camera_feed.h"
+#include "servers/rendering/rendering_server.h"
 
 void CameraTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "feed_id"), &CameraTexture::set_camera_feed_id);
@@ -45,6 +46,12 @@ void CameraTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera_feed_id"), "set_camera_feed_id", "get_camera_feed_id");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "which_feed"), "set_which_feed", "get_which_feed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
+	ADD_PROPERTY_DEFAULT("camera_is_active", false);
+}
+
+void CameraTexture::_on_format_changed() {
+	// FIXME: `emit_changed` is more appropriate, but causes errors for some reason.
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 }
 
 int CameraTexture::get_width() const {
@@ -82,13 +89,26 @@ RID CameraTexture::get_rid() const {
 }
 
 Ref<Image> CameraTexture::get_image() const {
-	// not (yet) supported
-	return Ref<Image>();
+	return RenderingServer::get_singleton()->texture_2d_get(get_rid());
 }
 
 void CameraTexture::set_camera_feed_id(int p_new_id) {
+	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		if (feed->is_connected("format_changed", callable_mp(this, &CameraTexture::_on_format_changed))) {
+			feed->disconnect("format_changed", callable_mp(this, &CameraTexture::_on_format_changed));
+		}
+	}
+
 	camera_feed_id = p_new_id;
+
+	feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		feed->connect("format_changed", callable_mp(this, &CameraTexture::_on_format_changed));
+	}
+
 	notify_property_list_changed();
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 }
 
 int CameraTexture::get_camera_feed_id() const {
@@ -98,6 +118,7 @@ int CameraTexture::get_camera_feed_id() const {
 void CameraTexture::set_which_feed(CameraServer::FeedImage p_which) {
 	which_feed = p_which;
 	notify_property_list_changed();
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 }
 
 CameraServer::FeedImage CameraTexture::get_which_feed() const {
@@ -109,6 +130,7 @@ void CameraTexture::set_camera_active(bool p_active) {
 	if (feed.is_valid()) {
 		feed->set_active(p_active);
 		notify_property_list_changed();
+		callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 	}
 }
 
@@ -121,11 +143,16 @@ bool CameraTexture::get_camera_active() const {
 	}
 }
 
-CameraTexture::CameraTexture() {}
+CameraTexture::CameraTexture() {
+	// Note: When any CameraTexture is created, we need to automatically activate monitoring
+	//       of camera feeds. This may incur a small lag spike, so it may be preferable to
+	//       enable it manually before creating the camera texture.
+	CameraServer::get_singleton()->set_monitoring_feeds(true);
+}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(_texture);
+		RenderingServer::get_singleton()->free_rid(_texture);
 	}
 }

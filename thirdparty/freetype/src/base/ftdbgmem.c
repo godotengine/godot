@@ -4,7 +4,7 @@
  *
  *   Memory debugger (body).
  *
- * Copyright (C) 2001-2023 by
+ * Copyright (C) 2001-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -139,7 +139,6 @@
   } FT_MemTableRec;
 
 
-#define FT_MEM_SIZE_MIN  7
 #define FT_MEM_SIZE_MAX  13845163
 
 #define FT_FILENAME( x )  ( (x) ? (x) : "unknown file" )

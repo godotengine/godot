@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_INPUT_EVENT_KEY_H
-#define TEST_INPUT_EVENT_KEY_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/os/keyboard.h"
@@ -85,6 +84,16 @@ TEST_CASE("[InputEventKey] Key correctly stores and retrieves unicode") {
 	CHECK(key.get_unicode() != 'y');
 }
 
+TEST_CASE("[InputEventKey] Key correctly stores and retrieves location") {
+	InputEventKey key;
+
+	CHECK(key.get_location() == KeyLocation::UNSPECIFIED);
+
+	key.set_location(KeyLocation::LEFT);
+	CHECK(key.get_location() == KeyLocation::LEFT);
+	CHECK(key.get_location() != KeyLocation::RIGHT);
+}
+
 TEST_CASE("[InputEventKey] Key correctly stores and checks echo") {
 	InputEventKey key;
 
@@ -101,28 +110,56 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	// These next three tests test the functionality of getting a key that is set to None
 	// as text. These cases are a bit weird, since None has no textual representation
 	// (find_keycode_name(Key::NONE) results in a nullptr). Thus, these tests look weird
-	// with only (Physical) or a lonely modifier with (Physical) but (as far as I
+	// with only "- Physical" or a lonely modifier with "- Physical" but (as far as I
 	// understand the code, that is intended behavior.
 
 	// Key is None without a physical key.
 	none_key.set_keycode(Key::NONE);
-	CHECK(none_key.as_text() == "(Unset)");
+	CHECK(none_key.as_text() == "(unset)");
 
 	// Key is none and has modifiers.
 	none_key.set_ctrl_pressed(true);
-	CHECK(none_key.as_text() == "Ctrl+(Unset)");
+	CHECK(none_key.as_text() == "Ctrl+(unset)");
 
 	// Key is None WITH a physical key AND modifiers.
 	none_key.set_physical_keycode(Key::ENTER);
-	CHECK(none_key.as_text() == "Ctrl+Enter (Physical)");
+	CHECK(none_key.as_text() == "Ctrl+Enter");
+
+	none_key.set_physical_keycode(Key::W);
+	CHECK(none_key.as_text() == "Ctrl+W - Physical");
+
+	// Key is None WITH a physical key AND multiple modifiers, checks for correct ordering.
+	none_key.set_physical_keycode(Key::ENTER);
+	none_key.set_alt_pressed(true);
+	none_key.set_shift_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(none_key.as_text() != "Ctrl+Shift+Option+Enter");
+	CHECK(none_key.as_text() == "Ctrl+Option+Shift+Enter");
+#else
+	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+Enter");
+	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+Enter");
+#endif
+	none_key.set_physical_keycode(Key::W);
+#ifdef MACOS_ENABLED
+	CHECK(none_key.as_text() != "Ctrl+Shift+Option+W - Physical");
+	CHECK(none_key.as_text() == "Ctrl+Option+Shift+W - Physical");
+#else
+	CHECK(none_key.as_text() != "Ctrl+Shift+Alt+W - Physical");
+	CHECK(none_key.as_text() == "Ctrl+Alt+Shift+W - Physical");
+#endif
 
 	InputEventKey none_key2;
 
 	// Key is None without modifiers with a physical key.
 	none_key2.set_keycode(Key::NONE);
+	none_key2.set_physical_keycode(Key::W);
+
+	CHECK(none_key2.as_text() == "W - Physical");
+
+	none_key2.set_keycode(Key::NONE);
 	none_key2.set_physical_keycode(Key::ENTER);
 
-	CHECK(none_key2.as_text() == "Enter (Physical)");
+	CHECK(none_key2.as_text() == "Enter");
 
 	InputEventKey key;
 
@@ -136,6 +173,17 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 	CHECK(key.as_text() != "Space");
 	CHECK(key.as_text() == "Ctrl+Space");
 
+	// Key has keycode and multiple modifiers, checks for correct ordering.
+	key.set_alt_pressed(true);
+	key.set_shift_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(key.as_text() != "Ctrl+Shift+Option+Space");
+	CHECK(key.as_text() == "Ctrl+Option+Shift+Space");
+#else
+	CHECK(key.as_text() != "Ctrl+Shift+Alt+Space");
+	CHECK(key.as_text() == "Ctrl+Alt+Shift+Space");
+#endif
+
 	// Since the keycode is set to Key::NONE upon initialization of the
 	// InputEventKey and you can only update it with another Key, the keycode
 	// cannot be empty, so the kc.is_empty() case cannot be tested.
@@ -144,32 +192,36 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 TEST_CASE("[InputEventKey] Key correctly converts its state to a string representation") {
 	InputEventKey none_key;
 
-	CHECK(none_key.to_string() == "InputEventKey: keycode=(Unset), mods=none, physical=false, pressed=false, echo=false");
+	CHECK(none_key.to_string() == "InputEventKey: keycode=(unset), mods=none, physical=false, location=unspecified, pressed=false, echo=false");
 	// Set physical key to Escape.
 	none_key.set_physical_keycode(Key::ESCAPE);
-	CHECK(none_key.to_string() == "InputEventKey: keycode=4194305 (Escape), mods=none, physical=true, pressed=false, echo=false");
+	CHECK(none_key.to_string() == "InputEventKey: keycode=4194305 (Escape), mods=none, physical=true, location=unspecified, pressed=false, echo=false");
 
 	InputEventKey key;
 
 	// Set physical to None, set keycode to Space.
 	key.set_keycode(Key::SPACE);
-	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, pressed=false, echo=false");
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, location=unspecified, pressed=false, echo=false");
+
+	// Set location
+	key.set_location(KeyLocation::RIGHT);
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, location=right, pressed=false, echo=false");
 
 	// Set pressed to true.
 	key.set_pressed(true);
-	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, pressed=true, echo=false");
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, location=right, pressed=true, echo=false");
 
 	// set echo to true.
 	key.set_echo(true);
-	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, pressed=true, echo=true");
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=none, physical=false, location=right, pressed=true, echo=true");
 
 	// Press Ctrl and Alt.
 	key.set_ctrl_pressed(true);
 	key.set_alt_pressed(true);
 #ifdef MACOS_ENABLED
-	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Option, physical=false, pressed=true, echo=true");
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Option, physical=false, location=right, pressed=true, echo=true");
 #else
-	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Alt, physical=false, pressed=true, echo=true");
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Alt, physical=false, location=right, pressed=true, echo=true");
 #endif
 }
 
@@ -291,7 +343,33 @@ TEST_CASE("[IsMatch] Keys are correctly matched") {
 
 	CHECK(key2.is_match(match, true) == true);
 	CHECK(key2.is_match(no_match, true) == false);
+
+	// Physical key with location.
+	InputEventKey key3;
+	key3.set_keycode(Key::NONE);
+	key3.set_physical_keycode(Key::SHIFT);
+
+	Ref<InputEventKey> loc_ref = key.create_reference(Key::NONE);
+
+	loc_ref->set_keycode(Key::SHIFT);
+	loc_ref->set_physical_keycode(Key::SHIFT);
+
+	CHECK(key3.is_match(loc_ref, false) == true);
+	key3.set_location(KeyLocation::UNSPECIFIED);
+	CHECK(key3.is_match(loc_ref, false) == true);
+
+	loc_ref->set_location(KeyLocation::LEFT);
+	CHECK(key3.is_match(loc_ref, false) == true);
+
+	key3.set_location(KeyLocation::LEFT);
+	CHECK(key3.is_match(loc_ref, false) == true);
+
+	key3.set_location(KeyLocation::RIGHT);
+	CHECK(key3.is_match(loc_ref, false) == false);
+
+	// Keycode key with location.
+	key3.set_physical_keycode(Key::NONE);
+	key3.set_keycode(Key::SHIFT);
+	CHECK(key3.is_match(loc_ref, false) == true);
 }
 } // namespace TestInputEventKey
-
-#endif // TEST_INPUT_EVENT_KEY_H

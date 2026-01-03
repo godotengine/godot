@@ -23,7 +23,7 @@
 #if PNG_POWERPC_VSX_OPT > 0
 
 #ifndef __VSX__
-#  error "This code requires VSX support (POWER7 and later). Please provide -mvsx compiler flag."
+#  error This code requires VSX support (POWER7 and later); please compile with -mvsx
 #endif
 
 #define vec_ld_unaligned(vec,data) vec = vec_vsx_ld(0,data)

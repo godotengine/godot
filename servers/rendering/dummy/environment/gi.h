@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GI_DUMMY_H
-#define GI_DUMMY_H
+#pragma once
 
 #include "servers/rendering/environment/renderer_gi.h"
 
@@ -78,8 +77,8 @@ public:
 	virtual bool voxel_gi_is_using_two_bounces(RID p_voxel_gi) const override { return false; }
 
 	virtual uint32_t voxel_gi_get_version(RID p_voxel_gi) const override { return 0; }
+
+	virtual void sdfgi_reset() override {}
 };
 
 } // namespace RendererDummy
-
-#endif // GI_DUMMY_H

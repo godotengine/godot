@@ -7,21 +7,21 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_add_global_constant" qualifiers="virtual">
+		<method name="_add_global_constant" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="_add_named_global_constant" qualifiers="virtual">
+		<method name="_add_named_global_constant" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="_auto_indent_code" qualifiers="virtual const">
+		<method name="_auto_indent_code" qualifiers="virtual required const">
 			<return type="String" />
 			<param index="0" name="code" type="String" />
 			<param index="1" name="from_line" type="int" />
@@ -29,12 +29,17 @@
 			<description>
 			</description>
 		</method>
-		<method name="_can_inherit_from_file" qualifiers="virtual const">
+		<method name="_can_inherit_from_file" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_complete_code" qualifiers="virtual const">
+		<method name="_can_make_function" qualifiers="virtual required const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_complete_code" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="code" type="String" />
 			<param index="1" name="path" type="String" />
@@ -42,52 +47,52 @@
 			<description>
 			</description>
 		</method>
-		<method name="_create_script" qualifiers="virtual const">
+		<method name="_create_script" qualifiers="virtual required const">
 			<return type="Object" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_current_stack_info" qualifiers="virtual">
+		<method name="_debug_get_current_stack_info" qualifiers="virtual required">
 			<return type="Dictionary[]" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_error" qualifiers="virtual const">
+		<method name="_debug_get_error" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_globals" qualifiers="virtual">
+		<method name="_debug_get_globals" qualifiers="virtual required">
 			<return type="Dictionary" />
 			<param index="0" name="max_subitems" type="int" />
 			<param index="1" name="max_depth" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_count" qualifiers="virtual const">
+		<method name="_debug_get_stack_level_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_function" qualifiers="virtual const">
+		<method name="_debug_get_stack_level_function" qualifiers="virtual required const">
 			<return type="String" />
 			<param index="0" name="level" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_instance" qualifiers="virtual">
+		<method name="_debug_get_stack_level_instance" qualifiers="virtual required">
 			<return type="void*" />
 			<param index="0" name="level" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_line" qualifiers="virtual const">
+		<method name="_debug_get_stack_level_line" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="level" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_locals" qualifiers="virtual">
+		<method name="_debug_get_stack_level_locals" qualifiers="virtual required">
 			<return type="Dictionary" />
 			<param index="0" name="level" type="int" />
 			<param index="1" name="max_subitems" type="int" />
@@ -95,7 +100,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_debug_get_stack_level_members" qualifiers="virtual">
+		<method name="_debug_get_stack_level_members" qualifiers="virtual required">
 			<return type="Dictionary" />
 			<param index="0" name="level" type="int" />
 			<param index="1" name="max_subitems" type="int" />
@@ -103,7 +108,14 @@
 			<description>
 			</description>
 		</method>
-		<method name="_debug_parse_stack_level_expression" qualifiers="virtual">
+		<method name="_debug_get_stack_level_source" qualifiers="virtual required const">
+			<return type="String" />
+			<param index="0" name="level" type="int" />
+			<description>
+				Returns the source associated with a given debug stack position.
+			</description>
+		</method>
+		<method name="_debug_parse_stack_level_expression" qualifiers="virtual required">
 			<return type="String" />
 			<param index="0" name="level" type="int" />
 			<param index="1" name="expression" type="String" />
@@ -112,30 +124,31 @@
 			<description>
 			</description>
 		</method>
-		<method name="_find_function" qualifiers="virtual const">
+		<method name="_find_function" qualifiers="virtual required const">
 			<return type="int" />
-			<param index="0" name="class_name" type="String" />
-			<param index="1" name="function_name" type="String" />
+			<param index="0" name="function" type="String" />
+			<param index="1" name="code" type="String" />
 			<description>
+				Returns the line where the function is defined in the code, or [code]-1[/code] if the function is not present.
 			</description>
 		</method>
-		<method name="_finish" qualifiers="virtual">
+		<method name="_finish" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_frame" qualifiers="virtual">
+		<method name="_frame" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_built_in_templates" qualifiers="virtual const">
+		<method name="_get_built_in_templates" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
 			<param index="0" name="object" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_comment_delimiters" qualifiers="virtual const">
+		<method name="_get_comment_delimiters" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
@@ -145,86 +158,85 @@
 			<description>
 			</description>
 		</method>
-		<method name="_get_extension" qualifiers="virtual const">
+		<method name="_get_extension" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_global_class_name" qualifiers="virtual const">
+		<method name="_get_global_class_name" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="path" type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_name" qualifiers="virtual const">
+		<method name="_get_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_public_annotations" qualifiers="virtual const">
+		<method name="_get_public_annotations" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_public_constants" qualifiers="virtual const">
+		<method name="_get_public_constants" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_public_functions" qualifiers="virtual const">
+		<method name="_get_public_functions" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_recognized_extensions" qualifiers="virtual const">
+		<method name="_get_recognized_extensions" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_reserved_words" qualifiers="virtual const">
+		<method name="_get_reserved_words" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_string_delimiters" qualifiers="virtual const">
+		<method name="_get_string_delimiters" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="_get_type" qualifiers="virtual const">
+		<method name="_get_type" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_handles_global_class_type" qualifiers="virtual const">
+		<method name="_handles_global_class_type" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="type" type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_has_named_classes" qualifiers="virtual const" is_deprecated="true">
+		<method name="_has_named_classes" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="bool" />
 			<description>
-				[i]Deprecated.[/i] This method is not called by the engine.
 			</description>
 		</method>
-		<method name="_init" qualifiers="virtual">
+		<method name="_init" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_is_control_flow_keyword" qualifiers="virtual const">
+		<method name="_is_control_flow_keyword" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="keyword" type="String" />
 			<description>
 			</description>
 		</method>
-		<method name="_is_using_templates" qualifiers="virtual">
+		<method name="_is_using_templates" qualifiers="virtual required">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_lookup_code" qualifiers="virtual const">
+		<method name="_lookup_code" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="code" type="String" />
 			<param index="1" name="symbol" type="String" />
@@ -233,7 +245,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_make_function" qualifiers="virtual const">
+		<method name="_make_function" qualifiers="virtual required const">
 			<return type="String" />
 			<param index="0" name="class_name" type="String" />
 			<param index="1" name="function_name" type="String" />
@@ -241,7 +253,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_make_template" qualifiers="virtual const">
+		<method name="_make_template" qualifiers="virtual required const">
 			<return type="Script" />
 			<param index="0" name="template" type="String" />
 			<param index="1" name="class_name" type="String" />
@@ -249,7 +261,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_open_in_external_editor" qualifiers="virtual">
+		<method name="_open_in_external_editor" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="script" type="Script" />
 			<param index="1" name="line" type="int" />
@@ -257,74 +269,92 @@
 			<description>
 			</description>
 		</method>
-		<method name="_overrides_external_editor" qualifiers="virtual">
+		<method name="_overrides_external_editor" qualifiers="virtual required">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_profiling_get_accumulated_data" qualifiers="virtual">
+		<method name="_preferred_file_name_casing" qualifiers="virtual const">
+			<return type="int" enum="ScriptLanguage.ScriptNameCasing" />
+			<description>
+			</description>
+		</method>
+		<method name="_profiling_get_accumulated_data" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="info_array" type="ScriptLanguageExtensionProfilingInfo*" />
 			<param index="1" name="info_max" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_profiling_get_frame_data" qualifiers="virtual">
+		<method name="_profiling_get_frame_data" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="info_array" type="ScriptLanguageExtensionProfilingInfo*" />
 			<param index="1" name="info_max" type="int" />
 			<description>
 			</description>
 		</method>
-		<method name="_profiling_start" qualifiers="virtual">
+		<method name="_profiling_set_save_native_calls" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_profiling_start" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_profiling_stop" qualifiers="virtual">
+		<method name="_profiling_stop" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_reload_all_scripts" qualifiers="virtual">
+		<method name="_reload_all_scripts" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_reload_tool_script" qualifiers="virtual">
+		<method name="_reload_scripts" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="scripts" type="Array" />
+			<param index="1" name="soft_reload" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_reload_tool_script" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="script" type="Script" />
 			<param index="1" name="soft_reload" type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_remove_named_global_constant" qualifiers="virtual">
+		<method name="_remove_named_global_constant" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="_supports_builtin_mode" qualifiers="virtual const">
+		<method name="_supports_builtin_mode" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_supports_documentation" qualifiers="virtual const">
+		<method name="_supports_documentation" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="_thread_enter" qualifiers="virtual">
+		<method name="_thread_enter" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_thread_exit" qualifiers="virtual">
+		<method name="_thread_exit" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 			</description>
 		</method>
-		<method name="_validate" qualifiers="virtual const">
+		<method name="_validate" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="script" type="String" />
 			<param index="1" name="path" type="String" />
@@ -335,7 +365,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_validate_path" qualifiers="virtual const">
+		<method name="_validate_path" qualifiers="virtual required const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
@@ -357,17 +387,21 @@
 		</constant>
 		<constant name="LOOKUP_RESULT_CLASS_ENUM" value="6" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="7" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="7" enum="LookupResultType" deprecated="">
 		</constant>
 		<constant name="LOOKUP_RESULT_CLASS_ANNOTATION" value="8" enum="LookupResultType">
 		</constant>
-		<constant name="LOOKUP_RESULT_MAX" value="9" enum="LookupResultType">
+		<constant name="LOOKUP_RESULT_LOCAL_CONSTANT" value="9" enum="LookupResultType">
+		</constant>
+		<constant name="LOOKUP_RESULT_LOCAL_VARIABLE" value="10" enum="LookupResultType">
+		</constant>
+		<constant name="LOOKUP_RESULT_MAX" value="11" enum="LookupResultType">
 		</constant>
 		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
 			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
 		</constant>
 		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
 		</constant>
 		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
 			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).

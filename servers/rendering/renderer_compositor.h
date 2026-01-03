@@ -28,21 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_COMPOSITOR_H
-#define RENDERER_COMPOSITOR_H
+#pragma once
 
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/storage/camera_attributes_storage.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/particles_storage.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
-#include "servers/rendering_server.h"
 
 class RendererSceneRender;
 struct BlitToScreen {
@@ -91,26 +87,27 @@ public:
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
-	virtual void prepare_for_blitting_render_targets() = 0;
 	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
-	virtual void end_frame(bool p_swap_buffers) = 0;
+	virtual bool is_opengl() = 0;
+	virtual void gl_end_frame(bool p_swap_buffers) = 0;
+	virtual void end_frame(bool p_present) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
 	virtual double get_total_time() const = 0;
+	virtual bool can_create_resources_async() const = 0;
 
-	static bool is_low_end() { return low_end; };
+	static bool is_low_end() { return low_end; }
 	virtual bool is_xr_enabled() const;
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
-	virtual ~RendererCompositor() {}
+	virtual ~RendererCompositor();
 };
-
-#endif // RENDERER_COMPOSITOR_H

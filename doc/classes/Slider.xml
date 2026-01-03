@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
@@ -23,26 +23,46 @@
 		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders" default="false">
 			If [code]true[/code], the slider will display ticks for minimum and maximum values.
 		</member>
+		<member name="ticks_position" type="int" setter="set_ticks_position" getter="get_ticks_position" enum="Slider.TickPosition" default="0">
+			Sets the position of the ticks. See [enum TickPosition] for details.
+		</member>
 	</members>
 	<signals>
 		<signal name="drag_ended">
 			<param index="0" name="value_changed" type="bool" />
 			<description>
-				Emitted when dragging stops. If [param value_changed] is true, [member Range.value] is different from the value when you started the dragging.
+				Emitted when the grabber stops being dragged. If [param value_changed] is [code]true[/code], [member Range.value] is different from the value when the dragging was started.
 			</description>
 		</signal>
 		<signal name="drag_started">
 			<description>
-				Emitted when dragging is started.
+				Emitted when the grabber starts being dragged. This is emitted before the corresponding [signal Range.value_changed] signal.
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="TICK_POSITION_BOTTOM_RIGHT" value="0" enum="TickPosition">
+			Places the ticks at the bottom of the [HSlider], or right of the [VSlider].
+		</constant>
+		<constant name="TICK_POSITION_TOP_LEFT" value="1" enum="TickPosition">
+			Places the ticks at the top of the [HSlider], or left of the [VSlider].
+		</constant>
+		<constant name="TICK_POSITION_BOTH" value="2" enum="TickPosition">
+			Places the ticks at the both sides of the slider.
+		</constant>
+		<constant name="TICK_POSITION_CENTER" value="3" enum="TickPosition">
+			Places the ticks at the center of the slider.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
 		</theme_item>
 		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
 			Vertical or horizontal offset of the grabber.
+		</theme_item>
+		<theme_item name="tick_offset" data_type="constant" type="int" default="0">
+			Vertical or horizontal offset of the ticks. The offset is reversed for top or left ticks.
 		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
 			The texture for the grabber (the draggable element).

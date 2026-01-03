@@ -29,23 +29,23 @@
 /**************************************************************************/
 
 #include "audio_effect_compressor.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float threshold = Math::db_to_linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
-	float ratatcoef = exp(-1 / (0.00001f * sample_rate));
-	float ratrelcoef = exp(-1 / (0.5f * sample_rate));
+	float ratatcoef = std::exp(-1 / (0.00001f * sample_rate));
+	float ratrelcoef = std::exp(-1 / (0.5f * sample_rate));
 	float attime = base->attack_us / 1000000.0;
 	float reltime = base->release_ms / 1000.0;
-	float atcoef = exp(-1 / (attime * sample_rate));
-	float relcoef = exp(-1 / (reltime * sample_rate));
+	float atcoef = std::exp(-1 / (attime * sample_rate));
+	float relcoef = std::exp(-1 / (reltime * sample_rate));
 
 	float makeup = Math::db_to_linear(base->gain);
 
 	float mix = base->mix;
-	float gr_meter_decay = exp(1 / (1 * sample_rate));
+	float gr_meter_decay = std::exp(1 / (1 * sample_rate));
 
 	const AudioFrame *src = p_src_frames;
 
@@ -59,10 +59,10 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	for (int i = 0; i < p_frame_count; i++) {
 		AudioFrame s = src[i];
 		//convert to positive
-		s.l = Math::abs(s.l);
-		s.r = Math::abs(s.r);
+		s.left = Math::abs(s.left);
+		s.right = Math::abs(s.right);
 
-		float peak = MAX(s.l, s.r);
+		float peak = MAX(s.left, s.right);
 
 		float overdb = 2.08136898f * Math::linear_to_db(peak / threshold);
 
@@ -185,6 +185,9 @@ StringName AudioEffectCompressor::get_sidechain() const {
 }
 
 void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {

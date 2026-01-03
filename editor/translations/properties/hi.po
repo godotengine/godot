@@ -1,0 +1,6084 @@
+# Hindi translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Abhas Kumar Sinha <abhaskumarsinha@gmail.com>, 2017.
+# Suryansh5545 <suryanshpathak5545@gmail.com>, 2018, 2020.
+# Vikram1323 <vikram1323@gmail.com>, 2018.
+# vkubre <v@kubre.in>, 2019.
+# Abhay Patel <abhay111patel@gmail.com>, 2019.
+# Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
+# Devashishsingh98 <devashishsingh98@gmail.com>, 2019.
+# Shirious <sad3119823@gmail.com>, 2020, 2021.
+# Abhay Patel <Traumaticbean@protonmail.com>, 2020.
+# Bishwajeet Parhi <bishwajeet.techmaster@gmail.com>, 2020.
+# l4KKY <greenforcesave@gmail.com>, 2020.
+# harvinder rathor <harvinderr09@gmail.com>, 2021.
+# Sumanyu Aggarwal <sumanyu.code@gmail.com>, 2021.
+# Arin <upadhyay.arin@gmail.com>, 2022.
+# Anime Fanz <accc1431@gmail.com>, 2022.
+# "Rudra Harsh V.Singh" <rudraHarsh45@proton.me>, 2023.
+# Arpit T <devlinker.arptiw@gmail.com>, 2023.
+# Priyanshu Dutt <priyanshudutt720@gmail.com>, 2023.
+# VKing9 <vaibhavrathod2282@gmail.com>, 2024, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2025-12-16 18:00+0000\n"
+"Last-Translator: VKing9 <vaibhavrathod2282@gmail.com>\n"
+"Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/hi/>\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15.1-dev\n"
+
+msgid "Application"
+msgstr "अनुप्रयोग"
+
+msgid "Config"
+msgstr "कॉन्फ़िग"
+
+msgid "Name"
+msgstr "नाम"
+
+msgid "Name Localized"
+msgstr "स्थानीयकृत नाम"
+
+msgid "Description"
+msgstr "विवरण"
+
+msgid "Version"
+msgstr "संस्करण"
+
+msgid "Run"
+msgstr "दौड़ना"
+
+msgid "Main Scene"
+msgstr "मुख्य दृश्य"
+
+msgid "Disable stdout"
+msgstr "\"stdout\" बंद करे"
+
+msgid "Disable stderr"
+msgstr "\"stderr\" बंद करे"
+
+msgid "Print Header"
+msgstr "हेडर छपाई"
+
+msgid "Enable Alt Space Menu"
+msgstr "\"Alt Space Menu\" चालू करे"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "छिपी हुई प्रोजेक्ट डेटा निर्देशिका का उपयोग करें"
+
+msgid "Use Custom User Dir"
+msgstr "खुदकी बनी हुई उपयोगकर्ता डायरेक्टरी का उपयोग करें"
+
+msgid "Custom User Dir Name"
+msgstr "खुदसे बनाई हुई उपयोगकर्ता का नाम"
+
+msgid "Project Settings Override"
+msgstr "प्रोजेक्ट सेटिंग्स ओवरराइड"
+
+msgid "Main Loop Type"
+msgstr "मुख्य लूप प्रकार"
+
+msgid "Auto Accept Quit"
+msgstr "स्वतः स्वीकार बंद करे"
+
+msgid "Quit on Go Back"
+msgstr "बंद करके पीछे जाओ"
+
+msgid "Accessibility"
+msgstr "सुलभता"
+
+msgid "General"
+msgstr "सामान्य"
+
+msgid "Accessibility Support"
+msgstr "सुलभता सहायता"
+
+msgid "Updates per Second"
+msgstr "प्रति सेकंड अपडेट"
+
+msgid "Display"
+msgstr "प्रकाशित छवि"
+
+msgid "Window"
+msgstr "खिड़की"
+
+msgid "Size"
+msgstr "माप"
+
+msgid "Viewport Width"
+msgstr "दृश्यद्वार चौड़ाई"
+
+msgid "Viewport Height"
+msgstr "दृश्यद्वार ऊंचाई"
+
+msgid "Mode"
+msgstr "प्रकार"
+
+msgid "Initial Position Type"
+msgstr "प्रारंभिक स्थिति प्रकार"
+
+msgid "Initial Position"
+msgstr "प्रारंभिक स्थिति"
+
+msgid "Initial Screen"
+msgstr "प्रारंभिक पटल"
+
+msgid "Resizable"
+msgstr "आकार बदलने योग्य"
+
+msgid "Borderless"
+msgstr "अनवधि"
+
+msgid "Always on Top"
+msgstr "हमेशा ऊपर"
+
+msgid "Transparent"
+msgstr "पारदर्शी"
+
+msgid "Extend to Title"
+msgstr "शीर्षक तक बढ़ाएँ"
+
+msgid "No Focus"
+msgstr "भ्रमित"
+
+msgid "Sharp Corners"
+msgstr "नुकीले कोने"
+
+msgid "Minimize Disabled"
+msgstr "छोटा करना निष्क्रिय"
+
+msgid "Maximize Disabled"
+msgstr "मैक्सिमाइज़ अक्षम"
+
+msgid "Window Width Override"
+msgstr "विंडो की चौड़ाई बदलना"
+
+msgid "Window Height Override"
+msgstr "विंडो की ऊँचाई बदलना"
+
+msgid "Energy Saving"
+msgstr "ऊर्जा बचत"
+
+msgid "Keep Screen On"
+msgstr "स्क्रीन को चालू रखें"
+
+msgid "Animation"
+msgstr "चलचित्रण"
+
+msgid "Warnings"
+msgstr "चेतावनियाँ"
+
+msgid "Check Invalid Track Paths"
+msgstr "अमान्य ट्रैक पथ जांचें"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "एंगल इंटरपोलेशन टाइप के विरोध की जाँच करें"
+
+msgid "Compatibility"
+msgstr "अनुकूलता"
+
+msgid "Audio"
+msgstr "ऑडियो"
+
+msgid "Buses"
+msgstr "ऑडियो बस"
+
+msgid "Default Bus Layout"
+msgstr "मूल बस व्यवस्था"
+
+msgid "Default Playback Type"
+msgstr "मूल प्लेबैक प्रकार"
+
+msgid "Text to Speech"
+msgstr "पाठ से वाणी"
+
+msgid "2D Panning Strength"
+msgstr "2D पैनिंग की ताकत"
+
+msgid "3D Panning Strength"
+msgstr "3D पैनिंग की ताकत"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "सेशन श्रेणी"
+
+msgid "Subwindows"
+msgstr "छोटे विंडो"
+
+msgid "Embed Subwindows"
+msgstr "छोटी विंडो जोड़ो"
+
+msgid "Frame Pacing"
+msgstr "फ्रेम समन्वय"
+
+msgid "Android"
+msgstr "एंड्रॉयड"
+
+msgid "Enable Frame Pacing"
+msgstr "फ्रेम पेइसिंग सक्षम करें"
+
+msgid "Swappy Mode"
+msgstr "स्वैपी मोड"
+
+msgid "Physics"
+msgstr "फिजिक्स"
+
+msgid "2D"
+msgstr "2डी"
+
+msgid "Run on Separate Thread"
+msgstr "अलग थ्रेड पर चलाएँ"
+
+msgid "3D"
+msgstr "3 डी"
+
+msgid "Stretch"
+msgstr "खींचना"
+
+msgid "Aspect"
+msgstr "पहलू"
+
+msgid "Scale"
+msgstr "स्केल"
+
+msgid "Scale Mode"
+msgstr "स्केल मोड"
+
+msgid "Debug"
+msgstr "डीबग करें"
+
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgid "Profiler"
+msgstr "प्रोफाइलर"
+
+msgid "Max Functions"
+msgstr "अधिकतम फ़ंक्शन"
+
+msgid "Max Timestamp Query Elements"
+msgstr "अधिकतम टाइमस्टैम्प क्वेरी तत्व"
+
+msgid "Compression"
+msgstr "कंप्रेशन"
+
+msgid "Formats"
+msgstr "फ़ॉर्मैट्स"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "दूरस्थ मिलान"
+
+msgid "Compression Level"
+msgstr "संकुचन स्तर"
+
+msgid "Window Log Size"
+msgstr "विंडो लॉग आकार"
+
+msgid "Zlib"
+msgstr "Zstd"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "क्रैश हैंडलर"
+
+msgid "Message"
+msgstr "मैसेज"
+
+msgid "Rendering"
+msgstr "रेंडरिंग"
+
+msgid "Occlusion Culling"
+msgstr "ओक्लूजन कलिंग"
+
+msgid "BVH Build Quality"
+msgstr "BVH निर्माण गुणवत्ता"
+
+msgid "Jitter Projection"
+msgstr "अनियमित प्रक्षेपण"
+
+msgid "Internationalization"
+msgstr "अंतरराष्ट्रीयकरण"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "लेआउट दिशा को दाएं से बाएं बलपूर्वक बदलें"
+
+msgid "Root Node Layout Direction"
+msgstr "रूट नोड लेआउट दिशा"
+
+msgid "Root Node Auto Translate"
+msgstr "रूट नोड स्वचालित अनुवाद"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Timers"
+msgstr "टाइमर्स"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "वृद्धिशील खोज अधिकतम अंतराल Msec"
+
+msgid "Tooltip Delay (sec)"
+msgstr "टूलटिप विलंब (सेकंड)"
+
+msgid "Common"
+msgstr "साधारण"
+
+msgid "Snap Controls to Pixels"
+msgstr "नियंत्रणों को पिक्सल पर स्नैप करें"
+
+msgid "Fonts"
+msgstr "लिपि"
+
+msgid "Dynamic Fonts"
+msgstr "गतिशील लिपि"
+
+msgid "Use Oversampling"
+msgstr "ओवरसैंपलिंग का उपयोग करें"
+
+msgid "Rendering Device"
+msgstr "रेंडरिंग डिवाइस"
+
+msgid "V-Sync"
+msgstr "वि-सिंक"
+
+msgid "Frame Queue Size"
+msgstr "फ़्रेम कतार आकार"
+
+msgid "Swapchain Image Count"
+msgstr "स्वैपचैन छवि गणना"
+
+msgid "Staging Buffer"
+msgstr "स्टेजिंग बफ़र"
+
+msgid "Block Size (KB)"
+msgstr "ब्लॉक आकार (KB)"
+
+msgid "Max Size (MB)"
+msgstr "अधिकतम आकार (MB)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "टेक्सचर अपलोड क्षेत्र आकार Px"
+
+msgid "Texture Download Region Size Px"
+msgstr "बुनावट डाउनलोड क्षेत्र आकार Px"
+
+msgid "Pipeline Cache"
+msgstr "पाइपलाइन कैश"
+
+msgid "Enable"
+msgstr "सक्रिय करे"
+
+msgid "Save Chunk Size (MB)"
+msgstr "चंक आकार सहेजें (MB)"
+
+msgid "Vulkan"
+msgstr "वुल्कन"
+
+msgid "Max Descriptors per Pool"
+msgstr "प्रति पूल अधिकतम विवरण"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Agility SDK Version"
+msgstr "चपलता SDK संस्करण"
+
+msgid "Textures"
+msgstr "बनावटें"
+
+msgid "Canvas Textures"
+msgstr "कैनवास बनावटें"
+
+msgid "Default Texture Filter"
+msgstr "प्रायिक बुनावट फिल्टर"
+
+msgid "Default Texture Repeat"
+msgstr "डिफ़ॉल्ट बनावट दोहराएँ"
+
+msgid "Collada"
+msgstr "संग्रह"
+
+msgid "Use Ambient"
+msgstr "परिवेश का प्रयोग करें"
+
+msgid "Input Devices"
+msgstr "आगत यंत्र"
+
+msgid "Pointing"
+msgstr "संकेत"
+
+msgid "Enable Long Press as Right Click"
+msgstr "दायाँ क्लिक के रूप में लॉन्ग प्रेस सक्षम करें"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "पैन और स्केल जेस्चर सक्षम करें"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "रोटरी इनपुट स्क्रॉल अक्ष"
+
+msgid "Override Volume Buttons"
+msgstr "वॉल्यूम बटन ओवरराइड करें"
+
+msgid "Disable Scroll Deadzone"
+msgstr "स्क्रॉल डेडज़ोन निष्क्रिय करे"
+
+msgid "Navigation"
+msgstr "मार्गदर्शन"
+
+msgid "World"
+msgstr "लोक"
+
+msgid "Map Use Async Iterations"
+msgstr "मानचित्र उपयोग Async पुनरावृत्तियों"
+
+msgid "Region Use Async Iterations"
+msgstr "क्षेत्र उपयोग असिंक्रोनस पुनरावृत्तियाँ"
+
+msgid "Avoidance"
+msgstr "परिहार"
+
+msgid "Thread Model"
+msgstr "धागा मॉडल"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "एकाधिक थ्रेड्स का उपयोग न करें"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "उच्च प्राथमिकता वाले थ्रेड का उपयोग न करें"
+
+msgid "Pathfinding"
+msgstr "पथ खोज"
+
+msgid "Max Threads"
+msgstr "अधिकतम धागे"
+
+msgid "Baking"
+msgstr "सेंकना"
+
+msgid "Use Crash Prevention Checks"
+msgstr "क्रैश रोकथाम जांच का उपयोग करें"
+
+msgid "Baking Use Multiple Threads"
+msgstr "सेकने में कई धागों का उपयोग करें"
+
+msgid "Baking Use High Priority Threads"
+msgstr "बेकिंग उच्च प्राथमिकता वाले थ्रेड का उपयोग करें"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "नवमेश एज मर्ज त्रुटियाँ"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "नेवमेश सेल आकार बेमेल"
+
+msgid "Low Processor Usage Mode"
+msgstr "कम प्रोसेसर प्रयोग मोड"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "कम प्रोसेसर उपयोग मोड स्लीप (µsec)"
+
+msgid "Delta Smoothing"
+msgstr "डेल्टा स्मूथिंग"
+
+msgid "Print Error Messages"
+msgstr "प्रिंट एरर संदेश"
+
+msgid "Print to stdout"
+msgstr "स्टैंडआउट पर प्रिंट करें"
+
+msgid "Physics Ticks per Second"
+msgstr "भौतिकी प्रति सेकंड टिक्स"
+
+msgid "Max Physics Steps per Frame"
+msgstr "प्रति फ्रेम अधिकतम भौतिकी चरण"
+
+msgid "Max FPS"
+msgstr "अधिकतम FPS"
+
+msgid "Time Scale"
+msgstr "समय पैमाना"
+
+msgid "Physics Jitter Fix"
+msgstr "भौतिक जिटर फिक्स"
+
+msgid "Mouse Mode"
+msgstr "माउस मोड"
+
+msgid "Use Accumulated Input"
+msgstr "संचित इनपुट का प्रयोग करें"
+
+msgid "Emulate Mouse From Touch"
+msgstr "स्पर्श से माउस का अनुकरण करें"
+
+msgid "Emulate Touch From Mouse"
+msgstr "माउस से स्पर्श का अनुकरण करें"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "पूर्ववत 'केवल दबाने' का तरीका"
+
+msgid "Sensors"
+msgstr "सेंसर"
+
+msgid "Enable Accelerometer"
+msgstr "एक्सेलेरोमीटर सक्षम करें"
+
+msgid "Enable Gravity"
+msgstr "गुरुत्वाकर्षण सक्रिय करे"
+
+msgid "Enable Gyroscope"
+msgstr "जाइरोस्कोप सक्रिय करे"
+
+msgid "Enable Magnetometer"
+msgstr "मैग्नेटोमीटर सक्षम करें"
+
+msgid "Device"
+msgstr "उपकरण"
+
+msgid "Window ID"
+msgstr "विंडो ID"
+
+msgid "Command or Control Autoremap"
+msgstr "कमांड या कंट्रोल ऑटोरीमैप"
+
+msgid "Alt Pressed"
+msgstr "Alt दबाया गया"
+
+msgid "Shift Pressed"
+msgstr "shift दबाया गया"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl दबाया गया"
+
+msgid "Meta Pressed"
+msgstr "Meta दबाया गया"
+
+msgid "Pressed"
+msgstr "प्रीसेट"
+
+msgid "Keycode"
+msgstr "कुंजी-कोड"
+
+msgid "Physical Keycode"
+msgstr "भौतिक कुंजीकोड"
+
+msgid "Key Label"
+msgstr "कुंजी लेबल"
+
+msgid "Unicode"
+msgstr "यूनिकोड"
+
+msgid "Location"
+msgstr "स्थान"
+
+msgid "Echo"
+msgstr "इको"
+
+msgid "Button Mask"
+msgstr "बटन मास्क"
+
+msgid "Position"
+msgstr "स्थान"
+
+msgid "Global Position"
+msgstr "वैश्विक स्थिति"
+
+msgid "Factor"
+msgstr "फैक्टर"
+
+msgid "Button Index"
+msgstr "बटन अनुक्रमणिका"
+
+msgid "Canceled"
+msgstr "रद्द किया गया"
+
+msgid "Double Click"
+msgstr "दो बार दबाएं"
+
+msgid "Tilt"
+msgstr "टिल्ट"
+
+msgid "Pressure"
+msgstr "प्रेशर"
+
+msgid "Pen Inverted"
+msgstr "पेन उल्टा"
+
+msgid "Relative"
+msgstr "सापेक्ष"
+
+msgid "Screen Relative"
+msgstr "स्क्रीन सापेक्ष"
+
+msgid "Velocity"
+msgstr "वेग"
+
+msgid "Screen Velocity"
+msgstr "स्क्रीन वेग"
+
+msgid "Axis"
+msgstr "अक्ष"
+
+msgid "Axis Value"
+msgstr "एक्सिस वैल्यू"
+
+msgid "Index"
+msgstr "इंडेक्स"
+
+msgid "Double Tap"
+msgstr "दो बार टैप"
+
+msgid "Action"
+msgstr "कार्य"
+
+msgid "Strength"
+msgstr "शक्ति"
+
+msgid "Event Index"
+msgstr "घटना सूचकांक"
+
+msgid "Delta"
+msgstr "डेल्टा"
+
+msgid "Channel"
+msgstr "चैनल"
+
+msgid "Pitch"
+msgstr "पिच"
+
+msgid "Instrument"
+msgstr "साधन"
+
+msgid "Controller Number"
+msgstr "नियंत्रक संख्या"
+
+msgid "Controller Value"
+msgstr "नियंत्रक मान"
+
+msgid "Shortcut"
+msgstr "संक्षिप्त-रूप"
+
+msgid "Events"
+msgstr "घटनाएँ"
+
+msgid "Include Navigational"
+msgstr "नेविगेशनल शामिल करें"
+
+msgid "Include Hidden"
+msgstr "छिपा हुआ शामिल करें"
+
+msgid "Big Endian"
+msgstr "बड़े एंडियन"
+
+msgid "Blocking Mode Enabled"
+msgstr "अवरुद्ध मोड सक्रिय"
+
+msgid "Read Chunk Size"
+msgstr "चंक आकार पढ़ें"
+
+msgid "Data"
+msgstr "डेटा"
+
+msgid "Object ID"
+msgstr "वस्तु आईडी"
+
+msgid "Encode Buffer Max Size"
+msgstr "एनकोड बफर अधिकतम आकार"
+
+msgid "Input Buffer Max Size"
+msgstr "इनपुट बफर अधिकतम आकार"
+
+msgid "Output Buffer Max Size"
+msgstr "आउटपुट बफर अधिकतम आकार"
+
+msgid "Resource"
+msgstr "संसाधन"
+
+msgid "Local to Scene"
+msgstr "लोकल से दृश्य"
+
+msgid "Path"
+msgstr "पथ"
+
+msgid "Data Array"
+msgstr "डेटा ऐरे"
+
+msgid "Max Pending Connections"
+msgstr "अधिकतम लंबित कनेक्शन"
+
+msgid "Neighbor Filter Enabled"
+msgstr "पड़ोसी फ़िल्टर सक्षम"
+
+msgid "Region"
+msgstr "क्षेत्र"
+
+msgid "Offset"
+msgstr "ओफ़्सेट"
+
+msgid "Cell Size"
+msgstr "सेल का आकार"
+
+msgid "Cell Shape"
+msgstr "कोशिका का आकार"
+
+msgid "Jumping Enabled"
+msgstr "कूदना सक्षम"
+
+msgid "Default Compute Heuristic"
+msgstr "प्रायिक कंप्यूट अनुमानी"
+
+msgid "Default Estimate Heuristic"
+msgstr "डिफ़ॉल्ट अनुमान अनुमानी"
+
+msgid "Diagonal Mode"
+msgstr "विकर्ण मोड"
+
+msgid "Seed"
+msgstr "बीज"
+
+msgid "State"
+msgstr "स्थिति"
+
+msgid "Memory"
+msgstr "स्मृति"
+
+msgid "Limits"
+msgstr "सीमाएं"
+
+msgid "Message Queue"
+msgstr "संदेश कतार"
+
+msgid "Max Steps"
+msgstr "अधिकतम चरण"
+
+msgid "Network"
+msgstr "संजाल"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "कनेक्ट टाइमआउट सेकंड"
+
+msgid "Packet Peer Stream"
+msgstr "पैकेट पीयर स्ट्रीम"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "अधिकतम बफर (2 की शक्ति)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Certificate Bundle Override"
+msgstr "प्रमाणपत्र बंडल ओवरराइड"
+
+msgid "Threading"
+msgstr "सूत्रण"
+
+msgid "Worker Pool"
+msgstr "कार्यकर्ता पूल"
+
+msgid "Low Priority Thread Ratio"
+msgstr "कम प्राथमिकता थ्रेड अनुपात"
+
+msgid "Locale"
+msgstr "लोकेल"
+
+msgid "Test"
+msgstr "टेस्ट"
+
+msgid "Fallback"
+msgstr "फ़ॉलबैक"
+
+msgid "Pseudolocalization"
+msgstr "छद्म स्थानीयकरण"
+
+msgid "Use Pseudolocalization"
+msgstr "छद्मस्थानीकरण का उपयोग करें"
+
+msgid "Double Vowels"
+msgstr "दोहरा स्वर"
+
+msgid "Fake BiDi"
+msgstr "नकली BiDi"
+
+msgid "Override"
+msgstr "ओवराईड"
+
+msgid "Expansion Ratio"
+msgstr "विस्तार अनुपात"
+
+msgid "Prefix"
+msgstr "उपसर्ग"
+
+msgid "Suffix"
+msgstr "प्रत्यय"
+
+msgid "Skip Placeholders"
+msgstr "प्लेसहोल्डर छोड़ें"
+
+msgid "Rotation"
+msgstr "चक्कर"
+
+msgid "Value"
+msgstr "मूल्य"
+
+msgid "Arg Count"
+msgstr "तर्क गणना"
+
+msgid "Args"
+msgstr "तर्क"
+
+msgid "Type"
+msgstr "प्रकार"
+
+msgid "In Handle"
+msgstr "हैंडल में"
+
+msgid "Out Handle"
+msgstr "आउट हैंडल"
+
+msgid "Handle Mode"
+msgstr "हैंडल मोड"
+
+msgid "Stream"
+msgstr "धारा"
+
+msgid "Start Offset"
+msgstr "ऑफसेट प्रारंभ करें"
+
+msgid "End Offset"
+msgstr "अंत ऑफसेट"
+
+msgid "Easing"
+msgstr "आसान"
+
+msgid "Asset Library"
+msgstr "अस्सेट संग्रह"
+
+msgid "Available URLs"
+msgstr "उपलब्ध URLs"
+
+msgid "Debug Adapter"
+msgstr "डीबग एडाप्टर"
+
+msgid "Remote Port"
+msgstr "रिमोट पोर्ट"
+
+msgid "Request Timeout"
+msgstr "अनुरोध समय समाप्त"
+
+msgid "Sync Breakpoints"
+msgstr "सिंक ब्रेकपॉइंट"
+
+msgid "Title"
+msgstr "शीर्षक"
+
+msgid "Distraction Free Mode"
+msgstr "व्याकुलता मुक्त मोड"
+
+msgid "Movie Maker Enabled"
+msgstr "मूवी मेकर सक्रिय"
+
+msgid "Custom Template"
+msgstr "कस्टम नमूना"
+
+msgid "Release"
+msgstr "मुक्ति"
+
+msgid "Architectures"
+msgstr "वास्तुकला"
+
+msgid "App Store Team ID"
+msgstr "App Store टीम आईडी"
+
+msgid "Export Method Debug"
+msgstr "निर्यात मेथड डिबग"
+
+msgid "Code Sign Identity Debug"
+msgstr "कोड साइन पहचान डीबग"
+
+msgid "Code Sign Identity Release"
+msgstr "कोड साइन आइडेंटिटी प्रकाशन"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "प्रोविज़निंग प्रोफ़ाइल UUID डीबग"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "प्रोविज़निंग प्रोफ़ाइल UUID रिलीज़"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "वर्णन के लिए प्रावधान निर्दिष्टकर्ता डीबग"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "प्रावधान प्रोफ़ाइल निर्दिष्टकर्ता – प्रकाशन"
+
+msgid "Export Method Release"
+msgstr "निर्यात मेथड प्रकाशन"
+
+msgid "Bundle Identifier"
+msgstr "बंडल पहचानकर्ता"
+
+msgid "Signature"
+msgstr "हस्ताक्षर"
+
+msgid "Short Version"
+msgstr "लघु संस्करण"
+
+msgid "Additional Plist Content"
+msgstr "अतिरिक्त Plist सामग्री"
+
+msgid "Icon Interpolation"
+msgstr "दृश्यचिन्ह इंटरपोलेशन"
+
+msgid "Export Project Only"
+msgstr "सिर्फ निर्यात योजना"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "पुरानी निर्यात फ़ाइलें बिना शर्त हटाएं"
+
+msgid "Plugins"
+msgstr "प्लगइन्स"
+
+msgid "Entitlements"
+msgstr "पात्रता"
+
+msgid "Increased Memory Limit"
+msgstr "मेमोरी सीमा में वृद्धि"
+
+msgid "Game Center"
+msgstr "खेल केंद्र"
+
+msgid "Push Notifications"
+msgstr "पुश नोटिफिकेशन"
+
+msgid "Additional"
+msgstr "अतिरिक्त"
+
+msgid "Capabilities"
+msgstr "क्षमता"
+
+msgid "Access Wi-Fi"
+msgstr "एक्सेस Wi-FI"
+
+msgid "Performance Gaming Tier"
+msgstr "प्रदर्शन गेमिंग टियर"
+
+msgid "Performance A 12"
+msgstr "प्रदर्शन ए 12"
+
+msgid "Shader Baker"
+msgstr "शेडर बेकर"
+
+msgid "Enabled"
+msgstr "सक्रिय"
+
+msgid "User Data"
+msgstr "उपयोगकर्ता डेटा"
+
+msgid "Accessible From Files App"
+msgstr "फ़ाइल ऐप से सुलभ"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "आईट्यून्स शेयरिंग से सुलभ"
+
+msgid "Privacy"
+msgstr "गोपनीयता"
+
+msgid "Camera Usage Description"
+msgstr "कैमरा उपयोग विवरण"
+
+msgid "Camera Usage Description Localized"
+msgstr "कैमरा उपयोग विवरण स्थानीयकृत"
+
+msgid "Microphone Usage Description"
+msgstr "माइक्रोफोन उपयोग विवरण"
+
+msgid "Microphone Usage Description Localized"
+msgstr "माइक्रोफोन उपयोग विवरण स्थानीयकृत"
+
+msgid "Photolibrary Usage Description"
+msgstr "चित्र पुस्तकालय उपयोग विवरण"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "चित्र पुस्तकालय उपयोग विवरण स्थानीयकृत"
+
+msgid "Tracking Enabled"
+msgstr "ट्रैकिंग सक्रिय"
+
+msgid "Tracking Domains"
+msgstr "ट्रैकिंग डोमेन"
+
+msgid "Icons"
+msgstr "कई चिह्न"
+
+msgid "Icon 1024 X 1024"
+msgstr "दृश्यचिन्ह 1024 X 1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "दृश्यचिन्ह 1024 X 1024 डार्क"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "दृश्यचिन्ह 1024 X 1024 टिंटेड"
+
+msgid "Export Console Wrapper"
+msgstr "कंसोल रैपर निर्यात करें"
+
+msgid "Binary Format"
+msgstr "बाइनरी फ़ोर्मैट"
+
+msgid "Embed PCK"
+msgstr "PCK एंबेड करें"
+
+msgid "Texture Format"
+msgstr "बुनावट फ़ोर्मैट"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
+msgid "Export Path"
+msgstr "निर्यात पथ"
+
+msgid "Label"
+msgstr "नाम"
+
+msgid "Read Only"
+msgstr "केवल पढ़ने के लिए"
+
+msgid "Flat"
+msgstr "समतल"
+
+msgid "Hide Slider"
+msgstr "स्लाइडर छिपाएँ"
+
+msgid "Editing Integer"
+msgstr "पूर्णांक का संपादन"
+
+msgid "Zoom"
+msgstr "ज़ूम"
+
+msgid "Retarget"
+msgstr "पुनर्लक्षित"
+
+msgid "Bone Renamer"
+msgstr "हड्डी पुन: नामकरण"
+
+msgid "Rename Bones"
+msgstr "हड्डियों नाम बदली"
+
+msgid "Unique Node"
+msgstr "अनोखा नोड"
+
+msgid "Make Unique"
+msgstr "अद्वितीय बनाओ"
+
+msgid "Skeleton Name"
+msgstr "कंकाल का नाम"
+
+msgid "Rest Fixer"
+msgstr "बाकी फिक्सर"
+
+msgid "Apply Node Transforms"
+msgstr "नोड ट्रांसफ़ॉर्म लागू करें"
+
+msgid "Normalize Position Tracks"
+msgstr "सामान्य स्थिति ट्रैक"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "आयात के बाद सभी अस्थि मुद्राओं को रीसेट करें"
+
+msgid "Retarget Method"
+msgstr "पुनर्लक्ष्य मेथड"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "बचे हुए पर ग्लोबल रेस्ट बनाए रखें"
+
+msgid "Use Global Pose"
+msgstr "वैश्विक मुद्रा उपयोग"
+
+msgid "Original Skeleton Name"
+msgstr "मूल कंकाल का नाम"
+
+msgid "Fix Silhouette"
+msgstr "सिल्हूट ठीक करें"
+
+msgid "Filter"
+msgstr "फिल्टर"
+
+msgid "Threshold"
+msgstr "सीमा"
+
+msgid "Base Height Adjustment"
+msgstr "आधार ऊंचाई समायोजन"
+
+msgid "Remove Tracks"
+msgstr "ट्रैक निकालें"
+
+msgid "Except Bone Transform"
+msgstr "हड्डी परिवर्तन को छोड़कर"
+
+msgid "Unimportant Positions"
+msgstr "अप्रमुख स्थितियाँ"
+
+msgid "Unmapped Bones"
+msgstr "अनमैप्ड हड्डियां"
+
+msgid "Generate Tangents"
+msgstr "टैन्जेंट उत्पन्न करें"
+
+msgid "Generate LODs"
+msgstr "LODs उत्पन्न करें"
+
+msgid "Generate Shadow Mesh"
+msgstr "छाया मेश उत्पन्न करें"
+
+msgid "Generate Lightmap UV2"
+msgstr "लाइटमैप UV2 उत्पन्न करना"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "लाइटमैप UV2 टेक्सेल आकार उत्पन्न करें"
+
+msgid "Scale Mesh"
+msgstr "स्केल मेष"
+
+msgid "Offset Mesh"
+msgstr "ऑफसेट मेश"
+
+msgid "Force Disable Mesh Compression"
+msgstr "मेश संपीड़न को जबरन निष्क्रिय करे"
+
+msgid "Node"
+msgstr "नोड"
+
+msgid "Node Type"
+msgstr "नोड प्ररूप"
+
+msgid "Script"
+msgstr "लिपि"
+
+msgid "Import"
+msgstr "आयात"
+
+msgid "Skip Import"
+msgstr "आयात छोड़ें"
+
+msgid "Generate"
+msgstr "उत्पन्न करना"
+
+msgid "NavMesh"
+msgstr "नेवमेश (NavMesh)"
+
+msgid "Body Type"
+msgstr "बॉडी प्ररूप"
+
+msgid "Shape Type"
+msgstr "आकार प्ररूप"
+
+msgid "Physics Material Override"
+msgstr "भौतिकी सामग्री ओवरराइड"
+
+msgid "Layer"
+msgstr "परत"
+
+msgid "Mask"
+msgstr "मुखौटा"
+
+msgid "Mesh Instance"
+msgstr "मेश इनस्टन्स"
+
+msgid "Layers"
+msgstr "परतें"
+
+msgid "Visibility Range Begin"
+msgstr "दृश्यता सीमा प्रारंभ"
+
+msgid "Visibility Range Begin Margin"
+msgstr "दृश्यता सीमा आरंभ मार्जिन"
+
+msgid "Visibility Range End"
+msgstr "दृश्यता सीमा समाप्त"
+
+msgid "Visibility Range End Margin"
+msgstr "दृश्यता रेंज समाप्त मार्जिन"
+
+msgid "Visibility Range Fade Mode"
+msgstr "दृश्यता सीमा फेड मोड"
+
+msgid "Cast Shadow"
+msgstr "छाया डालें"
+
+msgid "Decomposition"
+msgstr "वियोजन"
+
+msgid "Advanced"
+msgstr "अग्रवर्ती"
+
+msgid "Precision"
+msgstr "शुद्धता"
+
+msgid "Max Concavity"
+msgstr "अधिकतम अवतलता"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "सममिति समतल क्लिपिंग पूर्वाग्रह"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "क्रांति अक्ष क्लिपिंग पूर्वाग्रह"
+
+msgid "Min Volume per Convex Hull"
+msgstr "प्रति उत्तल आवरण न्यूनतम आयतन"
+
+msgid "Resolution"
+msgstr "रिज़ॉल्यूशन"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "प्रति उत्तल आवरण अधिकतम शीर्षों की संख्या"
+
+msgid "Plane Downsampling"
+msgstr "प्लेन डाउनसैंपलिंग"
+
+msgid "Convexhull Downsampling"
+msgstr "उत्तल-पतवार डाउनसैंपलिंग"
+
+msgid "Normalize Mesh"
+msgstr "मेष को सामान्य करें"
+
+msgid "Convexhull Approximation"
+msgstr "उत्तल-पतवार सन्निकटन"
+
+msgid "Max Convex Hulls"
+msgstr "अधिकतम उत्तल हल्स"
+
+msgid "Project Hull Vertices"
+msgstr "योजना हल वर्टेक्स"
+
+msgid "Primitive"
+msgstr "प्राचीन"
+
+msgid "Height"
+msgstr "ऊंचाई"
+
+msgid "Radius"
+msgstr "त्रिज्या"
+
+msgid "Occluder"
+msgstr "अवरोधक"
+
+msgid "Simplification Distance"
+msgstr "सरलीकरण दूरी"
+
+msgid "Save to File"
+msgstr "नत्थी में सहेजें"
+
+msgid "Lightmap UV"
+msgstr "लाइटमैप UV"
+
+msgid "LODs"
+msgstr "LODs"
+
+msgid "Normal Merge Angle"
+msgstr "सामान्य विलय कोण"
+
+msgid "Use External"
+msgstr "बाहरी उपयोग"
+
+msgid "Loop Mode"
+msgstr "लूप मोड"
+
+msgid "Keep Custom Tracks"
+msgstr "कस्टम ट्रैक रखें"
+
+msgid "Slices"
+msgstr "भाग"
+
+msgid "Amount"
+msgstr "मात्रा"
+
+msgid "Optimizer"
+msgstr "अनुकूलक"
+
+msgid "Max Velocity Error"
+msgstr "अधिकतम वेग त्रुटि"
+
+msgid "Max Angular Error"
+msgstr "अधिकतम कोणीय त्रुटि"
+
+msgid "Max Precision Error"
+msgstr "अधिकतम परिशुद्धता त्रुटि"
+
+msgid "Page Size"
+msgstr "पृष्ठ: माप"
+
+msgid "Import Tracks"
+msgstr "आयात ट्रैक"
+
+msgid "Rest Pose"
+msgstr "विश्राम मुद्रा"
+
+msgid "Load Pose"
+msgstr "मुद्रा लोड कीजिये"
+
+msgid "External Animation Library"
+msgstr "बाहरी एनिमेशन संग्रह"
+
+msgid "Selected Animation"
+msgstr "चयनित एनीमेशन"
+
+msgid "Selected Timestamp"
+msgstr "चयनित समयसूचक"
+
+msgid "Bone Map"
+msgstr "हड्डी मानचित्र"
+
+msgid "Nodes"
+msgstr "नोड्स"
+
+msgid "Root Type"
+msgstr "रूट प्रकार"
+
+msgid "Root Name"
+msgstr "रूट नाम"
+
+msgid "Root Script"
+msgstr "रूट लिपि"
+
+msgid "Apply Root Scale"
+msgstr "रूट स्केल लागू करें"
+
+msgid "Root Scale"
+msgstr "रूट स्केल"
+
+msgid "Import as Skeleton Bones"
+msgstr "कंकाल की हड्डियों के रूप में आयात करें"
+
+msgid "Use Name Suffixes"
+msgstr "नाम प्रत्ययों का उपयोग करें"
+
+msgid "Use Node Type Suffixes"
+msgstr "नोड प्रकार प्रत्यय का उपयोग करें"
+
+msgid "Meshes"
+msgstr "मेश"
+
+msgid "Ensure Tangents"
+msgstr "स्पर्शरेखा सुनिश्चित करें"
+
+msgid "Create Shadow Meshes"
+msgstr "छाया मेश बनाइये"
+
+msgid "Light Baking"
+msgstr "प्रकाश सेंकना"
+
+msgid "Lightmap Texel Size"
+msgstr "लाइटमैप टेक्सेल आकार"
+
+msgid "Force Disable Compression"
+msgstr "संपीड़न को बलपूर्वक निष्क्रिय करे"
+
+msgid "Skins"
+msgstr "त्वचा"
+
+msgid "Use Named Skins"
+msgstr "नाम वाली स्किन का उपयोग करें"
+
+msgid "FPS"
+msgstr "एफपीएस"
+
+msgid "Trimming"
+msgstr "ट्रिमिंग"
+
+msgid "Remove Immutable Tracks"
+msgstr "अपरिवर्तनीय ट्रैक हटाएँ"
+
+msgid "Import Rest as Reset"
+msgstr "रेस्ट को रीसेट के रूप में आयात करें"
+
+msgid "Import Script"
+msgstr "आयात लिपि"
+
+msgid "Materials"
+msgstr "सामग्री"
+
+msgid "Extract"
+msgstr "निकालना"
+
+msgid "Extract Format"
+msgstr "फ़ोर्मैट निकालें"
+
+msgid "Extract Path"
+msgstr "पथ निकालें"
+
+msgid "Antialiasing"
+msgstr "एन्टीलियासिंग"
+
+msgid "Generate Mipmaps"
+msgstr "मिपमैप जनरेट करें"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "एम्बेडेड बिटमैप्स को निष्क्रिय करे"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "मल्टीचैनल हस्ताक्षरित दूरी फ़ील्ड"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF पिक्सेल रेंज"
+
+msgid "MSDF Size"
+msgstr "MSDF आकार"
+
+msgid "Allow System Fallback"
+msgstr "सिस्टम फ़ॉलबैक की अनुमति दें"
+
+msgid "Force Autohinter"
+msgstr "फोर्स ऑटोहिंटर"
+
+msgid "Modulate Color Glyphs"
+msgstr "रंग ग्लिफ़ को समायोजित करें"
+
+msgid "Hinting"
+msgstr "इशारा"
+
+msgid "Subpixel Positioning"
+msgstr "सबपिक्सेल पोजिशनिंग"
+
+msgid "Keep Rounding Remainders"
+msgstr "शेष को पूर्णांकित करते रहें"
+
+msgid "Oversampling"
+msgstr "ओवरसैंपलिंग"
+
+msgid "Metadata Overrides"
+msgstr "मेटाडेटा ओवरराइड"
+
+msgid "Language Support"
+msgstr "भाषा समर्थन"
+
+msgid "Script Support"
+msgstr "स्क्रिप्ट समर्थन"
+
+msgid "OpenType Features"
+msgstr "ओपन टाइप विशेषताएँ"
+
+msgid "Fallbacks"
+msgstr "फ़ॉलबैक"
+
+msgid "Compress"
+msgstr "संकुचित"
+
+msgid "Language"
+msgstr "भाषा"
+
+msgid "Outline Size"
+msgstr "रूपरेखा का आकार"
+
+msgid "Variation"
+msgstr "प्रकार"
+
+msgid "OpenType"
+msgstr "खुले प्रकार का"
+
+msgid "Embolden"
+msgstr "प्रोत्साहित करना"
+
+msgid "Face Index"
+msgstr "चेहरा सूचकांक"
+
+msgid "Transform"
+msgstr "परिवर्तन"
+
+msgid "Create From"
+msgstr "से बनाएं"
+
+msgid "Scaling Mode"
+msgstr "स्केलिंग मोड"
+
+msgid "Delimiter"
+msgstr "सीमान्तक"
+
+msgid "Character Ranges"
+msgstr "अक्षरों की सीमा"
+
+msgid "Kerning Pairs"
+msgstr "कर्निंग युग्म"
+
+msgid "Columns"
+msgstr "कॉलम"
+
+msgid "Rows"
+msgstr "पंक्तियाँ"
+
+msgid "Image Margin"
+msgstr "छवि मार्जिन"
+
+msgid "Character Margin"
+msgstr "अक्षर मार्जिन"
+
+msgid "Ascent"
+msgstr "आरोहण"
+
+msgid "Descent"
+msgstr "अवरोहण"
+
+msgid "High Quality"
+msgstr "उच्च गुणवत्ता"
+
+msgid "Lossy Quality"
+msgstr "हानिपूर्ण गुणवत्ता"
+
+msgid "UASTC Level"
+msgstr "UASTC स्तर"
+
+msgid "RDO Quality Loss"
+msgstr "RDO गुणवत्ता हानि"
+
+msgid "HDR Compression"
+msgstr "HDR संपीड़न"
+
+msgid "Channel Pack"
+msgstr "चैनल पैक"
+
+msgid "Mipmaps"
+msgstr "मिपमैप्स"
+
+msgid "Limit"
+msgstr "सीमा"
+
+msgid "Horizontal"
+msgstr "क्षैतिज"
+
+msgid "Vertical"
+msgstr "ऊर्ध्वाधर"
+
+msgid "Arrangement"
+msgstr "व्यवस्था"
+
+msgid "Layout"
+msgstr "लेआउट"
+
+msgid "Base Scale"
+msgstr "आधार पैमाना"
+
+msgid "Saturation"
+msgstr "परिपूर्णता"
+
+msgid "Color Map"
+msgstr "रंग मैप"
+
+msgid "Normal Map"
+msgstr "सामान्य मानचित्र"
+
+msgid "Roughness"
+msgstr "बेअदबी"
+
+msgid "Src Normal"
+msgstr "Src सामान्य"
+
+msgid "Process"
+msgstr "प्रक्रिया"
+
+msgid "Channel Remap"
+msgstr "चैनल रीमैप"
+
+msgid "Red"
+msgstr "Red"
+
+msgid "Green"
+msgstr "हरा"
+
+msgid "Blue"
+msgstr "नीला"
+
+msgid "Alpha"
+msgstr "अल्फा"
+
+msgid "Fix Alpha Border"
+msgstr "अल्फ़ा बॉर्डर ठीक करें"
+
+msgid "Premult Alpha"
+msgstr "प्रीमल्ट अल्फ़ा"
+
+msgid "Normal Map Invert Y"
+msgstr "सामान्य मानचित्र उलटा Y"
+
+msgid "HDR as sRGB"
+msgstr "HDR को sRGB के रूप में"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDR प्रकाश सीमा"
+
+msgid "Size Limit"
+msgstr "आकार सीमा"
+
+msgid "Detect 3D"
+msgstr "3D का पता लगाएं"
+
+msgid "Compress To"
+msgstr "में दबाएं"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "संपादक"
+
+msgid "Atlas File"
+msgstr "एटलस फ़ाइल"
+
+msgid "Import Mode"
+msgstr "आयात मोड"
+
+msgid "Crop to Region"
+msgstr "क्षेत्र तक काटें"
+
+msgid "Trim Alpha Border From Region"
+msgstr "क्षेत्र से अल्फा बॉर्डर ट्रिम करें"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "बल"
+
+msgid "8 Bit"
+msgstr "8 बिट"
+
+msgid "Mono"
+msgstr "एक-"
+
+msgid "Max Rate"
+msgstr "अधिकतम दर"
+
+msgid "Max Rate Hz"
+msgstr "अधिकतम दर Hz"
+
+msgid "Edit"
+msgstr "संपादित"
+
+msgid "Trim"
+msgstr "काटना"
+
+msgid "Normalize"
+msgstr "सामान्य"
+
+msgid "Loop Begin"
+msgstr "लूप आरंभ"
+
+msgid "Loop End"
+msgstr "लूप समाप्त"
+
+msgid "Draw Label"
+msgstr "लेबल बनाएं"
+
+msgid "Draw Background"
+msgstr "पृष्ठभूमि बनाएं"
+
+msgid "Checkable"
+msgstr "चेक करने योग्य"
+
+msgid "Checked"
+msgstr "जांचा हुआ"
+
+msgid "Draw Warning"
+msgstr "चेतावनी दिखाएँ"
+
+msgid "Keying"
+msgstr "कीइंग"
+
+msgid "Deletable"
+msgstr "हटाने-योग्य"
+
+msgid "Selectable"
+msgstr "चयन योग्य"
+
+msgid "Use Folding"
+msgstr "फोल्डिंग का उपयोग करें"
+
+msgid "Name Split Ratio"
+msgstr "नाम विभाजन अनुपात"
+
+msgid "Base Type"
+msgstr "बेस प्ररूप"
+
+msgid "Editable"
+msgstr "संपादन योग्य"
+
+msgid "Toggle Mode"
+msgstr "मोड टॉगल कीजिये"
+
+msgid "Main Run Args"
+msgstr "मुख्य रन तर्क"
+
+msgid "Templates Search Path"
+msgstr "टेम्प्लेट खोज पथ"
+
+msgid "Naming"
+msgstr "नामोल्लेख"
+
+msgid "Default Signal Callback Name"
+msgstr "डिफ़ॉल्ट सिग्नल कॉलबैक नाम"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "स्वयं के नाम पर डिफ़ॉल्ट सिग्नल कॉलबैक"
+
+msgid "Scene Name Casing"
+msgstr "दृश्य नाम आवरण"
+
+msgid "Script Name Casing"
+msgstr "स्क्रिप्ट नाम आवरण"
+
+msgid "Reimport Missing Imported Files"
+msgstr "गुम आयातित फ़ाइलें पुनः आयात करें"
+
+msgid "Use Multiple Threads"
+msgstr "एकाधिक थ्रेड्स का उपयोग करें"
+
+msgid "Atlas Max Width"
+msgstr "एटलस अधिकतम चौड़ाई"
+
+msgid "Export"
+msgstr "‍एक्सपोर्ट"
+
+msgid "Convert Text Resources to Binary"
+msgstr "टेक्स्ट संसाधनों को बाइनरी में बदलें"
+
+msgid "Version Control"
+msgstr "वर्जन कंट्रोल"
+
+msgid "Plugin Name"
+msgstr "प्लगइन नाम"
+
+msgid "Autoload on Startup"
+msgstr "स्टार्टअप पर स्वतः लोड"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "बुनावट"
+
+msgid "Margins"
+msgstr "मार्जिन्स"
+
+msgid "Separation"
+msgstr "विभाजन"
+
+msgid "Texture Region Size"
+msgstr "बुनावट क्षेत्र आकार"
+
+msgid "Use Texture Padding"
+msgstr "बुनावट पैडिंग का उपयोग करें"
+
+msgid "Atlas Coords"
+msgstr "एटलस निर्देशांक"
+
+msgid "Size in Atlas"
+msgstr "एटलस में आकार"
+
+msgid "Alternative ID"
+msgstr "वैकल्पिक ID"
+
+msgid "Speed"
+msgstr "स्पीड"
+
+msgid "Frames Count"
+msgstr "फ़्रेम गणना"
+
+msgid "Duration"
+msgstr "अवधि"
+
+msgid "Current Group Idx"
+msgstr "वर्तमान समूह Idx"
+
+msgid "Current Bone Idx"
+msgstr "वर्तमान हड्डी Idx"
+
+msgid "Editors"
+msgstr "संपादनकर्ता"
+
+msgid "3D Gizmos"
+msgstr "3डी गिजमोस"
+
+msgid "Gizmo Colors"
+msgstr "गिज़मो कलर्स"
+
+msgid "Particles Emission Shape"
+msgstr "कण उत्सर्जन आकार"
+
+msgid "Interface"
+msgstr "इंटरफ़ेस"
+
+msgid "Editor Language"
+msgstr "एडीटर भाषा"
+
+msgid "Use Threads"
+msgstr "थ्रेड्स का प्रयोग करें"
+
+msgid "Localize Settings"
+msgstr "सेटिंग्स को स्थानीयकृत करें"
+
+msgid "Dock Tab Style"
+msgstr "डॉक टैब शैली"
+
+msgid "UI Layout Direction"
+msgstr "UI लेआउट दिशा"
+
+msgid "Display Scale"
+msgstr "प्रदर्शन स्केल"
+
+msgid "Custom Display Scale"
+msgstr "कस्टम डिस्प्ले स्केल"
+
+msgid "Editor Screen"
+msgstr "संपादक स्क्रीन"
+
+msgid "Tablet Driver"
+msgstr "टैबलेट ड्राइवर"
+
+msgid "Project Manager Screen"
+msgstr "योजना मैनेजर स्क्रीन"
+
+msgid "Connection"
+msgstr "कनेक्शन"
+
+msgid "Check for Updates"
+msgstr "अद्यतन के लिए जाँच"
+
+msgid "Use Embedded Menu"
+msgstr "एम्बेडेड मेनू का उपयोग करें"
+
+msgid "Use Native File Dialogs"
+msgstr "नेटिव नत्थी डायलॉग का उपयोग करें"
+
+msgid "Expand to Title"
+msgstr "शीर्षक तक विस्तृत करें"
+
+msgid "Main Font Size"
+msgstr "मुख्य फ़ॉन्ट आकार"
+
+msgid "Code Font Size"
+msgstr "कोड फ़ॉन्ट आकार"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "कोड फ़ॉन्ट प्रासंगिक संयुक्ताक्षर"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "कोड फ़ॉन्ट कस्टम ओपनटाइप सुविधाएँ"
+
+msgid "Code Font Custom Variations"
+msgstr "कोड फ़ॉन्ट कस्टम विविधता"
+
+msgid "Font Antialiasing"
+msgstr "फ़ॉन्ट Antialiasing"
+
+msgid "Font Hinting"
+msgstr "फ़ॉन्ट इशारा"
+
+msgid "Font Subpixel Positioning"
+msgstr "फ़ॉन्ट Subpixel स्थिति"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "फ़ॉन्ट अक्षम एम्बेडेड बिटमैप"
+
+msgid "Font Allow MSDF"
+msgstr "लिपि MSDF को अनुमति दें"
+
+msgid "Main Font"
+msgstr "मुख्य फ़ॉन्ट"
+
+msgid "Main Font Bold"
+msgstr "मुख्य लिपि बोल्ड"
+
+msgid "Code Font"
+msgstr "कोड फ़ॉन्ट"
+
+msgid "Separate Distraction Mode"
+msgstr "अलग करना मोड"
+
+msgid "Automatically Open Screenshots"
+msgstr "स्क्रीनशॉट स्वचालित रूप से खोलें"
+
+msgid "Single Window Mode"
+msgstr "सिंगल विंडो मोड"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "माउस अतिरिक्त बटन नेविगेट इतिहास"
+
+msgid "Save Each Scene on Quit"
+msgstr "गेम बंद करते समय प्रत्येक दृश्य को सहेजें"
+
+msgid "Save on Focus Loss"
+msgstr "ध्यान, हानि पर बचत करें"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "स्वीकार संवाद रद्द करें ठीक बटन"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "टोस्ट नोटिफिकेशन में आंतरिक त्रुटियाँ दिखाएँ"
+
+msgid "Show Update Spinner"
+msgstr "अद्यतन स्पिनर दिखाएँ"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "लो प्रोसेसर मोड स्लीप (µसेकंड)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "अनफोकस्ड लो प्रोसेसर मोड स्लीप (µसेकंड)"
+
+msgid "Import Resources When Unfocused"
+msgstr "ध्यान केंद्रित न होने पर संसाधन आयात करें"
+
+msgid "V-Sync Mode"
+msgstr "V-Sync सक्रिय"
+
+msgid "Update Continuously"
+msgstr "लगातार अपडेट करें"
+
+msgid "Collapse Main Menu"
+msgstr "मुख्य मेनू को संक्षिप्त करें"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "दृश्य दिखाएँ वृक्ष जड़ चयन"
+
+msgid "Derive Script Globals by Name"
+msgstr "नाम से स्क्रिप्ट ग्लोबल्स प्राप्त करें"
+
+msgid "Docks"
+msgstr "डौक्स"
+
+msgid "Scene Tree"
+msgstr "दृश्य वृक्ष"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "अद्वितीय नाम रद्द करने से पहले पूछें"
+
+msgid "Inspector"
+msgstr "निरीक्षक"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "प्रति पृष्ठ अधिकतम Array डिक्शनरी वस्तु"
+
+msgid "Show Low Level OpenType Features"
+msgstr "निम्न स्तर की ओपनटाइप सुविधाएँ दिखाएँ"
+
+msgid "Float Drag Speed"
+msgstr "फ्लोट ड्रैग स्पीड"
+
+msgid "Nested Color Mode"
+msgstr "नेस्टेड कलर मोड"
+
+msgid "Delimitate All Container and Resources"
+msgstr "सभी कंटेनर और संसाधनों को सीमांकित करें"
+
+msgid "Default Property Name Style"
+msgstr "प्रायिक संपत्ति नाम शैली"
+
+msgid "Default Float Step"
+msgstr "डिफ़ॉल्ट फ़्लोट चरण"
+
+msgid "Disable Folding"
+msgstr "फ़ोल्डिंग निष्क्रिय करे"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "विदेशी दृश्यों को स्वचालित रूप से प्रकट करें"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "क्षैतिज वेक्टर2 संपादन"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "क्षैतिज वेक्टर प्रकार संपादन"
+
+msgid "Open Resources in Current Inspector"
+msgstr "वर्तमान इंस्पेक्टर में संसाधन खोलें"
+
+msgid "Resources to Open in New Inspector"
+msgstr "नए इंस्पेक्टर में खोलने के लिए संसाधन"
+
+msgid "Default Color Picker Mode"
+msgstr "प्रायिक रंग चयनकर्ता मोड"
+
+msgid "Default Color Picker Shape"
+msgstr "प्रायिक रंग चयनकर्ता आकृति"
+
+msgid "Color Picker Show Intensity"
+msgstr "कलर पिकर में तीव्रता दिखाएँ"
+
+msgid "Theme"
+msgstr "थिम"
+
+msgid "Follow System Theme"
+msgstr "सिस्टम थीम का पालन करें"
+
+msgid "Spacing Preset"
+msgstr "रिक्ति प्रीसेट"
+
+msgid "Icon and Font Color"
+msgstr "icon और फ़ॉन्ट रंग"
+
+msgid "Base Color"
+msgstr "बेस रंग"
+
+msgid "Contrast"
+msgstr "कंट्रास्ट"
+
+msgid "Draw Extra Borders"
+msgstr "अतिरिक्त बॉर्डर बनाएं"
+
+msgid "Icon Saturation"
+msgstr "Icon Saturation"
+
+msgid "Draw Relationship Lines"
+msgstr "संबंध रेखाएँ खींचें"
+
+msgid "Relationship Line Opacity"
+msgstr "संबंध रेखा अपारदर्शिता"
+
+msgid "Border Size"
+msgstr "सीमा का आकार"
+
+msgid "Corner Radius"
+msgstr "कोने की त्रिज्या"
+
+msgid "Base Spacing"
+msgstr "बेस स्पेसिंग"
+
+msgid "Additional Spacing"
+msgstr "अतिरिक्त स्पेसिंग"
+
+msgid "Custom Theme"
+msgstr "कस्टम थिम"
+
+msgid "Touchscreen"
+msgstr "टच स्क्रीन"
+
+msgid "Enable Touch Optimizations"
+msgstr "टच ऑप्टिमाइज़ेशन सक्षम करें"
+
+msgid "Scale Gizmo Handles"
+msgstr "स्केल उपकरण हैंडल"
+
+msgid "Touch Actions Panel"
+msgstr "क्रियाएँ पैनल स्पर्श करें"
+
+msgid "Scene Tabs"
+msgstr "दृश्य टैब"
+
+msgid "Display Close Button"
+msgstr "प्रदर्शन बटन बंद करें"
+
+msgid "Show Thumbnail on Hover"
+msgstr "होवर पर थंबनेल दिखाएं"
+
+msgid "Maximum Width"
+msgstr "अधिकतम चौड़ाई"
+
+msgid "Show Script Button"
+msgstr "स्क्रिप्ट बटन दिखाएँ"
+
+msgid "Restore Scenes on Load"
+msgstr "लोड पर दृश्य पुनर्स्थापित करें"
+
+msgid "Multi Window"
+msgstr "मल्टी विंडो"
+
+msgid "Restore Windows on Load"
+msgstr "Windows को लोड पर पुनर्स्थापित करें"
+
+msgid "Maximize Window"
+msgstr "विंडो को अधिकतम करें"
+
+msgid "FileSystem"
+msgstr "फ़ाइल"
+
+msgid "External Programs"
+msgstr "बाह्य कार्यक्रम"
+
+msgid "Raster Image Editor"
+msgstr "रेखापुंज छवि संपादक"
+
+msgid "Vector Image Editor"
+msgstr "वेक्टर छवि संपादक"
+
+msgid "Audio Editor"
+msgstr "ऑडियो संपादक"
+
+msgid "3D Model Editor"
+msgstr "3D मॉडल संपादक"
+
+msgid "Terminal Emulator"
+msgstr "टर्मिनल एम्यूलेटर"
+
+msgid "Terminal Emulator Flags"
+msgstr "टर्मिनल एम्यूलेटर झंडे"
+
+msgid "Directories"
+msgstr "डायरेक्टरिज"
+
+msgid "Autoscan Project Path"
+msgstr "ऑटोस्कैन योजना पथ"
+
+msgid "Default Project Path"
+msgstr "प्रायिक योजना पथ"
+
+msgid "On Save"
+msgstr "सहेजें पर"
+
+msgid "Compress Binary Resources"
+msgstr "बाइनरी संसाधनों को संपीड़ित करें"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "बैकअप पर सुरक्षित सहेजें फिर नाम बदलें"
+
+msgid "File Server"
+msgstr "फ़ाइल सर्वर"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "पारण शब्द"
+
+msgid "File Dialog"
+msgstr "नत्थी संवाद"
+
+msgid "Show Hidden Files"
+msgstr "छुपी हुई फ़ाइलें दिखाएँ"
+
+msgid "Display Mode"
+msgstr "प्रदर्शन मोड"
+
+msgid "Thumbnail Size"
+msgstr "थंबनेल साइज"
+
+msgid "Quick Open Dialog"
+msgstr "त्वरित खुला संवाद"
+
+msgid "Max Results"
+msgstr "अधिकतम परिणाम"
+
+msgid "Show Search Highlight"
+msgstr "खोज हाइलाइट दिखाएँ"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Fuzzy मैचिंग को सक्रिय करे"
+
+msgid "Max Fuzzy Misses"
+msgstr "अधिकतम Fuzzy Misses"
+
+msgid "Include Addons"
+msgstr "ऐडऑन शामिल करें"
+
+msgid "Default Display Mode"
+msgstr "प्रायिक प्रदर्शन मोड"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "Blender Path"
+msgstr "Blender पथ"
+
+msgid "RPC Port"
+msgstr "RPC पोर्ट"
+
+msgid "RPC Server Uptime"
+msgstr "RPC सर्वर अपटाइम"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2glTF पथ"
+
+msgid "Tools"
+msgstr "उपकरण"
+
+msgid "OIDN"
+msgstr "OIDN"
+
+msgid "OIDN Denoise Path"
+msgstr "OIDN Denoise पथ"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "संबंधित एनिमेशन ट्रैक हटाने से पहले पूछें"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "प्रारंभ निर्माण संवाद पूरी तरह विस्तारित"
+
+msgid "Auto Expand to Selected"
+msgstr "चयनित भाग तक स्वतः विस्तारित करें"
+
+msgid "Center Node on Reparent"
+msgstr "रीपैरेंट पर केंद्र नोड"
+
+msgid "Hide Filtered Out Parents"
+msgstr "छांटे गए मूल तत्वों को छिपाएँ"
+
+msgid "Accessibility Warnings"
+msgstr "अभिगम्यता चेतावनियाँ"
+
+msgid "Always Show Folders"
+msgstr "हमेशा फ़ोल्डर दिखाएँ"
+
+msgid "TextFile Extensions"
+msgstr "टेक्स्ट फ़ाइल एक्सटेंशन"
+
+msgid "Auto Refresh Interval"
+msgstr "ऑटो रिफ्रेश अंतराल"
+
+msgid "Appearance"
+msgstr "उपस्थिति"
+
+msgid "Enable Inline Color Picker"
+msgstr "इनलाइन रंग पिकर सक्षम करें"
+
+msgid "Caret"
+msgstr "कैरट"
+
+msgid "Caret Blink"
+msgstr "कैरेट ब्लिंक"
+
+msgid "Caret Blink Interval"
+msgstr "कैरेट ब्लिंक अंतराल"
+
+msgid "Highlight Current Line"
+msgstr "वर्तमान लाइन को हाइलाइट करें"
+
+msgid "Highlight All Occurrences"
+msgstr "सभी घटनाओं को हाइलाइट करें"
+
+msgid "Guidelines"
+msgstr "दिशा-निर्देश"
+
+msgid "Show Line Length Guidelines"
+msgstr "लाइन लंबाई दिशानिर्देश दिखाएँ"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "लाइन लंबाई दिशानिर्देश सॉफ्ट कॉलम"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "लाइन लंबाई दिशानिर्देश हार्ड कॉलम"
+
+msgid "Highlight Type Safe Lines"
+msgstr "सुरक्षित लाइनों का प्रकार हाइलाइट करें"
+
+msgid "Minimap"
+msgstr "मिनिमैप"
+
+msgid "Minimap Width"
+msgstr "मिनिमैप चौड़ाई"
+
+msgid "Code Folding"
+msgstr "कोड फ़ोल्डिंग"
+
+msgid "Word Wrap"
+msgstr "शब्द वेष्ट"
+
+msgid "Whitespace"
+msgstr "खाली स्थान"
+
+msgid "Line Spacing"
+msgstr "पंक्ति रिक्ति"
+
+msgid "Behavior"
+msgstr "व्यवहार"
+
+msgid "Move Caret on Right Click"
+msgstr "दाएं क्लिक पर कैरेट ले जाएं"
+
+msgid "Scroll Past End of File"
+msgstr "नत्थी के अंत तक स्क्रॉल करें"
+
+msgid "Smooth Scrolling"
+msgstr "सहज स्क्रॉलिंग"
+
+msgid "V Scroll Speed"
+msgstr "वी स्क्रॉल गति"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "नोड चयनित होने पर स्क्रिप्ट संपादक में बने रहें"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "सिग्नल को मौजूदा विधि से कनेक्ट करते समय स्क्रिप्ट खोलें"
+
+msgid "Use Default Word Separators"
+msgstr "डिफ़ॉल्ट शब्द विभाजक का उपयोग करें"
+
+msgid "Indent"
+msgstr "मांगना"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "सेव करते समय अंतिम रिक्त स्थान को काटें"
+
+msgid "Trim Final Newlines on Save"
+msgstr "सेव करते समय अंतिम नई लाइनें काटें"
+
+msgid "Autosave Interval Secs"
+msgstr "स्वतः सहेजे अंतराल सेकंड"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "बाहरी परिवर्तन पर स्क्रिप्ट को स्वचालित रूप से पुनः लोड करें"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "सेव करने पर स्क्रिप्ट को स्वचालित रूप से पुनः लोड और पार्स करें"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "दृश्य परिवर्तन पर प्रमुख स्क्रिप्ट खोलें"
+
+msgid "Drop Preload Resources as UID"
+msgstr "प्रीलोड संसाधनों को UID के रूप में हटाएं"
+
+msgid "Show Members Overview"
+msgstr "सदस्यों का अवलोकन दिखाएँ"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "सदस्यों की रूपरेखा वर्णानुक्रम में क्रमबद्ध करें"
+
+msgid "Script Temperature History Size"
+msgstr "स्क्रिप्ट तापमान इतिहास आकार"
+
+msgid "Highlight Scene Scripts"
+msgstr "हाइलाइट सीन स्क्रिप्ट"
+
+msgid "List Script Names As"
+msgstr "स्क्रिप्ट नाम इस प्रकार सूचीबद्ध करें"
+
+msgid "External"
+msgstr "बाहरी"
+
+msgid "Exec Flags"
+msgstr "कार्यकारी झंडे"
+
+msgid "Idle Parse Delay"
+msgstr "निष्क्रिय पार्स विलंब"
+
+msgid "Auto Brace Complete"
+msgstr "ऑटो ब्रेस पूर्ण"
+
+msgid "Code Complete Delay"
+msgstr "कोड पूर्ण विलंब"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "कॉलहिंट टूलटिप को वर्तमान लाइन के नीचे रखें"
+
+msgid "Complete File Paths"
+msgstr "पूर्ण नत्थी पथ"
+
+msgid "Add Node Path Literals"
+msgstr "नोड पथ लिटरल जोड़ें"
+
+msgid "Use Single Quotes"
+msgstr "एकल उद्धरण चिह्नों का उपयोग करें"
+
+msgid "Help"
+msgstr "मदद"
+
+msgid "Class Reference Examples"
+msgstr "कक्षा संदर्भ उदाहरण"
+
+msgid "Sort Functions Alphabetically"
+msgstr "फ़ंक्शन को वर्णानुक्रम में क्रमबद्ध करें"
+
+msgid "Grid Map"
+msgstr "ग्रिड मानचित्र"
+
+msgid "Joint"
+msgstr "जोड़"
+
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Stream Player 3D"
+msgstr "स्ट्रीम प्लेयर 3D"
+
+msgid "Camera"
+msgstr "कैमरा"
+
+msgid "Decal"
+msgstr "डेकल"
+
+msgid "Particles"
+msgstr "कण"
+
+msgid "Joint Body A"
+msgstr "संयुक्त शरीर A"
+
+msgid "Joint Body B"
+msgstr "संयुक्त शरीर B"
+
+msgid "Lightprobe Lines"
+msgstr "लाइटप्रोब लाइन्स"
+
+msgid "Visibility Notifier"
+msgstr "दृश्यता सूचनाकर्ता"
+
+msgid "Voxel GI"
+msgstr "वोक्सेल जीआई"
+
+msgid "Skeleton"
+msgstr "कंकाल"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "GridMap Grid"
+msgstr "ग्रिडमैप ग्रिड"
+
+msgid "Spring Bone Inside Collision"
+msgstr "स्प्रिंग बोन के अंदर टक्कर"
+
+msgid "Primary Grid Steps"
+msgstr "प्राथमिक ग्रिड चरण"
+
+msgid "Grid Division Level Max"
+msgstr "ग्रिड डिवीजन स्तर अधिकतम"
+
+msgid "Grid Division Level Min"
+msgstr "ग्रिड डिवीजन स्तर न्यूनतम"
+
+msgid "Grid Division Level Bias"
+msgstr "ग्रिड डिवीजन स्तर पूर्वाग्रह"
+
+msgid "Grid XZ Plane"
+msgstr "ग्रिड XZ प्लेन"
+
+msgid "Grid XY Plane"
+msgstr "ग्रिड XY प्लेन"
+
+msgid "Grid YZ Plane"
+msgstr "ग्रिड YZ प्लेन"
+
+msgid "Emulate Numpad"
+msgstr "नमपैड का अनुकरण करें"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "3 बटन माउस का अनुकरण करें"
+
+msgid "Warped Mouse Panning"
+msgstr "विकृत माउस पैनिंग"
+
+msgid "Orbit Sensitivity"
+msgstr "कक्षा संवेदनशीलता"
+
+msgid "Orbit Inertia"
+msgstr "कक्षा जड़त्व"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "व्यूपोर्ट रोटेशन उपकरण दिखाएँ"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "व्यूपोर्ट नेविगेशन उपकरण दिखाएँ"
+
+msgid "Freelook Sensitivity"
+msgstr "फ्रीलुक संवेदनशीलता"
+
+msgid "Freelook Inertia"
+msgstr "फ्रीलुक जड़ता"
+
+msgid "Freelook Activation Modifier"
+msgstr "फ्रीलुक सक्रियण संपादित करें"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "फ्रीलुक स्पीड ज़ूम लिंक"
+
+msgid "Manipulator Gizmo Size"
+msgstr "मैनिपुलेटर गिजमो आकार"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "मैनिपुलेटर गिज़मो अपारदर्शिता"
+
+msgid "Grid Color"
+msgstr "ग्रिड का रंग"
+
+msgid "Guides Color"
+msgstr "मार्गदर्शक रंग"
+
+msgid "Smart Snapping Line Color"
+msgstr "स्मार्ट स्नैपिंग लाइन रंग"
+
+msgid "Bone Width"
+msgstr "हड्डी की चौड़ाई"
+
+msgid "Bone IK Color"
+msgstr "हड्डी मैं रंग"
+
+msgid "Bone Outline Color"
+msgstr "हड्डी की रूपरेखा का रंग"
+
+msgid "Bone Outline Size"
+msgstr "अस्थि रूपरेखा आकार"
+
+msgid "Viewport Border Color"
+msgstr "व्यूपोर्ट सीमा रंग"
+
+msgid "Use Integer Zoom by Default"
+msgstr "डिफ़ॉल्ट रूप से पूर्णांक ज़ूम का उपयोग करें"
+
+msgid "Unset"
+msgstr "अव्यवस्थित"
+
+msgid "Error"
+msgstr "एरर"
+
+msgid "Highlight Selected Layer"
+msgstr "चयनित परत हाइलाइट करें"
+
+msgid "Point Grab Radius"
+msgstr "पॉइंट ग्रैब रेडियस"
+
+msgid "Confirm Insert Track"
+msgstr "ट्रैक डालने की पुष्टि करें"
+
+msgid "Default Create Bezier Tracks"
+msgstr "डिफ़ॉल्ट बेज़ियर ट्रैक बनाएँ"
+
+msgid "Minimap Opacity"
+msgstr "मिनिमैप अपारदर्शिता"
+
+msgid "Grid Pattern"
+msgstr "ग्रिड पैटर्न"
+
+msgid "Window Placement"
+msgstr "विंडो प्लेसमेंट"
+
+msgid "Rect"
+msgstr "रेक्ट"
+
+msgid "Screen"
+msgstr "स्क्रीन"
+
+msgid "Game Embed Mode"
+msgstr "गेम एंबेड मोड"
+
+msgid "Output"
+msgstr "आउटपुट"
+
+msgid "Font Size"
+msgstr "लिपि आकार"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
+msgid "Prefer Wayland"
+msgstr "वेलैंड को प्राथमिकता दें"
+
+msgid "HTTP Proxy"
+msgstr "HTTP Proxy"
+
+msgid "Host"
+msgstr "मेजबान"
+
+msgid "Debugger"
+msgstr "डीबगर"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "रिमोट सीन ट्री पर स्वचालित स्विच"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "स्टैक ट्रेस पर स्वचालित स्विच"
+
+msgid "Profiler Frame History Size"
+msgstr "प्रोफाइलर फ़्रेम इतिहास आकार"
+
+msgid "Profiler Frame Max Functions"
+msgstr "प्रोफ़ाइलर फ़्रेम अधिकतम फ़ंक्शन"
+
+msgid "Profiler Target FPS"
+msgstr "प्रोफाइलर लक्ष्य एफपीएस"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "रिमोट सीन ट्री रिफ्रेश अंतराल"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "रिमोट निरीक्षण ताज़ा अंतराल"
+
+msgid "Profile Native Calls"
+msgstr "प्रोफ़ाइल मूलनिवासी कॉल"
+
+msgid "SSH Public Key Path"
+msgstr "SSH सार्वजनिक कुंजी पथ"
+
+msgid "SSH Private Key Path"
+msgstr "SSH निजी कुंजी पथ"
+
+msgid "Input"
+msgstr "इनपुट"
+
+msgid "Agile Event Flushing"
+msgstr "एजाइल इवेंट फ्लशिंग"
+
+msgid "Project Manager"
+msgstr "प्रोजेक्ट मैनेजर"
+
+msgid "Directory Naming Convention"
+msgstr "निर्देशिका नामकरण कन्वेंशन"
+
+msgid "Flush stdout on Print"
+msgstr "प्रिंट पर फ्लश स्टैंडआउट"
+
+msgid "Low Processor Mode"
+msgstr "निम्न प्रोसेसर मोड"
+
+msgid "stdout"
+msgstr "मानक आउटपुट (stdout)"
+
+msgid "Print FPS"
+msgstr "एफपीएस प्रिंट करें"
+
+msgid "Verbose stdout"
+msgstr "विस्तृत stdout"
+
+msgid "Max Chars per Second"
+msgstr "प्रति सेकंड अधिकतम अक्षर"
+
+msgid "Max Queued Messages"
+msgstr "अधिकतम पंक्तिबद्ध संदेश"
+
+msgid "Max Warnings per Second"
+msgstr "प्रति सेकंड अधिकतम चेतावनियाँ"
+
+msgid "File Logging"
+msgstr "फ़ाइल लॉगिंग"
+
+msgid "Enable File Logging"
+msgstr "नत्थी लॉगिंग सक्रिय करे"
+
+msgid "Driver"
+msgstr "ड्राइवर"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia थ्रेडेड ऑप्टिमाइज़ेशन अक्षम करें"
+
+msgid "Force Angle on Devices"
+msgstr "उपकरणों पर बल कोण"
+
+msgid "DPI"
+msgstr "DPI"
+
+msgid "Allow hiDPI"
+msgstr "hiDPI की अनुमति दें"
+
+msgid "Per Pixel Transparency"
+msgstr "प्रति पिक्सेल पारदर्शिता"
+
+msgid "Allowed"
+msgstr "अनुमति देना"
+
+msgid "Threads"
+msgstr "सूत्र"
+
+msgid "Frame Delay Msec"
+msgstr "फ़्रेम विलंब Msec"
+
+msgid "Allow High Refresh Rate"
+msgstr "उच्च ताज़ा दर की अनुमति दें"
+
+msgid "Hide Home Indicator"
+msgstr "होम संकेतक छिपाएँ"
+
+msgid "Hide Status Bar"
+msgstr "स्थिति पट्टी छुपाएँ"
+
+msgid "Suppress UI Gesture"
+msgstr "यूआई जेस्चर को दबाएँ"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "View Configuration"
+msgstr "कॉन्फ़िगरेशन देखें"
+
+msgid "Reference Space"
+msgstr "संदर्भ स्थान"
+
+msgid "Foveation Dynamic"
+msgstr "फोवेशन डायनेमिक"
+
+msgid "Submit Depth Buffer"
+msgstr "गहराई बफर सबमिट करें"
+
+msgid "Analog Threshold"
+msgstr "एनालॉग थ्रेशोल्ड"
+
+msgid "Boot Splash"
+msgstr "बूट स्प्लैश"
+
+msgid "Environment"
+msgstr "पर्यावरण"
+
+msgid "Default Clear Color"
+msgstr "प्रायिक साफ़ रंग"
+
+msgid "Icon"
+msgstr "दृश्यचिन्ह"
+
+msgid "macOS Native Icon"
+msgstr "macOS नेटिव दृश्यचिन्ह"
+
+msgid "Windows Native Icon"
+msgstr "विंडोज़ मूल चिह्न"
+
+msgid "Mouse Cursor"
+msgstr "माउस कर्सर"
+
+msgid "Custom Image Hotspot"
+msgstr "कस्टम छवि हॉटस्पॉट"
+
+msgid "Tooltip Position Offset"
+msgstr "टूलटिप स्थिति ऑफसेट"
+
+msgid "Show Image"
+msgstr "छवि दिखाएँ"
+
+msgid "Stretch Mode"
+msgstr "खिंचाव मोड"
+
+msgid "Image"
+msgstr "छवि"
+
+msgid "Dotnet"
+msgstr "डॉट नेट"
+
+msgid "Project"
+msgstr "परियोजना"
+
+msgid "Assembly Reload Attempts"
+msgstr "असेंबली पुनः लोड प्रयास"
+
+msgid "Time"
+msgstr "समय"
+
+msgid "Msg Buf Max"
+msgstr "संदेश बफ़ अधिकतम"
+
+msgid "Orphan Nodes"
+msgstr "अनाथ नोड्स"
+
+msgid "Raster"
+msgstr "रेखापुंज"
+
+msgid "Total Objects Drawn"
+msgstr "कुल खींची गई वस्तुएँ"
+
+msgid "Total Primitives Drawn"
+msgstr "कुल निकाले गए आदिम"
+
+msgid "Total Draw Calls"
+msgstr "कुल ड्रा कॉल"
+
+msgid "Video"
+msgstr "वीडियो"
+
+msgid "Video Mem"
+msgstr "वीडियो मेमोरी"
+
+msgid "Islands"
+msgstr "द्वीप समूह"
+
+msgid "Obstacles"
+msgstr "बाधाएं"
+
+msgid "Basis Universal"
+msgstr "आधार सार्वभौमिक"
+
+msgid "Calculate Tangents"
+msgstr "स्पर्शरेखाओं की गणना करें"
+
+msgid "Flip Faces"
+msgstr "चेहरे पलटें"
+
+msgid "Mesh"
+msgstr "मेश"
+
+msgid "Material"
+msgstr "सामग्री"
+
+msgid "Radial Segments"
+msgstr "रेडियल सेगमेंट"
+
+msgid "Smooth Faces"
+msgstr "चिकने चेहरे"
+
+msgid "Cone"
+msgstr "कोन"
+
+msgid "Inner Radius"
+msgstr "आंतरिक त्रिज्या"
+
+msgid "Outer Radius"
+msgstr "बाहरी त्रिज्या"
+
+msgid "Ring Sides"
+msgstr "रिंग साइड"
+
+msgid "Depth"
+msgstr "गहराई"
+
+msgid "Spin Degrees"
+msgstr "स्पिन डिग्री"
+
+msgid "Spin Sides"
+msgstr "स्पिन पक्ष"
+
+msgid "Path Interval Type"
+msgstr "पथ अंतराल प्रकार"
+
+msgid "Path Interval"
+msgstr "पथ अंतराल"
+
+msgid "Path Simplify Angle"
+msgstr "पथ सरल कोण"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "ज्यामिति सहायक नोड्स की अनुमति दें"
+
+msgid "Embedded Image Handling"
+msgstr "एम्बेडेड इमेज हैंडलिंग"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
+
+msgid "Max Call Stack"
+msgstr "मैक्स कॉल स्टैक"
+
+msgid "Always Track Call Stacks"
+msgstr "हमेशा कॉल स्टैक ट्रैक करें"
+
+msgid "Always Track Local Variables"
+msgstr "हमेशा स्थानीय चरों को ट्रैक करें"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "गोडोट 4 संकेत में नाम बदला गया"
+
+msgid "Unassigned Variable"
+msgstr "असाइन न किया गया चर"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "असाइन न किया गया चर Op असाइन करें"
+
+msgid "Unused Private Class Variable"
+msgstr "अप्रयुक्त निजी वर्ग चर"
+
+msgid "Unused Signal"
+msgstr "अप्रयुक्त सिग्नल"
+
+msgid "Shadowed Variable Base Class"
+msgstr "छायांकित चर आधार वर्ग"
+
+msgid "Unreachable Code"
+msgstr "अगम्य कोड"
+
+msgid "Unreachable Pattern"
+msgstr "अगम्य पैटर्न"
+
+msgid "Standalone Ternary"
+msgstr "स्टैंडअलोन टर्नरी"
+
+msgid "Incompatible Ternary"
+msgstr "असंगत त्रिक"
+
+msgid "Unsafe Property Access"
+msgstr "असुरक्षित संपत्ति पहुंच"
+
+msgid "Unsafe Method Access"
+msgstr "असुरक्षित विधि प्रवेश"
+
+msgid "Unsafe Cast"
+msgstr "असुरक्षित कास्ट"
+
+msgid "Unsafe Call Argument"
+msgstr "असुरक्षित कॉल तर्क"
+
+msgid "Unsafe Void Return"
+msgstr "असुरक्षित शून्य वापसी"
+
+msgid "Return Value Discarded"
+msgstr "वापसी मान त्याग दिया गया"
+
+msgid "Static Called On Instance"
+msgstr "स्टेटिक कॉल ऑन इंस्टेंस"
+
+msgid "Redundant Static Unload"
+msgstr "अनावश्यक स्थैतिक अनलोड"
+
+msgid "Redundant Await"
+msgstr "अनावश्यक प्रतीक्षा"
+
+msgid "Assert Always True"
+msgstr "दावा हमेशा सत्य"
+
+msgid "Assert Always False"
+msgstr "दावा हमेशा गलत"
+
+msgid "Integer Division"
+msgstr "पूर्णांक प्रभाग"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int इस तरह Enum बिना कास्ट के"
+
+msgid "Int As Enum Without Match"
+msgstr "Int इस तरह Enum बिना पूर्णांक के"
+
+msgid "Enum Variable Without Default"
+msgstr "डिफ़ॉल्ट के बिना Enum चर"
+
+msgid "Confusable Local Usage"
+msgstr "भ्रमित करने योग्य लोकल उपयोग"
+
+msgid "Confusable Capture Reassignment"
+msgstr "भ्रमित करने योग्य कैप्चर पुन: असाइनमेंट"
+
+msgid "Inference On Variant"
+msgstr "वेरिएंट पर अनुमान"
+
+msgid "Get Node Default Without Onready"
+msgstr "Onready के बिना नोड डिफ़ॉल्ट प्राप्त करें"
+
+msgid "Onready With Export"
+msgstr "निर्यात के साथ तैयार"
+
+msgid "Language Server"
+msgstr "भाषा सर्वर"
+
+msgid "Show Native Symbols in Editor"
+msgstr "संपादक में मूल प्रतीक दिखाएँ"
+
+msgid "Use Thread"
+msgstr "थ्रेड का प्रयोग करें"
+
+msgid "Poll Limit (µsec)"
+msgstr "मतदान सीमा (µsec)"
+
+msgid "glTF"
+msgstr "glTF"
+
+msgid "Color"
+msgstr "रंग"
+
+msgid "Intensity"
+msgstr "तीव्रता"
+
+msgid "Inner Cone Angle"
+msgstr "आंतरिक शंकु कोण"
+
+msgid "Outer Cone Angle"
+msgstr "बाहरी शंकु कोण"
+
+msgid "Diffuse Img"
+msgstr "फैला हुआ चित्र"
+
+msgid "Diffuse Factor"
+msgstr "फैलाना कारक"
+
+msgid "Gloss Factor"
+msgstr "चमक कारक"
+
+msgid "Specular Factor"
+msgstr "स्पेक्युलर फैक्टर"
+
+msgid "Spec Gloss Img"
+msgstr "स्पेक ग्लॉस इमेज"
+
+msgid "Mass"
+msgstr "द्रव्यमान"
+
+msgid "Angular Velocity"
+msgstr "कोणीय वेग"
+
+msgid "Inertia Tensor"
+msgstr "जड़त्व टेंसर"
+
+msgid "Is Trigger"
+msgstr "ट्रिगर है"
+
+msgid "Visibility Mode"
+msgstr "दृश्यता मोड"
+
+msgid "Json"
+msgstr "Json"
+
+msgid "GLB Data"
+msgstr "GLB डेटा"
+
+msgid "Use Named Skin Binds"
+msgstr "नामित त्वचा बंधन का उपयोग करें"
+
+msgid "Buffers"
+msgstr "बफ़र्स"
+
+msgid "Buffer Views"
+msgstr "बफ़र दृश्य"
+
+msgid "Accessors"
+msgstr "पहुंचकर्ता"
+
+msgid "Images"
+msgstr "इमेजिस"
+
+msgid "Cameras"
+msgstr "कैमरा"
+
+msgid "Lights"
+msgstr "प्रकाश"
+
+msgid "Unique Names"
+msgstr "अनोखे नाम"
+
+msgid "Skeletons"
+msgstr "कंकाल"
+
+msgid "Buffer View"
+msgstr "बफ़र दृश्य"
+
+msgid "Byte Offset"
+msgstr "बाइट ऑफसेट"
+
+msgid "Normalized"
+msgstr "सामान्यीकृत"
+
+msgid "Max"
+msgstr "अधिकतम"
+
+msgid "Sparse Indices Buffer View"
+msgstr "विरल सूचकांक बफर दृश्य"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "विरल सूचकांक बाइट ऑफसेट"
+
+msgid "Sparse Indices Component Type"
+msgstr "विरल सूचकांक घटक प्रकार"
+
+msgid "Sparse Values Buffer View"
+msgstr "विरल मान बफर दृश्य"
+
+msgid "Sparse Values Byte Offset"
+msgstr "विरल मान बाइट ऑफ़सेट"
+
+msgid "Buffer"
+msgstr "बफर"
+
+msgid "Byte Stride"
+msgstr "बाइट प्रगति"
+
+msgid "Perspective"
+msgstr "परिप्रेक्ष्य"
+
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Parent"
+msgstr "मूल"
+
+msgid "Xform"
+msgstr "Xform"
+
+msgid "Skin"
+msgstr "त्वचा"
+
+msgid "Children"
+msgstr "संतान"
+
+msgid "Light"
+msgstr "प्रकाश"
+
+msgid "Visible"
+msgstr "दृश्यमान"
+
+msgid "glTF to Godot Expression"
+msgstr "glTF से Godot अभिव्यक्ति"
+
+msgid "Godot to glTF Expression"
+msgstr "गोडोट से glTF अभिव्यक्ति"
+
+msgid "Object Model Type"
+msgstr "ऑब्जेक्ट मॉडल प्रकार"
+
+msgid "Roots"
+msgstr "मूल"
+
+msgid "Skin Root"
+msgstr "त्वचा की जड़"
+
+msgid "Joints Original"
+msgstr "जोड़ों का मूल रूप"
+
+msgid "Godot Skin"
+msgstr "गोडोट त्वचा"
+
+msgid "Src Image"
+msgstr "Src छवि"
+
+msgid "Sampler"
+msgstr "नमूना"
+
+msgid "Wrap S"
+msgstr "लपेटें S"
+
+msgid "Wrap T"
+msgstr "लपेटें T"
+
+msgid "Mesh Library"
+msgstr "मेश संग्रह"
+
+msgid "Cell"
+msgstr "सेल"
+
+msgid "Priority"
+msgstr "प्राथमिकता"
+
+msgid "Shuffle"
+msgstr "मिश्रण"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "उन्नत आंतरिक किनारा हटाने का उपयोग करें"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "सभी किनेमेटिक संपर्क उत्पन्न करें"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "बाउमगार्टे स्थिरीकरण कारक"
+
+msgid "Bounce Velocity Threshold"
+msgstr "बाउंस वेग सीमा"
+
+msgid "Sleep Time Threshold"
+msgstr "नींद का समय सीमा"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "निरंतर सीडी मूवमेंट थ्रेशोल्ड"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "बॉडी पेयर संपर्क कैश सक्षम"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "बॉडी पेयर संपर्क कैश दूरी सीमा"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "बॉडी पेयर संपर्क कैश कोण सीमा"
+
+msgid "Queries"
+msgstr "प्रश्नों"
+
+msgid "Enable Ray Cast Face Index"
+msgstr "रे कास्ट फेस इंडेक्स सक्षम करें"
+
+msgid "Active Edge Threshold"
+msgstr "सक्रिय एज थ्रेशोल्ड"
+
+msgid "World Boundary Shape Size"
+msgstr "विश्व सीमा आकार"
+
+msgid "Max Body Pairs"
+msgstr "अधिकतम शारीरिक जोड़े"
+
+msgid "Lightmapping"
+msgstr "लाइटमैपिंग"
+
+msgid "Low Quality Ray Count"
+msgstr "निम्न गुणवत्ता वाली किरण गणना"
+
+msgid "Medium Quality Ray Count"
+msgstr "मध्यम गुणवत्ता रे गणना"
+
+msgid "High Quality Ray Count"
+msgstr "उच्च गुणवत्ता रे गणना"
+
+msgid "Ultra Quality Ray Count"
+msgstr "अल्ट्रा क्वालिटी रे काउंट"
+
+msgid "Bake Performance"
+msgstr "बेक प्रदर्शन"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "कम गुणवत्ता जांच किरण गिनती"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "मध्यम गुणवत्ता जांच किरण गिनती"
+
+msgid "High Quality Probe Ray Count"
+msgstr "उच्च गुणवत्ता जांच किरण गिनती"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "अल्ट्रा क्वालिटी जांच रे गिनती"
+
+msgid "Max Rays per Probe Pass"
+msgstr "प्रति जांच अधिकतम किरणें"
+
+msgid "IOD"
+msgstr "IOD"
+
+msgid "Oversample"
+msgstr "ओवरसैंपल"
+
+msgid "K1"
+msgstr "K1"
+
+msgid "K2"
+msgstr "K2"
+
+msgid "Vulkan VRS"
+msgstr "वुल्कन VRS"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Public Visibility"
+msgstr "सार्वजनिक दृश्यता"
+
+msgid "Refuse New Connections"
+msgstr "नए कनेक्शनों को मना करें"
+
+msgid "Server Relay"
+msgstr "सर्वर रिले"
+
+msgid "Frequency"
+msgstr "आवृत्ति"
+
+msgid "Fractal"
+msgstr "भग्न"
+
+msgid "Octaves"
+msgstr "अष्टक"
+
+msgid "Lacunarity"
+msgstr "कमी"
+
+msgid "Gain"
+msgstr "लाभ"
+
+msgid "Fractal Lacunarity"
+msgstr "भग्न कमी"
+
+msgid "Fractal Gain"
+msgstr "आंशिक लाभ"
+
+msgid "Width"
+msgstr "चौड़ाई"
+
+msgid "Color Ramp"
+msgstr "रंग रैम्प"
+
+msgid "Seamless"
+msgstr "अखंड"
+
+msgid "Invert"
+msgstr "पलटना"
+
+msgid "Seamless Blend Skirt"
+msgstr "सीमलेस ब्लेंड स्कर्ट"
+
+msgid "Bump Strength"
+msgstr "टक्कर की ताकत"
+
+msgid "Is Sticky"
+msgstr "चिपचिपा है"
+
+msgid "On Threshold"
+msgstr "दहलीज पर"
+
+msgid "Off Threshold"
+msgstr "दहलीज से बाहर"
+
+msgid "Next"
+msgstr "अ‍गला"
+
+msgid "Green Swizzle"
+msgstr "हरा स्विज़ल"
+
+msgid "Blue Swizzle"
+msgstr "नीला स्विज़ल"
+
+msgid "Max Anisotropy"
+msgstr "अधिकतम अनिसोट्रॉपी"
+
+msgid "Hand"
+msgstr "हाथ"
+
+msgid "Hand Skeleton"
+msgstr "हाथ का कंकाल"
+
+msgid "Subject"
+msgstr "विषय"
+
+msgid "Discover Multicast If"
+msgstr "मल्टीकास्ट इफ की खोज करें"
+
+msgid "Discover Local Port"
+msgstr "स्थानीय बंदरगाह की खोज करें"
+
+msgid "Discover IPv6"
+msgstr "IPv6 की खोज करें"
+
+msgid "IGD Control URL"
+msgstr "आईजीडी नियंत्रण यूआरएल"
+
+msgid "IGD Service Type"
+msgstr "आईजीडी सेवा प्रकार"
+
+msgid "IGD Status"
+msgstr "IGD स्थिति"
+
+msgid "WebRTC"
+msgstr "वेबRTC"
+
+msgid "Max Channel in Buffer (KB)"
+msgstr "बफर में अधिकतम चैनल (KB)"
+
+msgid "Write Mode"
+msgstr "लेखन मोड"
+
+msgid "Supported Protocols"
+msgstr "समर्थित प्रोटोकॉल"
+
+msgid "Max Queued Packets"
+msgstr "अधिकतम पंक्तिबद्ध पैकेट"
+
+msgid "Requested Reference Space Types"
+msgstr "अनुरोधित संदर्भ स्थान प्रकार"
+
+msgid "Reference Space Type"
+msgstr "संदर्भ स्थान प्रकार"
+
+msgid "Visibility State"
+msgstr "दृश्यता स्थिति"
+
+msgid "Debug Keystore Pass"
+msgstr "कीस्टोर पास डीबग करें"
+
+msgid "Install Exported APK"
+msgstr "एक्सपोर्टेड एपीके इंस्टॉल करें"
+
+msgid "Java SDK Path"
+msgstr "जावा SDK पथ"
+
+msgid "Force System User"
+msgstr "फोर्स सिस्टम उपयोगकर्ता"
+
+msgid "Shutdown ADB on Exit"
+msgstr "बाहर निकलते समय ADB बंद करें"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "रिमोट डीबग के लिए Wi-Fi का उपयोग करें"
+
+msgid "Launcher Icons"
+msgstr "लॉन्चर चिह्न"
+
+msgid "Main 192 X 192"
+msgstr "मेन 192 X 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "अनुकूली अग्रभूमि 432 x 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "अनुकूली पृष्ठभूमि 432 X 432"
+
+msgid "Use Gradle Build"
+msgstr "ग्रैडल बिल्ड का उपयोग करें"
+
+msgid "Android Source Template"
+msgstr "एंड्रॉइड स्रोत टेम्पलेट"
+
+msgid "Compress Native Libraries"
+msgstr "मूल लाइब्रेरी को संपीड़ित करें"
+
+msgid "Keystore"
+msgstr "कुंजीस्टोर"
+
+msgid "Code"
+msgstr "कोड"
+
+msgid "App Category"
+msgstr "ऐप श्रेणी"
+
+msgid "Retain Data on Uninstall"
+msgstr "अनइंस्टॉल करने पर डेटा बनाए रखें"
+
+msgid "Show in Android TV"
+msgstr "एंड्रॉइड टीवी में दिखाएं"
+
+msgid "Show as Launcher App"
+msgstr "लॉन्चर ऐप के रूप में दिखाएं"
+
+msgid "Graphics"
+msgstr "ग्राफ़िक्स"
+
+msgid "Swipe to Dismiss"
+msgstr "खारिज करने के लिए स्वाइप करें"
+
+msgid "Support Small"
+msgstr "छोटा समर्थन करें"
+
+msgid "Support Normal"
+msgstr "सामान्य समर्थन करें"
+
+msgid "Support Large"
+msgstr "समर्थन बड़ा"
+
+msgid "Allow"
+msgstr "अनुमति दें"
+
+msgid "APK Expansion"
+msgstr "APK विस्तार"
+
+msgid "iOS Deploy"
+msgstr "IOS परिनियोजन"
+
+msgid "Targeted Device Family"
+msgstr "निर्दिष्ट उपकरण श्रेणी"
+
+msgid "Storyboard"
+msgstr "दृश्य क्रम"
+
+msgid "Spotlight 80 X 80"
+msgstr "स्पॉटलाइट 80 x 80"
+
+msgid "Spotlight 120 X 120"
+msgstr "स्पॉटलाइट 120 X 120"
+
+msgid "iPhone 120 X 120"
+msgstr "iphone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iOS 128 X 128"
+msgstr "iOS 128 X 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 X 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 X 136"
+
+msgid "App Store 1024 X 1024"
+msgstr "ऐप स्टोर 1024 X 1024"
+
+msgid "Architecture"
+msgstr "वास्तुकला"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "High Res"
+msgstr "उच्च Res"
+
+msgid "SDK Build"
+msgstr "SDK निर्माण"
+
+msgid "Xcode Build"
+msgstr "Xcode निर्माण"
+
+msgid "Apple Team ID"
+msgstr "एप्पल टीम ID"
+
+msgid "Identity"
+msgstr "पहचान"
+
+msgid "Allow JIT Code Execution"
+msgstr "JIT कोड निष्पादन की अनुमति दें"
+
+msgid "Allow Unsigned Executable Memory"
+msgstr "अहस्ताक्षरित निष्पादनयोग्य मेमोरी की अनुमति दें"
+
+msgid "Address Book"
+msgstr "पता पुस्तिका"
+
+msgid "Calendars"
+msgstr "पंचांग"
+
+msgid "App Sandbox"
+msgstr "ऐप सैंडबॉक्स"
+
+msgid "Network Server"
+msgstr "नेटवर्क सर्वर"
+
+msgid "Network Client"
+msgstr "नेटवर्क क्लाइंट"
+
+msgid "Device USB"
+msgstr "USB उपकरण"
+
+msgid "Device Bluetooth"
+msgstr "ब्लूटूथ उपकरण"
+
+msgid "Files Movies"
+msgstr "वीडियो फ़ाइलें"
+
+msgid "Helper Executables"
+msgstr "हेल्पर निष्पादनयोग्य"
+
+msgid "Apple ID Name"
+msgstr "एप्पल ID नाम"
+
+msgid "Apple ID Password"
+msgstr "Apple ID पासवर्ड"
+
+msgid "API UUID"
+msgstr "API UUID"
+
+msgid "API Key"
+msgstr "API कुंजी"
+
+msgid "API Key ID"
+msgstr "API कुंजी ID"
+
+msgid "Address Book Usage Description"
+msgstr "पता पुस्तिका उपयोग विवरण"
+
+msgid "Downloads Folder Usage Description"
+msgstr "डाउनलोड फ़ोल्डर उपयोग विवरण"
+
+msgid "Network Volumes Usage Description"
+msgstr "नेटवर्क वॉल्यूम उपयोग विवरण"
+
+msgid "Removable Volumes Usage Description"
+msgstr "हटाने योग्य वॉल्यूम उपयोग विवरण"
+
+msgid "Web"
+msgstr "वेब"
+
+msgid "HTTP Port"
+msgstr "HTTP पोर्ट"
+
+msgid "Use TLS"
+msgstr "TLS उपयोग"
+
+msgid "TLS Key"
+msgstr "TLS कुंजी"
+
+msgid "Extensions Support"
+msgstr "एक्सटेंशन समर्थन"
+
+msgid "For Desktop"
+msgstr "डेस्कटॉप के लिए"
+
+msgid "For Mobile"
+msgstr "मोबाइल के लिए"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Head Include"
+msgstr "हेड में सम्मिलित करें"
+
+msgid "Canvas Resize Policy"
+msgstr "कैनवास आकार परिवर्तन नीति"
+
+msgid "Focus Canvas on Start"
+msgstr "कैनवास को प्रारंभ पर केंद्रित करें"
+
+msgid "Progressive Web App"
+msgstr "प्रगतिशील वेब ऐप"
+
+msgid "Ensure Cross Origin Isolation Headers"
+msgstr "पार-अस्स्तान अलगाव हेडर्स सुनिश्चित करें"
+
+msgid "Offline Page"
+msgstr "अफ़लाइन पृष्ठ"
+
+msgid "Icon 144 X 144"
+msgstr "दृश्यचिन्ह 144 X 144"
+
+msgid "Icon 180 X 180"
+msgstr "दृश्यचिन्ह 180 X 180"
+
+msgid "Icon 512 X 512"
+msgstr "दृश्यचिन्ह 512 X 512"
+
+msgid "Emscripten Pool Size"
+msgstr "Emscripten पूल आकार"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "Identity Type"
+msgstr "पहचान का प्रकार"
+
+msgid "Timestamp Server URL"
+msgstr "समय-मुद्रा सर्वर पता"
+
+msgid "Digest Algorithm"
+msgstr "डाइजेस्ट एल्गोरिदम"
+
+msgid "Console Wrapper Icon"
+msgstr "कोनसोल आवरण दृश्यचिन्ह"
+
+msgid "Trademarks"
+msgstr "ट्रेडमार्क"
+
+msgid "D3D12 Agility SDK Multiarch"
+msgstr "D3D12 चपलता SDK मल्टीआर्क"
+
+msgid "Speed Scale"
+msgstr "गति पैमाना"
+
+msgid "Flip H"
+msgstr "पलटना H"
+
+msgid "Flip V"
+msgstr "पलटना V"
+
+msgid "Volume dB"
+msgstr "ध्वनि स्तर dB"
+
+msgid "Pitch Scale"
+msgstr "स्वर की तीव्रता"
+
+msgid "Stream Paused"
+msgstr "स्ट्रीम रोक दी गई"
+
+msgid "Area Mask"
+msgstr "क्षेत्र मुखौटा"
+
+msgid "Anchor Mode"
+msgstr "एंकर मोड"
+
+msgid "Top"
+msgstr "सर्वोच्च"
+
+msgid "Right"
+msgstr "दाहिने"
+
+msgid "Smoothed"
+msgstr "समतल"
+
+msgid "Drag"
+msgstr "खींचें"
+
+msgid "Tweaks"
+msgstr "बदलाव"
+
+msgid "Lifetime"
+msgstr "जीवनकाल"
+
+msgid "Preprocess"
+msgstr "पूर्वप्रक्रिया"
+
+msgid "Explosiveness"
+msgstr "विस्फोटकता"
+
+msgid "Randomness"
+msgstr "अनियमितता"
+
+msgid "Lifetime Randomness"
+msgstr "आजीवन यादृच्छिकता"
+
+msgid "Fixed FPS"
+msgstr "निश्चित FPS"
+
+msgid "Fract Delta"
+msgstr "भिन्न अंतर"
+
+msgid "Drawing"
+msgstr "चित्रकारी"
+
+msgid "Draw Order"
+msgstr "चित्रांकन क्रम"
+
+msgid "Shape"
+msgstr "आकार"
+
+msgid "Sphere Radius"
+msgstr "गोले की त्रिज्या"
+
+msgid "Rect Extents"
+msgstr "रेक्ट विस्तार"
+
+msgid "Normals"
+msgstr "नॉर्मल्स"
+
+msgid "Colors"
+msgstr "रंग"
+
+msgid "Ring Inner Radius"
+msgstr "रिंग आंतरिक त्रिज्या"
+
+msgid "Spread"
+msgstr "फैलाव"
+
+msgid "Gravity"
+msgstr "गुरुत्वाकर्षण"
+
+msgid "Initial Velocity"
+msgstr "प्रारंभिक वेग"
+
+msgid "Orbit Velocity"
+msgstr "कक्षा वेग"
+
+msgid "Radial Accel"
+msgstr "त्रिज्यीय त्वरण"
+
+msgid "Tangential Accel"
+msgstr "स्पर्शीय त्वरण"
+
+msgid "Angle"
+msgstr "कोण"
+
+msgid "Angle Min"
+msgstr "कोण न्यूनतम"
+
+msgid "Angle Max"
+msgstr "कोण अधिकतम"
+
+msgid "Color Initial Ramp"
+msgstr "रंग प्रारंभिक रैंप"
+
+msgid "Sub Emitter"
+msgstr "उप उत्सर्जक"
+
+msgid "Visibility Rect"
+msgstr "दृश्यता रेक्ट"
+
+msgid "Section Subdivisions"
+msgstr "अनुभाग उपविभाग"
+
+msgid "Process Material"
+msgstr "प्रक्रिया सामग्री"
+
+msgid "Energy"
+msgstr "ऊर्जा"
+
+msgid "Z Min"
+msgstr "Z न्यूनतम"
+
+msgid "Z Max"
+msgstr "Z अधिकतम"
+
+msgid "Item Cull Mask"
+msgstr "वस्तु क़ल मास्क"
+
+msgid "Shadow"
+msgstr "छाया"
+
+msgid "Texture Scale"
+msgstr "बनावट पैमाना"
+
+msgid "Fill"
+msgstr "भरना"
+
+msgid "Gradient"
+msgstr "ग्रेडिएंट"
+
+msgid "Capping"
+msgstr "सीमांकन"
+
+msgid "Begin Cap Mode"
+msgstr "आरंभिक सीमा मोड"
+
+msgid "End Cap Mode"
+msgstr "अंतिम सीमा मोड"
+
+msgid "Sharp Limit"
+msgstr "तीव्रता सीमा"
+
+msgid "Round Precision"
+msgstr "गोलाई सटीकता"
+
+msgid "Antialiased"
+msgstr "एंटीऐलियस्ड"
+
+msgid "Gizmo Extents"
+msgstr "गिज़्मो विस्तार"
+
+msgid "Multimesh"
+msgstr "मल्टीमेश"
+
+msgid "Target Desired Distance"
+msgstr "लक्षित वांछित दूरी"
+
+msgid "Path Max Distance"
+msgstr "पथ की अधिकतम दूरी"
+
+msgid "Path Postprocessing"
+msgstr "पथ बाद की प्रक्रिया"
+
+msgid "Path Metadata Flags"
+msgstr "पथ मेटाडाटा फ्लैग्स"
+
+msgid "Simplify Epsilon"
+msgstr "सरलीकरण एप्सिलॉन"
+
+msgid "Path Search Max Polygons"
+msgstr "पथ खोज अधिकतम बहुभुज"
+
+msgid "Max Neighbors"
+msgstr "अधिकतम पड़ोसी"
+
+msgid "Max Speed"
+msgstr "अधिकतम गति"
+
+msgid "Travel Cost"
+msgstr "यात्रा लागत"
+
+msgid "Skew"
+msgstr "तिरछा"
+
+msgid "Scroll Offset"
+msgstr "स्क्रॉल स्थानांतरण"
+
+msgid "Repeat"
+msgstr "दोहराना"
+
+msgid "End"
+msgstr "अंत"
+
+msgid "Ignore Camera Scroll"
+msgstr "कैमरा स्क्रॉल को अनदेखा करें"
+
+msgid "Scroll"
+msgstr "स्क्रॉल"
+
+msgid "Limit Begin"
+msgstr "सीमा प्रारंभ"
+
+msgid "Limit End"
+msgstr "अंतिम सीमा"
+
+msgid "Ignore Camera Zoom"
+msgstr "कैमरा ज़ूम को अनदेखा करें"
+
+msgid "H Offset"
+msgstr "H स्थानांतरण"
+
+msgid "V Offset"
+msgstr "V स्थानांतरण"
+
+msgid "Cubic Interp"
+msgstr "घनीय इंटरप"
+
+msgid "Monitoring"
+msgstr "निगरानी"
+
+msgid "Monitorable"
+msgstr "निगरानी योग्य"
+
+msgid "Point"
+msgstr "बिंदु"
+
+msgid "Wall Min Slide Angle"
+msgstr "दीवार का न्यूनतम स्लाइड कोण"
+
+msgid "Stop on Slope"
+msgstr "ढलान पर रुकें"
+
+msgid "Moving Platform"
+msgstr "चलता-फिरता प्लेटफार्म"
+
+msgid "On Leave"
+msgstr "जाने के बाद"
+
+msgid "Pickable"
+msgstr "चुनने योग्य"
+
+msgid "Build Mode"
+msgstr "निर्माण मोड"
+
+msgid "Length"
+msgstr "लंबाई"
+
+msgid "Rest Length"
+msgstr "बाकी लंबाई"
+
+msgid "Stiffness"
+msgstr "कठोरता"
+
+msgid "Initial Offset"
+msgstr "प्रारंभिक ऑफसेट"
+
+msgid "Bias"
+msgstr "पक्षपात"
+
+msgid "Softness"
+msgstr "मृदुता"
+
+msgid "Angular Limit"
+msgstr "कोणीय सीमा"
+
+msgid "Lower"
+msgstr "निचला"
+
+msgid "Upper"
+msgstr "ऊपरी"
+
+msgid "Motor"
+msgstr "मोटर"
+
+msgid "Bone 2D Nodepath"
+msgstr "हड्डी 2D नोड-पथ"
+
+msgid "Auto Configure Joint"
+msgstr "स्वतः कॉन्फ़िगर जोड़"
+
+msgid "Follow Bone When Simulating"
+msgstr "सिमुलेशन के दौरान हड्डी का अनुसरण करें"
+
+msgid "Exclude Parent"
+msgstr "अभिभावक को बाहर करें"
+
+msgid "Collide With"
+msgstr "टकराव करें"
+
+msgid "Areas"
+msgstr "क्षेत्रों"
+
+msgid "Bodies"
+msgstr "शरीर"
+
+msgid "Gravity Scale"
+msgstr "गुरुत्वाकर्षण पैमाना"
+
+msgid "Inertia"
+msgstr "जड़त्व"
+
+msgid "Solver"
+msgstr "समाधानकर्ता"
+
+msgid "Contact Monitor"
+msgstr "संपर्क मॉनिटर"
+
+msgid "Max Contacts Reported"
+msgstr "अधिकतम संपर्क रिपोर्ट किए गए"
+
+msgid "Linear"
+msgstr "रैखिक"
+
+msgid "Damp"
+msgstr "शमन"
+
+msgid "Angular"
+msgstr "कोणीय"
+
+msgid "Torque"
+msgstr "घुमाव (टॉर्क)"
+
+msgid "Bitmask"
+msgstr "बिटमास्क"
+
+msgid "Shape Centered"
+msgstr "आकार केन्द्रित"
+
+msgid "Shape Visible"
+msgstr "आकार दर्शनीय"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Vertex Colors"
+msgstr "वर्टेक्स रंग"
+
+msgid "Internal Vertex Count"
+msgstr "आंतरिक शीर्ष गणना"
+
+msgid "Update"
+msgstr "अद्यतन"
+
+msgid "Auto Calculate Length and Angle"
+msgstr "लंबाई और कोण की स्वचालित गणना"
+
+msgid "Editor Settings"
+msgstr "एडीटर सेटिंग्स"
+
+msgid "Show Bone Gizmo"
+msgstr "हड्डी उपकरण दिखाएँ"
+
+msgid "Rest"
+msgstr "विश्राम"
+
+msgid "Use Kinematic Bodies"
+msgstr "किनेमैटिक देह का उपयोग करें"
+
+msgid "Unit Size"
+msgstr "इकाई का आकार"
+
+msgid "Max dB"
+msgstr "अधिकतम dB"
+
+msgid "Emission Angle"
+msgstr "उत्सर्जन कोण"
+
+msgid "Degrees"
+msgstr "डिग्री"
+
+msgid "Cutoff Hz"
+msgstr "कटऑफ आवृत्ति"
+
+msgid "Doppler"
+msgstr "डॉपलर"
+
+msgid "Keep Aspect"
+msgstr "अनुपात बनाए रखें"
+
+msgid "Attributes"
+msgstr "गुण"
+
+msgid "Frustum Offset"
+msgstr "फ्रस्टम स्थानांतरण"
+
+msgid "Far"
+msgstr "दूर"
+
+msgid "Visibility AABB"
+msgstr "दृश्यता AABB"
+
+msgid "Box Extents"
+msgstr "बॉक्स विस्तार"
+
+msgid "Ring Height"
+msgstr "रिंग की ऊंचाई"
+
+msgid "Flatness"
+msgstr "समतलता"
+
+msgid "Orm"
+msgstr "ओर्म"
+
+msgid "Emission"
+msgstr "उत्सर्जन"
+
+msgid "Parameters"
+msgstr "पैरैमिटर्स"
+
+msgid "Modulate"
+msgstr "मिलाना"
+
+msgid "Albedo Mix"
+msgstr "अल्बेडो मिक्स"
+
+msgid "Distance Fade"
+msgstr "दूरी मिट गई"
+
+msgid "Thickness"
+msgstr "घनत्व"
+
+msgid "Heightfield Mask"
+msgstr "ऊँचाई क्षेत्र मास्क"
+
+msgid "Visibility Range"
+msgstr "दृश्यता दूरी"
+
+msgid "Deterministic"
+msgstr "निर्धारणात्मक"
+
+msgid "Pixel Size"
+msgstr "पिक्सेल आकार"
+
+msgid "Flags"
+msgstr "ध्वजा"
+
+msgid "Billboard"
+msgstr "सूचनापटल"
+
+msgid "Shaded"
+msgstr "छायांकित"
+
+msgid "Double Sided"
+msgstr "दोहरा"
+
+msgid "No Depth Test"
+msgstr "कोई गहराई परीक्षण नहीं"
+
+msgid "Alpha Cut"
+msgstr "अल्फा कट"
+
+msgid "Alpha Scissor Threshold"
+msgstr "अल्फा कटौती सीमा"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "अल्फा एंटीएलियसिंग मोड"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "अल्फा एंटीएलियसिंग किनारा"
+
+msgid "Render Priority"
+msgstr "रेंडर प्राथमिकता"
+
+msgid "Outline Render Priority"
+msgstr "आउटलाइन रेंडर प्राथमिकता"
+
+msgid "Text"
+msgstr "लेख"
+
+msgid "Font"
+msgstr "लिपि"
+
+msgid "Uppercase"
+msgstr "बड़े अक्षर"
+
+msgid "BiDi"
+msgstr "BiDi"
+
+msgid "Structured Text BiDi Override"
+msgstr "संरचित पाठ BiDi अधिलेख"
+
+msgid "Structured Text BiDi Override Options"
+msgstr "संरचित पाठ BiDi अधिलेख विकल्प"
+
+msgid "Indirect Energy"
+msgstr "अप्रत्यक्ष ऊर्जा"
+
+msgid "Volumetric Fog Energy"
+msgstr "घनत्वीय कोहरा ऊर्जा"
+
+msgid "Negative"
+msgstr "नकारात्मक"
+
+msgid "Normal Bias"
+msgstr "सामान्य पूर्वाग्रह"
+
+msgid "Opacity"
+msgstr "अपारदर्शिता"
+
+msgid "Blur"
+msgstr "धुंधला"
+
+msgid "Quality"
+msgstr "क्वालिटी"
+
+msgid "Supersampling Factor"
+msgstr "सुपरसैम्पलिंग फैक्टर"
+
+msgid "Bounces"
+msgstr "उछाल"
+
+msgid "Bounce Indirect Energy"
+msgstr "उछाल अप्रत्यक्ष ऊर्जा"
+
+msgid "Interior"
+msgstr "आंतरिक"
+
+msgid "Subdiv"
+msgstr "उपखंड"
+
+msgid "Light Data"
+msgstr "प्रकाश डेटा"
+
+msgid "Exclude"
+msgstr "निकालना"
+
+msgid "Use Secondary Rotation"
+msgstr "द्वितीयक घुमाव का उपयोग करें"
+
+msgid "Symmetry Limitation"
+msgstr "सममिति सीमा"
+
+msgid "Primary Damp Threshold"
+msgstr "प्राथमिक नमी सीमा"
+
+msgid "Primary Positive Limit Angle"
+msgstr "प्राथमिक धनात्मक सीमा कोण"
+
+msgid "Primary Positive Damp Threshold"
+msgstr "प्राथमिक सकारात्मक नमी सीमा"
+
+msgid "Primary Negative Limit Angle"
+msgstr "प्राथमिक ऋणात्मक सीमा कोण"
+
+msgid "Primary Negative Damp Threshold"
+msgstr "प्राथमिक नकारात्मक नमी सीमा"
+
+msgid "Secondary Positive Limit Angle"
+msgstr "द्वितीयक धनात्मक सीमा कोण"
+
+msgid "Secondary Negative Limit Angle"
+msgstr "द्वितीयक ऋणात्मक सीमा कोण"
+
+msgid "Secondary Negative Damp Threshold"
+msgstr "द्वितीयक नकारात्मक नमी सीमा"
+
+msgid "Quaternion"
+msgstr "चतुष्क"
+
+msgid "Basis"
+msgstr "आधार"
+
+msgid "Visibility"
+msgstr "दृश्यता"
+
+msgid "Visibility Parent"
+msgstr "दृश्यता मूल"
+
+msgid "Use Model Front"
+msgstr "मॉडल फ्रंट उपयोग करें"
+
+msgid "Uniformity"
+msgstr "एकरूपता"
+
+msgid "Twist Span"
+msgstr "मोड़ की अवधि"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Equilibrium Point"
+msgstr "संतुलन बिंदु"
+
+msgid "Upper Angle"
+msgstr "ऊपरी कोण"
+
+msgid "Lower Angle"
+msgstr "निचला कोण"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Impulse Clamp"
+msgstr "आवेग क्लैंप"
+
+msgid "Angular Spring Stiffness"
+msgstr "कोणीय स्प्रिंग कठोरता"
+
+msgid "Angular Spring Damping"
+msgstr "कोणीय स्प्रिंग डंपिंग"
+
+msgid "Angular Equilibrium Point"
+msgstr "कोणीय संतुलन बिंदु"
+
+msgid "Body Offset"
+msgstr "बॉडी ऑफसेट"
+
+msgid "Bounce"
+msgstr "उछाल"
+
+msgid "Axis Lock"
+msgstr "धुरी लॉक"
+
+msgid "Angular X"
+msgstr "कोणीय X"
+
+msgid "Angular Y"
+msgstr "कोणीय Y"
+
+msgid "Angular Z"
+msgstr "कोणीय Z"
+
+msgid "Hit Back Faces"
+msgstr "पीछे की सतहों से टकराएं"
+
+msgid "Spatial Attachment Path"
+msgstr "स्थानिक संलग्नक पथ"
+
+msgid "Simulation Precision"
+msgstr "सिमुलेशन परिशुद्धता"
+
+msgid "Total Mass"
+msgstr "कुल द्रव्यमान"
+
+msgid "Linear Stiffness"
+msgstr "रैखिक कठोरता"
+
+msgid "Shrinking Factor"
+msgstr "संकुचन गुणक"
+
+msgid "Pressure Coefficient"
+msgstr "दबाव गुणांक"
+
+msgid "Damping Coefficient"
+msgstr "अवमंदन गुणांक"
+
+msgid "Spring Length"
+msgstr "स्प्रिंग की लंबाई"
+
+msgid "Per-Wheel Motion"
+msgstr "प्रति-पहिया गति"
+
+msgid "Brake"
+msgstr "ब्रेक"
+
+msgid "Steering"
+msgstr "स्टीयरिंग"
+
+msgid "VehicleBody3D Motion"
+msgstr "वाहनशरीर 3D गति"
+
+msgid "Wheel"
+msgstr "पहिया"
+
+msgid "Roll Influence"
+msgstr "घुमाव का प्रभाव"
+
+msgid "Suspension"
+msgstr "निलंबन"
+
+msgid "Travel"
+msgstr "यात्रा"
+
+msgid "Origin Offset"
+msgstr "मूल ऑफसेट"
+
+msgid "Mesh LOD Threshold"
+msgstr "मेश LOD सीमा"
+
+msgid "Modifier"
+msgstr "आपरिवर्तक"
+
+msgid "Deprecated"
+msgstr "पदावनत"
+
+msgid "Target"
+msgstr "लक्ष्य"
+
+msgid "Use Magnet"
+msgstr "चुंबक उपयोग"
+
+msgid "Magnet"
+msgstr "चुंबक"
+
+msgid "Influence"
+msgstr "प्रभाव"
+
+msgid "Inside"
+msgstr "अंदर"
+
+msgid "Geometry"
+msgstr "रेखागणित"
+
+msgid "Material Override"
+msgstr "सामग्री ओवरराइड"
+
+msgid "Material Overlay"
+msgstr "सामग्री ओवरले"
+
+msgid "Custom AABB"
+msgstr "स्वनिर्धारित AABB"
+
+msgid "LOD Bias"
+msgstr "LOD पूर्वाग्रह"
+
+msgid "Dynamic Range"
+msgstr "गतिक परास"
+
+msgid "Use Two Bounces"
+msgstr "दो प्रतिबिंबों का उपयोग करें"
+
+msgid "Pose"
+msgstr "मुद्रा"
+
+msgid "Show When Tracked"
+msgstr "ट्रैक होने पर दिखाएँ"
+
+msgid "World Scale"
+msgstr "विश्व पैमाना"
+
+msgid "Sync"
+msgstr "समकालिकता"
+
+msgid "Mix Mode"
+msgstr "मिश्रण विधि"
+
+msgid "Fadeout Time"
+msgstr "फेडआउट समय"
+
+msgid "Delay"
+msgstr "विलंब"
+
+msgid "Random Delay"
+msgstr "यादृच्छिक विलंब"
+
+msgid "Explicit Elapse"
+msgstr "निश्चितअंतराल"
+
+msgid "Xfade Time"
+msgstr "Xfade समय"
+
+msgid "Allow Transition to Self"
+msgstr "स्वयं में परिवर्तन की अनुमति दें"
+
+msgid "Root Node"
+msgstr "रूट नोड"
+
+msgid "Root Motion"
+msgstr "जड़ गति"
+
+msgid "Method"
+msgstr "मेथड"
+
+msgid "Discrete"
+msgstr "अलग"
+
+msgid "Switch"
+msgstr "बदलना"
+
+msgid "Switch Mode"
+msgstr "मोड बदलना"
+
+msgid "Expression"
+msgstr "एक्सप्रेशन"
+
+msgid "Movie Quit on Finish"
+msgstr "मूवी खत्म होने पर बंद करें"
+
+msgid "Advance Expression Base Node"
+msgstr "उन्नत अभिव्यक्ति मूल नोड"
+
+msgid "Zero Y"
+msgstr "शून्य Y"
+
+msgid "Mix Target"
+msgstr "मिश्रण लक्ष्य"
+
+msgid "Ratio"
+msgstr "अनुपात"
+
+msgid "Keep Pressed Outside"
+msgstr "बाहर दबाकर रखें"
+
+msgid "Button Group"
+msgstr "बटन समूह"
+
+msgid "Shortcut in Tooltip"
+msgstr "टूलटिप में शॉर्टकट"
+
+msgid "Allow Unpress"
+msgstr "अनप्रेस को अनुमति दें"
+
+msgid "Text Overrun Behavior"
+msgstr "लेख अधिप्रवाह व्यवहार"
+
+msgid "Use Top Left"
+msgstr "शीर्ष बाएँ को इस्तेमाल करें"
+
+msgid "Symbol Lookup on Click"
+msgstr "क्लिक पर प्रतीक खोज"
+
+msgid "Symbol Tooltip on Hover"
+msgstr "माउस ले जाने पर चिह्न सूचना"
+
+msgid "Line Length Guidelines"
+msgstr "लाइन लंबाई दिशानिर्देश"
+
+msgid "Draw Executing Lines"
+msgstr "निष्पादन रेखाएँ बनाएँ"
+
+msgid "Prefixes"
+msgstr "उपसर्गों"
+
+msgid "Automatic Prefixes"
+msgstr "स्वचालित उपसर्गों"
+
+msgid "Pairs"
+msgstr "जोड़े"
+
+msgid "Edit Alpha"
+msgstr "अल्फ़ा संपादित करें"
+
+msgid "Sampler Visible"
+msgstr "नमूना दृश्यमान"
+
+msgid "Sliders Visible"
+msgstr "स्लाइडर्स दृश्यमान"
+
+msgid "Hex Visible"
+msgstr "हेक्स दृश्यमान"
+
+msgid "Presets Visible"
+msgstr "प्रीसेट दृश्यमान"
+
+msgid "Pivot Offset"
+msgstr "धुरी ओफ़्सेट"
+
+msgid "Container Sizing"
+msgstr "कंटेनर का आकार"
+
+msgid "Localization"
+msgstr "स्थानीयकरण"
+
+msgid "Localize Numeral System"
+msgstr "स्थानीयकृत अंक प्रणाली"
+
+msgid "Neighbor Right"
+msgstr "पड़ोसी दाहिने"
+
+msgid "Previous"
+msgstr "पिछला"
+
+msgid "Behavior Recursive"
+msgstr "व्यवहार पुनरावर्ती"
+
+msgid "Mouse"
+msgstr "माउस"
+
+msgid "Force Pass Scroll Events"
+msgstr "स्क्रॉल इवेंट्स को ज़बरदस्ती पास करें"
+
+msgid "Shortcut Context"
+msgstr "शॉर्टकट संदर्भ"
+
+msgid "Live"
+msgstr "प्रसारण में"
+
+msgid "Described by Nodes"
+msgstr "नोड्स द्वारा वर्णित"
+
+msgid "Labeled by Nodes"
+msgstr "नोड्स द्वारा लेबल किया गया"
+
+msgid "Dialog"
+msgstr "संवाद"
+
+msgid "Autowrap"
+msgstr "ऑटोरैप"
+
+msgid "File Mode"
+msgstr "नत्थी मोड"
+
+msgid "Access"
+msgstr "प्रवेश"
+
+msgid "Filters"
+msgstr "फ़िल्टर्स"
+
+msgid "Options"
+msgstr "विकल्प"
+
+msgid "Allow Folding All"
+msgstr "सभी को फ़ोल्ड करने की अनुमति दें"
+
+msgid "Show Grid"
+msgstr "ग्रिड दिखाएँ"
+
+msgid "Toolbar Menu"
+msgstr "टूलबार मेनू"
+
+msgid "Show Zoom Label"
+msgstr "ज़ूम लेबल दिखाएँ"
+
+msgid "Show Grid Buttons"
+msgstr "ग्रिड बटन दिखाएं"
+
+msgid "Show Arrange Button"
+msgstr "व्यवस्थित करें बटन दिखाएँ"
+
+msgid "Draggable"
+msgstr "खींचने योग्य"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "अमान्य कनेक्शन प्रकार को अनदेखा करें"
+
+msgid "Select Mode"
+msgstr "चुनाव मोड"
+
+msgid "Max Text Lines"
+msgstr "अधिकतम पाठ पंक्तियाँ"
+
+msgid "Wraparound Items"
+msgstr "लपेटने योग्य वस्तुएँ"
+
+msgid "Items"
+msgstr "वस्तुएँ"
+
+msgid "Max Columns"
+msgstr "अधिकतम कॉलम"
+
+msgid "Same Column Width"
+msgstr "समान स्तंभ चौड़ाई"
+
+msgid "Fixed Column Width"
+msgstr "निश्चित कॉलम चौड़ाई"
+
+msgid "Icon Mode"
+msgstr "दृश्यचिन्ह मोड"
+
+msgid "Icon Scale"
+msgstr "दृश्यचिन्ह स्केल"
+
+msgid "Ellipsis Char"
+msgstr "इलिप्सिस चार"
+
+msgid "Tab Stops"
+msgstr "टैब स्टॉप"
+
+msgid "Max Lines Visible"
+msgstr "अधिकतम दृश्यमान रेखाएँ"
+
+msgid "Placeholder Text"
+msgstr "प्लेसहोल्डर लेख"
+
+msgid "Max Length"
+msgstr "अधिकतम लंबाई"
+
+msgid "Keep Editing on Text Submit"
+msgstr "लेख सबमिट पर संपादन जारी रखें"
+
+msgid "Context Menu Enabled"
+msgstr "संदर्भ मेनू सक्रिय"
+
+msgid "Backspace Deletes Composite Character Enabled"
+msgstr "बैकस्पेस से सम्मिश्रित अक्षर हटाना सक्रिय"
+
+msgid "Shortcut Keys Enabled"
+msgstr "शॉर्टकट कुंजियाँ सक्रिय"
+
+msgid "Blink"
+msgstr "झपकाना"
+
+msgid "Blink Interval"
+msgstr "ब्लिंक अंतराल"
+
+msgid "Column"
+msgstr "काँलम"
+
+msgid "Mid Grapheme"
+msgstr "मध्य ग्राफ़ीम"
+
+msgid "Secret"
+msgstr "गुप्त"
+
+msgid "Underline"
+msgstr "रेखांकन"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Prefer Global Menu"
+msgstr "वैश्विक मेनू को प्राथमिकता दें"
+
+msgid "Draw Center"
+msgstr "केंद्र बनाएं"
+
+msgid "Patch Margin"
+msgstr "पैच मार्जिन"
+
+msgid "Axis Stretch"
+msgstr "अक्ष खिंचाव"
+
+msgid "Fit to Longest Item"
+msgstr "सबसे लम्बी वस्तु के लिए फिट"
+
+msgid "Submenu Popup Delay"
+msgstr "सबमेनू पॉपअप विलंब"
+
+msgid "System Menu ID"
+msgstr "सिस्टम मेनू ID"
+
+msgid "Prefer Native Menu"
+msgstr "मूल मेनू को प्राथमिकता दें"
+
+msgid "Indeterminate"
+msgstr "अनिर्धारित"
+
+msgid "Step"
+msgstr "कदम"
+
+msgid "Allow Lesser"
+msgstr "छोटे मान की अनुमति"
+
+msgid "Border Width"
+msgstr "सीमा चौड़ाई"
+
+msgid "Env"
+msgstr "Env"
+
+msgid "Glyph Flags"
+msgstr "ग्लिफ़ ध्वजा"
+
+msgid "Relative Index"
+msgstr "सापेक्ष सूचकांक"
+
+msgid "Scroll Active"
+msgstr "सक्रिय स्क्रॉल करें"
+
+msgid "Scroll Following"
+msgstr "निम्नलिखित स्क्रॉल करें"
+
+msgid "Markup"
+msgstr "मार्कअप"
+
+msgid "Meta Underlined"
+msgstr "मेटा रेखांकित"
+
+msgid "Hint Underlined"
+msgstr "संकेत रेखांकित"
+
+msgid "Follow Focus"
+msgstr "फोकस का पालन करें"
+
+msgid "Default Scroll Deadzone"
+msgstr "प्रायिक स्क्रॉल डेडज़ोन"
+
+msgid "Dragger Visibility"
+msgstr "ड्रैगर दृश्यता"
+
+msgid "Stretch Shrink"
+msgstr "खिंचाव सिकुड़न"
+
+msgid "Tab Close Display Policy"
+msgstr "टैब बंद करें प्रदर्शन नीति"
+
+msgid "Scrolling Enabled"
+msgstr "स्क्रॉलिंग सक्रिय"
+
+msgid "Tabs Visible"
+msgstr "टैब दृश्यमान"
+
+msgid "Use Hidden Tabs for Min Size"
+msgstr "न्यूनतम आकार के लिए छिपे हुए टैब का उपयोग करें"
+
+msgid "Past End of File"
+msgstr "फ़ाइल का पिछला अंत"
+
+msgid "Fit Content Height"
+msgstr "फ़िट सामग्री ऊंचाई"
+
+msgid "Move on Right Click"
+msgstr "राइट क्लिक पर आगे बढ़ें"
+
+msgid "Syntax Highlighter"
+msgstr "सिंटैक्स हाइलाइटर"
+
+msgid "Text Edit Idle Detect (sec)"
+msgstr "लेख संपादित आलसी पहचान (sec)"
+
+msgid "Text Edit Undo Stack Max Size"
+msgstr "लेख संपादित पूर्ववत स्टैक अधिकतम आकार"
+
+msgid "Hover"
+msgstr "होवर"
+
+msgid "Radial Fill"
+msgstr "रेडियल भरण"
+
+msgid "Initial Angle"
+msgstr "प्रारंभिक कोण"
+
+msgid "Fill Degrees"
+msgstr "डिग्री भरें"
+
+msgid "Under"
+msgstr "अंतर्गत"
+
+msgid "Progress Offset"
+msgstr "प्रगति ऑफसेट"
+
+msgid "Tint"
+msgstr "टिंट"
+
+msgid "Custom Minimum Height"
+msgstr "कस्टम न्यूनतम ऊंचाई"
+
+msgid "Column Titles Visible"
+msgstr "कॉलम शीर्षक दृश्य"
+
+msgid "Drop Mode Flags"
+msgstr "ड्रॉप मोड ध्वजा"
+
+msgid "Paused"
+msgstr "ठहरना"
+
+msgid "Show Behind Parent"
+msgstr "पेरेंट के पीछे दिखाएं"
+
+msgid "Light Mask"
+msgstr "प्रकाश मास्क"
+
+msgid "Visibility Layer"
+msgstr "दृश्यता परत"
+
+msgid "Z Index"
+msgstr "Z सूचकांक"
+
+msgid "Use Parent Material"
+msgstr "पेरेंट सामग्री का उपयोग करें"
+
+msgid "NormalMap"
+msgstr "नॉर्मल मैप"
+
+msgid "Shininess"
+msgstr "चमक"
+
+msgid "Body Size Limit"
+msgstr "शरीर के आकार की सीमा"
+
+msgid "Max Redirects"
+msgstr "अधिकतम पुनर्निर्देशन"
+
+msgid "Node Name Num Separator"
+msgstr "नोड नाम संख्या विभाजक"
+
+msgid "Node Name Casing"
+msgstr "नोड नाम आवरण"
+
+msgid "Shapes"
+msgstr "आकार"
+
+msgid "Shape Color"
+msgstr "आकार रंग"
+
+msgid "Contact Color"
+msgstr "रंग से संपर्क करें"
+
+msgid "Geometry Color"
+msgstr "रेखागणित रंग"
+
+msgid "Draw 2D Outlines"
+msgstr "2D रूपरेखा बनाएं"
+
+msgid "Anti Aliasing"
+msgstr "एंटी एलीयसिंग"
+
+msgid "Screen Space AA"
+msgstr "स्क्रीन स्पेस AA"
+
+msgid "Use TAA"
+msgstr "उपयोग TAA"
+
+msgid "Mesh LOD"
+msgstr "मेश LOD"
+
+msgid "LOD Change"
+msgstr "LOD परिवर्तन"
+
+msgid "Threshold Pixels"
+msgstr "थ्रेशोल्ड पिक्सेल"
+
+msgid "Snap"
+msgstr "स्नैप"
+
+msgid "Snap 2D Vertices to Pixel"
+msgstr "2D वर्टिसेस को पिक्सल में स्नैप करें"
+
+msgid "VRS"
+msgstr "VRS"
+
+msgid "Lights and Shadows"
+msgstr "प्रकाश और छायाएँ"
+
+msgid "Atlas Size"
+msgstr "एटलस आकार"
+
+msgid "Atlas Quadrant 0 Subdiv"
+msgstr "एटलस क्वाड्रेंट 0 उपविभाजन"
+
+msgid "Atlas Quadrant 1 Subdiv"
+msgstr "एटलस क्वाड्रेंट 1 उपविभाजन"
+
+msgid "Atlas Quadrant 2 Subdiv"
+msgstr "एटलस क्वाड्रेंट 2 उपविभाजन"
+
+msgid "Atlas Quadrant 3 Subdiv"
+msgstr "एटलस क्वाड्रेंट 3 उपविभाजन"
+
+msgid "SDF"
+msgstr "SDF"
+
+msgid "Enable Object Picking"
+msgstr "वस्तु चुनना सक्रिय करे"
+
+msgid "Menu"
+msgstr "मेनू"
+
+msgid "Use XR"
+msgstr "उपयोग XR"
+
+msgid "Own World 3D"
+msgstr "विश्व 3D"
+
+msgid "World 3D"
+msgstr "विश्व 3D"
+
+msgid "Transparent BG"
+msgstr "पारदर्शी BG"
+
+msgid "Handle Input Locally"
+msgstr "इनपुट को स्थानीय रूप से संभालें"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
+
+msgid "Use Debanding"
+msgstr "डिबैंडिंग का उपयोग करें"
+
+msgid "Use HDR 2D"
+msgstr "HDR 2D का उपयोग करें"
+
+msgid "Anisotropic Filtering Level"
+msgstr "एनीसोट्रॉपिक फिल्टरिंग स्तर"
+
+msgid "FSR Sharpness"
+msgstr "FSR शार्पनेस"
+
+msgid "Variable Rate Shading"
+msgstr "परिवर्तनीय दर शेडिंग"
+
+msgid "Audio Listener"
+msgstr "ऑडियो श्रोता"
+
+msgid "Object Picking"
+msgstr "वस्तु चुनना"
+
+msgid "Object Picking Sort"
+msgstr "ऑब्जेक्ट चुनना सॉर्ट"
+
+msgid "Object Picking First Only"
+msgstr "केवल पहले वस्तु चुनना"
+
+msgid "16 Bits"
+msgstr "16 बिट्स"
+
+msgid "Quad 0"
+msgstr "चतुर्थांश 0"
+
+msgid "Quad 1"
+msgstr "चतुर्थांश 1"
+
+msgid "Quad 2"
+msgstr "चतुर्थांश 2"
+
+msgid "Quad 3"
+msgstr "चतुर्थांश 3"
+
+msgid "Render Target"
+msgstr "रेंडर लक्ष्य"
+
+msgid "Current Screen"
+msgstr "वर्तमान स्क्रीन"
+
+msgid "Unfocusable"
+msgstr "अप्रेरक"
+
+msgid "Mouse Passthrough"
+msgstr "माउस पासथ्रू"
+
+msgid "Keep Title Visible"
+msgstr "शीर्षक दृश्यमान रखें"
+
+msgid "2D Render"
+msgstr "2D रेंडर"
+
+msgid "3D Render"
+msgstr "3D रेंडर"
+
+msgid "Segments"
+msgstr "खंड"
+
+msgid "Parsed Geometry Type"
+msgstr "पार्स की गई रेखागणित प्रकार"
+
+msgid "Source Geometry Mode"
+msgstr "स्रोत रेखागणित मोड"
+
+msgid "Cells"
+msgstr "कोष"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Custom Solver Bias"
+msgstr "कस्टम हल करनेवाला बायस"
+
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK डेटा चेन लंबाई"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK डेटा चेन लंबाई"
+
+msgid "Jiggle Data Chain Length"
+msgstr "जिगल डेटा चेन लंबाई"
+
+msgid "Bottom Left Side"
+msgstr "नीचे बाईं ओर"
+
+msgid "Top Left Corner"
+msgstr "शीर्ष बायां कोना"
+
+msgid "Top Right Side"
+msgstr "शीर्ष दाहिनी ओर"
+
+msgid "Top Right Corner"
+msgstr "शीर्ष दायां कोना"
+
+msgid "Terrains"
+msgstr "भूमियाँ"
+
+msgid "UV Clipping"
+msgstr "यूवी क्लिपिंग"
+
+msgid "One Way"
+msgstr "एक तरफ़ा रास्ता"
+
+msgid "Transpose"
+msgstr "ट्रांसपोज़"
+
+msgid "Terrain"
+msgstr "भू-भाग"
+
+msgid "Miscellaneous"
+msgstr "विविध"
+
+msgid "Probability"
+msgstr "संभावना"
+
+msgid "Density"
+msgstr "घनत्व"
+
+msgid "Edge Fade"
+msgstr "किवाड मद्धिमकरण"
+
+msgid "Map Width"
+msgstr "नक्शा चौड़ाई"
+
+msgid "Map Depth"
+msgstr "नक्शा गहराई"
+
+msgid "Map Data"
+msgstr "नक्शा डेटा"
+
+msgid "Item"
+msgstr "वस्तु"
+
+msgid "Preview"
+msgstr "पूर्व दर्शन"
+
+msgid "Add UV2"
+msgstr "ऐड UV2"
+
+msgid "UV2 Padding"
+msgstr "UV2 पैडिंग"
+
+msgid "Subdivide Width"
+msgstr "उपविभाजन चौड़ाई"
+
+msgid "Subdivide Height"
+msgstr "उपविभाजन ऊंचाई"
+
+msgid "Subdivide Depth"
+msgstr "उपविभाजन गहराई"
+
+msgid "Top Radius"
+msgstr "शीर्ष त्रिज्या"
+
+msgid "Bottom Radius"
+msgstr "निचला त्रिज्या"
+
+msgid "Cap Top"
+msgstr "कैप सर्वोच्च"
+
+msgid "Left to Right"
+msgstr "बाएं से दायां"
+
+msgid "Is Hemisphere"
+msgstr "गोलार्ध है"
+
+msgid "Ring Segments"
+msgstr "रिंग खंड"
+
+msgid "Bind"
+msgstr "बांधना"
+
+msgid "Sky"
+msgstr "आकाश"
+
+msgid "Cover"
+msgstr "ढकना"
+
+msgid "Sun"
+msgstr "सूर्य"
+
+msgid "Panorama"
+msgstr "पैनोरमा"
+
+msgid "Rayleigh"
+msgstr "रेलीघ"
+
+msgid "Coefficient"
+msgstr "गुणांक"
+
+msgid "Eccentricity"
+msgstr "विक्षिप्तता"
+
+msgid "Turbidity"
+msgstr "दुष्टता"
+
+msgid "Night Sky"
+msgstr "रात्रि आकाश"
+
+msgid "Fallback Environment"
+msgstr "फॉलबैक पर्यावरण"
+
+msgid "Plane"
+msgstr "समतल"
+
+msgid "Atlas"
+msgstr "मानचित्र संग्रह"
+
+msgid "Format"
+msgstr "फ़ोर्मैट"
+
+msgid "Mix Rate"
+msgstr "मिश्रण दर"
+
+msgid "Stereo"
+msgstr "स्टीरियो"
+
+msgid "Auto Exposure"
+msgstr "स्वचालित प्रदर्शन"
+
+msgid "DOF Blur"
+msgstr "DOF धुंधला"
+
+msgid "Frustum"
+msgstr "पिरामिडीय भाग"
+
+msgid "Camera Feed ID"
+msgstr "कैमरा फीड ID"
+
+msgid "Which Feed"
+msgstr "कौन सा फ़ीड"
+
+msgid "Particles Anim H Frames"
+msgstr "कण एनीमेशन H फ्रेम्स"
+
+msgid "Particles Anim V Frames"
+msgstr "कण एनीमेशन V फ्रेम्स"
+
+msgid "Access Resolved Depth"
+msgstr "हल की गई गहराई तक पहुँचें"
+
+msgid "Needs Motion Vectors"
+msgstr "मोशन वेक्टर की आवश्यकता है"
+
+msgid "Needs Normal Roughness"
+msgstr "नॉर्मल रफनेस की आवश्यकता"
+
+msgid "Needs Separate Specular"
+msgstr "अलग स्पेकुलर की आवश्यकता"
+
+msgid "Bake Interval"
+msgstr "बेक अंतराल"
+
+msgid "Background"
+msgstr "पृष्ठभूमि"
+
+msgid "Canvas Max Layer"
+msgstr "कैनवास मैक्स लेयर"
+
+msgid "Ambient Light"
+msgstr "पर्यावरणीय प्रकाश"
+
+msgid "Tonemap"
+msgstr "टोनमैप"
+
+msgid "White"
+msgstr "सफ़ेद"
+
+msgid "Fade In"
+msgstr "फेड इन"
+
+msgid "Fade Out"
+msgstr "फेड आउट"
+
+msgid "Depth Tolerance"
+msgstr "गहराई सहनशीलता"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "Power"
+msgstr "शक्ति"
+
+msgid "Detail"
+msgstr "विवरण"
+
+msgid "AO Channel Affect"
+msgstr "AO चैनल प्रभाव"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Read Sky Light"
+msgstr "आसमान प्रकाश पढ़ें"
+
+msgid "Cascades"
+msgstr "कास्केड्स"
+
+msgid "Probe Bias"
+msgstr "प्रोब बायस"
+
+msgid "Glow"
+msgstr "चमक"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "मिश्रण"
+
+msgid "Bloom"
+msgstr "खिलना"
+
+msgid "HDR Threshold"
+msgstr "HDR थ्रेशोल्ड"
+
+msgid "HDR Luminance Cap"
+msgstr "HDR ब्राइटनेस सीमा"
+
+msgid "Fog"
+msgstr "कोहरा"
+
+msgid "Sun Scatter"
+msgstr "सूर्य प्रसार"
+
+msgid "Aerial Perspective"
+msgstr "हवाई परिप्रेक्ष्य"
+
+msgid "Volumetric Fog"
+msgstr "वॉल्यूमेट्रिक कोहरा"
+
+msgid "GI Inject"
+msgstr "GI इंजेक्ट"
+
+msgid "Anisotropy"
+msgstr "वैकृतिकता"
+
+msgid "Adjustments"
+msgstr "समायोजन"
+
+msgid "Brightness"
+msgstr "चमक"
+
+msgid "Features"
+msgstr "सुविधाऐं"
+
+msgid "Glyph"
+msgstr "लिखाई"
+
+msgid "Offsets"
+msgstr "ऑफसेट"
+
+msgid "Use HDR"
+msgstr "HDR उपयोग"
+
+msgid "Shader"
+msgstr "शेडर"
+
+msgid "Use as Albedo"
+msgstr "एल्बेडो के रूप में उपयोग करें"
+
+msgid "Is sRGB"
+msgstr "क्या sRGB"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "Metallic"
+msgstr "धातुमय"
+
+msgid "Operator"
+msgstr "ऑपरेटर"
+
+msgid "On UV2"
+msgstr "UV2 पर"
+
+msgid "Flowmap"
+msgstr "फ्लोमैप"
+
+msgid "Deep Parallax"
+msgstr "गहरी पैरालैक्स"
+
+msgid "Flip Binormal"
+msgstr "बिनोर्मल पलटें"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "Triplanar"
+msgstr "त्रै-आयामी"
+
+msgid "Triplanar Sharpness"
+msgstr "त्रै-आयामी तीव्रता"
+
+msgid "World Triplanar"
+msgstr "विश्व त्रै-आयामी"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "Shadows"
+msgstr "छाया"
+
+msgid "Grow"
+msgstr "बढ़ना"
+
+msgid "Proximity Fade"
+msgstr "निकटता फेड"
+
+msgid "MSDF"
+msgstr "MSDF"
+
+msgid "Stencil"
+msgstr "निकृंत"
+
+msgid "Convex Hull Approximation"
+msgstr "उत्तल पतवार सन्निकटन"
+
+msgid "Lightmap Size Hint"
+msgstr "लाइटमैप आकार संकेत"
+
+msgid "Visible Instance Count"
+msgstr "दृश्यमान इंस्टेंस गणना"
+
+msgid "Max Climb"
+msgstr "अधिकतम चढ़ाई"
+
+msgid "Max Slope"
+msgstr "अधिकतम ढलान"
+
+msgid "Merge Size"
+msgstr "मर्ज आकार"
+
+msgid "Sample Distance"
+msgstr "नमूना दूरी"
+
+msgid "Sample Max Error"
+msgstr "नमूना अधिकतम त्रुटि"
+
+msgid "Low Hanging Obstacles"
+msgstr "निम्न लटकी हुई बाधाएं"
+
+msgid "Ledge Spans"
+msgstr "कगार विस्तार"
+
+msgid "Walkable Low Height Spans"
+msgstr "चलने योग्य कम ऊंचाई वाले स्पैन"
+
+msgid "Baking AABB"
+msgstr "बेकिंग AABB"
+
+msgid "Emission Ring Inner Radius"
+msgstr "उत्सर्जन रिंग आंतरिक त्रिज्या"
+
+msgid "Turbulence"
+msgstr "विक्षोम"
+
+msgid "Influence over Life"
+msgstr "जीवन पर प्रभाव"
+
+msgid "Amount at End"
+msgstr "अंत में मात्रा"
+
+msgid "Rough"
+msgstr "कठोर"
+
+msgid "Absorbent"
+msgstr "अवशोषक"
+
+msgid "Keep Compressed Buffer"
+msgstr "संपीड़ित बफर बनाए रखें"
+
+msgid "Radiance Size"
+msgstr "रेडियन्स आकार"
+
+msgid "Blend"
+msgstr "मिलाना"
+
+msgid "Top Right"
+msgstr "सर्वोच्च दाहिने"
+
+msgid "Bottom Right"
+msgstr "नीचे दाएं"
+
+msgid "Bottom Left"
+msgstr "नीचे बाएं"
+
+msgid "Corner Detail"
+msgstr "कोने का विवरण"
+
+msgid "Grow Begin"
+msgstr "वृद्धि प्रारंभ"
+
+msgid "Grow End"
+msgstr "वृद्धि समाप्त"
+
+msgid "Number Color"
+msgstr "संख्या रंग"
+
+msgid "Symbol Color"
+msgstr "प्रतीक रंग"
+
+msgid "Member Variable Color"
+msgstr "सदस्य चर रंग"
+
+msgid "Member Keyword Colors"
+msgstr "सदस्य कीवर्ड रंग"
+
+msgid "File"
+msgstr "नत्थी"
+
+msgid "Output Port for Preview"
+msgstr "पूर्वावलोकन के लिए आउटपुट पोर्ट"
+
+msgid "Input Name"
+msgstr "इनपुट नाम"
+
+msgid "Constant"
+msgstr "कोन्स्टन्ट"
+
+msgid "Cube Map"
+msgstr "घन मानचित्र"
+
+msgid "Function"
+msgstr "कार्य"
+
+msgid "Hint"
+msgstr "संकेत"
+
+msgid "Surface Index"
+msgstr "सतह सूचकांक"
+
+msgid "Align to Largest Stylebox"
+msgstr "सबसे बड़े स्टाइलबॉक्स से संरेखित करें"
+
+msgid "Arrow"
+msgstr "तीर"
+
+msgid "Unchecked"
+msgstr "अचेक्ड"
+
+msgid "Radio Unchecked"
+msgstr "रेडियो अचेक्ड"
+
+msgid "Radio Unchecked Disabled"
+msgstr "रेडियो अचेक्ड निष्क्रिय"
+
+msgid "Caret Color"
+msgstr "कैरेट रंग"
+
+msgid "Minimum Character Width"
+msgstr "न्यूनतम वर्ण चौड़ाई"
+
+msgid "Clear"
+msgstr "साफ़"
+
+msgid "Tab"
+msgstr "टैब"
+
+msgid "Current Line Color"
+msgstr "वर्तमान रेखा का रंग"
+
+msgid "Word Highlighted Color"
+msgstr "शब्द हाइलाइट किया गया रंग"
+
+msgid "Bookmark"
+msgstr "बुकमार्क"
+
+msgid "Folded EOL Icon"
+msgstr "फोल्डेड EOL दृश्यचिन्ह"
+
+msgid "Completion Existing Color"
+msgstr "समापन मौजूदा रंग"
+
+msgid "Completion Scroll Color"
+msgstr "समापन स्क्रॉल रंग"
+
+msgid "Bookmark Color"
+msgstr "बुकमार्क रंग"
+
+msgid "Executing Line Color"
+msgstr "लाइन रंग निष्पादित करना"
+
+msgid "Code Folding Color"
+msgstr "कोड फ़ोल्ड करने योग्य रंग"
+
+msgid "Brace Mismatch Color"
+msgstr "ब्रेस बेमेल रंग"
+
+msgid "Line Length Guideline Color"
+msgstr "लाइन लंबाई दिशानिर्देश रंग"
+
+msgid "Scroll Focus"
+msgstr "फोकस स्क्रॉल करें"
+
+msgid "Increment"
+msgstr "वृद्धि"
+
+msgid "Decrement"
+msgstr "घटती"
+
+msgid "Decrement Highlight"
+msgstr "घटती हाइलाइट"
+
+msgid "Decrement Pressed"
+msgstr "घटाव दबाया गया"
+
+msgid "Grabber Area Highlight"
+msgstr "ग्रैबर क्षेत्र हाइलाइट"
+
+msgid "Tick"
+msgstr "टिक"
+
+msgid "Updown"
+msgstr "ऊपरनीचे"
+
+msgid "Up"
+msgstr "ऊपर"
+
+msgid "Down"
+msgstr "नीचे"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "ऊपर दबा हुआ दृश्यचिन्ह मॉड्यूलेट"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "नीचे दबाया गया दृश्यचिन्ह मॉड्यूलेट"
+
+msgid "Embedded Border"
+msgstr "एंबेडेड सीमा"
+
+msgid "Embedded Unfocused Border"
+msgstr "एम्बेडेड अनफोकस्ड बॉर्डर"
+
+msgid "Close"
+msgstr "बंद करे"
+
+msgid "Reload"
+msgstr "पुनः लोड करें"
+
+msgid "Favorite"
+msgstr "फ़ेवरेट"
+
+msgid "Toggle Filename Filter"
+msgstr "फ़ाइल नाम फ़िल्टर टॉगल करें"
+
+msgid "Favorite Up"
+msgstr "पसंदीदा ऊपर"
+
+msgid "Favorite Down"
+msgstr "पसंदीदा नीचे"
+
+msgid "Labeled Separator Left"
+msgstr "लेबल विभाजक बाएँ"
+
+msgid "Labeled Separator Right"
+msgstr "लेबल विभाजक दायाँ"
+
+msgid "Submenu"
+msgstr "उपमेनू"
+
+msgid "Submenu Mirrored"
+msgstr "उपमेनू मिरर्ड"
+
+msgid "Separator Outline Size"
+msgstr "विभाजक रूपरेखा आकार"
+
+msgid "Item End Padding"
+msgstr "आइटम अंत पैडिंग"
+
+msgid "Slot"
+msgstr "slot"
+
+msgid "Cursor"
+msgstr "कर्सर"
+
+msgid "Cursor Unfocused"
+msgstr "कर्सर अनफोकस्ड"
+
+msgid "Children HL Line Color"
+msgstr "बच्चों की HL लाइन का रंग"
+
+msgid "Custom Button Font Highlight"
+msgstr "कस्टम बटन लिपि हाइलाइट"
+
+msgid "Parent HL Line Margin"
+msgstr "मूल HL लाइन मार्जिन"
+
+msgid "Center Slider Grabbers"
+msgstr "सेंटर स्लाइडर ग्रैबर्स"
+
+msgid "Picker Focus Rectangle"
+msgstr "पिकर फोकस आयत"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "कर्सर रंग पर ध्यान केंद्रित नहीं किया गया"
+
+msgid "Screen Picker"
+msgstr "स्क्रीन पिकर"
+
+msgid "Shape Circle"
+msgstr "आकार वृत्त"
+
+msgid "Shape Rect Wheel"
+msgstr "आकार आयताकार पहिया"
+
+msgid "Sample BG"
+msgstr "नमूना BG"
+
+msgid "Overbright Indicator"
+msgstr "ओवरब्राइट संकेतक"
+
+msgid "Bar Arrow"
+msgstr "बार तीर"
+
+msgid "Bold Italics Font"
+msgstr "बोल्ड इटैलिक्स लिपि"
+
+msgid "Table Even Row BG"
+msgstr "मेज सम पंक्ति BG"
+
+msgid "H Touch Dragger"
+msgstr "H ड्रैगर को स्पर्श करें"
+
+msgid "V Touch Dragger"
+msgstr "V ड्रैगर को स्पर्श करें"
+
+msgid "Touch Dragger"
+msgstr "ड्रैगर को स्पर्श करें"
+
+msgid "H Grabber"
+msgstr "H ग्रैबर"
+
+msgid "V Grabber"
+msgstr "V ग्रैबर"
+
+msgid "Minimum Grab Thickness"
+msgstr "न्यूनतम ग्रैब मोटाई"
+
+msgid "Grid Toggle"
+msgstr "ग्रिड टॉगल"
+
+msgid "Minimap Toggle"
+msgstr "मिनिमैप टॉगल"
+
+msgid "Snapping Toggle"
+msgstr "स्नैपिंग टॉगल"
+
+msgid "Menu Panel"
+msgstr "मेनू पैनल"
+
+msgid "Grid Minor"
+msgstr "ग्रिड माइनर"
+
+msgid "Grid Major"
+msgstr "ग्रिड मेजर"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "शीर्षक संकुचित होवर पैनल"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "पोर्ट हॉटज़ोन आंतरिक विस्तार"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "पोर्ट हॉटज़ोन बाहरी विस्तार"
+
+msgid "Channel Disable Threshold dB"
+msgstr "चैनल निष्क्रिय थ्रेशोल्ड dB"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "वीडियो विलंब समायोजन (ms)"
+
+msgid "Random Volume Offset dB"
+msgstr "यादृच्छिक ध्वनि मात्रा ऑफसेट dB"
+
+msgid "Buffer Length"
+msgstr "बफ़र लंबाई"
+
+msgid "Voice Count"
+msgstr "स्वर गणना"
+
+msgid "Dry"
+msgstr "सूखा"
+
+msgid "Wet"
+msgstr "गीला"
+
+msgid "Voice"
+msgstr "स्वर"
+
+msgid "Delay (ms)"
+msgstr "विलंब (ms)"
+
+msgid "Rate Hz"
+msgstr "Hz दर"
+
+msgid "Depth (ms)"
+msgstr "गहराई (ms)"
+
+msgid "Level dB"
+msgstr "स्तर dB"
+
+msgid "Release (ms)"
+msgstr "प्रकाशन (ms)"
+
+msgid "Sidechain"
+msgstr "पक्ष श्रृंखला"
+
+msgid "Tap 1"
+msgstr "1 टैप करें"
+
+msgid "Tap 2"
+msgstr "2 टैप करें"
+
+msgid "Pre Gain"
+msgstr "पूर्व लाभ"
+
+msgid "Keep Hf Hz"
+msgstr "Hf Hz बनाए रखें"
+
+msgid "Drive"
+msgstr "चलाना"
+
+msgid "Post Gain"
+msgstr "बाद वृद्धि"
+
+msgid "Pre Gain dB"
+msgstr "पूर्व लाभ dB"
+
+msgid "Ceiling dB"
+msgstr "सीलिंग dB"
+
+msgid "Threshold dB"
+msgstr "थ्रेशोल्ड dB"
+
+msgid "Soft Clip dB"
+msgstr "मुलायम क्लिप dB"
+
+msgid "Soft Clip Ratio"
+msgstr "नरम क्लिप अनुपात"
+
+msgid "Range Min Hz"
+msgstr "सीमा न्यूनतम Hz"
+
+msgid "Range Max Hz"
+msgstr "सीमा अधिकतम Hz"
+
+msgid "Predelay"
+msgstr "पूर्वविलंब"
+
+msgid "Msec"
+msgstr "Msec"
+
+msgid "Room Size"
+msgstr "कमरे का आकार"
+
+msgid "Tap Back Pos"
+msgstr "टैप बैक स्थिति"
+
+msgid "Pan Pullout"
+msgstr "पैन बाहर खींचना"
+
+msgid "Time Pullout (ms)"
+msgstr "समय पुलआउट (ms)"
+
+msgid "Surround"
+msgstr "चारों ओर"
+
+msgid "Is Active"
+msgstr "सक्रिय है"
+
+msgid "Monitoring Feeds"
+msgstr "फ़ीड की निगरानी करना"
+
+msgid "Metadata Flags"
+msgstr "अधि-आंकड़ा ध्वजा"
+
+msgid "Path Owner IDs"
+msgstr "पथ स्वामी IDs"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "मर्ज रास्टराइज़र सेल स्केल"
+
+msgid "Geometry Edge Disabled Color"
+msgstr "रेखागणित किनारा निष्क्रिय रंग"
+
+msgid "Geometry Face Disabled Color"
+msgstr "रेखागणित चेहरा निष्क्रिय रंग"
+
+msgid "Obstacles Radius Color"
+msgstr "बाधाएं त्रिज्या रंग"
+
+msgid "Obstacles Static Face Pushin Color"
+msgstr "बाधाएं स्थिर चेहरा पुशिन रंग"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "बाधाएं स्थिर किनारा पुशिन रंग"
+
+msgid "Enable Obstacles Radius"
+msgstr "बाधा त्रिज्या सक्रिय करे"
+
+msgid "Enable Obstacles Static"
+msgstr "बाधाएँ स्थिर सक्रिय करे"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "एज लाइन्स x-Ray सक्रिय करे"
+
+msgid "Inverse Mass"
+msgstr "विपरीत द्रव्यमान"
+
+msgid "Inverse Inertia"
+msgstr "व्युत्क्रम जड़त्व"
+
+msgid "Center of Mass Local"
+msgstr "द्रव्यमान केंद्र स्थानीय"
+
+msgid "Shape RID"
+msgstr "आकार RID"
+
+msgid "Sleep Threshold Linear"
+msgstr "निद्रा सीमा रेखीय"
+
+msgid "Sleep Threshold Angular"
+msgstr "निद्रा सीमा कोणीय"
+
+msgid "Time Before Sleep"
+msgstr "नींद से पहले का समय"
+
+msgid "Contact Recycle Radius"
+msgstr "संपर्क पुनर्चक्रण त्रिज्या"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "संपर्क की अधिकतम अनुमत पैठ"
+
+msgid "Inverse Inertia Tensor"
+msgstr "व्युत्क्रम जड़त्व टेंसर"
+
+msgid "Principal Inertia Axes"
+msgstr "मुख्य जड़त्व अक्षें"
+
+msgid "Fragment"
+msgstr "टुकड़ा"
+
+msgid "Tesselation Evaluation"
+msgstr "टेसलेशन मूल्यांकन"
+
+msgid "Syntax"
+msgstr "वाक्य रचना"
+
+msgid "Bytecode"
+msgstr "बाईटकोड"
+
+msgid "IDs"
+msgstr "IDs"
+
+msgid "VRAM Compression"
+msgstr "VRAM संपीड़न"
+
+msgid "Lossless Compression"
+msgstr "लॉसलेस संपीड़न"
+
+msgid "Force PNG"
+msgstr "PNG को बाध्य करें"
+
+msgid "Time Rollover Secs"
+msgstr "समय रोलओवर सेकंड्स"
+
+msgid "Use Physical Light Units"
+msgstr "भौतिक प्रकाश इकाइयों का उपयोग करें"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "सॉफ्ट शैडो फ़िल्टर गुणवत्ता"
+
+msgid "Shadow Atlas"
+msgstr "छाया एटलस"
+
+msgid "Batching"
+msgstr "बैचिंग"
+
+msgid "Uniform Set Cache Size"
+msgstr "यूनिफ़ॉर्म कैश आकार तय करना"
+
+msgid "Shader Cache"
+msgstr "शेडर कैश"
+
+msgid "Texture Array Reflections"
+msgstr "टेक्सचर ऐरे परावर्तन"
+
+msgid "Fast Filter High Quality"
+msgstr "तेज़ फ़िल्टर उच्च गुणवत्ता"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Overrides"
+msgstr "ओवरराइड"
+
+msgid "Force Vertex Shading"
+msgstr "फ़ोर्स वर्टेक्स शेडिंग"
+
+msgid "Force Lambert over Burley"
+msgstr "बर्ले के स्थान पर लैम्बर्ट को बाध्य करें"
+
+msgid "Depth Prepass"
+msgstr "गहराई प्रीपास"
+
+msgid "Use Nearest Mipmap Filter"
+msgstr "नियरस्ट मिपमैप फ़िल्टर का उपयोग करें"
+
+msgid "Depth of Field"
+msgstr "क्षेत्र की गहराई"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "गहराई क्षेत्र बोकेह आकार"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "क्षेत्र की गहराई बोकेह गुणवत्ता"
+
+msgid "Depth of Field Use Jitter"
+msgstr "गहराई क्षेत्र में जिटर का उपयोग करें"
+
+msgid "Adaptive Target"
+msgstr "अनुकूली लक्ष्य"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "स्क्रीन स्पेस रफनेस लिमिटर"
+
+msgid "Decals"
+msgstr "स्थानांतरण"
+
+msgid "Occlusion Rays per Thread"
+msgstr "प्रति थ्रेड अवरोधन किरणें"
+
+msgid "Subsurface Scattering"
+msgstr "उपसतह प्रकीर्णन"
+
+msgid "Subsurface Scattering Quality"
+msgstr "उपसतह प्रकीर्णन गुणवत्ता"
+
+msgid "Subsurface Scattering Depth Scale"
+msgstr "उपसतह प्रकीर्णन गहराई पैमाना"
+
+msgid "Probe Capture"
+msgstr "प्रोब छवि संग्रहण"
+
+msgid "Primitive Meshes"
+msgstr "प्रिमिटिव मेष"
+
+msgid "Frames to Update Lights"
+msgstr "लाइट्स को अपडेट करने के लिए फ्रेम"
+
+msgid "Volume Depth"
+msgstr "ध्वनि मात्रा की गहराई"
+
+msgid "Update Iterations per Frame"
+msgstr "प्रति फ्रेम अपडेट पुनरावृत्तियाँ"
+
+msgid "Max Clustered Elements"
+msgstr "अधिकतम क्लस्टर्ड तत्व"
+
+msgid "Max Renderable Elements"
+msgstr "अधिकतम प्रदर्शनीय तत्त्व"
+
+msgid "Max Renderable Lights"
+msgstr "अधिकतम रेंडरिंग लाइट्स"
+
+msgid "Max Lights per Object"
+msgstr "प्रति वस्तु अधिकतम प्रकाश स्रोत"
+
+msgid "Shaders"
+msgstr "शेडर्स"
+
+msgid "Treat Warnings as Errors"
+msgstr "चेतावनियों को त्रुटियाँ समझें"
+
+msgid "Depth Prepass Alpha"
+msgstr "डेप्थ प्रीपास अल्फा"
+
+msgid "SSS Mode Skin"
+msgstr "SSS मोड त्वचा"
+
+msgid "Unshaded"
+msgstr "अछायांकित"
+
+msgid "Wireframe"
+msgstr "वायरफ़्रेम"
+
+msgid "Alpha to Coverage"
+msgstr "अल्फ़ा से कवरेज"
+
+msgid "Alpha to Coverage and One"
+msgstr "अल्फा से कवरेज और वन"
+
+msgid "Use Quarter Res Pass"
+msgstr "क्वार्टर रिज़ पास का उपयोग करें"
+
+msgid "Float Comparison"
+msgstr "फ़्लोट तुलना"
+
+msgid "Unused Struct"
+msgstr "अप्रयुक्त बनावट"
+
+msgid "Unused Uniform"
+msgstr "अप्रयुक्त यूनिफार्म"
+
+msgid "Unused Varying"
+msgstr "अप्रयुक्त भिन्नता"
+
+msgid "Device Limit Exceeded"
+msgstr "डिवाइस सीमा पार हो गई"
+
+msgid "Default Font Multichannel Signed Distance Field"
+msgstr "प्रायिक लिपि मल्टीचैनल हस्ताक्षरित दूरी क्षेत्र"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "प्रायिक लिपि मिपमैप्स उत्पन्न करें"
+
+msgid "Include Text Server Data"
+msgstr "टेक्स्ट सर्वर डेटा शामिल करें"
+
+msgid "Is Primary"
+msgstr "क्या प्राथमिक है"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "क्या एंकर डिटेक्शन सक्रिय है"
+
+msgid "Tracking Confidence"
+msgstr "ट्रैकिंग विश्वसनीयता"
+
+msgid "Primary Interface"
+msgstr "प्राथमिक इंटरफ़ेस"

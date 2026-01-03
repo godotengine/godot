@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="float" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A built-in type for floating point numbers.
+		A built-in type for floating-point numbers.
 	</brief_description>
 	<description>
 		The [float] built-in type is a 64-bit double-precision floating-point number, equivalent to [code]double[/code] in C++. This type has 14 reliable decimal digits of precision. The maximum value of [float] is approximately [code]1.79769e308[/code], and the minimum is approximately [code]-1.79769e308[/code].
@@ -70,7 +70,7 @@
 			<description>
 				Multiplies each component of the [Color], including the alpha, by the given [float].
 				[codeblock]
-				print(1.5 * Color(0.5, 0.5, 0.5)) # Prints "(0.75, 0.75, 0.75, 1.5)"
+				print(1.5 * Color(0.5, 0.5, 0.5)) # Prints (0.75, 0.75, 0.75, 1.5)
 				[/codeblock]
 			</description>
 		</operator>
@@ -87,7 +87,7 @@
 			<description>
 				Multiplies each component of the [Vector2] by the given [float].
 				[codeblock]
-				print(2.5 * Vector2(1, 3)) # Prints "(2.5, 7.5)"
+				print(2.5 * Vector2(1, 3)) # Prints (2.5, 7.5)
 				[/codeblock]
 			</description>
 		</operator>
@@ -97,7 +97,7 @@
 			<description>
 				Multiplies each component of the [Vector2i] by the given [float]. Returns a [Vector2].
 				[codeblock]
-				print(0.9 * Vector2i(10, 15)) # Prints "(9, 13.5)"
+				print(0.9 * Vector2i(10, 15)) # Prints (9.0, 13.5)
 				[/codeblock]
 			</description>
 		</operator>
@@ -114,7 +114,7 @@
 			<description>
 				Multiplies each component of the [Vector3i] by the given [float]. Returns a [Vector3].
 				[codeblock]
-				print(0.9 * Vector3i(10, 15, 20)) # Prints "(9, 13.5, 18)"
+				print(0.9 * Vector3i(10, 15, 20)) # Prints (9.0, 13.5, 18.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -131,7 +131,7 @@
 			<description>
 				Multiplies each component of the [Vector4i] by the given [float]. Returns a [Vector4].
 				[codeblock]
-				print(0.9 * Vector4i(10, 15, 20, -10)) # Prints "(9, 13.5, 18, -9)"
+				print(0.9 * Vector4i(10, 15, 20, -10)) # Prints (9.0, 13.5, 18.0, -9.0)
 				[/codeblock]
 			</description>
 		</operator>

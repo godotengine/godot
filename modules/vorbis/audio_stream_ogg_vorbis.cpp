@@ -29,11 +29,10 @@
 /**************************************************************************/
 
 #include "audio_stream_ogg_vorbis.h"
-
 #include "core/io/file_access.h"
-#include "core/variant/typed_array.h"
 
-#include "modules/vorbis/resource_importer_ogg_vorbis.h"
+#include "core/templates/rb_map.h"
+
 #include <ogg/ogg.h>
 
 int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
@@ -46,8 +45,9 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 	int todo = p_frames;
 
 	int beat_length_frames = -1;
-	bool beat_loop = vorbis_stream->has_loop();
-	if (beat_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
+	bool use_loop = looping_override ? looping : vorbis_stream->loop;
+
+	if (use_loop && vorbis_stream->get_bpm() > 0 && vorbis_stream->get_beat_count() > 0) {
 		beat_length_frames = vorbis_stream->get_beat_count() * vorbis_data->get_sampling_rate() * 60 / vorbis_stream->get_bpm();
 	}
 
@@ -99,7 +99,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 			} else
 			**/
 
-			if (beat_loop && beat_length_frames <= (int)frames_mixed) {
+			if (use_loop && beat_length_frames <= (int)frames_mixed) {
 				// End of file when doing beat-based looping. <= used instead of == because importer editing
 				if (!have_packets_left && !have_samples_left) {
 					//Nothing remaining, so do nothing.
@@ -125,7 +125,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		if (!have_packets_left && !have_samples_left) {
 			// Actual end of file!
 			bool is_not_empty = mixed > 0 || vorbis_stream->get_length() > 0;
-			if (vorbis_stream->loop && is_not_empty) {
+			if (use_loop && is_not_empty) {
 				//loop
 
 				seek(vorbis_stream->loop_offset);
@@ -144,7 +144,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 }
 
 int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!ready, 0);
+	ERR_FAIL_COND_V(!ready, p_frames);
 	if (!have_samples_left) {
 		ogg_packet *packet = nullptr;
 		int err;
@@ -156,10 +156,10 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 		}
 
 		err = vorbis_synthesis(&block, packet);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis synthesis " + itos(err));
 
 		err = vorbis_synthesis_blockin(&dsp_state, &block);
-		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
+		ERR_FAIL_COND_V_MSG(err != 0, p_frames, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
@@ -176,13 +176,13 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 
 	if (info.channels > 1) {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[1][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[1][frame];
 		}
 	} else {
 		for (int frame = 0; frame < frames; frame++) {
-			p_buffer[frame].l = pcm[0][frame];
-			p_buffer[frame].r = pcm[0][frame];
+			p_buffer[frame].left = pcm[0][frame];
+			p_buffer[frame].right = pcm[0][frame];
 		}
 	}
 	vorbis_synthesis_read(&dsp_state, frames);
@@ -255,6 +255,25 @@ double AudioStreamPlaybackOggVorbis::get_playback_position() const {
 
 void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
+}
+
+void AudioStreamPlaybackOggVorbis::set_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_name == SNAME("looping")) {
+		if (p_value == Variant()) {
+			looping_override = false;
+			looping = false;
+		} else {
+			looping_override = true;
+			looping = p_value;
+		}
+	}
+}
+
+Variant AudioStreamPlaybackOggVorbis::get_parameter(const StringName &p_name) const {
+	if (looping_override && p_name == SNAME("looping")) {
+		return looping;
+	}
+	return Variant();
 }
 
 void AudioStreamPlaybackOggVorbis::seek(double p_time) {
@@ -356,6 +375,25 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	}
 }
 
+void AudioStreamPlaybackOggVorbis::set_is_sample(bool p_is_sample) {
+	_is_sample = p_is_sample;
+}
+
+bool AudioStreamPlaybackOggVorbis::get_is_sample() const {
+	return _is_sample;
+}
+
+Ref<AudioSamplePlayback> AudioStreamPlaybackOggVorbis::get_sample_playback() const {
+	return sample_playback;
+}
+
+void AudioStreamPlaybackOggVorbis::set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+	sample_playback = p_playback;
+	if (sample_playback.is_valid()) {
+		sample_playback->stream_playback = Ref<AudioStreamPlayback>(this);
+	}
+}
+
 AudioStreamPlaybackOggVorbis::~AudioStreamPlaybackOggVorbis() {
 	if (block_is_allocated) {
 		vorbis_block_clear(&block);
@@ -420,6 +458,28 @@ void AudioStreamOggVorbis::maybe_update_info() {
 		err = vorbis_synthesis_headerin(&info, &comment, packet);
 		ERR_FAIL_COND_MSG(err != 0, "Error parsing header packet " + itos(i) + ": " + itos(err));
 	}
+
+	Dictionary dictionary;
+	// Comments are required by the Vorbis spec to be structured like env vars, i.e. VAR=VALUE.
+	// This is how tags are stored (artist, album, etc.), and we parse them out for display.
+	// See https://xiph.org/vorbis/doc/v-comment.html
+	for (int i = 0; i < comment.comments; i++) {
+		String c = String::utf8(comment.user_comments[i]);
+		int equals = c.find_char('=');
+
+#ifdef TOOLS_ENABLED
+		if (equals == -1) {
+			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
+			continue;
+		}
+#endif
+
+		String tag = c.substr(0, equals);
+		String tag_value = c.substr(equals + 1);
+
+		dictionary[tag.to_lower()] = tag_value;
+	}
+	tags = dictionary;
 
 	packet_sequence->set_sampling_rate(info.rate);
 
@@ -489,12 +549,162 @@ int AudioStreamOggVorbis::get_bar_beats() const {
 	return bar_beats;
 }
 
+void AudioStreamOggVorbis::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamOggVorbis::get_tags() const {
+	return tags;
+}
+
 bool AudioStreamOggVorbis::is_monophonic() const {
 	return false;
 }
 
+void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
+	r_parameters->push_back(Parameter(PropertyInfo(Variant::BOOL, "looping", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CHECKABLE), Variant()));
+}
+
+Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
+	Ref<AudioSample> sample;
+	sample.instantiate();
+	sample->stream = this;
+	sample->loop_mode = loop
+			? AudioSample::LoopMode::LOOP_FORWARD
+			: AudioSample::LoopMode::LOOP_DISABLED;
+	sample->loop_begin = loop_offset;
+	sample->loop_end = 0;
+	return sample;
+}
+
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
+	Ref<AudioStreamOggVorbis> ogg_vorbis_stream;
+	ogg_vorbis_stream.instantiate();
+
+	Ref<OggPacketSequence> ogg_packet_sequence;
+	ogg_packet_sequence.instantiate();
+
+	ogg_stream_state stream_state;
+	ogg_sync_state sync_state;
+	ogg_page page;
+	ogg_packet packet;
+	bool initialized_stream = false;
+
+	ogg_sync_init(&sync_state);
+	const long OGG_SYNC_BUFFER_SIZE = 8192;
+	int err;
+	size_t cursor = 0;
+	size_t packet_count = 0;
+	bool done = false;
+	while (!done) {
+		err = ogg_sync_check(&sync_state);
+		ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+		while (ogg_sync_pageout(&sync_state, &page) != 1) {
+			if (cursor >= size_t(p_stream_data.size())) {
+				done = true;
+				break;
+			}
+			err = ogg_sync_check(&sync_state);
+			ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+			char *sync_buf = ogg_sync_buffer(&sync_state, OGG_SYNC_BUFFER_SIZE);
+			err = ogg_sync_check(&sync_state);
+			ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+			size_t copy_size = p_stream_data.size() - cursor;
+			if (copy_size > OGG_SYNC_BUFFER_SIZE) {
+				copy_size = OGG_SYNC_BUFFER_SIZE;
+			}
+			memcpy(sync_buf, &p_stream_data[cursor], copy_size);
+			ogg_sync_wrote(&sync_state, copy_size);
+			cursor += copy_size;
+			err = ogg_sync_check(&sync_state);
+			ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+		}
+		if (done) {
+			break;
+		}
+		err = ogg_sync_check(&sync_state);
+		ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg sync error " + itos(err));
+
+		// Have a page now.
+		if (!initialized_stream) {
+			if (ogg_stream_init(&stream_state, ogg_page_serialno(&page))) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamOggVorbis>(), "Failed allocating memory for Ogg Vorbis stream.");
+			}
+			initialized_stream = true;
+		}
+		ogg_stream_pagein(&stream_state, &page);
+		err = ogg_stream_check(&stream_state);
+		ERR_FAIL_COND_V_MSG(err != 0, Ref<AudioStreamOggVorbis>(), "Ogg stream error " + itos(err));
+		int desync_iters = 0;
+
+		RBMap<uint64_t, Vector<Vector<uint8_t>>> sorted_packets;
+		int64_t granule_pos = 0;
+
+		while (true) {
+			err = ogg_stream_packetout(&stream_state, &packet);
+			if (err == -1) {
+				// According to the docs this is usually recoverable, but don't sit here spinning forever.
+				desync_iters++;
+				WARN_PRINT_ONCE("Desync during ogg import.");
+				ERR_FAIL_COND_V_MSG(desync_iters > 100, Ref<AudioStreamOggVorbis>(), "Packet sync issue during Ogg import");
+				continue;
+			} else if (err == 0) {
+				// Not enough data to fully reconstruct a packet. Go on to the next page.
+				break;
+			}
+			if (packet_count == 0 && vorbis_synthesis_idheader(&packet) == 0) {
+				print_verbose("Found a non-vorbis-header packet in a header position");
+				// Clearly this logical stream is not a vorbis stream, so destroy it and try again with the next page.
+				if (initialized_stream) {
+					ogg_stream_clear(&stream_state);
+					initialized_stream = false;
+				}
+				break;
+			}
+			if (packet.granulepos > granule_pos) {
+				granule_pos = packet.granulepos;
+			}
+
+			if (packet.bytes > 0) {
+				PackedByteArray data;
+				data.resize(packet.bytes);
+				memcpy(data.ptrw(), packet.packet, packet.bytes);
+				sorted_packets[granule_pos].push_back(data);
+				packet_count++;
+			}
+		}
+		Vector<Vector<uint8_t>> packet_data;
+		for (const KeyValue<uint64_t, Vector<Vector<uint8_t>>> &pair : sorted_packets) {
+			for (const Vector<uint8_t> &packets : pair.value) {
+				packet_data.push_back(packets);
+			}
+		}
+		if (initialized_stream && packet_data.size() > 0) {
+			ogg_packet_sequence->push_page(ogg_page_granulepos(&page), packet_data);
+		}
+	}
+	if (initialized_stream) {
+		ogg_stream_clear(&stream_state);
+	}
+	ogg_sync_clear(&sync_state);
+
+	if (ogg_packet_sequence->get_packet_granule_positions().is_empty()) {
+		ERR_FAIL_V_MSG(Ref<AudioStreamOggVorbis>(), "Ogg Vorbis decoding failed. Check that your data is a valid Ogg Vorbis audio stream.");
+	}
+
+	ogg_vorbis_stream->set_packet_sequence(ogg_packet_sequence);
+
+	return ogg_vorbis_stream;
+}
+
+Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_file(const String &p_path) {
+	const Vector<uint8_t> stream_data = FileAccess::get_file_as_bytes(p_path);
+	ERR_FAIL_COND_V_MSG(stream_data.is_empty(), Ref<AudioStreamOggVorbis>(), vformat("Cannot open file '%s'.", p_path));
+	return load_from_buffer(stream_data);
+}
+
 void AudioStreamOggVorbis::_bind_methods() {
-	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_buffer", "buffer"), &AudioStreamOggVorbis::load_from_buffer);
+	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_buffer", "stream_data"), &AudioStreamOggVorbis::load_from_buffer);
 	ClassDB::bind_static_method("AudioStreamOggVorbis", D_METHOD("load_from_file", "path"), &AudioStreamOggVorbis::load_from_file);
 
 	ClassDB::bind_method(D_METHOD("set_packet_sequence", "packet_sequence"), &AudioStreamOggVorbis::set_packet_sequence);
@@ -515,10 +725,14 @@ void AudioStreamOggVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamOggVorbis::set_bar_beats);
 	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamOggVorbis::get_bar_beats);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamOggVorbis::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamOggVorbis::get_tags);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "packet_sequence", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_sequence", "get_packet_sequence");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,1,or_greater"), "set_beat_count", "get_beat_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
@@ -526,11 +740,3 @@ void AudioStreamOggVorbis::_bind_methods() {
 AudioStreamOggVorbis::AudioStreamOggVorbis() {}
 
 AudioStreamOggVorbis::~AudioStreamOggVorbis() {}
-
-Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_buffer(const Vector<uint8_t> &file_data) {
-	return ResourceImporterOggVorbis::load_from_buffer(file_data);
-}
-
-Ref<AudioStreamOggVorbis> AudioStreamOggVorbis::load_from_file(const String &p_path) {
-	return ResourceImporterOggVorbis::load_from_file(p_path);
-}

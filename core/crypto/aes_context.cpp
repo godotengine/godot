@@ -30,7 +30,7 @@
 
 #include "core/crypto/aes_context.h"
 
-Error AESContext::start(Mode p_mode, PackedByteArray p_key, PackedByteArray p_iv) {
+Error AESContext::start(Mode p_mode, const PackedByteArray &p_key, const PackedByteArray &p_iv) {
 	ERR_FAIL_COND_V_MSG(mode != MODE_MAX, ERR_ALREADY_IN_USE, "AESContext already started. Call 'finish' before starting a new one.");
 	ERR_FAIL_COND_V_MSG(p_mode < 0 || p_mode >= MODE_MAX, ERR_INVALID_PARAMETER, "Invalid mode requested.");
 	// Key check.
@@ -52,7 +52,7 @@ Error AESContext::start(Mode p_mode, PackedByteArray p_key, PackedByteArray p_iv
 	return OK;
 }
 
-PackedByteArray AESContext::update(PackedByteArray p_src) {
+PackedByteArray AESContext::update(const PackedByteArray &p_src) {
 	ERR_FAIL_COND_V_MSG(mode < 0 || mode >= MODE_MAX, PackedByteArray(), "AESContext not started. Call 'start' before calling 'update'.");
 	int len = p_src.size();
 	ERR_FAIL_COND_V_MSG(len % 16, PackedByteArray(), "The number of bytes to be encrypted must be multiple of 16. Add padding if needed");
@@ -109,7 +109,4 @@ void AESContext::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_CBC_ENCRYPT);
 	BIND_ENUM_CONSTANT(MODE_CBC_DECRYPT);
 	BIND_ENUM_CONSTANT(MODE_MAX);
-}
-
-AESContext::AESContext() {
 }

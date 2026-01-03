@@ -31,7 +31,6 @@
 #include "check_button.h"
 
 #include "scene/theme/theme_db.h"
-#include "servers/rendering_server.h"
 
 Size2 CheckButton::get_icon_size() const {
 	Ref<Texture2D> on_tex;
@@ -56,30 +55,43 @@ Size2 CheckButton::get_icon_size() const {
 	}
 
 	Size2 tex_size = Size2(0, 0);
-	if (!on_tex.is_null()) {
-		tex_size = Size2(on_tex->get_width(), on_tex->get_height());
+	if (on_tex.is_valid()) {
+		tex_size = on_tex->get_size();
 	}
-	if (!off_tex.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, off_tex->get_width()), MAX(tex_size.height, off_tex->get_height()));
+	if (off_tex.is_valid()) {
+		tex_size = tex_size.max(off_tex->get_size());
 	}
 
-	return tex_size;
+	return _fit_icon_size(tex_size);
 }
 
 Size2 CheckButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();
-	Size2 tex_size = get_icon_size();
-	minsize.width += tex_size.width;
-	if (get_text().length() > 0) {
-		minsize.width += MAX(0, theme_cache.h_separation);
+	const Size2 tex_size = get_icon_size();
+	if (tex_size.width > 0 || tex_size.height > 0) {
+		const Size2 padding = _get_largest_stylebox_size();
+		Size2 content_size = minsize - padding;
+		if (content_size.width > 0 && tex_size.width > 0) {
+			content_size.width += MAX(0, theme_cache.h_separation);
+		}
+		content_size.width += tex_size.width;
+		content_size.height = MAX(content_size.height, tex_size.height);
+
+		minsize = content_size + padding;
 	}
-	minsize.height = MAX(minsize.height, tex_size.height + theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
 
 	return minsize;
 }
 
 void CheckButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CHECK_BUTTON);
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -128,9 +140,9 @@ void CheckButton::_notification(int p_what) {
 			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
-				on_tex->draw(ci, ofs);
+				on_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(on_tex->get_size())), false, theme_cache.button_checked_color);
 			} else {
-				off_tex->draw(ci, ofs);
+				off_tex->draw_rect(ci, Rect2(ofs, _fit_icon_size(off_tex->get_size())), false, theme_cache.button_unchecked_color);
 			}
 		} break;
 	}
@@ -149,6 +161,9 @@ void CheckButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked_disabled_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, unchecked_disabled_mirrored);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckButton, button_checked_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckButton, button_unchecked_color);
 }
 
 CheckButton::CheckButton(const String &p_text) :

@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LSP_H
-#define TEST_LSP_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "modules/modules_enabled.gen.h" // For jsonrpc.
+
+#ifdef MODULE_JSONRPC_ENABLED
 
 #include "tests/test_macros.h"
 
@@ -43,23 +46,35 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
+
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
 
+class TestGDScriptLanguageProtocolInitializer {
+public:
+	static void setup_client() {
+		GDScriptLanguageProtocol *proto = GDScriptLanguageProtocol::get_singleton();
+		Ref<GDScriptLanguageProtocol::LSPeer> peer = memnew(GDScriptLanguageProtocol::LSPeer);
+		proto->clients.insert(proto->next_client_id, peer);
+		proto->latest_client_id = proto->next_client_id;
+		proto->next_client_id++;
+	}
+};
+
 template <>
-struct doctest::StringMaker<lsp::Position> {
-	static doctest::String convert(const lsp::Position &p_val) {
+struct doctest::StringMaker<LSP::Position> {
+	static doctest::String convert(const LSP::Position &p_val) {
 		return p_val.to_string().utf8().get_data();
 	}
 };
 
 template <>
-struct doctest::StringMaker<lsp::Range> {
-	static doctest::String convert(const lsp::Range &p_val) {
+struct doctest::StringMaker<LSP::Range> {
+	static doctest::String convert(const LSP::Range &p_val) {
 		return p_val.to_string().utf8().get_data();
 	}
 };
@@ -76,7 +91,7 @@ namespace GDScriptTests {
 // LSP GDScript test scripts are located inside project of other GDScript tests:
 // Cannot reset `ProjectSettings` (singleton) -> Cannot load another workspace and resources in there.
 // -> Reuse GDScript test project. LSP specific scripts are then placed inside `lsp` folder.
-//    Access via `res://lsp/my_script.notest.gd`.
+//    Access via `res://lsp/my_script.gd`.
 const String root = "modules/gdscript/tests/scripts/";
 
 /*
@@ -92,6 +107,7 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	init_language(absolute_root);
 
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
+	TestGDScriptLanguageProtocolInitializer::setup_client();
 
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 	workspace->root = absolute_root;
@@ -101,32 +117,32 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	return proto;
 }
 
-lsp::Position pos(const int p_line, const int p_character) {
-	lsp::Position p;
+LSP::Position pos(const int p_line, const int p_character) {
+	LSP::Position p;
 	p.line = p_line;
 	p.character = p_character;
 	return p;
 }
 
-lsp::Range range(const lsp::Position p_start, const lsp::Position p_end) {
-	lsp::Range r;
+LSP::Range range(const LSP::Position p_start, const LSP::Position p_end) {
+	LSP::Range r;
 	r.start = p_start;
 	r.end = p_end;
 	return r;
 }
 
-lsp::TextDocumentPositionParams pos_in(const lsp::DocumentUri &p_uri, const lsp::Position p_pos) {
-	lsp::TextDocumentPositionParams params;
+LSP::TextDocumentPositionParams pos_in(const LSP::DocumentUri &p_uri, const LSP::Position p_pos) {
+	LSP::TextDocumentPositionParams params;
 	params.textDocument.uri = p_uri;
 	params.position = p_pos;
 	return params;
 }
 
-const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const lsp::Range &p_expected_range) {
+const LSP::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const LSP::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const LSP::Range &p_expected_range) {
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
-	lsp::TextDocumentPositionParams params = pos_in(p_uri, p_pos);
-	const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
+	LSP::TextDocumentPositionParams params = pos_in(p_uri, p_pos);
+	const LSP::DocumentSymbol *symbol = workspace->resolve_symbol(params);
 	CHECK(symbol);
 
 	if (symbol) {
@@ -139,7 +155,7 @@ const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp
 }
 
 struct InlineTestData {
-	lsp::Range range;
+	LSP::Range range;
 	String text;
 	String name;
 	String ref;
@@ -227,7 +243,7 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 		if (InlineTestData::try_parse(lines, i, d)) {
 			if (!d.name.is_empty()) {
 				// Safety check: names must be unique.
-				if (names.find(d.name) != -1) {
+				if (names.has(d.name)) {
 					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
 				}
 				names.append(d.name);
@@ -256,7 +272,7 @@ void test_resolve_symbol(const String &p_uri, const InlineTestData &p_test_data,
 		REQUIRE_MESSAGE(target, vformat("No target for ref '%s'", p_test_data.ref));
 
 		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
-		lsp::Position pos = p_test_data.range.start;
+		LSP::Position pos = p_test_data.range.start;
 
 		SUBCASE("start of identifier") {
 			pos.character = p_test_data.range.start.character;
@@ -307,17 +323,17 @@ void assert_no_errors_in(const String &p_path) {
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
 }
 
-inline lsp::Position lsp_pos(int line, int character) {
-	lsp::Position p;
+inline LSP::Position lsp_pos(int line, int character) {
+	LSP::Position p;
 	p.line = line;
 	p.character = character;
 	return p;
 }
 
-void test_position_roundtrip(lsp::Position p_lsp, GodotPosition p_gd, const PackedStringArray &p_lines) {
+void test_position_roundtrip(LSP::Position p_lsp, GodotPosition p_gd, const PackedStringArray &p_lines) {
 	GodotPosition actual_gd = GodotPosition::from_lsp(p_lsp, p_lines);
 	CHECK_EQ(p_gd, actual_gd);
-	lsp::Position actual_lsp = p_gd.to_lsp(p_lines);
+	LSP::Position actual_lsp = p_gd.to_lsp(p_lines);
 	CHECK_EQ(p_lsp, actual_lsp);
 }
 
@@ -330,7 +346,7 @@ void test_position_roundtrip(lsp::Position p_lsp, GodotPosition p_gd, const Pack
 // * Line & Char:
 //   * LSP: both 0-based
 //   * Godot: both 1-based
-TEST_SUITE("[Modules][GDScript][LSP]") {
+TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 	TEST_CASE("Can convert positions to and from Godot") {
 		String code = R"(extends Node
 
@@ -342,25 +358,25 @@ func f():
 		PackedStringArray lines = code.split("\n");
 
 		SUBCASE("line after end") {
-			lsp::Position lsp = lsp_pos(7, 0);
+			LSP::Position lsp = lsp_pos(7, 0);
 			GodotPosition gd(8, 1);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 		SUBCASE("first char in first line") {
-			lsp::Position lsp = lsp_pos(0, 0);
+			LSP::Position lsp = lsp_pos(0, 0);
 			GodotPosition gd(1, 1);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 
 		SUBCASE("with tabs") {
 			// On `v` in `value` in `var value := ...`.
-			lsp::Position lsp = lsp_pos(5, 6);
+			LSP::Position lsp = lsp_pos(5, 6);
 			GodotPosition gd(6, 13);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 
 		SUBCASE("doesn't fail with column outside of character length") {
-			lsp::Position lsp = lsp_pos(2, 100);
+			LSP::Position lsp = lsp_pos(2, 100);
 			GodotPosition::from_lsp(lsp, lines);
 
 			GodotPosition gd(3, 100);
@@ -368,33 +384,46 @@ func f():
 		}
 
 		SUBCASE("doesn't fail with line outside of line length") {
-			lsp::Position lsp = lsp_pos(200, 100);
+			LSP::Position lsp = lsp_pos(200, 100);
 			GodotPosition::from_lsp(lsp, lines);
 
 			GodotPosition gd(300, 100);
 			gd.to_lsp(lines);
 		}
 
+		SUBCASE("special case: zero column for root class") {
+			GodotPosition gd(1, 0);
+			LSP::Position expected = lsp_pos(0, 0);
+			LSP::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
+		SUBCASE("special case: zero line and column for root class") {
+			GodotPosition gd(0, 0);
+			LSP::Position expected = lsp_pos(0, 0);
+			LSP::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
 		SUBCASE("special case: negative line for root class") {
 			GodotPosition gd(-1, 0);
-			lsp::Position expected = lsp_pos(0, 0);
-			lsp::Position actual = gd.to_lsp(lines);
+			LSP::Position expected = lsp_pos(0, 0);
+			LSP::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 		SUBCASE("special case: lines.length() + 1 for root class") {
 			GodotPosition gd(lines.size() + 1, 0);
-			lsp::Position expected = lsp_pos(lines.size(), 0);
-			lsp::Position actual = gd.to_lsp(lines);
+			LSP::Position expected = lsp_pos(lines.size(), 0);
+			LSP::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 	}
 	TEST_CASE("[workspace][resolve_symbol]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
 		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
 		{
-			String path = "res://lsp/local_variables.notest.gd";
+			String path = "res://lsp/local_variables.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -413,7 +442,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for indented variables") {
-			String path = "res://lsp/indentation.notest.gd";
+			String path = "res://lsp/indentation.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -421,7 +450,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for scopes") {
-			String path = "res://lsp/scopes.notest.gd";
+			String path = "res://lsp/scopes.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -429,7 +458,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for lambda") {
-			String path = "res://lsp/lambdas.notest.gd";
+			String path = "res://lsp/lambdas.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -437,7 +466,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for inner class") {
-			String path = "res://lsp/class.notest.gd";
+			String path = "res://lsp/class.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -445,7 +474,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for inner class") {
-			String path = "res://lsp/enums.notest.gd";
+			String path = "res://lsp/enums.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -453,7 +482,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for shadowing & shadowed variables") {
-			String path = "res://lsp/shadowing_initializer.notest.gd";
+			String path = "res://lsp/shadowing_initializer.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -461,7 +490,7 @@ func f():
 		}
 
 		SUBCASE("Can get correct ranges for properties and getter/setter") {
-			String path = "res://lsp/properties.notest.gd";
+			String path = "res://lsp/properties.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
@@ -469,12 +498,115 @@ func f():
 		}
 
 		memdelete(proto);
+		memdelete(efs);
 		finish_language();
+	}
+	TEST_CASE("[workspace][document_symbol]") {
+		EditorFileSystem *efs = memnew(EditorFileSystem);
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+
+		SUBCASE("selectionRange of root class must be inside range") {
+			LocalVector<String> paths = {
+				"res://lsp/first_line_comment.gd", // Comment on first line
+				"res://lsp/first_line_class_name.gd", // class_name (and thus selection range) before extends
+			};
+
+			for (const String &path : paths) {
+				assert_no_errors_in(path);
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+				REQUIRE(parser);
+				LSP::DocumentSymbol cls = parser->get_symbols();
+
+				REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
+				REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
+			}
+		}
+
+		SUBCASE("Documentation is correctly set") {
+			String path = "res://lsp/doc_comments.gd";
+			assert_no_errors_in(path);
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+			REQUIRE(parser);
+			LSP::DocumentSymbol cls = parser->get_symbols();
+			REQUIRE(cls.documentation.contains("brief"));
+			REQUIRE(cls.documentation.contains("description"));
+			REQUIRE(cls.documentation.contains("t1"));
+			REQUIRE(cls.documentation.contains("t2"));
+			REQUIRE(cls.documentation.contains("t3"));
+		}
+
+		memdelete(proto);
+		memdelete(efs);
+		finish_language();
+	}
+
+	TEST_CASE("BBCode to markdown conversion") {
+		// This tests the conversion from BBCode docstrings to the markdown markup sent to
+		// the LSP client on documentation requests
+
+		// Basic formatting
+		CHECK_EQ(LSP::marked_documentation("[b]bold[/b]"), "**bold**");
+		CHECK_EQ(LSP::marked_documentation("[i]italic[/i]"), "*italic*");
+		CHECK_EQ(LSP::marked_documentation("[u]underline[/u]"), "__underline__");
+		CHECK_EQ(LSP::marked_documentation("[s]strikethrough[/s]"), "~~strikethrough~~");
+		CHECK_EQ(LSP::marked_documentation("[code]code[/code]"), "`code`");
+		CHECK_EQ(LSP::marked_documentation("[kbd]Ctrl + S[/kbd]"), "`Ctrl + S`");
+
+		// Line breaks. We insert paragraphs for [br] because the BBCode to
+		// markdown conversion function simply makes the conversion line-wise and
+		// we don't distinguish markdown inline elements and blocks.
+		CHECK_EQ(LSP::marked_documentation("Line1[br]Line2"), "Line1\n\nLine2");
+
+		// These tags (center, color, font) aren't supported in markdown and should be stripped.
+		CHECK_EQ(LSP::marked_documentation("[center]Centered text[/center]"), "Centered text");
+		CHECK_EQ(LSP::marked_documentation("[color=red]red text[/color]"), "red text");
+		CHECK_EQ(LSP::marked_documentation("[font=Arial]Arial text[/font]"), "Arial text");
+
+		// The following tests are for all the link patterns specific to Godot's built-in docs that we render as inline code.
+		CHECK_EQ(LSP::marked_documentation("Class link: [Node2D], [Sprite2D]"), "Class link: `Node2D`, `Sprite2D`");
+		CHECK_EQ(LSP::marked_documentation("Single class [RigidBody2D]"), "Single class `RigidBody2D`");
+		CHECK_EQ(LSP::marked_documentation("[method Node2D.set_position]"), "`Node2D.set_position`");
+		CHECK_EQ(LSP::marked_documentation("[member Node2D.position]"), "`Node2D.position`");
+		CHECK_EQ(LSP::marked_documentation("[signal Node.ready]"), "`Node.ready`");
+		CHECK_EQ(LSP::marked_documentation("[constant Color.RED]"), "`Color.RED`");
+		CHECK_EQ(LSP::marked_documentation("[enum Node.ProcessMode]"), "`Node.ProcessMode`");
+		CHECK_EQ(LSP::marked_documentation("[annotation @GDScript.@export]"), "`@GDScript.@export`");
+		CHECK_EQ(LSP::marked_documentation("[constructor Vector2.Vector2]"), "`Vector2.Vector2`");
+		CHECK_EQ(LSP::marked_documentation("[operator Vector2.operator +]"), "`Vector2.operator +`");
+		CHECK_EQ(LSP::marked_documentation("[theme_item Button.font]"), "`Button.font`");
+		CHECK_EQ(LSP::marked_documentation("[param delta]"), "`delta`");
+
+		// Markdown links
+		CHECK_EQ(LSP::marked_documentation("[url=https://godotengine.org]link to Godot Engine[/url]"),
+				"[link to Godot Engine](https://godotengine.org)");
+		CHECK_EQ(LSP::marked_documentation("[url]https://godotengine.org/[/url]"),
+				"[https://godotengine.org/](https://godotengine.org/)");
+
+		// Code listings
+		CHECK_EQ(LSP::marked_documentation("[codeblock]\nfunc test():\n    print(\"Hello, Godot!\")\n[/codeblock]"),
+				"```gdscript\nfunc test():\n    print(\"Hello, Godot!\")\n```");
+		CHECK_EQ(LSP::marked_documentation("[codeblock lang=csharp]\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n[/codeblock]"),
+				"```csharp\npublic void Test()\n{\n    GD.Print(\"Hello, Godot!\");\n}\n```");
+		// Code listings with multiple languages (the codeblocks tag is used in the built-in reference)
+		// When [codeblocks] is used, we only convert the [gdscript] tag to a code block like the built-in editor.
+		// NOTE: There is always a GDScript code listing in the built-in class reference.
+		CHECK_EQ(LSP::marked_documentation("[codeblocks]\n[gdscript]\nprint(hash(\"a\")) # Prints 177670\n[/gdscript]\n[csharp]\nGD.Print(GD.Hash(\"a\")); // Prints 177670\n[/csharp]\n[/codeblocks]"),
+				"```gdscript\nprint(hash(\"a\")) # Prints 177670\n```\n");
+
+		// lb and rb are used to insert literal square brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("[lb]literal brackets[rb]"), "\\[literal brackets\\]");
+		CHECK_EQ(LSP::marked_documentation("[lb]literal[rb] with [ClassName]"), "\\[literal\\] with `ClassName`");
+
+		// We have to be careful that different patterns don't conflict with each
+		// other, especially with urls that use brackets in markdown.
+		CHECK_EQ(LSP::marked_documentation("Class [Sprite2D] with [url=https://godotengine.org]link[/url]"),
+				"Class `Sprite2D` with [link](https://godotengine.org)");
 	}
 }
 
 } // namespace GDScriptTests
 
-#endif // TOOLS_ENABLED
+#endif // MODULE_JSONRPC_ENABLED
 
-#endif // TEST_LSP_H
+#endif // TOOLS_ENABLED

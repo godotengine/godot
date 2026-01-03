@@ -4,14 +4,16 @@
 		Interface to a WebRTC peer connection.
 	</brief_description>
 	<description>
-		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
+		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain, and monitor the connection.
 		Setting up a WebRTC connection between two peers may not seem a trivial task, but it can be broken down into 3 main steps:
-		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
-		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]A[/code]).
-		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.
-		After these steps, the connection should become connected. Keep on reading or look into the tutorial for more information.
+		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and sends it to the other peer ([code]B[/code] from now on).
+		- [code]B[/code] receives the offer, generates an answer, and sends it to [code]A[/code].
+		- [code]A[/code] and [code]B[/code] then generate and exchange ICE candidates with each other.
+		After these steps, the connection should be established. Refer to the linked tutorials for details.
 	</description>
 	<tutorials>
+		<link title="WebRTC documentation">$DOCS_URL/tutorials/networking/webrtc.html</link>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_ice_candidate">
@@ -40,15 +42,15 @@
 				Valid [param options] are:
 				[codeblock]
 				{
-				    "negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. "data_channel_received" will not be called.
-				    "id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
+					"negotiated": true, # When set to true (default off), means the channel is negotiated out of band. "id" must be set too. "data_channel_received" will not be called.
+					"id": 1, # When "negotiated" is true this value must also be set to the same value on both peer.
 
-				    # Only one of maxRetransmits and maxPacketLifeTime can be specified, not both. They make the channel unreliable (but also better at real time).
-				    "maxRetransmits": 1, # Specify the maximum number of attempt the peer will make to retransmits packets if they are not acknowledged.
-				    "maxPacketLifeTime": 100, # Specify the maximum amount of time before giving up retransmitions of unacknowledged packets (in milliseconds).
-				    "ordered": true, # When in unreliable mode (i.e. either "maxRetransmits" or "maxPacketLifetime" is set), "ordered" (true by default) specify if packet ordering is to be enforced.
+					# Only one of maxRetransmits and maxPacketLifeTime can be specified, not both. They make the channel unreliable (but also better at real time).
+					"maxRetransmits": 1, # Specify the maximum number of attempt the peer will make to retransmits packets if they are not acknowledged.
+					"maxPacketLifeTime": 100, # Specify the maximum amount of time before giving up retransmitions of unacknowledged packets (in milliseconds).
+					"ordered": true, # When in unreliable mode (i.e. either "maxRetransmits" or "maxPacketLifetime" is set), "ordered" (true by default) specify if packet ordering is to be enforced.
 
-				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
+					"protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
 				[/codeblock]
 				[b]Note:[/b] You must keep a reference to channels created this way, or it will be closed.
@@ -64,7 +66,7 @@
 		<method name="get_connection_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.ConnectionState" />
 			<description>
-				Returns the connection state. See [enum ConnectionState].
+				Returns the connection state.
 			</description>
 		</method>
 		<method name="get_gathering_state" qualifiers="const">
@@ -76,7 +78,7 @@
 		<method name="get_signaling_state" qualifiers="const">
 			<return type="int" enum="WebRTCPeerConnection.SignalingState" />
 			<description>
-				Returns the [enum SignalingState] on the local end of the connection while connecting or reconnecting to another peer.
+				Returns the signaling state on the local end of the connection while connecting or reconnecting to another peer.
 			</description>
 		</method>
 		<method name="initialize">
@@ -87,16 +89,16 @@
 				Valid [param configuration] options are:
 				[codeblock]
 				{
-				    "iceServers": [
-				        {
-				            "urls": [ "stun:stun.example.com:3478" ], # One or more STUN servers.
-				        },
-				        {
-				            "urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
-				            "username": "a_username", # Optional username for the TURN server.
-				            "credential": "a_password", # Optional password for the TURN server.
-				        }
-				    ]
+					"iceServers": [
+						{
+							"urls": [ "stun:stun.example.com:3478" ], # One or more STUN servers.
+						},
+						{
+							"urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
+							"username": "a_username", # Optional username for the TURN server.
+							"credential": "a_password", # Optional password for the TURN server.
+						}
+					]
 				}
 				[/codeblock]
 			</description>

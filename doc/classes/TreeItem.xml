@@ -18,8 +18,9 @@
 			<param index="2" name="id" type="int" default="-1" />
 			<param index="3" name="disabled" type="bool" default="false" />
 			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
+			<param index="5" name="description" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+				Adds a button with [Texture2D] [param button] to the end of the cell at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text]. [param description] is used as the button description for assistive apps.
 			</description>
 		</method>
 		<method name="add_child">
@@ -34,6 +35,12 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Calls the [param method] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
+			</description>
+		</method>
+		<method name="clear_buttons">
+			<return type="void" />
+			<description>
+				Removes all buttons from all columns of this item.
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
@@ -73,6 +80,13 @@
 				Removes the button at index [param button_index] in column [param column].
 			</description>
 		</method>
+		<method name="get_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the column's auto translate mode.
+			</description>
+		</method>
 		<method name="get_autowrap_mode" qualifiers="const">
 			<return type="int" enum="TextServer.AutowrapMode" />
 			<param index="0" name="column" type="int" />
@@ -94,6 +108,14 @@
 			<param index="1" name="id" type="int" />
 			<description>
 				Returns the button index if there is a button with ID [param id] in column [param column], otherwise returns -1.
+			</description>
+		</method>
+		<method name="get_button_color" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="id" type="int" />
+			<description>
+				Returns the color of the button with ID [param id] in column [param column]. If the specified button does not exist, returns [constant Color.BLACK].
 			</description>
 		</method>
 		<method name="get_button_count" qualifiers="const">
@@ -160,6 +182,13 @@
 				Returns the custom color of column [param column].
 			</description>
 		</method>
+		<method name="get_custom_draw_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the custom callback of column [param column].
+			</description>
+		</method>
 		<method name="get_custom_font" qualifiers="const">
 			<return type="Font" />
 			<param index="0" name="column" type="int" />
@@ -172,6 +201,20 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns custom font size used to draw text in the column [param column].
+			</description>
+		</method>
+		<method name="get_custom_stylebox" qualifiers="const">
+			<return type="StyleBox" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's custom [StyleBox] used to draw the background.
+			</description>
+		</method>
+		<method name="get_description" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's description for assistive apps.
 			</description>
 		</method>
 		<method name="get_expand_right" qualifiers="const">
@@ -208,6 +251,13 @@
 				Returns the [Color] modulating the column's icon.
 			</description>
 		</method>
+		<method name="get_icon_overlay" qualifiers="const">
+			<return type="Texture2D" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the given column's icon overlay [Texture2D].
+			</description>
+		</method>
 		<method name="get_icon_region" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="column" type="int" />
@@ -238,7 +288,7 @@
 		<method name="get_next" qualifiers="const">
 			<return type="TreeItem" />
 			<description>
-				Returns the next sibling TreeItem in the tree or a null object if there is none.
+				Returns the next sibling TreeItem in the tree or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_next_in_tree">
@@ -260,13 +310,13 @@
 		<method name="get_parent" qualifiers="const">
 			<return type="TreeItem" />
 			<description>
-				Returns the parent TreeItem or a null object if there is none.
+				Returns the parent TreeItem or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_prev">
 			<return type="TreeItem" />
 			<description>
-				Returns the previous sibling TreeItem in the tree or a null object if there is none.
+				Returns the previous sibling TreeItem in the tree or a [code]null[/code] object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_in_tree">
@@ -303,12 +353,14 @@
 			<return type="int" enum="TextServer.StructuredTextParser" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the BiDi algorithm override set for this cell.
 			</description>
 		</method>
 		<method name="get_structured_text_bidi_override_options" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns the additional BiDi options set for this cell.
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
@@ -386,6 +438,7 @@
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
 			<description>
+				Returns [code]true[/code] if the cell was made into a button with [method set_custom_as_button].
 			</description>
 		</method>
 		<method name="is_edit_multiline" qualifiers="const">
@@ -421,6 +474,12 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if the given [param column] is selected.
+			</description>
+		</method>
+		<method name="is_visible_in_tree" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [member visible] is [code]true[/code] and all its ancestors are also visible.
 			</description>
 		</method>
 		<method name="move_after">
@@ -462,6 +521,15 @@
 				Selects the given [param column].
 			</description>
 		</method>
+		<method name="set_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the given column's auto translate mode to [param mode].
+				All columns use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [Tree] itself.
+			</description>
+		</method>
 		<method name="set_autowrap_mode">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -488,6 +556,15 @@
 				Sets the given column's button color at index [param button_index] to [param color].
 			</description>
 		</method>
+		<method name="set_button_description">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_index" type="int" />
+			<param index="2" name="description" type="String" />
+			<description>
+				Sets the given column's button description at index [param button_index] for assistive apps.
+			</description>
+		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
@@ -511,7 +588,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="mode" type="int" enum="TreeItem.TreeCellMode" />
 			<description>
-				Sets the given column's cell mode to [param mode]. See [enum TreeCellMode] constants.
+				Sets the given column's cell mode to [param mode]. This determines how the cell is displayed and edited.
 			</description>
 		</method>
 		<method name="set_checked">
@@ -534,6 +611,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Makes a cell with [constant CELL_MODE_CUSTOM] display as a non-flat button with a [StyleBox].
 			</description>
 		</method>
 		<method name="set_custom_bg_color">
@@ -543,6 +621,7 @@
 			<param index="2" name="just_outline" type="bool" default="false" />
 			<description>
 				Sets the given column's custom background color and whether to just use it as an outline.
+				[b]Note:[/b] If a custom [StyleBox] is set, the background color will be drawn behind it.
 			</description>
 		</method>
 		<method name="set_custom_color">
@@ -553,13 +632,22 @@
 				Sets the given column's custom color.
 			</description>
 		</method>
-		<method name="set_custom_draw">
+		<method name="set_custom_draw" deprecated="Use [method TreeItem.set_custom_draw_callback] instead.">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="callback" type="StringName" />
 			<description>
-				Sets the given column's custom draw callback to [param callback] method on [param object].
+				Sets the given column's custom draw callback to the [param callback] method on [param object].
+				The method named [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+			</description>
+		</method>
+		<method name="set_custom_draw_callback">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback. The cell has to be in [constant CELL_MODE_CUSTOM] to use this feature.
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
@@ -577,6 +665,23 @@
 			<param index="1" name="font_size" type="int" />
 			<description>
 				Sets custom font size used to draw text in the given [param column].
+			</description>
+		</method>
+		<method name="set_custom_stylebox">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="stylebox" type="StyleBox" />
+			<description>
+				Sets the given column's custom [StyleBox] used to draw the background.
+				[b]Note:[/b] If a custom background color is set, the [StyleBox] will be drawn in front of it.
+			</description>
+		</method>
+		<method name="set_description">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="description" type="String" />
+			<description>
+				Sets the given column's description for assistive apps.
 			</description>
 		</method>
 		<method name="set_edit_multiline">
@@ -609,7 +714,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
-				Sets the given column's icon [Texture2D].
+				Sets the given cell's icon [Texture2D]. If the cell is in [constant CELL_MODE_ICON] mode, the icon is displayed in the center of the cell. Otherwise, the icon is displayed before the cell's text. [constant CELL_MODE_RANGE] does not display an icon.
 			</description>
 		</method>
 		<method name="set_icon_max_width">
@@ -626,6 +731,14 @@
 			<param index="1" name="modulate" type="Color" />
 			<description>
 				Modulates the given column's icon with [param modulate].
+			</description>
+		</method>
+		<method name="set_icon_overlay">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="texture" type="Texture2D" />
+			<description>
+				Sets the given cell's icon overlay [Texture2D]. The cell has to be in [constant CELL_MODE_ICON] mode, and icon has to be set. Overlay is drawn on top of icon, in the bottom left corner.
 			</description>
 		</method>
 		<method name="set_icon_region">
@@ -650,7 +763,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+				Sets the language code of the given [param column]'s text to [param language]. This is used for line-breaking and text shaping algorithms. If [param language] is empty, the current locale is used.
 			</description>
 		</method>
 		<method name="set_metadata">
@@ -694,6 +807,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="parser" type="int" enum="TextServer.StructuredTextParser" />
 			<description>
+				Set BiDi algorithm override for the structured text. Has effect for cells that display text.
 			</description>
 		</method>
 		<method name="set_structured_text_bidi_override_options">
@@ -701,6 +815,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="args" type="Array" />
 			<description>
+				Set additional options for BiDi override. Has effect for cells that display text.
 			</description>
 		</method>
 		<method name="set_suffix">
@@ -724,7 +839,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="text_alignment" type="int" enum="HorizontalAlignment" />
 			<description>
-				Sets the given column's text alignment. See [enum HorizontalAlignment] for possible values.
+				Sets the given column's text alignment to [param text_alignment].
 			</description>
 		</method>
 		<method name="set_text_direction">
@@ -754,6 +869,7 @@
 		<method name="uncollapse_tree">
 			<return type="void" />
 			<description>
+				Uncollapses all [TreeItem]s necessary to reveal this [TreeItem], i.e. all ancestor [TreeItem]s.
 			</description>
 		</method>
 	</methods>
@@ -774,18 +890,21 @@
 	</members>
 	<constants>
 		<constant name="CELL_MODE_STRING" value="0" enum="TreeCellMode">
-			Cell contains a string.
+			Cell shows a string label, optionally with an icon. When editable, the text can be edited using a [LineEdit], or a [TextEdit] popup if [method set_edit_multiline] is used.
 		</constant>
 		<constant name="CELL_MODE_CHECK" value="1" enum="TreeCellMode">
-			Cell contains a checkbox.
+			Cell shows a checkbox, optionally with text and an icon. The checkbox can be pressed, released, or indeterminate (via [method set_indeterminate]). The checkbox can't be clicked unless the cell is editable.
 		</constant>
 		<constant name="CELL_MODE_RANGE" value="2" enum="TreeCellMode">
-			Cell contains a range.
+			Cell shows a numeric range. When editable, it can be edited using a range slider. Use [method set_range] to set the value and [method set_range_config] to configure the range.
+			This cell can also be used in a text dropdown mode when you assign a text with [method set_text]. Separate options with a comma, e.g. [code]"Option1,Option2,Option3"[/code].
 		</constant>
 		<constant name="CELL_MODE_ICON" value="3" enum="TreeCellMode">
-			Cell contains an icon.
+			Cell shows an icon. It can't be edited nor display text. The icon is always centered within the cell.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
+			Cell shows as a clickable button. It will display an arrow similar to [OptionButton], but doesn't feature a dropdown (for that you can use [constant CELL_MODE_RANGE]). Clicking the button emits the [signal Tree.item_edited] signal. The button is flat by default, you can use [method set_custom_as_button] to display it with a [StyleBox].
+			This mode also supports custom drawing using [method set_custom_draw_callback].
 		</constant>
 	</constants>
 </class>

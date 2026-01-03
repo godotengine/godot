@@ -4,7 +4,7 @@
  *
  *   TT CMAP classes definitions (specification only).
  *
- * Copyright (C) 2009-2023 by
+ * Copyright (C) 2009-2025 by
  * Oran Agra and Mickey Gabel.
  *
  * This file is part of the FreeType project, and may only be used,

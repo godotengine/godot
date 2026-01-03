@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "key_mapping_macos.h"
+#import "key_mapping_macos.h"
 
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
@@ -46,6 +46,7 @@ HashSet<unsigned int> numpad_keys;
 HashMap<unsigned int, Key, HashMapHasherKeys> keysym_map;
 HashMap<Key, unsigned int, HashMapHasherKeys> keysym_map_inv;
 HashMap<Key, char32_t, HashMapHasherKeys> keycode_map;
+HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
 void KeyMappingMacOS::initialize() {
 	numpad_keys.insert(0x41); //kVK_ANSI_KeypadDecimal
@@ -321,6 +322,20 @@ void KeyMappingMacOS::initialize() {
 	keycode_map[Key::BAR] = '|';
 	keycode_map[Key::BRACERIGHT] = '}';
 	keycode_map[Key::ASCIITILDE] = '~';
+
+	// Keysym -> physical location.
+	// Ctrl.
+	location_map[0x3b] = KeyLocation::LEFT;
+	location_map[0x3e] = KeyLocation::RIGHT;
+	// Shift.
+	location_map[0x38] = KeyLocation::LEFT;
+	location_map[0x3c] = KeyLocation::RIGHT;
+	// Alt/Option.
+	location_map[0x3a] = KeyLocation::LEFT;
+	location_map[0x3d] = KeyLocation::RIGHT;
+	// Meta/Command (yes, right < left).
+	location_map[0x36] = KeyLocation::RIGHT;
+	location_map[0x37] = KeyLocation::LEFT;
 }
 
 bool KeyMappingMacOS::is_numpad_key(unsigned int p_key) {
@@ -375,7 +390,7 @@ Key KeyMappingMacOS::remap_key(unsigned int p_key, unsigned int p_state, bool p_
 			LMGetKbdType(),
 			kUCKeyTranslateNoDeadKeysBit,
 			&keys_down,
-			sizeof(chars) / sizeof(chars[0]),
+			std_size(chars),
 			&real_length,
 			chars);
 
@@ -394,6 +409,15 @@ Key KeyMappingMacOS::remap_key(unsigned int p_key, unsigned int p_state, bool p_
 	} else {
 		return fix_keycode(c, translate_key(p_key));
 	}
+}
+
+// Translates a macOS keycode to a Godot key location.
+KeyLocation KeyMappingMacOS::translate_location(unsigned int p_key) {
+	const KeyLocation *location = location_map.getptr(p_key);
+	if (location) {
+		return *location;
+	}
+	return KeyLocation::UNSPECIFIED;
 }
 
 String KeyMappingMacOS::keycode_get_native_string(Key p_keycode) {

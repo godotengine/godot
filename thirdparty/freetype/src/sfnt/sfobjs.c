@@ -4,7 +4,7 @@
  *
  *   SFNT object management (base).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -38,6 +38,10 @@
 
 #ifdef TT_CONFIG_OPTION_BDF
 #include "ttbdf.h"
+#endif
+
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+#include "ttgpos.h"
 #endif
 
 
@@ -575,6 +579,9 @@
     if ( face_instance_index < 0 && face_index > 0 )
       face_index--;
 
+    /* Note that `face_index` is also used to enumerate elements */
+    /* of containers like a Mac Resource; this means we must     */
+    /* check whether we actually have a TTC.                     */
     if ( face_index >= face->ttc_header.count )
     {
       if ( face_instance_index >= 0 )
@@ -1026,6 +1033,10 @@
     LOAD_( gasp );
     LOAD_( kern );
 
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+    LOAD_( gpos );
+#endif
+
     face->root.num_glyphs = face->max_profile.numGlyphs;
 
     /* Bit 8 of the `fsSelection' field in the `OS/2' table denotes  */
@@ -1119,7 +1130,11 @@
         flags |= FT_FACE_FLAG_VERTICAL;
 
       /* kerning available ? */
-      if ( TT_FACE_HAS_KERNING( face ) )
+      if ( face->kern_avail_bits
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+           || face->num_gpos_lookups_kerning
+#endif
+         )
         flags |= FT_FACE_FLAG_KERNING;
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
@@ -1469,6 +1484,11 @@
 
     /* freeing the kerning table */
     tt_face_done_kern( face );
+
+#ifdef TT_CONFIG_OPTION_GPOS_KERNING
+    /* freeing the GPOS table */
+    tt_face_done_gpos( face );
+#endif
 
     /* freeing the collection table */
     FT_FREE( face->ttc_header.offsets );
