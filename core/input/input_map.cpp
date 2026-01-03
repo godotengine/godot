@@ -161,6 +161,21 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 	return nullptr;
 }
 
+Ref<InputEvent> InputMap::_normalize_event(const Ref<InputEvent> &p_event) const {
+	ERR_FAIL_COND_V(p_event.is_null(), nullptr);
+	// Normalize for key events if they are raw
+	Ref<InputEventKey> k = p_event;
+	// Raw input IDs are HANDLE, which use 32 bit HANDLE even for 64 bit Windows
+	// So raw input's device (HANDLE casted to int64_t) is > 0
+	if (k.is_valid() && (k->get_device() > 0)) {
+		// Create a normalized event with device = ALL_DEVICES for InpuMap
+		Ref<InputEventKey> k_norm = k->duplicate();
+		k_norm->set_device(ALL_DEVICES);
+		return k_norm;
+	}
+	return p_event;
+}
+
 bool InputMap::has_action(const StringName &p_action) const {
 	return input_map.has(p_action);
 }
@@ -203,7 +218,10 @@ void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputE
 		return; // Already added.
 	}
 
-	input_map[p_action].inputs.push_back(p_event);
+	// Normalize events first
+	Ref<InputEvent> p_event_norm = _normalize_event(p_event);
+
+	input_map[p_action].inputs.push_back(p_event_norm);
 }
 
 bool InputMap::action_has_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {

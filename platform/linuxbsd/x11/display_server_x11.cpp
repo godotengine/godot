@@ -270,6 +270,26 @@ bool DisplayServerX11::_refresh_device_info() {
 	int dev_count;
 	XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
 
+	// Remove loop for raw keyboard mapping
+	for (const auto &[raw_kb_id, in_use] : id_map) {
+		if (!in_use) {
+			continue; // Skip unused raw IDs
+		}
+		bool listed = false;
+		for (int i = 0; i < dev_count; ++i) {
+			XIDeviceInfo *dev = &info[i];
+			if (dev->deviceid == raw_kb_id) {
+				listed = true;
+				break;
+			}
+		}
+		// Only remove the 1st ID that is not listed
+		if (!listed) {
+			this->kb_map_remove(raw_kb_id);
+			break;
+		}
+	}
+
 	for (int i = 0; i < dev_count; i++) {
 		XIDeviceInfo *dev = &info[i];
 		if (!dev->enabled) {
@@ -3794,7 +3814,7 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo) {
+void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, int p_device_id, bool p_echo) {
 	WindowData &wd = windows[p_window];
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -3916,6 +3936,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				k->set_pressed(keypress);
 
 				k->set_keycode(keycode);
+				k->set_device(p_device_id);
 				k->set_physical_keycode(physical_keycode);
 				if (!keysym.is_empty()) {
 					k->set_key_label(fix_key_label(keysym[0], keycode));
@@ -3931,6 +3952,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				if (k->get_keycode() == Key::BACKTAB) {
 					//make it consistent across platforms.
 					k->set_keycode(Key::TAB);
+					k->set_device(p_device_id);
 					k->set_physical_keycode(Key::TAB);
 					k->set_shift_pressed(true);
 				}
@@ -3996,6 +4018,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					k->set_pressed(keypress);
 
 					k->set_keycode(keycode);
+					k->set_device(p_device_id);
 					k->set_physical_keycode(physical_keycode);
 					if (!keysym.is_empty()) {
 						k->set_key_label(fix_key_label(keysym[0], keycode));
@@ -4013,6 +4036,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 					if (k->get_keycode() == Key::BACKTAB) {
 						//make it consistent across platforms.
 						k->set_keycode(Key::TAB);
+						k->set_device(p_device_id);
 						k->set_physical_keycode(Key::TAB);
 						k->set_shift_pressed(true);
 					}
@@ -4114,7 +4138,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				if (rk == keysym_keycode) {
 					// Consume to next event.
 					++p_event_index;
-					_handle_key_event(p_window, (XKeyEvent *)&peek_event, p_events, p_event_index, true);
+					_handle_key_event(p_window, (XKeyEvent *)&peek_event, p_events, p_event_index, p_device_id, true);
 					return; //ignore current, echo next
 				}
 			}
@@ -4134,6 +4158,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	}
 
 	k->set_keycode(keycode);
+	k->set_device(p_device_id);
 	k->set_physical_keycode((Key)physical_keycode);
 	if (!keysym.is_empty()) {
 		k->set_key_label(fix_key_label(keysym[0], keycode));
@@ -4151,6 +4176,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	if (k->get_keycode() == Key::BACKTAB) {
 		//make it consistent across platforms.
 		k->set_keycode(Key::TAB);
+		k->set_device(p_device_id);
 		k->set_physical_keycode(Key::TAB);
 		k->set_shift_pressed(true);
 	}
@@ -4801,6 +4827,7 @@ void DisplayServerX11::process_events() {
 
 		bool ime_window_event = false;
 		WindowID window_id = MAIN_WINDOW_ID;
+		static int current_keyboard_id;
 
 		// Assign the event to the relevant window
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
@@ -4822,6 +4849,12 @@ void DisplayServerX11::process_events() {
 					case XI_HierarchyChanged:
 					case XI_DeviceChanged: {
 						_refresh_device_info();
+					} break;
+					case XI_RawKeyPress:
+					case XI_RawKeyRelease: {
+						XIRawEvent *raw_event = (XIRawEvent *)event_data;
+						this->kb_map_insert(raw_event->sourceid);
+						current_keyboard_id = id_map.get_index(raw_event->sourceid);
 					} break;
 					case XI_RawMotion: {
 						if (ime_window_event || ignore_events) {
@@ -5475,7 +5508,7 @@ void DisplayServerX11::process_events() {
 
 				// key event is a little complex, so
 				// it will be handled in its own function.
-				_handle_key_event(window_id, &event.xkey, events, event_index);
+				_handle_key_event(window_id, &event.xkey, events, event_index, current_keyboard_id);
 			} break;
 
 			case SelectionNotify:
@@ -7215,6 +7248,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		all_master_event_mask.mask = all_master_mask_data;
 		XISetMask(all_master_event_mask.mask, XI_DeviceChanged);
 		XISetMask(all_master_event_mask.mask, XI_RawMotion);
+		XISetMask(all_master_event_mask.mask, XI_RawKeyPress);
+		XISetMask(all_master_event_mask.mask, XI_RawKeyRelease);
 		XISelectEvents(x11_display, DefaultRootWindow(x11_display), &all_master_event_mask, 1);
 	}
 

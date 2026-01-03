@@ -491,6 +491,31 @@ bool DisplayServer::_get_window_early_clear_override(Color &r_color) {
 	}
 }
 
+void DisplayServer::kb_map_insert(int new_kb_id) {
+	if (id_map.end() != id_map.find(new_kb_id)) {
+		return; // raw id already existed in map
+	}
+	id_map.insert(new_kb_id, true);
+	// Look for the 1st unused id
+	for (const auto &[raw_kb_id, in_use] : id_map) {
+		if (false == in_use) {
+			// Erase the 1st unused id found, the newly added id will take its place thanks to Array Hash Map
+			id_map.erase(raw_kb_id);
+			break;
+		}
+	}
+	return;
+}
+
+void DisplayServer::kb_map_remove(int raw_kb_id) {
+	if (id_map.end() == id_map.find(raw_kb_id)) {
+		return; // raw id not existed in map
+	}
+	// Mark as unused to delete later
+	id_map[raw_kb_id] = false;
+	return;
+}
+
 void DisplayServer::set_early_window_clear_color_override(bool p_enabled, Color p_color) {
 	window_early_clear_override_enabled = p_enabled;
 	window_early_clear_override_color = p_color;
