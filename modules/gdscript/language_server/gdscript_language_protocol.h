@@ -32,6 +32,7 @@
 
 #include "gdscript_text_document.h"
 #include "gdscript_workspace.h"
+#include "scene_cache.h"
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
@@ -92,6 +93,7 @@ private:
 	static GDScriptLanguageProtocol *singleton;
 
 	HashMap<int, Ref<LSPeer>> clients;
+	SceneCache scene_cache;
 	Ref<TCPServer> server;
 	int latest_client_id = LSP_NO_CLIENT;
 	int next_client_id = 0;
@@ -119,6 +121,8 @@ public:
 	_FORCE_INLINE_ static GDScriptLanguageProtocol *get_singleton() { return singleton; }
 	_FORCE_INLINE_ Ref<GDScriptWorkspace> get_workspace() { return workspace; }
 	_FORCE_INLINE_ Ref<GDScriptTextDocument> get_text_document() { return text_document; }
+	_FORCE_INLINE_ SceneCache *get_scene_cache() { return &scene_cache; }
+
 	_FORCE_INLINE_ bool is_initialized() const { return _initialized; }
 
 	void poll(int p_limit_usec);
