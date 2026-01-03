@@ -537,6 +537,7 @@ public:
 	virtual void reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+	void set_parent(Node *p_parent, bool p_keep_global_transform = true);
 
 	void set_unique_scene_id(int32_t p_unique_id);
 	int32_t get_unique_scene_id() const;
