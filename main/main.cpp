@@ -4231,6 +4231,19 @@ int Main::start() {
 		main_loop_type = GLOBAL_GET("application/run/main_loop_type");
 	}
 
+	// Register autoload constants early so they exist before any script.
+	// Should happen before --check-only to avoid parse errors.
+	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+		const ProjectSettings::AutoloadInfo &info = E.value;
+
+		if (info.is_singleton) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
+			}
+		}
+	}
+
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), EXIT_FAILURE, "Can't load script: " + script);
@@ -4364,20 +4377,7 @@ int Main::start() {
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
 				OS::get_singleton()->benchmark_begin_measure("Startup", "Load Autoloads");
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
-				//first pass, add the constants so they exist before any script is loaded
-				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
-					const ProjectSettings::AutoloadInfo &info = E.value;
-
-					if (info.is_singleton) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-							ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
-						}
-					}
-				}
-
-				//second pass, load into global constants
 				List<Node *> to_add;
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;
