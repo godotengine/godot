@@ -318,6 +318,50 @@ String Time::get_offset_string_from_offset_minutes(int64_t p_offset_minutes) con
 	return vformat("%s%02d:%02d", sign, offset_hours, offset_minutes);
 }
 
+double Time::_take_time_unit(double *p_seconds, double p_sec_time_unit) const {
+	double count_within_this_time = floor(*p_seconds / p_sec_time_unit);
+	*p_seconds = *p_seconds - count_within_this_time * p_sec_time_unit;
+	return count_within_this_time;
+}
+
+#define SEC_PER_MILLISECOND 0.001
+#define SEC_PER_MINUTE 60.0
+#define SEC_PER_HOUR (SEC_PER_MINUTE * 60.0)
+#define SEC_PER_DAY (SEC_PER_HOUR * 24.0)
+#define SEC_PER_YEAR (SEC_PER_DAY * 365.2425)
+
+Dictionary Time::get_duration_dict_from_duration(double p_duration_seconds, DurationComponent p_components) const {
+	Dictionary component_dict;
+
+	if (p_components & DURATION_YEARS) {
+		component_dict["years"] = _take_time_unit(&p_duration_seconds, SEC_PER_YEAR);
+	}
+
+	if (p_components & DURATION_DAYS) {
+		component_dict["days"] = _take_time_unit(&p_duration_seconds, SEC_PER_DAY);
+	}
+
+	if (p_components & DURATION_HOURS) {
+		component_dict["hours"] = _take_time_unit(&p_duration_seconds, SEC_PER_HOUR);
+	}
+
+	if (p_components & DURATION_MINUTES) {
+		component_dict["minutes"] = _take_time_unit(&p_duration_seconds, SEC_PER_MINUTE);
+	}
+
+	if (p_components & DURATION_SECONDS) {
+		component_dict["seconds"] = _take_time_unit(&p_duration_seconds, 1.0);
+	}
+
+	if (p_components & DURATION_MILLISECONDS) {
+		component_dict["milliseconds"] = _take_time_unit(&p_duration_seconds, SEC_PER_MILLISECOND);
+	}
+
+	component_dict["remaining_seconds"] = p_duration_seconds;
+
+	return component_dict;
+}
+
 Dictionary Time::get_datetime_dict_from_system(bool p_utc) const {
 	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary datetime;
@@ -400,6 +444,7 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_dict", "datetime"), &Time::get_unix_time_from_datetime_dict);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_string", "datetime"), &Time::get_unix_time_from_datetime_string);
 	ClassDB::bind_method(D_METHOD("get_offset_string_from_offset_minutes", "offset_minutes"), &Time::get_offset_string_from_offset_minutes);
+	ClassDB::bind_method(D_METHOD("get_duration_dict_from_duration", "duration_seconds", "components"), &Time::get_duration_dict_from_duration);
 
 	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_system", "utc"), &Time::get_datetime_dict_from_system, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_date_dict_from_system", "utc"), &Time::get_date_dict_from_system, DEFVAL(false));
@@ -432,6 +477,13 @@ void Time::_bind_methods() {
 	BIND_ENUM_CONSTANT(WEEKDAY_THURSDAY);
 	BIND_ENUM_CONSTANT(WEEKDAY_FRIDAY);
 	BIND_ENUM_CONSTANT(WEEKDAY_SATURDAY);
+
+	BIND_ENUM_CONSTANT(DURATION_MILLISECONDS);
+	BIND_ENUM_CONSTANT(DURATION_SECONDS);
+	BIND_ENUM_CONSTANT(DURATION_MINUTES);
+	BIND_ENUM_CONSTANT(DURATION_HOURS);
+	BIND_ENUM_CONSTANT(DURATION_DAYS);
+	BIND_ENUM_CONSTANT(DURATION_YEARS);
 }
 
 Time::Time() {
