@@ -81,10 +81,13 @@ class OS_LinuxBSD : public OS_Unix {
 
 	MainLoop *main_loop = nullptr;
 
-	String get_systemd_os_release_info_value(const String &key) const;
-
-	Vector<String> lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const;
-	Vector<String> lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const;
+	String get_systemd_os_release_info_value(const String &p_key) const;
+	Vector<String> lspci_get_graphics_cards() const;
+	String get_video_adapter_driver_version(const String &p_driver_name) const;
+	String extract_version_from_text(const String &p_text, const String &p_delimiter) const;
+	Vector<String> eglinfo_get_vendor_and_device(const String &p_dri_prime) const;
+	String lspci_get_device_value(const String &p_vendor_device_id_mapping, const String &p_check_column, const String &p_disallow_list) const;
+	Vector<String> glxinfo_get_device_info(const String &p_dri_prime) const;
 
 	String system_dir_desktop_cache;
 

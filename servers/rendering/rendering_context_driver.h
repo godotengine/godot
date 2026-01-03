@@ -80,6 +80,7 @@ public:
 	};
 
 	struct Device {
+		uint32_t id = 0x0;
 		String name = "Unknown";
 		uint32_t vendor = Vendor::VENDOR_UNKNOWN;
 		DeviceType type = DEVICE_TYPE_OTHER;

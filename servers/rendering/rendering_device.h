@@ -1711,7 +1711,9 @@ public:
 	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
+	uint32_t get_device_vendor_id() const;
 	String get_device_vendor_name() const;
+	uint32_t get_device_id() const;
 	String get_device_name() const;
 	DeviceType get_device_type() const;
 	String get_device_api_name() const;

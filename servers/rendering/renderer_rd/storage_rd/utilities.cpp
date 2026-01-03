@@ -310,8 +310,16 @@ uint64_t Utilities::get_rendering_info(RS::RenderingInfo p_info) {
 	return 0;
 }
 
+uint32_t Utilities::get_video_adapter_id() const {
+	return RenderingDevice::get_singleton()->get_device_id();
+}
+
 String Utilities::get_video_adapter_name() const {
 	return RenderingDevice::get_singleton()->get_device_name();
+}
+
+uint32_t Utilities::get_video_adapter_vendor_id() const {
+	return RenderingDevice::get_singleton()->get_device_vendor_id();
 }
 
 String Utilities::get_video_adapter_vendor() const {
