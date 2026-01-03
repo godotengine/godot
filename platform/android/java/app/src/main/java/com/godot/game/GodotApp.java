@@ -92,4 +92,9 @@ public class GodotApp extends GodotActivity {
 			super.onGodotForceQuit(instance);
 		}
 	}
+
+	@Override
+	protected boolean isPiPEnabled() {
+		return true;
+	}
 }

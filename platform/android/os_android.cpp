@@ -417,7 +417,9 @@ void OS_Android::main_loop_focusout() {
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
-	audio_driver_android.set_pause(true);
+
+	// Only pause when we are not in PiP mode.
+	audio_driver_android.set_pause(!DisplayServerAndroid::get_singleton()->is_in_pip_mode());
 }
 
 void OS_Android::main_loop_focusin() {

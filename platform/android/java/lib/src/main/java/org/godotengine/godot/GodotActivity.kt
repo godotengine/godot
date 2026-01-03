@@ -31,17 +31,25 @@
 package org.godotengine.godot
 
 import android.app.Activity
+import android.app.PictureInPictureParams
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
+import android.view.View
 import androidx.annotation.CallSuper
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.FragmentActivity
+import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
@@ -49,7 +57,7 @@ import org.godotengine.godot.utils.ProcessPhoenix
  * Also a reference implementation for how to setup and use the [GodotFragment] fragment
  * within an Android app.
  */
-abstract class GodotActivity : FragmentActivity(), GodotHost {
+abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPictureProvider {
 
 	companion object {
 		private val TAG = GodotActivity::class.java.simpleName
@@ -65,6 +73,12 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private final val DEFAULT_WINDOW_ID = 664;
 	}
 
+	/**
+	 * Set to true if the activity should automatically enter picture-in-picture when put in the background.
+	 */
+	private val pipAspectRatio = AtomicReference<Rational>()
+	private val autoEnterPiP = AtomicBoolean(false)
+	private val gameViewSourceRectHint = Rect()
 	private val commandLineParams = ArrayList<String>()
 	/**
 	 * Interaction with the [Godot] object is delegated to the [GodotFragment] class.
@@ -139,6 +153,13 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 				.setPrimaryNavigationFragment(godotFragment)
 				.commitNowAllowingStateLoss()
 		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val gameView = findViewById<View>(R.id.godot_fragment_container)
+			gameView?.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+				gameView.getGlobalVisibleRect(gameViewSourceRectHint)
+			}
+		}
 	}
 
 	override fun onNewGodotInstanceRequested(args: Array<String>): Int {
@@ -149,7 +170,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 			.putExtra(EXTRA_COMMAND_LINE_PARAMS, args)
 		triggerRebirth(null, intent)
 		// fake 'process' id returned by create_instance() etc
-		return DEFAULT_WINDOW_ID;
+		return DEFAULT_WINDOW_ID
 	}
 
 	protected fun triggerRebirth(bundle: Bundle?, intent: Intent) {
@@ -165,6 +186,15 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	override fun onDestroy() {
 		Log.v(TAG, "Destroying GodotActivity $this...")
 		super.onDestroy()
+	}
+
+	override fun onStop() {
+		super.onStop()
+
+		if (isInPictureInPictureMode && !isFinishing) {
+			// We get in this state when PiP is closed, so we terminate the activity.
+			finish()
+		}
 	}
 
 	override fun onGodotForceQuit(instance: Godot) {
@@ -193,6 +223,23 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 					ProcessPhoenix.triggerRebirth(this)
 				}
 			}
+		}
+	}
+
+	override fun onGodotSetupCompleted() {
+		super.onGodotSetupCompleted()
+
+		if (isPiPEnabled()) {
+			try {
+				// Update the aspect ratio for picture-in-picture mode.
+				val viewportWidth = Integer.parseInt(GodotLib.getGlobal("display/window/size/viewport_width"))
+				val viewportHeight = Integer.parseInt(GodotLib.getGlobal("display/window/size/viewport_height"))
+				pipAspectRatio.set(Rational(viewportWidth, viewportHeight))
+			} catch (e: NumberFormatException) {
+				Log.w(TAG, "Unable to parse viewport dimensions.", e)
+			}
+
+			runOnHostThread { updatePiPParams() }
 		}
 	}
 
@@ -256,4 +303,56 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	@CallSuper
 	override fun getCommandLine(): MutableList<String> = commandLineParams
+
+	override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+		super.onPictureInPictureModeChanged(isInPictureInPictureMode)
+		godot?.onPictureInPictureModeChanged(isInPictureInPictureMode)
+	}
+
+	/**
+	 * Returns true if picture-in-picture (PiP) mode is supported.
+	 */
+	override fun isPiPModeSupported() = isPiPEnabled() && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+
+	/**
+	 * Returns true if the current activity has enabled picture-in-picture in its manifest declaration using
+	 * 'android:supportsPictureInPicture="true"'
+	 */
+	protected open fun isPiPEnabled() = false
+
+	internal fun updatePiPParams(enableAutoEnter: Boolean = autoEnterPiP.get(), aspectRatio: Rational? = pipAspectRatio.get()) {
+		if (isPiPModeSupported()) {
+			autoEnterPiP.set(enableAutoEnter)
+			pipAspectRatio.set(aspectRatio)
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				val builder = PictureInPictureParams.Builder()
+					.setSourceRectHint(gameViewSourceRectHint)
+					.setAspectRatio(aspectRatio)
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+					builder.setSeamlessResizeEnabled(false)
+						.setAutoEnterEnabled(enableAutoEnter)
+				}
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+					builder.setExpandedAspectRatio(aspectRatio)
+				}
+				setPictureInPictureParams(builder.build())
+			}
+		}
+	}
+
+	override fun enterPiPMode() {
+		if (isPiPModeSupported()) {
+			updatePiPParams()
+
+			Log.v(TAG, "Entering PiP mode")
+			enterPictureInPictureMode()
+		}
+	}
+
+	override fun onUserLeaveHint() {
+		if (autoEnterPiP.get()) {
+			enterPiPMode()
+		}
+	}
 }

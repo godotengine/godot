@@ -68,6 +68,12 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 			return sdk_version.to_int() >= 29;
 		} break;
 
+		case FEATURE_PIP_MODE: {
+			GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+			ERR_FAIL_NULL_V(godot_java, false);
+			return godot_java->is_pip_mode_supported();
+		} break;
+
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_HIDPI:
@@ -990,4 +996,28 @@ void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 
 bool DisplayServerAndroid::is_window_transparency_available() const {
 	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
+}
+
+bool DisplayServerAndroid::is_in_pip_mode() {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+	return godot_java->is_in_pip_mode();
+}
+
+void DisplayServerAndroid::pip_mode_enter() {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->enter_pip_mode();
+}
+
+void DisplayServerAndroid::pip_mode_set_aspect_ratio(int p_numerator, int p_denominator) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->set_pip_mode_aspect_ratio(p_numerator, p_denominator);
+}
+
+void DisplayServerAndroid::pip_mode_set_auto_enter_on_background(bool p_auto_enter_on_background) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->set_auto_enter_pip_mode_on_background(p_auto_enter_on_background);
 }
