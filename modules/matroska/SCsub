@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_matroska = env_modules.Clone()
+
+# YCbCr sampler shader
+env_matroska.GLSL_HEADER("ycbcr_sampler.glsl")
+
+env_matroska.Depends(Glob("*.glsl.gen.h"), ["#glsl_builders.py"])
+
+# Godot source files
+env_matroska.add_source_files(env.modules_sources, "*.cpp")

@@ -1,0 +1,454 @@
+/**************************************************************************/
+/*  matroska.h                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+
+#include <cstddef>
+
+// Path: EBML/
+#define EBML_ID_HEADER 0x1A45DFA3
+#define EBML_ID_VERSION 0x4286
+#define EBML_ID_READ_VERSION 0x42F7
+#define EBML_ID_MAX_LENGTH 0x42F2
+#define EBML_ID_MAX_SIZE_LENGTH 0x42F3
+#define EBML_ID_DOC_TYPE 0x4282
+#define EBML_ID_DOC_TYPE_VERSION 0x4287
+#define EBML_ID_DOC_TYPE_READ_VERSION 0x4285
+#define EBML_ID_DOC_TYPE_EXTENSION 0x4281
+#define EBML_ID_DOC_TYPE_EXTENSION_NAME 0x4283
+#define EBML_ID_DOC_TYPE_EXTENSION_VERSION 0x4284
+
+// EBML special elements
+#define EBML_ID_CRC32 0xBF
+#define EBML_ID_VOID 0xEC
+
+// Path://Segment
+#define MATROSKA_ID_SEGMENT 0x18538067
+
+// Path://Segment/SeekHead
+#define MATROSKA_ID_SEEK_HEAD 0x114D9B74
+#define MATROSKA_ID_SEEK 0x4DBB
+#define MATROSKA_ID_SEEK_ID 0x53AB
+#define MATROSKA_ID_SEEK_POSITION 0x53AC
+
+// Path://Segment/Info
+#define MATROSKA_ID_SEGMENT_INFO 0x1549A966
+#define MATROSKA_ID_SEGMENT_INFO_UUID 0x73A4
+#define MATROSKA_ID_SEGMENT_INFO_FILENAME 0x7384
+#define MATROSKA_ID_SEGMENT_INFO_PREV_UUID 0x3CB923
+#define MATROSKA_ID_SEGMENT_INFO_PREV_FILENAME 0x3C83AB
+#define MATROSKA_ID_SEGMENT_INFO_NEXT_UUID 0x3EB923
+#define MATROSKA_ID_SEGMENT_INFO_NEXT_FILENAME 0x3E83BB
+#define MATROSKA_ID_SEGMENT_INFO_FAMILY 0x4444
+
+// Path://Segment/ChapterTranslate
+#define MATROSKA_ID_SEGMENT_INFO_CHAPTER_TRANSLATE 0x6924
+#define MATROSKA_ID_SEGMENT_INFO_CHAPTER_TRANSLATE_ID 0x69A5
+#define MATROSKA_ID_SEGMENT_INFO_CHAPTER_TRANSLATE_CODEC 0x69BF
+#define MATROSKA_ID_SEGMENT_INFO_CHAPTER_TRANSLATE_EDITION_UID 0x69FC
+
+// Path://Segment/Info
+#define MATROSKA_ID_SEGMENT_INFO_TIME_SCALE 0x2AD7B1
+#define MATROSKA_ID_SEGMENT_INFO_DURATION 0x4489
+#define MATROSKA_ID_SEGMENT_INFO_DATE_UTC 0x4461
+#define MATROSKA_ID_SEGMENT_INFO_TITLE 0x7BA9
+#define MATROSKA_ID_SEGMENT_INFO_MUXING_APP 0x4D80
+#define MATROSKA_ID_SEGMENT_INFO_WRITING_APP 0x5741
+
+// Path://Segment/Cluster
+#define MATROSKA_ID_CLUSTER 0x1F43B675
+#define MATROSKA_ID_CLUSTER_TIMESTAMP 0xE7
+#define MATROSKA_ID_CLUSTER_POSITION 0xA7
+#define MATROSKA_ID_CLUSTER_PREV_SIZE 0xAB
+#define MATROSKA_ID_CLUSTER_SIMPLE_BLOCK 0xA3
+
+// Path://Segment/Cluster/BlockGroup
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP 0xA0
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK 0xA1
+
+// Path://Segment/Cluster/BlockGroup/BlockAdditions
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK_ADDITIONS 0x75A1
+
+// Path://Segment/Cluster/BlockGroup/BlockAdditions/BlockMore
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK_MORE 0xA6
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK_ADDITIONAL 0xA5
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK_ADD_ID 0xEE
+
+// Path://Segment/Cluster/BlockGroup
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_BLOCK_DURATION 0x9B
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_REFERENCE_PRIORITY 0xFA
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_REFERENCE_BLOCK 0xFB
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_CODEC_STATE 0xA4
+#define MATROSKA_ID_CLUSTER_BLOCK_GROUP_DISCARD_PADDING 0x75A2
+
+// Path://Segment/Tracks
+#define MATROSKA_ID_TRACKS 0x1654AE6B
+
+// Path://Segment/Tracks/TrackEntry
+#define MATROSKA_ID_TRACK_ENTRY 0xAE
+#define MATROSKA_ID_TRACK_NUMBER 0xd7
+#define MATROSKA_ID_TRACK_UID 0x73C5
+#define MATROSKA_ID_TRACK_TYPE 0x83
+#define MATROSKA_ID_TRACK_FLAG_ENABLED 0xB9
+#define MATROSKA_ID_TRACK_FLAG_DEFAULT 0x88
+#define MATROSKA_ID_TRACK_FLAG_FORCED 0x55AA
+#define MATROSKA_ID_TRACK_FLAG_HEARING_IMPAIRED 0x55AB
+#define MATROSKA_ID_TRACK_FLAG_VISUAL_IMPAIRED 0x55AC
+#define MATROSKA_ID_TRACK_FLAG_TEXT_DESCRIPTIONS 0x55AD
+#define MATROSKA_ID_TRACK_FLAG_ORIGINAL 0x55AE
+#define MATROSKA_ID_TRACK_FLAG_COMMENTARY 0x55AF
+#define MATROSKA_ID_TRACK_FLAG_LACING 0x9C
+#define MATROSKA_ID_TRACK_DEFAULT_DURATION 0x23E383
+#define MATROSKA_ID_TRACK_DEFAULT_DECODED_FIELD_DURATION 0x234E7A
+#define MATROSKA_ID_TRACK_TIMESTAMP_SCALE 0x23314F
+#define MATROSKA_ID_TRACK_MAX_BLOCK_ADDITION_ID 0x55EE
+
+// Path://Segment/Tracks/TrackEntry/BlockAdditionMapping
+#define MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING 0x41E4
+#define MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING_BLOCK_ADD_ID_VALUE 0x41F0
+#define MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING_BLOCK_ADD_ID_NAME 0x41A4
+#define MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING_BLOCK_ADD_ID_TYPE 0x41E7
+#define MATROSKA_ID_TRACK_BLOCK_ADDITION_MAPPING_BLOCK_ADD_ID_EXTRA_DATA 0x41ED
+
+// Path://Segment/Tracks/TrackEntry
+#define MATROSKA_ID_TRACK_NAME 0x536E
+#define MATROSKA_ID_TRACK_LANGUAGE 0x22B59C
+#define MATROSKA_ID_TRACK_LANGUAGE_BCP47 0x22B59D
+#define MATROSKA_ID_TRACK_CODEC_ID 0x86
+#define MATROSKA_ID_TRACK_CODEC_PRIVATE 0x63A2
+#define MATROSKA_ID_TRACK_CODEC_NAME 0x258688
+#define MATROSKA_ID_TRACK_ATTACHMENT_LINK 0x7446
+#define MATROSKA_ID_TRACK_CODEC_DELAY 0x56AA
+#define MATROSKA_ID_TRACK_SEEK_PRE_ROLL 0x56BB
+
+// Path://Segment/Tracks/TrackEntry/TrackTranslate
+#define MATROSKA_ID_TRACK_TRANSLATE 0x6624
+#define MATROSKA_ID_TRACK_TRANSLATE_ID 0x66A5
+#define MATROSKA_ID_TRACK_TRANSLATE_CODEC 0x66BF
+#define MATROSKA_ID_TRACK_TRANSLATE_EDITION_UID 0x66FC
+
+// Path://Segment/Tracks/TrackEntry/Video
+#define MATROSKA_ID_TRACK_VIDEO 0xE0
+#define MATROSKA_ID_TRACK_VIDEO_FLAG_INTERLACED 0x9A
+#define MATROSKA_ID_TRACK_VIDEO_FIELD_ORDER 0x9D
+#define MATROSKA_ID_TRACK_VIDEO_STEREO_MODE 0x53B8
+#define MATROSKA_ID_TRACK_VIDEO_ALPHA_MODE 0x53C0
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_WIDTH 0xB0
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_HEIGHT 0xBA
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_CROP_BOTTOM 0x54AA
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_CROP_TOP 0x54BB
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_CROP_LEFT 0x54CC
+#define MATROSKA_ID_TRACK_VIDEO_PIXEL_CROP_RIGHT 0x54DD
+#define MATROSKA_ID_TRACK_VIDEO_DISPLAY_WIDTH 0x54B0
+#define MATROSKA_ID_TRACK_VIDEO_DISPLAY_HEIGHT 0x54BA
+#define MATROSKA_ID_TRACK_VIDEO_DISPLAY_UNIT 0x54B2
+#define MATROSKA_ID_TRACK_VIDEO_UNCOMPRESSED_FOUR_CC 0x2EB524
+
+// Path://Segment/Tracks/TrackEntry/Video/Colour
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR 0x55B0
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MATRIX_COEFFICIENTS 0x55B1
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_BITS_PER_CHANNEL 0x55B2
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CHROMA_SUBSAMPLING_HORZ 0x55B3
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CHROMA_SUBSAMPLING_VERT 0x55B4
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CB_SUBSAMPLING_HORZ 0x55B5
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CB_SUBSAMPLING_VERT 0x55B6
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CHROMA_SITTING_HORZ 0x55B7
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_CHROMA_SITTING_VERT 0x55B8
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_RANGE 0x55B9
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_TRANSFER_CHARACTERISTICS 0x55BA
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_PRIMARIES 0x55BB
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MAX_CLL 0x55BC
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MAX_FALL 0x55BD
+
+// Path://Segment/Tracks/TrackEntry/Video/Colour/MasteringMetadata
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA 0x55D0
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_R_CHROMATICITY_X 0x55D1
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_R_CHROMATICITY_Y 0x55D2
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_G_CHROMATICITY_X 0x55D3
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_G_CHROMATICITY_Y 0x55D4
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_B_CHROMATICITY_X 0x55D5
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_PRIMARY_B_CHROMATICITY_Y 0x55D6
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_WHITE_POINT_CHROMATICITY_X 0x55D7
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_WHITE_POINT_CHROMATICITY_Y 0x55D8
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_LUMINANCE_MAX 0x55D9
+#define MATROSKA_ID_TRACK_VIDEO_COLOUR_MASTERING_METADATA_LUMINANCE_MIN 0x55DA
+
+// Path://Segment/Tracks/TrackEntry/Video/Projection
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION 0x7670
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION_TYPE 0x7671
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION_PRIVATE 0x7672
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION_POSE_YAW 0x7673
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION_POSE_PITCH 0x7674
+#define MATROSKA_ID_TRACK_VIDEO_PROJECTION_POSE_ROLL 0x7675
+
+// Path://Segment/Tracks/TrackEntry/Audio
+#define MATROSKA_ID_TRACK_AUDIO 0xE1
+#define MATROSKA_ID_TRACK_AUDIO_SAMPLING_FREQUENCY 0xB5
+#define MATROSKA_ID_TRACK_AUDIO_OUTPUT_SAMPLING_FREQUENCY 0x78B5
+#define MATROSKA_ID_TRACK_AUDIO_CHANNELS 0x9F
+#define MATROSKA_ID_TRACK_AUDIO_BIT_DEPTH 0x6264
+
+// Path://Segment/Tracks/TrackEntry/TrackOperation
+#define MATROSKA_ID_TRACK_OPERATION 0xE2
+
+// Path://Segment/Tracks/TrackEntry/TrackOperation/CombinePlanes
+#define MATROSKA_ID_TRACK_OPERATION_COMBINE_PLANES 0xE3
+
+// Path://Segment/Tracks/TrackEntry/TrackOperation/TrackCombinePlanes/Plane
+#define MATROSKA_ID_TRACK_OPERATION_COMBINE_PLANES_PLANE 0xE4
+#define MATROSKA_ID_TRACK_OPERATION_COMBINE_PLANES_PLANE_UID 0xE5
+#define MATROSKA_ID_TRACK_OPERATION_COMBINE_PLANES_PLANE_TYPE 0xE6
+
+// Path://Segment/Tracks/TrackEntry/TrackOperation/TrackJoinBlocks
+#define MATROSKA_ID_TRACK_OPERATION_JOIN_BLOCKS 0xE9
+#define MATROSKA_ID_TRACK_OPERATION_JOIN_BLOCKS_UID 0xEA
+
+// Path://Segment/Tracks/TrackEntry/ContentEncodings
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS 0x6D80
+
+// Path://Segment/Tracks/TrackEntry/ContentEncodings/ContentEncoding
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING 0x6240
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ORDER 0x5031
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_SCOPE 0x5032
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_TYPE 0x5033
+
+// Path://Segment/Tracks/TrackEntry/ContentEncodings/ContentEncoding/ContentCompression
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_COMPRESSION 0x5034
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_COMP_ALGO 0x4254
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_COMP_SETTINGS 0x4255
+
+// Path://Segment/Tracks/TrackEntry/ContentEncodings/ContentEncoding/ContentEncryption
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ENCRYPTION 0x5035
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ENC_ALGO 0x47E1
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ENC_KEY_ID 0x47E2
+
+// Path://Segment/Tracks/TrackEntry/ContentEncodings/ContentEncoding/ContentEncryption/ContentEncAESSettings
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ENC_AES_SETTINGS 0x47E2
+#define MATROSKA_ID_TRACK_CONTENT_ENCODINGS_ENCODING_ENC_AES_SETTINGS_CYPHER_MODE 0x47E8
+
+// Path://Segment/Cues
+#define MATROSKA_ID_CUES 0x1C53BB6B
+
+// Path://Segment/Cues/CuePoint
+#define MATROSKA_ID_CUES_CUE_POINT 0xBB
+#define MATROSKA_ID_CUES_CUE_POINT_TIME 0xB3
+
+// Path://Segment/Cues/CuePoint/CueTrackPositions
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS 0xB7
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_TRACK 0xF7
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CLUSTER_POSITION 0xF1
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_RELATIVE_POSITION 0xF0
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CUE_DURATION 0xB2
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CUE_BLOCK_NUMBER 0x5378
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CUE_CODEC_STATE 0xEA
+
+// Path://Segment/Cues/CuePoint/CueTrackPositions/CueReference
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CUE_REFERENCE 0xDB
+#define MATROSKA_ID_CUES_CUE_POINT_POSITIONS_CUE_REF_TIME 0x96
+
+// Path://Segment/Attachments
+#define MATROSKA_ID_ATTACHEMENTS 0x1941A469
+
+// Path://Segment/Attachments/AttachedFile
+#define MATROSKA_ID_ATTACHEMENTS_FILE 0x61A7
+#define MATROSKA_ID_ATTACHEMENTS_FILE_DESCRIPTOR 0x467E
+#define MATROSKA_ID_ATTACHEMENTS_FILE_NAME 0x466E
+#define MATROSKA_ID_ATTACHEMENTS_FILE_MEDIA_TYPE 0x4660
+#define MATROSKA_ID_ATTACHEMENTS_FILE_DATA 0x465C
+#define MATROSKA_ID_ATTACHEMENTS_FILE_UID 0x46AE
+
+// Path://Segment/Chapters
+#define MATROSKA_ID_CHAPTERS 0x1043A770
+
+// Path://Segment/Chapters/EditionEntry
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY 0x45B9
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_UID 0x45BC
+#define MATROSKA_ID_CHAPTERS_EDITION_FLAG_DEFAULT 0x45DB
+#define MATROSKA_ID_CHAPTERS_EDITION_FLAG_ORDERED 0x45DD
+#define MATROSKA_ID_CHAPTERS_EDITION_FLAG_ORDERED 0x45DD
+
+// Path://Segment/Chapters/EditionEntry/+ChapterAtom
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM 0xB6
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_UID 0x73C4
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_STRING_UID 0x5654
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_TIME_START 0x91
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_TIME_END 0x92
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_FLAG_HIDDEN 0x98
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_SEGMENT_UUID 0x6E67
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_SEGMENT_EDITION_UUID 0x6EBC
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PHYSICAL_EQUIV 0x63C3
+
+// Path://Segment/Chapters/EditionEntry/+ChapterAtom/ChapterDisplay
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_DISPLAY 0x80
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_DISPLAY_STRING 0x85
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_DISPLAY_LANGUAGE 0x437C
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_DISPLAY_LANGUAGE_BCP47 0x437D
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_DISPLAY_COUNTRY 0x437E
+
+// Path://Segment/Chapters/EditionEntry/+ChapterAtom/ChapProcess
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS 0x6944
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS_CODEC_ID 0x6955
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS_PRIVATE 0x450D
+
+// Path://Segment/Chapters/EditionEntry/+ChapterAtom/ChapProcess/ChapProcessCommand
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS_COMMAND 0x6911
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS_COMMAND_TIME 0x6922
+#define MATROSKA_ID_CHAPTERS_EDITION_ENTRY_ATOM_PROCESS_COMMAND_DATA 0x6933
+
+// Path://Segment/Tags
+#define MATROSKA_ID_TAGS 0x1254C367
+
+// Path://Segment/Tags/Tag
+#define MATROSKA_ID_TAGS_TAG 0x7373
+
+// Path://Segment/Tags/Tag/Targets
+#define MATROSKA_ID_TAGS_TAG_TARGETS 0x63C0
+#define MATROSKA_ID_TAGS_TAG_TARGETS_TARGET_TYPE_VALUE 0x68CA
+#define MATROSKA_ID_TAGS_TAG_TARGETS_TARGET_TYPE 0x63CA
+#define MATROSKA_ID_TAGS_TAG_TARGETS_TRACK_UID 0x63C5
+#define MATROSKA_ID_TAGS_TAG_TARGETS_EDITION_UID 0x63C9
+#define MATROSKA_ID_TAGS_TAG_TARGETS_CHAPTER_UID 0x63C4
+#define MATROSKA_ID_TAGS_TAG_TARGETS_ATTACHEMENT_UID 0x63C6
+
+// Path://Segment/Tags/Tag/+SimpleTag
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG 0x67C8
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_NAME 0x45A3
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_LANGUAGE 0x447A
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_LANGUAGE_BCP47 0x447B
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_DEFAULT 0x4484
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_STRING 0x4487
+#define MATROSKA_ID_TAGS_TAG_SIMPLE_TAG_BINARY 0x4485
+
+struct EbmlHeader {
+	uint64_t version;
+	uint64_t read_version;
+
+	uint64_t max_id_length;
+	uint64_t max_size_length;
+
+	String doc_type;
+	uint64_t doc_type_version;
+	uint64_t doc_type_read_version;
+};
+
+struct SeekHead {
+	uint64_t segment_info_position = 0;
+	uint64_t tracks_position = 0;
+	uint64_t cues_position = 0;
+	uint64_t tags_position = 0;
+};
+
+struct SegmentInfo {
+	uint8_t uuid[16];
+	String filename;
+
+	uint8_t prev_uuid[16];
+	String prev_filename;
+
+	uint8_t next_uuid[16];
+	String next_filename;
+
+	// multiple
+	void *segment_family;
+
+	// TODO
+	void *chapter_translate;
+
+	uint64_t time_scale;
+	double duration;
+	void *creation_date;
+
+	String title;
+
+	String muxing_app;
+	String writing_app;
+};
+
+struct Track {
+	uint32_t track_number = 0;
+	uint64_t track_uid = 0;
+
+	bool flag_enabled = true;
+	bool flag_default = true;
+	bool flag_forced = false;
+	bool flag_hearing_impaired = false;
+	bool flag_visual_impaired = false;
+	bool flag_text_descriptions = false;
+	bool flag_original = false;
+	bool flag_commentary = false;
+	bool flag_lacing = false;
+
+	uint64_t default_duration = 0;
+	uint64_t default_decoded_field_duration = 0;
+
+	double track_timestamp_scale = 0.0;
+
+	uint64_t max_block_addition_id = 0;
+
+	String name = "";
+	String language = "";
+
+	String codec_id;
+	String coded_name;
+
+	uint64_t attachment_link = 0;
+
+	uint64_t codec_delay = 0;
+
+	uint64_t seek_pre_roll = 0;
+};
+
+struct Cluster {
+	uint64_t time;
+	uint64_t position;
+	uint64_t target_track;
+
+	HashMap<uint64_t, uint8_t> time_to_layer;
+
+	struct Block {
+		uint64_t position;
+		uint64_t size;
+		bool key;
+		bool invisible;
+		bool discardable;
+	};
+
+	Vector<Block> blocks;
+};
+
+struct Segment {
+	SeekHead seek_head;
+	SegmentInfo info;
+	Vector<Track> tracks;
+	Vector<Cluster> clusters;
+};
