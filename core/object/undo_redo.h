@@ -58,10 +58,10 @@ private:
 		} type;
 
 		bool force_keep_in_merge_ends = false;
-		Ref<RefCounted> ref;
-		ObjectID object;
-		StringName name;
+
+		Variant object;
 		Callable callable;
+		StringName name;
 		Variant value;
 
 		void delete_reference();
