@@ -196,17 +196,19 @@ Error PacketPeerStream::_poll_buffer() const {
 	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
 
 	int read = 0;
-	ERR_FAIL_COND_V(input_buffer.size() < ring_buffer.space_left(), ERR_UNAVAILABLE);
-	Error err = peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read);
-	if (err) {
-		return err;
-	}
-	if (read == 0) {
-		return OK;
-	}
+	ERR_FAIL_COND_V(input_buffer.size() <= 0, ERR_UNAVAILABLE);
 
-	int w = ring_buffer.write(&input_buffer[0], read);
-	ERR_FAIL_COND_V(w != read, ERR_BUG);
+	int space_left = ring_buffer.space_left();
+	if (space_left > 0) {
+		Error err = peer->get_partial_data(input_buffer.ptrw(), space_left, read);
+		if (err) {
+			return err;
+		}
+		if (read > 0) {
+			int w = ring_buffer.write(&input_buffer[0], read);
+			ERR_FAIL_COND_V(w != read, ERR_BUG);
+		}
+	}
 
 	return OK;
 }
@@ -241,12 +243,16 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	_poll_buffer();
 
 	int remaining = ring_buffer.data_left();
-	ERR_FAIL_COND_V(remaining < 4, ERR_UNAVAILABLE);
+	if (remaining < 4) {
+		return ERR_UNAVAILABLE;
+	}
 	uint8_t lbuf[4];
 	ring_buffer.copy(lbuf, 0, 4);
 	remaining -= 4;
 	uint32_t len = decode_uint32(lbuf);
-	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
+	if (remaining < (int)len) {
+		return ERR_UNAVAILABLE;
+	}
 
 	ERR_FAIL_COND_V(input_buffer.size() < (int)len, ERR_UNAVAILABLE);
 	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
@@ -272,13 +278,22 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_buffer_size + 4 > output_buffer.size(), ERR_INVALID_PARAMETER);
 
+	if (p_buffer_size + 4 > output_buffer.size()) {
+		output_buffer.resize(p_buffer_size + 4);
+	}
+
 	encode_uint32(p_buffer_size, output_buffer.ptrw());
 	uint8_t *dst = &output_buffer.write[4];
 	for (int i = 0; i < p_buffer_size; i++) {
 		dst[i] = p_buffer[i];
 	}
 
-	return peer->put_data(&output_buffer[0], p_buffer_size + 4);
+	Error put_err = peer->put_data(&output_buffer[0], p_buffer_size + 4);
+	if (put_err != OK) {
+		return put_err;
+	}
+
+	return OK;
 }
 
 int PacketPeerStream::get_max_packet_size() const {
