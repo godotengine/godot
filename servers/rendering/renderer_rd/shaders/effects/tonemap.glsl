@@ -920,6 +920,13 @@ void main() {
 		// to be performed on linear-encoded values.
 		color.rgb = color.rgb * params.bcs.x;
 
+		// Apply saturation:
+		// Luminance weights of the current primaries must be used to prevent blues from
+		// brightening when saturation is decreased and darkening when saturation is increased.
+		// This approach approximately matches Photoshop 26.1's camera raw filter behavior.
+		const vec3 rec709_luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+		color.rgb = mix(vec3(dot(rec709_luminance_weights, color.rgb)), color.rgb, params.bcs.z);
+
 		color.rgb = linear_to_srgb(color.rgb);
 
 		// Apply contrast:
@@ -928,12 +935,6 @@ void main() {
 		// higher quality contrast adjustment and maintains compatibility with
 		// existing projects.
 		color.rgb = mix(vec3(0.5), color.rgb, params.bcs.y);
-
-		// Apply saturation:
-		// By applying saturation adjustment to nonlinear sRGB-encoded values with
-		// even weights the preceived brightness of blues are affected, but this
-		// maintains compatibility with existing projects.
-		color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, params.bcs.z);
 
 		if (bool(params.flags & FLAG_USE_COLOR_CORRECTION)) {
 			color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
