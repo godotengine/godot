@@ -533,6 +533,7 @@ LRESULT DisplayServerWindows::WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wPa
 }
 
 void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
+	Thread::set_name("Windows native file dialog monitor");
 	DisplayServerWindows *ds = static_cast<DisplayServerWindows *>(get_singleton());
 	FileDialogData *fd = (FileDialogData *)p_ud;
 

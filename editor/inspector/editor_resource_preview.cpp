@@ -135,6 +135,7 @@ bool EditorResourcePreview::is_threaded() const {
 }
 
 void EditorResourcePreview::_thread_func(void *ud) {
+	Thread::set_name("Resource preview");
 	EditorResourcePreview *erp = (EditorResourcePreview *)ud;
 	erp->_thread();
 }

@@ -139,6 +139,7 @@ void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture2D::_thread_function(void *p_ud) {
+	Thread::set_name("NoiseTexture2D");
 	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
 	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
 }

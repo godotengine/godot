@@ -80,6 +80,7 @@ Error AudioDriverXAudio2::init() {
 }
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
+	Thread::set_name("Audio XAudio2");
 	AudioDriverXAudio2 *ad = static_cast<AudioDriverXAudio2 *>(p_udata);
 
 	while (!ad->exit_thread.is_set()) {

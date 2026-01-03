@@ -48,6 +48,7 @@
 #define BUS_INTERFACE_PROPERTIES "org.freedesktop.DBus.Properties"
 
 void FreeDesktopAtSPIMonitor::monitor_thread_func(void *p_userdata) {
+	Thread::set_name("AT-SPI accessibility status monitor");
 	FreeDesktopAtSPIMonitor *mon = (FreeDesktopAtSPIMonitor *)p_userdata;
 
 	DBusError error;
