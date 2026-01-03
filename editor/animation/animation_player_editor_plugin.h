@@ -199,6 +199,7 @@ class AnimationPlayerEditor : public EditorDock {
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
 	void _seek_value_changed(float p_value, bool p_timeline_only = false);
+	void _animation_player_seeked(float p_value);
 	void _blend_editor_next_changed(const int p_idx);
 
 	void _edit_animation_blend();
