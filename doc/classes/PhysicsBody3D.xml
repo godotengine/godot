@@ -6,6 +6,7 @@
 	<description>
 		[PhysicsBody3D] is an abstract base class for 3D game objects affected by physics. All 3D physics bodies inherit from it.
 		[b]Warning:[/b] With a non-uniform scale, this node will likely not behave as expected. It is advised to keep its scale the same on all axes and adjust its collision shape(s) instead.
+		[b]Note:[/b] The physics engine in Godot is [b]not[/b] deterministic, the nature of physics engine determinism is very complex and has to do with many factors, and the physics is not guaranteed to run the same way for seemingly identical situations.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
