@@ -2108,6 +2108,20 @@ void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMo
 	lm->shadowmask_mode = p_mode;
 }
 
+float LightStorage::lightmap_get_specular_intensity(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, 1.0);
+
+	return lm->specular_intensity;
+}
+
+void LightStorage::lightmap_set_specular_intensity(RID p_lightmap, float p_strength) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->specular_intensity = p_strength;
+}
+
 /* LIGHTMAP INSTANCE */
 
 RID LightStorage::lightmap_instance_create(RID p_lightmap) {

@@ -219,6 +219,10 @@ LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
 	return (ShadowmaskMode)RS::get_singleton()->lightmap_get_shadowmask_mode(lightmap);
 }
 
+void LightmapGIData::update_specular_intensity(float p_intensity) {
+	RS::get_singleton()->lightmap_set_specular_intensity(lightmap, p_intensity);
+}
+
 void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash) {
 	if (p_points.size()) {
 		int pc = p_points.size();
@@ -272,6 +276,14 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
+void LightmapGIData::_set_light_textures_data(const Array &p_data) {
+	set_lightmap_textures(p_data);
+}
+
+Array LightmapGIData::_get_light_textures_data() const {
+	return Array(storage_light_textures);
+}
+
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
@@ -312,14 +324,6 @@ Ref<TextureLayered> LightmapGIData::get_light_texture() const {
 		return Ref<TextureLayered>();
 	}
 	return storage_light_textures.get(0);
-}
-
-void LightmapGIData::_set_light_textures_data(const Array &p_data) {
-	set_lightmap_textures(p_data);
-}
-
-Array LightmapGIData::_get_light_textures_data() const {
-	return Array(storage_light_textures);
 }
 #endif
 
@@ -1650,6 +1654,8 @@ int LightmapGI::get_denoiser_range() const {
 
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
+
+	notify_property_list_changed();
 }
 
 bool LightmapGI::is_directional() const {
@@ -1800,6 +1806,18 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+float LightmapGI::get_specular_intensity() const {
+	return specular_intensity;
+}
+
+void LightmapGI::set_specular_intensity(float p_strength) {
+	specular_intensity = p_strength;
+
+	if (light_data.is_valid()) {
+		light_data->update_specular_intensity(p_strength);
+	}
+}
+
 PackedStringArray LightmapGI::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
@@ -1843,6 +1861,11 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	}
 	if (p_property.name == "denoiser_range" && !use_denoiser) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	if (p_property.name == "specular_intensity") {
+		if (!directional) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 
@@ -1913,6 +1936,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
+	ClassDB::bind_method(D_METHOD("set_specular_intensity", "specular_intensity"), &LightmapGI::set_specular_intensity);
+	ClassDB::bind_method(D_METHOD("get_specular_intensity"), &LightmapGI::get_specular_intensity);
+
 	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
 
 	ADD_GROUP("Tweaks", "");
@@ -1922,6 +1948,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_intensity", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_specular_intensity", "get_specular_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadowmask_mode", PROPERTY_HINT_ENUM, "None,Replace,Overlay"), "set_shadowmask_mode", "get_shadowmask_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_for_bounces"), "set_use_texture_for_bounces", "is_using_texture_for_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
@@ -1937,6 +1964,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
