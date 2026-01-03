@@ -1001,6 +1001,28 @@
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
+		<member name="display/window/size/initial_maximum_viewport_height" type="int" setter="" getter="" default="32768">
+			Sets the initial maximum height for the main viewport.
+			[b]Note:[/b] This value is only set on the main window initially, if you wish to change this value dynamically (or on other windows), see [member Window.max_size].
+			[b]Note:[/b] Maximum size does not apply while the game window is embedded, both inside the editor and while floating. Disable embedding if you wish to view these changes.
+		</member>
+		<member name="display/window/size/initial_maximum_viewport_width" type="int" setter="" getter="" default="32768">
+			Sets the initial maximum width for the main viewport.
+			[b]Note:[/b] This value is only set on the main window initially, if you wish to change this value dynamically (or on other windows), see [member Window.max_size].
+			[b]Note:[/b] Maximum size does not apply while the game window is embedded, both inside the editor and while floating. Disable embedding if you wish to view these changes.
+		</member>
+		<member name="display/window/size/initial_minimum_viewport_height" type="int" setter="" getter="" default="64">
+			Sets the initial minimum height for the main viewport.
+			[b]Note:[/b] This value is only set on the main window initially, if you wish to change this value dynamically (or on other windows), see [member Window.min_size].
+			[b]Note:[/b] Minimum size does not apply while the game window is embedded, both inside the editor and while floating. Disable embedding if you wish to view these changes.
+			[b]Warning:[/b] Setting this value below the default is not recommended, potential issues may arise when doing so.
+		</member>
+		<member name="display/window/size/initial_minimum_viewport_width" type="int" setter="" getter="" default="64">
+			Sets the initial minimum width for the main viewport.
+			[b]Note:[/b] This value is only set on the main window initially, if you wish to change this value dynamically (or on other windows), see [member Window.min_size].
+			[b]Note:[/b] Minimum size does not apply while the game window is embedded, both inside the editor and while floating. Disable embedding if you wish to view these changes.
+			[b]Warning:[/b] Setting this value below the default is not recommended, potential issues may arise when doing so.
+		</member>
 		<member name="display/window/size/initial_position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			Main window initial position (in virtual desktop coordinates), this setting is used only if [member display/window/size/initial_position_type] is set to "Absolute" ([code]0[/code]).
 			[b]Note:[/b] This setting only affects the exported project, or when the project is run from the command line. In the editor, the value of [member EditorSettings.run/window_placement/rect_custom_position] is used instead.
@@ -1048,10 +1070,14 @@
 			[b]Note:[/b] This setting has no effect on Android as transparency is controlled only via [member display/window/per_pixel_transparency/allowed].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
-			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
+			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor.
+			Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes.
+			See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
 		</member>
 		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1152">
-			Sets the game's main viewport width. On desktop platforms, this is also the initial window width, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_height], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
+			Sets the game's main viewport width. On desktop platforms, this is also the initial window width, represented by an indigo-colored rectangle in the 2D editor.
+			Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes.
+			See also [member display/window/size/viewport_height], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
 		</member>
 		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
 			On desktop platforms, overrides the game's initial window height. See also [member display/window/size/window_width_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
