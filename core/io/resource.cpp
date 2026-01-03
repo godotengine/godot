@@ -178,6 +178,9 @@ String Resource::get_scene_unique_id() const {
 }
 
 void Resource::set_name(const String &p_name) {
+	if (name == p_name) {
+		return;
+	}
 	name = p_name;
 	emit_changed();
 }

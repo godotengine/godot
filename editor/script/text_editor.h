@@ -93,6 +93,9 @@ private:
 		EDIT_EMOJI_AND_SYMBOL,
 	};
 
+	bool parsing = false;
+	void _update_text(); // For resources that allow editing in the inspector and internal editor.
+
 protected:
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position);
