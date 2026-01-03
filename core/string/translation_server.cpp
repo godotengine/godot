@@ -432,12 +432,11 @@ Vector<String> TranslationServer::get_all_languages() const {
 	return languages;
 }
 
-String TranslationServer::get_language_name(const String &p_language) const {
-	if (language_map.has(p_language)) {
-		return language_map[p_language];
-	} else {
-		return p_language;
+String TranslationServer::get_language_name(const String &p_code) const {
+	if (language_map.has(p_code)) {
+		return language_map[p_code];
 	}
+	return p_code;
 }
 
 Vector<String> TranslationServer::get_all_scripts() const {
@@ -450,12 +449,11 @@ Vector<String> TranslationServer::get_all_scripts() const {
 	return scripts;
 }
 
-String TranslationServer::get_script_name(const String &p_script) const {
-	if (script_map.has(p_script)) {
-		return script_map[p_script];
-	} else {
-		return p_script;
+String TranslationServer::get_script_name(const String &p_code) const {
+	if (script_map.has(p_code)) {
+		return script_map[p_code];
 	}
+	return p_code;
 }
 
 Vector<String> TranslationServer::get_all_countries() const {
@@ -468,12 +466,11 @@ Vector<String> TranslationServer::get_all_countries() const {
 	return countries;
 }
 
-String TranslationServer::get_country_name(const String &p_country) const {
-	if (country_name_map.has(p_country)) {
-		return country_name_map[p_country];
-	} else {
-		return p_country;
+String TranslationServer::get_country_name(const String &p_code) const {
+	if (country_name_map.has(p_code)) {
+		return country_name_map[p_code];
 	}
+	return p_code;
 }
 
 void TranslationServer::set_locale(const String &p_locale) {
@@ -708,13 +705,13 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("standardize_locale", "locale", "add_defaults"), &TranslationServer::standardize_locale, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_all_languages"), &TranslationServer::get_all_languages);
-	ClassDB::bind_method(D_METHOD("get_language_name", "language"), &TranslationServer::get_language_name);
+	ClassDB::bind_method(D_METHOD("get_language_name", "code"), &TranslationServer::get_language_name);
 
 	ClassDB::bind_method(D_METHOD("get_all_scripts"), &TranslationServer::get_all_scripts);
-	ClassDB::bind_method(D_METHOD("get_script_name", "script"), &TranslationServer::get_script_name);
+	ClassDB::bind_method(D_METHOD("get_script_name", "code"), &TranslationServer::get_script_name);
 
 	ClassDB::bind_method(D_METHOD("get_all_countries"), &TranslationServer::get_all_countries);
-	ClassDB::bind_method(D_METHOD("get_country_name", "country"), &TranslationServer::get_country_name);
+	ClassDB::bind_method(D_METHOD("get_country_name", "code"), &TranslationServer::get_country_name);
 
 	ClassDB::bind_method(D_METHOD("get_locale_name", "locale"), &TranslationServer::get_locale_name);
 	ClassDB::bind_method(D_METHOD("get_plural_rules", "locale"), &TranslationServer::get_plural_rules);
