@@ -211,8 +211,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				use_taa = false;
 			}
 
-			int target_width;
-			int target_height;
+			int target_width = p_viewport->size.width;
+			int target_height = p_viewport->size.height;
 			int render_width;
 			int render_height;
 
@@ -220,23 +220,83 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
 					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
 					// This prevents freezing the engine or outright crashing on lower-end GPUs.
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = CLAMP(target_width * scaling_3d_scale, 1, 16384);
 					render_height = CLAMP(target_height * scaling_3d_scale, 1, 16384);
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
+					render_width = CLAMP(target_width * scaling_3d_scale, 1.0, 16384.0);
+					render_height = CLAMP(target_height * scaling_3d_scale, 1.0, 16384.0);
+					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
-					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
-					render_height = MAX(target_height * scaling_3d_scale, 1.0);
+					// scaling_3d_scale should be <=1.0 at this point and target size is already clamped.
+					// No need to clamp again here, as we validate the dimensions being below 64px right after.
+					render_width = target_width * scaling_3d_scale;
+					render_height = target_height * scaling_3d_scale;
+					// Handle dimensions being below 64px and try to maintain the minimum while preserving aspect ratio.
+					if (render_width < 64 || render_height < 64 || render_width < 2 || render_height < 2) {
+						// Calculate separately as floats to lose as little precision to int conversions as possible.
+						float aspect_ratio = target_width / (float)target_height;
+
+						// Find small and large side to avoid more conditional branches.
+						float render_large_side = target_width * scaling_3d_scale;
+						float render_small_side = target_height * scaling_3d_scale;
+						// Swap large and small if we guessed wrong.
+						if (aspect_ratio < 1.0) {
+							render_large_side = target_height * scaling_3d_scale;
+							render_small_side = target_width * scaling_3d_scale;
+						}
+						float render_small_adjustment = 2.0 / render_small_side;
+						if (render_small_side < 2.0) {
+							// Scale up the sides so the smallest one is at least 2px.
+							// Scale both to maintain aspect ratio.
+							render_small_side = render_small_side * render_small_adjustment;
+							render_large_side = render_large_side * render_small_adjustment;
+						}
+						// This has to be calculated after we have already made the previous adjustment
+						float render_large_adjustment = 64.0 / render_large_side;
+						if (render_large_side < 64.0) {
+							// Scale up the sides so at least one is 64px.
+							render_small_side = render_small_side * render_large_adjustment;
+							render_large_side = render_large_side * render_large_adjustment;
+						}
+						// Place values appropriately back to their place
+						render_width = CLAMP(render_large_side, 64.0, 16384.0);
+						render_height = CLAMP(render_small_side, 2.0, 16384.0);
+						if (aspect_ratio < 1.0) {
+							render_width = CLAMP(render_small_side, 2.0, 16384.0);
+							render_height = CLAMP(render_large_side, 64.0, 16384.0);
+						}
+
+						// Make sure target size is at least as big as render size
+						float target_large_side = target_width;
+						float target_small_side = target_height;
+						if (aspect_ratio < 1.0) {
+							target_large_side = target_height;
+							target_small_side = target_width;
+						}
+
+						float target_small_adjustment = MAX(render_small_side / target_small_side, 1.0);
+						target_small_side = target_small_adjustment * target_small_side;
+						target_large_side = target_small_adjustment * target_large_side;
+
+						float target_large_adjustment = MAX(render_large_side / target_large_side, 1.0);
+						target_small_side = target_large_adjustment * target_small_side;
+						target_large_side = target_large_adjustment * target_large_side;
+
+						target_width = CLAMP(target_large_side, 64.0, 16384.0);
+						target_height = CLAMP(target_small_side, 2.0, 16384.0);
+						if (aspect_ratio < 1.0) {
+							target_width = CLAMP(target_small_side, 2.0, 16384.0);
+							target_height = CLAMP(target_large_side, 64.0, 16384.0);
+						}
+
+						// Ensure scaling_3d_scale is representative
+						scaling_3d_scale = render_width / (float)target_width;
+					}
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_OFF:
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = target_width;
 					render_height = target_height;
 					break;
@@ -245,8 +305,6 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
 					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 					scaling_3d_scale = 1.0;
-					target_width = p_viewport->size.width;
-					target_height = p_viewport->size.height;
 					render_width = target_width;
 					render_height = target_height;
 					break;
