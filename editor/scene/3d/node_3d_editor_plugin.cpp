@@ -4850,43 +4850,72 @@ void Node3DEditorViewport::reset() {
 }
 
 void Node3DEditorViewport::focus_selection() {
-	Vector3 center;
-	int count = 0;
-
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-	for (Node *node : selection) {
-		Node3D *node_3d = Object::cast_to<Node3D>(node);
-		if (!node_3d) {
+	AABB aabb;
+	bool aabb_valid = false;
+
+	for (Node *E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (!sp) {
 			continue;
 		}
 
-		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(node_3d);
-		if (!se) {
-			continue;
-		}
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
 
-		if (se->gizmo.is_valid()) {
+		if (se && se->gizmo.is_valid() && !se->subgizmos.is_empty()) {
 			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
 				const Vector3 pos = se->gizmo->get_subgizmo_transform(GE.key).origin;
 				if (pos.is_finite()) {
-					center += pos;
-					count++;
+					if (aabb_valid) {
+						aabb.expand_to(pos);
+					} else {
+						aabb.position = pos;
+						aabb_valid = true;
+					}
 				}
 			}
+			continue;
 		}
-		const Vector3 pos = node_3d->get_global_gizmo_transform().origin;
-		if (pos.is_finite()) {
-			center += pos;
-			count++;
+
+		Transform3D gt = sp->get_global_transform();
+		if (!gt.is_finite()) {
+			continue;
+		}
+
+		AABB node_aabb = gt.xform(_calculate_spatial_bounds(sp));
+		if (aabb_valid) {
+			aabb.merge_with(node_aabb);
+		} else {
+			aabb = node_aabb;
+			aabb_valid = true;
 		}
 	}
 
-	if (count > 1) {
-		center /= count;
+	if (!aabb_valid) {
+		return;
 	}
 
-	cursor.pos = center;
+	cursor.pos = aabb.get_center();
+
+	const real_t radius = aabb.size.length() * 0.5;
+	const real_t min_distance = MAX(camera->get_near() * 4, ZOOM_FREELOOK_MIN);
+	const real_t max_distance = MIN(camera->get_far() / 4, ZOOM_FREELOOK_MAX);
+
+	if (radius < CMP_EPSILON) {
+		cursor.distance = CLAMP(cursor.distance, min_distance, max_distance);
+		return;
+	}
+
+	const real_t fov_y = Math::deg_to_rad(get_fov());
+	const real_t aspect = surface->get_size().aspect();
+
+	const real_t fov_x = 2.0 * Math::atan(Math::tan(fov_y * 0.5) * aspect);
+	const real_t half_fov = MIN(fov_x, fov_y) * 0.5;
+
+	const real_t new_distance = (radius / Math::tan(half_fov)) * 1.1;
+
+	cursor.distance = CLAMP(new_distance, min_distance, max_distance);
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
