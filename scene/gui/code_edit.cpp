@@ -600,7 +600,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true) || k->is_action("ui_text_backspace_word", true)) {
 			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
