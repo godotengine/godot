@@ -266,6 +266,7 @@ private:
 	Point2 ruler_tool_origin;
 	real_t ruler_width_scaled = 16.0;
 	int ruler_font_size = 8;
+	Point2 right_click_origin;
 	Point2 node_create_position;
 	real_t grab_distance = 0.0;
 	bool simple_panning = false;
