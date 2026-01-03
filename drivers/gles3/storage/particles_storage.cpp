@@ -769,6 +769,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::CLEAR, p_particles->clear, version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::TOTAL_PARTICLES, uint32_t(p_particles->amount), version, variant, specialization);
 	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::USE_FRACTIONAL_DELTA, p_particles->fractional_delta, version, variant, specialization);
+	material_storage->shaders.particles_process_shader.version_set_uniform(ParticlesShaderGLES3::INSTANCE_OFFSET, p_particles->instance_uniforms_ofs, version, variant, specialization);
 
 	p_particles->clear = false;
 
@@ -1224,6 +1225,12 @@ bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;
+}
+
+void GLES3::ParticlesStorage::particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->instance_uniforms_ofs = (uint32_t)p_offset;
 }
 
 /* PARTICLES COLLISION API */

@@ -123,6 +123,7 @@ public:
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active) override {}
 
 	virtual bool particles_is_inactive(RID p_particles) const override { return false; }
+	virtual void particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) override {}
 };
 
 } // namespace RendererDummy

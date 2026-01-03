@@ -4091,6 +4091,13 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) const {
 				p_instance->instance_uniforms.materials_append(p_instance->material_overlay);
 			}
 
+			if (p_instance->base_type == RS::INSTANCE_PARTICLES) {
+				RID process_material = RSG::particles_storage->particles_get_process_material(p_instance->base);
+				if (process_material.is_valid()) {
+					p_instance->instance_uniforms.materials_append(process_material);
+				}
+			}
+
 			if (can_cast_shadows != geom->can_cast_shadows) {
 				//ability to cast shadows change, let lights now
 				for (const Instance *E : geom->lights) {

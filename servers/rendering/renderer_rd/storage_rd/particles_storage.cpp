@@ -121,6 +121,7 @@ ParticlesStorage::ParticlesStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
+		actions.instance_uniform_index_variable = "params.instance_uniforms_ofs";
 
 		particles_shader.compiler.initialize(actions);
 	}
@@ -1129,6 +1130,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	push_constant.use_fractional_delta = p_particles->fractional_delta;
 	push_constant.sub_emitter_mode = !p_particles->emitting && p_particles->emission_buffer && (p_particles->emission_buffer->particle_count > 0 || p_particles->force_sub_emit);
 	push_constant.trail_pass = false;
+	push_constant.instance_uniforms_ofs = p_particles->shader_uniforms_offset;
 
 	p_particles->force_sub_emit = false; //reset
 
@@ -1671,6 +1673,13 @@ bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;
+}
+
+void ParticlesStorage::particles_set_instance_uniform_offset(RID p_particles, int32_t p_offset) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->shader_uniforms_offset = (uint32_t)p_offset;
 }
 
 /* Particles SHADER */

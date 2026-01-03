@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "servers/rendering/renderer_geometry_instance.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void RenderGeometryInstanceBase::set_skeleton(RID p_skeleton) {
 	data->skeleton = p_skeleton;
@@ -124,7 +125,9 @@ void RenderGeometryInstanceBase::set_use_dynamic_gi(bool p_enable) {
 
 void RenderGeometryInstanceBase::set_instance_shader_uniforms_offset(int32_t p_offset) {
 	shader_uniforms_offset = p_offset;
-
+	if (data->base_type == RS::INSTANCE_PARTICLES) {
+		RSG::particles_storage->particles_set_instance_uniform_offset(data->base, p_offset);
+	}
 	_mark_dirty();
 }
 
