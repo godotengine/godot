@@ -289,6 +289,9 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 		}
 	}
 
+	GODOT_GCC_WARNING_PUSH
+	GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignore" this for some reason.
+
 	Vector<uint8_t> contents;
 	contents.resize(16);
 	encode_uint32(identifier_map.size(), &contents.write[0]);
@@ -378,6 +381,8 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 			buf.append_array(compressed);
 		} break;
 	}
+
+	GODOT_GCC_WARNING_POP
 
 	return buf;
 }
