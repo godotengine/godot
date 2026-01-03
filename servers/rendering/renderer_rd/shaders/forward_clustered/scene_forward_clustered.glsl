@@ -709,7 +709,7 @@ void vertex_shader(vec3 vertex_input,
 				vec2(1, 1));
 
 		vec2 point_coord = point_coords[gl_VertexIndex % 6];
-		gl_Position.xy += (point_coord * 2.0 - 1.0) * point_size * scene_data.screen_pixel_size * gl_Position.w;
+		gl_Position.xy += (point_coord * 2.0 - 1.0) * (point_size / scene_data.viewport_size) * gl_Position.w;
 
 #ifdef POINT_COORD_USED
 		point_coord_interp = point_coord;
