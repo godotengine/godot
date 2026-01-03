@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  texture_loader_dds.h                                                  */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,40 +30,7 @@
 
 #pragma once
 
-#include "core/io/image_loader.h"
-#include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
+#include "modules/register_module_types.h"
 
-class ResourceImporterDds : public ResourceImporter {
-	GDCLASS(ResourceImporterDds, ResourceImporter);
-	static ResourceImporterDds *singleton;
-
-public:
-	static ResourceImporterDds *get_singleton() { return singleton; }
-
-	virtual String get_importer_name() const override;
-	virtual String get_visible_name() const override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual String get_save_extension() const override;
-	virtual String get_resource_type() const override;
-	virtual float get_priority() const override { return 2.0; }
-
-	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
-	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
-
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
-
-	ResourceImporterDds(bool p_singleton = false);
-	virtual ~ResourceImporterDds() = default;
-};
-
-class ResourceLoaderDDS : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceLoaderDDS, ResourceFormatLoader);
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-
-public:
-	virtual ~ResourceLoaderDDS() = default;
-};
+void initialize_texture_streaming_module(ModuleInitializationLevel p_level);
+void uninitialize_texture_streaming_module(ModuleInitializationLevel p_level);

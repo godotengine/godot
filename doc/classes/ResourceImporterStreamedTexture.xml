@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterStreamedTexture" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports an image as a streaming-capable texture for dynamic mipmap loading.
+	</brief_description>
+	<description>
+		This importer creates [StreamedTexture2D] resources that support dynamic mipmap streaming. When texture streaming is enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]), these textures can have their mipmap levels dynamically loaded and unloaded based on usage, significantly reducing VRAM consumption for projects with many large textures.
+		The streaming system monitors which textures are visible in each frame and loads appropriate mipmap levels accordingly. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded, while textures being displayed up close are loaded at higher resolutions.
+		For textures that don't need streaming support, use [ResourceImporterTexture] instead.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compress/normal_map" type="int" setter="" getter="" default="0">
+			When using a texture as normal map, only the red and green channels are required. Given regular texture compression algorithms produce artifacts that don't look that nice in normal maps, the RGTC compression format is the best fit for this data. Forcing this option to Enable will make Godot import the image as RGTC compressed. By default, it's set to Detect. This means that if the texture is ever detected to be used as a normal map, it will be changed to Enable and reimported automatically.
+		</member>
+		<member name="roughness/mode" type="int" setter="" getter="" default="0">
+			The color channel to consider as a roughness map in this texture. Only effective if Roughness &gt; Src Normal is not empty.
+		</member>
+		<member name="roughness/src_normal" type="String" setter="" getter="" default="&quot;&quot;">
+			The path to the texture to consider as a normal map for roughness filtering on import. Specifying this can help decrease specular aliasing slightly in 3D.
+		</member>
+		<member name="streaming/max_resolution" type="int" setter="" getter="" default="0">
+			The maximum resolution (in pixels) that this texture can be streamed at. If set to [code]0[/code], the global default from [member ProjectSettings.rendering/textures/streaming/default_max_dimension] is used. This limits how high the texture quality can be increased during streaming.
+		</member>
+		<member name="streaming/min_resolution" type="int" setter="" getter="" default="0">
+			The minimum resolution (in pixels) that this texture can be reduced to when streaming. If set to [code]0[/code], the global default from [member ProjectSettings.rendering/textures/streaming/default_min_dimension] is used. Lower values allow more memory savings when the texture is not actively used, but may result in visibly blurry textures.
+		</member>
+	</members>
+</class>

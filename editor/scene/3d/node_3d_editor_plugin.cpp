@@ -85,6 +85,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/translations/editor_translation_preview_button.h"
 #include "editor/translations/editor_translation_preview_menu.h"
+#include "modules/texture_streaming/texture_streaming.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/decal.h"
@@ -95,10 +96,15 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/sky_material.h"
@@ -8803,6 +8809,133 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->grab_focus();
 }
 
+void Node3DEditor::_textures_button_pressed() {
+	Vector2 pos = textures_button->get_screen_position();
+	pos.y += +textures_button->get_size().y;
+	textures_popup->set_position(pos);
+	textures_popup->reset_size();
+	textures_popup->popup();
+
+	textures_very_low->grab_focus();
+}
+
+void Node3DEditor::_textures_preset_pressed(int p_preset) {
+	textures_very_low->set_pressed(false);
+	textures_low->set_pressed(false);
+	textures_medium->set_pressed(false);
+	textures_high->set_pressed(false);
+	textures_very_high->set_pressed(false);
+	textures_max->set_pressed(false);
+	textures_manual->set_pressed(false);
+
+	textures_max_slider->set_editable(false);
+	textures_min_slider->set_editable(false);
+	// textures_very_low->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold")
+
+	switch (p_preset) {
+		case TEXTURE_QUALITY_VERY_LOW:
+			textures_very_low->set_pressed(true);
+			textures_max_slider->set_value(8); // 256
+			textures_min_slider->set_value(5); // 32
+
+			break;
+		case TEXTURE_QUALITY_LOW:
+			textures_low->set_pressed(true);
+			textures_max_slider->set_value(9); // 512
+			textures_min_slider->set_value(6); // 64
+			break;
+		case TEXTURE_QUALITY_MEDIUM:
+			textures_medium->set_pressed(true);
+			textures_max_slider->set_value(10); // 1024
+			textures_min_slider->set_value(7); // 128
+			break;
+		case TEXTURE_QUALITY_HIGH:
+			textures_high->set_pressed(true);
+			textures_max_slider->set_value(11); // 2048
+			textures_min_slider->set_value(8); // 256
+			break;
+		case TEXTURE_QUALITY_VERY_HIGH:
+			textures_very_high->set_pressed(true);
+			textures_max_slider->set_value(12); // 4096
+			textures_min_slider->set_value(9); // 512
+			break;
+		case TEXTURE_QUALITY_MAX:
+			textures_max->set_pressed(true);
+			textures_max_slider->set_value(13); // 8192
+			textures_min_slider->set_value(13); // 8192
+			break;
+		case TEXTURE_QUALITY_MANUAL:
+			textures_manual->set_pressed(true);
+			textures_max_slider->set_editable(true);
+			textures_min_slider->set_editable(true);
+			break;
+	}
+}
+
+void Node3DEditor::_textures_min_size_changed(float p_value) {
+	textures_min_edit->set_text(vformat("%d", 1u << int(p_value)));
+	float max_value = textures_max_slider->get_value();
+	if (p_value > max_value) {
+		textures_max_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+void Node3DEditor::_textures_max_size_changed(float p_value) {
+	textures_max_edit->set_text(vformat("%d", 1u << int(p_value)));
+	float min_value = textures_min_slider->get_value();
+	if (p_value < min_value) {
+		textures_min_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_budget_toggled(bool p_enabled) {
+	_textures_apply_settings();
+	textures_budget_slider->set_editable(p_enabled);
+}
+
+void Node3DEditor::_textures_budget_changed(float p_value) {
+	textures_budget_edit->set_text(String::humanize_size(p_value * 1024 * 1024));
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_save_pressed() {
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/default_min_dimension", int(textures_min_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/default_max_dimension", int(textures_max_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_enabled", textures_budget_enable->is_pressed());
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_mb", textures_budget_slider->get_value());
+	ProjectSettings::get_singleton()->save();
+	textures_popup->hide();
+}
+
+void Node3DEditor::_textures_load_settings() {
+	int min_size = GLOBAL_GET("rendering/textures/streaming/default_min_dimension");
+	int max_size = GLOBAL_GET("rendering/textures/streaming/default_max_dimension");
+	bool budget_enabled = GLOBAL_GET("rendering/textures/streaming/memory_budget_enabled");
+	float budget_size = GLOBAL_GET("rendering/textures/streaming/memory_budget_mb");
+
+	textures_min_slider->set_value(min_size);
+	textures_max_slider->set_value(max_size);
+	textures_budget_enable->set_pressed(budget_enabled);
+	textures_budget_slider->set_value(budget_size);
+
+	_textures_min_size_changed(textures_min_slider->get_value());
+	_textures_max_size_changed(textures_max_slider->get_value());
+	_textures_budget_changed(textures_budget_slider->get_value());
+}
+
+void Node3DEditor::_textures_apply_settings() {
+	int min_size = textures_min_slider->get_value();
+	int max_size = textures_max_slider->get_value();
+	bool budget_enabled = textures_budget_enable->is_pressed();
+	float budget_size = textures_budget_slider->get_value();
+
+	TextureStreaming::get_singleton()->set_streaming_min_resolution(1 << min_size);
+	TextureStreaming::get_singleton()->set_streaming_max_resolution(1 << max_size);
+	TextureStreaming::get_singleton()->set_budget_enabled(budget_enabled);
+	TextureStreaming::get_singleton()->set_memory_budget_mb(budget_size);
+}
+
 void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
 
@@ -9944,6 +10077,14 @@ Node3DEditor::Node3DEditor() {
 	view_layout_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(view_layout_menu);
 
+	textures_button = memnew(Button);
+	textures_button->set_text(TTRC("Textures"));
+	textures_button->set_tooltip_text(TTRC("Edit Texture quality settings."));
+	textures_button->set_theme_type_variation(SceneStringName(FlatButton));
+	textures_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_button_pressed));
+
+	main_menu_hbox->add_child(textures_button);
+
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	context_toolbar_panel = memnew(PanelContainer);
@@ -10351,6 +10492,150 @@ void fragment() {
 
 		_load_default_preview_settings();
 		_preview_settings_changed();
+	}
+
+	{
+		textures_popup = memnew(PopupPanel);
+		add_child(textures_popup);
+
+		VBoxContainer *textures_vb = memnew(VBoxContainer);
+		textures_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		textures_vb->add_theme_constant_override("separation", 10);
+		textures_popup->add_child(textures_vb);
+
+		// Presets
+		HBoxContainer *presets_hb = memnew(HBoxContainer);
+		presets_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low = memnew(Button);
+		textures_very_low->set_text(TTRC("Very Low"));
+		textures_very_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low->set_toggle_mode(true);
+		textures_very_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_LOW));
+		presets_hb->add_child(textures_very_low);
+
+		textures_low = memnew(Button);
+		textures_low->set_text(TTRC("Low"));
+		textures_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_low->set_toggle_mode(true);
+		textures_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_LOW));
+		presets_hb->add_child(textures_low);
+
+		textures_medium = memnew(Button);
+		textures_medium->set_text(TTRC("Medium"));
+		textures_medium->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_medium->set_toggle_mode(true);
+		textures_medium->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MEDIUM));
+		presets_hb->add_child(textures_medium);
+
+		textures_high = memnew(Button);
+		textures_high->set_text(TTRC("High"));
+		textures_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_high->set_toggle_mode(true);
+		textures_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_HIGH));
+		presets_hb->add_child(textures_high);
+
+		textures_very_high = memnew(Button);
+		textures_very_high->set_text(TTRC("Very High"));
+		textures_very_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_high->set_toggle_mode(true);
+		textures_very_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_HIGH));
+		presets_hb->add_child(textures_very_high);
+
+		textures_max = memnew(Button);
+		textures_max->set_text(TTRC("Max"));
+		textures_max->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max->set_toggle_mode(true);
+		textures_max->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MAX));
+		presets_hb->add_child(textures_max);
+
+		textures_manual = memnew(Button);
+		textures_manual->set_text(TTRC("Manual"));
+		textures_manual->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_manual->set_toggle_mode(true);
+		textures_manual->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MANUAL));
+		presets_hb->add_child(textures_manual);
+
+		textures_vb->add_margin_child(TTRC("Quality Presets"), presets_hb);
+
+		HBoxContainer *texture_min_size_hb = memnew(HBoxContainer);
+		texture_min_size_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_min_slider = memnew(HSlider);
+		textures_min_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_min_slider->set_min(0);
+		textures_min_slider->set_max(13);
+		textures_min_slider->set_step(1);
+		textures_min_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_min_size_changed));
+		textures_min_edit = memnew(LineEdit);
+		textures_min_edit->add_theme_constant_override("minimum_character_width", 6);
+		textures_min_edit->set_flat(true);
+		textures_min_edit->set_editable(false);
+		textures_min_edit->set_focus_mode(FocusMode::FOCUS_NONE);
+		texture_min_size_hb->add_child(textures_min_slider);
+		texture_min_size_hb->add_child(textures_min_edit);
+		textures_vb->add_margin_child(TTRC("Min Texture Size:"), texture_min_size_hb);
+
+		HBoxContainer *texture_max_size_hb = memnew(HBoxContainer);
+		texture_max_size_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		textures_max_slider = memnew(HSlider);
+		textures_max_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max_slider->set_min(0);
+		textures_max_slider->set_max(13);
+		textures_max_slider->set_step(1);
+		textures_max_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_max_size_changed));
+
+		textures_max_edit = memnew(LineEdit);
+		textures_max_edit->set_editable(false);
+		textures_max_edit->set_focus_mode(FocusMode::FOCUS_NONE);
+		textures_max_edit->add_theme_constant_override("minimum_character_width", 6);
+		textures_max_edit->set_flat(true);
+		texture_max_size_hb->add_child(textures_max_slider);
+		texture_max_size_hb->add_child(textures_max_edit);
+		textures_vb->add_margin_child(TTRC("Max Texture Size:"), texture_max_size_hb);
+
+		VBoxContainer *textures_budget_vb = memnew(VBoxContainer);
+		textures_budget_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		const bool memory_budget_enabled = GLOBAL_GET("rendering/textures/streaming/memory_budget_enabled");
+		textures_budget_enable = memnew(CheckBox);
+		textures_budget_enable->set_text(TTRC("Enable texture memory budget"));
+		textures_budget_enable->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_enable->set_pressed(memory_budget_enabled);
+		textures_budget_enable->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_textures_budget_toggled));
+		textures_budget_vb->add_child(textures_budget_enable);
+
+		textures_budget_slider = memnew(HSlider);
+		textures_budget_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_slider->set_min(1); // 1 MB
+		textures_budget_slider->set_max(16384); // 16 GB
+		textures_budget_slider->set_step(0.1f);
+		textures_budget_slider->set_editable(memory_budget_enabled);
+		// textures_budget_slider->set_exp_ratio(true);
+		textures_budget_slider->set_value(GLOBAL_GET("rendering/textures/streaming/memory_budget_mb"));
+		textures_budget_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_budget_changed));
+
+		textures_budget_edit = memnew(LineEdit);
+		textures_budget_edit->set_editable(false);
+		textures_budget_edit->set_focus_mode(FocusMode::FOCUS_NONE);
+		// textures_budget_edit->set_flat(true);
+		textures_budget_edit->add_theme_constant_override("minimum_character_width", 6);
+
+		HBoxContainer *textures_budget_hb = memnew(HBoxContainer);
+		textures_budget_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_hb->add_child(textures_budget_slider);
+		textures_budget_hb->add_child(textures_budget_edit);
+		textures_budget_vb->add_child(textures_budget_hb);
+
+		textures_vb->add_margin_child(TTRC("Memory Budget:"), textures_budget_vb);
+
+		Button *textures_save = memnew(Button);
+		textures_save->set_text(TTRC("Save to settings"));
+		textures_save->set_anchors_preset(LayoutPreset::PRESET_CENTER_RIGHT);
+		textures_save->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_save_pressed));
+		textures_vb->add_child(textures_save);
+
+		_textures_load_settings();
+		_textures_apply_settings();
 	}
 	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }

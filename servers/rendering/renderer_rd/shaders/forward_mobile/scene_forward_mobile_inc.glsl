@@ -149,6 +149,10 @@ bool sc_scene_roughness_limiter_enabled() {
 	return ((sc_packed_0() >> 18) & 1U) != 0;
 }
 
+bool sc_material_feedback() {
+	return ((sc_packed_0() >> 19) & 1U) != 0;
+}
+
 uint sc_soft_shadow_samples() {
 	return (sc_packed_0() >> 20) & 63U;
 }
@@ -328,7 +332,8 @@ scene_data_block;
 struct InstanceData {
 	highp mat3x4 transform;
 	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec3 compressed_aabb_size_pad; // Only .xyz is used.
+	uint material_feedback_index; // Index into the material feedback buffer.
 	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; // Base offset in global buffer for instance variables.
@@ -397,6 +402,14 @@ layout(set = 1, binding = 13 + 8) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_R
 layout(set = 1, binding = 13 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT;
 layout(set = 1, binding = 13 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
+
+#ifdef TEXTURE_STREAMING
+// Texture streaming material feedback buffer access
+layout(set = 1, binding = 25, std430) buffer restrict coherent MaterialFeedbackBuffer {
+	uint data[];
+}
+material_feedback;
+#endif
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

@@ -2225,7 +2225,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				external_program = EDITOR_GET("text_editor/external/exec_path");
 			} else if (extension == "res" || extension == "scn") {
 				// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
-			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+			} else if (resource_type == "CompressedTexture2D" || resource_type == "Image" || resource_type == "StreamedTexture2D") {
 				if (extension == "svg" || extension == "svgz") {
 					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 				} else {

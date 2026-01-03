@@ -129,6 +129,7 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_streamed_texture.h"
 #include "editor/import/resource_importer_svg.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -543,6 +544,7 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
 	ResourceImporterTexture::get_singleton()->update_imports();
+	ResourceImporterStreamedTexture::get_singleton()->update_imports();
 
 	_update_translations();
 
@@ -847,6 +849,7 @@ void EditorNode::_notification(int p_what) {
 			editor_selection->update();
 
 			ResourceImporterTexture::get_singleton()->update_imports();
+			ResourceImporterStreamedTexture::get_singleton()->update_imports();
 
 			if (requested_first_scan) {
 				requested_first_scan = false;
@@ -8256,8 +8259,13 @@ EditorNode::EditorNode() {
 
 	{
 		// Register importers at the beginning, so dialogs are created with the right extensions.
-		Ref<ResourceImporterTexture> import_texture = memnew(ResourceImporterTexture(true));
+		Ref<ResourceImporterTexture> import_texture;
+		import_texture.instantiate(true);
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+
+		Ref<ResourceImporterStreamedTexture> import_streamed_texture;
+		import_streamed_texture.instantiate(true);
+		ResourceFormatImporter::get_singleton()->add_importer(import_streamed_texture);
 
 		Ref<ResourceImporterLayeredTexture> import_cubemap;
 		import_cubemap.instantiate();

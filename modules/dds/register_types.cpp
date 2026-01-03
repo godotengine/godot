@@ -35,7 +35,8 @@
 
 #include "scene/resources/texture.h"
 
-static Ref<ResourceFormatDDS> resource_loader_dds;
+static Ref<ResourceImporterDds> resource_importer_dds;
+static Ref<ResourceLoaderDDS> resource_loader_dds;
 
 void initialize_dds_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -46,6 +47,9 @@ void initialize_dds_module(ModuleInitializationLevel p_level) {
 	Image::save_dds_buffer_func = save_dds_buffer;
 
 	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
+		resource_importer_dds.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(resource_importer_dds, true);
+
 		resource_loader_dds.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_dds);
 	}
@@ -59,6 +63,9 @@ void uninitialize_dds_module(ModuleInitializationLevel p_level) {
 	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_dds);
 		resource_loader_dds.unref();
+
+		ResourceFormatImporter::get_singleton()->remove_importer(resource_importer_dds);
+		resource_importer_dds.unref();
 	}
 
 	Image::save_dds_func = nullptr;

@@ -1624,7 +1624,11 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
+	RID streaming_state = tex->streaming_state; // keep streaming state
+
 	*tex = *by_tex;
+
+	tex->streaming_state = streaming_state; // restore streaming state
 
 	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
 
@@ -4553,4 +4557,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 		// FIXME: Storage bit should only be requested when FSR is required.
 		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
+}
+
+void TextureStorage::texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_MSG(tex, "Invalid texture RID.");
+	tex->streaming_state = p_streaming_state;
 }
