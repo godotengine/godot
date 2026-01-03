@@ -188,10 +188,14 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			bool scaling_3d_is_not_bilinear = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			bool use_taa = p_viewport->use_taa;
 
-			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + EPSILON))) {
-				// FSR and MetalFX is not designed for downsampling.
+			if (scaling_3d_is_not_bilinear && scaling_type != RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL && scaling_3d_scale >= 1.0 + EPSILON) {
+				// FSR1 and MetalFX Spatial are not designed for downsampling.
 				// Fall back to bilinear scaling.
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
+				//
+				// FSR2 and MetalFX temporal are not designed for downsampling either,
+				// but we can render at the specified render scale and downscale bilinearly
+				// to achieve the same effect.
+				WARN_PRINT_ONCE("FSR1 or MetalFX Spatial 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
@@ -199,7 +203,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			if (scaling_3d_is_not_bilinear && !upscaler_available) {
 				// FSR is not actually available.
 				// Fall back to bilinear scaling.
-				WARN_PRINT_ONCE("FSR 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
+				WARN_PRINT_ONCE("FSR or MetalFX 3D resolution scaling is not available. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 			}
@@ -225,14 +229,29 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					render_width = CLAMP(target_width * scaling_3d_scale, 1, 16384);
 					render_height = CLAMP(target_height * scaling_3d_scale, 1, 16384);
 					break;
-				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL:
-				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
-				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
+				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL:
 					target_width = p_viewport->size.width;
 					target_height = p_viewport->size.height;
 					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
 					render_height = MAX(target_height * scaling_3d_scale, 1.0);
+					break;
+				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
+				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
+					if (scaling_3d_scale > 1.0 + EPSILON) {
+						// Downsampling is not supported by FSR2 or MetalFX Temporal.
+						// Instead, we render at native resolution at the specified resolution scale
+						// and downscale bilinearly.
+						target_width = p_viewport->size.width * scaling_3d_scale;
+						target_height = p_viewport->size.height * scaling_3d_scale;
+						render_width = target_width;
+						render_height = target_height;
+					} else {
+						target_width = p_viewport->size.width;
+						target_height = p_viewport->size.height;
+						render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
+						render_height = MAX(target_height * scaling_3d_scale, 1.0);
+					}
 					break;
 				case RS::VIEWPORT_SCALING_3D_MODE_OFF:
 					target_width = p_viewport->size.width;
