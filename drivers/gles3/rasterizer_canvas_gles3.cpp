@@ -820,14 +820,6 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		state.canvas_instance_batches[state.current_batch_index].filter = texture_filter;
 	}
 
-	RenderingServer::CanvasItemTextureRepeat texture_repeat = p_item->texture_repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? state.default_repeat : p_item->texture_repeat;
-
-	if (texture_repeat != state.canvas_instance_batches[state.current_batch_index].repeat) {
-		_new_batch(r_batch_broken);
-
-		state.canvas_instance_batches[state.current_batch_index].repeat = texture_repeat;
-	}
-
 	Transform2D base_transform = p_item->final_transform;
 	if (p_item->repeat_source_item && (p_repeat_offset.x || p_repeat_offset.y)) {
 		base_transform.columns[2] += p_item->repeat_source_item->final_transform.basis_xform(p_repeat_offset);
@@ -882,6 +874,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		state.canvas_instance_batches[state.current_batch_index].specialization ^= CanvasShaderGLES3::DISABLE_LIGHTING;
 	}
 
+	const RS::CanvasItemTextureRepeat texture_repeat = p_item->texture_repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? state.default_repeat : p_item->texture_repeat;
 	const Item::Command *c = p_item->commands;
 	while (c) {
 		if (skipping && c->type != Item::Command::TYPE_ANIMATION_SLICE) {
@@ -915,12 +908,26 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 		Color blend_color = base_color;
 		GLES3::CanvasShaderData::BlendMode blend_mode = p_blend_mode;
+		bool validate_texture_repeat = true;
 		if (c->type == Item::Command::TYPE_RECT) {
 			const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
 			if (rect->flags & CANVAS_RECT_LCD) {
 				blend_mode = GLES3::CanvasShaderData::BLEND_MODE_LCD;
 				blend_color = rect->modulate * base_color;
 			}
+
+			if (rect->flags & CANVAS_RECT_TILE) {
+				if (state.canvas_instance_batches[state.current_batch_index].repeat != RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED) {
+					_new_batch(r_batch_broken);
+					state.canvas_instance_batches[state.current_batch_index].repeat = RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+				}
+				validate_texture_repeat = false;
+			}
+		}
+
+		if (validate_texture_repeat && texture_repeat != state.canvas_instance_batches[state.current_batch_index].repeat) {
+			_new_batch(r_batch_broken);
+			state.canvas_instance_batches[state.current_batch_index].repeat = texture_repeat;
 		}
 
 		if (blend_mode != state.canvas_instance_batches[state.current_batch_index].blend_mode || blend_color != state.canvas_instance_batches[state.current_batch_index].blend_color) {
@@ -932,12 +939,6 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		switch (c->type) {
 			case Item::Command::TYPE_RECT: {
 				const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
-
-				if (rect->flags & CANVAS_RECT_TILE && state.canvas_instance_batches[state.current_batch_index].repeat != RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED) {
-					_new_batch(r_batch_broken);
-					state.canvas_instance_batches[state.current_batch_index].repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
-				}
-
 				if (rect->texture != state.canvas_instance_batches[state.current_batch_index].tex || state.canvas_instance_batches[state.current_batch_index].command_type != Item::Command::TYPE_RECT) {
 					_new_batch(r_batch_broken);
 					state.canvas_instance_batches[state.current_batch_index].tex = rect->texture;
