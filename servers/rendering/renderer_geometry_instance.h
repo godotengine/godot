@@ -66,7 +66,8 @@ public:
 	virtual Transform3D get_transform() = 0;
 	virtual AABB get_aabb() = 0;
 
-	virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) = 0;
+	virtual void clear_light_instances() = 0;
+	virtual void pair_light_instance(const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) = 0;
 	virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) = 0;
 	virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) = 0;
 	virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) = 0;

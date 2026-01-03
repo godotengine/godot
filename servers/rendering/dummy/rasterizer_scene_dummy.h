@@ -66,7 +66,8 @@ public:
 		virtual Transform3D get_transform() override { return Transform3D(); }
 		virtual AABB get_aabb() override { return AABB(); }
 
-		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override {}
+		virtual void clear_light_instances() override {}
+		virtual void pair_light_instance(const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) override {}
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
 		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
 		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
@@ -94,6 +95,9 @@ public:
 	}
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
+
+	virtual uint32_t get_max_lights_total() override { return 0; }
+	virtual uint32_t get_max_lights_per_mesh() override { return 0; }
 
 	/* PIPELINES */
 
