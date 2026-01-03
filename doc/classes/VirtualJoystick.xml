@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualJoystick" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A virtual joystick control for touch screen devices.
+	</brief_description>
+	<description>
+		A customizable on-screen joystick control designed for touch screen devices. It allows users to provide directional input by dragging a virtual tip within a defined circular area.
+		This control can simulate directional actions, such as [member action_up], [member action_down], [member action_left], and [member action_right], which are triggered when the joystick is moved in the corresponding directions.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="action_down" type="StringName" setter="set_action_down" getter="get_action_down" default="&amp;&quot;ui_down&quot;">
+			The action to trigger when the joystick is moved down.
+		</member>
+		<member name="action_left" type="StringName" setter="set_action_left" getter="get_action_left" default="&amp;&quot;ui_left&quot;">
+			The action to trigger when the joystick is moved left.
+		</member>
+		<member name="action_right" type="StringName" setter="set_action_right" getter="get_action_right" default="&amp;&quot;ui_right&quot;">
+			The action to trigger when the joystick is moved right.
+		</member>
+		<member name="action_up" type="StringName" setter="set_action_up" getter="get_action_up" default="&amp;&quot;ui_up&quot;">
+			The action to trigger when the joystick is moved up.
+		</member>
+		<member name="clampzone_ratio" type="float" setter="set_clampzone_ratio" getter="get_clampzone_ratio" default="1.0">
+			The multiplier applied to the joystick's radius that defines the clamp zone.
+			This zone limits how far the joystick tip can move from its center before being clamped.
+			A value of [code]1.0[/code] means the tip can move up to the edge of the joystick's visual size.
+			In [constant JOYSTICK_FOLLOWING] mode, this radius also determines how far the finger can move before the joystick base starts following the touch input.
+		</member>
+		<member name="deadzone_ratio" type="float" setter="set_deadzone_ratio" getter="get_deadzone_ratio" default="0.25">
+			The ratio of the joystick size that defines the deadzone area. The joystick tip must move beyond this ratio before being considered active.
+		</member>
+		<member name="initial_offset_ratio" type="Vector2" setter="set_initial_offset_ratio" getter="get_initial_offset_ratio" default="Vector2(0.5, 0.5)">
+			The initial position of the joystick as a ratio of the control's size. [code](0, 0)[/code] is top-left, [code](1, 1)[/code] is bottom-right.
+		</member>
+		<member name="joystick_mode" type="int" setter="set_joystick_mode" getter="get_joystick_mode" enum="VirtualJoystick.JoystickMode" default="0">
+			The joystick mode to use.
+		</member>
+		<member name="joystick_size" type="float" setter="set_joystick_size" getter="get_joystick_size" default="100.0">
+			The size of the joystick in pixels.
+		</member>
+		<member name="joystick_texture" type="Texture2D" setter="set_joystick_texture" getter="get_joystick_texture">
+			The texture to use for the joystick base. When [code]null[/code], a ring will be drawn instead with the color in the theme.
+		</member>
+		<member name="tip_size" type="float" setter="set_tip_size" getter="get_tip_size" default="50.0">
+			The size of the joystick tip in pixels.
+		</member>
+		<member name="tip_texture" type="Texture2D" setter="set_tip_texture" getter="get_tip_texture">
+			The texture to use for the joystick tip. When [code]null[/code], a circle will be drawn instead with the color in the theme.
+		</member>
+		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="VirtualJoystick.VisibilityMode" default="0">
+			The visibility mode to use.
+		</member>
+	</members>
+	<signals>
+		<signal name="flick_canceled">
+			<description>
+				Emitted when the tip enters the deadzone after being outside of it.
+			</description>
+		</signal>
+		<signal name="flicked">
+			<param index="0" name="input_vector" type="Vector2" />
+			<description>
+				Emitted when the tip moved outside the deadzone and the joystick is released. The [param input_vector] contains the last input direction and strength before release. Its length is between [code]0.0[/code] and [code]1.0[/code]
+			</description>
+		</signal>
+		<signal name="pressed">
+			<description>
+				Emitted when the joystick is pressed.
+			</description>
+		</signal>
+		<signal name="released">
+			<param index="0" name="input_vector" type="Vector2" />
+			<description>
+				Emitted when the joystick is released. The [param input_vector] is the final input direction and strength, with a length between [code]0.0[/code] and [code]1.0[/code].
+			</description>
+		</signal>
+		<signal name="tapped">
+			<description>
+				Emitted when the joystick is released without moving the tip.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="JOYSTICK_FIXED" value="0" enum="JoystickMode">
+			The joystick doesn't move.
+		</constant>
+		<constant name="JOYSTICK_DYNAMIC" value="1" enum="JoystickMode">
+			The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It moves back to its original position when released.
+		</constant>
+		<constant name="JOYSTICK_FOLLOWING" value="2" enum="JoystickMode">
+			The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It will follow the touch input if it goes outside the joystick's range. It moves back to its original position when released.
+		</constant>
+		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
+			The joystick is always visible.
+		</constant>
+		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
+			The joystick is only visible on touchscreen devices.
+		</constant>
+		<constant name="VISIBILITY_WHEN_TOUCHED" value="2" enum="VisibilityMode">
+			The joystick is only visible when being touched.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="ring_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Default ring joystick [Color].
+		</theme_item>
+		<theme_item name="ring_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Ring joystick [Color] when pressed.
+		</theme_item>
+		<theme_item name="tip_normal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Default Tip joystick [Color].
+		</theme_item>
+		<theme_item name="tip_pressed_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Tip joystick [Color] when pressed.
+		</theme_item>
+	</theme_items>
+</class>
