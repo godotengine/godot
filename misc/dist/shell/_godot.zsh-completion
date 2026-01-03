@@ -82,6 +82,8 @@ _arguments \
   '--check-only[only parse for errors and quit (use with --script)]' \
   '--export-release[export the project in release mode using the given preset and output path]:export preset name then path' \
   '--export-debug[export the project in debug mode using the given preset and output path]:export preset name then path' \
+  '--export-release-all[export the project in release mode using every existing preset in sequence, all preset must have a valid export path, all parameters are read from the presets] \
+  '--export-debug-all[export the project in debug mode using every existing preset in sequence, all preset must have a valid export path, all parameters are read from the presets] \
   '--export-pack[export the project data only as a PCK or ZIP file using the given preset and output path]:export preset name then path' \
   '--convert-3to4[converts project from Godot 3.x to Godot 4.x]' \
   '--validate-conversion-3to4[shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x]' \
