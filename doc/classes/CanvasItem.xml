@@ -677,7 +677,7 @@
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
 			If [code]true[/code], the parent [CanvasItem]'s [member material] is used as this node's material.
 		</member>
-		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
+		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="4294967295">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
 			[b]Note:[/b] A [CanvasItem] does not inherit its parents' visibility layers. This means that if a parent [CanvasItem] does not have all the same layers as its child, the child may not be visible even if both the parent and child have [member visible] set to [code]true[/code]. For example, if a parent has layer 1 and a child has layer 2, the child will not be visible in a [Viewport] with the canvas cull mask set to layer 1 or 2 (see [member Viewport.canvas_cull_mask]). To ensure that both the parent and child are visible, the parent must have both layers 1 and 2, or the child must have [member top_level] set to [code]true[/code].
 		</member>
