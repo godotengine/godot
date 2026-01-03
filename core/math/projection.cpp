@@ -424,6 +424,15 @@ Vector2 Projection::get_viewport_half_extents() const {
 	return Vector2(w / columns[0][0], w / columns[1][1]);
 }
 
+Rect2 Projection::get_viewport_rect() const {
+	// NOTE: This assumes a rectangular projection plane, i.e. that :
+	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
+	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
+	Size2 half_extents = get_viewport_half_extents();
+	Point2 bottom_left = -half_extents * Vector2(columns[3][0] * columns[3][3] + columns[2][0] * columns[2][3] + 1, columns[3][1] * columns[3][3] + columns[2][1] * columns[2][3] + 1);
+	return Rect2(bottom_left, 2 * half_extents);
+}
+
 Vector2 Projection::get_far_plane_half_extents() const {
 	// NOTE: This assumes a symmetrical frustum, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
@@ -431,6 +440,15 @@ Vector2 Projection::get_far_plane_half_extents() const {
 	// - there is no offset / skew (i.e. columns[2][0] == columns[2][1] == 0)
 	real_t w = -get_z_far() * columns[2][3] + columns[3][3];
 	return Vector2(w / columns[0][0], w / columns[1][1]);
+}
+
+Rect2 Projection::get_far_plane_rect() const {
+	// NOTE: This assumes a rectangular projection plane, i.e. that :
+	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
+	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
+	Size2 half_extents = get_far_plane_half_extents();
+	Point2 bottom_left = -half_extents * Vector2(columns[3][0] * columns[3][3] + columns[2][0] * columns[2][3] + 1, columns[3][1] * columns[3][3] + columns[2][1] * columns[2][3] + 1);
+	return Rect2(bottom_left, 2 * half_extents);
 }
 
 bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const {
