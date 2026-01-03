@@ -574,10 +574,18 @@ void ProjectSettings::_emit_changed() {
 }
 
 bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
-	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false);
+	return ProjectSettings::_load_resource_pack_encrypted(p_pack, PackedByteArray(), p_replace_files, p_offset, false);
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool main_file) {
+	return ProjectSettings::_load_resource_pack_encrypted(p_pack, PackedByteArray(), p_replace_files, p_offset, false);
+}
+
+bool ProjectSettings::load_resource_pack_encrypted(const String &p_pack, const PackedByteArray &p_key, bool p_replace_files, int p_offset) {
+	return ProjectSettings::_load_resource_pack_encrypted(p_pack, p_key, p_replace_files, p_offset, false);
+}
+
+bool ProjectSettings::_load_resource_pack_encrypted(const String &p_pack, const PackedByteArray &p_key, bool p_replace_files, int p_offset, bool p_main_pack) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
@@ -591,12 +599,12 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		// Add the project's resource file system to PackedData so directory access keeps working when
 		// the game is running without a main pack, like in the editor or on Android.
 		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceDirectory));
-		PackedData::get_singleton()->add_pack("res://", false, 0);
+		PackedData::get_singleton()->add_pack("res://", false, 0, p_key);
 		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 		using_datapack = true;
 	}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset, p_key) == OK;
 	if (!ok) {
 		return false;
 	}
@@ -1629,6 +1637,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack_encrypted", "pack", "key", "replace_files", "offset"), &ProjectSettings::load_resource_pack_encrypted, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
