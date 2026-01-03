@@ -616,7 +616,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	} else {
 		String assembly_name = Path::get_csharp_project_name();
 
-		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
+		assembly_path = GodotSharpDirs::get_res_assemblies_dir()
 								.path_join(assembly_name + ".dll");
 		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
