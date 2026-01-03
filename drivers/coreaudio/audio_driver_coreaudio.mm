@@ -241,15 +241,14 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
-	bufferList.mBuffers[0].mData = nullptr;
+	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
-	bufferList.mBuffers[0].mDataByteSize = ad->buffer_size * sizeof(int16_t);
+	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		int16_t *data = (int16_t *)bufferList.mBuffers[0].mData;
 		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
-			int32_t sample = data[i] << 16;
+			int32_t sample = ad->input_buf[i] << 16;
 			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
@@ -441,10 +440,16 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	capture_mix_rate = mix_rate;
+
+	if (abs(hw_mix_rate - mix_rate) > 1.0) {
+		WARN_PRINT("CoreAudio: Input device hardware rate (" + rtos(hw_mix_rate) + " Hz) differs from output mix rate (" + itos(mix_rate) + " Hz). Forcing input to " + itos(mix_rate) + " Hz to avoid sample rate mismatch.");
+	}
 #else
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
-#endif
 	capture_mix_rate = hw_mix_rate;
+#endif
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
@@ -464,6 +469,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 	capture_buffer_frames = closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
 
 	buffer_size = capture_buffer_frames * capture_channels;
+	input_buf.resize(buffer_size);
 
 	AURenderCallbackStruct callback;
 	memset(&callback, 0, sizeof(AURenderCallbackStruct));
