@@ -910,6 +910,11 @@ void CodeTextEditor::input(const Ref<InputEvent> &event) {
 		accept_event();
 		return;
 	}
+	if (ED_IS_SHORTCUT("script_text_editor/join_lines", key_event)) {
+		text_editor->join_lines();
+		accept_event();
+		return;
+	}
 	if (ED_IS_SHORTCUT("script_text_editor/duplicate_selection", key_event)) {
 		text_editor->duplicate_selection();
 		accept_event();
