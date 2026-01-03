@@ -722,6 +722,7 @@
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
 			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
+			[b]Warning:[/b] Be careful about user input when [member bbcode_enabled] is [code]true[/code], as users may be able to inject arbitrary BBCode tags. This can be a security concern, since users could break formatting or create clickable links to malicious websites. Use [method String.bbcode_escape] or [method String.strip_bbcode] when adding text to prevent users from injecting arbitrary BBCode tags.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">

@@ -1948,6 +1948,26 @@ TEST_CASE("[String] Strip edges") {
 	CHECK(s.strip_edges(true, true) == "Test Test");
 }
 
+TEST_CASE("[String] Strip BBCode") {
+	CHECK(String().strip_bbcode() == "");
+	CHECK(String("Test").strip_bbcode() == "Test");
+	CHECK(String("[b][i][color=blue]Test[/color][/i][/b]").strip_bbcode() == "Test");
+	CHECK(String(" [b] [i] [color=blue]Test[/color] [/i] [/b] ").strip_bbcode() == "   Test   ");
+	CHECK(String("[nonexistent]Test[/nonexistent]").strip_bbcode() == "Test");
+	CHECK(String("[nonexistent]Test").strip_bbcode() == "Test");
+	CHECK(String("Test[/nonexistent]").strip_bbcode() == "Test");
+}
+
+TEST_CASE("[String] Escape BBCode") {
+	CHECK(String().bbcode_escape() == "");
+	CHECK(String("Test").bbcode_escape() == "Test");
+	CHECK(String("[b][i][color=blue]Test[/color][/i][/b]").bbcode_escape() == "[lb]b][lb]i][lb]color=blue]Test[lb]/color][lb]/i][lb]/b]");
+	CHECK(String(" [b] [i] [color=blue]Test[/color] [/i] [/b] ").bbcode_escape() == " [lb]b] [lb]i] [lb]color=blue]Test[lb]/color] [lb]/i] [lb]/b] ");
+	CHECK(String("[nonexistent]Test[/nonexistent]").bbcode_escape() == "[lb]nonexistent]Test[lb]/nonexistent]");
+	CHECK(String("[nonexistent]Test").bbcode_escape() == "[lb]nonexistent]Test");
+	CHECK(String("Test[/nonexistent]").bbcode_escape() == "Test[lb]/nonexistent]");
+}
+
 TEST_CASE("[String] Trim") {
 	String s = "aaaTestbbb";
 	MULTICHECK_STRING_EQ(s, trim_prefix, "aaa", "Testbbb");
