@@ -1450,7 +1450,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 	if (ws->rect.position != pos) {
 		DEBUG_LOG_WAYLAND_THREAD(vformat("Repositioning popup %d from %s to %s", ws->id, ws->rect.position, pos));
 
-		double parent_scale = window_state_get_scale_factor(parent);
+		double parent_scale = parent->buffer_scale;
 
 		ws->rect.position = pos;
 
@@ -1910,7 +1910,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		return;
 	}
 
-	double scale = window_state_get_scale_factor(ws);
+	double scale = ws->buffer_scale;
 
 	wayland_thread->_set_current_seat(ss->wl_seat);
 
@@ -2534,7 +2534,7 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 	WindowState *ws = wayland_thread->window_get_state(pd.pointed_id);
 	ERR_FAIL_NULL(ws);
 
-	double win_scale = window_state_get_scale_factor(ws);
+	double win_scale = ws->buffer_scale;
 
 	if (ss->active_gesture == Gesture::MAGNIFY) {
 		Ref<InputEventMagnifyGesture> mg;
@@ -2926,7 +2926,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	WindowState *ws = wayland_thread->window_get_state(td.proximal_id);
 	ERR_FAIL_NULL(ws);
 
-	double scale = window_state_get_scale_factor(ws);
+	double scale = ws->buffer_scale;
 	if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
 		td.motion_time = time;
 
@@ -3450,7 +3450,6 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	ERR_FAIL_NULL(p_ws);
 
 	int preferred_buffer_scale = window_state_get_preferred_buffer_scale(p_ws);
-	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
 	// If neither is true we no-op.
 	bool scale_changed = false;
@@ -3463,9 +3462,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		size_changed = true;
 	}
 
-	if (using_fractional && p_ws->fractional_scale != p_ws->preferred_fractional_scale) {
+	if (p_ws->fractional_scale != p_ws->preferred_fractional_scale) {
 		p_ws->fractional_scale = p_ws->preferred_fractional_scale;
-		scale_changed = true;
 	}
 
 	if (p_ws->buffer_scale != preferred_buffer_scale) {
@@ -3473,10 +3471,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		p_ws->buffer_scale = preferred_buffer_scale;
 		p_ws->buffer_scale_changed = true;
 
-		if (!using_fractional) {
-			// We don't bother updating everything else if it's turned on though.
-			scale_changed = true;
-		}
+		scale_changed = true;
 	}
 
 	if (p_ws->wl_surface) {
@@ -3499,14 +3494,10 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 #endif
 
 	if (size_changed || scale_changed) {
-		double win_scale = window_state_get_scale_factor(p_ws);
+		double win_scale = p_ws->buffer_scale;
 		Size2i scaled_size = scale_vector2i(p_ws->rect.size, win_scale);
 
-		if (using_fractional) {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (fractional scale x%f).", p_ws->rect.size, scaled_size, p_ws->fractional_scale));
-		} else {
-			DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (buffer scale x%d).", p_ws->rect.size, scaled_size, p_ws->buffer_scale));
-		}
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Resizing the window from %s to %s (buffer scale x%d).", p_ws->rect.size, scaled_size, p_ws->buffer_scale));
 
 		// FIXME: Actually resize the hint instead of centering it.
 		p_ws->wayland_thread->pointer_set_hint(scaled_size / 2);
@@ -3835,7 +3826,7 @@ void WaylandThread::window_create_popup(DisplayServer::WindowID p_window_id, Dis
 	WindowState &ws = windows[p_window_id];
 	WindowState &parent = windows[p_parent_id];
 
-	double parent_scale = window_state_get_scale_factor(&parent);
+	double parent_scale = parent.buffer_scale;
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
@@ -4101,7 +4092,7 @@ void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Vector2i logical_max_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
+	Vector2i logical_max_size = scale_vector2i(p_size, 1 / ws.buffer_scale);
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
@@ -4120,7 +4111,7 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, con
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
-	Size2i logical_min_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
+	Size2i logical_min_size = scale_vector2i(p_size, 1 / ws.buffer_scale);
 
 	if (ws.wl_surface && ws.xdg_toplevel) {
 		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);
@@ -4599,8 +4590,8 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 		// discussing about this. I'm not really sure about the maths behind this but,
 		// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 		// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
-		hint_x = std::round(p_hint.x / window_state_get_scale_factor(ws));
-		hint_y = std::round(p_hint.y / window_state_get_scale_factor(ws));
+		hint_x = std::round(p_hint.x / ws->buffer_scale);
+		hint_y = std::round(p_hint.y / ws->buffer_scale);
 	}
 
 	if (ss) {
