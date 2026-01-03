@@ -739,6 +739,7 @@ public:
 	// Public for use with callable_mp.
 	void init_plugins();
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+	void refresh_plugins();
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);

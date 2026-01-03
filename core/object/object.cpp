@@ -1977,6 +1977,7 @@ void Object::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("script_changed"));
 	ADD_SIGNAL(MethodInfo("property_list_changed"));
+	ADD_SIGNAL(MethodInfo("_property_value_changed"));
 
 #define BIND_OBJ_CORE_METHOD(m_method) \
 	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);

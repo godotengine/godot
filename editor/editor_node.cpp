@@ -1204,6 +1204,21 @@ void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
 	}
 }
 
+void EditorNode::refresh_plugins() {
+	ObjectID current_id = get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
+	if (!current_obj) {
+		return;
+	}
+	bool is_resource = Object::cast_to<Resource>(current_obj);
+	bool is_node = Object::cast_to<Node>(current_obj);
+
+	Object *editor_owner = (is_node || Object::cast_to<MultiNodeEdit>(current_obj)) ? SceneTreeDock::get_singleton() : is_resource ? (Object *)InspectorDock::get_inspector_singleton()
+																																   : (Object *)this;
+
+	edit_item(current_obj, editor_owner);
+}
+
 void EditorNode::_plugin_over_self_own(EditorPlugin *p_plugin) {
 	active_plugins[p_plugin->get_instance_id()].insert(p_plugin);
 }
@@ -2914,6 +2929,10 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 
 	for (EditorPlugin *plugin : to_over_edit) {
 		_plugin_over_edit(plugin, p_object);
+	}
+
+	if (p_object && !p_object->is_connected(CoreStringName(_property_value_changed), callable_mp(this, &EditorNode::refresh_plugins))) {
+		p_object->connect(CoreStringName(_property_value_changed), callable_mp(this, &EditorNode::refresh_plugins));
 	}
 }
 
