@@ -40,6 +40,9 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/world_2d.h"
 
+CanvasItemGizmo::CanvasItemGizmo() {
+}
+
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
@@ -73,6 +76,135 @@ void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
 	_handle_visibility_change(p_parent_visible_in_tree);
 }
 
+void CanvasItem::add_gizmo(Ref<CanvasItemGizmo> p_gizmo) {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (data.gizmos_disabled || p_gizmo.is_null()) {
+		return;
+	}
+	data.gizmos.push_back(p_gizmo);
+
+	if (is_inside_tree()) {
+		p_gizmo->create();
+		if (is_visible_in_tree()) {
+			p_gizmo->redraw();
+		}
+		p_gizmo->transform();
+	}
+#endif
+}
+
+void CanvasItem::remove_gizmo(Ref<CanvasItemGizmo> p_gizmo) {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	int idx = data.gizmos.find(p_gizmo);
+	if (idx != -1) {
+		data.gizmos.remove_at(idx);
+	}
+#endif
+}
+
+void CanvasItem::clear_gizmos() {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	data.gizmos.clear();
+	data.gizmos_requested = false;
+#endif
+}
+
+void CanvasItem::_update_gizmos() {
+#ifdef TOOLS_ENABLED
+	if (data.gizmos_disabled || !is_inside_tree() || !data.gizmos_dirty) {
+		data.gizmos_dirty = false;
+		return;
+	}
+	data.gizmos_dirty = false;
+	for (Ref<CanvasItemGizmo> &gizmo : data.gizmos) {
+		if (is_visible_in_tree()) {
+			gizmo->redraw();
+		} else {
+			gizmo->clear();
+		}
+	}
+#endif
+}
+
+void CanvasItem::update_gizmos() {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (data.gizmos.is_empty()) {
+		if (!data.gizmos_requested) {
+			data.gizmos_requested = true;
+			// done this way to avoid having editor references in CanvasItem
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
+		}
+		return;
+	}
+
+	if (data.gizmos_dirty) {
+		return;
+	}
+
+	data.gizmos_dirty = true;
+	callable_mp(this, &CanvasItem::_update_gizmos).call_deferred();
+#endif
+}
+
+TypedArray<CanvasItemGizmo> CanvasItem::get_gizmos_bind() const {
+	ERR_THREAD_GUARD_V(TypedArray<CanvasItemGizmo>());
+	TypedArray<CanvasItemGizmo> ret;
+#ifdef TOOLS_ENABLED
+	for (const Ref<CanvasItemGizmo> &gizmo : data.gizmos) {
+		ret.push_back(Variant(gizmo.ptr()));
+	}
+#endif
+	return ret;
+}
+
+Vector<Ref<CanvasItemGizmo>> CanvasItem::get_gizmos() const {
+	ERR_THREAD_GUARD_V(Vector<Ref<CanvasItemGizmo>>());
+#ifdef TOOLS_ENABLED
+	return data.gizmos;
+#else
+	return Vector<Ref<CanvasItemGizmo>>();
+#endif
+}
+
+void CanvasItem::set_subgizmo_selection(Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform) {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (is_part_of_edited_scene()) {
+		// done this way to avoid having editor references in CanvasItem
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_set_subgizmo_selection"), this, p_gizmo, p_id, p_transform);
+	}
+#endif
+}
+
+void CanvasItem::clear_subgizmo_selection() {
+	ERR_THREAD_GUARD;
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (data.gizmos.is_empty()) {
+		return;
+	}
+
+	if (is_part_of_edited_scene()) {
+		// done this way to avoid having editor references in CanvasItem
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_clear_subgizmo_selection"), this);
+	}
+#endif
+}
 void CanvasItem::set_visible(bool p_visible) {
 	ERR_MAIN_THREAD_GUARD;
 	if (visible == p_visible) {
@@ -92,6 +224,13 @@ void CanvasItem::set_visible(bool p_visible) {
 void CanvasItem::_handle_visibility_change(bool p_visible) {
 	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
+
+#ifdef TOOLS_ENABLED
+	if (!data.gizmos.is_empty()) {
+		data.gizmos_dirty = true;
+		_update_gizmos();
+	}
+#endif
 
 	if (p_visible) {
 		queue_redraw();
@@ -383,6 +522,12 @@ void CanvasItem::_notification(int p_what) {
 				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 			}
 
+#ifdef TOOLS_ENABLED
+			if (is_part_of_edited_scene() && !data.gizmos_requested) {
+				data.gizmos_requested = true;
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_canvas_item_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
+			}
+#endif
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_MAIN_THREAD_GUARD;
@@ -1350,6 +1495,13 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
 #endif //TOOLS_ENABLED
 
+	ClassDB::bind_method(D_METHOD("update_gizmos"), &CanvasItem::update_gizmos);
+	ClassDB::bind_method(D_METHOD("add_gizmo", "gizmo"), &CanvasItem::add_gizmo);
+	ClassDB::bind_method(D_METHOD("get_gizmos"), &CanvasItem::get_gizmos_bind);
+	ClassDB::bind_method(D_METHOD("clear_gizmos"), &CanvasItem::clear_gizmos);
+	ClassDB::bind_method(D_METHOD("set_subgizmo_selection"), &CanvasItem::set_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("clear_subgizmo_selection"), &CanvasItem::clear_subgizmo_selection);
+
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &CanvasItem::set_visible);
@@ -1774,6 +1926,12 @@ CanvasItem::CanvasItem() :
 	_define_ancestry(AncestralClass::CANVAS_ITEM);
 
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
+
+#if TOOLS_ENABLED
+	data.gizmos_requested = false;
+	data.gizmos_disabled = false;
+	data.gizmos_dirty = false;
+#endif
 }
 
 CanvasItem::~CanvasItem() {

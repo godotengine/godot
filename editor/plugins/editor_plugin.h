@@ -47,6 +47,7 @@ class EditorExportPlatform;
 class EditorImportPlugin;
 class EditorInspectorPlugin;
 class EditorInterface;
+class EditorCanvasItemGizmoPlugin;
 class EditorNode3DGizmoPlugin;
 class EditorResourceConversionPlugin;
 class EditorSceneFormatImporter;
@@ -239,6 +240,9 @@ public:
 
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
 	void remove_export_platform(const Ref<EditorExportPlatform> &p_platform);
+
+	void add_canvas_item_gizmo_plugin(const Ref<EditorCanvasItemGizmoPlugin> &p_gizmo_plugin);
+	void remove_canvas_item_gizmo_plugin(const Ref<EditorCanvasItemGizmoPlugin> &p_gizmo_plugin);
 
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);

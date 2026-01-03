@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/2d/canvas_item_editor_gizmos.h"
 #include "scene/gui/box_container.h"
 
 class AcceptDialog;
@@ -64,8 +65,8 @@ public:
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
 
-	List<real_t> pre_drag_bones_length;
-	List<Dictionary> pre_drag_bones_undo_state;
+	Ref<EditorCanvasItemGizmo> gizmo;
+	HashMap<int, Transform2D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
 	Dictionary undo_state;
 };
@@ -145,7 +146,9 @@ private:
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
-		SKELETON_SHOW_BONES
+		SKELETON_SHOW_BONES,
+		// offset for the first user-defined gizmo plugin
+		SHOW_USER_DEFINED_GIZMO = 10000,
 	};
 
 	enum DragType {
@@ -177,7 +180,8 @@ private:
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE
+		DRAG_KEY_MOVE,
+		DRAG_GIZMO_HANDLE,
 	};
 
 	enum GridVisibility {
@@ -375,6 +379,11 @@ private:
 	bool is_hovering_h_guide = false;
 	bool is_hovering_v_guide = false;
 
+	Ref<EditorCanvasItemGizmo> current_gizmo = nullptr;
+	int current_gizmo_handle = -1;
+	bool current_gizmo_handle_secondary = false;
+	Variant current_gizmo_initial_value;
+
 	bool updating_value_dialog = false;
 	Transform2D original_transform;
 
@@ -393,6 +402,9 @@ private:
 	Ref<Shortcut> reset_transform_rotation_shortcut;
 	Ref<Shortcut> reset_transform_scale_shortcut;
 
+	Vector<Ref<EditorCanvasItemGizmoPlugin>> gizmo_plugins_by_priority;
+	Vector<Ref<EditorCanvasItemGizmoPlugin>> gizmo_plugins_by_name;
+
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -403,18 +415,21 @@ private:
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
+	bool _select_subgizmos(Point2 p_click_pos, bool p_append);
+	bool _select_click_on_item(CanvasItem *item, bool p_append);
 
 	ConfirmationDialog *snap_dialog = nullptr;
 
 	CanvasItem *ref_item = nullptr;
 
-	void _save_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool save_bones = false);
-	void _restore_canvas_item_state(const List<CanvasItem *> &p_canvas_items, bool restore_bones = false);
-	void _commit_canvas_item_state(const List<CanvasItem *> &p_canvas_items, const String &action_name, bool commit_bones = false);
+	void _save_drag_selection_state();
+	void _restore_drag_selection_state();
+	void _commit_drag_selection_state(const String &action_name);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
+
+	void _update_gizmos_menu();
 
 	void _prepare_view_menu();
 	void _popup_callback(int p_op);
@@ -481,6 +496,7 @@ private:
 
 	void _draw_viewport();
 
+	bool _gui_input_gizmos(const Ref<InputEvent> &p_event);
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
@@ -544,6 +560,13 @@ private:
 	void _set_owner_for_node_and_children(Node *p_node, Node *p_owner);
 
 	friend class CanvasItemEditorPlugin;
+
+	CanvasItem *selected_canvas_item = nullptr;
+
+	void _request_gizmo(Object *p_obj);
+	void _request_gizmo_for_id(ObjectID p_id);
+	void _set_subgizmo_selection(Object *p_obj, Ref<CanvasItemGizmo> p_gizmo, int p_id, Transform2D p_transform = Transform2D());
+	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
 protected:
 	void _notification(int p_what);
@@ -609,6 +632,29 @@ public:
 	ThemePreviewMode get_theme_preview() const { return theme_preview; }
 
 	EditorSelection *editor_selection = nullptr;
+
+	/* GIZMOS */
+
+	Ref<CanvasItemGizmo> current_hover_gizmo;
+	int current_hover_gizmo_handle;
+	bool current_hover_gizmo_handle_secondary;
+	bool gizmos_dirty = false;
+
+	bool is_current_selected_gizmo(const EditorCanvasItemGizmo *p_gizmo);
+	Ref<EditorCanvasItemGizmo> get_current_hover_gizmo() { return current_hover_gizmo; }
+	int get_current_hover_gizmo_handle(bool &r_secondary) const {
+		r_secondary = current_hover_gizmo_handle_secondary;
+		return current_hover_gizmo_handle;
+	}
+	bool is_subgizmo_selected(int p_id);
+	Vector<int> get_subgizmo_selection();
+	void clear_subgizmo_selection(Object *p_obj = nullptr);
+	void refresh_dirty_gizmos();
+	// TODO: GIZMOS actually implement this.
+	void update_transform_gizmo() {}
+	void update_all_gizmos(Node *p_node = nullptr);
+	void add_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);
+	void remove_gizmo_plugin(Ref<EditorCanvasItemGizmoPlugin> p_plugin);
 
 	CanvasItemEditor();
 };
@@ -677,6 +723,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
+
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
