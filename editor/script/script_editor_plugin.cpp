@@ -981,7 +981,7 @@ void ScriptEditor::_copy_script_uid() {
 	ScriptEditorBase *se = _get_current_editor();
 	if (se) {
 		Ref<Resource> scr = se->get_edited_resource();
-		ResourceUID::ID uid = ResourceLoader::get_resource_uid(scr->get_path());
+		ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(scr->get_path());
 		DisplayServer::get_singleton()->clipboard_set(ResourceUID::get_singleton()->id_to_text(uid));
 	}
 }
@@ -1756,7 +1756,7 @@ void ScriptEditor::_prepare_file_menu() {
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_SOFT_RELOAD_TOOL), res.is_null());
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_COPY_PATH), res.is_null() || res->get_path().is_empty());
-	menu->set_item_disabled(menu->get_item_index(FILE_MENU_COPY_UID), res.is_null() || ResourceLoader::get_resource_uid(res->get_path()) == ResourceUID::INVALID_ID);
+	menu->set_item_disabled(menu->get_item_index(FILE_MENU_COPY_UID), res.is_null() || EditorFileSystem::get_singleton()->get_file_uid(res->get_path()) == ResourceUID::INVALID_ID);
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_SHOW_IN_FILE_SYSTEM), res.is_null());
 
 	menu->set_item_disabled(menu->get_item_index(FILE_MENU_HISTORY_PREV), history_pos <= 0);
@@ -3517,7 +3517,7 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_MENU_COPY_PATH);
 		context_menu->set_item_disabled(-1, se->get_edited_resource()->get_path().is_empty());
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), FILE_MENU_COPY_UID);
-		context_menu->set_item_disabled(-1, ResourceLoader::get_resource_uid(se->get_edited_resource()->get_path()) == ResourceUID::INVALID_ID);
+		context_menu->set_item_disabled(-1, EditorFileSystem::get_singleton()->get_file_uid(se->get_edited_resource()->get_path()) == ResourceUID::INVALID_ID);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), FILE_MENU_SHOW_IN_FILE_SYSTEM);
 		context_menu->add_separator();
 	}

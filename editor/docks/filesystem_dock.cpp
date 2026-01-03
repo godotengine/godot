@@ -2056,7 +2056,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Hash
 	for (int i = 0; i < to_move.size(); i++) {
 		if (to_move[i].is_file) {
 			renamed_files.insert(to_move[i].path);
-			ResourceUID::ID uid = ResourceLoader::get_resource_uid(to_move[i].path);
+			ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(to_move[i].path);
 			if (uid != ResourceUID::INVALID_ID) {
 				r_uids[to_move[i].path] = uid;
 			}
@@ -2070,7 +2070,7 @@ void FileSystemDock::_before_move(HashMap<String, ResourceUID::ID> &r_uids, Hash
 				for (int j = 0; j < current_folder->get_file_count(); j++) {
 					const String file_path = current_folder->get_file_path(j);
 					renamed_files.insert(file_path);
-					ResourceUID::ID uid = ResourceLoader::get_resource_uid(file_path);
+					ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(file_path);
 					if (uid != ResourceUID::INVALID_ID) {
 						r_uids[file_path] = uid;
 					}
@@ -2623,7 +2623,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_MENU_COPY_UID: {
 			if (!p_selected.is_empty()) {
-				ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_selected[0]);
+				ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_selected[0]);
 				if (uid != ResourceUID::INVALID_ID) {
 					String uid_string = ResourceUID::get_singleton()->id_to_text(uid);
 					DisplayServer::get_singleton()->clipboard_set(uid_string);
@@ -3452,7 +3452,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	if (p_paths.size() == 1) {
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("filesystem_dock/copy_path"), FILE_MENU_COPY_PATH);
 		p_popup->add_shortcut(ED_GET_SHORTCUT("filesystem_dock/copy_absolute_path"), FILE_MENU_COPY_ABSOLUTE_PATH);
-		if (ResourceLoader::get_resource_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
+		if (EditorFileSystem::get_singleton()->get_file_uid(p_paths[0]) != ResourceUID::INVALID_ID) {
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/copy_uid"), FILE_MENU_COPY_UID);
 		}
 		if (root_path_not_selected) {
