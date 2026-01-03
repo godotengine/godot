@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBCodeParser" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Parser for BBCode.
+	</brief_description>
+	<description>
+		Configurable parser for BBCode strings, converting them to a list of tokens.
+		Validate methods can be overridden to create parser errors for determining invalid tag names or parameters.
+		Push methods can be called multiple times, keeping the current stack of tags and previously parsed tokens in memory.
+		[b]Note:[/b] When the parser is cleared or freed, all of its tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_validate_tag" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Check whether the specified [param tag] with [param parameters] is valid. This gets called while parsing BBCode tags to decide whether parsing should be successful.
+			</description>
+		</method>
+		<method name="_validate_text" qualifiers="virtual const">
+			<return type="int" enum="Error" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Check whether the specified [param text] is valid. This gets called while parsing plain-text to decide whether parsing should be successful.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clear the list of previously parsed tokens stored in this parser.
+				[b]Note:[/b] Upon calling this method, all of the tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+			</description>
+		</method>
+		<method name="get_error" qualifiers="const">
+			<return type="int" enum="Error" />
+			<description>
+				Returns the last error encountered during parsing of BBCode.
+				This includes syntax errors, as well as validation errors triggered by the various validate methods.
+			</description>
+		</method>
+		<method name="get_items" qualifiers="const">
+			<return type="BBCodeToken[]" />
+			<description>
+				Returns the list of tokens parsed by this parser.
+			</description>
+		</method>
+		<method name="pop_tag">
+			<return type="void" />
+			<param index="0" name="tag" type="String" />
+			<description>
+				Append a closing BBCode tag. Errors if the specified tag name does not match the last opened tag on the stack.
+			</description>
+		</method>
+		<method name="push_bbcode">
+			<return type="void" />
+			<param index="0" name="bbcode" type="String" />
+			<description>
+				Append a string containing BBCode.
+			</description>
+		</method>
+		<method name="push_tag">
+			<return type="void" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Append an opening BBCode tag. Queries [method validate_tag] to determine if the specified tag is valid, auto-escaping or self-closing.
+			</description>
+		</method>
+		<method name="push_text">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Append plain-text string. The string is pushed verbatim, no escaping is supported. Queries [method validate_text] to determine if the specified text is valid.
+			</description>
+		</method>
+		<method name="validate_tag">
+			<return type="Dictionary" />
+			<param index="0" name="tag" type="String" />
+			<param index="1" name="parameters" type="Dictionary" />
+			<description>
+				Check whether the specified [param tag] with [param parameters] is valid. This gets called while parsing BBCode tags to decide whether parsing should be successful.
+				For the default [BBCodeParser], every tag is considered valid. However, sub-classes can override [method _validate_tag] to configure this behavior.
+			</description>
+		</method>
+		<method name="validate_text">
+			<return type="int" enum="Error" />
+			<param index="0" name="text" type="String" />
+			<description>
+				Check whether the specified [param text] is valid. This gets called while parsing plain-text to decide whether parsing should be successful.
+				For the default [BBCodeParser], all text is considered valid. However, sub-classes can override [method _validate_text] to configure this behavior.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="backslash_escape_quotes" type="bool" setter="set_backslash_escape_quotes" getter="get_backslash_escape_quotes" default="true">
+			Allow single and double quotes used inside of opening BBCode tags to be escaped by prefixing them with a backslash.
+			Quotes used in plain-text are always treated as literals and do not need to be escaped.
+			In order to write a literal backslash inside of opening BBCode tags after enabling this escaping syntax, use [code]\\[/code].
+		</member>
+		<member name="error_handling" type="int" setter="set_error_handling" getter="get_error_handling" enum="BBCodeParser.ErrorHandling" default="0">
+			How syntax or validation errors in the BBCode should be handled.
+		</member>
+		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="2">
+			Configure which syntax is supported for escaping brackets. Instead of parsing these brackets as part of tags, they are instead treated as text that contains literal brackets.
+			[b]Note:[/b] When specifying a parameter value in BBCode surrounded with quotes, the contents are handled verbatim, including brackets. Every escape mode except for [constant ESCAPE_BRACKETS_BACKSLASH] is not respected and will be left unchanged.
+		</member>
+	</members>
+	<constants>
+		<constant name="ESCAPE_BRACKETS_NONE" value="0" enum="EscapeBrackets" is_bitfield="true">
+			Brackets can not be escaped.
+		</constant>
+		<constant name="ESCAPE_BRACKETS_WRAPPED" value="1" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by wrapping the literal bracket into a tag: [code][[][/code] and [code][]][/code].
+		</constant>
+		<constant name="ESCAPE_BRACKETS_BACKSLASH" value="2" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by prefixing the bracket with a backslash: [code]\[[/code] and [code]\][/code].
+			In order to write a literal backslash after enabling this escape syntax, use [code]\\[/code].
+		</constant>
+		<constant name="ESCAPE_BRACKETS_ABBREVIATION" value="4" enum="EscapeBrackets" is_bitfield="true">
+			Brackets are escaped by using special abbreviated tags: [code][lb][/code] for opening bracket and [code][rb][/code] for closing bracket.
+		</constant>
+		<constant name="ERROR_HANDLING_REMOVE" value="0" enum="ErrorHandling">
+			Erroneous data is not included in the output.
+		</constant>
+		<constant name="ERROR_HANDLING_PARSE_AS_TEXT" value="1" enum="ErrorHandling">
+			Erroneous data is included as plain-text instead.
+		</constant>
+		<constant name="ERROR_HANDLING_KEEP" value="2" enum="ErrorHandling">
+			Errors are ignored - all data is included in the output.
+		</constant>
+	</constants>
+</class>

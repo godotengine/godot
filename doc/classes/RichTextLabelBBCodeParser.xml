@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextLabelBBCodeParser" inherits="BBCodeParser" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [BBCodeParser] compatible with [RichTextLabel] syntax.
+	</brief_description>
+	<description>
+		The [BBCodeParser] type that is used by [RichTextLabel].
+	</description>
+	<tutorials>
+		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_custom_effect">
+			<return type="void" />
+			<param index="0" name="effect" type="RichTextEffect" />
+			<description>
+				Add a custom effect to the list of known effects. Custom effects decide their own BBCode tag, but can not validate their parameters.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="backslash_escape_quotes" type="bool" setter="set_backslash_escape_quotes" getter="get_backslash_escape_quotes" overrides="BBCodeParser" default="false" />
+		<member name="custom_effects" type="RichTextEffect[]" setter="set_custom_effects" getter="get_custom_effects" default="[]">
+			List of custom [RichTextEffect] resources known to this parser. A custom effect decides its own BBCode tag, but can not validate its parameters.
+		</member>
+		<member name="error_handling" type="int" setter="set_error_handling" getter="get_error_handling" overrides="BBCodeParser" enum="BBCodeParser.ErrorHandling" default="1" />
+		<member name="escape_brackets" type="int" setter="set_escape_brackets" getter="get_escape_brackets" overrides="BBCodeParser" enum="BBCodeParser.EscapeBrackets" is_bitfield="true" default="4" />
+	</members>
+</class>
