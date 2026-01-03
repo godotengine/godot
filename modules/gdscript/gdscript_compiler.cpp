@@ -678,12 +678,18 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								// It's a static native method call.
 								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
 								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
-								if (_can_use_validate_call(method, arguments)) {
-									// Exact arguments, use validated call.
-									gen->write_call_native_static_validated(result, method, arguments);
+								if (method != nullptr) {
+									if (_can_use_validate_call(method, arguments)) {
+										// Exact arguments, use validated call.
+										gen->write_call_native_static_validated(result, method, arguments);
+									} else {
+										// Not exact arguments, use regular static call
+										gen->write_call_native_static(result, class_name, subscript->attribute->name, arguments);
+									}
 								} else {
-									// Not exact arguments, use regular static call
-									gen->write_call_native_static(result, class_name, subscript->attribute->name, arguments);
+									_set_error("Method '" + String(subscript->attribute->name) + "' not found in class '" + String(class_name) + "'.", call->callee);
+									r_error = ERR_COMPILATION_FAILED;
+									return GDScriptCodeGenerator::Address();
 								}
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
