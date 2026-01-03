@@ -759,6 +759,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	if (warning_count == 0 && error_count == 0) {
 		expand_all_button->set_disabled(false);
 		collapse_all_button->set_disabled(false);
+		copy_all_button->set_disabled(false);
 		clear_button->set_disabled(false);
 	}
 
@@ -1822,6 +1823,41 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 	}
 }
 
+void ScriptEditorDebugger::_copy_all_errors() {
+	String text;
+
+	TreeItem *root = error_tree->get_root();
+	if (!root) {
+		return;
+	}
+
+	TreeItem *item = root->get_first_child();
+	while (item) {
+		String type;
+
+		if (item->has_meta("_is_warning")) {
+			type = "W ";
+		} else if (item->has_meta("_is_error")) {
+			type = "E ";
+		}
+
+		String error_text = item->get_text(0) + "   ";
+		int rpad_len = error_text.length();
+
+		error_text = type + error_text + item->get_text(1) + "\n";
+		TreeItem *ci = item->get_first_child();
+		while (ci) {
+			error_text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+			ci = ci->get_next();
+		}
+
+		text += error_text;
+		item = item->get_next();
+	}
+
+	DisplayServer::get_singleton()->clipboard_set(text);
+}
+
 void ScriptEditorDebugger::_vmem_item_activated() {
 	TreeItem *selected = vmem_tree->get_selected();
 	if (!selected) {
@@ -1843,6 +1879,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
+	copy_all_button->set_disabled(true);
 	clear_button->set_disabled(true);
 }
 
@@ -2232,6 +2269,12 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		collapse_all_button->set_disabled(true);
 		collapse_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		error_hbox->add_child(collapse_all_button);
+
+		copy_all_button = memnew(Button);
+		copy_all_button->set_text(TTRC("Copy All"));
+		copy_all_button->set_disabled(true);
+		copy_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_copy_all_errors));
+		error_hbox->add_child(copy_all_button);
 
 		Control *space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
