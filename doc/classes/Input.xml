@@ -48,8 +48,13 @@
 		<method name="get_accelerometer" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the acceleration in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				Returns the acceleration, including the force of gravity, in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO]. See also [method get_gravity].
 				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
+				For a device held in front of you, the returned axes are defined as follows:
+				+X ... -X: left ... right;
+				+Y ... -Y: bottom ... top;
+				+Z ... -Z: farther ... closer.
+				The gravity part value is measured as a vector with length of about [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer] must be enabled.
 			</description>
@@ -96,7 +101,12 @@
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO]. See also [method get_accelerometer].
+				For a device held in front of you, the returned axes are defined as follows:
+				+X ... -X: left ... right;
+				+Y ... -Y: bottom ... top;
+				+Z ... -Z: farther ... closer.
+				The gravity part value is measured as a vector with length of about [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gravity] must be enabled.
 			</description>
@@ -105,6 +115,11 @@
 			<return type="Vector3" />
 			<description>
 				Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the gyroscope sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				The rotation is positive in the counter-clockwise direction.
+				For a device held in front of you, the returned axes are defined as follows:
+				X: Angular speed around the x axis (pitch);
+				Y: Angular speed around the y axis (yaw);
+				Z: Angular speed around the z axis (roll).
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gyroscope] must be enabled.
 			</description>
