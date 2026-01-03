@@ -138,8 +138,16 @@ void ProjectSettingsEditor::_on_editor_override_deleted(const String &p_setting)
 	const String full_name = general_settings_inspector->get_full_item_path(p_setting);
 	ERR_FAIL_COND(!full_name.begins_with(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
 
-	ProjectSettings::get_singleton()->set_setting(full_name, Variant());
-	EditorSettings::get_singleton()->mark_setting_changed(full_name.trim_prefix(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), p_setting));
+	undo_redo->add_do_method(this, "_set_editor_override", full_name, Variant());
+	undo_redo->add_undo_method(this, "_set_editor_override", full_name, ProjectSettings::get_singleton()->get(full_name));
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_set_editor_override(const String &p_setting, const Variant &p_value) {
+	ProjectSettings::get_singleton()->set_setting(p_setting, p_value);
+	EditorSettings::get_singleton()->mark_setting_changed(p_setting.trim_prefix(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
 	pending_override_notify = true;
 	_save();
 	general_settings_inspector->update_category_list();
@@ -680,6 +688,7 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save"), &ProjectSettingsEditor::queue_save);
 
 	ClassDB::bind_method(D_METHOD("_update_action_map_editor"), &ProjectSettingsEditor::_update_action_map_editor);
+	ClassDB::bind_method(D_METHOD("_set_editor_override", "setting", "value"), &ProjectSettingsEditor::_set_editor_override);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {

@@ -94,6 +94,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	void _on_category_changed(const String &p_new_category);
 	void _on_editor_override_deleted(const String &p_setting);
+	void _set_editor_override(const String &p_setting, const Variant &p_value);
 
 	void _advanced_toggled(bool p_button_pressed);
 	void _update_advanced(bool p_is_advanced);

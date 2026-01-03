@@ -1103,12 +1103,32 @@ void EditorSettingsPropertyWrapper::_update_override() {
 }
 
 void EditorSettingsPropertyWrapper::_create_override() {
-	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add project override for setting: %s"), property));
+	undo_redo->add_do_method(this, "_create_override");
+	undo_redo->add_undo_method(this, "_remove_override");
+	undo_redo->commit_action();
+}
+
+void EditorSettingsPropertyWrapper::_create_override_bind(const Variant &p_value) {
+	if (p_value == Variant()) {
+		ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	} else {
+		ProjectSettings::get_singleton()->set_editor_setting_override(property, p_value);
+	}
 	ProjectSettings::get_singleton()->save();
 	_update_override();
 }
 
 void EditorSettingsPropertyWrapper::_remove_override() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), property));
+	undo_redo->add_do_method(this, "_remove_override");
+	undo_redo->add_undo_method(this, "_create_override", ProjectSettings::get_singleton()->get_editor_setting_override(property));
+	undo_redo->commit_action();
+}
+
+void EditorSettingsPropertyWrapper::_remove_override_bind() {
 	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
 	ProjectSettings::get_singleton()->save();
 	EditorSettings::get_singleton()->mark_setting_changed(property);
@@ -1118,6 +1138,11 @@ void EditorSettingsPropertyWrapper::_remove_override() {
 	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
 		restart_request_callback.call();
 	}
+}
+
+void EditorSettingsPropertyWrapper::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_create_override", "value"), &EditorSettingsPropertyWrapper::_create_override_bind, DEFVAL(Variant()));
+	ClassDB::bind_method("_remove_override", &EditorSettingsPropertyWrapper::_remove_override_bind);
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {
