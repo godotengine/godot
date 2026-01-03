@@ -2838,6 +2838,8 @@ void ScriptEditor::save_all_scripts() {
 		if (scr.is_valid()) {
 			update_docs_from_script(scr);
 		}
+
+		edited_res->emit_changed();
 	}
 
 	if (!scenes_to_save.is_empty()) {
