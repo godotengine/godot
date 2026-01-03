@@ -1928,6 +1928,8 @@ void EditorSettings::_add_shortcut_default(const String &p_path, const Ref<Short
 }
 
 void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_COND_MSG(p_shortcut.is_null(), "Cannot add a null shortcut for path: " + p_path);
+
 	Array use_events = p_shortcut->get_events();
 	if (shortcuts.has(p_path)) {
 		Ref<Shortcut> existing = shortcuts.get(p_path);
