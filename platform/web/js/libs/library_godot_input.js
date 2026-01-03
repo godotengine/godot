@@ -177,6 +177,7 @@ const GodotInputGamepads = {
 	$GodotInputGamepads__deps: ['$GodotRuntime', '$GodotEventListeners'],
 	$GodotInputGamepads: {
 		samples: [],
+		vibration_timestamp: [],
 
 		get_pads: function () {
 			try {
@@ -226,6 +227,29 @@ const GodotInputGamepads = {
 				samples.push(s);
 			}
 			GodotInputGamepads.samples = samples;
+		},
+
+		process_vibration: function (index, timestamp, weak_magnitude, strong_magnitude, duration) {
+			const pad = GodotInputGamepads.get_pads()[index];
+			if (!pad) {
+				return;
+			}
+			const actuator = pad['vibrationActuator'];
+			if (!actuator) {
+				return;
+			}
+			const prev_timestamp = GodotInputGamepads.vibration_timestamp[index];
+			if (prev_timestamp >= timestamp) {
+				return;
+			}
+			GodotInputGamepads.vibration_timestamp[index] = timestamp;
+
+			actuator['playEffect']('dual-rumble', {
+				'startDelay': 0,
+				'duration': duration * 1000,
+				'weakMagnitude': weak_magnitude,
+				'strongMagnitude': strong_magnitude,
+			});
 		},
 
 		init: function (onchange) {
@@ -692,6 +716,12 @@ const GodotInput = {
 		const is_standard = sample.standard ? 1 : 0;
 		GodotRuntime.setHeapValue(r_standard, is_standard, 'i32');
 		return 0;
+	},
+
+	godot_js_input_gamepad_process_vibration__proxy: 'sync',
+	godot_js_input_gamepad_process_vibration__sig: 'viffff',
+	godot_js_input_gamepad_process_vibration: function (p_index, p_timestamp, p_weak_magnitude, p_strong_magnitude, p_duration) {
+		GodotInputGamepads.process_vibration(p_index, p_timestamp, p_weak_magnitude, p_strong_magnitude, p_duration);
 	},
 
 	/*

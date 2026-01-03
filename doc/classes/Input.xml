@@ -433,7 +433,7 @@
 			<description>
 				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [param weak_magnitude] is the strength of the weak motor (between 0 and 1) and [param strong_magnitude] is the strength of the strong motor (between 0 and 1). [param duration] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
-				[b]Note:[/b] For macOS, vibration is only supported in macOS 11 and later.
+				[b]Note:[/b] For Android and web browsers running on Android, joypad vibration is not supported due to OS restrictions. For macOS, vibration is only supported in macOS 11 and later. For the web browsers running on macOS, vibration only works in Safari.
 			</description>
 		</method>
 		<method name="stop_joy_vibration">
