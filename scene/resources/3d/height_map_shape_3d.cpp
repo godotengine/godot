@@ -137,10 +137,6 @@ Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modula
 	return mesh;
 }
 
-real_t HeightMapShape3D::get_enclosing_radius() const {
-	return Vector3(real_t(map_width), max_height - min_height, real_t(map_depth)).length();
-}
-
 void HeightMapShape3D::_update_shape() {
 	Dictionary d;
 	d["width"] = map_width;

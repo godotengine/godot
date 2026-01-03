@@ -86,10 +86,6 @@ Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate
 	return capsule_mesh;
 }
 
-real_t CapsuleShape3D::get_enclosing_radius() const {
-	return height * 0.5f;
-}
-
 void CapsuleShape3D::_update_shape() {
 	Dictionary d;
 	d["radius"] = radius;

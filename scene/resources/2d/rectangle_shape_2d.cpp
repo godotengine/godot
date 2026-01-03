@@ -92,10 +92,6 @@ Rect2 RectangleShape2D::get_rect() const {
 	return Rect2(-size * 0.5, size);
 }
 
-real_t RectangleShape2D::get_enclosing_radius() const {
-	return size.length() / 2;
-}
-
 void RectangleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &RectangleShape2D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &RectangleShape2D::get_size);

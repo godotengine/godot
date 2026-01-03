@@ -69,10 +69,6 @@ Rect2 CircleShape2D::get_rect() const {
 	return rect;
 }
 
-real_t CircleShape2D::get_enclosing_radius() const {
-	return radius;
-}
-
 void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
 	points.resize(24);
