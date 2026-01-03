@@ -72,10 +72,6 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		return;
 	}
 
-	if (p_path.is_empty()) {
-		p_take_over = false; // Can't take over an empty path
-	}
-
 	{
 		MutexLock lock(ResourceCache::lock);
 
@@ -83,23 +79,24 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 			ResourceCache::resources.erase(path_cache);
 		}
 
-		path_cache = "";
-
-		Ref<Resource> existing = ResourceCache::get_ref(p_path);
-
-		if (existing.is_valid()) {
-			if (p_take_over) {
-				existing->path_cache = String();
-				ResourceCache::resources.erase(p_path);
-			} else {
-				ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
-			}
-		}
-
 		path_cache = p_path;
 
-		if (!path_cache.is_empty()) {
-			ResourceCache::resources[path_cache] = this;
+		if (!p_path.is_empty()) {
+			Resource **existing = ResourceCache::resources.getptr(p_path);
+
+			if (existing != nullptr) {
+				if (p_take_over) {
+					// Note: Existing might be currently destructing, but it will only fully destruct when it acquires the lock.
+					// So dereferencing this pointer is safe.
+					(*existing)->path_cache = String();
+					ResourceCache::resources[path_cache] = this;
+				} else {
+					path_cache = String();
+					ERR_FAIL_MSG(vformat("Another resource is loaded from path '%s' (possible cyclic resource inclusion).", p_path));
+				}
+			} else {
+				ResourceCache::resources[path_cache] = this;
+			}
 		}
 	}
 
