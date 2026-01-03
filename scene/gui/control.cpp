@@ -1697,7 +1697,7 @@ void Control::update_minimum_size() {
 	}
 	data.updating_last_minimum_size = true;
 
-	callable_mp(this, &Control::_update_minimum_size).call_deferred();
+	_update_minimum_size();
 }
 
 void Control::set_block_minimum_size_adjust(bool p_block) {
