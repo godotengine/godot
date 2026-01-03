@@ -73,9 +73,6 @@ void ResourceImporterSVG::get_import_options(const String &p_path, List<ImportOp
 }
 
 Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	Ref<DPITexture> dpi_tex;
-	dpi_tex.instantiate();
-
 	String source = FileAccess::get_file_as_string(p_source_file);
 	ERR_FAIL_COND_V_MSG(source.is_empty(), ERR_CANT_OPEN, vformat("Cannot open file from path \"%s\".", p_source_file));
 
@@ -83,11 +80,7 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 	double saturation = p_options["saturation"];
 	Dictionary color_map = p_options["color_map"];
 
-	dpi_tex->set_base_scale(base_scale);
-	dpi_tex->set_saturation(saturation);
-	dpi_tex->set_color_map(color_map);
-	dpi_tex->set_source(source);
-
+	Ref<DPITexture> dpi_tex = DPITexture::create_from_string(source, base_scale, saturation, color_map);
 	ERR_FAIL_COND_V_MSG(dpi_tex->get_rid().is_null(), ERR_CANT_OPEN, vformat("Failed loading SVG, unsupported or invalid SVG data in \"%s\".", p_source_file));
 
 	int flg = 0;
