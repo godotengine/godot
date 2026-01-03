@@ -148,6 +148,7 @@ void ColorPicker::_notification(int p_what) {
 			alpha_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
 			alpha_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 			intensity_label->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
+			intensity_slider->add_theme_constant_override(SNAME("center_grabber"), theme_cache.center_slider_grabbers);
 
 			for (int i = 0; i < MODE_BUTTON_COUNT; i++) {
 				mode_btns[i]->begin_bulk_theme_override();
@@ -2179,6 +2180,7 @@ ColorPicker::ColorPicker() {
 	intensity_slider->set_min(-10);
 	intensity_slider->set_max(10);
 	intensity_slider->set_step(0.001);
+	intensity_slider->set_symmetric_fill(true);
 	intensity_value->set_allow_greater(true);
 	intensity_value->set_custom_arrow_step(1);
 	intensity_value->set_custom_arrow_round(true);
