@@ -171,6 +171,7 @@ public:
 	virtual String get_path() const { return ""; } /// returns the path for the current open file
 	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
 
+	void advance(int64_t p_offset); ///< advance a specific amount of bytes
 	virtual void seek(uint64_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
 	virtual uint64_t get_position() const = 0; ///< get position in the file
