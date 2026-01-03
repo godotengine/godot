@@ -727,6 +727,13 @@ bool SceneTree::process(double p_time) {
 
 	_call_idle_callbacks();
 
+	Input::get_singleton()->keys_just_pressed.clear();
+	Input::get_singleton()->keys_just_released.clear();
+	Input::get_singleton()->physical_keys_just_pressed.clear();
+	Input::get_singleton()->physical_keys_just_released.clear();
+	Input::get_singleton()->key_label_just_pressed.clear();
+	Input::get_singleton()->key_label_just_released.clear();
+
 #ifdef TOOLS_ENABLED
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
