@@ -118,8 +118,8 @@ private:
 		uint64_t pressed_process_frame = UINT64_MAX;
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
-		ObjectID pressed_event_id;
-		ObjectID released_event_id;
+		Ref<InputEvent> pressed_event;
+		Ref<InputEvent> released_event;
 		bool exact = true;
 
 		struct DeviceState {
