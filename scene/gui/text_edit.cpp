@@ -2494,13 +2494,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
-		const real_t delta = pan_gesture->get_delta().y;
+		const real_t delta = pan_gesture->get_delta().y / 10;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
 		} else {
 			_scroll_down(delta, false);
 		}
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 5);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}

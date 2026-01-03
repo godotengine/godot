@@ -268,10 +268,10 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		if (h_scroll_enabled) {
-			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / ScrollBar::PAGE_DIVISOR);
+			h_scroll->scroll(pan_gesture->get_delta().x * 5);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / ScrollBar::PAGE_DIVISOR);
+			v_scroll->scroll(pan_gesture->get_delta().y * 5);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {

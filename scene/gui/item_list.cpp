@@ -1165,8 +1165,8 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() * pan_gesture->get_delta().y / 8);
-		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() * pan_gesture->get_delta().x / 8);
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + pan_gesture->get_delta().y * 5);
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + pan_gesture->get_delta().x * 5);
 	}
 
 	if (scroll_value_modified && (scroll_bar_v->get_value() != prev_scroll_v || scroll_bar_h->get_value() != prev_scroll_h)) {

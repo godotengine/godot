@@ -4232,13 +4232,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		double prev_v = v_scroll->get_value();
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		v_scroll->set_value(v_scroll->get_value() + pan_gesture->get_delta().y * 5);
 
 		double prev_h = h_scroll->get_value();
 		if (is_layout_rtl()) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() - pan_gesture->get_delta().x * 5);
 		} else {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 5);
 		}
 
 		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {

@@ -891,11 +891,6 @@
 	double delta_x = [event scrollingDeltaX];
 	double delta_y = [event scrollingDeltaY];
 
-	if ([event hasPreciseScrollingDeltas]) {
-		delta_x *= 0.03;
-		delta_y *= 0.03;
-	}
-
 	if ([event momentumPhase] != NSEventPhaseNone) {
 		if (ignore_momentum_scroll) {
 			return;
