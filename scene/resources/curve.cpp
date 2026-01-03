@@ -867,9 +867,9 @@ void Curve2D::_bake_segment2d_even_length(RBMap<real_t, Vector2> &r_bake, real_t
 	Vector2 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
 	Vector2 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
 
-	real_t length = beg.distance_to(end);
+	real_t length_squared = beg.distance_squared_to(end);
 
-	if (length > p_length && p_depth < p_max_depth) {
+	if (length_squared > (p_length * p_length) && p_depth < p_max_depth) {
 		real_t mp = (p_begin + p_end) * 0.5;
 		Vector2 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
 		r_bake[mp] = mid;
@@ -1618,9 +1618,9 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 	Vector3 beg = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_begin);
 	Vector3 end = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, p_end);
 
-	real_t length = beg.distance_to(end);
+	real_t length_squared = beg.distance_squared_to(end);
 
-	if (length > p_length && p_depth < p_max_depth) {
+	if (length_squared > (p_length * p_length) && p_depth < p_max_depth) {
 		real_t mp = (p_begin + p_end) * 0.5;
 		Vector3 mid = p_a.bezier_interpolate(p_a + p_out, p_b + p_in, p_b, mp);
 		r_bake[mp] = mid;

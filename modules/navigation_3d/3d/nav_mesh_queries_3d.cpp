@@ -235,8 +235,8 @@ void NavMeshQueries3D::map_query_path(NavMap3D *map, const Ref<NavigationPathQue
 }
 
 void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration) {
-	real_t begin_d = FLT_MAX;
-	real_t end_d = FLT_MAX;
+	real_t begin_d_squared = FLT_MAX;
+	real_t end_d_squared = FLT_MAX;
 
 	const LocalVector<Ref<NavRegionIteration3D>> &regions = p_map_iteration.region_iterations;
 
@@ -257,17 +257,17 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 				const Face3 face(p.vertices[0], p.vertices[point_id - 1], p.vertices[point_id]);
 
 				Vector3 point = face.get_closest_point_to(p_query_task.start_position);
-				real_t distance_to_point = point.distance_to(p_query_task.start_position);
-				if (distance_to_point < begin_d) {
-					begin_d = distance_to_point;
+				real_t distance_to_point_squared = point.distance_squared_to(p_query_task.start_position);
+				if (distance_to_point_squared < begin_d_squared) {
+					begin_d_squared = distance_to_point_squared;
 					p_query_task.begin_polygon = &p;
 					p_query_task.begin_position = point;
 				}
 
 				point = face.get_closest_point_to(p_query_task.target_position);
-				distance_to_point = point.distance_to(p_query_task.target_position);
-				if (distance_to_point < end_d) {
-					end_d = distance_to_point;
+				distance_to_point_squared = point.distance_squared_to(p_query_task.target_position);
+				if (distance_to_point_squared < end_d_squared) {
+					end_d_squared = distance_to_point_squared;
 					p_query_task.end_polygon = &p;
 					p_query_task.end_position = point;
 				}
@@ -880,7 +880,7 @@ void NavMeshQueries3D::_query_task_post_process_nopostprocessing(NavMeshPathQuer
 Vector3 NavMeshQueries3D::map_iteration_get_closest_point_to_segment(const NavMapIteration3D &p_map_iteration, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) {
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
-	real_t closest_point_distance = FLT_MAX;
+	real_t closest_point_distance_squared = FLT_MAX;
 
 	const LocalVector<Ref<NavRegionIteration3D>> &regions = p_map_iteration.region_iterations;
 	for (const Ref<NavRegionIteration3D> &region : regions) {
@@ -890,30 +890,30 @@ Vector3 NavMeshQueries3D::map_iteration_get_closest_point_to_segment(const NavMa
 				const Face3 face(polygon.vertices[0], polygon.vertices[point_id - 1], polygon.vertices[point_id]);
 				Vector3 intersection_point;
 				if (face.intersects_segment(p_from, p_to, &intersection_point)) {
-					const real_t d = p_from.distance_to(intersection_point);
+					const real_t d_squared = p_from.distance_squared_to(intersection_point);
 					if (!use_collision) {
 						closest_point = intersection_point;
 						use_collision = true;
-						closest_point_distance = d;
-					} else if (closest_point_distance > d) {
+						closest_point_distance_squared = d_squared;
+					} else if (closest_point_distance_squared > d_squared) {
 						closest_point = intersection_point;
-						closest_point_distance = d;
+						closest_point_distance_squared = d_squared;
 					}
 				}
 				// If segment does not itersect face, check the distance from segment's endpoints.
 				else if (!use_collision) {
 					const Vector3 p_from_closest = face.get_closest_point_to(p_from);
-					const real_t d_p_from = p_from.distance_to(p_from_closest);
-					if (closest_point_distance > d_p_from) {
+					const real_t d_p_from_squared = p_from.distance_squared_to(p_from_closest);
+					if (closest_point_distance_squared > d_p_from_squared) {
 						closest_point = p_from_closest;
-						closest_point_distance = d_p_from;
+						closest_point_distance_squared = d_p_from_squared;
 					}
 
 					const Vector3 p_to_closest = face.get_closest_point_to(p_to);
-					const real_t d_p_to = p_to.distance_to(p_to_closest);
-					if (closest_point_distance > d_p_to) {
+					const real_t d_p_to_squared = p_to.distance_squared_to(p_to_closest);
+					if (closest_point_distance_squared > d_p_to_squared) {
 						closest_point = p_to_closest;
-						closest_point_distance = d_p_to;
+						closest_point_distance_squared = d_p_to_squared;
 					}
 				}
 			}
@@ -930,9 +930,9 @@ Vector3 NavMeshQueries3D::map_iteration_get_closest_point_to_segment(const NavMa
 							a,
 							b);
 
-					const real_t d = a.distance_to(b);
-					if (d < closest_point_distance) {
-						closest_point_distance = d;
+					const real_t d_squared = a.distance_squared_to(b);
+					if (d_squared < closest_point_distance_squared) {
+						closest_point_distance_squared = d_squared;
 						closest_point = b;
 					}
 				}
@@ -1097,7 +1097,7 @@ Vector3 NavMeshQueries3D::map_iteration_get_random_point(const NavMapIteration3D
 Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVector<Polygon> &p_polygons, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) {
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
-	real_t closest_point_distance = FLT_MAX;
+	real_t closest_point_distance_squared = FLT_MAX;
 
 	for (const Polygon &polygon : p_polygons) {
 		// For each face check the distance to the segment.
@@ -1105,30 +1105,30 @@ Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVecto
 			const Face3 face(polygon.vertices[0], polygon.vertices[point_id - 1], polygon.vertices[point_id]);
 			Vector3 intersection_point;
 			if (face.intersects_segment(p_from, p_to, &intersection_point)) {
-				const real_t d = p_from.distance_to(intersection_point);
+				const real_t d_squared = p_from.distance_squared_to(intersection_point);
 				if (!use_collision) {
 					closest_point = intersection_point;
 					use_collision = true;
-					closest_point_distance = d;
-				} else if (closest_point_distance > d) {
+					closest_point_distance_squared = d_squared;
+				} else if (closest_point_distance_squared > d_squared) {
 					closest_point = intersection_point;
-					closest_point_distance = d;
+					closest_point_distance_squared = d_squared;
 				}
 			}
 			// If segment does not itersect face, check the distance from segment's endpoints.
 			else if (!use_collision) {
 				const Vector3 p_from_closest = face.get_closest_point_to(p_from);
-				const real_t d_p_from = p_from.distance_to(p_from_closest);
-				if (closest_point_distance > d_p_from) {
+				const real_t d_p_from_squared = p_from.distance_squared_to(p_from_closest);
+				if (closest_point_distance_squared > d_p_from_squared) {
 					closest_point = p_from_closest;
-					closest_point_distance = d_p_from;
+					closest_point_distance_squared = d_p_from_squared;
 				}
 
 				const Vector3 p_to_closest = face.get_closest_point_to(p_to);
-				const real_t d_p_to = p_to.distance_to(p_to_closest);
-				if (closest_point_distance > d_p_to) {
+				const real_t d_p_to_squared = p_to.distance_squared_to(p_to_closest);
+				if (closest_point_distance_squared > d_p_to_squared) {
 					closest_point = p_to_closest;
-					closest_point_distance = d_p_to;
+					closest_point_distance_squared = d_p_to_squared;
 				}
 			}
 		}
@@ -1145,9 +1145,9 @@ Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVecto
 						a,
 						b);
 
-				const real_t d = a.distance_to(b);
-				if (d < closest_point_distance) {
-					closest_point_distance = d;
+				const real_t d_squared = a.distance_squared_to(b);
+				if (d_squared < closest_point_distance_squared) {
+					closest_point_distance_squared = d_squared;
 					closest_point = b;
 				}
 			}

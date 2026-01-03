@@ -438,7 +438,8 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 
 	Vector2 last = result[result.size() - 1];
 
-	if (last.y > result[0].y && last.distance_to(result[0]) < ep * 0.5f) {
+	const float tolerance_squared = (ep * 0.5f) * (ep * 0.5f);
+	if (last.y > result[0].y && last.distance_squared_to(result[0]) < tolerance_squared) {
 		result.write[0].y = last.y;
 		result.resize(result.size() - 1);
 	}

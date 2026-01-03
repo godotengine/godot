@@ -100,10 +100,11 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 			// Check depth of recovery.
 			real_t projected_length = r_result.travel.dot(motion_normal);
 			Vector2 recovery = r_result.travel - motion_normal * projected_length;
-			real_t recovery_length = recovery.length();
+			const real_t recovery_length_squared = recovery.length_squared();
+			const real_t recovery_max_threshold = p_parameters.margin + precision;
 			// Fixes cases where canceling slide causes the motion to go too deep into the ground,
 			// because we're only taking rest information into account and not general recovery.
-			if (recovery_length < p_parameters.margin + precision) {
+			if (recovery_length_squared < recovery_max_threshold * recovery_max_threshold) {
 				// Apply adjustment to motion.
 				r_result.travel = motion_normal * projected_length;
 				r_result.remainder = p_parameters.motion - r_result.travel;

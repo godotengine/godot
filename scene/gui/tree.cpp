@@ -3981,7 +3981,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (rtl) {
 					cpos.x = get_size().width - cpos.x;
 				}
-				if (cpos.distance_to(pressing_pos) > 2) {
+				if (cpos.distance_squared_to(pressing_pos) > 4.0f) {
 					range_drag_enabled = true;
 					range_drag_capture_pos = cpos;
 					range_drag_base = popup_edited_item->get_range(popup_edited_item_col);

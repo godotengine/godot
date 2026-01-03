@@ -200,16 +200,16 @@ void GodotSliderJoint3D::solve(real_t p_step) {
 	Vector3 angBorthog = angVelB - angVelAroundAxisB;
 	Vector3 velrelOrthog = angAorthog - angBorthog;
 	//solve orthogonal angular velocity correction
-	real_t len = velrelOrthog.length();
-	if (len > real_t(0.00001)) {
+	real_t len_squared = velrelOrthog.length_squared();
+	if (len_squared > real_t(0.0000000001f)) {
 		Vector3 normal = velrelOrthog.normalized();
 		real_t denom = A->compute_angular_impulse_denominator(normal) + B->compute_angular_impulse_denominator(normal);
 		velrelOrthog *= (real_t(1.) / denom) * m_dampingOrthoAng * m_softnessOrthoAng;
 	}
 	//solve angular positional correction
 	Vector3 angularError = axisA.cross(axisB) * (real_t(1.) / p_step);
-	real_t len2 = angularError.length();
-	if (len2 > real_t(0.00001)) {
+	real_t len2_squared = angularError.length_squared();
+	if (len2_squared > real_t(0.0000000001f)) {
 		Vector3 normal2 = angularError.normalized();
 		real_t denom2 = A->compute_angular_impulse_denominator(normal2) + B->compute_angular_impulse_denominator(normal2);
 		angularError *= (real_t(1.) / denom2) * m_restitutionOrthoAng * m_softnessOrthoAng;

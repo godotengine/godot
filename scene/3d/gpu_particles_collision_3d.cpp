@@ -326,14 +326,14 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 		bool pass = true;
 		if (!p_bvh[p_bvh_cell].bounds.has_point(p_pos)) {
 			//outside, find closest point
-			Vector3 he = p_bvh[p_bvh_cell].bounds.size * 0.5;
-			Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
+			const Vector3 he = p_bvh[p_bvh_cell].bounds.size * 0.5f;
+			const Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
 
-			Vector3 rel = (p_pos - center).abs();
-			Vector3 closest = rel.min(he);
-			float d = rel.distance_to(closest);
+			const Vector3 rel = (p_pos - center).abs();
+			const Vector3 closest = rel.min(he);
+			const float d_squared = rel.distance_squared_to(closest);
 
-			if (d >= r_closest_distance) {
+			if (d_squared >= (r_closest_distance * r_closest_distance)) {
 				pass = false; //already closer than this aabb, discard
 			}
 		}

@@ -671,7 +671,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		for (const Vector3 &vertex : vertices) {
 			int idx = -1;
 			for (uint32_t k = 0; k < mesh.vertices.size(); k++) {
-				if (mesh.vertices[k].distance_to(vertex) < 0.001f) {
+				if (mesh.vertices[k].distance_squared_to(vertex) < 0.000001f) {
 					idx = k;
 					break;
 				}

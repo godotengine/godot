@@ -2318,7 +2318,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				const int triple_click_timeout = 600;
 				const int triple_click_tolerance = 5;
-				bool is_triple_click = (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_to(last_dblclk_pos) < triple_click_tolerance);
+				const int triple_click_tolerance_squared = triple_click_tolerance * triple_click_tolerance;
+				bool is_triple_click = (!mb->is_double_click() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < triple_click_timeout && mb->get_position().distance_squared_to(last_dblclk_pos) < triple_click_tolerance_squared);
 
 				if (!mb->is_double_click() && !is_triple_click) {
 					if (mb->is_alt_pressed()) {

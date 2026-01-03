@@ -80,7 +80,8 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
@@ -96,13 +97,13 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			original_mouse_pos = gpoint;
 
 			for (int i = 0; i < curve->get_point_count(); i++) {
-				real_t dist_to_p = gpoint.distance_to(xform.xform(curve->get_point_position(i)));
-				real_t dist_to_p_out = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_out(i)));
-				real_t dist_to_p_in = gpoint.distance_to(xform.xform(curve->get_point_position(i) + curve->get_point_in(i)));
+				real_t dist_to_p_squared = gpoint.distance_squared_to(xform.xform(curve->get_point_position(i)));
+				real_t dist_to_p_out_squared = gpoint.distance_squared_to(xform.xform(curve->get_point_position(i) + curve->get_point_out(i)));
+				real_t dist_to_p_in_squared = gpoint.distance_squared_to(xform.xform(curve->get_point_position(i) + curve->get_point_in(i)));
 
 				// Check for point movement start (for point + in/out controls).
 				if (mb->get_button_index() == MouseButton::LEFT) {
-					if (mode == MODE_EDIT && !mb->is_shift_pressed() && dist_to_p < grab_threshold) {
+					if (mode == MODE_EDIT && !mb->is_shift_pressed() && dist_to_p_squared < grab_threshold_squared) {
 						// Points can only be moved in edit mode.
 
 						action = ACTION_MOVING_POINT;
@@ -113,7 +114,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
 						control_points_in_range = 0;
 						// In/out controls can be moved in multiple modes.
-						if (dist_to_p_out < grab_threshold && i < (curve->get_point_count() - 1)) {
+						if (dist_to_p_out_squared < grab_threshold_squared && i < (curve->get_point_count() - 1)) {
 							action = ACTION_MOVING_OUT;
 							action_point = i;
 							moving_from = curve->get_point_out(i);
@@ -121,7 +122,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							orig_in_length = curve->get_point_in(action_point).length();
 							control_points_in_range += 1;
 						}
-						if (dist_to_p_in < grab_threshold && i > 0) {
+						if (dist_to_p_in_squared < grab_threshold_squared && i > 0) {
 							action = ACTION_MOVING_IN;
 							action_point = i;
 							moving_from = curve->get_point_in(i);
@@ -138,7 +139,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				// Check for point deletion.
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				if ((mb->get_button_index() == MouseButton::RIGHT && (mode == MODE_EDIT || mode == MODE_CREATE)) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
-					if (dist_to_p < grab_threshold) {
+					if (dist_to_p_squared < grab_threshold_squared) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "remove_point", i);
 						undo_redo->add_undo_method(curve.ptr(), "add_point", curve->get_point_position(i), curve->get_point_in(i), curve->get_point_out(i), i);
@@ -146,7 +147,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 						undo_redo->commit_action();
 						return true;
-					} else if (dist_to_p_out < grab_threshold) {
+					} else if (dist_to_p_out_squared < grab_threshold_squared) {
 						undo_redo->create_action(TTR("Remove Out-Control from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "set_point_out", i, Vector2());
 						undo_redo->add_undo_method(curve.ptr(), "set_point_out", i, curve->get_point_out(i));
@@ -154,7 +155,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 						undo_redo->commit_action();
 						return true;
-					} else if (dist_to_p_in < grab_threshold) {
+					} else if (dist_to_p_in_squared < grab_threshold_squared) {
 						undo_redo->create_action(TTR("Remove In-Control from Curve"));
 						undo_redo->add_do_method(curve.ptr(), "set_point_in", i, Vector2());
 						undo_redo->add_undo_method(curve.ptr(), "set_point_in", i, curve->get_point_in(i));
@@ -343,7 +344,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			// Find edge
 			edge_point = xform.xform(curve->get_closest_point(xform.affine_inverse().xform(mm->get_position())));
 			on_edge = false;
-			if (edge_point.distance_to(gpoint) <= grab_threshold) {
+			if (edge_point.distance_squared_to(gpoint) <= grab_threshold_squared) {
 				on_edge = true;
 			}
 			// However, if near a control point or its in-out handles then not on edge
@@ -351,17 +352,17 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			for (int i = 0; i < len; i++) {
 				Vector2 pp = curve->get_point_position(i);
 				Vector2 p = xform.xform(pp);
-				if (p.distance_to(gpoint) <= grab_threshold) {
+				if (p.distance_squared_to(gpoint) <= grab_threshold_squared) {
 					on_edge = false;
 					break;
 				}
 				p = xform.xform(pp + curve->get_point_in(i));
-				if (p.distance_to(gpoint) <= grab_threshold) {
+				if (p.distance_squared_to(gpoint) <= grab_threshold_squared) {
 					on_edge = false;
 					break;
 				}
 				p = xform.xform(pp + curve->get_point_out(i));
-				if (p.distance_to(gpoint) <= grab_threshold) {
+				if (p.distance_squared_to(gpoint) <= grab_threshold_squared) {
 					on_edge = false;
 					break;
 				}
