@@ -30,6 +30,8 @@
 
 #include "curve.h"
 
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
 
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
@@ -1157,13 +1159,7 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
-		Vector2 origin = r[i];
-		Vector2 direction = (r[i + 1] - origin) / interval;
-
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
-		Vector2 proj = origin + direction * d;
-
+		Vector2 proj = Geometry2D::get_closest_point_to_segment(p_to_point, r[i], r[i + 1]);
 		real_t dist = proj.distance_squared_to(p_to_point);
 
 		if (nearest_dist < 0.0f || dist < nearest_dist) {
@@ -1192,29 +1188,22 @@ real_t Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 
 	const Vector2 *r = baked_point_cache.ptr();
 
-	real_t nearest = 0.0f;
+	int nearest_idx = 0;
+	Vector2 nearest;
 	real_t nearest_dist = -1.0f;
-	real_t offset = 0.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		offset = baked_dist_cache[i];
-
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
-		Vector2 origin = r[i];
-		Vector2 direction = (r[i + 1] - origin) / interval;
-
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
-		Vector2 proj = origin + direction * d;
-
+		Vector2 proj = Geometry2D::get_closest_point_to_segment(p_to_point, r[i], r[i + 1]);
 		real_t dist = proj.distance_squared_to(p_to_point);
 
 		if (nearest_dist < 0.0f || dist < nearest_dist) {
-			nearest = offset + d;
+			nearest = proj;
 			nearest_dist = dist;
+			nearest_idx = i;
 		}
 	}
 
-	return nearest;
+	return baked_dist_cache[nearest_idx] + r[nearest_idx].distance_to(nearest);
 }
 
 Dictionary Curve2D::_get_data() const {
@@ -2156,13 +2145,7 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	real_t nearest_dist = -1.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
-		Vector3 origin = r[i];
-		Vector3 direction = (r[i + 1] - origin) / interval;
-
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
-		Vector3 proj = origin + direction * d;
-
+		Vector3 proj = Geometry3D::get_closest_point_to_segment(p_to_point, r[i], r[i + 1]);
 		real_t dist = proj.distance_squared_to(p_to_point);
 
 		if (nearest_dist < 0.0f || dist < nearest_dist) {
@@ -2195,29 +2178,22 @@ real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 
 	const Vector3 *r = baked_point_cache.ptr();
 
-	real_t nearest = 0.0f;
+	int nearest_idx = 0;
+	Vector3 nearest;
 	real_t nearest_dist = -1.0f;
-	real_t offset;
 
 	for (int i = 0; i < pc - 1; i++) {
-		offset = baked_dist_cache[i];
-
-		const real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
-		Vector3 origin = r[i];
-		Vector3 direction = (r[i + 1] - origin) / interval;
-
-		real_t d = CLAMP((p_to_point - origin).dot(direction), 0.0f, interval);
-		Vector3 proj = origin + direction * d;
-
+		Vector3 proj = Geometry3D::get_closest_point_to_segment(p_to_point, r[i], r[i + 1]);
 		real_t dist = proj.distance_squared_to(p_to_point);
 
 		if (nearest_dist < 0.0f || dist < nearest_dist) {
-			nearest = offset + d;
+			nearest = proj;
 			nearest_dist = dist;
+			nearest_idx = i;
 		}
 	}
 
-	return nearest;
+	return baked_dist_cache[nearest_idx] + r[nearest_idx].distance_to(nearest);
 }
 
 void Curve3D::set_closed(bool p_closed) {
