@@ -4474,6 +4474,42 @@ void RenderingDeviceDriverD3D12::command_end_render_pass(CommandBufferID p_cmd_b
 		}
 	}
 
+	auto _transition_subresources = [&](TextureInfo *p_texture_info, D3D12_RESOURCE_STATES p_states) {
+		uint32_t planes = 1;
+		if ((p_texture_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
+			planes = format_get_plane_count(p_texture_info->format);
+		}
+		for (uint32_t i = 0; i < p_texture_info->layers; i++) {
+			for (uint32_t j = 0; j < p_texture_info->mipmaps; j++) {
+				uint32_t subresource = D3D12CalcSubresource(
+						p_texture_info->base_mip + j,
+						p_texture_info->base_layer + i,
+						0,
+						p_texture_info->desc.MipLevels,
+						p_texture_info->desc.ArraySize());
+
+				_resource_transition_batch(cmd_buf_info, p_texture_info, subresource, planes, p_states);
+			}
+		}
+	};
+
+	if (!barrier_capabilities.enhanced_barriers_supported) {
+		for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
+			if (pass_info->attachments[i].store_op == ATTACHMENT_STORE_OP_DONT_CARE) {
+				TextureInfo *tex_info = (TextureInfo *)fb_info->attachments[i].id;
+				if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET)) {
+					_transition_subresources(tex_info, D3D12_RESOURCE_STATE_RENDER_TARGET);
+				} else if ((tex_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) {
+					_transition_subresources(tex_info, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				} else {
+					DEV_ASSERT(false);
+				}
+			}
+		}
+
+		_resource_transitions_flush(cmd_buf_info);
+	}
+
 	for (uint32_t i = 0; i < pass_info->attachments.size(); i++) {
 		const Attachment &attachment = pass_info->attachments[i];
 
