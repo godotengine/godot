@@ -140,9 +140,6 @@ func test_unreachable_pattern():
 		1:
 			print(1)
 
-func test_unsafe_void_return_variant() -> void:
-	return variant_func() # No warning (intended?).
-
 func test_unsafe_void_return() -> void:
 	@warning_ignore("unsafe_method_access", "unsafe_void_return")
 	return variant_func().f()
