@@ -698,6 +698,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
 			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+			anim_ping_pong->set_button_icon(get_editor_theme_icon(SNAME("PingPong")));
 			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
 			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
@@ -1366,10 +1367,26 @@ void SpriteFramesEditor::_animation_loop_changed() {
 		return;
 	}
 
+	// ping pong settings don't apply if the animation isn't looping.
+	anim_ping_pong->set_disabled(!anim_loop->is_pressed());
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Loop"), UndoRedo::MERGE_DISABLE, frames.ptr());
 	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", edited_anim, anim_loop->is_pressed());
 	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(this, "_update_library", true);
+	undo_redo->add_undo_method(this, "_update_library", true);
+	undo_redo->commit_action();
+}
+
+void SpriteFramesEditor::_animation_ping_pong_changed() {
+	if (updating) {
+		return;
+	}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change Animation Ping Pong"), UndoRedo::MERGE_DISABLE, frames.ptr());
+	undo_redo->add_do_method(frames.ptr(), "set_ping_pong", edited_anim, anim_ping_pong->is_pressed());
+	undo_redo->add_undo_method(frames.ptr(), "set_ping_pong", edited_anim, frames->get_ping_pong(edited_anim));
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
@@ -1751,6 +1768,8 @@ void SpriteFramesEditor::_update_library_impl() {
 
 	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
 	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
+	anim_ping_pong->set_pressed_no_signal(frames->get_ping_pong(edited_anim));
+	anim_ping_pong->set_disabled(!frames->get_animation_loop(edited_anim));
 
 	updating = false;
 }
@@ -1798,6 +1817,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
+	anim_ping_pong->set_disabled(read_only);
 	load->set_disabled(read_only);
 	load_sheet->set_disabled(read_only);
 	copy->set_disabled(read_only);
@@ -2196,6 +2216,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop->set_tooltip_text(TTRC("Animation Looping"));
 	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 	hbc_animlist->add_child(anim_loop);
+
+	anim_ping_pong = memnew(Button);
+	anim_ping_pong->set_toggle_mode(true);
+	anim_ping_pong->set_theme_type_variation(SceneStringName(FlatButton));
+	anim_ping_pong->set_tooltip_text(TTRC("Ping-Pong"));
+	anim_ping_pong->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_ping_pong_changed));
+	hbc_animlist->add_child(anim_ping_pong);
 
 	anim_speed = memnew(SpinBox);
 	anim_speed->set_suffix(TTR("FPS"));

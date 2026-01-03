@@ -165,6 +165,18 @@ bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	return E->value.loop;
 }
 
+void SpriteFrames::set_ping_pong(const StringName &p_anim, bool p_ping_pong) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	E->value.ping_pong = p_ping_pong;
+}
+
+bool SpriteFrames::get_ping_pong(const StringName &p_anim) const {
+	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
+	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
+	return E->value.ping_pong;
+}
+
 Array SpriteFrames::_get_animations() const {
 	Array anims;
 
@@ -178,6 +190,8 @@ Array SpriteFrames::_get_animations() const {
 		d["name"] = anim_name;
 		d["speed"] = anim.speed;
 		d["loop"] = anim.loop;
+		d["ping_pong"] = anim.ping_pong;
+
 		Array frames;
 		for (int i = 0; i < anim.frames.size(); i++) {
 			Dictionary f;
@@ -205,6 +219,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		Anim anim;
 		anim.speed = d["speed"];
 		anim.loop = d["loop"];
+		anim.ping_pong = d.has("ping_pong") ? (bool)d["ping_pong"] : false;
 		Array frames = d["frames"];
 		for (int j = 0; j < frames.size(); j++) {
 #ifndef DISABLE_DEPRECATED
@@ -263,6 +278,9 @@ void SpriteFrames::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_animation_loop", "anim", "loop"), &SpriteFrames::set_animation_loop);
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
+
+	ClassDB::bind_method(D_METHOD("set_ping_pong", "anim", "ping_pong"), &SpriteFrames::set_ping_pong);
+	ClassDB::bind_method(D_METHOD("get_ping_pong", "anim"), &SpriteFrames::get_ping_pong);
 
 	ClassDB::bind_method(D_METHOD("add_frame", "anim", "texture", "duration", "at_position"), &SpriteFrames::add_frame, DEFVAL(1.0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "texture", "duration"), &SpriteFrames::set_frame, DEFVAL(1.0));
