@@ -1051,7 +1051,7 @@
 			Reference-counted connections can be assigned to the same [Callable] multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
 		</constant>
 		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
-			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
+			The source object is automatically bound to the connected [Callable] on signal emission. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
 		</constant>
 	</constants>
 </class>
