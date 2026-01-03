@@ -158,6 +158,7 @@ private:
 	};
 
 	struct Particles {
+		RID self;
 		RS::ParticlesMode mode = RS::PARTICLES_MODE_3D;
 		bool inactive = true;
 		double inactive_time = 0.0;
@@ -266,12 +267,26 @@ private:
 		}
 	};
 
+	struct ParticlesSubEmitterSort {
+		_FORCE_INLINE_ bool operator()(const Particles &p_left, const Particles &p_right) const {
+			return p_left.sub_emitter == p_right.self;
+		}
+	};
+
+	struct ParticlesTreeNode {
+		Particles *particles;
+		Particles *sub_emitter;
+	};
+
+	bool _particles_check(Particles *particles);
+	void _particles_init(Particles *particles);
 	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_trail_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
+	void _particles_post_process(Particles *particles);
 
 	struct ParticlesShader {
 		struct PushConstant {
