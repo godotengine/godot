@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
@@ -100,6 +101,7 @@ class ShaderMaterial : public Material {
 	mutable HashMap<StringName, StringName> remap_cache;
 	mutable HashMap<StringName, Variant> param_cache;
 	mutable Mutex material_rid_mutex;
+	mutable HashMap<StringName, Pair<TypedDictionary<StringName, Variant>, String>> buffer_cache;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -126,6 +128,14 @@ public:
 
 	void set_shader_parameter(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_parameter(const StringName &p_param) const;
+
+	void set_shader_buffer(const StringName &buf_name, const TypedDictionary<StringName, Variant> &buf_values);
+	void update_shader_buffer(const StringName &buf_name, const TypedDictionary<StringName, Variant> &buf_values);
+	TypedDictionary<StringName, Variant> get_shader_buffer(const StringName &buf_name) const;
+	void set_shader_buffer_raw(const StringName &buf_name, const PackedByteArray &buf);
+	PackedByteArray get_shader_buffer_raw(const StringName &buf_name) const;
+	void set_shader_buffer_field(const StringName &buf_name, const StringName &p_field, const Variant &p_value);
+	Variant get_shader_buffer_field(const StringName &buf_name, const StringName &p_field);
 
 	virtual Shader::Mode get_shader_mode() const override;
 

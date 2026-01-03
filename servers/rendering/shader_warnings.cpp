@@ -61,6 +61,8 @@ String ShaderWarning::get_message() const {
 			return vformat(RTR("The varying '%s' is declared but never used."), subject);
 		case UNUSED_LOCAL_VARIABLE:
 			return vformat(RTR("The local variable '%s' is declared but never used."), subject);
+		case UNUSED_BUFFER:
+			return vformat(RTR("The buffer '%s' is declared but never used."), subject);
 		case FORMATTING_ERROR:
 			return subject;
 		case DEVICE_LIMIT_EXCEEDED:
@@ -95,6 +97,7 @@ String ShaderWarning::get_name_from_code(Code p_code) {
 		PNAME("FORMATTING_ERROR"),
 		PNAME("DEVICE_LIMIT_EXCEEDED"),
 		PNAME("MAGIC_POSITION_WRITE"),
+		PNAME("UNUSED_BUFFER"),
 	};
 
 	static_assert(std_size(names) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
@@ -126,6 +129,7 @@ static void init_code_to_flags_map() {
 	code_to_flags_map->insert(ShaderWarning::FORMATTING_ERROR, ShaderWarning::FORMATTING_ERROR_FLAG);
 	code_to_flags_map->insert(ShaderWarning::DEVICE_LIMIT_EXCEEDED, ShaderWarning::DEVICE_LIMIT_EXCEEDED_FLAG);
 	code_to_flags_map->insert(ShaderWarning::MAGIC_POSITION_WRITE, ShaderWarning::MAGIC_POSITION_WRITE_FLAG);
+	code_to_flags_map->insert(ShaderWarning::UNUSED_BUFFER, ShaderWarning::UNUSED_BUFFER_FLAG);
 }
 
 ShaderWarning::CodeFlags ShaderWarning::get_flags_from_codemap(const HashMap<Code, bool> &p_map) {

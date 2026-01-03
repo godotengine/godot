@@ -194,12 +194,18 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"PERIOD",
 	"UNIFORM",
 	"UNIFORM_GROUP",
+	"BUFFER",
 	"INSTANCE",
 	"GLOBAL",
 	"VARYING",
 	"ARG_IN",
 	"ARG_OUT",
 	"ARG_INOUT",
+	"BUFFER_RESTRICT",
+	"BUFFER_SET",
+	"BUFFER_BIND",
+	"BUFFER_BIND_NAME",
+	"BUFFER_FORMAT",
 	"RENDER_MODE",
 	"HINT_DEFAULT_WHITE_TEXTURE",
 	"HINT_DEFAULT_BLACK_TEXTURE",
@@ -275,6 +281,8 @@ enum ContextFlag : uint32_t {
 	CF_CONST_KEYWORD = 4096U, // "const"
 	CF_UNIFORM_QUALIFIER = 8192U, // "<x> uniform float t;"
 	CF_SHADER_TYPE = 16384U, // "shader_type"
+	CF_BUFFER_QUALIFIER = 32768U, // buffer <x> myBuffer { ... };
+	CF_BUFFER_LAYOUT = 65536U, // buffer myBuffer { ... }(<x>);
 };
 
 const uint32_t KCF_DATATYPE = CF_BLOCK | CF_GLOBAL_SPACE | CF_DATATYPE | CF_FUNC_DECL_PARAM_TYPE | CF_UNIFORM_TYPE;
@@ -332,11 +340,12 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	// global space keywords
 
-	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD, {}, {} },
+	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD | CF_BUFFER_QUALIFIER, {}, {} },
 	{ TK_UNIFORM_GROUP, "group_uniforms", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_VARYING, "varying", CF_GLOBAL_SPACE, { "particles", "sky", "fog" }, {} },
 	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_BUFFER, "buffer", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_STENCIL_MODE, "stencil_mode", CF_GLOBAL_SPACE, {}, {} },
@@ -361,11 +370,16 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CF_RETURN, "return", CF_BLOCK, {}, {} },
 	{ TK_CF_DISCARD, "discard", CF_BLOCK, { "particles", "sky", "fog" }, { "vertex" } },
 
-	// function specifier keywords
+	// function / buffer specifier keywords
 
-	{ TK_ARG_IN, "in", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
-	{ TK_ARG_OUT, "out", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_ARG_IN, "in", CF_FUNC_DECL_PARAM_SPEC | CF_BUFFER_QUALIFIER, {}, {} },
+	{ TK_ARG_OUT, "out", CF_FUNC_DECL_PARAM_SPEC | CF_BUFFER_QUALIFIER, {}, {} },
 	{ TK_ARG_INOUT, "inout", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_BUFFER_RESTRICT, "restrict", CF_BUFFER_QUALIFIER, {}, {} },
+	{ TK_BUFFER_SET, "set", CF_BUFFER_LAYOUT, {}, {} },
+	{ TK_BUFFER_BIND, "binding", CF_BUFFER_LAYOUT, {}, {} },
+	{ TK_BUFFER_BIND_NAME, "bindname", CF_BUFFER_LAYOUT, {}, {} },
+	{ TK_BUFFER_FORMAT, "format", CF_BUFFER_LAYOUT, {}, {} },
 
 	// hints
 
@@ -1068,6 +1082,25 @@ bool ShaderLanguage::is_token_arg_qual(TokenType p_type) {
 			p_type == TK_ARG_INOUT);
 }
 
+bool ShaderLanguage::is_token_buffer_qual(TokenType p_type) {
+	return (
+			p_type == TK_ARG_IN ||
+			p_type == TK_ARG_OUT ||
+			p_type == TK_UNIFORM ||
+			p_type == TK_BUFFER_RESTRICT);
+}
+
+bool ShaderLanguage::is_token_buffer_layout(TokenType p_type) {
+	return (
+			p_type == TK_BUFFER_BIND ||
+			p_type == TK_BUFFER_SET ||
+			p_type == TK_BUFFER_FORMAT);
+}
+
+bool ShaderLanguage::is_name_used(ShaderNode *shader, StringName name) {
+	return shader->unnamed_buffer_members.has(name) || shader->constants.has(name) || shader->uniforms.has(name) || shader->structs.has(name) || shader->buffers.has(name);
+}
+
 ShaderLanguage::DataPrecision ShaderLanguage::get_token_precision(TokenType p_type) {
 	if (p_type == TK_PRECISION_LOW) {
 		return PRECISION_LOWP;
@@ -1172,6 +1205,8 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 			return "samplerExternalOES";
 		case TYPE_STRUCT:
 			return "struct";
+		case TYPE_BUFFER:
+			return "buffer";
 		case TYPE_MAX:
 			return "invalid";
 	}
@@ -1368,6 +1403,11 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 				used_local_vars[p_function][p_identifier].used = true;
 			}
 			break;
+		case IdentifierType::IDENTIFIER_BUFFER:
+			if (HAS_WARNING(ShaderWarning::UNUSED_BUFFER_FLAG) && used_buffers.has(p_identifier)) {
+				used_buffers[p_identifier].used = true;
+			}
+			break;
 		default:
 			break;
 	}
@@ -1530,6 +1570,42 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		if (r_type) {
 			*r_type = IDENTIFIER_CONSTANT;
 		}
+		return true;
+	}
+
+	if (shader->buffers.has(p_identifier)) {
+		if (r_data_type) {
+			*r_data_type = TYPE_BUFFER;
+		}
+		if (r_array_size) {
+			*r_array_size = 0;
+		}
+		if (r_struct_name) {
+			*r_struct_name = shader->buffers[p_identifier].name;
+		}
+		if (r_type) {
+			*r_type = IDENTIFIER_BUFFER;
+		}
+		return true;
+	}
+
+	if (shader->unnamed_buffer_members.has(p_identifier)) {
+		if (r_type) {
+			*r_type = IDENTIFIER_BUFFER_FIELD;
+		}
+		if (r_data_type || r_array_size || r_struct_name) {
+			MemberNode *member = shader->unnamed_buffer_members[p_identifier];
+			if (r_data_type) {
+				*r_data_type = member->datatype;
+			}
+			if (r_array_size) {
+				*r_array_size = member->array_size;
+			}
+			if (r_struct_name) {
+				*r_struct_name = member->struct_name;
+			}
+		}
+
 		return true;
 	}
 
@@ -4561,6 +4637,8 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<Scalar> &p_value,
 			}
 			case ShaderLanguage::TYPE_STRUCT:
 				break;
+			case ShaderLanguage::TYPE_BUFFER:
+				break;
 			case ShaderLanguage::TYPE_VOID:
 				break;
 			case ShaderLanguage::TYPE_MAX:
@@ -5085,6 +5163,9 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
 		} break;
+		case ShaderLanguage::TYPE_BUFFER: {
+			// FIXME: Implement this.
+		} break;
 		case ShaderLanguage::TYPE_MAX:
 			break;
 	}
@@ -5158,6 +5239,8 @@ uint32_t ShaderLanguage::get_datatype_size(ShaderLanguage::DataType p_type) {
 		case TYPE_SAMPLEREXT:
 			return 16;
 		case TYPE_STRUCT:
+			return 0;
+		case TYPE_BUFFER:
 			return 0;
 		case TYPE_MAX: {
 			ERR_FAIL_V(0);
@@ -5300,6 +5383,7 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_FLOAT,
 		TYPE_FLOAT,
 		TYPE_VOID,
+		TYPE_VOID,
 	};
 
 	static_assert(std_size(scalar_types) == TYPE_MAX);
@@ -5329,6 +5413,7 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		4,
 		9,
 		16,
+		1,
 		1,
 		1,
 		1,
@@ -5564,6 +5649,12 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 		if (shader->uniforms.has(var->name)) {
 			if (r_message) {
 				*r_message = RTR("Assignment to uniform.");
+			}
+			return false;
+		}
+		if (shader->buffers.has(var->name) && (shader->buffers[var->name].io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || shader->buffers[var->name].io_qual == ShaderNode::Buffer::BUFFER_IN)) {
+			if (r_message) {
+				*r_message = RTR("Assignment to immutable buffer.");
 			}
 			return false;
 		}
@@ -6649,7 +6740,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				Node *call_expression = nullptr;
 				Node *assign_expression = nullptr;
 
-				if (array_size > 0) {
+				if (array_size != 0) {
 					prepos = _get_tkpos();
 					tk = _get_token();
 
@@ -6690,7 +6781,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							if (cnode) {
 								if (!cnode->values.is_empty()) {
 									int value = cnode->values[0].sint;
-									if (value < 0 || value >= array_size) {
+									if (value < 0 || (value >= array_size && array_size != -1)) {
 										_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), value, 0, array_size - 1));
 										return nullptr;
 									}
@@ -6823,8 +6914,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				StringName identifier;
-				if (_get_completable_identifier(p_block, dt == TYPE_STRUCT ? COMPLETION_STRUCT : COMPLETION_INDEX, identifier)) {
-					if (dt == TYPE_STRUCT) {
+				if (_get_completable_identifier(p_block, (dt == TYPE_STRUCT || dt == TYPE_BUFFER) ? COMPLETION_STRUCT : COMPLETION_INDEX, identifier)) {
+					if (dt == TYPE_STRUCT || dt == TYPE_BUFFER) {
 						completion_struct = st;
 					} else {
 						completion_base = dt;
@@ -6868,6 +6959,24 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							}
 						}
 
+					} break;
+					case TYPE_BUFFER: {
+						ok = false;
+						String member_name = String(ident.ptr());
+						if (shader->buffers.has(st)) {
+							BufferNode *n = shader->buffers[st].shader_buffer;
+							for (const MemberNode *E : n->members) {
+								if (String(E->name) == member_name) {
+									member_type = E->datatype;
+									array_size = E->array_size;
+									if (member_type == TYPE_STRUCT) {
+										member_struct_name = E->struct_name;
+									}
+									ok = true;
+									break;
+								}
+							}
+						}
 					} break;
 					case TYPE_BVEC2:
 					case TYPE_IVEC2:
@@ -7082,7 +7191,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				if (!ok) {
-					_set_error(vformat(RTR("Invalid member for '%s' expression: '.%s'."), (dt == TYPE_STRUCT ? st : get_datatype_name(dt)), ident));
+					_set_error(vformat(RTR("Invalid member for '%s' expression: '.%s'."), (dt == TYPE_STRUCT || dt == TYPE_BUFFER ? st : get_datatype_name(dt)), ident));
 					return nullptr;
 				}
 
@@ -9315,7 +9424,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
-					if (shader->constants.has(st.name) || shader->structs.has(st.name)) {
+					if (is_name_used(shader, st.name)) {
 						_set_redefinition_error(String(st.name));
 						return ERR_PARSE_ERROR;
 					}
@@ -9470,7 +9579,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				}
 #ifdef DEBUG_ENABLED
 				keyword_completion_context = CF_GLOBAL_SPACE;
-#endif // DEBUG_ENABLED
+#endif // DEBUG_ENABLEDx
 
 				shader->structs[st.name] = st;
 				shader->vstructs.push_back(st); // struct's order is important!
@@ -9680,7 +9789,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				prev_pos = _get_tkpos();
 				name = tk.text;
 
-				if (_find_identifier(nullptr, false, constants, name)) {
+				if (is_name_used(shader, name) || _find_identifier(nullptr, false, constants, name)) {
 					_set_redefinition_error(String(name));
 					return ERR_PARSE_ERROR;
 				}
@@ -10249,6 +10358,292 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				_set_error(RTR("Shader type is already defined."));
 				return ERR_PARSE_ERROR;
 			} break;
+			case TK_BUFFER: {
+				ShaderNode::Buffer buf;
+				StringName buffer_name;
+				completion_type = COMPLETION_BUFFER_IO;
+
+				tk = _get_token();
+				for (int i = 0; i < 2 && is_token_buffer_qual(tk.type); i++) {
+					if (tk.type == TK_BUFFER_RESTRICT) {
+						if (buf.restrict == true) {
+							_set_error(vformat(RTR("Unexpected token '%s'."), tk.text));
+							return ERR_PARSE_ERROR;
+						}
+						buf.restrict = true;
+					} else {
+						if (buf.io_qual != ShaderNode::Buffer::BUFFER_NONE) {
+							_set_error(RTR("Buffer can only be 'in', 'out', or 'uniform', not a combination."));
+							return ERR_PARSE_ERROR;
+						} else {
+							switch (tk.type) {
+								case TK_ARG_IN: {
+									buf.io_qual = ShaderNode::Buffer::BUFFER_IN;
+								} break;
+								case TK_ARG_OUT: {
+									buf.io_qual = ShaderNode::Buffer::BUFFER_OUT;
+								} break;
+								case TK_UNIFORM: {
+									buf.io_qual = ShaderNode::Buffer::BUFFER_UNIFORM;
+								} break;
+								default: { // should be unreachable
+								} break;
+							}
+						}
+					}
+					tk = _get_token();
+				}
+				completion_type = COMPLETION_NONE;
+
+				if (tk.type == TK_IDENTIFIER) {
+					buf.name = tk.text;
+					if (is_name_used(shader, buf.name)) {
+						_set_redefinition_error(String(buf.name));
+						return ERR_PARSE_ERROR;
+					}
+					tk = _get_token();
+				}
+
+				if (tk.type != TK_CURLY_BRACKET_OPEN) {
+					_set_error(vformat(RTR("Unexpected token '%s'."), tk.text));
+					return ERR_PARSE_ERROR;
+				}
+
+				DataType type;
+				int member_count = 0;
+				HashSet<String> member_names;
+				bool unsized_array_init = false;
+
+				BufferNode *bufnode = alloc_node<BufferNode>();
+				buf.shader_buffer = bufnode;
+				while (true) {
+					tk = _get_token();
+					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
+						break;
+					}
+
+					if (unsized_array_init) {
+						_set_error(RTR("An unsized array must be the final declaration in the buffer."));
+						return ERR_PARSE_ERROR;
+					}
+
+					StringName struct_name = "";
+					bool struct_dt = false;
+					DataPrecision precision = PRECISION_DEFAULT;
+
+					if (is_token_precision(tk.type)) {
+						precision = get_token_precision(tk.type);
+						tk = _get_token();
+					}
+
+					if (shader->structs.has(tk.text)) {
+						struct_name = tk.text;
+						struct_dt = true;
+					}
+
+					if (!is_token_datatype(tk.type) && !struct_dt) {
+						_set_error(RTR("Expected data type."));
+						return ERR_PARSE_ERROR;
+					} else {
+						type = struct_dt ? TYPE_STRUCT : get_token_datatype(tk.type);
+
+						if (precision != PRECISION_DEFAULT && _validate_precision(type, precision) != OK) {
+							return ERR_PARSE_ERROR;
+						}
+
+						if (type == TYPE_VOID || is_sampler_type(type)) {
+							_set_error(vformat(RTR("A '%s' data type is not allowed here."), get_datatype_name(type)));
+							return ERR_PARSE_ERROR;
+						}
+
+						bool first = true;
+						bool fixed_array_size = false;
+						int array_size = 0;
+						
+
+						do {
+							if (unsized_array_init) {
+								_set_error(RTR("An unsized array must be the final declaration in the buffer."));
+								return ERR_PARSE_ERROR;
+							}
+							tk = _get_token();
+							
+							if (first) {
+								first = false;
+
+								if (tk.type != TK_IDENTIFIER && tk.type != TK_BRACKET_OPEN) {
+									_set_error(RTR("Expected an identifier or '['."));
+									return ERR_PARSE_ERROR;
+								}
+
+								if (tk.type == TK_BRACKET_OPEN) {
+									Error error = _parse_array_size(nullptr, constants, false, nullptr, &array_size, nullptr);
+									if (error != OK) {
+										return error;
+									}
+									fixed_array_size = true;
+
+									tk = _get_token();
+								}
+							}
+
+							if (tk.type != TK_IDENTIFIER) {
+								_set_error(RTR("Expected an identifier."));
+								return ERR_PARSE_ERROR;
+							}
+
+							MemberNode *member = alloc_node<MemberNode>();
+							member->precision = precision;
+							member->datatype = type;
+							member->basetype = TYPE_BUFFER;
+							member->struct_name = struct_name;
+							member->name = tk.text;
+							member->array_size = array_size;
+							member->owner = bufnode;
+
+							if (member_names.has(member->name)) {
+								_set_redefinition_error(String(member->name));
+								return ERR_PARSE_ERROR;
+							}
+							if (buf.name.is_empty()) {
+								if (is_name_used(shader, member->name)) {
+									_set_redefinition_error(String(member->name));
+									return ERR_PARSE_ERROR;
+								}	
+							}
+							member_names.insert(member->name);
+							
+							tk = _get_token();
+
+							if (tk.type == TK_BRACKET_OPEN) {
+								Error error = _parse_array_size(nullptr, constants, (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM), nullptr, &member->array_size, &unsized_array_init);
+								if (error != OK) {
+									return error;
+								}
+								if (unsized_array_init) {
+									member->array_size = -1;
+								}
+								tk = _get_token();
+							}
+
+							if (!fixed_array_size) {
+								array_size = 0;
+							}
+
+							if (tk.type != TK_SEMICOLON && tk.type != TK_COMMA) {
+								_set_expected_error(",", ";");
+								return ERR_PARSE_ERROR;
+							}
+
+							bufnode->members.push_back(member);
+							member_count++;
+						} while (tk.type == TK_COMMA); // another member
+					}
+				}
+
+				if (member_count == 0) {
+					_set_error(RTR("Buffer cannot be empty"));
+					return ERR_PARSE_ERROR;
+				}
+
+				tk = _get_token();
+
+				if (tk.type != TK_PARENTHESIS_OPEN) {
+					_set_error(RTR("Expected layout specifications."));
+					return ERR_PARSE_ERROR;
+				}
+
+				bool binded = false;
+				//bool set_assigned = false;
+				bool format_assigned = false;
+				while (true) {
+					tk = _get_token();
+					if (tk.type == TK_PARENTHESIS_CLOSE) {
+						if (!binded && buf.name_bind.is_empty()) {
+							if (shader_type_identifier != "compute") {
+								_set_error(RTR("Buffer name binding not provided."));
+								return ERR_PARSE_ERROR;
+							}
+							_set_error(RTR("Binding not specified."));
+							return ERR_PARSE_ERROR;
+						}
+						break;
+					}
+
+					if (tk.type == TK_BUFFER_FORMAT) {
+						if (format_assigned) {
+							_set_error(RTR("Format already specified."));
+							return ERR_PARSE_ERROR;
+						}
+						tk = _get_token();
+						if (tk.type != TK_OP_ASSIGN) {
+							_set_error(RTR("Expected format specifier."));
+							return ERR_PARSE_ERROR;
+						}
+						completion_type = COMPLETION_BUFFER_FORMAT;
+
+						tk = _get_token();
+
+						if (tk.text == "packed") {
+							_set_error(RTR("The packed format is not supported."));
+							return ERR_PARSE_ERROR;
+						} else if (tk.text == "shared") {
+							_set_error(RTR("The shared format is not supported."));
+							return ERR_PARSE_ERROR;
+						} else if (tk.text == "std140") {
+							buf.format = ShaderNode::Buffer::BUFFORMAT_STD140;
+						} else if (tk.text == "std430") {
+							if (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM) {
+								_set_error(RTR("Uniform buffers cannot use the std430 format."));
+								return ERR_PARSE_ERROR;
+							}
+							buf.format = ShaderNode::Buffer::BUFFORMAT_STD430;
+						} else {
+							_set_error(RTR("Expected a valid format specifier."));
+							return ERR_PARSE_ERROR;
+						}
+
+						format_assigned = true;
+						completion_type = COMPLETION_NONE;
+					}
+					if (tk.type == TK_BUFFER_BIND_NAME) {
+						if (!buf.name_bind.is_empty()) {
+							_set_error(RTR("Name binding already specified."));
+							return ERR_PARSE_ERROR;
+						}
+						tk = _get_token();
+						if (tk.type != TK_OP_ASSIGN) {
+							_set_error(RTR("Expected name binding."));
+							return ERR_PARSE_ERROR;
+						}
+						tk = _get_token();
+						if (tk.type == TK_IDENTIFIER) {
+							buf.name_bind = tk.text;
+						} else {
+							_set_error(RTR("Expected a valid name binding."));
+							return ERR_PARSE_ERROR;
+						}
+					}
+				}
+
+				tk = _get_token();
+				if (tk.type != TK_SEMICOLON) {
+					_set_expected_error(";");
+					return ERR_PARSE_ERROR;
+				}
+
+				if (!buf.name.is_empty()) {
+					shader->buffers[buf.name] = buf;
+				} else {
+					int index = shader->unnamed_buffers.size();
+					shader->unnamed_buffers.push_back(buf);
+					for (MemberNode *member : bufnode->members) {
+						member->owner_index = index;
+						shader->unnamed_buffer_members[member->name] = member;
+					}
+				}
+
+			} break;
 			default: {
 				//function or constant variable
 
@@ -10339,7 +10734,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				}
 
 				IdentifierType itype;
-				if (shader->structs.has(name) || (_find_identifier(nullptr, false, constants, name, nullptr, &itype) && itype != IDENTIFIER_FUNCTION) || has_builtin(p_functions, name, !is_constant)) {
+				if (is_name_used(shader, name) || (_find_identifier(nullptr, false, constants, name, nullptr, &itype) && itype != IDENTIFIER_FUNCTION) || has_builtin(p_functions, name, !is_constant)) {
 					_set_redefinition_error(String(name));
 					return ERR_PARSE_ERROR;
 				}
@@ -11551,6 +11946,14 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_STRUCT: {
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
+				r_options->clear();
+				for (ShaderLanguage::MemberNode *member : node->members) {
+					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+					r_options->push_back(option);
+				}
+			} else if (shader->buffers.has(completion_struct)) {
+				BufferNode *node = shader->buffers[completion_struct].shader_buffer;
+				r_options->clear();
 				for (ShaderLanguage::MemberNode *member : node->members) {
 					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
@@ -11683,6 +12086,21 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
 						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+					}
+					for (const KeyValue<StringName, ShaderNode::Buffer> &E : shader->buffers) {
+						if (E.value.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || E.value.io_qual == ShaderNode::Buffer::BUFFER_IN) {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						} else {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+						}
+					}
+					for (const KeyValue<StringName, MemberNode *> &E : shader->unnamed_buffer_members) {
+						ShaderNode::Buffer owner = shader->unnamed_buffers[E.value->owner_index];
+						if (owner.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || owner.io_qual == ShaderNode::Buffer::BUFFER_IN) {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						} else {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+						}
 					}
 				}
 
@@ -12079,6 +12497,29 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			if (!completion_base_array && !current_uniform_instance_index_defined) {
 				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
+				r_options->push_back(option);
+			}
+		} break;
+		case COMPLETION_BUFFER_IO: {
+			Vector<String> options;
+			options.push_back("in");
+			options.push_back("out");
+			options.push_back("uniform");
+			options.push_back("restrict");
+			r_options->clear();
+			for (int i = 0; i < options.size(); i++) {
+				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+			return OK;
+		} break;
+		case COMPLETION_BUFFER_FORMAT: {
+			Vector<String> options;
+			options.push_back("std140");
+			options.push_back("std430");
+			r_options->clear();
+			for (int i = 0; i < options.size(); i++) {
+				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			}
 		} break;

@@ -316,6 +316,14 @@ public:
 
 	FUNC3(material_set_param, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
+	using Buffer = TypedDictionary<StringName, Variant>;
+	FUNC3(material_set_buffer, RID, const StringName &, const Buffer &)
+	FUNC2RC(Buffer, material_get_buffer, RID, const StringName &)
+	FUNC3(material_update_buffer, RID, const StringName &, const Buffer &)
+	FUNC3(material_set_buffer_raw, RID, const StringName &, const PackedByteArray &)
+	FUNC2RC(PackedByteArray, material_get_buffer_raw, RID, const StringName &)
+	FUNC4(material_set_buffer_field, RID, const StringName &, const StringName &, const Variant &)
+	FUNC3RC(Variant, material_get_buffer_field, RID, const StringName &, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
 	FUNC2(material_set_next_pass, RID, RID)

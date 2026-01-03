@@ -2394,6 +2394,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("material_set_shader", "shader_material", "shader"), &RenderingServer::material_set_shader);
 	ClassDB::bind_method(D_METHOD("material_set_param", "material", "parameter", "value"), &RenderingServer::material_set_param);
 	ClassDB::bind_method(D_METHOD("material_get_param", "material", "parameter"), &RenderingServer::material_get_param);
+	ClassDB::bind_method(D_METHOD("material_set_buffer", "material", "buffer", "values"), &RenderingServer::material_set_buffer);
+	ClassDB::bind_method(D_METHOD("material_update_buffer", "material", "buffer", "values"), &RenderingServer::material_update_buffer);
+	ClassDB::bind_method(D_METHOD("material_get_buffer", "material", "buffer"), &RenderingServer::material_get_buffer);
+	ClassDB::bind_method(D_METHOD("material_set_buffer_raw", "material", "buffer", "values"), &RenderingServer::material_set_buffer_raw);
+	ClassDB::bind_method(D_METHOD("material_get_buffer_raw", "material", "buffer"), &RenderingServer::material_get_buffer_raw);
+	ClassDB::bind_method(D_METHOD("material_set_buffer_field", "material", "buffer", "field", "value"), &RenderingServer::material_set_buffer_field);
+	ClassDB::bind_method(D_METHOD("material_get_buffer_field", "material", "buffer", "field"), &RenderingServer::material_get_buffer_field);
 	ClassDB::bind_method(D_METHOD("material_set_render_priority", "material", "priority"), &RenderingServer::material_set_render_priority);
 
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &RenderingServer::material_set_next_pass);

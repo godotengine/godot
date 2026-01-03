@@ -165,10 +165,10 @@ Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 ////////////////////////////////////////////////////////////////////////////////
 // Fog material
 
-bool Fog::FogMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool Fog::FogMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, PackedByteArray> &p_buffer_params, bool p_uniform_dirty, bool p_textures_dirty, bool p_buffer_dirty) {
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, _get_fog_variant()), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true, true);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, p_buffer_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, p_buffer_params, shader_data->uniform_buffers, shader_data->storage_buffers, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, _get_fog_variant()), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true, true);
 }
 
 Fog::FogMaterialData::~FogMaterialData() {

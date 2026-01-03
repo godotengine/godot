@@ -29,6 +29,14 @@
 				[b]Note:[/b] Changes to the shader uniform will be effective on all instances using this [ShaderMaterial]. To prevent this, use per-instance uniforms with [method GeometryInstance3D.set_instance_shader_parameter] or duplicate the [ShaderMaterial] resource using [method Resource.duplicate]. Per-instance uniforms allow for better shader reuse and are therefore faster, so they should be preferred over duplicating the [ShaderMaterial] when possible.
 			</description>
 		</method>
+		<method name="set_shader_buffer">
+			<return type="void" />
+			<param index="0" name="buffer" type="StringName" />
+			<param index="1" name="values" type="PackedByteArray" />
+			<description>
+				Changes the values set for this material of a buffer in the shader.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">

@@ -862,6 +862,16 @@ MaterialStorage::MaterialData::~MaterialData() {
 			RD::get_singleton()->free_rid(uniform_buffer[i]);
 		}
 	}
+	for (RID &ub_rid : uniform_buffer_ids) {
+		if (ub_rid.is_valid()) {
+			RD::get_singleton()->free(ub_rid);
+		}
+	}
+	for (RID &sb_rid : storage_buffer_ids) {
+		if (sb_rid.is_valid()) {
+			RD::get_singleton()->free(sb_rid);
+		}
+	}
 }
 
 void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color, bool p_3d_material) {
@@ -1141,7 +1151,7 @@ void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_se
 	}
 }
 
-bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material) {
+bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, bool p_buffer_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, const HashMap<StringName, PackedByteArray> &p_buffer_params, const Vector<ShaderCompiler::GeneratedCode::Buffer> &p_uniform_buffers, const Vector<ShaderCompiler::GeneratedCode::Buffer> &p_storage_buffers, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material) {
 	if ((uint32_t)ubo_data[p_use_linear_color].size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer[p_use_linear_color].is_valid()) {
@@ -1191,12 +1201,83 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
-	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty())) {
+	if (uniform_buffer_ids.size() != p_uniform_buffers.size() || p_buffer_dirty) {
+		p_buffer_dirty = true;
+
+		int i = 0;
+		for (int id = p_uniform_buffers.size(); id < uniform_buffer_ids.size(); id++) {
+			if (uniform_buffer_ids[id].is_valid()) {
+				RD::get_singleton()->free(uniform_buffer_ids[id]);
+			}
+		}
+		uniform_buffer_ids.resize(p_uniform_buffers.size());
+		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_uniform_buffers) {
+			PackedByteArray data;
+
+			if (p_buffer_params.has(B.bufName)) {
+				data = p_buffer_params[B.bufName];
+			} else {
+				data.resize_initialized(B.total_size);
+			}
+
+			if (uniform_buffer_ids[i].is_valid()) {
+				RD::get_singleton()->free(uniform_buffer_ids[i]);
+			}
+			uniform_buffer_ids.set(i, RD::get_singleton()->uniform_buffer_create(data.size()));
+			RD::get_singleton()->buffer_update(uniform_buffer_ids[i++], 0, data.size(), data.ptrw());
+		}
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	if (storage_buffer_ids.size() != p_storage_buffers.size() || p_buffer_dirty) {
+		p_buffer_dirty = true;
+
+		int i = 0;
+
+		// clear out any RIDS that are about to get trimmed
+		for (int id = p_storage_buffers.size(); id < storage_buffer_ids.size(); id++) {
+			if (storage_buffer_ids[id].is_valid()) {
+				RD::get_singleton()->free(storage_buffer_ids[id]);
+			}
+		}
+		storage_buffer_ids.resize(p_storage_buffers.size());
+		for (const ShaderCompiler::GeneratedCode::Buffer &B : p_storage_buffers) {
+			PackedByteArray data;
+
+			if (p_buffer_params.has(B.bufName)) {
+				data.resize(p_buffer_params[B.bufName].size());
+				data = p_buffer_params[B.bufName];
+			} else {
+				data.resize_initialized(B.total_size);
+			}
+
+			if (storage_buffer_ids[i].is_valid()) {
+				RD::get_singleton()->free(storage_buffer_ids[i]);
+			}
+			storage_buffer_ids.set(i, RD::get_singleton()->storage_buffer_create(data.size()));
+			RD::get_singleton()->buffer_update(storage_buffer_ids[i++], 0, data.size(), data.ptrw());
+		}
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, nullptr, nullptr);
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty()) && (p_uniform_buffers.is_empty()) && (p_storage_buffers.is_empty())) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}
 
-	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+	if (!p_textures_dirty && !p_buffer_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		//no reason to update uniform set, only UBO (or nothing) was needed to update
 		return false;
 	}
@@ -1213,7 +1294,8 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		}
 
 		const RID *textures = texture_cache.ptrw();
-		for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
+		int k = 0;
+		for (int i = 0; i < p_texture_uniforms.size(); i++) {
 			const int array_size = p_texture_uniforms[i].array_size;
 
 			RD::Uniform u;
@@ -1226,6 +1308,28 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 			} else {
 				u.append_id(textures[k++]);
 			}
+			uniforms.push_back(u);
+		}
+
+		const RID *u_buffers = uniform_buffer_ids.ptrw();
+
+		for (int i = 0, j = k; i < p_uniform_buffers.size(); i++) {
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 1 + k;
+			u.append_id(u_buffers[k - j]);
+			k++;
+			uniforms.push_back(u);
+		}
+
+		const RID *s_buffers = storage_buffer_ids.ptrw();
+
+		for (int i = 0, j = k; i < p_storage_buffers.size(); i++) {
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 1 + k;
+			u.append_id(s_buffers[k - j]);
+			k++;
 			uniforms.push_back(u);
 		}
 	}
@@ -2083,12 +2187,25 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 	if (shader->data) {
 		shader->data->set_path_hint(shader->path_hint);
 		shader->data->set_code(p_code);
+
+		Vector<ShaderCompiler::GeneratedCode::Buffer> buffer_list = shader->data->uniform_buffers.duplicate();
+		buffer_list.append_array(shader->data->storage_buffers);
+		for (auto &buf : buffer_list) {
+			Pair<TypedDictionary<StringName, Variant>, StringName> new_buf_cache;
+			new_buf_cache.second = buf.format;
+			TypedDictionary<StringName, Variant> new_buf;
+			create_buffer_cache(new_buf, buf.structs, buf.members);
+			new_buf_cache.first = new_buf;
+			buffer_cache[buf.bufName] = new_buf_cache;
+			print_line(vformat("Cached buffer values: ") + ((Variant) new_buf).stringify());
+		}
+		buffer_list.~Vector(); // I want him gone
 	}
 
 	for (Material *E : shader->owners) {
 		Material *material = E;
 		material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
-		_material_queue_update(material, true, true);
+		_material_queue_update(material, true, true, true);
 	}
 }
 
@@ -2209,16 +2326,21 @@ void MaterialStorage::_material_uniform_set_erased(void *p_material) {
 	}
 }
 
-void MaterialStorage::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+void MaterialStorage::_material_queue_update(Material *material, bool p_uniform, bool p_texture, bool p_buffer) {
 	MutexLock lock(material_update_list_mutex);
 	material->uniform_dirty = material->uniform_dirty || p_uniform;
 	material->texture_dirty = material->texture_dirty || p_texture;
+	material->buffer_dirty = material->buffer_dirty || p_buffer;
 
 	if (material->update_element.in_list()) {
 		return;
 	}
 
 	material_update_list.add(&material->update_element);
+}
+
+void MaterialStorage::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+	return _material_queue_update(material, p_uniform, p_texture, p_uniform && p_texture);
 }
 
 void MaterialStorage::_update_queued_materials() {
@@ -2238,10 +2360,11 @@ void MaterialStorage::_update_queued_materials() {
 		bool uniforms_changed = false;
 
 		if (material->data) {
-			uniforms_changed = material->data->update_parameters(material->params, material->uniform_dirty, material->texture_dirty);
+			uniforms_changed = material->data->update_parameters(material->params, material->buffers, material->uniform_dirty, material->texture_dirty, material->buffer_dirty);
 		}
 		material->texture_dirty = false;
 		material->uniform_dirty = false;
+		material->buffer_dirty = false;
 
 		if (uniforms_changed) {
 			//some implementations such as 3D renderer cache the material uniform set, so update is required
@@ -2329,6 +2452,191 @@ MaterialStorage::ShaderData *MaterialStorage::material_get_shader_data(RID p_mat
 	}
 
 	return nullptr;
+}
+
+using ShaderBuffer = TypedDictionary<StringName, Variant>;
+
+void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_buffer, const ShaderBuffer &p_values) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+	if (!buffer_cache.has(p_buffer)) {
+		ERR_FAIL_MSG(vformat("Buffer \"%s\" does not exist", p_buffer));
+	}
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+	StringName &buffer_format = buffer_cache[p_buffer].second;
+	HashSet<StringName> used;
+
+	PackedByteArray data;
+	for (const KeyValue<Variant, Variant> &entry : buffer) {
+		const StringName &e_name = entry.key;
+		const Variant &e_val = entry.value;
+
+		bool valid = true;
+
+		if (!p_values.has(e_name)) {
+			WARN_PRINT(vformat("No value provided for field \"%s\" of buffer \"%s\"", e_name, p_buffer));
+			valid = false;
+		} else {
+			if (p_values[e_name].get_type() != e_val.get_type()) {
+				WARN_PRINT(vformat("Wrong value type provided for field \"%s\" of buffer \"%s\": expected type %s and got type %s", e_name, p_buffer, Variant::get_type_name(e_val.get_type()), Variant::get_type_name(p_values[e_name].get_type())));
+				valid = false;
+			}
+		}		
+		if (!valid) {
+			Variant new_val = Variant(e_val);
+			format_buffer_data(data, buffer_format, new_val, true);
+			buffer[e_name] = new_val;
+			continue;
+		}
+		const Variant &buf_val = p_values[e_name];
+		format_buffer_data(data, buffer_format, buf_val, false);
+		buffer[e_name] = buf_val;
+	}
+
+	material->buffers[p_buffer] = data;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
+}
+
+void MaterialStorage::material_update_buffer(RID p_material, const StringName &p_buffer, const ShaderBuffer &p_values) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	ERR_FAIL_COND_MSG(!buffer_cache.has(p_buffer), vformat("Buffer \"%s\" does not exist", p_buffer));
+
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+	StringName &buffer_format = buffer_cache[p_buffer].second;
+	bool changed = false;
+
+	PackedByteArray data;
+	for (const KeyValue<Variant, Variant> &entry : buffer) {
+		const StringName &e_name = entry.key;
+		const Variant &e_val = entry.value;
+
+
+		if (!p_values.has(e_name)) {
+			format_buffer_data(data, buffer_format, e_val, true);
+			continue;
+		}
+
+		if (p_values[e_name].get_type() != e_val.get_type()) {
+			WARN_PRINT(vformat("Wrong value type provided for field \"%s\" of buffer \"%s\": expected type %s and got type %s", e_name, p_buffer, Variant::get_type_name(e_val.get_type()), Variant::get_type_name(p_values[e_name].get_type())));
+			Variant new_val = Variant(e_val);
+			format_buffer_data(data, buffer_format, new_val, true);
+			buffer[e_name] = new_val;
+			if (!changed) {
+				changed = true;
+			}
+			continue;
+		}
+		const Variant &buf_val = p_values[e_name];
+		format_buffer_data(data, buffer_format, buf_val, false);
+		buffer[e_name] = buf_val;
+		if (!changed) {
+			changed = true;
+		}
+	}
+
+	if (!changed) {
+		return;
+	}
+
+	material->buffers[p_buffer] = data;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
+}
+
+
+ShaderBuffer MaterialStorage::material_get_buffer(RID p_material, const StringName &p_buffer) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, ShaderBuffer());
+
+	if (buffer_cache.has(p_buffer)) {
+		return buffer_cache[p_buffer].first;
+	} else {
+		return ShaderBuffer();
+	}
+}
+
+void MaterialStorage::material_set_buffer_raw(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	material->buffers[p_buffer] = p_values;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
+}
+
+PackedByteArray MaterialStorage::material_get_buffer_raw(RID p_material, const StringName &p_buffer) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, PackedByteArray());
+
+	if (material->buffers.has(p_buffer)) {
+		return material->buffers[p_buffer];
+	} else {
+		return PackedByteArray();
+	}
+}
+
+void MaterialStorage::material_set_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field, const Variant &p_value) {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	ERR_FAIL_COND_MSG(!buffer_cache.has(p_buffer), vformat("Buffer \"%s\" does not exist", p_buffer));
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+	ERR_FAIL_COND_MSG(!buffer.has(p_field), vformat("Buffer \"%s\" has no field with name \"%s\"", p_buffer, p_field));
+	ERR_FAIL_COND_MSG(buffer[p_field].get_type() != p_value.get_type(), vformat("Wrong value type provided for field \"%s\" of buffer \"%s\": expected type %s and got type %s", p_field, p_buffer, Variant::get_type_name(buffer[p_field].get_type()), Variant::get_type_name(p_value.get_type())));
+	StringName &buffer_format = buffer_cache[p_buffer].second;
+
+	PackedByteArray data;
+
+	for (const KeyValue<Variant, Variant> &entry : buffer) {
+		const StringName &e_name = entry.key;
+		const Variant &e_val = entry.value;
+
+		if (p_field != e_name) {
+			format_buffer_data(data, buffer_format, e_val, true);
+		} else {
+			format_buffer_data(data, buffer_format, p_value, false);
+			buffer[e_name] = p_value;
+		}
+	}
+
+	material->buffers[p_buffer] = data;
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false, true);
+	} else {
+		_material_queue_update(material, true, true, true);
+	}
+}
+
+Variant MaterialStorage::material_get_buffer_field(RID p_material, const StringName &p_buffer, const StringName &p_field) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, Variant());
+
+	ERR_FAIL_COND_V_MSG(!buffer_cache.has(p_buffer), Variant(), vformat("Buffer \"%s\" does not exist", p_buffer));
+
+	ShaderBuffer &buffer = buffer_cache[p_buffer].first;
+
+	if (buffer.has(p_field)) {
+		return buffer[p_field];
+	} else {
+		WARN_PRINT(vformat("Buffer \"%s\" has no field with name \"%s\"", p_buffer, p_field));
+		return Variant();
+	}
 }
 
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
