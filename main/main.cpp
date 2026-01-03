@@ -4633,6 +4633,12 @@ int Main::start() {
 				ERR_FAIL_NULL_V_MSG(scene, EXIT_FAILURE, "Failed loading scene: " + local_game_path + ".");
 				sml->add_current_scene(scene);
 
+				if (game_path == ResourceUID::ensure_path(String(GLOBAL_GET("application/run/main_scene")))) {
+					OS::get_singleton()->_custom_scene = false;
+				} else {
+					OS::get_singleton()->_custom_scene = true;
+				}
+
 #ifdef MACOS_ENABLED
 #ifndef TOOLS_ENABLED
 				if ((FileAccess::exists(OS::get_singleton()->get_bundle_resource_dir().path_join("Assets.car")) && !OS::get_singleton()->get_bundle_icon_name().is_empty()) || (!OS::get_singleton()->get_bundle_icon_path().is_empty())) {

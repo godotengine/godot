@@ -625,6 +625,10 @@ bool OS::has_feature(const String &p_feature) {
 #endif
 	}
 
+	if (p_feature == "custom_scene") {
+		return _custom_scene;
+	}
+
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
 	}
