@@ -47,6 +47,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
@@ -119,6 +120,18 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	if (updating || blend_tree.is_null()) {
 		return;
 	}
+	if (graph_update_queued) {
+		return;
+	}
+	graph_update_queued = true;
+	// Defer to idle time, so multiple requests can be merged.
+	callable_mp(this, &AnimationNodeBlendTreeEditor::update_graph_immediately).call_deferred();
+}
+
+void AnimationNodeBlendTreeEditor::update_graph_immediately() {
+	if (updating || blend_tree.is_null()) {
+		return;
+	}
 
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_animation_tree();
 	if (!tree) {
@@ -128,7 +141,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 	visible_properties.clear();
 
 	// Store selected nodes before clearing the graph.
-	List<StringName> selected_nodes;
+	LocalVector<StringName> selected_nodes;
 	for (int i = 0; i < graph->get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
 		if (gn && gn->is_selected()) {
@@ -164,6 +177,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 		node->set_title(agnode->get_caption());
 		node->set_name(E);
+		node->set_meta(animation_node_name_meta, E);
 
 		int base = 0;
 		if (E != SceneStringName(output)) {
@@ -174,8 +188,8 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
-			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
-			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
+			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode, E), CONNECT_DEFERRED);
+			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode, E), CONNECT_DEFERRED);
 			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
 			agnode->set_deletable(true);
@@ -198,7 +212,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			node->set_slot(base + i, true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")), false, 0, Color());
 		}
 
-		List<PropertyInfo> pinfo;
+		LocalVector<PropertyInfo> pinfo;
 		agnode->get_parameter_list(&pinfo);
 		for (const PropertyInfo &F : pinfo) {
 			if (!(F.usage & PROPERTY_USAGE_EDITOR)) {
@@ -218,7 +232,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				}
 				prop->set_name_split_ratio(ratio);
 				prop->update_property();
-				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
+				prop->connect(SNAME("property_changed"), callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
 
 				if (F.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					// Give the resource editor some more space to make the inside readable.
@@ -232,7 +246,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			}
 		}
 
-		node->connect("dragged", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged).bind(E));
+		node->connect(SNAME("dragged"), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_dragged).bind(E));
 
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {
 			node->add_child(memnew(HSeparator));
@@ -272,10 +286,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 			ProgressBar *pb = memnew(ProgressBar);
 
-			List<StringName> anims;
-			tree->get_animation_list(&anims);
-
-			for (const StringName &F : anims) {
+			for (const StringName &F : tree->get_sorted_animation_list()) {
 				mb->get_popup()->add_item(F);
 				options.push_back(F);
 			}
@@ -285,25 +296,25 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			animations[E] = pb;
 			node->add_child(pb);
 
-			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
+			mb->get_popup()->connect(SNAME("index_pressed"), callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), "GraphNode")->duplicate();
+		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), SNAME("GraphNode"))->duplicate();
 		if (sb_panel.is_valid()) {
 			sb_panel->set_content_margin(SIDE_TOP, 12 * EDSCALE);
 			sb_panel->set_content_margin(SIDE_BOTTOM, 12 * EDSCALE);
 			node->add_theme_style_override(SceneStringName(panel), sb_panel);
 		}
 
-		node->add_theme_constant_override("separation", 4 * EDSCALE);
+		node->add_theme_constant_override(SNAME("separation"), 4 * EDSCALE);
 	}
 
-	List<AnimationNodeBlendTree::NodeConnection> node_connections;
+	LocalVector<AnimationNodeBlendTree::NodeConnection> node_connections;
 	blend_tree->get_node_connections(&node_connections);
 
 	for (const AnimationNodeBlendTree::NodeConnection &E : node_connections) {
-		StringName from = E.output_node;
-		StringName to = E.input_node;
+		const StringName &from = E.output_node;
+		const StringName &to = E.input_node;
 		int to_idx = E.input_index;
 
 		graph->connect_node(from, 0, to, to_idx);
@@ -324,6 +335,48 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			}
 		}
 	}
+
+	graph_update_queued = false;
+}
+
+void AnimationNodeBlendTreeEditor::pan_to_node(const StringName &p_node_name, int p_input_index) {
+	GraphNode *target_node = nullptr;
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		if (GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i)); gn && gn->has_meta(animation_node_name_meta)) {
+			if (gn->get_meta(animation_node_name_meta).operator StringName() == p_node_name) {
+				target_node = gn;
+				break;
+			}
+		}
+	}
+	ERR_FAIL_NULL(target_node);
+
+	Vector2 position = target_node->get_position_offset();
+	if (p_input_index != -1) {
+		const Vector2 slot_pos = target_node->get_input_port_position(p_input_index);
+		position += slot_pos;
+	} else {
+		position += target_node->get_size() * 0.5f; // Center of the node.
+	}
+	const Vector2 target = position * graph->get_zoom() - graph->get_size() * 0.5f;
+
+	if (pan_to_tween.is_valid()) {
+		pan_to_tween->kill();
+	}
+	pan_to_tween = Ref<Tween>(graph->create_tween());
+
+	bool is_close_enough = graph->get_scroll_offset().distance_to(target) < 10.0f;
+	if (!is_close_enough) {
+		pan_to_tween
+				->set_trans(Tween::TRANS_CUBIC)
+				->set_ease(Tween::EASE_OUT)
+				->tween_method(callable_mp(graph, &GraphEdit::set_scroll_offset), graph->get_scroll_offset(), target, 0.25);
+	}
+
+	pan_to_tween->tween_property(target_node, NodePath("modulate"), Color(1, 1, 1, 1) * 10, 0.05);
+	pan_to_tween->set_trans(Tween::TRANS_LINEAR)
+			->set_ease(Tween::EASE_OUT)
+			->tween_property(target_node, NodePath("modulate"), Color(1, 1, 1, 1), 0.3);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
@@ -547,7 +600,7 @@ void AnimationNodeBlendTreeEditor::_delete_node_request(const String &p_which) {
 	undo_redo->add_do_method(blend_tree.ptr(), "remove_node", p_which);
 	undo_redo->add_undo_method(blend_tree.ptr(), "add_node", p_which, blend_tree->get_node(p_which), blend_tree.ptr()->get_node_position(p_which));
 
-	List<AnimationNodeBlendTree::NodeConnection> conns;
+	LocalVector<AnimationNodeBlendTree::NodeConnection> conns;
 	blend_tree->get_node_connections(&conns);
 
 	for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
@@ -795,16 +848,13 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	updating = true;
 
-	HashSet<String> paths;
-	HashMap<String, RBSet<String>> types;
+	HashSet<NodePath> paths;
+	HashMap<NodePath, RBSet<String>> types;
 	{
-		List<StringName> animation_list;
-		tree->get_animation_list(&animation_list);
-
-		for (const StringName &E : animation_list) {
+		for (const StringName &E : tree->get_sorted_animation_list()) {
 			Ref<Animation> anim = tree->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
-				String track_path = String(anim->track_get_path(i));
+				NodePath track_path = anim->track_get_path(i);
 				paths.insert(track_path);
 
 				String track_type_name;
@@ -835,8 +885,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	HashMap<String, TreeItem *> parenthood;
 
-	for (const String &E : paths) {
-		NodePath path = E;
+	for (const NodePath &path : paths) {
 		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
@@ -856,8 +905,8 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				ti->set_selectable(0, false);
 				ti->set_editable(0, false);
 
-				if (base->has_node(accum)) {
-					Node *node = base->get_node(accum);
+				Node *node = base->get_node_or_null(accum);
+				if (node) {
 					ti->set_icon(0, EditorNode::get_singleton()->get_object_icon(node));
 				}
 
@@ -866,10 +915,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		}
 
-		Node *node = nullptr;
-		if (base->has_node(accum)) {
-			node = base->get_node(accum);
-		}
+		Node *node = base->get_node_or_null(accum);
 		if (!node) {
 			continue; //no node, can't edit
 		}
@@ -994,7 +1040,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			if (is_visible_in_tree()) {
 				update_graph();
@@ -1007,20 +1053,13 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 				return; // Node has been changed.
 			}
 
-			String error;
-
-			error = tree->get_editor_error_message();
-
-			if (error != error_label->get_text()) {
-				error_label->set_text(error);
-				if (!error.is_empty()) {
-					error_panel->show();
-				} else {
-					error_panel->hide();
-				}
+			if (graph_update_queued) {
+				return;
 			}
 
-			List<AnimationNodeBlendTree::NodeConnection> conns;
+			update_error_message(tree, error_panel, error_label);
+
+			LocalVector<AnimationNodeBlendTree::NodeConnection> conns;
 			blend_tree->get_node_connections(&conns);
 			for (const AnimationNodeBlendTree::NodeConnection &E : conns) {
 				float activity = 0;
@@ -1094,7 +1133,7 @@ void AnimationNodeBlendTreeEditor::_node_changed(const StringName &p_node_name) 
 	update_graph();
 }
 
-void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
+void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node, const StringName &p_name) {
 	if (blend_tree.is_null()) {
 		return;
 	}
@@ -1104,13 +1143,14 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		return;
 	}
 
-	String prev_name = blend_tree->get_node_name(p_node);
+	String prev_name = p_name;
 	ERR_FAIL_COND(prev_name.is_empty());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
 	ERR_FAIL_NULL(gn);
 
 	const String &new_name = p_text;
 
+	ERR_FAIL_COND_MSG(String(p_name).validate_node_name() != p_name, "Invalid AnimationNode name, ignoring rename.");
 	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
 
 	if (new_name == prev_name) {
@@ -1137,6 +1177,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	undo_redo->commit_action();
 	updating = false;
 	gn->set_name(new_name);
+	gn->set_meta(animation_node_name_meta, new_name);
 	gn->set_size(gn->get_minimum_size());
 
 	//change editors accordingly
@@ -1151,7 +1192,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	//recreate connections
 	graph->clear_connections();
 
-	List<AnimationNodeBlendTree::NodeConnection> node_connections;
+	LocalVector<AnimationNodeBlendTree::NodeConnection> node_connections;
 	blend_tree->get_node_connections(&node_connections);
 
 	for (const AnimationNodeBlendTree::NodeConnection &E : node_connections) {
@@ -1175,11 +1216,11 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	current_node_rename_text = String();
 }
 
-void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Ref<AnimationNode> p_node) {
+void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Ref<AnimationNode> p_node, const StringName &p_name) {
 	if (current_node_rename_text.is_empty()) {
 		return; // The text_submitted signal triggered the graph update and freed the LineEdit.
 	}
-	_node_renamed(current_node_rename_text, p_node);
+	_node_renamed(current_node_rename_text, p_node, p_name);
 }
 
 void AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed(const String &p_text) {
@@ -1269,10 +1310,8 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
-	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
-	error_label->set_text("eh");
 
 	filter_dialog = memnew(AcceptDialog);
 	add_child(filter_dialog);
