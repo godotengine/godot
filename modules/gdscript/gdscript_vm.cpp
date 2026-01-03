@@ -3971,7 +3971,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 
 		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+		if (p_instance->owner_id != ObjectID()) {
+			// skip debug when using set_script() during calling
+			GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+		}
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
