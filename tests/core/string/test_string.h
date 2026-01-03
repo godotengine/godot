@@ -861,16 +861,59 @@ TEST_CASE("[String] Splitting") {
 }
 
 TEST_CASE("[String] format") {
-	const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
+	{ // Array index/value.
+		const String format_template = "red=\"$0\" green=\"$1\" blue=\"$2\" alpha=\"$3\" missing=\"$4\"";
 
-	Dictionary value_dictionary;
-	value_dictionary["red"] = 10;
-	value_dictionary["green"] = 20;
-	value_dictionary["blue"] = "bla";
-	value_dictionary["alpha"] = 0.4;
-	String value = value_format.format(value_dictionary, "$_");
+		Array value_array{ 10, 20, "bla", 0.4 };
+		String formatted_string = format_template.format(value_array, "$_");
 
-	CHECK(value == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\"");
+		CHECK(formatted_string == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\" missing=\"$4\"");
+	}
+	{ // Array in order.
+		const String format_template = "red=\"{}\" green=\"{}\" blue=\"{}\" alpha=\"{}\" missing=\"{}\"";
+
+		Array value_array{ 10, 20, "bla", 0.4 };
+		String formatted_string = format_template.format(value_array, "{}");
+
+		CHECK(formatted_string == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\" missing=\"{}\"");
+	}
+	{ // Array of Array pair key/values.
+		const String format_template = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\" missing=\"$missing\"";
+
+		Array value_array{ Array{ "red", 10 }, Array{ "green", 20 }, Array{ "blue", "bla" }, Array{ "alpha", 0.4 } };
+		String formatted_string = format_template.format(value_array, "$_");
+
+		CHECK(formatted_string == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\" missing=\"$missing\"");
+	}
+	{ // Dictionary key/values.
+		const String format_template = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\" missing=\"$missing\"";
+
+		Dictionary value_dictionary;
+		value_dictionary["red"] = 10;
+		value_dictionary["green"] = 20;
+		value_dictionary["blue"] = "bla";
+		value_dictionary["alpha"] = 0.4;
+		String formatted_string = format_template.format(value_dictionary, "$_");
+
+		CHECK(formatted_string == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\" missing=\"$missing\"");
+	}
+
+	// TODO: Test Object properties form of values.
+
+	{ // Ensure single-pass key replacement
+		const String format_template = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\" missing=\"$missing\"";
+
+		// Check that String::format doesn't replace each key sequentially so that if early values map to later keys,
+		// they don't get replaced.
+		Dictionary value_dictionary;
+		value_dictionary["red"] = "$green";
+		value_dictionary["green"] = "$blue";
+		value_dictionary["blue"] = "$alpha";
+		value_dictionary["alpha"] = "$red";
+		String formatted_string = format_template.format(value_dictionary, "$_");
+
+		CHECK(formatted_string == "red=\"$green\" green=\"$blue\" blue=\"$alpha\" alpha=\"$red\" missing=\"$missing\"");
+	}
 }
 
 TEST_CASE("[String] sprintf") {
