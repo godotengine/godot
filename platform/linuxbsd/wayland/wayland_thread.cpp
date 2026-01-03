@@ -553,7 +553,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		struct wl_seat *wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, CLAMP((int)version, 1, 9));
+		struct wl_seat *wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, CLAMP((int)version, 1, 10));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_seat);
 
 		SeatState *ss = memnew(SeatState);
@@ -2279,6 +2279,7 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	xkb_keycode_t xkb_keycode = key + 8;
 
 	bool pressed = state & WL_KEYBOARD_KEY_STATE_PRESSED;
+	bool repeated = state & WL_KEYBOARD_KEY_STATE_REPEATED;
 
 	if (pressed) {
 		if (xkb_keymap_key_repeats(ss->xkb_keymap, xkb_keycode)) {
@@ -2291,7 +2292,12 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 		ss->repeating_keycode = XKB_KEYCODE_INVALID;
 	}
 
-	_seat_state_handle_xkb_keycode(ss, xkb_keycode, pressed);
+	if (repeated && ss->repeat_key_delay_msec != 0) {
+		// This shouldn't happen, but _technically_ the spec allows for this undefined state to happen. Let's just assume it was a mistake.
+		return;
+	}
+
+	_seat_state_handle_xkb_keycode(ss, xkb_keycode, pressed | repeated, repeated);
 }
 
 void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
