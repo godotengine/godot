@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
@@ -1119,7 +1120,6 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 			modified_files.push_back(fpath);
 		}
 	}
-
 	// Hide replace bar so we can't trigger the action twice without doing a new search.
 	_replace_container->hide();
 
@@ -1266,6 +1266,8 @@ void FindInFilesPanel::apply_replaces_in_file(const String &fpath, const Vector<
 	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
 	f->store_string(buffer);
+
+	EditorFileSystem::get_singleton()->update_file(fpath);
 }
 
 String FindInFilesPanel::get_replace_text() {
