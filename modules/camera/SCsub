@@ -6,7 +6,7 @@ Import("env_modules")
 
 env_camera = env_modules.Clone()
 
-if env["platform"] in ["windows", "macos", "linuxbsd", "android"]:
+if env["platform"] in ["windows", "macos", "linuxbsd", "android", "web"]:
     env_camera.add_source_files(env.modules_sources, "register_types.cpp")
 
 if env["platform"] == "windows":
@@ -23,3 +23,6 @@ elif env["platform"] == "linuxbsd":
     env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_feed_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "buffer_decoder.cpp")
+
+elif env["platform"] == "web":
+    env_camera.add_source_files(env.modules_sources, "camera_web.cpp")

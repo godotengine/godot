@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_driver_web.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
-#endif
+#include "godot_camera.h"
+#include "godot_js.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
-}
+struct FormatInfo {
+	int width;
+	int height;
+};
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+struct CameraInfo {
+	int index;
+	String device_id;
+	String label;
+	Vector<FormatInfo> formats;
+};
+
+using CameraDriverWebGetCamerasCallback = void (*)(void *p_context, const Vector<CameraInfo> &p_camera_info);
+
+class CameraDriverWeb {
+private:
+	static CameraDriverWeb *singleton;
+	static Array _camera_info_key;
+	static int _get_int_value(const Variant &p_val);
+	WASM_EXPORT static void _on_get_cameras_callback(void *context, void *callback, const char *json_ptr);
+
+public:
+	static CameraDriverWeb *get_singleton();
+	void get_cameras(void *p_context, CameraDriverWebGetCamerasCallback p_callback);
+	void get_pixel_data(void *p_context, const String &p_device_id, const int p_width, const int p_height, void (*p_callback)(void *, const uint8_t *, const int, const int, const int, const int, const int, const char *), void (*p_denied_callback)(void *));
+	void stop_stream(const String &device_id = String());
+
+	CameraDriverWeb();
+	~CameraDriverWeb();
+};

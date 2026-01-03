@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  godot_camera.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
+#include <emscripten.h>
+#include <cstdint>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+extern void godot_js_camera_get_cameras(
+		void *p_context,
+		void *p_callback,
+		void (*p_callback_ptr)(void *p_context, void *p_callback, const char *p_result));
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
+extern void godot_js_camera_get_pixel_data(
+		void *p_context,
+		const char *p_device_id,
+		const int p_width,
+		const int p_height,
+		void (*p_callback)(void *p_context, const uint8_t *p_data, const int p_size, const int p_width, const int p_height, const int p_orientation, const int p_facing_mode, const char *p_error),
+		void (*p_denied_callback)(void *p_context));
+
+extern void godot_js_camera_stop_stream(const char *p_device_id = nullptr);
+
+#ifdef __cplusplus
 }
-
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#endif
