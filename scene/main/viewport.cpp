@@ -5376,14 +5376,6 @@ Viewport::Viewport() {
 	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_GET("gui/timers/tooltip_delay_sec");
 
-#ifndef _3D_DISABLED
-	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));
-	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
-	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
-	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
-	set_anisotropic_filtering_level((Viewport::AnisotropicFiltering)(int)GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
-#endif // _3D_DISABLED
-
 	set_sdf_oversize(sdf_oversize); // Set to server.
 
 	// Physics interpolation mode for viewports is a special case.
