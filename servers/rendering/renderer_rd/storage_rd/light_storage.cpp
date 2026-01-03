@@ -1529,6 +1529,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		uint32_t padding_pixels = (1 << (mipmaps - 1));
 		atlas->reflection_texture_size = atlas->size * 2 + padding_pixels * 2;
 		atlas->uv_border_size = float(padding_pixels) / float(atlas->reflection_texture_size);
+		atlas->roughness_levels = mipmaps;
 
 		bool use_storage = !copy_effects->get_raster_effects().has_flag(CopyEffects::RASTER_EFFECT_OCTMAP);
 		{
@@ -1562,7 +1563,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 		atlas->reflections.resize(atlas->count);
 		for (int i = 0; i < atlas->count; i++) {
-			atlas->reflections.write[i].data.update_reflection_data(atlas->reflection_texture_size, mipmaps, false, atlas->reflection, i, update_always, RendererSceneRenderRD::get_singleton()->get_sky()->roughness_layers, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format(), atlas->uv_border_size);
+			atlas->reflections.write[i].data.update_reflection_data(atlas->reflection_texture_size, mipmaps, false, atlas->reflection, i, update_always, atlas->roughness_levels, RendererSceneRenderRD::get_singleton()->_render_buffers_get_preferred_color_format(), atlas->uv_border_size);
 		}
 
 		for (int i = 0; i < 6; i++) {

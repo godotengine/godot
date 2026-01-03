@@ -958,7 +958,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 		hvec4 reflection;
 		half reflection_blend = max(half(0.0), blend - reflection_accum.a);
 
-		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
+		float roughness_lod = sqrt(roughness) * scene_data_block.data.probe_max_roughness_lod;
 		vec2 reflection_uv = vec3_to_oct_with_border(local_ref_vec, border_size);
 		reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(reflection_uv, reflections.data[ref_index].index), roughness_lod).rgb) * REFLECTION_MULTIPLIER;
 		reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
@@ -983,7 +983,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			hvec4 ambient_out;
 			half ambient_blend = max(half(0.0), blend - ambient_accum.a);
 
-			float roughness_lod = MAX_ROUGHNESS_LOD;
+			float roughness_lod = scene_data_block.data.probe_max_roughness_lod;
 			vec2 ambient_uv = vec3_to_oct_with_border(local_amb_vec, border_size);
 			ambient_out.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, reflections.data[ref_index].index), roughness_lod).rgb);
 			ambient_out.rgb *= half(reflections.data[ref_index].exposure_normalization);

@@ -1396,6 +1396,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 			float border_size = light_storage->reflection_atlas_get_border_size(p_reflection_atlas);
 			scene_data.reflection_atlas_border_size.x = border_size;
 			scene_data.reflection_atlas_border_size.y = 1.0f - border_size * 2.0;
+			scene_data.probe_max_roughness_lod = light_storage->reflection_atlas_get_roughness_levels(p_reflection_atlas) - 1;
 		}
 
 		scene_data.time = time;

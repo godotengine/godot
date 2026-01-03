@@ -84,6 +84,8 @@ public:
 	float radiance_border_size;
 	Size2 reflection_atlas_border_size;
 
+	float probe_max_roughness_lod;
+
 	float time;
 	float time_step;
 
@@ -182,6 +184,9 @@ private:
 		float IBL_exposure_normalization; // Adjusts for baked exposure.
 		uint32_t camera_visible_layers;
 		float pass_alpha_multiplier;
+
+		float probe_max_roughness_lod;
+		float padding[3];
 	};
 
 	struct UBODATA {
