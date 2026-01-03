@@ -161,6 +161,14 @@ AudioListener3D::DopplerTracking AudioListener3D::get_doppler_tracking() const {
 	return doppler_tracking;
 }
 
+void AudioListener3D::set_doppler_scale(float p_scale) {
+	doppler_scale = p_scale;
+}
+
+float AudioListener3D::get_doppler_scale() const {
+	return doppler_scale;
+}
+
 void AudioListener3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_current"), &AudioListener3D::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current"), &AudioListener3D::clear_current);
@@ -168,8 +176,11 @@ void AudioListener3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_listener_transform"), &AudioListener3D::get_listener_transform);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &AudioListener3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &AudioListener3D::get_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("set_doppler_scale", "mode"), &AudioListener3D::set_doppler_scale);
+	ClassDB::bind_method(D_METHOD("get_doppler_scale"), &AudioListener3D::get_doppler_scale);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doppler_scale", PROPERTY_HINT_RANGE, "-4.0,4.0,or_less,or_greater"), "set_doppler_scale", "get_doppler_scale");
 
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);

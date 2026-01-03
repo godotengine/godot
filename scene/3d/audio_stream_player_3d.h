@@ -74,6 +74,7 @@ private:
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	float unit_size = 10.0;
 	float max_db = 3.0;
+	float doppler_scale = 1.0;
 	// Internally used to take doppler tracking into account.
 	float actual_pitch_scale = 1.0;
 
@@ -195,6 +196,9 @@ public:
 
 	void set_doppler_tracking(DopplerTracking p_tracking);
 	DopplerTracking get_doppler_tracking() const;
+
+	void set_doppler_scale(float p_scale);
+	float get_doppler_scale() const;
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
