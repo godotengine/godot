@@ -382,6 +382,11 @@ window.addEventListener('load', () => {
 					});
 				});
 			});
+			navigator.serviceWorker.ready.then((registration) => {
+				window.addEventListener('pagehide', () => {
+					registration.active.postMessage('pagehide');
+				});
+			});
 		} catch (e) {
 			console.error('Error while registering service worker:', e);
 		}
