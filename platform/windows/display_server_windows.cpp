@@ -560,13 +560,13 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			ds->file_dialog_wnd[hwnd_dialog] = fd;
 		}
 
-		HICON mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		HICON w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)w_icon);
 		}
-		mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+		w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)w_icon);
 		}
 		IPropertyStore *prop_store;
 		HRESULT hr = SHGetPropertyStoreForWindow(hwnd_dialog, IID_IPropertyStore, (void **)&prop_store);
@@ -1727,15 +1727,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		wd.layered_window = true;
 	}
 
-	// Inherit icons from MAIN_WINDOW for all sub windows.
-	HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (mainwindow_icon) {
-		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
-	}
-	mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
-	if (mainwindow_icon) {
-		SendMessage(windows[window_id].hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
-	}
+	_update_window_icon(wd);
 #ifdef RD_ENABLED
 	if (rendering_device) {
 		rendering_device->screen_create(window_id);
@@ -1989,7 +1981,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon.is_valid()) {
+	if (wd.icon.is_valid() || icon.is_valid() || (icon_big && icon_small)) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2451,9 +2443,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon.is_valid()) {
-		set_icon(icon);
-	}
+	_update_window_icon(wd);
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
@@ -2631,6 +2621,108 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 		return WINDOW_MODE_MAXIMIZED;
 	} else {
 		return WINDOW_MODE_WINDOWED;
+	}
+}
+
+void DisplayServerWindows::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.icon_set = true;
+
+	Ref<Image> img;
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+		img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+	}
+	wd.icon = img;
+	_update_window_icon(wd);
+}
+
+void DisplayServerWindows::_update_window_icon(WindowData &p_wd) {
+	Ref<Image> w_icon;
+	if (p_wd.icon_set) {
+		w_icon = p_wd.icon;
+	} else {
+		if (icon_big && icon_small) {
+			// Use native icon.
+			SendMessage(p_wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+			SendMessage(p_wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+			return;
+		} else if (icon.is_null()) {
+			// Use main window icon.
+			HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+			if (mainwindow_icon) {
+				SendMessage(p_wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+			}
+			mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+			if (mainwindow_icon) {
+				SendMessage(p_wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+			}
+			return;
+		} else {
+			// Use image icon.
+			w_icon = icon;
+		}
+	}
+
+	if (w_icon.is_valid()) {
+		if (p_wd.icon_handle != nullptr) {
+			DestroyIcon(p_wd.icon_handle);
+		}
+
+		int w = w_icon->get_width();
+		int h = w_icon->get_height();
+
+		// Create temporary bitmap buffer.
+		int icon_len = 40 + h * w * 4;
+		p_wd.icon_data.resize(icon_len);
+		BYTE *icon_bmp = (BYTE *)p_wd.icon_data.ptrw();
+
+		encode_uint32(40, &icon_bmp[0]);
+		encode_uint32(w, &icon_bmp[4]);
+		encode_uint32(h * 2, &icon_bmp[8]);
+		encode_uint16(1, &icon_bmp[12]);
+		encode_uint16(32, &icon_bmp[14]);
+		encode_uint32(BI_RGB, &icon_bmp[16]);
+		encode_uint32(w * h * 4, &icon_bmp[20]);
+		encode_uint32(0, &icon_bmp[24]);
+		encode_uint32(0, &icon_bmp[28]);
+		encode_uint32(0, &icon_bmp[32]);
+		encode_uint32(0, &icon_bmp[36]);
+
+		uint8_t *wr = &icon_bmp[40];
+		const uint8_t *r = w_icon->get_data().ptr();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+				uint8_t *wpx = &wr[(i * w + j) * 4];
+				wpx[0] = rpx[2];
+				wpx[1] = rpx[1];
+				wpx[2] = rpx[0];
+				wpx[3] = rpx[3];
+			}
+		}
+
+		p_wd.icon_handle = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+
+		// Set the icon for the window.
+		SendMessage(p_wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)p_wd.icon_handle);
+
+		// Set the icon in the task manager (should we do this?).
+		SendMessage(p_wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)p_wd.icon_handle);
+	} else {
+		if (p_wd.icon_handle != nullptr) {
+			DestroyIcon(p_wd.icon_handle);
+		}
+		p_wd.icon_data.clear();
+		p_wd.icon_handle = nullptr;
+
+		SendMessage(p_wd.hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(p_wd.hWnd, WM_SETICON, ICON_BIG, 0);
 	}
 }
 
@@ -3925,6 +4017,16 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
 
+	if (icon_big != nullptr) {
+		DestroyIcon(icon_big);
+		icon_big = nullptr;
+	}
+
+	if (icon_small != nullptr) {
+		DestroyIcon(icon_small);
+		icon_big = nullptr;
+	}
+
 	ICONDIR *icon_dir = (ICONDIR *)memalloc(sizeof(ICONDIR));
 	int pos = 0;
 
@@ -3979,22 +4081,20 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_big;
 	data_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
 	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_small;
 	data_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
 	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
 	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
@@ -4010,74 +4110,43 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
 
 	memdelete(icon_dir);
+
+	icon = Ref<Image>();
+	for (KeyValue<WindowID, WindowData> &pair : windows) {
+		if (pair.value.icon_set) {
+			continue;
+		}
+		_update_window_icon(pair.value);
+	}
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
-	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND(p_icon.is_null());
 
-	if (p_icon.is_valid()) {
-		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+	icon = p_icon->duplicate();
+	icon->convert(Image::FORMAT_RGBA8);
 
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
+	if (icon_big != nullptr) {
+		DestroyIcon(icon_big);
+		icon_big = nullptr;
+	}
+
+	if (icon_small != nullptr) {
+		DestroyIcon(icon_small);
+		icon_big = nullptr;
+	}
+
+	for (KeyValue<WindowID, WindowData> &pair : windows) {
+		if (pair.value.icon_set) {
+			continue;
 		}
-
-		int w = img->get_width();
-		int h = img->get_height();
-
-		// Create temporary bitmap buffer.
-		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
-
-		encode_uint32(40, &icon_bmp[0]);
-		encode_uint32(w, &icon_bmp[4]);
-		encode_uint32(h * 2, &icon_bmp[8]);
-		encode_uint16(1, &icon_bmp[12]);
-		encode_uint16(32, &icon_bmp[14]);
-		encode_uint32(BI_RGB, &icon_bmp[16]);
-		encode_uint32(w * h * 4, &icon_bmp[20]);
-		encode_uint32(0, &icon_bmp[24]);
-		encode_uint32(0, &icon_bmp[28]);
-		encode_uint32(0, &icon_bmp[32]);
-		encode_uint32(0, &icon_bmp[36]);
-
-		uint8_t *wr = &icon_bmp[40];
-		const uint8_t *r = img->get_data().ptr();
-
-		for (int i = 0; i < h; i++) {
-			for (int j = 0; j < w; j++) {
-				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
-				uint8_t *wpx = &wr[(i * w + j) * 4];
-				wpx[0] = rpx[2];
-				wpx[1] = rpx[1];
-				wpx[2] = rpx[0];
-				wpx[3] = rpx[3];
-			}
-		}
-
-		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_NULL(hicon);
-
-		icon = img;
-
-		// Set the icon for the window.
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-		// Set the icon in the task manager (should we do this?).
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
-	} else {
-		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
+		_update_window_icon(pair.value);
 	}
 }
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
-	HICON hicon = nullptr;
+	IndicatorData idat;
+
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4091,9 +4160,8 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_data.resize(icon_len);
+		BYTE *icon_bmp = (BYTE *)idat.icon_data.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4121,10 +4189,9 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon_handle = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
 	}
 
-	IndicatorData idat;
 	idat.callback = p_callback;
 
 	NOTIFYICONDATAW ndat;
@@ -4134,7 +4201,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uID = indicator_id_counter;
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon_handle;
 	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
@@ -4150,7 +4217,11 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	HICON hicon = nullptr;
+	if (indicators[p_id].icon_handle != nullptr) {
+		DestroyIcon(indicators[p_id].icon_handle);
+		indicators[p_id].icon_handle = nullptr;
+	}
+
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4164,9 +4235,8 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		indicators[p_id].icon_data.resize(icon_len);
+		BYTE *icon_bmp = (BYTE *)indicators[p_id].icon_data.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4194,7 +4264,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		indicators[p_id].icon_handle = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
 	}
 
 	NOTIFYICONDATAW ndat;
@@ -4203,7 +4273,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_ICON;
-	ndat.hIcon = hicon;
+	ndat.hIcon = indicators[p_id].icon_handle;
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -4262,6 +4332,10 @@ Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
 
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
 	ERR_FAIL_COND(!indicators.has(p_id));
+
+	if (indicators[p_id].icon_handle != nullptr) {
+		DestroyIcon(indicators[p_id].icon_handle);
+	}
 
 	NOTIFYICONDATAW ndat;
 	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
@@ -6644,6 +6718,10 @@ void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
 		wd.drop_target->Release();
 	}
 
+	if (wd.icon_handle != nullptr) {
+		DestroyIcon(wd.icon_handle);
+	}
+
 	DestroyWindow(wd.hWnd);
 	windows.erase(p_window_id);
 }
@@ -7646,6 +7724,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	// Destroy all status indicators.
 	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
+		if (E->value.icon_handle != nullptr) {
+			DestroyIcon(E->value.icon_handle);
+		}
+
 		NOTIFYICONDATAW ndat;
 		ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
 		ndat.cbSize = sizeof(NOTIFYICONDATAW);
