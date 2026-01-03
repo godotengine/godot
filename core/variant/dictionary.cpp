@@ -754,6 +754,10 @@ const void *Dictionary::id() const {
 	return _p;
 }
 
+Dictionary::operator String() const {
+	return Variant(*this).stringify();
+}
+
 Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
 	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();
