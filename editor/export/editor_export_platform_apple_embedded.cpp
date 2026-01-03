@@ -256,7 +256,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_debug", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple Development"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple Distribution"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple Development"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_specifier_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, ""), ""));
@@ -854,7 +854,7 @@ Error EditorExportPlatformAppleEmbedded::_codesign(String p_file, void *p_userda
 		if (data->debug) {
 			sign_id = data->preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "Apple Development" : data->preset->get("application/code_sign_identity_debug");
 		} else {
-			sign_id = data->preset->get("application/code_sign_identity_release").operator String().is_empty() ? "Apple Distribution" : data->preset->get("application/code_sign_identity_release");
+			sign_id = data->preset->get("application/code_sign_identity_release").operator String().is_empty() ? "Apple Development" : data->preset->get("application/code_sign_identity_release");
 		}
 
 		List<String> codesign_args;
