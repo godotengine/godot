@@ -209,6 +209,9 @@ public:
 	void set_weights(const Vector<float> &p_weights);
 	void set_smooth_group(uint32_t p_group);
 
+	int get_vertex_count() const;
+	int get_index_count() const;
+
 	void add_vertex(const Vector3 &p_vertex);
 
 	void add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const Vector<Plane> &p_tangents = Vector<Plane>());

@@ -163,6 +163,12 @@
 				Returns the format for custom [param channel_index] (currently up to 4). Returns [constant CUSTOM_MAX] if this custom channel is unused.
 			</description>
 		</method>
+		<method name="get_index_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current number of indices.
+			</description>
+		</method>
 		<method name="get_primitive_type" qualifiers="const">
 			<return type="int" enum="Mesh.PrimitiveType" />
 			<description>
@@ -175,6 +181,12 @@
 				By default, returns [constant SKIN_4_WEIGHTS] to indicate only 4 bone influences per vertex are used.
 				Returns [constant SKIN_8_WEIGHTS] if up to 8 influences are used.
 				[b]Note:[/b] This function returns an enum, not the exact number of weights.
+			</description>
+		</method>
+		<method name="get_vertex_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the current number of vertices.
 			</description>
 		</method>
 		<method name="index">
