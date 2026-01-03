@@ -876,6 +876,13 @@ bool Projection::is_orthogonal() const {
 	return columns[2][3] == 0.0;
 }
 
+bool Projection::is_frustum_symmetric() const {
+	return (columns[0][1] == 0.0f && columns[0][2] == 0.0f && columns[0][3] == 0.0f &&
+			columns[1][0] == 0.0f && columns[1][2] == 0.0f && columns[1][3] == 0.0f &&
+			columns[2][0] == 0.0f && columns[2][1] == 0.0f &&
+			columns[3][0] == 0.0f && columns[3][1] == 0.0f);
+}
+
 real_t Projection::get_fov() const {
 	// NOTE: This assumes a rectangular projection plane, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)

@@ -7,6 +7,7 @@ mode_cubemap = #define USE_CUBEMAP_PASS
 #[specializations]
 
 USE_MULTIVIEW = false
+USE_ASYMMETRIC_PROJECTION = false
 USE_INVERTED_Y = true
 APPLY_TONEMAPPING = true
 USE_QUARTER_RES_PASS = false
@@ -125,6 +126,8 @@ layout(std140) uniform MultiviewData { // ubo:11
 	highp vec4 eye_offset[MAX_VIEWS];
 }
 multiview_data;
+#elif defined(USE_ASYMMETRIC_PROJECTION)
+uniform mat4 inv_projection_matrix;
 #endif
 
 layout(location = 0) out vec4 frag_color;
@@ -192,6 +195,10 @@ void main() {
 
 	// Unproject will give us the position between the eyes, need to re-offset.
 	cube_normal += multiview_data.eye_offset[ViewIndex].xyz;
+#elif defined(USE_ASYMMETRIC_PROJECTION)
+	vec4 unproject = vec4(uv_interp.x, -uv_interp.y, -1.0, 1.0);
+	vec4 unprojected = inv_projection_matrix * unproject;
+	cube_normal = unprojected.xyz / unprojected.w;
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;

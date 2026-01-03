@@ -78,7 +78,7 @@ layout(set = 0, binding = 2, std140) uniform SkySceneData {
 
 	float z_far; // 4 - 52
 	uint directional_light_count; // 4 - 56
-	uint pad1; // 4 - 60
+	bool full_projection; // 4 - 60
 	uint pad2; // 4 - 64
 }
 sky_scene_data;
@@ -215,9 +215,15 @@ void main() {
 	// Unproject will give us the position between the eyes, need to re-offset
 	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
 #else
-	cube_normal.z = -1.0;
-	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
-	cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
+	if (sky_scene_data.full_projection) {
+		vec4 unproject = vec4(uv_interp, 0.0, 1.0);
+		vec4 unprojected = sky_scene_data.view_inv_projections[0] * unproject;
+		cube_normal = unprojected.xyz / unprojected.w;
+	} else {
+		cube_normal.z = -1.0;
+		cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
+		cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
+	}
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
