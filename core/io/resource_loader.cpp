@@ -415,6 +415,12 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	}
 	load_task.need_wait = false;
 
+	bool should_auto_complete = !load_task.load_token->user_callbacks.is_empty();
+	String user_path_for_auto_complete;
+	if (should_auto_complete) {
+		user_path_for_auto_complete = load_task.load_token->user_path;
+	}
+
 	bool ignoring = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP;
 	bool replacing = load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE || load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP;
 	bool unlock_pending = true;
@@ -491,6 +497,11 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		thread_load_mutex.unlock();
 	}
 
+	if (should_auto_complete) {
+		Callable callable = callable_mp_static(_load_threaded_auto_complete_user_request).bind(user_path_for_auto_complete);
+		MessageQueue::get_main_singleton()->push_callable(callable);
+	}
+
 	if (load_nesting == 0) {
 		if (own_mq_override) {
 			MessageQueue::set_thread_singleton_override(nullptr);
@@ -518,6 +529,60 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	return token.is_valid() ? OK : FAILED;
 }
 
+Error ResourceLoader::load_threaded(const String &p_path, const Callable &p_callback, const String &p_type_hint, bool p_use_sub_threads, ResourceFormatLoader::CacheMode p_cache_mode) {
+	Ref<ResourceLoader::LoadToken> token = _load_start(p_path, p_type_hint, p_use_sub_threads ? LOAD_THREAD_DISTRIBUTE : LOAD_THREAD_SPAWN_SINGLE, p_cache_mode, true);
+	if (!token.is_valid()) {
+		return FAILED;
+	}
+
+	bool finished = false;
+	ThreadLoadStatus status = THREAD_LOAD_INVALID_RESOURCE;
+	Ref<Resource> resource;
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
+
+		// All these ERR_FAILs are left without messages because they're meant to guard against
+		// a very specific data race, where load_threaded_get is called mid-method from another thread.
+		// Elsewhere in this file, state invalidation from mutex relocking (mostly temp_relock) is ignored,
+		// so I guess we're fine.
+		ERR_FAIL_COND_V(token->user_rc == 0, FAILED);
+		ERR_FAIL_COND_V(!user_load_tokens.has(p_path), FAILED);
+		ERR_FAIL_COND_V(user_load_tokens[p_path] != token.ptr(), FAILED);
+
+		ThreadLoadTask *load_task_ptr;
+		if (token->task_if_unregistered) {
+			load_task_ptr = token->task_if_unregistered;
+		} else {
+			ERR_FAIL_COND_V_MSG(!thread_load_tasks.has(token->local_path), ERR_BUG, "Bug in ResourceLoader logic, please report.");
+			load_task_ptr = &thread_load_tasks[token->local_path];
+		}
+
+		status = load_task_ptr->status;
+		if (status == THREAD_LOAD_IN_PROGRESS) {
+			token->user_callbacks.push_back(p_callback);
+		} else {
+			Error error;
+			resource = _load_complete_inner(*token.ptr(), &error, thread_load_lock);
+			finished = true;
+
+			token->user_rc--;
+			if (token->user_rc == 0) {
+				token->user_path.clear();
+				user_load_tokens.erase(p_path);
+				token->unreference();
+			}
+		}
+	}
+
+	if (finished) {
+		p_callback.call_deferred(status, resource);
+	}
+
+	print_lt("REQUEST_CB: user load tokens: " + itos(user_load_tokens.size()));
+
+	return OK;
+}
+
 ResourceLoader::LoadToken *ResourceLoader::_load_threaded_request_reuse_user_token(const String &p_path) {
 	HashMap<String, LoadToken *>::Iterator E = user_load_tokens.find(p_path);
 	if (E) {
@@ -536,6 +601,63 @@ void ResourceLoader::_load_threaded_request_setup_user_token(LoadToken *p_token,
 	p_token->user_rc = 1;
 	user_load_tokens[p_path] = p_token;
 	print_lt("REQUEST: user load tokens: " + itos(user_load_tokens.size()));
+}
+
+void ResourceLoader::_load_threaded_auto_complete_user_request(const String &p_user_path) {
+	ThreadLoadStatus status;
+	Ref<Resource> res;
+	LocalVector<Callable> callbacks;
+
+	{
+		MutexLock thread_load_lock(thread_load_mutex);
+
+		ERR_FAIL_COND_MSG(!user_load_tokens.has(p_user_path),
+				"ResourceLoader: result of threaded load requested with callback for '" + p_user_path + "' has been collected before callbacks processing (likely by load_threaded_get).");
+
+		LoadToken *load_token = user_load_tokens[p_user_path];
+		DEV_ASSERT(load_token->user_rc >= 1);
+
+		ThreadLoadTask *load_task_ptr;
+		if (load_token->task_if_unregistered) {
+			load_task_ptr = load_token->task_if_unregistered;
+		} else {
+			ERR_FAIL_COND_MSG(!thread_load_tasks.has(load_token->local_path), "Bug in ResourceLoader logic, please report.");
+			load_task_ptr = &thread_load_tasks[load_token->local_path];
+		}
+
+		DEV_ASSERT(Thread::is_main_thread());
+		DEV_ASSERT(load_task_ptr->status == THREAD_LOAD_LOADED || load_task_ptr->status == THREAD_LOAD_FAILED);
+
+		Error error;
+		res = _load_complete_inner(*load_token, &error, thread_load_lock);
+		status = load_task_ptr->status;
+
+		uint32_t implied_rc = load_token->user_callbacks.size();
+		if (load_token->user_rc < implied_rc) {
+			ERR_PRINT("ResourceLoader: result of threaded load requested with callback for '" + p_user_path + "' has been partially collected before callbacks processing (likely by load_threaded_get).");
+			implied_rc = load_token->user_rc;
+		}
+
+		SWAP(callbacks, load_token->user_callbacks);
+
+		load_token->user_rc -= implied_rc;
+		if (load_token->user_rc == 0) {
+			load_token->user_path.clear();
+			user_load_tokens.erase(p_user_path);
+			if (load_token->unreference()) {
+				memdelete(load_token);
+				load_token = nullptr;
+			}
+		}
+	}
+
+	print_lt("PROCESS_CALLBACKS: user load tokens: " + itos(user_load_tokens.size()));
+
+	for (const Callable &callback : callbacks) {
+		// `call_deferred` is the easiest way to handle dead objects and error reporting here,
+		// at the cost of a small extra delay (up to one frame).
+		callback.call_deferred(status, res);
+	}
 }
 
 Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error) {
