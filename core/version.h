@@ -32,7 +32,11 @@
 
 #include "core/version_generated.gen.h" // IWYU pragma: export
 
-#include <stdint.h> // NOLINT(modernize-deprecated-headers) FIXME: MinGW compilation fails when changing to C++ Header.
+#if defined(_WIN32) && defined (__MINGW32__)
+#include <stdint.h>
+#else
+#include <cstdint>
+#endif
 
 // Copied from typedefs.h to stay lean.
 #ifndef _STR
