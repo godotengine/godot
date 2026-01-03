@@ -41,6 +41,10 @@ TEST_CASE("[Vector4] Constructor methods") {
 	static_assert(
 			vector_empty == vector_zero,
 			"Vector4 Constructor with no inputs should return a zero Vector4.");
+
+	CHECK_MESSAGE(
+			Vector4(0.5) == Vector4(0.5, 0.5, 0.5, 0.5),
+			"Vector4 Constructor with one argument should set all components to the same value.");
 }
 
 TEST_CASE("[Vector4] Axis methods") {
