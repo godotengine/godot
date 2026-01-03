@@ -219,6 +219,13 @@ void EditorResourcePicker::_resource_selected() {
 		return;
 	}
 
+	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+		if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+			FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
+		}
+		return;
+	}
+
 	emit_signal(SNAME("resource_selected"), edited_resource, false);
 }
 
@@ -695,23 +702,23 @@ void EditorResourcePicker::_button_draw() {
 void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	if (mb.is_valid() && mb->is_pressed()) {
 		// Only attempt to update and show the menu if we have
 		// a valid resource or the Picker is editable, as
 		// there will otherwise be nothing to display.
-		if (edited_resource.is_valid() || is_editable()) {
-			if (edit_menu && edit_menu->is_visible()) {
-				edit_button->set_pressed(false);
-				edit_menu->hide();
-				return;
+		if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (edited_resource.is_valid() || is_editable()) {
+				_update_menu_items();
+
+				Vector2 pos = get_screen_position() + mb->get_position();
+				edit_menu->reset_size();
+				edit_menu->set_position(pos);
+				edit_menu->popup();
 			}
-
-			_update_menu_items();
-
-			Vector2 pos = get_screen_position() + mb->get_position();
-			edit_menu->reset_size();
-			edit_menu->set_position(pos);
-			edit_menu->popup();
+		} else if (mb->get_button_index() == MouseButton::MIDDLE) {
+			if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+				FileSystemDock::get_singleton()->navigate_to_path(edited_resource->get_path());
+			}
 		}
 	}
 }
