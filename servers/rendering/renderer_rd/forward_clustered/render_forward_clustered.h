@@ -110,7 +110,7 @@ public:
 			Transform3D ssr_last_frame_transform;
 
 			RendererRD::SSEffects::SSILRenderBuffers ssil;
-			RendererRD::SSEffects::SSAORenderBuffers ssao;
+			RendererRD::SSEffects::AORenderBuffers ssao;
 			RendererRD::SSEffects::SSRRenderBuffers ssr;
 		} ss_effects_data;
 
@@ -775,7 +775,7 @@ protected:
 	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
-	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
+	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOType p_type, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 	virtual void environment_set_ssr_half_size(bool p_half_size) override;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
