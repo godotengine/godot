@@ -46,6 +46,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/progress_bar.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
@@ -530,6 +531,263 @@ void ProjectDialog::_nonempty_confirmation_ok_pressed() {
 	ok_pressed();
 }
 
+void ProjectDialog::_post_process_project(Mode p_mode, const String &p_path) {
+	if (p_mode == MODE_RENAME || p_mode == MODE_INSTALL || p_mode == MODE_DUPLICATE) {
+		// Load project.godot as ConfigFile to set the new name.
+		ConfigFile cfg;
+		String project_godot = p_path.path_join("project.godot");
+		Error err = cfg.load(project_godot);
+		if (err != OK) {
+			dialog_error->set_text(vformat(TTR("Couldn't load project at \"%s\" (error %d). It may be missing or corrupted."), project_godot, err));
+			dialog_error->popup_centered();
+			return;
+		}
+		cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
+		err = cfg.save(project_godot);
+		if (err != OK) {
+			dialog_error->set_text(vformat(TTR("Couldn't save project at \"%s\" (error %d)."), project_godot, err));
+			dialog_error->popup_centered();
+			return;
+		}
+	}
+
+	hide();
+	if (p_mode == MODE_NEW || p_mode == MODE_IMPORT || p_mode == MODE_INSTALL) {
+#ifdef ANDROID_ENABLED
+		// Create a .nomedia file to hide assets from media apps on Android.
+		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
+		// NOTE: Nomedia file is also handled during the first filesystem scan. See editor_file_system.cpp -> EditorFileSystem::scan().
+		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+		if (sdk_version != "30") {
+			const String nomedia_file_path = p_path.path_join(".nomedia");
+			Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+			if (f2.is_null()) {
+				// .nomedia isn't so critical.
+				ERR_PRINT("Couldn't create .nomedia in project path.");
+			} else {
+				f2->close();
+			}
+		}
+#endif
+		emit_signal(SNAME("project_created"), p_path, edit_check_box->is_pressed());
+	} else if (p_mode == MODE_DUPLICATE) {
+		emit_signal(SNAME("project_duplicated"), original_project_path, p_path, edit_check_box->is_visible() && edit_check_box->is_pressed());
+	} else if (p_mode == MODE_RENAME) {
+		emit_signal(SNAME("projects_updated"));
+	}
+}
+
+void ProjectDialog::_run_thread(void *p_data) {
+	ProgressData *data = static_cast<ProgressData *>(p_data);
+	data->error = FAILED;
+
+	switch (data->mode) {
+		case MODE_DUPLICATE: {
+			data->error = _copy_dir_threaded(data->source_path, data->target_path, data);
+			if (data->error != OK) {
+				data->popup_error_msg = vformat(TTR("Couldn't duplicate project (error %d)."), data->error);
+			}
+		} break;
+		case MODE_INSTALL:
+		case MODE_IMPORT: {
+			data->error = _unzip_threaded(data->source_path, data->target_path, data);
+		} break;
+		default:
+			ERR_PRINT(vformat("Invalid mode %d for threaded project creation.", data->mode));
+	}
+
+	data->state_mutex.lock();
+	data->state.done = true;
+	data->state_mutex.unlock();
+}
+
+Error ProjectDialog::_copy_dir_threaded(const String &p_from_dir, const String &p_to_dir, ProgressData *p_progress_data) {
+	LocalVector<String> files;
+	LocalVector<String> dirs;
+
+	Ref<DirAccess> da = DirAccess::open(p_from_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), DirAccess::get_open_error(), "Failed to open source directory.");
+	dirs.push_back("");
+
+	for (size_t i = 0; i < dirs.size(); i++) {
+		String rel_path = dirs[i];
+
+		da->change_dir(p_from_dir.path_join(rel_path));
+		da->list_dir_begin();
+
+		String target_dir = p_to_dir.path_join(rel_path);
+		if (!da->dir_exists(target_dir)) {
+			Error err = da->make_dir(target_dir);
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed making directory \"%s\".", target_dir));
+		}
+
+		for (String entry = da->get_next(); !entry.is_empty(); entry = da->get_next()) {
+			if (entry == "." || entry == "..") {
+				continue;
+			}
+
+			if (da->current_is_dir() && !da->is_link(entry)) {
+				dirs.push_back(rel_path.path_join(entry));
+			} else {
+				files.push_back(rel_path.path_join(entry));
+			}
+		}
+		da->list_dir_end();
+	}
+
+	p_progress_data->state_mutex.lock();
+	p_progress_data->state.total_files = files.size();
+	p_progress_data->state_mutex.unlock();
+
+	for (const String &file : files) {
+		p_progress_data->state_mutex.lock();
+		p_progress_data->state.current_file = file;
+		p_progress_data->state.completed_files++;
+		p_progress_data->state_mutex.unlock();
+
+		String from = p_from_dir.path_join(file);
+		String to = p_to_dir.path_join(file);
+		if (da->is_link(from)) {
+			Error err = da->create_link(da->read_link(from), to);
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error copying link \"%s\": %s.", file, error_names[err]));
+		} else {
+			Error err = da->copy(p_from_dir.path_join(file), p_to_dir.path_join(file));
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error copying file \"%s\": %s.", file, error_names[err]));
+		}
+	}
+
+	return OK;
+}
+
+Error ProjectDialog::_unzip_threaded(const String &p_zip_path, const String &p_path, ProgressData *p_progress_data) {
+	ERR_FAIL_COND_V(p_zip_path.is_empty(), FAILED);
+
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile pkg = unzOpen2(p_zip_path.utf8().get_data(), &io);
+	if (!pkg) {
+		p_progress_data->popup_error_msg = TTRC("Error opening package file, not in ZIP format.");
+		return FAILED;
+	}
+
+	// Find the first directory with a "project.godot".
+	String zip_root;
+	int ret = unzGoToFirstFile(pkg);
+	while (ret == UNZ_OK) {
+		unz_file_info info;
+		char fname[16384];
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ERR_FAIL_COND_V_MSG(ret != UNZ_OK, FAILED, "Failed to get current file info.");
+
+		String name = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (name.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		if (name.get_file() == "project.godot") {
+			zip_root = name.get_base_dir();
+			break;
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	if (ret == UNZ_END_OF_LIST_OF_FILE) {
+		p_progress_data->inline_error_msg = TTRC("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file.");
+		unzClose(pkg);
+		return FAILED;
+	}
+
+	if (p_progress_data->create_dir) {
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (!d->dir_exists(p_path) && d->make_dir(p_path) != OK) {
+			p_progress_data->inline_error_msg = TTRC("Couldn't create project directory, check permissions.");
+			return FAILED;
+		}
+	}
+
+	unz_global_info zip_info;
+	unzGetGlobalInfo(pkg, &zip_info);
+
+	p_progress_data->state_mutex.lock();
+	p_progress_data->state.total_files = zip_info.number_entry;
+	p_progress_data->state_mutex.unlock();
+
+	ret = unzGoToFirstFile(pkg);
+
+	Vector<String> failed_files;
+	while (ret == UNZ_OK) {
+		//get filename
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ERR_BREAK_MSG(ret != UNZ_OK, "Failed to get current file info.");
+
+		String name = String::utf8(fname);
+
+		p_progress_data->state_mutex.lock();
+		p_progress_data->state.completed_files++;
+		p_progress_data->state_mutex.unlock();
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (name.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		String rel_path = name.trim_prefix(zip_root);
+
+		p_progress_data->state_mutex.lock();
+		p_progress_data->state.current_file = rel_path;
+		p_progress_data->state_mutex.unlock();
+
+		if (rel_path.is_empty()) { // Root.
+		} else if (rel_path.ends_with("/")) { // Directory.
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			da->make_dir(p_path.path_join(rel_path));
+		} else { // File.
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
+
+			unzOpenCurrentFile(pkg);
+			ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: \"%s\". This file will not be used.", rel_path));
+			unzCloseCurrentFile(pkg);
+
+			Ref<FileAccess> f = FileAccess::open(p_path.path_join(rel_path), FileAccess::WRITE);
+			if (f.is_valid()) {
+				f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+			} else {
+				failed_files.push_back(rel_path);
+			}
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	unzClose(pkg);
+
+	if (failed_files.size()) {
+		String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
+		for (int i = 0; i < failed_files.size(); i++) {
+			if (i > 15) {
+				err_msg += "\n" + vformat(TTR("And %d more files."), failed_files.size() - i);
+				break;
+			}
+			err_msg += failed_files[i] + "\n";
+		}
+
+		p_progress_data->popup_error_msg = err_msg;
+		return FAILED;
+	}
+
+	return OK;
+}
+
 void ProjectDialog::ok_pressed() {
 	// Before we create a project, check that the target folder is empty.
 	// If not, we need to ask the user if they're sure they want to do this.
@@ -633,177 +891,33 @@ void ProjectDialog::ok_pressed() {
 			[[fallthrough]];
 		}
 		case MODE_INSTALL: {
-			ERR_FAIL_COND(zip_path.is_empty());
+			progress_dialog->show_dialog(mode == MODE_INSTALL ? TTR("Installing project...") : TTR("Importing project..."));
 
-			Ref<FileAccess> io_fa;
-			zlib_filefunc_def io = zipio_create_io(&io_fa);
+			progress_data = memnew(ProgressData);
+			progress_data->mode = mode;
+			progress_data->source_path = zip_path;
+			progress_data->target_path = path;
+			progress_data->create_dir = create_dir->is_pressed();
+			thread.start(_run_thread, progress_data);
+			set_process(true);
+			return;
+		} break;
+		case MODE_DUPLICATE: {
+			progress_dialog->show_dialog(TTR("Duplicating project..."));
 
-			unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
-			if (!pkg) {
-				dialog_error->set_text(TTRC("Error opening package file, not in ZIP format."));
-				dialog_error->popup_centered();
-				return;
-			}
-
-			// Find the first directory with a "project.godot".
-			String zip_root;
-			int ret = unzGoToFirstFile(pkg);
-			while (ret == UNZ_OK) {
-				unz_file_info info;
-				char fname[16384];
-				unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
-				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
-
-				String name = String::utf8(fname);
-
-				// Skip the __MACOSX directory created by macOS's built-in file zipper.
-				if (name.begins_with("__MACOSX")) {
-					ret = unzGoToNextFile(pkg);
-					continue;
-				}
-
-				if (name.get_file() == "project.godot") {
-					zip_root = name.get_base_dir();
-					break;
-				}
-
-				ret = unzGoToNextFile(pkg);
-			}
-
-			if (ret == UNZ_END_OF_LIST_OF_FILE) {
-				_set_message(TTRC("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
-				unzClose(pkg);
-				return;
-			}
-
-			if (create_dir->is_pressed()) {
-				Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-				if (!d->dir_exists(path) && d->make_dir(path) != OK) {
-					_set_message(TTRC("Couldn't create project directory, check permissions."), MESSAGE_ERROR);
-					return;
-				}
-			}
-
-			ret = unzGoToFirstFile(pkg);
-
-			Vector<String> failed_files;
-			while (ret == UNZ_OK) {
-				//get filename
-				unz_file_info info;
-				char fname[16384];
-				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
-				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
-
-				String name = String::utf8(fname);
-
-				// Skip the __MACOSX directory created by macOS's built-in file zipper.
-				if (name.begins_with("__MACOSX")) {
-					ret = unzGoToNextFile(pkg);
-					continue;
-				}
-
-				String rel_path = name.trim_prefix(zip_root);
-				if (rel_path.is_empty()) { // Root.
-				} else if (rel_path.ends_with("/")) { // Directory.
-					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-					da->make_dir(path.path_join(rel_path));
-				} else { // File.
-					Vector<uint8_t> uncomp_data;
-					uncomp_data.resize(info.uncompressed_size);
-
-					unzOpenCurrentFile(pkg);
-					ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
-					ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
-					unzCloseCurrentFile(pkg);
-
-					Ref<FileAccess> f = FileAccess::open(path.path_join(rel_path), FileAccess::WRITE);
-					if (f.is_valid()) {
-						f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
-					} else {
-						failed_files.push_back(rel_path);
-					}
-				}
-
-				ret = unzGoToNextFile(pkg);
-			}
-
-			unzClose(pkg);
-
-			if (failed_files.size()) {
-				String err_msg = TTR("The following files failed extraction from package:") + "\n\n";
-				for (int i = 0; i < failed_files.size(); i++) {
-					if (i > 15) {
-						err_msg += "\nAnd " + itos(failed_files.size() - i) + " more files.";
-						break;
-					}
-					err_msg += failed_files[i] + "\n";
-				}
-
-				dialog_error->set_text(err_msg);
-				dialog_error->popup_centered();
-				return;
-			}
+			progress_data = memnew(ProgressData);
+			progress_data->mode = mode;
+			progress_data->source_path = original_project_path;
+			progress_data->target_path = path;
+			thread.start(_run_thread, progress_data);
+			set_process(true);
+			return;
 		} break;
 		default: {
 		} break;
 	}
 
-	if (mode == MODE_DUPLICATE) {
-		Ref<DirAccess> dir = DirAccess::open(original_project_path);
-		Error err = FAILED;
-		if (dir.is_valid()) {
-			err = dir->copy_dir(".", path, -1, true);
-		}
-		if (err != OK) {
-			dialog_error->set_text(vformat(TTR("Couldn't duplicate project (error %d)."), err));
-			dialog_error->popup_centered();
-			return;
-		}
-	}
-
-	if (mode == MODE_RENAME || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
-		// Load project.godot as ConfigFile to set the new name.
-		ConfigFile cfg;
-		String project_godot = path.path_join("project.godot");
-		Error err = cfg.load(project_godot);
-		if (err != OK) {
-			dialog_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
-			dialog_error->popup_centered();
-			return;
-		}
-		cfg.set_value("application", "config/name", project_name->get_text().strip_edges());
-		err = cfg.save(project_godot);
-		if (err != OK) {
-			dialog_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
-			dialog_error->popup_centered();
-			return;
-		}
-	}
-
-	hide();
-	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
-#ifdef ANDROID_ENABLED
-		// Create a .nomedia file to hide assets from media apps on Android.
-		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
-		// NOTE: Nomedia file is also handled during the first filesystem scan. See editor_file_system.cpp -> EditorFileSystem::scan().
-		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
-		if (sdk_version != "30") {
-			const String nomedia_file_path = path.path_join(".nomedia");
-			Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
-			if (f2.is_null()) {
-				// .nomedia isn't so critical.
-				ERR_PRINT("Couldn't create .nomedia in project path.");
-			} else {
-				f2->close();
-			}
-		}
-#endif
-		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
-	} else if (mode == MODE_DUPLICATE) {
-		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
-	} else if (mode == MODE_RENAME) {
-		emit_signal(SNAME("projects_updated"));
-	}
+	_post_process_project(mode, path);
 }
 
 void ProjectDialog::set_zip_path(const String &p_path) {
@@ -970,7 +1084,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 
 	_validate_path();
 
-	popup_centered(Size2(500, 0) * EDSCALE);
+	popup_centered(Size2(500, 0));
 }
 
 void ProjectDialog::_notification(int p_what) {
@@ -991,6 +1105,36 @@ void ProjectDialog::_notification(int p_what) {
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false, false), CONNECT_DEFERRED);
 			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			if (progress_data && thread.is_started()) {
+				progress_data->state_mutex.lock();
+				ProgressData::State state = progress_data->state;
+				progress_data->state_mutex.unlock();
+				if (state.done) {
+					thread.wait_to_finish();
+					progress_dialog->hide();
+					set_process(false);
+
+					if (progress_data->error == OK) {
+						_post_process_project(progress_data->mode, progress_data->target_path);
+					} else {
+						if (!progress_data->popup_error_msg.is_empty()) {
+							dialog_error->set_text(progress_data->popup_error_msg);
+							dialog_error->popup_centered();
+						}
+						if (!progress_data->inline_error_msg.is_empty()) {
+							_set_message(progress_data->inline_error_msg, MESSAGE_ERROR);
+						}
+					}
+
+					memdelete(progress_data);
+					progress_data = nullptr;
+				} else {
+					progress_dialog->set_progress(state.completed_files, state.total_files, state.current_file);
+				}
+			}
 		} break;
 	}
 }
@@ -1229,4 +1373,40 @@ ProjectDialog::ProjectDialog() {
 
 	dialog_error = memnew(AcceptDialog);
 	add_child(dialog_error);
+
+	progress_dialog = memnew(ProjectProgressDialog);
+	add_child(progress_dialog);
+}
+
+ProjectProgressDialog::ProjectProgressDialog() {
+	set_exclusive(true);
+	set_flag(FLAG_POPUP, false);
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
+
+	title = memnew(Label);
+	title->set_theme_type_variation("HeaderSmall");
+	vb->add_child(title);
+
+	progress_bar = memnew(ProgressBar);
+	vb->add_child(progress_bar);
+
+	current_file = memnew(Label);
+	current_file->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	vb->add_child(current_file);
+}
+
+void ProjectProgressDialog::set_progress(int p_completed_files, int p_total_files, const String &p_current_file) {
+	progress_bar->set_value(p_completed_files);
+	progress_bar->set_indeterminate(p_total_files == 0);
+	progress_bar->set_max(p_total_files);
+	current_file->set_text(p_current_file);
+}
+
+void ProjectProgressDialog::show_dialog(const String &p_title) {
+	title->set_text(p_title);
+	set_progress(0, 0, "");
+	reset_size();
+	popup_centered(Size2(450 * EDSCALE, 0));
 }
