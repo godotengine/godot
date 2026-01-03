@@ -99,6 +99,7 @@
 			<description>
 				Draws a colored polygon of any number of points, convex or concave. The points in the [param points] array are defined in local space. Unlike [method draw_polygon], a single color must be specified for the whole polygon.
 				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_dashed_line">
@@ -173,6 +174,7 @@
 				dst.b = texture.b * modulate.b * modulate.a + dst.b * (1.0 - texture.b * modulate.a);
 				dst.a = modulate.a + dst.a * (1.0 - modulate.a);
 				[/codeblock]
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_line">
@@ -195,6 +197,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation. The [param transform] is defined in local space.
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_msdf_texture_rect_region">
@@ -210,6 +213,7 @@
 				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
 				Value of the [param pixel_range] should the same that was used during distance field texture generation.
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_multiline">
@@ -281,6 +285,7 @@
 			<param index="1" name="texture" type="Texture2D" />
 			<description>
 				Draws a [MultiMesh] in 2D with the provided texture. See [MultiMeshInstance2D] for related documentation.
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_polygon">
@@ -292,6 +297,7 @@
 			<description>
 				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. The [param points] array is defined in local space. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
 				[b]Note:[/b] If you frequently redraw the same polygon with a large number of vertices, consider pre-calculating the triangulation with [method Geometry2D.triangulate_polygon] and using [method draw_mesh], [method draw_multimesh], or [method RenderingServer.canvas_item_add_triangle_array].
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -324,6 +330,7 @@
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
 				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. The [param points] array is defined in local space. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_rect">
@@ -409,6 +416,7 @@
 			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Draws a styled rectangle. The [param rect] is defined in local space.
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_texture">
@@ -418,6 +426,7 @@
 			<param index="2" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws a texture at a given position. The [param position] is defined in local space.
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_texture_rect">
@@ -429,6 +438,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
 				Draws a textured rectangle at a given position, optionally modulated by a color. The [param rect] is defined in local space. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -441,6 +451,7 @@
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
 				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position in local space, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
+				[b]Note:[/b] Styleboxes, textures and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called and in GDScript when the function with the local variables ends, the local variables get destroyed and therefore not rendered.
 			</description>
 		</method>
 		<method name="force_update_transform">
