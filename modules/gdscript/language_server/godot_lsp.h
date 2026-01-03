@@ -1066,8 +1066,12 @@ struct CompletionItem {
 			dict["insertText"] = insertText;
 		}
 		if (resolved) {
-			dict["detail"] = detail;
-			dict["documentation"] = documentation.to_json();
+			if (!detail.is_empty()) {
+				dict["detail"] = detail;
+			}
+			if (!documentation.value.is_empty()) {
+				dict["documentation"] = documentation.to_json();
+			}
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
 			if (!sortText.is_empty()) {
