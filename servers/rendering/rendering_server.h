@@ -803,9 +803,31 @@ public:
 		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD,
 		PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
 		PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY,
+		PARTICLES_TRANSFORM_ALIGN_ROTATION,
+		PARTICLES_TRANSFORM_ALIGN_LOCAL,
+		PARTICLES_TRANSFORM_MAX,
+	};
+
+	enum ParticlesAlignCustomSrc {
+		PARTICLES_ALIGN_CUSTOM_SRC_DISABLED,
+		PARTICLES_ALIGN_CUSTOM_SRC_X,
+		PARTICLES_ALIGN_CUSTOM_SRC_Y,
+		PARTICLES_ALIGN_CUSTOM_SRC_Z,
+		PARTICLES_ALIGN_CUSTOM_SRC_W,
+		PARTICLES_ALIGN_CUSTOM_SRC_MAX,
+	};
+
+	enum ParticlesAlignRotationAxis {
+		PARTICLES_ALIGN_AXIS_X,
+		PARTICLES_ALIGN_AXIS_Y,
+		PARTICLES_ALIGN_AXIS_Z,
+		PARTICLES_ALIGN_AXIS_MAX,
 	};
 
 	virtual void particles_set_transform_align(RID p_particles, ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align_custom_src(RID p_particles, ParticlesAlignCustomSrc p_transform_align_custom_src) = 0;
+	virtual void particles_set_transform_align_rotation_axis(RID p_particles, ParticlesAlignRotationAxis p_rotation_axis) = 0;
+	virtual void particles_set_transform_align_flags(RID p_particles, uint32_t p_flags) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length_sec) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
@@ -1967,6 +1989,8 @@ VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST(RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesTransformAlign);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesAlignCustomSrc);
+VARIANT_ENUM_CAST(RenderingServer::ParticlesAlignRotationAxis);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
