@@ -2952,7 +2952,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			int polygon_index = components[1].trim_prefix("polygon_").to_int();
 			ERR_FAIL_COND_V(polygon_index < 0, false);
 			if (components[2] == "points") {
-				return true;
+				return false;
 			}
 		}
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
