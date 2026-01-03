@@ -429,6 +429,12 @@ Key find_keycode(const String &p_codestr) {
 			keycode |= KeyModifierMask::META;
 		} else if (code_part.nocasecmp_to(find_keycode_name(Key::ALT)) == 0) {
 			keycode |= KeyModifierMask::ALT;
+		} else if (code_part.nocasecmp_to("command/ctrl") == 0 || code_part.nocasecmp_to("ctrl/command") == 0) {
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				keycode |= KeyModifierMask::META;
+			} else {
+				keycode |= KeyModifierMask::CTRL;
+			}
 		}
 	}
 
