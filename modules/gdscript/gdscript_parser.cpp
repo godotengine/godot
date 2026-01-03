@@ -4697,10 +4697,13 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	// This is called after the analyzer is done finding the type, so this should be set here.
 	DataType export_type = variable->get_datatype();
 
+	bool is_variant_explicitly_declared = false;
+
 	// Use initializer type if specified type is `Variant`.
 	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
 		export_type = variable->initializer->get_datatype();
 		export_type.type_source = DataType::INFERRED;
+		is_variant_explicitly_declared = true;
 	}
 
 	const Variant::Type original_export_type_builtin = export_type.builtin_type;
@@ -4745,31 +4748,36 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
 
+		DataType deduced_export_type = export_type;
+
+		if (is_variant_explicitly_declared) {
+			deduced_export_type = variable->get_datatype();
+		}
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
 			return false;
 		}
 
-		if (export_type.has_no_type()) {
+		if (deduced_export_type.has_no_type()) {
 			push_error(R"(Cannot use simple "@export" annotation because the type of the initialized value can't be inferred.)", p_annotation);
 			return false;
 		}
 
-		switch (export_type.kind) {
+		switch (deduced_export_type.kind) {
 			case GDScriptParser::DataType::BUILTIN:
-				variable->export_info.type = export_type.builtin_type;
+				variable->export_info.type = deduced_export_type.builtin_type;
 				variable->export_info.hint = PROPERTY_HINT_NONE;
 				variable->export_info.hint_string = String();
 				break;
 			case GDScriptParser::DataType::NATIVE:
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::CLASS: {
-				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
-				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+				const StringName class_name = _find_narrowest_native_or_global_class(deduced_export_type);
+				if (ClassDB::is_parent_class(deduced_export_type.native_type, SNAME("Resource"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
 					variable->export_info.hint_string = class_name;
-				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+				} else if (ClassDB::is_parent_class(deduced_export_type.native_type, SNAME("Node"))) {
 					variable->export_info.type = Variant::OBJECT;
 					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
 					variable->export_info.hint_string = class_name;
@@ -4779,7 +4787,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				}
 			} break;
 			case GDScriptParser::DataType::ENUM: {
-				if (export_type.is_meta_type) {
+				if (deduced_export_type.is_meta_type) {
 					variable->export_info.type = Variant::DICTIONARY;
 				} else {
 					variable->export_info.type = Variant::INT;
@@ -4787,7 +4795,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 					String enum_hint_string;
 					bool first = true;
-					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+					for (const KeyValue<StringName, int64_t> &E : deduced_export_type.enum_values) {
 						if (!first) {
 							enum_hint_string += ",";
 						} else {
@@ -4800,11 +4808,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 					variable->export_info.hint_string = enum_hint_string;
 					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
+					variable->export_info.class_name = String(deduced_export_type.native_type).replace("::", ".");
 				}
 			} break;
 			case GDScriptParser::DataType::VARIANT: {
-				if (export_type.is_variant()) {
+				if (deduced_export_type.is_variant()) {
 					variable->export_info.type = Variant::NIL;
 					variable->export_info.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 				}
