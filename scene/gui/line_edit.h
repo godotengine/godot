@@ -106,6 +106,12 @@ private:
 		ALT_INPUT_WIN,
 	};
 
+	enum ConvertCase {
+		PASCALCASE,
+		SNAKECASE,
+		CONSTANTCASE,
+	};
+
 	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
@@ -250,6 +256,8 @@ private:
 	void selection_fill_at_caret();
 	void set_scroll_offset(float p_pos);
 	float get_scroll_offset() const;
+
+	void convert_case(ConvertCase case_type);
 
 	void set_caret_at_pixel_pos(int p_x);
 	Vector2 get_caret_pixel_pos();

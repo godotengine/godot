@@ -1066,6 +1066,48 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 		return;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (ED_IS_SHORTCUT("script_text_editor/convert_to_pascalcase", p_event)) {
+			convert_case(PASCALCASE);
+		}
+		if (ED_IS_SHORTCUT("script_text_editor/convert_to_snakecase", p_event)) {
+			convert_case(SNAKECASE);
+		}
+		if (ED_IS_SHORTCUT("script_text_editor/convert_to_constantcase", p_event)) {
+			convert_case(CONSTANTCASE);
+		}
+	}
+#endif
+}
+
+void LineEdit::convert_case(ConvertCase case_type) {
+	if (text.is_empty()) {
+		return;
+	}
+
+	String extension = text.get_extension();
+	String base_text = text.get_basename();
+	String converted;
+
+	switch (case_type) {
+		case PASCALCASE: {
+			converted = base_text.to_pascal_case();
+		} break;
+		case SNAKECASE: {
+			converted = base_text.to_snake_case();
+		} break;
+		case CONSTANTCASE: {
+			converted = base_text.to_constant_case();
+		} break;
+	}
+
+	if (!extension.is_empty()) {
+		converted += "." + extension;
+	}
+
+	set_text(converted);
 }
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {

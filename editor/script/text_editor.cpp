@@ -427,6 +427,15 @@ void TextEditor::_edit_option(int p_op) {
 			code_editor->set_indent_using_spaces(false);
 			convert_indent();
 		} break;
+		case EDIT_TO_PASCALCASE: {
+			_convert_case(CodeTextEditor::PASCALCASE);
+		} break;
+		case EDIT_TO_SNAKECASE: {
+			_convert_case(CodeTextEditor::SNAKECASE);
+		} break;
+		case EDIT_TO_CONSTANTCASE: {
+			_convert_case(CodeTextEditor::CONSTANTCASE);
+		} break;
 		case EDIT_TO_UPPERCASE: {
 			_convert_case(CodeTextEditor::UPPER);
 		} break;
@@ -662,6 +671,11 @@ TextEditor::TextEditor() {
 	edit_menu->get_popup()->add_separator();
 	PopupMenu *convert_case = memnew(PopupMenu);
 	edit_menu->get_popup()->add_submenu_node_item(TTRC("Convert Case"), convert_case);
+
+	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_pascalcase"), EDIT_TO_PASCALCASE);
+	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_snakecase"), EDIT_TO_SNAKECASE);
+	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_constantcase"), EDIT_TO_CONSTANTCASE);
+
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	convert_case->add_shortcut(ED_GET_SHORTCUT("script_text_editor/capitalize"), EDIT_CAPITALIZE);
