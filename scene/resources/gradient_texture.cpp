@@ -302,6 +302,8 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 		ofs = (pos - fill_from).length() / (fill_to - fill_from).length();
 	} else if (fill == Fill::FILL_SQUARE) {
 		ofs = MAX(Math::abs(pos.x - fill_from.x), Math::abs(pos.y - fill_from.y)) / MAX(Math::abs(fill_to.x - fill_from.x), Math::abs(fill_to.y - fill_from.y));
+	} else if (fill == Fill::FILL_CONIC) {
+		ofs = Math::fposmod((pos - fill_from).angle() - (fill_to - fill_from).angle(), (float)Math::TAU) / Math::TAU;
 	}
 	if (repeat == Repeat::REPEAT_NONE) {
 		ofs = CLAMP(ofs, 0.0, 1.0);
@@ -442,7 +444,7 @@ void GradientTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 
 	ADD_GROUP("Fill", "fill_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill", PROPERTY_HINT_ENUM, "Linear,Radial,Square"), "set_fill", "get_fill");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill", PROPERTY_HINT_ENUM, "Linear,Radial,Square,Conic"), "set_fill", "get_fill");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_from"), "set_fill_from", "get_fill_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_to"), "set_fill_to", "get_fill_to");
 
@@ -452,6 +454,7 @@ void GradientTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILL_LINEAR);
 	BIND_ENUM_CONSTANT(FILL_RADIAL);
 	BIND_ENUM_CONSTANT(FILL_SQUARE);
+	BIND_ENUM_CONSTANT(FILL_CONIC);
 
 	BIND_ENUM_CONSTANT(REPEAT_NONE);
 	BIND_ENUM_CONSTANT(REPEAT);
