@@ -33,11 +33,13 @@
 #include "scene/gui/dialogs.h"
 
 class CheckBox;
+class LineEdit;
 class SceneTreeEditor;
 
 class ReparentDialog : public ConfirmationDialog {
 	GDCLASS(ReparentDialog, ConfirmationDialog);
 
+	LineEdit *filter_nodes = nullptr;
 	SceneTreeEditor *tree = nullptr;
 	CheckBox *keep_transform = nullptr;
 
@@ -45,6 +47,8 @@ class ReparentDialog : public ConfirmationDialog {
 	void _cancel();
 
 protected:
+	virtual void _pre_popup() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
