@@ -171,6 +171,7 @@ public:
 
 	Variant min() const;
 	Variant max() const;
+	Variant sum() const;
 
 	const void *id() const;
 
