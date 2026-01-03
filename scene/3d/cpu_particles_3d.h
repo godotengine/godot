@@ -134,6 +134,7 @@ private:
 
 	bool one_shot = false;
 
+	float amount_ratio = 1;
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
 	double _requested_process_time = 0.0;
@@ -219,6 +220,7 @@ public:
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
+	void set_amount_ratio(float p_amount_ratio);
 	void set_lifetime(double p_lifetime);
 	void set_one_shot(bool p_one_shot);
 	void set_pre_process_time(double p_time);
@@ -231,6 +233,7 @@ public:
 
 	bool is_emitting() const;
 	int get_amount() const;
+	float get_amount_ratio() const;
 	double get_lifetime() const;
 	bool get_one_shot() const;
 	double get_pre_process_time() const;
