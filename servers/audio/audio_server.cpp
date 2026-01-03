@@ -1225,21 +1225,21 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, double p_from_pos, float p_pitch_scale) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volume_db_vector;
 
-	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
+	start_playback_stream(p_playback, map, p_from_pos, p_pitch_scale);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, double p_from_pos, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
 	playback_node->stream_playback = p_playback;
-	playback_node->stream_playback->start(p_start_time);
+	playback_node->stream_playback->start(p_from_pos);
 
 	AudioStreamPlaybackBusDetails *new_bus_details = new AudioStreamPlaybackBusDetails();
 	int idx = 0;
@@ -1448,7 +1448,7 @@ bool AudioServer::is_playback_active(Ref<AudioStreamPlayback> p_playback) {
 	return playback_node->state.load() == AudioStreamPlaybackListNode::PLAYING;
 }
 
-float AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
+double AudioServer::get_playback_position(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND_V(p_playback.is_null(), 0);
 
 	// Samples.
@@ -1686,6 +1686,10 @@ double AudioServer::get_time_to_next_mix() const {
 
 double AudioServer::get_time_since_last_mix() const {
 	return AudioDriver::get_singleton()->get_time_since_last_mix();
+}
+
+double AudioServer::get_absolute_time() const {
+	return mix_frames / double(get_mix_rate());
 }
 
 AudioServer *AudioServer::singleton = nullptr;
@@ -2079,6 +2083,7 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
+	ClassDB::bind_method(D_METHOD("get_absolute_time"), &AudioServer::get_absolute_time);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
 
 	ClassDB::bind_method(D_METHOD("get_input_device_list"), &AudioServer::get_input_device_list);
