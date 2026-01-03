@@ -439,6 +439,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_expand = memnew(CheckBox);
 	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_clip_text(true);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
