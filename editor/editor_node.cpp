@@ -825,21 +825,19 @@ void EditorNode::_notification(int p_what) {
 				scene_tabs->update_scene_tabs();
 			}
 
-			// Update the animation frame of the update spinner.
-			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-			uint64_t tick = OS::get_singleton()->get_ticks_msec();
+			if (update_spinner->is_visible()) {
+				// Update the animation frame of the update spinner.
+				uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+				uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
-				update_spinner_step++;
-				if (update_spinner_step >= 8) {
-					update_spinner_step = 0;
-				}
+				if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
+					update_spinner_step++;
+					if (update_spinner_step >= 8) {
+						update_spinner_step = 0;
+					}
 
-				update_spinner_step_msec = tick;
-				update_spinner_step_frame = frame + 1;
-
-				// Update the icon itself only when the spinner is visible.
-				if (_should_display_update_spinner()) {
+					update_spinner_step_msec = tick;
+					update_spinner_step_frame = frame + 1;
 					update_spinner->set_button_icon(theme->get_icon("Progress" + itos(update_spinner_step + 1), EditorStringName(EditorIcons)));
 				}
 			}
