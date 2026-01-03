@@ -944,11 +944,11 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 			continue;
 		}
 
-#ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
 
+#ifdef DEBUG_ENABLED
 		for (const StringName &E : type->method_order) {
 			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
 				continue;
@@ -990,12 +990,12 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			continue;
 		}
 
-#ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
 			Pair<MethodInfo, uint32_t> pair(E, E.get_compatibility_hash());
 			p_methods->push_back(pair);
 		}
 
+#ifdef DEBUG_ENABLED
 		for (const StringName &E : type->method_order) {
 			if (p_exclude_from_properties && type->methods_in_properties.has(E)) {
 				continue;
@@ -1050,7 +1050,6 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			continue;
 		}
 
-#ifdef DEBUG_ENABLED
 		MethodBind **method = type->method_map.getptr(p_method);
 		if (method && *method) {
 			if (r_info != nullptr) {
@@ -1064,16 +1063,6 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			}
 			return true;
 		}
-#else
-		if (type->method_map.has(p_method)) {
-			if (r_info) {
-				MethodBind *m = type->method_map[p_method];
-				MethodInfo minfo = info_from_bind(m);
-				*r_info = minfo;
-			}
-			return true;
-		}
-#endif // DEBUG_ENABLED
 
 		if (p_no_inheritance) {
 			break;
@@ -2042,7 +2031,6 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
-#ifdef DEBUG_ENABLED
 	MethodInfo mi = p_method;
 	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
@@ -2067,8 +2055,6 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	}
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
-
-#endif // DEBUG_ENABLED
 }
 
 void ClassDB::add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual, const Vector<String> &p_arg_names, bool p_object_core) {
@@ -2090,7 +2076,7 @@ void ClassDB::add_virtual_compatibility_method(const StringName &p_class, const 
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
 
-#ifdef DEBUG_ENABLED
+	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -2104,8 +2090,6 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 		}
 		check = check->inherits_ptr;
 	}
-
-#endif // DEBUG_ENABLED
 }
 
 Vector<uint32_t> ClassDB::get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
@@ -2130,7 +2114,6 @@ Vector<uint32_t> ClassDB::get_virtual_method_compatibility_hashes(const StringNa
 void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
 
-#ifdef DEBUG_ENABLED
 	PackedStringArray arg_names;
 
 	MethodInfo mi;
@@ -2146,7 +2129,6 @@ void ClassDB::add_extension_class_virtual_method(const StringName &p_class, cons
 	}
 
 	add_virtual_method(p_class, mi, true, arg_names);
-#endif // DEBUG_ENABLED
 }
 
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
