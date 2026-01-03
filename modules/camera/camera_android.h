@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/semaphore.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 
@@ -38,6 +39,7 @@
 #include <camera/NdkCameraManager.h>
 #include <camera/NdkCameraMetadataTags.h>
 #include <media/NdkImageReader.h>
+#include <atomic>
 #include <optional>
 
 enum class CameraFacing {
@@ -61,6 +63,9 @@ private:
 	Ref<Image> image_uv;
 	Vector<uint8_t> data_y;
 	Vector<uint8_t> data_uv;
+	// Scratch buffers to avoid reallocations when compacting stride-aligned planes.
+	Vector<uint8_t> scratch_y;
+	Vector<uint8_t> scratch_uv;
 
 	ACameraManager *manager = nullptr;
 	ACameraMetadata *metadata = nullptr;
@@ -68,8 +73,21 @@ private:
 	AImageReader *reader = nullptr;
 	ACameraCaptureSession *session = nullptr;
 	ACaptureRequest *request = nullptr;
+	ACaptureSessionOutput *session_output = nullptr;
+	ACaptureSessionOutputContainer *session_output_container = nullptr;
+	ACameraOutputTarget *camera_output_target = nullptr;
 	Mutex callback_mutex;
+	Semaphore session_closed_semaphore;
+	std::atomic<bool> is_deactivating{ false };
+	std::atomic<bool> session_close_pending{ false };
+	std::atomic<bool> device_error_occurred{ false };
 	bool was_active_before_pause = false;
+
+	// Callback structures - must be instance members, not static, to ensure
+	// correct 'this' pointer is captured for each camera feed instance.
+	ACameraDevice_stateCallbacks device_callbacks = {};
+	AImageReader_ImageListener image_listener = {};
+	ACameraCaptureSession_stateCallbacks session_callbacks = {};
 
 	void _add_formats();
 	void _set_rotation();
@@ -78,6 +96,7 @@ private:
 	static int normalize_angle(int p_angle);
 	static int get_display_rotation();
 	static int get_app_orientation();
+	static void compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride);
 
 	static void onError(void *context, ACameraDevice *p_device, int error);
 	static void onDisconnected(void *context, ACameraDevice *p_device);

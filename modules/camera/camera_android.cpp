@@ -35,6 +35,35 @@
 #include "platform/android/java_godot_io_wrapper.h"
 #include "platform/android/os_android.h"
 
+// Scope guard to ensure AImage instances are always deleted.
+class ScopedAImage {
+	AImage *image = nullptr;
+
+public:
+	ScopedAImage() = default;
+	~ScopedAImage() {
+		reset();
+	}
+
+	ScopedAImage(const ScopedAImage &) = delete;
+	ScopedAImage &operator=(const ScopedAImage &) = delete;
+
+	AImage **out() {
+		return &image;
+	}
+
+	AImage *get() const {
+		return image;
+	}
+
+	void reset(AImage *p_image = nullptr) {
+		if (image != nullptr) {
+			AImage_delete(image);
+		}
+		image = p_image;
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////
 // Helper functions
 //
@@ -203,20 +232,25 @@ bool CameraFeedAndroid::activate_feed() {
 		deactivate_feed();
 	};
 
+	// Clear deactivation and error flags before starting activation.
+	is_deactivating.store(false, std::memory_order_release);
+	device_error_occurred.store(false, std::memory_order_release);
+
 	// Request permission
 	if (!OS::get_singleton()->request_permission("CAMERA")) {
 		return false;
 	}
 
 	// Open device
-	static ACameraDevice_stateCallbacks deviceCallbacks = {
+	device_callbacks = {
 		.context = this,
 		.onDisconnected = onDisconnected,
 		.onError = onError,
 	};
-	camera_status_t c_status = ACameraManager_openCamera(manager, camera_id.utf8().get_data(), &deviceCallbacks, &device);
+	camera_status_t c_status = ACameraManager_openCamera(manager, camera_id.utf8().get_data(), &device_callbacks, &device);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to open camera (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -224,18 +258,20 @@ bool CameraFeedAndroid::activate_feed() {
 	const FeedFormat &feed_format = formats[selected_format];
 	media_status_t m_status = AImageReader_new(feed_format.width, feed_format.height, feed_format.pixel_format, 1, &reader);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to create image reader (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Get image listener
-	static AImageReader_ImageListener listener{
+	image_listener = {
 		.context = this,
 		.onImageAvailable = onImage,
 	};
-	m_status = AImageReader_setImageListener(reader, &listener);
+	m_status = AImageReader_setImageListener(reader, &image_listener);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to set image listener (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -243,69 +279,75 @@ bool CameraFeedAndroid::activate_feed() {
 	ANativeWindow *surface;
 	m_status = AImageReader_getWindow(reader, &surface);
 	if (m_status != AMEDIA_OK) {
-		onError(this, device, m_status);
+		print_error(vformat("Camera %s: Failed to get image surface (status: %d)", camera_id, m_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Prepare session outputs
-	ACaptureSessionOutput *output = nullptr;
-	c_status = ACaptureSessionOutput_create(surface, &output);
+	c_status = ACaptureSessionOutput_create(surface, &session_output);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create session output (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	ACaptureSessionOutputContainer *outputs = nullptr;
-	c_status = ACaptureSessionOutputContainer_create(&outputs);
+	c_status = ACaptureSessionOutputContainer_create(&session_output_container);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create session output container (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	c_status = ACaptureSessionOutputContainer_add(outputs, output);
+	c_status = ACaptureSessionOutputContainer_add(session_output_container, session_output);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to add session output to container (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Create capture session
-	static ACameraCaptureSession_stateCallbacks sessionStateCallbacks{
+	session_callbacks = {
 		.context = this,
 		.onClosed = onSessionClosed,
 		.onReady = onSessionReady,
 		.onActive = onSessionActive
 	};
-	c_status = ACameraDevice_createCaptureSession(device, outputs, &sessionStateCallbacks, &session);
+	c_status = ACameraDevice_createCaptureSession(device, session_output_container, &session_callbacks, &session);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create capture session (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Create capture request
 	c_status = ACameraDevice_createCaptureRequest(device, TEMPLATE_PREVIEW, &request);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create capture request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Set capture target
-	ACameraOutputTarget *imageTarget = nullptr;
-	c_status = ACameraOutputTarget_create(surface, &imageTarget);
+	c_status = ACameraOutputTarget_create(surface, &camera_output_target);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to create camera output target (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
-	c_status = ACaptureRequest_addTarget(request, imageTarget);
+	c_status = ACaptureRequest_addTarget(request, camera_output_target);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to add target to capture request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
 	// Start capture
 	c_status = ACameraCaptureSession_setRepeatingRequest(session, nullptr, 1, &request, nullptr);
 	if (c_status != ACAMERA_OK) {
-		onError(this, device, c_status);
+		print_error(vformat("Camera %s: Failed to start repeating request (status: %d)", camera_id, c_status));
+		deactivate_feed();
 		return false;
 	}
 
@@ -317,6 +359,12 @@ bool CameraFeedAndroid::set_format(int p_index, const Dictionary &p_parameters) 
 	ERR_FAIL_INDEX_V_MSG(p_index, formats.size(), false, "Invalid format index.");
 
 	selected_format = p_index;
+
+	// Reset base dimensions to force texture recreation on next frame.
+	// This ensures proper handling when switching between different resolutions.
+	base_width = 0;
+	base_height = 0;
+
 	return true;
 }
 
@@ -367,28 +415,63 @@ void CameraFeedAndroid::handle_rotation_change() {
 	_set_rotation();
 }
 
+// In-place stride compaction (handles row padding).
+void CameraFeedAndroid::compact_stride_inplace(uint8_t *data, size_t width, int height, size_t stride) {
+	if (stride <= width) {
+		return;
+	}
+
+	uint8_t *src_row = data + stride;
+	uint8_t *dst_row = data + width;
+
+	for (int y = 1; y < height; y++) {
+		memmove(dst_row, src_row, width);
+		src_row += stride;
+		dst_row += width;
+	}
+}
+
 void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
 
+	// Check deactivation flag before acquiring mutex to avoid using resources
+	// that may be deleted during deactivate_feed(). This is a racy check but
+	// safe because we only transition is_deactivating from false->true during
+	// deactivation, and back to false only at the start of activation.
+	if (feed->is_deactivating.load(std::memory_order_acquire)) {
+		// Don't try to acquire images - the reader may be deleted.
+		// Android will clean up pending images when the reader is deleted.
+		return;
+	}
+
 	MutexLock lock(feed->callback_mutex);
 
+	// Re-check after acquiring mutex in case deactivation started while waiting.
+	if (feed->is_deactivating.load(std::memory_order_acquire)) {
+		return;
+	}
+
+	// If feed is not active, we must still acquire and discard the image to
+	// free the buffer slot. Otherwise, with maxImages=1, the buffer stays full
+	// and no new frames will arrive (onImage won't be called again).
+	// This can happen when a frame arrives between activate_feed() returning
+	// and active=true being set in the base class.
 	if (!feed->is_active()) {
 		AImage *pending_image = nullptr;
-		if (AImageReader_acquireNextImage(p_reader, &pending_image) == AMEDIA_OK) {
+		if (AImageReader_acquireNextImage(p_reader, &pending_image) == AMEDIA_OK && pending_image != nullptr) {
 			AImage_delete(pending_image);
 		}
 		return;
 	}
 
-	Vector<uint8_t> data_y = feed->data_y;
-	Vector<uint8_t> data_uv = feed->data_uv;
-	Ref<Image> image_y = feed->image_y;
-	Ref<Image> image_uv = feed->image_uv;
+	Vector<uint8_t> data_y;
+	Vector<uint8_t> data_uv;
 
 	// Get image
-	AImage *image = nullptr;
-	media_status_t status = AImageReader_acquireNextImage(p_reader, &image);
+	ScopedAImage image_guard;
+	media_status_t status = AImageReader_acquireNextImage(p_reader, image_guard.out());
 	ERR_FAIL_COND(status != AMEDIA_OK);
+	AImage *image = image_guard.get();
 
 	// Get image data
 	uint8_t *data = nullptr;
@@ -397,65 +480,148 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 	FeedFormat format = feed->get_format();
 	int width = format.width;
 	int height = format.height;
+
 	switch (format.pixel_format) {
-		case AIMAGE_FORMAT_YUV_420_888:
+		case AIMAGE_FORMAT_YUV_420_888: {
+			int32_t y_row_stride;
+			AImage_getPlaneRowStride(image, 0, &y_row_stride);
 			AImage_getPlaneData(image, 0, &data, &len);
+
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
-				data_y.resize(len > size ? len : size);
+
+			int64_t y_size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+
+			if (y_row_stride == width && len == y_size) {
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), data, y_size);
+			} else {
+				// Validate buffer size before compaction to prevent out-of-bounds read.
+				int64_t required_y_len = (int64_t)y_row_stride * (height - 1) + width;
+				if (len < required_y_len) {
+					return;
+				}
+				if (feed->scratch_y.size() < len) {
+					feed->scratch_y.resize(len);
+				}
+				memcpy(feed->scratch_y.ptrw(), data, len);
+				CameraFeedAndroid::compact_stride_inplace(feed->scratch_y.ptrw(), width, height, y_row_stride);
+				data_y.resize(y_size);
+				memcpy(data_y.ptrw(), feed->scratch_y.ptr(), y_size);
 			}
-			memcpy(data_y.ptrw(), data, len);
 
 			AImage_getPlanePixelStride(image, 1, &pixel_stride);
 			AImage_getPlaneRowStride(image, 1, &row_stride);
 			AImage_getPlaneData(image, 1, &data, &len);
+
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
-				data_uv.resize(len > size ? len : size);
+
+			int64_t uv_size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+
+			int uv_width = width / 2;
+			int uv_height = height / 2;
+
+			uint8_t *data_v = nullptr;
+			int32_t v_pixel_stride = 0;
+			int32_t v_row_stride = 0;
+			int len_v = 0;
+
+			if (pixel_stride != 2) {
+				AImage_getPlanePixelStride(image, 2, &v_pixel_stride);
+				AImage_getPlaneRowStride(image, 2, &v_row_stride);
+				AImage_getPlaneData(image, 2, &data_v, &len_v);
+				if (len_v <= 0) {
+					return;
+				}
 			}
-			memcpy(data_uv.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
-			image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+			if (pixel_stride == 2 && row_stride == uv_width * 2 && len == uv_size) {
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), data, uv_size);
+			} else if (pixel_stride == 2) {
+				// Allow 1-2 byte tolerance for UV buffer (some devices omit final bytes).
+				int64_t required_uv_len = (int64_t)row_stride * (uv_height - 1) + uv_width * 2;
+				const int64_t UV_TOLERANCE = 2;
+				if (len < required_uv_len - UV_TOLERANCE) {
+					return;
+				}
 
-			feed->set_ycbcr_images(image_y, image_uv);
+				if (feed->scratch_uv.size() < required_uv_len) {
+					feed->scratch_uv.resize(required_uv_len);
+				}
+				if (len < required_uv_len) {
+					memset(feed->scratch_uv.ptrw() + len, 128, required_uv_len - len);
+				}
+				memcpy(feed->scratch_uv.ptrw(), data, len);
+				if (row_stride != uv_width * 2) {
+					CameraFeedAndroid::compact_stride_inplace(feed->scratch_uv.ptrw(), uv_width * 2, uv_height, row_stride);
+				}
+				data_uv.resize(uv_size);
+				memcpy(data_uv.ptrw(), feed->scratch_uv.ptr(), uv_size);
+			} else {
+				if (data_v && len_v > 0) {
+					data_uv.resize(uv_size);
+					uint8_t *dst = data_uv.ptrw();
+					uint8_t *src_u = data;
+					uint8_t *src_v = data_v;
+					for (int row = 0; row < uv_height; row++) {
+						for (int col = 0; col < uv_width; col++) {
+							dst[col * 2] = src_u[col * pixel_stride];
+							dst[col * 2 + 1] = src_v[col * v_pixel_stride];
+						}
+						dst += uv_width * 2;
+						src_u += row_stride;
+						src_v += v_row_stride;
+					}
+				} else {
+					data_uv.resize(uv_size);
+					memset(data_uv.ptrw(), 128, uv_size);
+				}
+			}
+
+			// Defer to main thread to avoid race conditions with RenderingServer.
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_R8, data_y);
+
+			feed->image_uv.instantiate();
+			feed->image_uv->initialize_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+
+			feed->call_deferred("set_ycbcr_images", feed->image_y, feed->image_uv);
 			break;
-		case AIMAGE_FORMAT_RGBA_8888:
+		}
+		case AIMAGE_FORMAT_RGBA_8888: {
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
-				data_y.resize(len > size ? len : size);
-			}
+			int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
+			data_y.resize(len > size ? len : size);
 			memcpy(data_y.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_RGBA8, data_y);
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_RGBA8, data_y);
 
-			feed->set_rgb_image(image_y);
+			feed->call_deferred("set_rgb_image", feed->image_y);
 			break;
-		case AIMAGE_FORMAT_RGB_888:
+		}
+		case AIMAGE_FORMAT_RGB_888: {
 			AImage_getPlaneData(image, 0, &data, &len);
 			if (len <= 0) {
 				return;
 			}
-			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, false);
-				data_y.resize(len > size ? len : size);
-			}
+			int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, false);
+			data_y.resize(len > size ? len : size);
 			memcpy(data_y.ptrw(), data, len);
 
-			image_y->initialize_data(width, height, false, Image::FORMAT_RGB8, data_y);
+			feed->image_y.instantiate();
+			feed->image_y->initialize_data(width, height, false, Image::FORMAT_RGB8, data_y);
 
-			feed->set_rgb_image(image_y);
+			feed->call_deferred("set_rgb_image", feed->image_y);
 			break;
+		}
 		default:
 			return;
 	}
@@ -472,8 +638,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 		}
 	}
 
-	// Release image
-	AImage_delete(image);
+	// Release image happens automatically via ScopedAImage.
 }
 
 void CameraFeedAndroid::onSessionReady(void *context, ACameraCaptureSession *session) {
@@ -484,21 +649,51 @@ void CameraFeedAndroid::onSessionActive(void *context, ACameraCaptureSession *se
 	print_verbose("Capture session active");
 }
 
-void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *session) {
-	print_verbose("Capture session closed");
+void CameraFeedAndroid::onSessionClosed(void *context, ACameraCaptureSession *p_session) {
+	CameraFeedAndroid *feed = static_cast<CameraFeedAndroid *>(context);
+	// Only post if deactivate_feed() is waiting for us. This prevents
+	// spurious posts from error-triggered session closes that could
+	// desynchronize the semaphore count.
+	if (feed->session_close_pending.load(std::memory_order_acquire)) {
+		feed->session_closed_semaphore.post();
+	}
 }
 
 void CameraFeedAndroid::deactivate_feed() {
+	// Signal that deactivation is in progress. This prevents onImage callbacks
+	// from using resources that may be deleted during cleanup.
+	is_deactivating.store(true, std::memory_order_release);
+
 	// First, remove image listener to prevent new callbacks.
 	if (reader != nullptr) {
 		AImageReader_setImageListener(reader, nullptr);
 	}
 
 	// Stop and close capture session.
-	// These calls may wait for pending callbacks to complete.
+	// Must wait for session to fully close before closing device.
 	if (session != nullptr) {
 		ACameraCaptureSession_stopRepeating(session);
+
+		// If an error occurred, the session may have already been closed by
+		// Android. In that case, ACameraCaptureSession_close() may not trigger
+		// onSessionClosed, so we skip waiting to avoid a deadlock.
+		bool skip_wait = device_error_occurred.load(std::memory_order_acquire);
+
+		if (!skip_wait) {
+			// Set flag before closing to indicate we're waiting for the callback.
+			// This ensures we only wait for the post from THIS close operation.
+			session_close_pending.store(true, std::memory_order_release);
+		}
+
 		ACameraCaptureSession_close(session);
+
+		if (!skip_wait) {
+			// Wait for onSessionClosed callback to ensure session is fully closed
+			// before proceeding to close the device.
+			session_closed_semaphore.wait();
+			session_close_pending.store(false, std::memory_order_release);
+		}
+
 		session = nullptr;
 	}
 
@@ -520,17 +715,38 @@ void CameraFeedAndroid::deactivate_feed() {
 		ACaptureRequest_free(request);
 		request = nullptr;
 	}
+
+	if (camera_output_target != nullptr) {
+		ACameraOutputTarget_free(camera_output_target);
+		camera_output_target = nullptr;
+	}
+
+	if (session_output_container != nullptr) {
+		ACaptureSessionOutputContainer_free(session_output_container);
+		session_output_container = nullptr;
+	}
+
+	if (session_output != nullptr) {
+		ACaptureSessionOutput_free(session_output);
+		session_output = nullptr;
+	}
 }
 
 void CameraFeedAndroid::onError(void *context, ACameraDevice *p_device, int error) {
-	print_error(vformat("Camera error: %d", error));
+	auto *feed = static_cast<CameraFeedAndroid *>(context);
+	print_error(vformat("Camera %s error: %d", feed->camera_id, error));
+	// Mark that an error occurred. This signals to deactivate_feed() that
+	// the session may have been closed by Android, so we shouldn't wait
+	// for onSessionClosed.
+	feed->device_error_occurred.store(true, std::memory_order_release);
 	onDisconnected(context, p_device);
 }
 
 void CameraFeedAndroid::onDisconnected(void *context, ACameraDevice *p_device) {
-	print_verbose("Camera disconnected");
 	auto *feed = static_cast<CameraFeedAndroid *>(context);
-	feed->set_active(false);
+	// Defer to main thread to avoid reentrancy issues when called from
+	// ACameraDevice_close() during deactivate_feed().
+	feed->call_deferred("set_active", false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -540,6 +756,14 @@ void CameraAndroid::update_feeds() {
 	ACameraIdList *cameraIds = nullptr;
 	camera_status_t c_status = ACameraManager_getCameraIdList(cameraManager, &cameraIds);
 	ERR_FAIL_COND(c_status != ACAMERA_OK);
+
+	// Deactivate all feeds before removing to ensure proper cleanup.
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
 
 	// remove existing devices
 	for (int i = feeds.size() - 1; i >= 0; i--) {
@@ -593,6 +817,16 @@ void CameraAndroid::update_feeds() {
 }
 
 void CameraAndroid::remove_all_feeds() {
+	// Deactivate all feeds before removing to ensure proper cleanup.
+	// This prevents "Device is closed but session is not notified" warnings
+	// that can occur if feeds are destroyed while still active.
+	for (int i = 0; i < feeds.size(); i++) {
+		Ref<CameraFeedAndroid> feed = feeds[i];
+		if (feed.is_valid() && feed->is_active()) {
+			feed->deactivate_feed();
+		}
+	}
+
 	// remove existing devices
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		remove_feed(feeds[i]);
