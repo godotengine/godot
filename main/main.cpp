@@ -75,6 +75,7 @@
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_api_dump.h"
 #include "servers/text/text_server.h"
 #include "servers/text/text_server_dummy.h"
 
@@ -282,6 +283,7 @@ static bool editor_pseudolocalization = false;
 static bool dump_gdextension_interface = false;
 static bool dump_gdextension_interface_header = false;
 static bool dump_extension_api = false;
+static bool dump_shader_api = false;
 static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
 static String validate_extension_api_file;
@@ -712,6 +714,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--dump-gdextension-interface-json", "Generate a JSON dump of the GDExtension interface named \"gdextension_interface.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api", "Generate a JSON dump of the Godot API for GDExtension bindings named \"extension_api.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-extension-api-with-docs", "Generate JSON dump of the Godot API like the previous option, but including documentation.\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dump-shader-api", "Generate a JSON dump of the Godot shader API for GDShader bindings named \"shader_api.json\" in the current folder.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--validate-extension-api <path>", "Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("", "If incompatibilities or errors are detected, the exit code will be non-zero.\n");
 	print_help_option("--benchmark", "Benchmark the run time and print it to console.\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1597,6 +1600,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			dump_extension_api = true;
 			include_docs_in_extension_api_dump = true;
 			print_line("Dumping Extension API including documentation");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
+			main_args.push_back(arg);
+		} else if (arg == "--dump-shader-api") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			dump_shader_api = true;
+			print_line("Dumping Shader API");
 			// Hack. Not needed but otherwise we end up detecting that this should
 			// run the project instead of a cmdline tool.
 			// Needs full refactoring to fix properly.
@@ -4169,6 +4182,13 @@ int Main::start() {
 			Engine::get_singleton()->set_editor_hint(true); // "extension_api.json" should always contains editor singletons.
 			bool valid = GDExtensionAPIDump::validate_extension_json_file(validate_extension_api_file) == OK;
 			return valid ? EXIT_SUCCESS : EXIT_FAILURE;
+		}
+	}
+
+	// GDShader API
+	{
+		if (dump_shader_api) {
+			GDShaderAPIDump::generate_shader_json_file("shader_api.json");
 		}
 	}
 

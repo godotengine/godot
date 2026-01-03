@@ -1563,195 +1563,19 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 
 	switch (p_op->op) {
 		case OP_EQUAL:
-		case OP_NOT_EQUAL: {
-			if ((!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) || (!p_op->arguments[1]->is_indexed() && p_op->arguments[1]->get_array_size() > 0)) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-			valid = na == nb;
-			ret_type = TYPE_BOOL;
-		} break;
+		case OP_NOT_EQUAL:
 		case OP_LESS:
 		case OP_LESS_EQUAL:
 		case OP_GREATER:
-		case OP_GREATER_EQUAL: {
-			if ((!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) || (!p_op->arguments[1]->is_indexed() && p_op->arguments[1]->get_array_size() > 0)) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			valid = na == nb && (na == TYPE_UINT || na == TYPE_INT || na == TYPE_FLOAT);
-			ret_type = TYPE_BOOL;
-
-		} break;
+		case OP_GREATER_EQUAL:
 		case OP_AND:
-		case OP_OR: {
-			if ((!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) || (!p_op->arguments[1]->is_indexed() && p_op->arguments[1]->get_array_size() > 0)) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			valid = na == nb && na == TYPE_BOOL;
-			ret_type = TYPE_BOOL;
-
-		} break;
-		case OP_NOT: {
-			if (!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			valid = na == TYPE_BOOL;
-			ret_type = TYPE_BOOL;
-
-		} break;
-		case OP_INCREMENT:
-		case OP_DECREMENT:
-		case OP_POST_INCREMENT:
-		case OP_POST_DECREMENT:
-		case OP_NEGATE: {
-			if (!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			valid = na > TYPE_BVEC4 && na < TYPE_MAT2;
-			ret_type = na;
-		} break;
+		case OP_OR:
 		case OP_ADD:
 		case OP_SUB:
 		case OP_MUL:
-		case OP_DIV: {
-			if ((!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) || (!p_op->arguments[1]->is_indexed() && p_op->arguments[1]->get_array_size() > 0)) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			if (na > nb) {
-				//make things easier;
-				SWAP(na, nb);
-			}
-
-			if (na == nb) {
-				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
-				ret_type = na;
-			} else if (na == TYPE_INT && nb == TYPE_IVEC2) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_INT && nb == TYPE_IVEC3) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_INT && nb == TYPE_IVEC4) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_UINT && nb == TYPE_UVEC2) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UINT && nb == TYPE_UVEC3) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UINT && nb == TYPE_UVEC4) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			} else if (na == TYPE_FLOAT && nb == TYPE_VEC2) {
-				valid = true;
-				ret_type = TYPE_VEC2;
-			} else if (na == TYPE_FLOAT && nb == TYPE_VEC3) {
-				valid = true;
-				ret_type = TYPE_VEC3;
-			} else if (na == TYPE_FLOAT && nb == TYPE_VEC4) {
-				valid = true;
-				ret_type = TYPE_VEC4;
-			} else if (na == TYPE_FLOAT && nb == TYPE_MAT2) {
-				valid = true;
-				ret_type = TYPE_MAT2;
-			} else if (na == TYPE_FLOAT && nb == TYPE_MAT3) {
-				valid = true;
-				ret_type = TYPE_MAT3;
-			} else if (na == TYPE_FLOAT && nb == TYPE_MAT4) {
-				valid = true;
-				ret_type = TYPE_MAT4;
-			} else if (p_op->op == OP_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
-				valid = true;
-				ret_type = TYPE_VEC2;
-			} else if (p_op->op == OP_MUL && na == TYPE_VEC3 && nb == TYPE_MAT3) {
-				valid = true;
-				ret_type = TYPE_VEC3;
-			} else if (p_op->op == OP_MUL && na == TYPE_VEC4 && nb == TYPE_MAT4) {
-				valid = true;
-				ret_type = TYPE_VEC4;
-			}
-		} break;
+		case OP_DIV:
 		case OP_ASSIGN_MOD:
-		case OP_MOD: {
-			/*
-			 * The operator modulus (%) operates on signed or unsigned integers or integer vectors. The operand
-			 * types must both be signed or both be unsigned. The operands cannot be vectors of differing size. If
-			 * one operand is a scalar and the other vector, then the scalar is applied component-wise to the vector,
-			 * resulting in the same type as the vector. If both are vectors of the same size, the result is computed
-			 * component-wise.
-			 */
-
-			if ((!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) || (!p_op->arguments[1]->is_indexed() && p_op->arguments[1]->get_array_size() > 0)) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			if (na == TYPE_INT && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_INT;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-				/////
-			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UINT;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			}
-		} break;
+		case OP_MOD:
 		case OP_ASSIGN_SHIFT_LEFT:
 		case OP_ASSIGN_SHIFT_RIGHT:
 		case OP_SHIFT_LEFT:
@@ -1760,52 +1584,20 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 				break; // don't accept arrays
 			}
 
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			if (na == TYPE_INT && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_INT;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UINT;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
+			valid = get_datatype_operator_result(p_op->arguments[0]->get_datatype(), p_op->op, p_op->arguments[1]->get_datatype(), &ret_type, nullptr);
+		} break;
+		case OP_NOT:
+		case OP_INCREMENT:
+		case OP_DECREMENT:
+		case OP_POST_INCREMENT:
+		case OP_POST_DECREMENT:
+		case OP_NEGATE:
+		case OP_BIT_INVERT: {
+			if (!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) {
+				break; // don't accept arrays
 			}
+
+			valid = get_datatype_operator_result(p_op->arguments[0]->get_datatype(), p_op->op, TYPE_VOID, &ret_type, nullptr);
 		} break;
 		case OP_ASSIGN: {
 			int sa = 0;
@@ -1833,86 +1625,13 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 		case OP_ASSIGN_ADD:
 		case OP_ASSIGN_SUB:
 		case OP_ASSIGN_MUL:
-		case OP_ASSIGN_DIV: {
-			int sa = 0;
-			int sb = 0;
-			if (!p_op->arguments[0]->is_indexed()) {
-				sa = p_op->arguments[0]->get_array_size();
-			}
-			if (!p_op->arguments[1]->is_indexed()) {
-				sb = p_op->arguments[1]->get_array_size();
-			}
-			if (sa > 0 || sb > 0) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			if (na == nb) {
-				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
-				ret_type = na;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			} else if (na == TYPE_VEC2 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_VEC2;
-			} else if (na == TYPE_VEC3 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_VEC3;
-			} else if (na == TYPE_VEC4 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_VEC4;
-			} else if (na == TYPE_MAT2 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_MAT2;
-			} else if (na == TYPE_MAT3 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_MAT3;
-			} else if (na == TYPE_MAT4 && nb == TYPE_FLOAT) {
-				valid = true;
-				ret_type = TYPE_MAT4;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
-				valid = true;
-				ret_type = TYPE_VEC2;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC3 && nb == TYPE_MAT3) {
-				valid = true;
-				ret_type = TYPE_VEC3;
-			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC4 && nb == TYPE_MAT4) {
-				valid = true;
-				ret_type = TYPE_VEC4;
-			}
-		} break;
+		case OP_ASSIGN_DIV:
 		case OP_ASSIGN_BIT_AND:
 		case OP_ASSIGN_BIT_OR:
 		case OP_ASSIGN_BIT_XOR:
 		case OP_BIT_AND:
 		case OP_BIT_OR:
 		case OP_BIT_XOR: {
-			/*
-			 * The bitwise operators and (&), exclusive-or (^), and inclusive-or (|). The operands must be of type
-			 * signed or unsigned integers or integer vectors. The operands cannot be vectors of differing size. If
-			 * one operand is a scalar and the other a vector, the scalar is applied component-wise to the vector,
-			 * resulting in the same type as the vector. The fundamental types of the operands (signed or unsigned)
-			 * must match.
-			 */
-
 			int sa = 0;
 			int sb = 0;
 			if (!p_op->arguments[0]->is_indexed()) {
@@ -1925,67 +1644,7 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 				break; // don't accept arrays
 			}
 
-			DataType na = p_op->arguments[0]->get_datatype();
-			DataType nb = p_op->arguments[1]->get_datatype();
-
-			if (na > nb && p_op->op >= OP_BIT_AND) {
-				//can swap for non assign
-				SWAP(na, nb);
-			}
-
-			if (na == TYPE_INT && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_INT;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
-				valid = true;
-				ret_type = TYPE_IVEC2;
-			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
-				valid = true;
-				ret_type = TYPE_IVEC3;
-			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
-				valid = true;
-				ret_type = TYPE_IVEC4;
-				/////
-			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UINT;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
-				valid = true;
-				ret_type = TYPE_UVEC2;
-			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
-				valid = true;
-				ret_type = TYPE_UVEC3;
-			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
-				valid = true;
-				ret_type = TYPE_UVEC4;
-			}
-		} break;
-		case OP_BIT_INVERT: { //unaries
-			if (!p_op->arguments[0]->is_indexed() && p_op->arguments[0]->get_array_size() > 0) {
-				break; // don't accept arrays
-			}
-
-			DataType na = p_op->arguments[0]->get_datatype();
-			valid = na >= TYPE_INT && na < TYPE_FLOAT;
-			ret_type = na;
+			valid = get_datatype_operator_result(p_op->arguments[0]->get_datatype(), p_op->op, p_op->arguments[1]->get_datatype(), &ret_type, nullptr);
 		} break;
 		case OP_SELECT_IF: {
 			int sa = 0;
@@ -5212,6 +4871,453 @@ uint32_t ShaderLanguage::get_datatype_component_count(ShaderLanguage::DataType p
 	return 0U;
 }
 
+ShaderLanguage::DataType ShaderLanguage::get_datatype_indexed_type(DataType p_type) {
+	switch (p_type) {
+		case TYPE_BVEC2:
+		case TYPE_BVEC3:
+		case TYPE_BVEC4:
+			return TYPE_BOOL;
+		case TYPE_VEC2:
+		case TYPE_VEC3:
+		case TYPE_VEC4:
+			return TYPE_FLOAT;
+		case TYPE_IVEC2:
+		case TYPE_IVEC3:
+		case TYPE_IVEC4:
+			return TYPE_INT;
+		case TYPE_UVEC2:
+		case TYPE_UVEC3:
+		case TYPE_UVEC4:
+			return TYPE_UINT;
+		case TYPE_MAT2:
+			return TYPE_VEC2;
+		case TYPE_MAT3:
+			return TYPE_VEC3;
+		case TYPE_MAT4:
+			return TYPE_VEC4;
+		default:
+			break;
+	}
+	return TYPE_VOID;
+}
+
+uint32_t ShaderLanguage::get_datatype_indexed_size(DataType p_type) {
+	switch (p_type) {
+		case TYPE_BVEC2:
+		case TYPE_VEC2:
+		case TYPE_IVEC2:
+		case TYPE_UVEC2:
+		case TYPE_MAT2:
+			return 2;
+		case TYPE_BVEC3:
+		case TYPE_VEC3:
+		case TYPE_IVEC3:
+		case TYPE_UVEC3:
+		case TYPE_MAT3:
+			return 3;
+		case TYPE_BVEC4:
+		case TYPE_VEC4:
+		case TYPE_IVEC4:
+		case TYPE_UVEC4:
+		case TYPE_MAT4:
+			return 4;
+		default:
+			break;
+	}
+	return 0;
+}
+
+uint32_t ShaderLanguage::get_datatype_swizzle_field_count(DataType p_type) {
+	switch (p_type) {
+		case TYPE_BVEC2:
+		case TYPE_IVEC2:
+		case TYPE_UVEC2:
+		case TYPE_VEC2:
+			return 2;
+		case TYPE_BVEC3:
+		case TYPE_IVEC3:
+		case TYPE_UVEC3:
+		case TYPE_VEC3:
+			return 3;
+		case TYPE_BVEC4:
+		case TYPE_IVEC4:
+		case TYPE_UVEC4:
+		case TYPE_VEC4:
+			return 4;
+		default:
+			break;
+	}
+	return 0;
+}
+
+bool ShaderLanguage::get_datatype_operator_result(DataType p_type, Operator p_op, DataType p_other_type, DataType *r_ret_type, bool *r_unary) {
+	bool valid = false;
+	bool unary = false;
+	DataType ret_type = TYPE_VOID;
+
+	switch (p_op) {
+		case OP_EQUAL:
+		case OP_NOT_EQUAL: {
+			valid = p_type == p_other_type;
+			ret_type = TYPE_BOOL;
+		} break;
+
+		case OP_LESS:
+		case OP_LESS_EQUAL:
+		case OP_GREATER:
+		case OP_GREATER_EQUAL: {
+			valid = p_type == p_other_type && (p_type == TYPE_UINT || p_type == TYPE_INT || p_type == TYPE_FLOAT);
+			ret_type = TYPE_BOOL;
+		} break;
+
+		case OP_AND:
+		case OP_OR: {
+			valid = p_type == p_other_type && p_type == TYPE_BOOL;
+			ret_type = TYPE_BOOL;
+		} break;
+
+		case OP_NOT: {
+			valid = p_type == TYPE_BOOL;
+			unary = true;
+			ret_type = TYPE_BOOL;
+		} break;
+
+		case OP_INCREMENT:
+		case OP_DECREMENT:
+		case OP_POST_INCREMENT:
+		case OP_POST_DECREMENT:
+		case OP_NEGATE: {
+			valid = p_type > TYPE_BVEC4 && p_type < TYPE_MAT2;
+			unary = true;
+			ret_type = p_type;
+		} break;
+
+		case OP_ADD:
+		case OP_SUB:
+		case OP_MUL:
+		case OP_DIV: {
+			DataType na = p_type;
+			DataType nb = p_other_type;
+
+			if (na > nb) {
+				//make things easier;
+				SWAP(na, nb);
+			}
+
+			if (na == nb) {
+				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
+				ret_type = na;
+			} else if (na == TYPE_INT && nb == TYPE_IVEC2) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_INT && nb == TYPE_IVEC3) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_INT && nb == TYPE_IVEC4) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_UINT && nb == TYPE_UVEC2) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UINT && nb == TYPE_UVEC3) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UINT && nb == TYPE_UVEC4) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			} else if (na == TYPE_FLOAT && nb == TYPE_VEC2) {
+				valid = true;
+				ret_type = TYPE_VEC2;
+			} else if (na == TYPE_FLOAT && nb == TYPE_VEC3) {
+				valid = true;
+				ret_type = TYPE_VEC3;
+			} else if (na == TYPE_FLOAT && nb == TYPE_VEC4) {
+				valid = true;
+				ret_type = TYPE_VEC4;
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT2) {
+				valid = true;
+				ret_type = TYPE_MAT2;
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT3) {
+				valid = true;
+				ret_type = TYPE_MAT3;
+			} else if (na == TYPE_FLOAT && nb == TYPE_MAT4) {
+				valid = true;
+				ret_type = TYPE_MAT4;
+			} else if (p_op == OP_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
+				valid = true;
+				ret_type = TYPE_VEC2;
+			} else if (p_op == OP_MUL && na == TYPE_VEC3 && nb == TYPE_MAT3) {
+				valid = true;
+				ret_type = TYPE_VEC3;
+			} else if (p_op == OP_MUL && na == TYPE_VEC4 && nb == TYPE_MAT4) {
+				valid = true;
+				ret_type = TYPE_VEC4;
+			}
+		} break;
+
+		case OP_ASSIGN_MOD:
+		case OP_MOD: {
+			/*
+			 * The operator modulus (%) operates on signed or unsigned integers or integer vectors. The operand
+			 * types must both be signed or both be unsigned. The operands cannot be vectors of differing size. If
+			 * one operand is a scalar and the other vector, then the scalar is applied component-wise to the vector,
+			 * resulting in the same type as the vector. If both are vectors of the same size, the result is computed
+			 * component-wise.
+			 */
+
+			DataType na = p_type;
+			DataType nb = p_other_type;
+
+			if (na == TYPE_INT && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_INT;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+				/////
+			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UINT;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			}
+		} break;
+
+		case OP_ASSIGN_SHIFT_LEFT:
+		case OP_ASSIGN_SHIFT_RIGHT:
+		case OP_SHIFT_LEFT:
+		case OP_SHIFT_RIGHT: {
+			DataType na = p_type;
+			DataType nb = p_other_type;
+
+			if (na == TYPE_INT && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_INT;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UINT;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			}
+		} break;
+
+		case OP_ASSIGN: {
+			valid = p_type == p_other_type;
+			ret_type = p_type;
+		} break;
+
+		case OP_ASSIGN_ADD:
+		case OP_ASSIGN_SUB:
+		case OP_ASSIGN_MUL:
+		case OP_ASSIGN_DIV: {
+			DataType na = p_type;
+			DataType nb = p_other_type;
+
+			if (na == nb) {
+				valid = (na > TYPE_BVEC4 && na <= TYPE_MAT4);
+				ret_type = na;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			} else if (na == TYPE_VEC2 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_VEC2;
+			} else if (na == TYPE_VEC3 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_VEC3;
+			} else if (na == TYPE_VEC4 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_VEC4;
+			} else if (na == TYPE_MAT2 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_MAT2;
+			} else if (na == TYPE_MAT3 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_MAT3;
+			} else if (na == TYPE_MAT4 && nb == TYPE_FLOAT) {
+				valid = true;
+				ret_type = TYPE_MAT4;
+			} else if (p_op == OP_ASSIGN_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
+				valid = true;
+				ret_type = TYPE_VEC2;
+			} else if (p_op == OP_ASSIGN_MUL && na == TYPE_VEC3 && nb == TYPE_MAT3) {
+				valid = true;
+				ret_type = TYPE_VEC3;
+			} else if (p_op == OP_ASSIGN_MUL && na == TYPE_VEC4 && nb == TYPE_MAT4) {
+				valid = true;
+				ret_type = TYPE_VEC4;
+			}
+		} break;
+
+		case OP_ASSIGN_BIT_AND:
+		case OP_ASSIGN_BIT_OR:
+		case OP_ASSIGN_BIT_XOR:
+		case OP_BIT_AND:
+		case OP_BIT_OR:
+		case OP_BIT_XOR: {
+			/*
+			 * The bitwise operators and (&), exclusive-or (^), and inclusive-or (|). The operands must be of type
+			 * signed or unsigned integers or integer vectors. The operands cannot be vectors of differing size. If
+			 * one operand is a scalar and the other a vector, the scalar is applied component-wise to the vector,
+			 * resulting in the same type as the vector. The fundamental types of the operands (signed or unsigned)
+			 * must match.
+			 */
+
+			DataType na = p_type;
+			DataType nb = p_other_type;
+
+			if (na > nb && p_op >= OP_BIT_AND) {
+				//can swap for non assign
+				SWAP(na, nb);
+			}
+
+			if (na == TYPE_INT && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_INT;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_INT) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+			} else if (na == TYPE_IVEC2 && nb == TYPE_IVEC2) {
+				valid = true;
+				ret_type = TYPE_IVEC2;
+			} else if (na == TYPE_IVEC3 && nb == TYPE_IVEC3) {
+				valid = true;
+				ret_type = TYPE_IVEC3;
+			} else if (na == TYPE_IVEC4 && nb == TYPE_IVEC4) {
+				valid = true;
+				ret_type = TYPE_IVEC4;
+				/////
+			} else if (na == TYPE_UINT && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UINT;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UINT) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			} else if (na == TYPE_UVEC2 && nb == TYPE_UVEC2) {
+				valid = true;
+				ret_type = TYPE_UVEC2;
+			} else if (na == TYPE_UVEC3 && nb == TYPE_UVEC3) {
+				valid = true;
+				ret_type = TYPE_UVEC3;
+			} else if (na == TYPE_UVEC4 && nb == TYPE_UVEC4) {
+				valid = true;
+				ret_type = TYPE_UVEC4;
+			}
+		} break;
+
+		case OP_BIT_INVERT: {
+			valid = p_type >= TYPE_INT && p_type < TYPE_FLOAT;
+			unary = true;
+			ret_type = p_type;
+		} break;
+
+		default: {
+			break;
+		}
+	}
+
+	if (r_ret_type) {
+		*r_ret_type = ret_type;
+	}
+	if (r_unary) {
+		*r_unary = unary;
+	}
+
+	return valid;
+}
+
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 	HashSet<String> kws;
 
@@ -7199,109 +7305,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						member_struct_name = expr->get_datatype_name();
 					}
 				} else {
-					switch (expr->get_datatype()) {
-						case TYPE_BVEC2:
-						case TYPE_VEC2:
-						case TYPE_IVEC2:
-						case TYPE_UVEC2:
-						case TYPE_MAT2:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
-								if (index_constant >= 2) {
-									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 1));
-									return nullptr;
-								}
-							}
-
-							switch (expr->get_datatype()) {
-								case TYPE_BVEC2:
-									member_type = TYPE_BOOL;
-									break;
-								case TYPE_VEC2:
-									member_type = TYPE_FLOAT;
-									break;
-								case TYPE_IVEC2:
-									member_type = TYPE_INT;
-									break;
-								case TYPE_UVEC2:
-									member_type = TYPE_UINT;
-									break;
-								case TYPE_MAT2:
-									member_type = TYPE_VEC2;
-									break;
-								default:
-									break;
-							}
-
-							break;
-						case TYPE_BVEC3:
-						case TYPE_VEC3:
-						case TYPE_IVEC3:
-						case TYPE_UVEC3:
-						case TYPE_MAT3:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
-								if (index_constant >= 3) {
-									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 2));
-									return nullptr;
-								}
-							}
-
-							switch (expr->get_datatype()) {
-								case TYPE_BVEC3:
-									member_type = TYPE_BOOL;
-									break;
-								case TYPE_VEC3:
-									member_type = TYPE_FLOAT;
-									break;
-								case TYPE_IVEC3:
-									member_type = TYPE_INT;
-									break;
-								case TYPE_UVEC3:
-									member_type = TYPE_UINT;
-									break;
-								case TYPE_MAT3:
-									member_type = TYPE_VEC3;
-									break;
-								default:
-									break;
-							}
-							break;
-						case TYPE_BVEC4:
-						case TYPE_VEC4:
-						case TYPE_IVEC4:
-						case TYPE_UVEC4:
-						case TYPE_MAT4:
-							if (index->type == Node::NODE_TYPE_CONSTANT) {
-								uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
-								if (index_constant >= 4) {
-									_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, 3));
-									return nullptr;
-								}
-							}
-
-							switch (expr->get_datatype()) {
-								case TYPE_BVEC4:
-									member_type = TYPE_BOOL;
-									break;
-								case TYPE_VEC4:
-									member_type = TYPE_FLOAT;
-									break;
-								case TYPE_IVEC4:
-									member_type = TYPE_INT;
-									break;
-								case TYPE_UVEC4:
-									member_type = TYPE_UINT;
-									break;
-								case TYPE_MAT4:
-									member_type = TYPE_VEC4;
-									break;
-								default:
-									break;
-							}
-							break;
-						default: {
-							_set_error(vformat(RTR("An object of type '%s' can't be indexed."), (expr->get_datatype() == TYPE_STRUCT ? expr->get_datatype_name() : get_datatype_name(expr->get_datatype()))));
+					member_type = get_datatype_indexed_type(expr->get_datatype());
+					if (member_type == TYPE_VOID) {
+						_set_error(vformat(RTR("An object of type '%s' can't be indexed."), (expr->get_datatype() == TYPE_STRUCT ? expr->get_datatype_name() : get_datatype_name(expr->get_datatype()))));
+						return nullptr;
+					}
+					if (index->type == Node::NODE_TYPE_CONSTANT) {
+						uint32_t size = get_datatype_indexed_size(expr->get_datatype());
+						uint32_t index_constant = static_cast<ConstantNode *>(index)->values[0].uint;
+						if (index_constant >= size) {
+							_set_error(vformat(RTR("Index [%d] out of range [%d..%d]."), index_constant, 0, size - 1));
 							return nullptr;
 						}
 					}
@@ -11973,33 +11986,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			const char coordt[4] = { 's', 't', 'p', 'q' };
 			const String theme_color_names[4] = { "axis_x_color", "axis_y_color", "axis_z_color", "axis_w_color" };
 
-			int limit = 0;
-
-			switch (completion_base) {
-				case TYPE_BVEC2:
-				case TYPE_IVEC2:
-				case TYPE_UVEC2:
-				case TYPE_VEC2: {
-					limit = 2;
-
-				} break;
-				case TYPE_BVEC3:
-				case TYPE_IVEC3:
-				case TYPE_UVEC3:
-				case TYPE_VEC3: {
-					limit = 3;
-
-				} break;
-				case TYPE_BVEC4:
-				case TYPE_IVEC4:
-				case TYPE_UVEC4:
-				case TYPE_VEC4: {
-					limit = 4;
-
-				} break;
-				default: {
-				}
-			}
+			int limit = get_datatype_swizzle_field_count(completion_base);
 
 			for (int i = 0; i < limit; i++) {
 				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(colv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
