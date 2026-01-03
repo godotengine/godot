@@ -698,7 +698,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
 			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
-			anim_ping_pong->set_button_icon(get_editor_theme_icon(SNAME("PingPong")));
+			anim_ping_pong->set_button_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
 			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
 			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
