@@ -32,6 +32,7 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
+#include "core/variant/typed_dictionary.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -118,6 +119,11 @@ Variant EditorDebuggerRemoteObjects::get_variant(const StringName &p_name) {
 	Variant var;
 	_get(p_name, var);
 	return var;
+}
+
+void EditorDebuggerRemoteObjects::clear() {
+	prop_list.clear();
+	prop_values.clear();
 }
 
 void EditorDebuggerRemoteObjects::_bind_methods() {
