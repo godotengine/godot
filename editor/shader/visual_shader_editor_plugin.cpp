@@ -4572,6 +4572,9 @@ void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_no
 	if (p_preview_port != -1) {
 		node->set_output_port_for_preview(p_preview_port);
 	}
+
+	// remember clean parameter_name when convert parameter to constant
+	graph_plugin->register_parameter_name(p_node_id, nullptr);
 }
 
 void VisualShaderEditor::_update_parameter(VisualShader::Type p_type_id, int p_node_id, const Variant &p_var, int p_preview_port) {
