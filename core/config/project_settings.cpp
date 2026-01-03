@@ -38,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"

@@ -2052,6 +2052,10 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
+void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
+	MessageQueue::get_singleton()->push_callp(this, p_method, p_args, p_argcount);
+}
+
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
 	MessageQueue::get_singleton()->push_set(this, p_property, p_value);
 }
