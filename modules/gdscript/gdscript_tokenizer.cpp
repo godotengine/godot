@@ -74,6 +74,7 @@ static const char *token_names[] = {
 	"*", // STAR,
 	"**", // STAR_STAR,
 	"/", // SLASH,
+	"~/", // TILDE_SLASH
 	"%", // PERCENT,
 	// Assignment
 	"=", // EQUAL,
@@ -1443,8 +1444,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			return annotation();
 
 		// Single characters.
-		case '~':
-			return make_token(Token::TILDE);
 		case ',':
 			return make_token(Token::COMMA);
 		case ':':
@@ -1485,6 +1484,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			return make_token(Token::BRACE_CLOSE);
 
 		// Double characters.
+		case '~':
+			if (_peek() == '/') {
+				_advance();
+				return make_token(Token::TILDE_SLASH);
+			} else {
+				return make_token(Token::TILDE);
+			}
 		case '!':
 			if (_peek() == '=') {
 				_advance();
