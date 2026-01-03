@@ -1217,6 +1217,13 @@ Vector3 GodotPhysicsServer3D::soft_body_get_point_global_position(RID p_body, in
 	return soft_body->get_vertex_position(p_point_index);
 }
 
+uint32_t GodotPhysicsServer3D::soft_body_get_point_count(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0);
+
+	return soft_body->get_vertex_count();
+}
+
 void GodotPhysicsServer3D::soft_body_remove_all_pinned_points(RID p_body) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

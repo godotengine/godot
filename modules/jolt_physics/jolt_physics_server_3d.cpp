@@ -1225,6 +1225,13 @@ Vector3 JoltPhysicsServer3D::soft_body_get_point_global_position(RID p_body, int
 	return body->get_vertex_position(p_point_index);
 }
 
+uint32_t JoltPhysicsServer3D::soft_body_get_point_count(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0);
+
+	return body->get_vertex_count();
+}
+
 void JoltPhysicsServer3D::soft_body_remove_all_pinned_points(RID p_body) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);

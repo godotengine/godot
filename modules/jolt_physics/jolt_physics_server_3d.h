@@ -356,6 +356,8 @@ public:
 
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override;
 
+	virtual uint32_t soft_body_get_point_count(RID p_body) const override;
+
 	virtual void soft_body_remove_all_pinned_points(RID p_body) override;
 
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override;
