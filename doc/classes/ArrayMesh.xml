@@ -109,6 +109,16 @@
 				Performs a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
+		<method name="merge_array_meshes" qualifiers="static">
+			<return type="ArrayMesh" />
+			<param index="0" name="array_meshes" type="ArrayMesh[]" />
+			<param index="1" name="relative_transforms" type="Transform3D[]" />
+			<param index="2" name="deduplicate_surfaces" type="bool" default="true" />
+			<description>
+				Merges multiple [ArrayMesh]es into a single [ArrayMesh]. Each input mesh is transformed by the corresponding [Transform3D] in the [param relative_transforms] array, which must be the same size as [param array_meshes]. Negative scales are supported, and the winding order in the mesh data will be corrected to account for this. Blend shapes and LODs are discarded.
+				If [param deduplicate_surfaces] is [code]true[/code] and multiple meshes have surfaces with the same names and formats, the surfaces will be merged together when the meshes are merged, and will use the material from the first matching surface. This is useful for reducing the number of surfaces in the resulting mesh, and avoids duplicating materials. Surfaces with bone weights and custom data will never be deduplicated. If [param deduplicate_surfaces] is [code]false[/code], the surfaces will always be kept separate, and will be given unique names.
+			</description>
+		</method>
 		<method name="regen_normal_maps">
 			<return type="void" />
 			<description>
