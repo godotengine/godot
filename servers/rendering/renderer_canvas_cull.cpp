@@ -687,6 +687,14 @@ void RendererCanvasCull::canvas_item_set_custom_rect(RID p_item, bool p_custom_r
 
 	canvas_item->custom_rect = p_custom_rect;
 	canvas_item->rect = p_rect;
+	canvas_item->custom_rect_value = p_rect;
+}
+
+void RendererCanvasCull::canvas_item_set_merge_custom_rect(RID p_item, bool p_merge_custom_rect) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->merge_custom_rect = p_merge_custom_rect;
 }
 
 void RendererCanvasCull::canvas_item_set_modulate(RID p_item, const Color &p_color) {

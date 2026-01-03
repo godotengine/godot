@@ -3937,8 +3937,11 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_DRAW: {
 			_update_canvas_item_transform();
-			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
-			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
+
+			RID ci = get_canvas_item();
+			RenderingServer::get_singleton()->canvas_item_set_custom_rect(ci, !data.disable_visibility_clip, Rect2(Point2(), get_size()));
+			RenderingServer::get_singleton()->canvas_item_set_merge_custom_rect(ci, !data.disable_visibility_clip);
+			RenderingServer::get_singleton()->canvas_item_set_clip(ci, data.clip_contents);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
