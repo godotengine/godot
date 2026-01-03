@@ -94,11 +94,73 @@ if env["builtin_libtheora"]:
     if env["builtin_libvorbis"]:
         env_theora.Prepend(CPPPATH=["#thirdparty/libvorbis"])
 
+    if env["builtin_libyuv"]:
+        env_theora.Prepend(CPPEXTPATH=["#thirdparty/libyuv/include"])
+        libyuv_dir = "#thirdparty/libyuv/source/"
+        libyuv_sources = [
+            "compare.cc",
+            "compare_common.cc",
+            "compare_gcc.cc",
+            "compare_msa.cc",
+            "compare_neon64.cc",
+            "compare_neon.cc",
+            "compare_win.cc",
+            "convert_argb.cc",
+            "convert.cc",
+            "convert_from_argb.cc",
+            "convert_from.cc",
+            "convert_jpeg.cc",
+            "convert_to_argb.cc",
+            "convert_to_i420.cc",
+            "cpu_id.cc",
+            "mjpeg_decoder.cc",
+            "mjpeg_validate.cc",
+            "planar_functions.cc",
+            "rotate_any.cc",
+            "rotate_argb.cc",
+            "rotate.cc",
+            "rotate_common.cc",
+            "rotate_gcc.cc",
+            "rotate_lsx.cc",
+            "rotate_msa.cc",
+            "rotate_neon64.cc",
+            "rotate_neon.cc",
+            "rotate_sme.cc",
+            "rotate_win.cc",
+            "row_any.cc",
+            "row_common.cc",
+            "row_gcc.cc",
+            "row_lasx.cc",
+            "row_lsx.cc",
+            "row_msa.cc",
+            "row_neon64.cc",
+            "row_neon.cc",
+            "row_rvv.cc",
+            "row_sme.cc",
+            "row_sve.cc",
+            "row_win.cc",
+            "scale_any.cc",
+            "scale_argb.cc",
+            "scale.cc",
+            "scale_common.cc",
+            "scale_gcc.cc",
+            "scale_lsx.cc",
+            "scale_msa.cc",
+            "scale_neon64.cc",
+            "scale_neon.cc",
+            "scale_rgb.cc",
+            "scale_rvv.cc",
+            "scale_sme.cc",
+            "scale_uv.cc",
+            "scale_win.cc",
+            "video_common.cc",
+        ]
+        thirdparty_sources += [libyuv_dir + file for file in libyuv_sources]
+
     env_thirdparty = env_theora.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
     env.modules_sources += thirdparty_obj
-
 
 # Godot source files
 
