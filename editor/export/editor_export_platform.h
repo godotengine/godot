@@ -237,6 +237,8 @@ public:
 	virtual Ref<EditorExportPreset> create_preset();
 	virtual bool is_executable(const String &p_path) const { return false; }
 
+	void check_disk_space(const String &p_path) const;
+
 	virtual void clear_messages() { messages.clear(); }
 	virtual void add_message(ExportMessageType p_type, const String &p_category, const String &p_message) {
 		ExportMessage msg;

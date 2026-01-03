@@ -3224,6 +3224,13 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	EditorProgress *ep = memnew(EditorProgress("reimport", TTR("(Re)Importing Assets"), p_files.size()));
 
+	if (!p_files.is_empty()) {
+		// Imported resources can be relatively large, so check if there is enough disk space.
+		// We perform the check here so it's performed only one for all files to be reimported,
+		// instead of once for each file.
+		EditorNode::get_singleton()->check_disk_space(p_files[0], 2.0, TTR("Importing resources will fail if the disk runs out of space."));
+	}
+
 	// The method reimport_files runs on the main thread, and if VSync is enabled
 	// or Update Continuously is disabled, Main::Iteration takes longer each frame.
 	// Each EditorProgress::step can trigger a redraw, and when there are many files to import,
