@@ -556,7 +556,7 @@ TEST_SUITE("[Navigation3D]") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", { { map } });
+			SIGNAL_CHECK("map_changed", { Array{ map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}
@@ -653,7 +653,7 @@ TEST_SUITE("[Navigation3D]") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", { { map } });
+			SIGNAL_CHECK("map_changed", { Array{ map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}

@@ -1717,7 +1717,7 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 }
 
 TEST_CASE("[Variant] array initializer list") {
-	Variant arr_v = { 0, 1, "test", true, { 0.0, 1.0 } };
+	Variant arr_v = Array{ 0, 1, "test", true, Array{ 0.0, 1.0 } };
 	CHECK(arr_v.get_type() == Variant::ARRAY);
 	Array arr = (Array)arr_v;
 	CHECK(arr.size() == 5);
@@ -1725,7 +1725,7 @@ TEST_CASE("[Variant] array initializer list") {
 	CHECK(arr[1] == Variant(1));
 	CHECK(arr[2] == Variant("test"));
 	CHECK(arr[3] == Variant(true));
-	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+	CHECK(arr[4] == Variant(Array{ 0.0, 1.0 }));
 
 	PackedInt32Array packed_arr = { 2, 1, 0 };
 	CHECK(packed_arr.size() == 3);
@@ -2125,9 +2125,9 @@ TEST_CASE("[Variant] Identity comparison") {
 }
 
 TEST_CASE("[Variant] Nested array comparison") {
-	Array a1 = { 1, { 2, 3 } };
-	Array a2 = { 1, { 2, 3 } };
-	Array a_other = { 1, { 2, 4 } };
+	Array a1 = { 1, Array{ 2, 3 } };
+	Array a2 = { 1, Array{ 2, 3 } };
+	Array a_other = { 1, Array{ 2, 4 } };
 	Variant v_a1 = a1;
 	Variant v_a1_ref2 = a1;
 	Variant v_a2 = a2;
