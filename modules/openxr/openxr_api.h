@@ -146,6 +146,7 @@ private:
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
+	bool protected_content = false;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -272,7 +273,7 @@ private:
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
-	bool create_main_swapchains(const Size2i &p_size);
+	bool create_main_swapchains(const Size2i &p_size, bool p_protected_content);
 	void free_main_swapchains();
 	void destroy_session();
 
@@ -377,6 +378,7 @@ private:
 		};
 
 		Size2i main_swapchain_size;
+		bool swapchain_protected_content = false;
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
@@ -645,6 +647,9 @@ public:
 
 	void set_emulate_environment_blend_mode_alpha_blend(bool p_enabled);
 	OpenXRAlphaBlendModeSupport is_environment_blend_mode_alpha_blend_supported();
+
+	void set_protected_content(bool p_protected_content) { protected_content = p_protected_content; }
+	bool is_protected_content() const { return protected_content; }
 
 	OpenXRAPI();
 	~OpenXRAPI();

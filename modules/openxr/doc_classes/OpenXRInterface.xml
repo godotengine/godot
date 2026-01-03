@@ -169,6 +169,9 @@
 			The foveation level, from [code]0[/code] (off) to [code]3[/code] (high). The interface must be initialized before this is accessible.
 			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
+		<member name="protected_content" type="bool" setter="set_protected_content" getter="is_protected_content" default="false">
+			If enabled, the OpenXR swapchain will be created with the [code]XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT[/code] flag, which will protect its contents from CPU access.
+		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
 			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>

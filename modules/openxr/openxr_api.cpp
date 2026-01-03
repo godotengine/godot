@@ -1286,7 +1286,7 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 	return true;
 }
 
-bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
+bool OpenXRAPI::create_main_swapchains(const Size2i &p_size, bool p_protected_content) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
@@ -1307,11 +1307,19 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	*/
 
 	render_state.main_swapchain_size = p_size;
+	render_state.swapchain_protected_content = p_protected_content;
 	uint32_t sample_count = 1;
+
+	// Check to see if content should be protected.
+	XrSwapchainCreateFlags create_flags = 0;
+
+	if (p_protected_content) {
+		create_flags = XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT;
+	}
 
 	// We start with our color swapchain...
 	if (color_swapchain_format != 0) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
@@ -1323,7 +1331,7 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 	// - we support our depth layer extension
 	// - we have our spacewarp extension (not yet implemented)
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
 			return false;
 		}
 
@@ -2378,12 +2386,12 @@ void OpenXRAPI::pre_render() {
 	OpenXRSwapChainInfo::free_queued();
 
 	Size2i swapchain_size = get_recommended_target_size();
-	if (swapchain_size != render_state.main_swapchain_size) {
+	if (swapchain_size != render_state.main_swapchain_size || protected_content != render_state.swapchain_protected_content) {
 		// Out with the old.
 		free_main_swapchains();
 
 		// In with the new.
-		create_main_swapchains(swapchain_size);
+		create_main_swapchains(swapchain_size, protected_content);
 	}
 
 	void *view_locate_info_next_pointer = nullptr;
