@@ -51,10 +51,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
 	ClassDB::bind_method(D_METHOD("prepareRename"), &GDScriptTextDocument::prepareRename);
 	ClassDB::bind_method(D_METHOD("references"), &GDScriptTextDocument::references);
-	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
-	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
-	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
 	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
 	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
 	ClassDB::bind_method(D_METHOD("declaration"), &GDScriptTextDocument::declaration);
@@ -341,14 +338,6 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	return item.to_json(true);
 }
 
-Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
-	return Array();
-}
-
-Array GDScriptTextDocument::codeLens(const Dictionary &p_params) {
-	return Array();
-}
-
 Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 	Array ret;
 
@@ -361,10 +350,6 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 		ret.push_back(E.to_json());
 	}
 	return ret;
-}
-
-Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
-	return Array();
 }
 
 Variant GDScriptTextDocument::hover(const Dictionary &p_params) {

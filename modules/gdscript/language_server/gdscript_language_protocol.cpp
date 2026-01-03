@@ -561,10 +561,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	SET_DOCUMENT_METHOD(rename);
 	SET_DOCUMENT_METHOD(prepareRename);
 	SET_DOCUMENT_METHOD(references);
-	SET_DOCUMENT_METHOD(foldingRange);
-	SET_DOCUMENT_METHOD(codeLens);
 	SET_DOCUMENT_METHOD(documentLink);
-	SET_DOCUMENT_METHOD(colorPresentation);
 	SET_DOCUMENT_METHOD(hover);
 	SET_DOCUMENT_METHOD(definition);
 	SET_DOCUMENT_METHOD(declaration);

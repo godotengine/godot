@@ -491,22 +491,6 @@ struct SignatureHelpOptions {
 };
 
 /**
- * Code Lens options.
- */
-struct CodeLensOptions {
-	/**
-	 * Code lens has a resolve provider as well.
-	 */
-	bool resolveProvider = false;
-
-	Dictionary to_json() {
-		Dictionary dict;
-		dict["resolveProvider"] = resolveProvider;
-		return dict;
-	}
-};
-
-/**
  * Rename options
  */
 struct RenameOptions {
@@ -567,24 +551,6 @@ struct SaveOptions {
 		Dictionary dict;
 		dict["includeText"] = includeText;
 		return dict;
-	}
-};
-
-/**
- * Color provider options.
- */
-struct ColorProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
-	}
-};
-
-/**
- * Folding range provider options.
- */
-struct FoldingRangeProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
 	}
 };
 
@@ -1786,11 +1752,6 @@ struct ServerCapabilities {
 	bool codeActionProvider = false;
 
 	/**
-	 * The server provides code lens.
-	 */
-	CodeLensOptions codeLensProvider;
-
-	/**
 	 * The server provides document formatting.
 	 */
 	bool documentFormattingProvider = false;
@@ -1818,20 +1779,6 @@ struct ServerCapabilities {
 	DocumentLinkOptions documentLinkProvider;
 
 	/**
-	 * The server provides color provider support.
-	 *
-	 * Since 3.6.0
-	 */
-	ColorProviderOptions colorProvider;
-
-	/**
-	 * The server provides folding provider support.
-	 *
-	 * Since 3.10.0
-	 */
-	FoldingRangeProviderOptions foldingRangeProvider;
-
-	/**
 	 * The server provides go to declaration support.
 	 *
 	 * Since 3.14.0
@@ -1850,12 +1797,9 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
-		dict["colorProvider"] = false; // colorProvider.to_json();
-		dict["foldingRangeProvider"] = false; //foldingRangeProvider.to_json();
 		dict["executeCommandProvider"] = executeCommandProvider.to_json();
 		dict["hoverProvider"] = hoverProvider;
 		dict["definitionProvider"] = definitionProvider;
