@@ -773,7 +773,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			GDMonoCache::managed_callbacks.CSharpInstanceBridge_SerializeState(
 					csi->get_gchandle_intptr(), &properties, &state.event_signals);
-
+			List<PropertyInfo> prop_list;
+			obj->get_property_list(&prop_list);
+			for (const PropertyInfo &P : prop_list) {
+				if ((P.usage & PROPERTY_USAGE_STORAGE) && !properties.has(P.name)) {
+					properties[P.name] = obj->get(P.name);
+				}
+			}
 			for (const Variant *s = properties.next(nullptr); s != nullptr; s = properties.next(s)) {
 				StringName name = *s;
 				Variant value = properties[*s];
@@ -1019,6 +1025,10 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				// Restore serialized state and call OnAfterDeserialize.
 				GDMonoCache::managed_callbacks.CSharpInstanceBridge_DeserializeState(
 						csi->get_gchandle_intptr(), &properties, &state_backup.event_signals);
+
+				for (const Pair<StringName, Variant> &G : state_backup.properties) {
+					obj->set(G.first, G.second);
+				}
 			}
 		}
 
