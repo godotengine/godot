@@ -988,7 +988,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool b_deferred = connect_dialog->get_deferred();
 	bool b_oneshot = connect_dialog->get_one_shot();
 	bool b_append_source = connect_dialog->get_append_source();
-	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0) | (b_append_source ? CONNECT_APPEND_SOURCE_OBJECT : 0);
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0) | (b_append_source ? CONNECT_APPEND_SOURCE_OBJECT : 0) | CONNECT_NO_EDITOR;
 
 	// If the function is found in target's own script, check the editor setting
 	// to determine if the script should be opened.
@@ -1227,6 +1227,8 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	cd.target = dst_node;
 	cd.signal = signal_name;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
+	// Always enable CONNECT_NO_EDITOR when connecting in the editor, to prevent unwanted emissions from nodes in the edited scene (e.g. from AnimationPlayer).
+	cd.flags = CONNECT_NO_EDITOR;
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 	connect_dialog->popup_dialog(signal_name.operator String() + "(" + String(", ").join(signal_args) + ")");
