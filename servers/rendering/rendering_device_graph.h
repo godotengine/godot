@@ -712,6 +712,7 @@ private:
 	LocalVector<char> command_label_chars;
 	LocalVector<Color> command_label_colors;
 	LocalVector<uint32_t> command_label_offsets;
+	LocalVector<int32_t> command_label_parents;
 	int32_t command_label_index = -1;
 	DrawInstructionList draw_instruction_list;
 	ComputeInstructionList compute_instruction_list;

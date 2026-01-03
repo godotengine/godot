@@ -271,6 +271,9 @@ Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) 
 
 	block.driver_id = driver->buffer_create(p_staging_buffers.block_size, p_staging_buffers.usage_bits, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	ERR_FAIL_COND_V(!block.driver_id, ERR_CANT_CREATE);
+#if DEV_ENABLED
+	driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, block.driver_id, "Staging");
+#endif
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
@@ -6459,6 +6462,11 @@ void RenderingDevice::draw_command_begin_label(const Span<char> p_label_name, co
 	}
 
 	draw_graph.begin_label(p_label_name, p_color);
+}
+
+RenderingDevice::DrawCommandLabel RenderingDevice::draw_command_label(const Span<char> p_label_name, const Color &p_color) {
+	draw_command_begin_label(p_label_name, p_color);
+	return DrawCommandLabel(this);
 }
 
 #ifndef DISABLE_DEPRECATED

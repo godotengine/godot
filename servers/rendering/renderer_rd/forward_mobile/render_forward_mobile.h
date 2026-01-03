@@ -310,6 +310,7 @@ private:
 		};
 
 		LocalVector<ShadowPass> shadow_passes;
+		RD::DrawCommandLabel shadow_setup_label;
 
 		void grow_instance_buffer(RenderListType p_render_list, uint32_t p_req_element_count, bool p_append);
 	} scene_state;

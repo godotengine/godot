@@ -1367,7 +1367,7 @@ void CopyEffects::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_b
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
-	RD::get_singleton()->draw_command_begin_label("Merge Specular");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Merge Specular");
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer);
 
@@ -1408,6 +1408,4 @@ void CopyEffects::merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_b
 
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
-
-	RD::get_singleton()->draw_command_end_label();
 }

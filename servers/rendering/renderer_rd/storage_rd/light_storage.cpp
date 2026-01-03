@@ -1499,7 +1499,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Reflection Probe Render");
 
 	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS;
 	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
@@ -1609,8 +1609,6 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	rpi->dirty = false;
 	rpi->processing_layer = 1;
 
-	RD::get_singleton()->draw_command_end_label();
-
 	return true;
 }
 
@@ -1624,9 +1622,8 @@ bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_re
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
-	RD::get_singleton()->draw_command_begin_label("Convert reflection probe to octahedral");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Convert reflection probe to octahedral");
 	copy_effects->copy_cubemap_to_octmap(atlas->color_buffer, atlas->reflections.write[rpi->atlas_index].data.layers[0].mipmaps[0].framebuffer, atlas->uv_border_size);
-	RD::get_singleton()->draw_command_end_label();
 
 	return true;
 }

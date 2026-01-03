@@ -1707,10 +1707,47 @@ public:
 
 	void set_resource_name(RID p_id, const String &p_name);
 
+	class DrawCommandLabel {
+		RenderingDevice *rd = nullptr;
+
+	public:
+		DrawCommandLabel() = default;
+		explicit DrawCommandLabel(RenderingDevice *p_rd) :
+				rd(p_rd) {}
+		~DrawCommandLabel() { end(); }
+
+		DrawCommandLabel(const DrawCommandLabel &) = delete;
+		DrawCommandLabel &operator=(const DrawCommandLabel &) = delete;
+		DrawCommandLabel(DrawCommandLabel &&p_other) noexcept :
+				rd(p_other.rd) {
+			p_other.rd = nullptr;
+		}
+		DrawCommandLabel &operator=(DrawCommandLabel &&p_other) noexcept {
+			if (this != &p_other) {
+				end();
+				rd = p_other.rd;
+				p_other.rd = nullptr;
+			}
+			return *this;
+		}
+
+		void end() {
+			if (rd) {
+				rd->draw_command_end_label();
+				rd = nullptr;
+			}
+		}
+	};
+
+	[[nodiscard]] DrawCommandLabel draw_command_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+
 	void _draw_command_begin_label(String p_label_name, const Color &p_color = Color(1, 1, 1, 1));
-	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
 	void draw_command_end_label();
 
+private:
+	void draw_command_begin_label(const Span<char> p_label_name, const Color &p_color = Color(1, 1, 1, 1));
+
+public:
 	String get_device_vendor_name() const;
 	String get_device_name() const;
 	DeviceType get_device_type() const;

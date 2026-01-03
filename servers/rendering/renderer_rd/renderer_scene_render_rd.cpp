@@ -354,7 +354,7 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy Screen Texture");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Copy Screen Texture");
 
 	StringName texture_name;
 	bool can_use_storage = _render_buffers_can_be_storage();
@@ -395,8 +395,6 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 			}
 		}
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RendererSceneRenderRD::_render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data) {
@@ -425,7 +423,7 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 		return;
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Copy Depth Texture");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Copy Depth Texture");
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
@@ -446,8 +444,6 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 			}
 		}
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data, bool p_use_msaa) {
@@ -497,7 +493,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	if (can_use_effects && using_dof) {
 		RENDER_TIMESTAMP("Depth of Field");
-		RD::get_singleton()->draw_command_begin_label("DOF");
+		RD::DrawCommandLabel dof_label = RD::get_singleton()->draw_command_label("DOF");
 
 		rb->allocate_blur_textures();
 
@@ -543,15 +539,13 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				bokeh_dof->bokeh_dof_raster(buffers, p_render_data->camera_attributes, z_near, z_far, p_render_data->scene_data->cam_orthogonal);
 			}
 		}
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	float auto_exposure_scale = 1.0;
 
 	if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 		RENDER_TIMESTAMP("Auto exposure");
-
-		RD::get_singleton()->draw_command_begin_label("Auto Exposure");
+		RD::DrawCommandLabel ae_label = RD::get_singleton()->draw_command_label("Auto Exposure");
 
 		Ref<RendererRD::Luminance::LuminanceBuffers> luminance_buffers = luminance->get_luminance_buffers(rb);
 
@@ -569,7 +563,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		auto_exposure_scale = RSG::camera_attributes->camera_attributes_get_auto_exposure_scale(p_render_data->camera_attributes);
 
 		RenderingServerDefault::redraw_request(); // Redraw all the time if auto exposure rendering is on.
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
@@ -594,7 +587,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		float luminance_multiplier = rb->get_luminance_multiplier();
 		if (can_use_storage) {
-			RD::get_singleton()->draw_command_begin_label("Gaussian Glow");
+			RD::DrawCommandLabel glow_label = RD::get_singleton()->draw_command_label("Gaussian Glow");
 			RID luminance_texture;
 			if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
 				luminance_texture = luminance->get_current_luminance_buffer(rb); // this will return and empty RID if we don't have an auto exposure buffer
@@ -612,7 +605,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 					copy_effects->gaussian_glow(source, dest, vp_size, environment_get_glow_strength(p_render_data->environment));
 				}
 			}
-			RD::get_singleton()->draw_command_end_label();
 		} else {
 			// For the mobile renderer we blur down and up the mip chain. Which works out to (2*level-1) passes. This
 			// allows us to gather our levels at low resolutions and ultimately save a lot of texture read bandwidth.
@@ -622,54 +614,59 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			RID dest;
 
 			for (uint32_t l = 0; l < rb->get_view_count(); l++) {
-				RD::get_singleton()->draw_command_begin_label("Gaussian Glow downsample");
-
-				Size2i source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_COLOR, 0);
-
-				source = rb->get_internal_texture(l);
-				dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1); // Level 1 is quarter res.
-
-				copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, source_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment));
-
+				Size2i source_size;
 				Size2i vp_size;
-				for (int i = 1; i < (max_glow_index + 1); i++) {
-					source = dest;
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
 
-					copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment));
+				{
+					RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Glow downsample");
+
+					source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_COLOR, 0);
+
+					source = rb->get_internal_texture(l);
+					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1); // Level 1 is quarter res.
+
+					copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, source_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment));
+
+					for (int i = 1; i < (max_glow_index + 1); i++) {
+						source = dest;
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
+
+						copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment));
+					}
 				}
-				RD::get_singleton()->draw_command_end_label();
-				RD::get_singleton()->draw_command_begin_label("Gaussian Glow upsample");
 
-				if (max_glow_index <= 0) {
-					// Only layer 1 is visible, just copy over.
-					source = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK); // Technically a waste, but oh well. I'm not optimizing for the case of only level 1.
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, 2);
-					RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1);
-					source_size = vp_size;
+				{
+					RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Gaussian Glow upsample");
 
-					copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[0], 0.0, use_debanding);
+					if (max_glow_index <= 0) {
+						// Only layer 1 is visible, just copy over.
+						source = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK); // Technically a waste, but oh well. I'm not optimizing for the case of only level 1.
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, 2);
+						RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1);
+						source_size = vp_size;
+
+						copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[0], 0.0, use_debanding);
+					}
+
+					for (int i = max_glow_index - 1; i >= 0; i--) {
+						source = dest;
+						source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 3);
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, i + 2);
+						RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
+
+						copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[i], i == (max_glow_index - 1) ? glow_levels[i + 1] : 1.0, use_debanding);
+					}
 				}
-
-				for (int i = max_glow_index - 1; i >= 0; i--) {
-					source = dest;
-					source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 3);
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, i + 2);
-					RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
-
-					copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[i], i == (max_glow_index - 1) ? glow_levels[i + 1] : 1.0, use_debanding);
-				}
-				RD::get_singleton()->draw_command_end_label();
 			}
 		}
 	}
 
 	{
 		RENDER_TIMESTAMP("Tonemap");
-		RD::get_singleton()->draw_command_begin_label("Tonemap");
+		RD::DrawCommandLabel tonemap_label = RD::get_singleton()->draw_command_label("Tonemap");
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
@@ -795,13 +792,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		} else {
 			tone_mapper->tonemapper_mobile(color_texture, dest_fb, tonemap);
 		}
-
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (use_smaa) {
 		RENDER_TIMESTAMP("SMAA");
-		RD::get_singleton()->draw_command_begin_label("SMAA");
+		RD::DrawCommandLabel smaa_label = RD::get_singleton()->draw_command_label("SMAA");
 
 		bool using_hdr = texture_storage->render_target_is_using_hdr(render_target);
 
@@ -840,14 +835,11 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 			smaa->process(rb, source_texture, dest_fb, rb->get_use_debanding() && !using_hdr);
 		}
-
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (rb.is_valid() && spatial_upscaler) {
 		spatial_upscaler->ensure_context(rb);
-
-		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
+		RD::DrawCommandLabel upscaler_label = RD::get_singleton()->draw_command_label(spatial_upscaler->get_label());
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RID source_texture;
@@ -869,8 +861,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 			texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
 		}
-
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	texture_storage->render_target_disable_clear_request(render_target);
@@ -878,7 +868,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	RD::get_singleton()->draw_command_begin_label("Post Process Subpass");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Post Process Subpass");
 
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -957,8 +947,6 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	}
 
 	tone_mapper->tonemapper_subpass(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_data) {

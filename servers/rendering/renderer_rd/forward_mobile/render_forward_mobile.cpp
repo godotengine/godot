@@ -1011,14 +1011,14 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
 
-	RD::get_singleton()->draw_command_begin_label("Render Setup");
+	{
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render Setup");
 
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
+		_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
-	// May have changed due to the above (light buffer enlarged, as an example).
-	_update_render_base_uniform_set();
-
-	RD::get_singleton()->draw_command_end_label(); // Render Setup
+		// May have changed due to the above (light buffer enlarged, as an example).
+		_update_render_base_uniform_set();
+	}
 
 	// setup environment
 	RID radiance_texture;
@@ -1091,7 +1091,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || ambient_source == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
-			RD::get_singleton()->draw_command_begin_label("Setup Sky");
+			RD::DrawCommandLabel setup_sky_label = RD::get_singleton()->draw_command_label("Setup Sky");
 
 			sky.setup_sky(p_render_data, screen_size);
 
@@ -1110,7 +1110,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// update sky half/quarter res buffers (if required)
 				sky.update_res_buffers(rb, p_render_data->environment, time, sky_luminance_multiplier, sky_brightness_multiplier);
 			}
-			RD::get_singleton()->draw_command_end_label(); // Setup Sky
 		}
 	} else {
 		clear_color = p_default_bg_color;
@@ -1149,12 +1148,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	}
 
 	{
+		RD::DrawCommandLabel render_pass_label;
 		RDD::BreadcrumbMarker breadcrumb;
 		if (rb_data.is_valid()) {
-			RD::get_singleton()->draw_command_begin_label("Render 3D Pass");
+			render_pass_label = RD::get_singleton()->draw_command_label("Render 3D Pass");
 			breadcrumb = RDD::BreadcrumbMarker::OPAQUE_PASS;
 		} else {
-			RD::get_singleton()->draw_command_begin_label("Render Reflection Probe Pass");
+			render_pass_label = RD::get_singleton()->draw_command_label("Render Reflection Probe Pass");
 			breadcrumb = RDD::BreadcrumbMarker::REFLECTION_PROBES;
 		}
 
@@ -1167,18 +1167,16 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				Vector<Color> mv_pass_clear;
 				mv_pass_clear.push_back(Color(0, 0, 0, 0));
 
-				RD::get_singleton()->draw_command_begin_label("Render Motion Vectors");
+				RD::DrawCommandLabel motion_vectors_label = RD::get_singleton()->draw_command_label("Render Motion Vectors");
 
 				RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID(), samplers);
 				RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_MOTION_VECTORS, rp_uniform_set, base_specialization);
 				_render_list_with_draw_list(&render_list_params, mv_fb, RD::DRAW_CLEAR_ALL, mv_pass_clear);
-
-				RD::get_singleton()->draw_command_end_label();
 			}
 		}
 
 		// opaque pass
-		RD::get_singleton()->draw_command_begin_label("Render Opaque");
+		RD::DrawCommandLabel render_opaque_label = RD::get_singleton()->draw_command_label("Render Opaque");
 
 		p_render_data->scene_data->directional_light_count = p_render_data->directional_light_count;
 
@@ -1237,24 +1235,20 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 		}
-
-		RD::get_singleton()->draw_command_end_label(); //Render Opaque
+		render_opaque_label.end();
 
 		if (draw_sky || draw_sky_fog_only) {
-			RD::get_singleton()->draw_command_begin_label("Draw Sky");
+			RD::DrawCommandLabel draw_sky_label = RD::get_singleton()->draw_command_label("Draw Sky");
 
 			// Note, sky.setup should have been called up above and setup stuff we need.
 
 			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
-
-			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
 
 		if (merge_transparent_pass) {
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
 				// transparent pass
-
-				RD::get_singleton()->draw_command_begin_label("Render Transparent");
+				RD::DrawCommandLabel render_transparent_label = RD::get_singleton()->draw_command_label("Render Transparent");
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
@@ -1263,16 +1257,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
-
-				RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
 			}
 
 			// blit to tonemap
 			if (rb_data.is_valid() && using_subpass_post_process) {
 				_post_process_subpass(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
 			}
-
-			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
 
 			RD::get_singleton()->draw_list_end();
 
@@ -1288,7 +1278,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::get_singleton()->draw_list_end();
 
-			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
+			render_pass_label.end();
 
 			// rendering effects
 			if (ce_has_pre_transparent) {
@@ -1319,7 +1309,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			}
 
 			if (render_list[RENDER_LIST_ALPHA].element_info.size() > 0) {
-				RD::get_singleton()->draw_command_begin_label("Render Transparent Pass");
+				RD::DrawCommandLabel transparent_pass_label = RD::get_singleton()->draw_command_label("Render Transparent Pass");
 				RENDER_TIMESTAMP("Render Transparent");
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
@@ -1334,14 +1324,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_render_data->render_region, breadcrumb);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 				RD::get_singleton()->draw_list_end();
-
-				RD::get_singleton()->draw_command_end_label(); // Render Transparent Pass
 			}
 		}
 	}
 
 	if (rb_data.is_valid() && !using_subpass_post_process) {
-		RD::get_singleton()->draw_command_begin_label("Post Process Pass");
+		RD::DrawCommandLabel post_process_label = RD::get_singleton()->draw_command_label("Post Process Pass");
 
 		if (ce_has_post_transparent) {
 			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
@@ -1351,8 +1339,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RENDER_TIMESTAMP("Tonemap");
 
 		_render_buffers_post_process_and_tonemap(p_render_data, use_msaa);
-
-		RD::get_singleton()->draw_command_end_label(); // Post process pass
 	}
 
 	if (rb_data.is_valid()) {
@@ -1543,7 +1529,7 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 
 void RenderForwardMobile::_render_shadow_begin() {
 	scene_state.shadow_passes.clear();
-	RD::get_singleton()->draw_command_begin_label("Shadow Setup");
+	scene_state.shadow_setup_label = RD::get_singleton()->draw_command_label("Shadow Setup");
 	_update_render_base_uniform_set();
 
 	render_list[RENDER_LIST_SECONDARY].clear();
@@ -1630,18 +1616,16 @@ void RenderForwardMobile::_render_shadow_process() {
 		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), false, scene_state.shadow_passes.size() - 1u - i);
 	}
 
-	RD::get_singleton()->draw_command_end_label();
+	scene_state.shadow_setup_label = RD::DrawCommandLabel(); // End shadow setup label
 }
 
 void RenderForwardMobile::_render_shadow_end() {
-	RD::get_singleton()->draw_command_begin_label("Shadow Render");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Shadow Render");
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
 		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 /* */
@@ -1649,7 +1633,7 @@ void RenderForwardMobile::_render_shadow_end() {
 void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
-	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render 3D Material");
 
 	_update_render_base_uniform_set();
 
@@ -1694,14 +1678,12 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
-	RD::get_singleton()->draw_command_begin_label("Render UV2");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render UV2");
 
 	_update_render_base_uniform_set();
 
@@ -1764,8 +1746,6 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 
 		RD::get_singleton()->draw_list_end();
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardMobile::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
@@ -1775,7 +1755,7 @@ void RenderForwardMobile::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffe
 void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
-	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render Collider Heightfield");
 
 	_update_render_base_uniform_set();
 
@@ -1813,7 +1793,6 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, rp_uniform_set, scene_shader.default_specialization);
 		_render_list_with_draw_list(&render_list_params, p_fb);
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardMobile::base_uniforms_changed() {

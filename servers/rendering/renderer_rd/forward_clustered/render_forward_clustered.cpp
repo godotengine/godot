@@ -699,6 +699,9 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.uniform_buffers.resize(p_index + 1);
 		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
 			scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
+#ifdef DEV_ENABLED
+			RD::get_singleton()->set_resource_name(scene_state.uniform_buffers[i], vformat("Scene State UBO (%d)", i));
+#endif
 		}
 	}
 
@@ -774,6 +777,9 @@ void RenderForwardClustered::_setup_environment(const RenderDataRD *p_render_dat
 		scene_state.implementation_uniform_buffers.resize(p_index + 1);
 		for (uint32_t i = from; i < scene_state.implementation_uniform_buffers.size(); i++) {
 			scene_state.implementation_uniform_buffers[i] = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
+#ifdef DEV_ENABLED
+			RD::get_singleton()->set_resource_name(scene_state.implementation_uniform_buffers[i], vformat("Scene State Implementation UBO (%d)", i));
+#endif
 		}
 	}
 
@@ -1869,26 +1875,26 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	p_render_data->scene_data->emissive_exposure_normalization = -1.0;
 
-	RD::get_singleton()->draw_command_begin_label("Render Setup");
+	{
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render Setup");
 
-	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
-	_setup_voxelgis(*p_render_data->voxel_gi_instances);
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
+		_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
+		_setup_voxelgis(*p_render_data->voxel_gi_instances);
+		_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
 
-	// May have changed due to the above (light buffer enlarged, as an example).
-	_update_render_base_uniform_set();
+		// May have changed due to the above (light buffer enlarged, as an example).
+		_update_render_base_uniform_set();
 
-	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi, using_motion_pass);
-	render_list[RENDER_LIST_OPAQUE].sort_by_key();
-	render_list[RENDER_LIST_MOTION].sort_by_key();
-	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+		_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi, using_motion_pass);
+		render_list[RENDER_LIST_OPAQUE].sort_by_key();
+		render_list[RENDER_LIST_MOTION].sort_by_key();
+		render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
 
-	int *render_info = p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr;
-	_fill_instance_data(RENDER_LIST_OPAQUE, render_info);
-	_fill_instance_data(RENDER_LIST_MOTION, render_info);
-	_fill_instance_data(RENDER_LIST_ALPHA, render_info);
-
-	RD::get_singleton()->draw_command_end_label();
+		int *render_info = p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr;
+		_fill_instance_data(RENDER_LIST_OPAQUE, render_info);
+		_fill_instance_data(RENDER_LIST_MOTION, render_info);
+		_fill_instance_data(RENDER_LIST_ALPHA, render_info);
+	}
 
 	if (!is_reflection_probe) {
 		if (using_voxelgi) {
@@ -2037,7 +2043,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || (reflection_source == RS::ENV_REFLECTION_SOURCE_BG && bg_mode == RS::ENV_BG_SKY) || reflection_source == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
-			RD::get_singleton()->draw_command_begin_label("Setup Sky");
+			RD::DrawCommandLabel setup_sky_label = RD::get_singleton()->draw_command_label("Setup Sky");
 
 			// Setup our sky render information for this frame/viewport
 			sky.setup_sky(p_render_data, screen_size);
@@ -2057,8 +2063,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				// update sky half/quarter res buffers (if required)
 				sky.update_res_buffers(rb, p_render_data->environment, time, sky_luminance_multiplier, sky_brightness_multiplier);
 			}
-
-			RD::get_singleton()->draw_command_end_label();
 		}
 	} else {
 		clear_color = p_default_bg_color;
@@ -2100,19 +2104,18 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
 		}
 
-		RD::get_singleton()->draw_command_begin_label("Render Depth Pre-Pass");
-
-		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID(), samplers);
-
 		bool finish_depth = using_ssao || using_ssil || using_sdfgi || using_voxelgi || ce_pre_opaque_resolved_depth || ce_post_opaque_resolved_depth;
-		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, 0, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
-		_render_list_with_draw_list(&render_list_params, depth_framebuffer, RD::DrawFlags(needs_pre_resolve ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_ALL), depth_pass_clear, 0.0f, 0u, p_render_data->render_region);
+		{
+			RD::DrawCommandLabel depth_prepass_label = RD::get_singleton()->draw_command_label("Render Depth Pre-Pass");
 
-		RD::get_singleton()->draw_command_end_label();
+			RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, RID(), samplers);
 
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, 0, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
+			_render_list_with_draw_list(&render_list_params, depth_framebuffer, RD::DrawFlags(needs_pre_resolve ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_ALL), depth_pass_clear, 0.0f, 0u, p_render_data->render_region);
+		}
 		if (use_msaa) {
 			RENDER_TIMESTAMP("Resolve Depth Pre-Pass (MSAA)");
-			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass (MSAA)");
+			RD::DrawCommandLabel resolve_depth_msaa_label = RD::get_singleton()->draw_command_label("Resolve Depth Pre-Pass (MSAA)");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), rb->get_internal_size(), texture_multisamples[msaa]);
@@ -2122,7 +2125,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 					resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
 				}
 			}
-			RD::get_singleton()->draw_command_end_label();
 		}
 	}
 
@@ -2151,8 +2153,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 
-	RD::get_singleton()->draw_command_begin_label("Render Opaque Pass");
-
 	p_render_data->scene_data->directional_light_count = p_render_data->directional_light_count;
 	p_render_data->scene_data->opaque_prepass_threshold = 0.0f;
 
@@ -2167,6 +2167,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		bool render_motion_pass = !render_list[RENDER_LIST_MOTION].elements.is_empty();
 
 		{
+			RD::DrawCommandLabel opaque_pass_label = RD::get_singleton()->draw_command_label("Render Opaque Pass");
+
 			Vector<Color> c;
 			if (!load_color) {
 				Color cc = clear_color.srgb_to_linear();
@@ -2188,8 +2190,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			_render_list_with_draw_list(&render_list_params, opaque_framebuffer, RD::DrawFlags(load_color ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_COLOR_ALL) | (depth_pre_pass ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_DEPTH), c, 0.0f, 0u, p_render_data->render_region);
 		}
 
-		RD::get_singleton()->draw_command_end_label();
-
 		if (using_motion_pass) {
 			if (scale_type == SCALE_MFX) {
 				motion_vectors_store->process(rb,
@@ -2204,7 +2204,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		if (render_motion_pass) {
-			RD::get_singleton()->draw_command_begin_label("Render Motion Pass");
+			RD::DrawCommandLabel motion_pass_label = RD::get_singleton()->draw_command_label("Render Motion Pass");
 
 			RENDER_TIMESTAMP("Render Motion Pass");
 
@@ -2212,8 +2212,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			RenderListParameters render_list_params(render_list[RENDER_LIST_MOTION].elements.ptr(), render_list[RENDER_LIST_MOTION].element_info.ptr(), render_list[RENDER_LIST_MOTION].elements.size(), reverse_cull, PASS_MODE_COLOR, color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
 			_render_list_with_draw_list(&render_list_params, color_framebuffer);
-
-			RD::get_singleton()->draw_command_end_label();
 		}
 	}
 
@@ -2239,11 +2237,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		dc.set_depth_correction(true);
 		Projection cm = (dc * p_render_data->scene_data->cam_projection) * Projection(p_render_data->scene_data->cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer);
-		RD::get_singleton()->draw_command_begin_label("Debug VoxelGIs");
-		for (int i = 0; i < (int)p_render_data->voxel_gi_instances->size(); i++) {
-			gi.debug_voxel_gi((*p_render_data->voxel_gi_instances)[i], draw_list, color_only_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION, 1.0);
+		{
+			RD::DrawCommandLabel debug_voxelgi_label = RD::get_singleton()->draw_command_label("Debug VoxelGIs");
+			for (int i = 0; i < (int)p_render_data->voxel_gi_instances->size(); i++) {
+				gi.debug_voxel_gi((*p_render_data->voxel_gi_instances)[i], draw_list, color_only_framebuffer, cm, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION, 1.0);
+			}
 		}
-		RD::get_singleton()->draw_command_end_label();
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -2260,13 +2259,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	if (draw_sky || draw_sky_fog_only) {
 		RENDER_TIMESTAMP("Render Sky");
 
-		RD::get_singleton()->draw_command_begin_label("Draw Sky");
+		RD::DrawCommandLabel draw_sky_label = RD::get_singleton()->draw_command_label("Draw Sky");
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0u, p_render_data->render_region);
 
 		sky.draw_sky(draw_list, rb, p_render_data->environment, color_only_framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
 
 		RD::get_singleton()->draw_list_end();
-		RD::get_singleton()->draw_command_end_label();
 	}
 
 	if (use_msaa) {
@@ -2299,9 +2297,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	if (using_separate_specular) {
 		if (using_sss) {
 			RENDER_TIMESTAMP("Sub-Surface Scattering");
-			RD::get_singleton()->draw_command_begin_label("Process Sub-Surface Scattering");
+			RD::DrawCommandLabel sss_label = RD::get_singleton()->draw_command_label("Process Sub-Surface Scattering");
 			_process_sss(rb, p_render_data->scene_data->cam_projection);
-			RD::get_singleton()->draw_command_end_label();
 		}
 
 		{
@@ -2372,50 +2369,51 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 	}
 
-	RENDER_TIMESTAMP("Render 3D Transparent Pass");
-
-	RD::get_singleton()->draw_command_begin_label("Render 3D Transparent Pass");
-
-	rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
-
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
-
 	{
-		uint32_t transparent_color_pass_flags = (color_pass_flags | uint32_t(COLOR_PASS_FLAG_TRANSPARENT)) & ~uint32_t(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
-		// Motion vectors should not be overwritten by transparent objects.
-		transparent_color_pass_flags &= ~uint32_t(COLOR_PASS_FLAG_MOTION_VECTORS);
+		RENDER_TIMESTAMP("Render 3D Transparent Pass");
 
-		RID alpha_framebuffer = rb_data.is_valid() ? rb_data->get_color_pass_fb(transparent_color_pass_flags) : color_only_framebuffer;
-		RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, transparent_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
-		_render_list_with_draw_list(&render_list_params, alpha_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0u, p_render_data->render_region);
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render 3D Transparent Pass");
+
+		rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
+
+		_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
+
+		{
+			uint32_t transparent_color_pass_flags = (color_pass_flags | uint32_t(COLOR_PASS_FLAG_TRANSPARENT)) & ~uint32_t(COLOR_PASS_FLAG_SEPARATE_SPECULAR);
+			// Motion vectors should not be overwritten by transparent objects.
+			transparent_color_pass_flags &= ~uint32_t(COLOR_PASS_FLAG_MOTION_VECTORS);
+
+			RID alpha_framebuffer = rb_data.is_valid() ? rb_data->get_color_pass_fb(transparent_color_pass_flags) : color_only_framebuffer;
+			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, transparent_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
+			_render_list_with_draw_list(&render_list_params, alpha_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0u, p_render_data->render_region);
+		}
 	}
 
-	RD::get_singleton()->draw_command_end_label();
+	{
+		RENDER_TIMESTAMP("Resolve");
 
-	RENDER_TIMESTAMP("Resolve");
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Resolve");
 
-	RD::get_singleton()->draw_command_begin_label("Resolve");
+		if (rb_data.is_valid() && use_msaa) {
+			bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
 
-	if (rb_data.is_valid() && use_msaa) {
-		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
-		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
-			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
-
-			if (resolve_velocity_buffer) {
-				RD::get_singleton()->texture_resolve_multisample(rb->get_velocity_buffer(true, v), rb->get_velocity_buffer(false, v));
+				if (resolve_velocity_buffer) {
+					RD::get_singleton()->texture_resolve_multisample(rb->get_velocity_buffer(true, v), rb->get_velocity_buffer(false, v));
+				}
 			}
 		}
 	}
 
-	RD::get_singleton()->draw_command_end_label();
-
-	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL/SSR");
-	if (using_ssil || using_ssr) {
-		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL/SSR)");
-		_copy_framebuffer_to_ss_effects(rb, using_ssil, using_ssr);
+	{
+		RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Copy Framebuffer for SSIL/SSR");
+		if (using_ssil || using_ssr) {
+			RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL/SSR)");
+			_copy_framebuffer_to_ss_effects(rb, using_ssil, using_ssr);
+		}
 	}
-	RD::get_singleton()->draw_command_end_label();
 
 	{
 		RENDER_TIMESTAMP("Process Post Transparent Compositor Effects");
@@ -2431,7 +2429,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				exposure = luminance->get_current_luminance_buffer(rb);
 			}
 
-			RD::get_singleton()->draw_command_begin_label("FSR2");
+			RD::DrawCommandLabel fsr2_label = RD::get_singleton()->draw_command_label("FSR2");
 			RENDER_TIMESTAMP("FSR2");
 
 			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
@@ -2467,8 +2465,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 				fsr2_effect->upscale(params);
 			}
-
-			RD::get_singleton()->draw_command_end_label();
 		} else if (scale_type == SCALE_MFX) {
 #ifdef METAL_MFXTEMPORAL_ENABLED
 			bool reset = rb_data->ensure_mfx_temporal(mfx_temporal_effect);
@@ -2478,7 +2474,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				exposure = luminance->get_current_luminance_buffer(rb);
 			}
 
-			RD::get_singleton()->draw_command_begin_label("MetalFX Temporal");
+			RD::DrawCommandLabel mfx_temporal_label = RD::get_singleton()->draw_command_label("MetalFX Temporal");
 			// Scale to ±0.5.
 			Vector2 jitter = p_render_data->scene_data->taa_jitter * 0.5f;
 			jitter *= Vector2(1.0, -1.0); // Flip y-axis as bottom left is origin.
@@ -2495,14 +2491,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 				mfx_temporal_effect->process(rb_data->get_mfx_temporal_context(), params);
 			}
-
-			RD::get_singleton()->draw_command_end_label();
 #endif
 		} else if (using_taa) {
-			RD::get_singleton()->draw_command_begin_label("TAA");
+			RD::DrawCommandLabel taa_label = RD::get_singleton()->draw_command_label("TAA");
 			RENDER_TIMESTAMP("TAA");
 			taa->process(rb, rb->get_base_data_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
-			RD::get_singleton()->draw_command_end_label();
 		}
 	}
 
@@ -2745,7 +2738,7 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 
 void RenderForwardClustered::_render_shadow_begin() {
 	scene_state.shadow_passes.clear();
-	RD::get_singleton()->draw_command_begin_label("Shadow Setup");
+	scene_state.shadow_setup_label = RD::get_singleton()->draw_command_label("Shadow Setup");
 	_update_render_base_uniform_set();
 
 	render_list[RENDER_LIST_SECONDARY].clear();
@@ -2838,23 +2831,21 @@ void RenderForwardClustered::_render_shadow_process() {
 		shadow_pass.rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_SECONDARY, nullptr, RID(), RendererRD::MaterialStorage::get_singleton()->samplers_rd_get_default(), false, i);
 	}
 
-	RD::get_singleton()->draw_command_end_label();
+	scene_state.shadow_setup_label.end();
 }
 void RenderForwardClustered::_render_shadow_end() {
-	RD::get_singleton()->draw_command_begin_label("Shadow Render");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Shadow Render");
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, 0, true, false, shadow_pass.rp_uniform_set, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
 		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup GPUParticlesCollisionHeightField3D");
 
-	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render Collider Heightfield");
 
 	RenderSceneDataRD scene_data;
 	scene_data.flip_y = true;
@@ -2895,13 +2886,12 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, 0, true, false, rp_uniform_set);
 		_render_list_with_draw_list(&render_list_params, p_fb, RD::DRAW_CLEAR_ALL);
 	}
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
-	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render 3D Material");
 
 	RenderSceneDataRD scene_data;
 	scene_data.cam_projection = p_cam_projection;
@@ -2951,14 +2941,12 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), &render_list_params, 0, render_list_params.element_count);
 		RD::get_singleton()->draw_list_end();
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering UV2");
 
-	RD::get_singleton()->draw_command_begin_label("Render UV2");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render UV2");
 
 	RenderSceneDataRD scene_data;
 	scene_data.dual_paraboloid_side = 0;
@@ -3026,14 +3014,12 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 
 		RD::get_singleton()->draw_list_end();
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Render SDFGI");
 
-	RD::get_singleton()->draw_command_begin_label("Render SDFGI Voxel");
+	RD::DrawCommandLabel label = RD::get_singleton()->draw_command_label("Render SDFGI Voxel");
 
 	RenderSceneDataRD scene_data;
 
@@ -3108,8 +3094,6 @@ void RenderForwardClustered::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_bu
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), true, pass_mode, 0, true, false, rp_uniform_set, false);
 		_render_list_with_draw_list(&render_list_params, E->value);
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 }
 
 void RenderForwardClustered::base_uniforms_changed() {
@@ -5002,12 +4986,18 @@ RenderForwardClustered::RenderForwardClustered() {
 			defines += "\n#define MAX_LIGHTMAPS " + itos(scene_state.max_lightmaps) + "\n";
 
 			scene_state.lightmap_buffer = RD::get_singleton()->storage_buffer_create(sizeof(LightmapData) * scene_state.max_lightmaps);
+#ifdef DEV_ENABLED
+			RD::get_singleton()->set_resource_name(scene_state.lightmap_buffer, "Lightmap");
+#endif
 		}
 		{
 			//captures
 			scene_state.max_lightmap_captures = 2048;
 			scene_state.lightmap_captures = memnew_arr(LightmapCaptureData, scene_state.max_lightmap_captures);
 			scene_state.lightmap_capture_buffer = RD::get_singleton()->storage_buffer_create(sizeof(LightmapCaptureData) * scene_state.max_lightmap_captures);
+#ifdef DEV_ENABLED
+			RD::get_singleton()->set_resource_name(scene_state.lightmap_capture_buffer, "Lightmap Capture");
+#endif
 		}
 		{
 			defines += "\n#define MATERIAL_UNIFORM_SET " + itos(MATERIAL_UNIFORM_SET) + "\n";
