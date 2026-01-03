@@ -301,6 +301,14 @@ void ProjectDialog::_set_target_path(const String &p_text) {
 	}
 }
 
+String ProjectDialog::_get_default_project_path() const {
+	const String path = EDITOR_GET("filesystem/directories/default_project_path");
+	if (path.is_empty()) {
+		return OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS);
+	}
+	return path;
+}
+
 void ProjectDialog::_update_target_auto_dir() {
 	String new_auto_dir;
 	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
@@ -396,7 +404,7 @@ void ProjectDialog::_install_path_changed() {
 void ProjectDialog::_browse_project_path() {
 	String path = project_path->get_text();
 	if (path.is_relative_path()) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = _get_default_project_path();
 	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
@@ -427,7 +435,7 @@ void ProjectDialog::_browse_install_path() {
 
 	String path = install_path->get_text();
 	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = _get_default_project_path();
 	}
 	if (create_dir->is_pressed()) {
 		// Select parent directory of install path.
@@ -546,6 +554,9 @@ void ProjectDialog::ok_pressed() {
 	}
 
 	String path = project_path->get_text();
+	if (set_as_default_dir->is_pressed()) {
+		EditorSettings::get_singleton()->set("filesystem/directories/default_project_path", path.get_base_dir());
+	}
 
 	if (mode == MODE_NEW) {
 		if (create_dir->is_pressed()) {
@@ -874,7 +885,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path->set_text(original_dir);
 			fdialog_project->set_current_dir(original_dir);
 		} else {
-			String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+			String fav_dir = _get_default_project_path();
 			fav_dir = fav_dir.simplify_path();
 			if (!fav_dir.is_empty()) {
 				project_path->set_text(fav_dir);
@@ -1028,6 +1039,12 @@ ProjectDialog::ProjectDialog() {
 	l->set_text(TTRC("Project Path:"));
 	l->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	pphb_label->add_child(l);
+
+	set_as_default_dir = memnew(CheckBox);
+	set_as_default_dir->set_text(TTRC("Set As Default"));
+	set_as_default_dir->set_tooltip_text(TTRC("If enabled, the base folder will be used as default folder for future projects."));
+	set_as_default_dir->set_pressed(EDITOR_GET("filesystem/directories/default_project_path").operator String().is_empty());
+	pphb_label->add_child(set_as_default_dir);
 
 	create_dir = memnew(CheckButton);
 	create_dir->set_text(TTRC("Create Folder"));
