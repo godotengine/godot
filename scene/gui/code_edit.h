@@ -97,6 +97,7 @@ private:
 	int main_gutter = -1;
 	void _update_draw_main_gutter();
 	void _main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+	_FORCE_INLINE_ bool _is_bookmark_only() { return draw_bookmarks && !draw_executing_lines && !draw_breakpoints; }
 
 	// breakpoints
 	HashMap<int, bool> breakpointed_lines;
