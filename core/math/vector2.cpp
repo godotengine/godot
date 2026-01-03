@@ -50,11 +50,13 @@ real_t Vector2::length_squared() const {
 }
 
 void Vector2::normalize() {
-	real_t l = x * x + y * y;
-	if (l != 0) {
-		l = Math::sqrt(l);
-		x /= l;
-		y /= l;
+	real_t lengthsq = length_squared();
+	if (lengthsq == 0) {
+		x = y = 0;
+	} else {
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
 	}
 }
 
