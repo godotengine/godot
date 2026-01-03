@@ -235,12 +235,22 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
-	// TODO: Improve positional information.
+	ParserError err;
+	err.message = p_message;
+
 	if (p_origin == nullptr) {
-		errors.push_back({ p_message, previous.start_line, previous.start_column });
+		err.line = previous.start_line;
+		err.end_line = previous.end_line;
+		err.column = previous.start_column;
+		err.end_column = previous.end_column;
 	} else {
-		errors.push_back({ p_message, p_origin->start_line, p_origin->start_column });
+		err.line = p_origin->start_line;
+		err.end_line = p_origin->end_line;
+		err.column = p_origin->start_column;
+		err.end_column = p_origin->end_column;
 	}
+
+	errors.push_back(err);
 }
 
 #ifdef DEBUG_ENABLED
@@ -280,6 +290,8 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.symbols = pw.symbols;
 		warning.start_line = pw.source->start_line;
 		warning.end_line = pw.source->end_line;
+		warning.start_column = pw.source->start_column;
+		warning.end_column = pw.source->end_column;
 
 		if (pw.treated_as_error) {
 			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);

@@ -270,6 +270,7 @@ public:
 		// Type type = NO_ERROR;
 		String message;
 		int line = 0, column = 0;
+		int end_line = 0, end_column = 0;
 	};
 
 #ifdef TOOLS_ENABLED
