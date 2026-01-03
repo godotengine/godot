@@ -1733,7 +1733,7 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 	if (p_type == "function" && p_signature_start != -1) {
 		const int signature_end_pos = tokenizer->get_current_position() - 1;
 		const String source_code = tokenizer->get_source_code();
-		p_function->signature = source_code.substr(p_signature_start, signature_end_pos - p_signature_start).strip_edges(false, true);
+		p_function->signature = source_code.substr(p_signature_start, signature_end_pos - p_signature_start).get_slice("#", 0).strip_edges(false, true);
 	}
 #endif // TOOLS_ENABLED
 
