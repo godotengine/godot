@@ -366,7 +366,7 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 	Ref<GDScript> scr = instance->get_script();
 	ERR_FAIL_COND(scr.is_null());
 
-	const HashMap<StringName, GDScript::MemberInfo> &mi = scr->debug_get_member_indices();
+	const AHashMap<StringName, GDScript::MemberInfo> &mi = scr->debug_get_member_indices();
 
 	for (const KeyValue<StringName, GDScript::MemberInfo> &E : mi) {
 		p_members->push_back(E.key);
