@@ -372,7 +372,7 @@ class GDScriptInstance : public ScriptInstance {
 #ifdef DEBUG_ENABLED
 	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
-	Vector<Variant> members;
+	TightLocalVector<Variant> members;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
