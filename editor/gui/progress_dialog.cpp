@@ -157,8 +157,11 @@ void ProgressDialog::_popup() {
 	// will discard every key input.
 	EditorNode::get_singleton()->set_process_input(true);
 	// Disable all other windows to prevent interaction with them.
-	for (Window *w : host_windows) {
-		w->set_process_mode(PROCESS_MODE_DISABLED);
+	for (ObjectID wid : host_windows) {
+		Window *w = ObjectDB::get_instance<Window>(wid);
+		if (w) {
+			w->set_process_mode(PROCESS_MODE_DISABLED);
+		}
 	}
 
 	Size2 ms = main->get_combined_minimum_size();
@@ -256,21 +259,22 @@ void ProgressDialog::end_task(const String &p_task) {
 	if (tasks.is_empty()) {
 		hide();
 		EditorNode::get_singleton()->set_process_input(false);
-		for (Window *w : host_windows) {
-			w->set_process_mode(PROCESS_MODE_INHERIT);
+		for (ObjectID wid : host_windows) {
+			Window *w = ObjectDB::get_instance<Window>(wid);
+			if (w) {
+				w->set_process_mode(PROCESS_MODE_INHERIT);
+			}
 		}
 	} else {
 		_popup();
 	}
 }
 
-void ProgressDialog::add_host_window(Window *p_window) {
-	ERR_FAIL_NULL(p_window);
+void ProgressDialog::add_host_window(ObjectID p_window) {
 	host_windows.push_back(p_window);
 }
 
-void ProgressDialog::remove_host_window(Window *p_window) {
-	ERR_FAIL_NULL(p_window);
+void ProgressDialog::remove_host_window(ObjectID p_window) {
 	host_windows.erase(p_window);
 }
 
