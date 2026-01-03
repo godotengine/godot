@@ -35,9 +35,16 @@
 class CheckButton : public Button {
 	GDCLASS(CheckButton, Button);
 
+	enum CheckPosition {
+		CHECK_POSITION_AUTO,
+		CHECK_POSITION_LEFT,
+		CHECK_POSITION_RIGHT
+	};
+
 	struct ThemeCache {
 		int h_separation = 0;
 		int check_v_offset = 0;
+		CheckPosition check_position = CHECK_POSITION_AUTO;
 		Ref<StyleBox> normal_style;
 
 		Ref<Texture2D> checked;
@@ -52,6 +59,8 @@ class CheckButton : public Button {
 		Color button_checked_color;
 		Color button_unchecked_color;
 	} theme_cache;
+
+	void _set_left_and_right_internal_margins();
 
 protected:
 	Size2 get_icon_size() const;
