@@ -589,7 +589,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	if (r_state.wall) {
 		if (wall_collision_count > 1 && !r_state.floor) {
 			// Check if wall normals cancel out to floor support.
-			if (!r_state.floor && motion_mode == MOTION_MODE_GROUNDED) {
+			if (motion_mode == MOTION_MODE_GROUNDED) {
 				combined_wall_normal.normalize();
 				real_t floor_angle = Math::acos(combined_wall_normal.dot(up_direction));
 				if (floor_angle <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
