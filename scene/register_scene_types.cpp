@@ -1000,6 +1000,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SphereMesh);
 	GDREGISTER_CLASS(TextMesh);
 	GDREGISTER_CLASS(TorusMesh);
+	GDREGISTER_CLASS(Curve3DMesh);
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
