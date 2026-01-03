@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A vertical separator used for separating other controls that are arranged [b]horizontally[/b]. [VSeparator] is purely visual and normally drawn as a [StyleBoxLine].
+		This class inherits its properties, methods, and signals from [Separator].
 	</description>
 	<tutorials>
 	</tutorials>
