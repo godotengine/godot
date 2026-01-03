@@ -23,6 +23,74 @@ namespace Godot.SourceGenerators
             }
         }
 
+        /// <summary>
+        /// Checks if the given type symbol is a StringName type from GodotSharp.
+        /// </summary>
+        public static bool IsStringNameType(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol is INamedTypeSymbol namedType &&
+                   namedType.ContainingAssembly?.Name == "GodotSharp" &&
+                   namedType.ContainingNamespace?.Name == "Godot" &&
+                   namedType.Name == "StringName";
+        }
+
+        /// <summary>
+        /// Checks if the given type symbol is a NodePath type from GodotSharp.
+        /// </summary>
+        public static bool IsNodePathType(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol is INamedTypeSymbol namedType &&
+                   namedType.ContainingAssembly?.Name == "GodotSharp" &&
+                   namedType.ContainingNamespace?.Name == "Godot" &&
+                   namedType.Name == "NodePath";
+        }
+
+        /// <summary>
+        /// Checks if the given type symbol is a packed array (C# array of Godot-compatible primitive or struct types).
+        /// </summary>
+        public static bool IsPackedArrayType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.TypeKind != TypeKind.Array)
+                return false;
+
+            var arrayType = (IArrayTypeSymbol)typeSymbol;
+            if (arrayType.Rank != 1)
+                return false;
+
+            var elementType = arrayType.ElementType;
+
+            // Check for primitive packed arrays
+            switch (elementType.SpecialType)
+            {
+                case SpecialType.System_Byte:
+                case SpecialType.System_Int32:
+                case SpecialType.System_Int64:
+                case SpecialType.System_Single:
+                case SpecialType.System_Double:
+                case SpecialType.System_String:
+                    return true;
+            }
+
+            // Check for Godot struct packed arrays
+            if (elementType.ContainingAssembly?.Name == "GodotSharp" &&
+                elementType.ContainingNamespace?.Name == "Godot")
+            {
+                switch (elementType.Name)
+                {
+                    case "Vector2":
+                    case "Vector3":
+                    case "Vector4":
+                    case "Color":
+                    case "StringName":
+                    case "NodePath":
+                    case "Rid":
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public static VariantType? ConvertMarshalTypeToVariantType(MarshalType marshalType)
             => marshalType switch
             {

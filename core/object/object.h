@@ -858,6 +858,8 @@ public:
 		NOTIFICATION_EXTENSION_RELOADED = 2,
 		// Internal notification to send after NOTIFICATION_PREDELETE, not bound to scripting.
 		NOTIFICATION_PREDELETE_CLEANUP = 3,
+		// Notification sent when all of the exported variables have been assigned after resource load or scene instantiation.
+		NOTIFICATION_EXPORT_ASSIGNED = 4,
 	};
 
 	/* TYPE API */
