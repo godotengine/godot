@@ -457,6 +457,7 @@ class ScriptEditor : public PanelContainer {
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
 	bool external_editor_active;
+	bool highlight_scene_scripts = false;
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
@@ -489,6 +490,10 @@ class ScriptEditor : public PanelContainer {
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
 	void _filter_scripts_text_changed(const String &p_newtext);
 	void _filter_methods_text_changed(const String &p_newtext);
+
+	void _connect_to_scene();
+	void _connect_to_scene_recursive(Node *p_current, Node *p_base);
+	void _queue_update_script_names();
 	void _update_script_names();
 	bool _sort_list_on_update;
 
@@ -500,10 +505,6 @@ class ScriptEditor : public PanelContainer {
 	void _help_overview_selected(int p_idx);
 
 	void _update_online_doc();
-
-	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
-
-	void _tree_changed();
 
 	void _split_dragged(float);
 
@@ -522,7 +523,7 @@ class ScriptEditor : public PanelContainer {
 	void _history_forward();
 	void _history_back();
 
-	bool waiting_update_names;
+	bool queue_update_script_names = false;
 	bool lock_history = false;
 	void _unlock_history();
 
