@@ -42,8 +42,12 @@ class NetSocketWinSock : public NetSocket {
 
 private:
 	SOCKET _sock = INVALID_SOCKET;
+	Family _family = Family::NONE;
 	IP::Type _ip_type = IP::TYPE_NONE;
 	bool _is_stream = false;
+	CharString _unix_path;
+	// If this is Family::UNIX,
+	bool _unlink_on_close = false;
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,
@@ -63,6 +67,20 @@ protected:
 	static NetSocket *_create_func();
 
 	bool _can_use_ip(const IPAddress &p_ip, const bool p_for_bind) const;
+	bool _can_use_path(const CharString &p_path) const;
+
+	Error _inet_open(Type p_sock_type, IP::Type &r_ip_type);
+	Error _inet_bind(IPAddress p_addr, uint16_t p_port);
+	Error _inet_connect_to_host(IPAddress p_addr, uint16_t p_port);
+	Error _inet_get_socket_address(IPAddress *r_ip, uint16_t *r_port) const;
+	Ref<NetSocket> _inet_accept(IPAddress &r_ip, uint16_t &r_port);
+
+	String _fix_path(const CharString &p_path) const;
+	static socklen_t _unix_set_sockaddr(struct sockaddr_un *p_addr, const CharString &p_path);
+	Error _unix_open();
+	Error _unix_bind(const CharString &p_path);
+	Error _unix_connect_to_host(const CharString &p_path);
+	Ref<NetSocket> _unix_accept();
 
 public:
 	static void make_default();

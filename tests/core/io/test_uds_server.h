@@ -39,9 +39,10 @@
 
 namespace TestUDSServer {
 
-#ifdef UNIX_ENABLED
+#if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
 
-const String SOCKET_PATH = "/tmp/godot_test_uds_socket";
+const String SOCKET_NAME = "godot_test_uds_socket";
+
 const uint32_t SLEEP_DURATION = 1000;
 const uint64_t MAX_WAIT_USEC = 2000000;
 
@@ -53,9 +54,10 @@ void wait_for_condition(std::function<bool()> f_test) {
 }
 
 void cleanup_socket_file() {
+	String path = OS::get_singleton()->get_temp_path().path_join(SOCKET_NAME);
 	// Remove socket file if it exists
-	if (FileAccess::exists(SOCKET_PATH)) {
-		DirAccess::remove_absolute(SOCKET_PATH);
+	if (FileAccess::exists(path)) {
+		DirAccess::remove_absolute(path);
 	}
 }
 
@@ -112,8 +114,10 @@ TEST_CASE("[UDSServer] Instantiation") {
 }
 
 TEST_CASE("[UDSServer] Accept a connection and receive/send data") {
-	Ref<UDSServer> server = create_server(SOCKET_PATH);
-	Ref<StreamPeerUDS> client = create_client(SOCKET_PATH);
+	String path = OS::get_singleton()->get_temp_path().path_join(SOCKET_NAME);
+
+	Ref<UDSServer> server = create_server(path);
+	Ref<StreamPeerUDS> client = create_client(path);
 	Ref<StreamPeerUDS> client_from_server = accept_connection(server);
 
 	wait_for_condition([&]() {
@@ -140,11 +144,13 @@ TEST_CASE("[UDSServer] Accept a connection and receive/send data") {
 }
 
 TEST_CASE("[UDSServer] Handle multiple clients at the same time") {
-	Ref<UDSServer> server = create_server(SOCKET_PATH);
+	String path = OS::get_singleton()->get_temp_path().path_join(SOCKET_NAME);
+
+	Ref<UDSServer> server = create_server(path);
 
 	Vector<Ref<StreamPeerUDS>> clients;
 	for (int i = 0; i < 5; i++) {
-		clients.push_back(create_client(SOCKET_PATH));
+		clients.push_back(create_client(path));
 	}
 
 	Vector<Ref<StreamPeerUDS>> clients_from_server;
@@ -189,8 +195,10 @@ TEST_CASE("[UDSServer] Handle multiple clients at the same time") {
 }
 
 TEST_CASE("[UDSServer] When stopped shouldn't accept new connections") {
-	Ref<UDSServer> server = create_server(SOCKET_PATH);
-	Ref<StreamPeerUDS> client = create_client(SOCKET_PATH);
+	String path = OS::get_singleton()->get_temp_path().path_join(SOCKET_NAME);
+
+	Ref<UDSServer> server = create_server(path);
+	Ref<StreamPeerUDS> client = create_client(path);
 	Ref<StreamPeerUDS> client_from_server = accept_connection(server);
 
 	wait_for_condition([&]() {
@@ -214,7 +222,9 @@ TEST_CASE("[UDSServer] When stopped shouldn't accept new connections") {
 	// Try to connect to non-existent socket
 	Ref<StreamPeerUDS> new_client;
 	new_client.instantiate();
-	Error err = new_client->connect_to_host(SOCKET_PATH);
+	ERR_PRINT_OFF
+	Error err = new_client->connect_to_host(path);
+	ERR_PRINT_ON
 
 	// Connection should fail since socket doesn't exist
 	CHECK_NE(err, Error::OK);
@@ -224,8 +234,10 @@ TEST_CASE("[UDSServer] When stopped shouldn't accept new connections") {
 }
 
 TEST_CASE("[UDSServer] Should disconnect client") {
-	Ref<UDSServer> server = create_server(SOCKET_PATH);
-	Ref<StreamPeerUDS> client = create_client(SOCKET_PATH);
+	String path = OS::get_singleton()->get_temp_path().path_join(SOCKET_NAME);
+
+	Ref<UDSServer> server = create_server(path);
+	Ref<StreamPeerUDS> client = create_client(path);
 	Ref<StreamPeerUDS> client_from_server = accept_connection(server);
 
 	wait_for_condition([&]() {
@@ -266,7 +278,7 @@ TEST_CASE("[UDSServer] Should disconnect client") {
 
 TEST_CASE("[UDSServer] Test with different socket paths") {
 	// Test with a different socket path
-	const String alt_socket_path = "/tmp/godot_test_uds_socket_alt";
+	String alt_socket_path = OS::get_singleton()->get_temp_path().path_join("godot_test_uds_socket_alt");
 
 	// Clean up before test
 	if (FileAccess::exists(alt_socket_path)) {

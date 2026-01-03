@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A stream peer that handles UNIX Domain Socket (UDS) connections. This object can be used to connect to UDS servers, or also is returned by a UDS server. Unix Domain Sockets provide inter-process communication on the same machine using the filesystem namespace.
-		[b]Note:[/b] UNIX Domain Sockets are only available on UNIX-like systems (Linux, macOS, etc.) and are not supported on Windows.
+		[b]Note:[/b] UNIX Domain Sockets are only available on UNIX-like systems (Linux, macOS, etc.) and on Windows 10 Redstone 5 or newer.
 	</description>
 	<tutorials>
 	</tutorials>
