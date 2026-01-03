@@ -34,6 +34,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/light_3d.h"
 
 Light3DGizmoPlugin::Light3DGizmoPlugin() {
@@ -193,7 +194,8 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		Ref<Material> icon = get_material("light_directional_icon", p_gizmo);
-		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
+		const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+		p_gizmo->add_unscaled_billboard(icon, icon_size, color);
 	}
 
 	if (Object::cast_to<OmniLight3D>(light)) {
@@ -236,7 +238,8 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		const Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
-		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
+		const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+		p_gizmo->add_unscaled_billboard(icon, icon_size, color);
 	}
 
 	if (Object::cast_to<SpotLight3D>(light)) {
@@ -284,7 +287,8 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		const Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
-		p_gizmo->add_unscaled_billboard(icon, 0.05, color);
+		const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+		p_gizmo->add_unscaled_billboard(icon, icon_size, color);
 	}
 }
 

@@ -150,6 +150,8 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Size2i viewport_size = Node3DEditor::get_camera_viewport_size(camera);
 	const real_t viewport_aspect = viewport_size.x > 0 && viewport_size.y > 0 ? viewport_size.aspect() : 1.0;
 	const Size2 size_factor = viewport_aspect > 1.0 ? Size2(1.0, 1.0 / viewport_aspect) : Size2(viewport_aspect, 1.0);
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+	const real_t frustum_scale = EDITOR_GET("editors/3d_gizmos/gizmo_settings/camera_frustum_scale");
 
 #define ADD_TRIANGLE(m_a, m_b, m_c) \
 	{                               \
@@ -190,15 +192,19 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 nside = Vector3(-side.x, side.y, side.z);
 			Vector3 up = Vector3(0, hsize * size_factor.y, 0);
 
+			side *= frustum_scale;
+			nside *= frustum_scale;
+			up *= frustum_scale;
+
 			ADD_TRIANGLE(Vector3(), side + up, side - up);
 			ADD_TRIANGLE(Vector3(), nside + up, nside - up);
 			ADD_TRIANGLE(Vector3(), side + up, nside + up);
 			ADD_TRIANGLE(Vector3(), side - up, nside - up);
 
 			handles.push_back(side);
-			side.x = MIN(side.x, hsize * 0.25);
+			side.x /= 4.0;
 			nside.x = -side.x;
-			Vector3 tup(0, up.y + hsize / 2, side.z);
+			Vector3 tup(0, up.y + side.x, side.z);
 			ADD_TRIANGLE(tup, side + up, nside + up);
 		} break;
 
@@ -256,7 +262,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 	p_gizmo->add_collision_segments(lines);
 
 	if (!handles.is_empty()) {

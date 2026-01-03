@@ -587,6 +587,12 @@
 		<member name="editors/3d_gizmos/gizmo_settings/bone_shape" type="int" setter="" getter="">
 			The shape of [Skeleton3D] bone gizmos in the 3D editor. [b]Wire[/b] is a thin line, while [b]Octahedron[/b] is a set of lines that represent a thicker hollow line pointing in a specific direction (similar to most 3D animation software).
 		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/camera_frustum_scale" type="float" setter="" getter="">
+			Scale of the camera frustum gizmo shape.
+		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/icon_size" type="float" setter="" getter="">
+			Size of the 3D gizmo icons.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size" type="float" setter="" getter="">
 			Size of probe gizmos displayed when editing [LightmapGI] and [LightmapProbe] nodes. Setting this to [code]0.0[/code] will hide the probe spheres of [LightmapGI] and wireframes of [LightmapProbe] nodes, but will keep the wireframes linking probes from [LightmapGI] and billboard icons from [LightmapProbe] intact.
 		</member>
