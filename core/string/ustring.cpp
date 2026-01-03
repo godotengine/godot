@@ -4942,40 +4942,85 @@ String String::validate_filename() const {
 bool String::is_valid_ip_address() const {
 	if (find_char(':') >= 0) {
 		Vector<String> ip = split(":");
+		int double_colons = 0, consecutive = 0;
+
+		for (int i = 0; i < length(); i++) {
+			char32_t c = operator[](i);
+			if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || c == ':' || c == '.')) {
+				return false;
+			}
+			if (c == ':') {
+				consecutive++;
+				if (consecutive > 2) {
+					return false;
+				}
+			} else {
+				if (consecutive == 2) {
+					double_colons++;
+				}
+				consecutive = 0;
+			}
+		}
+		if (consecutive == 2) {
+			double_colons++;
+		}
+		if (double_colons > 1) {
+			return false;
+		}
+
+		int groups = 0;
+		bool has_ipv4 = false;
 		for (int i = 0; i < ip.size(); i++) {
 			const String &n = ip[i];
 			if (n.is_empty()) {
 				continue;
 			}
-			if (n.is_valid_hex_number(false)) {
-				int64_t nint = n.hex_to_int();
-				if (nint < 0 || nint > 0xffff) {
+			if (n.find_char('.') >= 0) {
+				if (i != ip.size() - 1) {
 					return false;
 				}
-				continue;
-			}
-			if (!n.is_valid_ip_address()) {
+				Vector<String> parts = n.split(".");
+				if (parts.size() != 4) {
+					return false;
+				}
+				for (const String &part : parts) {
+					if (!part.is_valid_int() || (part.length() > 1 && part[0] == '0') || part.to_int() > 255) {
+						return false;
+					}
+				}
+				has_ipv4 = true;
+				groups += 2;
+			} else if (n.length() <= 4 && n.is_valid_hex_number(false)) {
+				int64_t val = n.hex_to_int();
+				if (val > 0xffff) {
+					return false;
+				}
+				groups++;
+			} else {
 				return false;
 			}
 		}
 
+		int max_groups = has_ipv4 ? 6 : 8;
+		return (double_colons > 0) ? (groups < max_groups) : (groups == max_groups);
+
 	} else {
+		for (int i = 0; i < length(); i++) {
+			if (!(operator[](i) >= '0' && operator[](i) <= '9') && operator[](i) != '.') {
+				return false;
+			}
+		}
+
 		Vector<String> ip = split(".");
 		if (ip.size() != 4) {
 			return false;
 		}
-		for (int i = 0; i < ip.size(); i++) {
-			const String &n = ip[i];
-			if (!n.is_valid_int()) {
-				return false;
-			}
-			int val = n.to_int();
-			if (val < 0 || val > 255) {
+		for (const String &n : ip) {
+			if (n.is_empty() || !n.is_valid_int() || (n.length() > 1 && n[0] == '0') || n.to_int() > 255) {
 				return false;
 			}
 		}
 	}
-
 	return true;
 }
 
