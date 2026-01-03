@@ -179,6 +179,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If the value returned by [method determinant] is negative, the scale is also negative.
+				[b]Note:[/b] Scale is stored in and retrieved from a matrix which is constructed by multiplying a normalized rotation matrix by a scale, so the rotation's floating-point precision errors will affect the scale precision.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
