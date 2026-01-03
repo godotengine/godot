@@ -7507,6 +7507,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_line_background_color", "line", "color"), &TextEdit::set_line_background_color);
 	ClassDB::bind_method(D_METHOD("get_line_background_color", "line"), &TextEdit::get_line_background_color);
 
+	// Inline objects
+	ClassDB::bind_method(D_METHOD("set_inline_object_handlers", "parser", "drawer", "click_handler"), &TextEdit::set_inline_object_handlers);
+
 	/* Syntax Highlighting. */
 	ClassDB::bind_method(D_METHOD("set_syntax_highlighter", "syntax_highlighter"), &TextEdit::set_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_syntax_highlighter"), &TextEdit::get_syntax_highlighter);
