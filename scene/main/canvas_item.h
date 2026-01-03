@@ -80,6 +80,10 @@ private:
 			xform_change;
 
 	RID canvas_item;
+#ifdef DEBUG_ENABLED
+	RID debug_canvas_item;
+	bool should_update_canvas_item_parent = false;
+#endif // DEBUG_ENABLED
 	StringName canvas_group;
 
 	CanvasLayer *canvas_layer = nullptr;
@@ -344,6 +348,10 @@ public:
 	void draw_end_animation();
 
 	static CanvasItem *get_current_item_drawn();
+	void get_arc_points(Vector<Point2> &r_points, const Vector2 &p_center, real_t p_major, real_t p_minor, real_t p_start_angle, real_t p_end_angle, int p_point_count);
+#ifdef DEBUG_ENABLED
+	void _draw_arc_debug(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false);
+#endif // DEBUG_ENABLED
 
 	/* RECT / TRANSFORM */
 
@@ -366,6 +374,13 @@ public:
 	_FORCE_INLINE_ RID get_canvas_item() const {
 		return canvas_item;
 	}
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ RID _get_debug_canvas_item() const { return debug_canvas_item; }
+	void _prepare_debug_canvas_item();
+	void _update_debug_canvas_item_transform();
+	void _update_debug_canvas_item_modulate();
+	void _set_debug_canvas_item_visible(bool p_visible);
+#endif // DEBUG_ENABLED
 
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;

@@ -95,17 +95,11 @@ void NavigationObstacle2D::_notification(int p_what) {
 			NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 			_update_transform();
 			set_physics_process_internal(true);
-#ifdef DEBUG_ENABLED
-			RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
-#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			set_physics_process_internal(false);
 			_update_map(RID());
-#ifdef DEBUG_ENABLED
-			RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, RID());
-#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_SUSPENDED:
@@ -138,12 +132,6 @@ void NavigationObstacle2D::_notification(int p_what) {
 			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
 
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-#ifdef DEBUG_ENABLED
-			RS::get_singleton()->canvas_item_set_visible(debug_canvas_item, is_visible_in_tree());
-#endif // DEBUG_ENABLED
-		} break;
-
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (is_inside_tree()) {
 				_update_transform();
@@ -159,25 +147,21 @@ void NavigationObstacle2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
-			if (is_inside_tree()) {
-				bool is_debug_enabled = false;
-				if (Engine::get_singleton()->is_editor_hint()) {
-					is_debug_enabled = true;
-				} else if (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_avoidance_enabled()) {
-					is_debug_enabled = true;
-				}
-
-				if (is_debug_enabled) {
-					RS::get_singleton()->canvas_item_clear(debug_canvas_item);
-					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, Transform2D());
-					_update_fake_agent_radius_debug();
-					_update_static_obstacle_debug();
-				}
+		case NOTIFICATION_DRAW: {
+			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {
+				return;
 			}
-#endif // DEBUG_ENABLED
+
+			_prepare_debug_canvas_item();
+			if (!NavigationServer2D::get_singleton()->get_debug_enabled() || !NavigationServer2D::get_singleton()->get_debug_avoidance_enabled()) {
+				return;
+			}
+
+			_update_fake_agent_radius_debug();
+			_update_static_obstacle_debug();
 		} break;
+#endif // DEBUG_ENABLED
 	}
 }
 
@@ -190,7 +174,6 @@ NavigationObstacle2D::NavigationObstacle2D() {
 	NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 
 #ifdef DEBUG_ENABLED
-	debug_canvas_item = RenderingServer::get_singleton()->canvas_item_create();
 	debug_mesh_rid = RenderingServer::get_singleton()->mesh_create();
 #endif // DEBUG_ENABLED
 }
@@ -205,10 +188,6 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 	if (debug_mesh_rid.is_valid()) {
 		RenderingServer::get_singleton()->free_rid(debug_mesh_rid);
 		debug_mesh_rid = RID();
-	}
-	if (debug_canvas_item.is_valid()) {
-		RenderingServer::get_singleton()->free_rid(debug_canvas_item);
-		debug_canvas_item = RID();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -445,7 +424,7 @@ void NavigationObstacle2D::_update_fake_agent_radius_debug() {
 		const Vector2 safe_scale = get_global_scale().abs().maxf(0.001);
 		// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
 		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
-		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, get_global_position(), scaling_max_value * radius, debug_radius_color);
+		RS::get_singleton()->canvas_item_add_circle(_get_debug_canvas_item(), get_global_position(), scaling_max_value * radius, debug_radius_color);
 	}
 }
 #endif // DEBUG_ENABLED
@@ -507,6 +486,6 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 
 	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, edge_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 
-	rs->canvas_item_add_mesh(debug_canvas_item, debug_mesh_rid, get_global_transform());
+	rs->canvas_item_add_mesh(_get_debug_canvas_item(), debug_mesh_rid, Transform2D());
 }
 #endif // DEBUG_ENABLED

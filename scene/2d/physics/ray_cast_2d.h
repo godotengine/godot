@@ -55,7 +55,9 @@ class RayCast2D : public Node2D {
 
 	bool hit_from_inside = false;
 
+#ifdef DEBUG_ENABLED
 	void _draw_debug_shape();
+#endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);
