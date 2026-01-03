@@ -438,11 +438,13 @@ String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const S
 	debug_get_stack_level_locals(p_level, &names, &values, p_max_subitems, p_max_depth);
 
 	Vector<String> name_vector;
+	name_vector.reserve(names.size());
 	for (const String &name : names) {
 		name_vector.push_back(name);
 	}
 
 	Array value_array;
+	value_array.reserve(values.size());
 	for (const Variant &value : values) {
 		value_array.push_back(value);
 	}
