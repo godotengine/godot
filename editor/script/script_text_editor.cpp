@@ -819,7 +819,7 @@ String ScriptTextEditor::get_name() {
 	}
 
 	if (is_unsaved()) {
-		name += "(*)";
+		name = "*" + name;
 	}
 
 	return name;

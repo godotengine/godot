@@ -87,7 +87,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 		// TODO: Handle visual shaders too.
 
 		if (unsaved) {
-			text += "(*)";
+			text = "*" + text;
 		}
 
 		String _class = shader->get_class();
@@ -313,7 +313,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 				if (unsaved_shaders.is_empty()) {
 					unsaved_shaders.append(TTR("Save changes to the following shaders(s) before quitting?"));
 				}
-				unsaved_shaders.append(edited_shaders[i].name.trim_suffix("(*)"));
+				unsaved_shaders.append(edited_shaders[i].name.trim_prefix("*"));
 			}
 		}
 	}

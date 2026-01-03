@@ -2314,14 +2314,14 @@ void ScriptEditor::_update_script_names() {
 		if (se) {
 			Ref<Texture2D> icon = se->get_theme_icon();
 			String path = se->get_edited_resource()->get_path();
-			bool saved = !path.is_empty();
+			bool is_stored_on_disk = !path.is_empty();
 			String name = se->get_name();
 			Ref<Script> scr = se->get_edited_resource();
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
 			sd.name = name;
-			sd.tooltip = saved ? path : TTR("Unsaved file.");
+			sd.tooltip = is_stored_on_disk ? path : TTR("Unsaved file.");
 			sd.index = i;
 			sd.used = used.has(se->get_edited_resource());
 			sd.category = 0;
@@ -2357,7 +2357,7 @@ void ScriptEditor::_update_script_names() {
 					sd.name = path;
 				} break;
 			}
-			if (!saved) {
+			if (!is_stored_on_disk) {
 				sd.name = se->get_name();
 			}
 
@@ -2387,7 +2387,7 @@ void ScriptEditor::_update_script_names() {
 	Vector<String> disambiguated_script_names;
 	Vector<String> full_script_paths;
 	for (int j = 0; j < sedata.size(); j++) {
-		String name = sedata[j].name.replace("(*)", "");
+		String name = sedata[j].name.replace("*", "");
 		ScriptListName script_display = (ScriptListName)(int)EDITOR_GET("text_editor/script_list/list_script_names_as");
 		switch (script_display) {
 			case DISPLAY_NAME: {
@@ -2407,8 +2407,8 @@ void ScriptEditor::_update_script_names() {
 	EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
 
 	for (int j = 0; j < sedata.size(); j++) {
-		if (sedata[j].name.ends_with("(*)")) {
-			sedata.write[j].name = disambiguated_script_names[j] + "(*)";
+		if (sedata[j].name.begins_with("*")) {
+			sedata.write[j].name = "*" + disambiguated_script_names[j];
 		} else {
 			sedata.write[j].name = disambiguated_script_names[j];
 		}
@@ -4726,7 +4726,7 @@ String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 			int i = 1;
 			for (const String &E : unsaved_built_in_scripts) {
-				message.write[i] = E.trim_suffix("(*)");
+				message.write[i] = E.trim_prefix("*");
 				i++;
 			}
 			return String("\n").join(message);
@@ -4738,7 +4738,7 @@ String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 	int i = 1;
 	for (const String &E : unsaved_scripts) {
-		message.write[i] = E.trim_suffix("(*)");
+		message.write[i] = E.trim_prefix("*");
 		i++;
 	}
 	return String("\n").join(message);
