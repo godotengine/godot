@@ -485,6 +485,7 @@
 			<return type="Transform2D" />
 			<description>
 				Returns the global transform matrix of this item, i.e. the combined transform up to the topmost [CanvasItem] node. The topmost item is a [CanvasItem] that either has no parent, has non-[CanvasItem] parent or it has [member top_level] enabled.
+				[b]Note:[/b] If the node is not inside the currently playing scene, the value returned will not be global with regard to the playing scene's world origin, but only relative to the topmost item of its out-of-tree branch.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
