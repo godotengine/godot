@@ -814,6 +814,35 @@ void DisplayServerWeb::_vk_input_text_callback(const String &p_text, int p_curso
 	}
 }
 
+void DisplayServerWeb::vk_submit_text_callback() {
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(DisplayServerWeb::_vk_submit_text_callback).call_deferred();
+		return;
+	}
+#endif
+
+	_vk_submit_text_callback();
+}
+
+void DisplayServerWeb::_vk_submit_text_callback() {
+	DisplayServerWeb *ds = DisplayServerWeb::get_singleton();
+	if (!ds || !ds->input_event_callback.is_valid()) {
+		return;
+	}
+	Ref<InputEventKey> k;
+	k.instantiate();
+	k->set_pressed(true);
+	k->set_echo(false);
+	k->set_keycode(Key::ENTER);
+	ds->input_event_callback.call(k);
+	k.instantiate();
+	k->set_pressed(false);
+	k->set_echo(false);
+	k->set_keycode(Key::ENTER);
+	ds->input_event_callback.call(k);
+}
+
 void DisplayServerWeb::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	godot_js_display_vk_show(p_existing_text.utf8().get_data(), p_type, p_cursor_start, p_cursor_end);
 }
@@ -1173,7 +1202,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 			WINDOW_EVENT_MOUSE_EXIT,
 			WINDOW_EVENT_FOCUS_IN,
 			WINDOW_EVENT_FOCUS_OUT);
-	godot_js_display_vk_cb(&DisplayServerWeb::vk_input_text_callback);
+	godot_js_display_vk_cb(&DisplayServerWeb::vk_input_text_callback, &DisplayServerWeb::vk_submit_text_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
 }
