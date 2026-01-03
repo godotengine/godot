@@ -303,6 +303,31 @@ Vector3 NavigationMesh::get_filter_baking_aabb_offset() const {
 	return filter_baking_aabb_offset;
 }
 
+void NavigationMesh::set_tile_baking_enabled(bool p_enabled) {
+	if (tile_baking_enabled == p_enabled) {
+		return;
+	}
+	tile_baking_enabled = p_enabled;
+	emit_changed();
+}
+
+bool NavigationMesh::is_tile_baking_enabled() const {
+	return tile_baking_enabled;
+}
+
+void NavigationMesh::set_tile_baking_size(float p_size) {
+	const float clamped = CLAMP(p_size, 5.0f, 200.0f);
+	if (Math::is_equal_approx(clamped, tile_baking_size)) {
+		return;
+	}
+	tile_baking_size = clamped;
+	emit_changed();
+}
+
+float NavigationMesh::get_tile_baking_size() const {
+	return tile_baking_size;
+}
+
 void NavigationMesh::set_vertices(const Vector<Vector3> &p_vertices) {
 	RWLockWrite write_lock(rwlock);
 	vertices = p_vertices;
@@ -553,6 +578,10 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filter_baking_aabb"), &NavigationMesh::get_filter_baking_aabb);
 	ClassDB::bind_method(D_METHOD("set_filter_baking_aabb_offset", "baking_aabb_offset"), &NavigationMesh::set_filter_baking_aabb_offset);
 	ClassDB::bind_method(D_METHOD("get_filter_baking_aabb_offset"), &NavigationMesh::get_filter_baking_aabb_offset);
+	ClassDB::bind_method(D_METHOD("set_tile_baking_enabled", "enabled"), &NavigationMesh::set_tile_baking_enabled);
+	ClassDB::bind_method(D_METHOD("is_tile_baking_enabled"), &NavigationMesh::is_tile_baking_enabled);
+	ClassDB::bind_method(D_METHOD("set_tile_baking_size", "size"), &NavigationMesh::set_tile_baking_size);
+	ClassDB::bind_method(D_METHOD("get_tile_baking_size"), &NavigationMesh::get_tile_baking_size);
 
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationMesh::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationMesh::get_vertices);
@@ -601,6 +630,9 @@ void NavigationMesh::_bind_methods() {
 	ADD_GROUP("Details", "detail_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.1,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_distance", "get_detail_sample_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_max_error", "get_detail_sample_max_error");
+	ADD_GROUP("Tile Baking", "tile_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_baking_enabled"), "set_tile_baking_enabled", "is_tile_baking_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tile_baking_size", PROPERTY_HINT_RANGE, "5,200,0.1,or_greater,suffix:m"), "set_tile_baking_size", "get_tile_baking_size");
 	ADD_GROUP("Filters", "filter_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_low_hanging_obstacles"), "set_filter_low_hanging_obstacles", "get_filter_low_hanging_obstacles");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_ledge_spans"), "set_filter_ledge_spans", "get_filter_ledge_spans");
