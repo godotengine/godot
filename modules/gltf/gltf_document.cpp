@@ -1929,6 +1929,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				} else {
 					Ref<StandardMaterial3D> mat3d;
 					mat3d.instantiate();
+					mat3d->set_meta("unique_id", vformat("%s@%s", import_mesh->get_name(), itos(j)));
 					if (has_vertex_color) {
 						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}

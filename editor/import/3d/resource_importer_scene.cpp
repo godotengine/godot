@@ -1581,6 +1581,12 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					Ref<Material> mat = m->get_surface_material(i);
 					if (mat.is_valid()) {
 						String mat_id = mat->get_meta("import_id", mat->get_name());
+
+						if (mat_id.is_empty() && mat->has_meta("unique_id")) {
+							mat_id = mat->get_meta("unique_id");
+							mat->remove_meta("unique_id");
+						}
+
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
 							{
