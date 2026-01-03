@@ -253,6 +253,13 @@ Error ScriptServer::register_language(ScriptLanguage *p_language) {
 		ERR_FAIL_COND_V_MSG(other_language->get_type() == p_language->get_type(), ERR_ALREADY_EXISTS, vformat("A script language with type '%s' is already registered.", p_language->get_type()));
 	}
 	_languages[_language_count++] = p_language;
+
+	// Make sure the new language is initialized in case languages have already been initialized before
+	// This happens when importing the GDExtension for the first time in the editor
+	if (languages_ready) {
+		p_language->init();
+	}
+
 	return OK;
 }
 
