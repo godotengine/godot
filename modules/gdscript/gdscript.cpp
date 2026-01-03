@@ -2214,25 +2214,9 @@ void GDScriptLanguage::_add_global(const StringName &p_name, const Variant &p_va
 		return;
 	}
 
-	if (global_array_empty_indexes.size()) {
-		int index = global_array_empty_indexes[global_array_empty_indexes.size() - 1];
-		globals[p_name] = index;
-		global_array.write[index] = p_value;
-		global_array_empty_indexes.resize(global_array_empty_indexes.size() - 1);
-	} else {
-		globals[p_name] = global_array.size();
-		global_array.push_back(p_value);
-		_global_array = global_array.ptrw();
-	}
-}
-
-void GDScriptLanguage::_remove_global(const StringName &p_name) {
-	if (!globals.has(p_name)) {
-		return;
-	}
-	global_array_empty_indexes.push_back(globals[p_name]);
-	global_array.write[globals[p_name]] = Variant::NIL;
-	globals.erase(p_name);
+	globals[p_name] = global_array.size();
+	global_array.push_back(p_value);
+	_global_array = global_array.ptrw();
 }
 
 void GDScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
@@ -2318,7 +2302,7 @@ void GDScriptLanguage::_extension_loaded(const Ref<GDExtension> &p_extension) {
 			continue;
 		}
 		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
-		_add_global(n, nc);
+		add_named_global_constant(n, nc);
 	}
 }
 
@@ -2326,7 +2310,7 @@ void GDScriptLanguage::_extension_unloading(const Ref<GDExtension> &p_extension)
 	List<StringName> class_list;
 	ClassDB::get_extension_class_list(p_extension, &class_list);
 	for (const StringName &n : class_list) {
-		_remove_global(n);
+		remove_named_global_constant(n);
 	}
 }
 #endif
