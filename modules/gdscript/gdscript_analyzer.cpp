@@ -1435,6 +1435,37 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		}
 	}
 
+	// Verify that read-only variables are assigned only once, either inline or in the constructor.
+	GDScriptParser::FunctionNode *constructor = p_class->has_function("_init") ? p_class->get_member("_init").function : nullptr;
+	for (int i = 0; i < p_class->members.size(); i++) {
+		GDScriptParser::ClassNode::Member member = p_class->members[i];
+		if (member.type != GDScriptParser::ClassNode::Member::VARIABLE || !member.variable->readonly) {
+			continue;
+		}
+		if (!constructor) {
+			if (member.variable->initializer == nullptr) {
+				push_error(vformat(R"(The read-only variable "%s" must be assigned a value inline or in the constructor.)", member.variable->identifier->name), member.variable);
+			}
+			continue;
+		}
+		int assignment_result = check_readonly_assignments(constructor->body, member.variable->identifier->name);
+		if (member.variable->initializer != nullptr) {
+			if (assignment_result > 0) {
+				push_error(vformat(R"(The read-only variable "%s" is assigned inline and in the constructor; only one assignment is allowed.)", member.variable->identifier->name), member.variable);
+			}
+		} else {
+			if (assignment_result == -1) {
+				push_error(vformat(R"(The read-only variable "%s" must be assigned a value inline or in the constructor.)", member.variable->identifier->name), member.variable);
+			} else if (assignment_result == 0) {
+				push_error(vformat(R"(The read-only variable "%s" must be definitely assigned in all code paths of the constructor.)", member.variable->identifier->name), member.variable);
+			} else if (assignment_result == 2) {
+				push_error(vformat(R"(The read-only variable "%s" is assigned more than once in the constructor; only one assignment is allowed.)", member.variable->identifier->name), member.variable);
+			} else if (assignment_result == 1) {
+				member.variable->assignments++;
+			}
+		}
+	}
+
 	// Check unused variables and datatypes of property getters and setters.
 	for (int i = 0; i < p_class->members.size(); i++) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
@@ -2860,6 +2891,32 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 #endif // DEBUG_ENABLED
 
+	// If we're assigning to a read-only member in the base constructor, count the assignment
+	// before reducing the assignee so we don't mis-diagnose the LHS as a read-before-assign read.
+	{
+		auto early_increment_member_assignment = [&](const StringName &p_name) {
+			if (!parser->current_class->has_member(p_name)) {
+				return;
+			}
+			GDScriptParser::ClassNode::Member found_member = parser->current_class->get_member(p_name);
+			if (found_member.type == GDScriptParser::ClassNode::Member::VARIABLE && found_member.variable && found_member.variable->readonly) {
+				found_member.variable->assignments++;
+			}
+		};
+
+		if (parser->current_function && parser->current_function->identifier && parser->current_function->identifier->name == SNAME("_init") && p_assignment->assignee) {
+			if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+				GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
+				early_increment_member_assignment(id->name);
+			} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+				GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+				if (sub->is_attribute && sub->base->type == GDScriptParser::Node::SELF) {
+					early_increment_member_assignment(sub->attribute->name);
+				}
+			}
+		}
+	}
+
 	reduce_expression(p_assignment->assignee);
 
 #ifdef DEBUG_ENABLED
@@ -2902,6 +2959,39 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
 		return;
+	}
+
+	// Enforce: class read-only variables can only be assigned in the base constructor (_init of the class that declares the variable).
+	{
+		bool in_constructor = parser->current_function && parser->current_function->identifier && parser->current_function->identifier->name == SNAME("_init");
+
+		auto check_readonly_assignment = [&](const GDScriptParser::IdentifierNode *id, bool allow_reference_types) {
+			using Src = GDScriptParser::IdentifierNode::Source;
+			if (id && (id->source == Src::MEMBER_VARIABLE || id->source == Src::INHERITED_VARIABLE) && id->variable_source && id->variable_source->readonly && (!in_constructor || !parser->current_class->has_member(id->name))) {
+				const GDScriptParser::DataType &id_type = id->datatype;
+				if (allow_reference_types && (id_type.kind == GDScriptParser::DataType::CLASS || id_type.builtin_type == Variant::ARRAY || id_type.builtin_type == Variant::DICTIONARY || id_type.builtin_type == Variant::OBJECT)) {
+					return;
+				}
+				push_error(vformat(R"(The read-only variable "%s" can only be assigned inline or in the base constructor.)", id->name), p_assignment->assignee);
+			}
+		};
+
+		if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+			check_readonly_assignment(static_cast<const GDScriptParser::IdentifierNode *>(p_assignment->assignee), false);
+		} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+			if (sub->is_attribute) {
+				check_readonly_assignment(sub->attribute, false);
+			}
+			if (sub->base->type == GDScriptParser::Node::IDENTIFIER) {
+				check_readonly_assignment(static_cast<const GDScriptParser::IdentifierNode *>(sub->base), true);
+			} else if (sub->base->type == GDScriptParser::Node::SUBSCRIPT) {
+				const GDScriptParser::SubscriptNode *base = static_cast<const GDScriptParser::SubscriptNode *>(sub->base);
+				if (base->is_attribute) {
+					check_readonly_assignment(base->attribute, true);
+				}
+			}
+		}
 	}
 
 	GDScriptParser::DataType assignee_type = p_assignment->assignee->get_datatype();
@@ -3708,6 +3798,43 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 #endif // DEBUG_ENABLED
 
+		// Check for attempts to use .set() or .set_deferred() on read-only variables.
+		if ((p_call->function_name == SNAME("set") || p_call->function_name == SNAME("set_deferred")) && !p_call->arguments.is_empty()) {
+			const GDScriptParser::ExpressionNode *property_arg = p_call->arguments[0];
+			if (property_arg) {
+				StringName property_name;
+				bool has_property_name = false;
+
+				if (property_arg->is_constant && property_arg->reduced_value.get_type() == Variant::STRING) {
+					property_name = property_arg->reduced_value;
+					has_property_name = true;
+				} else if (property_arg->type == GDScriptParser::Node::LITERAL) {
+					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(property_arg);
+					if (literal->value.get_type() == Variant::STRING) {
+						property_name = literal->value;
+						has_property_name = true;
+					}
+				}
+
+				if (has_property_name && base_type.kind == GDScriptParser::DataType::CLASS && base_type.class_type != nullptr) {
+					List<GDScriptParser::ClassNode *> script_classes;
+					get_class_node_current_scope_classes(base_type.class_type, &script_classes, p_call);
+
+					for (GDScriptParser::ClassNode *script_class : script_classes) {
+						if (script_class->has_member(property_name)) {
+							resolve_class_member(script_class, property_name, p_call);
+							const GDScriptParser::ClassNode::Member &member = script_class->get_member(property_name);
+
+							if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable && member.variable->readonly) {
+								push_error(vformat(R"*(Cannot use "%s()" to modify read-only variable "%s".)*", p_call->function_name, property_name), p_call);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		call_type = return_type;
 	} else {
 		bool found = false;
@@ -4476,6 +4603,10 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		const bool source_is_instance_function = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_FUNCTION && !p_identifier->function_source_is_static;
 		const bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
 
+		if (source_is_instance_variable && p_identifier->variable_source && p_identifier->variable_source->readonly && p_identifier->variable_source->assignments == 0) {
+			push_error(vformat(R"(The read-only variable "%s" must be assigned a value inline or in the constructor before it can be read.)", p_identifier->name), p_identifier);
+		}
+
 		if (static_context && (source_is_instance_variable || source_is_instance_function || source_is_signal)) {
 			// Get the parent function above any lambda.
 			GDScriptParser::FunctionNode *parent_function = parser->current_function;
@@ -4860,6 +4991,13 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			reduce_identifier_from_base(p_subscript->attribute, &base_type);
 			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
 			if (attr_type.is_set()) {
+				if (p_subscript->base && p_subscript->base->type == GDScriptParser::Node::SELF) {
+					GDScriptParser::IdentifierNode *attr = p_subscript->attribute;
+					using Src = GDScriptParser::IdentifierNode::Source;
+					if ((attr->source == Src::MEMBER_VARIABLE || attr->source == Src::INHERITED_VARIABLE) && attr->variable_source && attr->variable_source->readonly && attr->variable_source->assignments == 0) {
+						push_error(vformat(R"(The read-only variable "%s" must be assigned a value before it can be read.)", attr->name), attr);
+					}
+				}
 				if (base_type.builtin_type == Variant::DICTIONARY && base_type.has_container_element_types()) {
 					Variant::Type key_type = base_type.get_container_element_type_or_variant(0).builtin_type;
 					valid = key_type == Variant::NIL || key_type == Variant::STRING || key_type == Variant::STRING_NAME;
@@ -5521,6 +5659,94 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 	}
 
 	return result;
+}
+
+int GDScriptAnalyzer::check_readonly_assignments(const GDScriptParser::Node *p_node, const StringName &p_var_name) {
+	switch (p_node->type) {
+		case GDScriptParser::Node::ASSIGNMENT: {
+			const GDScriptParser::AssignmentNode *assignment = static_cast<const GDScriptParser::AssignmentNode *>(p_node);
+			const GDScriptParser::ExpressionNode *lhs = assignment->assignee;
+			bool assigns_target = false;
+
+			if (lhs && lhs->type == GDScriptParser::Node::IDENTIFIER) {
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(lhs);
+				assigns_target = (id->name == p_var_name && id->source == GDScriptParser::IdentifierNode::Source::MEMBER_VARIABLE);
+			} else if (lhs && lhs->type == GDScriptParser::Node::SUBSCRIPT) {
+				const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(lhs);
+				assigns_target = (sub->is_attribute && sub->attribute->name == p_var_name && sub->base && sub->base->type == GDScriptParser::Node::SELF);
+			}
+			return assigns_target ? 1 : -1;
+			break;
+		}
+		case GDScriptParser::Node::IF: {
+			const GDScriptParser::IfNode *if_node = static_cast<const GDScriptParser::IfNode *>(p_node);
+			int true_result = check_readonly_assignments(if_node->true_block, p_var_name);
+			int false_result = if_node->false_block ? check_readonly_assignments(if_node->false_block, p_var_name) : -1;
+			if (true_result == 1 && false_result == 1) {
+				return 1;
+			} else if (true_result == 2 || false_result == 2) {
+				return 2;
+			} else if (true_result > 0 || false_result > 0) {
+				return 0;
+			}
+			return -1;
+			break;
+		}
+		case GDScriptParser::Node::MATCH: {
+			const GDScriptParser::MatchNode *match_node = static_cast<const GDScriptParser::MatchNode *>(p_node);
+			if (match_node->branches.is_empty()) {
+				return -1;
+			}
+			bool all_assign = true;
+			bool any_multiple = false;
+			bool has_wildcard = false;
+			for (const GDScriptParser::MatchBranchNode *branch : match_node->branches) {
+				if (branch->has_wildcard) {
+					has_wildcard = true;
+				}
+				int branch_result = check_readonly_assignments(branch->block, p_var_name);
+				if (branch_result < 1) {
+					all_assign = false;
+				} else if (branch_result == 2) {
+					any_multiple = true;
+				}
+			}
+			if (has_wildcard && all_assign) {
+				return any_multiple ? 2 : 1;
+			} else if (!all_assign && (any_multiple || match_node->branches.size() > 0)) {
+				for (const GDScriptParser::MatchBranchNode *branch : match_node->branches) {
+					if (check_readonly_assignments(branch->block, p_var_name) > 0) {
+						return any_multiple ? 2 : 0;
+					}
+				}
+			}
+			return -1;
+			break;
+		}
+		case GDScriptParser::Node::SUITE: {
+			const GDScriptParser::SuiteNode *suite = static_cast<const GDScriptParser::SuiteNode *>(p_node);
+			int total_assignments = 0;
+			bool definitely_assigned = false;
+
+			for (int i = 0; i < suite->statements.size(); ++i) {
+				int result = check_readonly_assignments(suite->statements[i], p_var_name);
+				if (result == 1) {
+					total_assignments++;
+					definitely_assigned = true;
+				} else if (result == 2) {
+					return 2;
+				} else if (result == 0 && !definitely_assigned) {
+					return 0;
+				} else if (total_assignments > 1) {
+					return 2;
+				}
+			}
+			return definitely_assigned ? 1 : -1;
+			break;
+		}
+		default:
+			return -1;
+	}
 }
 
 GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source) {

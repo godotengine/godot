@@ -1,0 +1,19 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 8: "@readonly" annotation cannot be used with a variable that has a setter.
+>> ERROR at line 14: The read-only variable "b" must be assigned a value inline or in the constructor before it can be read.
+>> ERROR at line 69: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 70: Cannot use "set()" to modify read-only variable "a".
+>> ERROR at line 74: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 75: The read-only variable "c" can only be assigned inline or in the base constructor.
+>> ERROR at line 77: The read-only variable "d" can only be assigned inline or in the base constructor.
+>> ERROR at line 80: The read-only variable "d" can only be assigned inline or in the base constructor.
+>> ERROR at line 23: The read-only variable "b" must be assigned a value inline or in the constructor before it can be read.
+>> ERROR at line 24: The read-only variable "b" must be assigned a value before it can be read.
+>> ERROR at line 42: The read-only variable "a" can only be assigned inline or in the base constructor.
+>> ERROR at line 2: The read-only variable "a" is assigned inline and in the constructor; only one assignment is allowed.
+>> ERROR at line 3: The read-only variable "b" is assigned more than once in the constructor; only one assignment is allowed.
+>> ERROR at line 4: The read-only variable "c" must be assigned a value inline or in the constructor.
+>> ERROR at line 16: The read-only variable "k" must be definitely assigned in all code paths of the constructor.
+>> ERROR at line 48: The read-only variable "b" can only be assigned inline or in the base constructor.
+>> ERROR at line 49: The read-only variable "b" can only be assigned inline or in the base constructor.
+>> ERROR at line 58: The read-only variable "e" must be assigned a value inline or in the constructor.

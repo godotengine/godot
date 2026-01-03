@@ -152,6 +152,8 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		// Read-only annotation.
+		register_annotation(MethodInfo("@read_only"), AnnotationInfo::VARIABLE, &GDScriptParser::readonly_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4499,6 +4501,26 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	}
 	variable->onready = true;
 	current_class->onready_used = true;
+	return true;
+}
+
+bool GDScriptParser::readonly_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@readonly" annotation can only be applied to class variables.)");
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(R"("@readonly" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
+	if (variable->readonly) {
+		push_error(R"("@readonly" annotation can only be used once per variable.)", p_annotation);
+		return false;
+	}
+	if (variable->setter_pointer != nullptr) {
+		push_error(R"("@readonly" annotation cannot be used with a variable that has a setter.)", p_annotation);
+		return false;
+	}
+	variable->readonly = true;
 	return true;
 }
 

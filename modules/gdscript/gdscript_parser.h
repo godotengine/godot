@@ -1260,6 +1260,7 @@ public:
 
 		bool exported = false;
 		bool onready = false;
+		bool readonly = false;
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
@@ -1555,6 +1556,7 @@ private:
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool readonly_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

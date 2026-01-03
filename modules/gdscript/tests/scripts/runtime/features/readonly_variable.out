@@ -1,0 +1,12 @@
+GDTEST_OK
+A values
+A.a: 1
+A.b: 2
+A.c: 3
+--
+B values
+B.a: 1
+B.b: 2
+B.c: 12
+B.d: 4
+--
