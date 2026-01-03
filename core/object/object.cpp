@@ -32,6 +32,7 @@
 
 #include "core/extension/gdextension_manager.h"
 #include "core/io/resource.h"
+#include "core/object/call_error_info.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -711,6 +712,41 @@ void Object::get_method_list(List<MethodInfo> *p_list) const {
 	if (script_instance) {
 		script_instance->get_method_list(p_list);
 	}
+}
+
+Variant Object::_call_with_error_test_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	if (p_argcount < 2) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 2;
+		return Variant();
+	}
+
+	Ref<CallErrorInfo> err_info = *p_args[0];
+
+	if (err_info.is_null()) {
+		ERR_PRINT("First argument to function must be a CallErrorInfo object.");
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type() != Variant::STRING_NAME && p_args[1]->get_type() != Variant::STRING) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		r_error.expected = Variant::STRING_NAME;
+		return Variant();
+	}
+
+	StringName method = *p_args[1];
+
+	Variant ret = callp(method, &p_args[2], p_argcount - 2, r_error);
+	err_info->set_call_error(CallErrorInfo::CallError(r_error.error), r_error.argument, r_error.expected);
+	err_info->set_call_inner_error(CallErrorInfo::CallError(r_error.inner_error));
+
+	r_error.error = Callable::CallError::CALL_OK; // This call validates, so the call should not fail.
+
+	return ret;
 }
 
 Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -1931,6 +1967,15 @@ void Object::_bind_methods() {
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call", &Object::_call_bind, mi);
+	}
+
+	{
+		MethodInfo mi;
+		mi.name = "call_with_error_test";
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "call_error_info", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_with_error_test", &Object::_call_with_error_test_bind, mi);
 	}
 
 	{
