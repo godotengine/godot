@@ -655,6 +655,10 @@ bool ConnectDialog::get_append_source() const {
 	return !append_source->is_disabled() && append_source->is_pressed();
 }
 
+bool ConnectDialog::get_unique() const {
+	return unique->is_pressed();
+}
+
 /*
  * Returns true if ConnectDialog is being used to edit an existing connection.
  */
@@ -699,10 +703,12 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 	bool b_deferred = (p_cd.flags & CONNECT_DEFERRED);
 	bool b_oneshot = (p_cd.flags & CONNECT_ONE_SHOT);
 	bool b_append_source = (p_cd.flags & CONNECT_APPEND_SOURCE_OBJECT);
+	bool b_unique = (p_cd.flags & CONNECT_UNIQUE);
 
 	deferred->set_pressed(b_deferred);
 	one_shot->set_pressed(b_oneshot);
 	append_source->set_pressed(b_append_source);
+	unique->set_pressed(b_unique);
 
 	unbind_count->set_max(p_signal_args.size());
 	unbind_count->set_value(p_cd.unbinds);
@@ -933,6 +939,11 @@ ConnectDialog::ConnectDialog() {
 	append_source->set_tooltip_text(TTRC("The source object is automatically sent when the signal is emitted."));
 	fc_flags->add_child(append_source);
 
+	unique = memnew(CheckBox);
+	unique->set_text(TTRC("Unique"));
+	unique->set_tooltip_text(TTRC("Unique connections can use the same method, but with different arguments."));
+	fc_flags->add_child(unique);
+
 	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(AcceptDialog);
@@ -988,7 +999,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 	bool b_deferred = connect_dialog->get_deferred();
 	bool b_oneshot = connect_dialog->get_one_shot();
 	bool b_append_source = connect_dialog->get_append_source();
-	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0) | (b_append_source ? CONNECT_APPEND_SOURCE_OBJECT : 0);
+	bool b_unique = connect_dialog->get_unique();
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0) | (b_append_source ? CONNECT_APPEND_SOURCE_OBJECT : 0) | (b_unique ? CONNECT_UNIQUE : 0);
 
 	// If the function is found in target's own script, check the editor setting
 	// to determine if the script should be opened.
@@ -1227,6 +1239,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	cd.target = dst_node;
 	cd.signal = signal_name;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
+	cd.flags = CONNECT_UNIQUE;
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 	connect_dialog->popup_dialog(signal_name.operator String() + "(" + String(", ").join(signal_args) + ")");
