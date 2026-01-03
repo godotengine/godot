@@ -1405,22 +1405,24 @@ void ItemList::_notification(int p_what) {
 			// Ensure_selected_visible needs to be checked before we draw the list.
 			if (ensure_selected_visible && current >= 0 && current < items.size()) {
 				Rect2 r = items[current].rect_cache;
+
+				// Vertical
 				int from_v = scroll_bar_v->get_value();
 				int to_v = from_v + scroll_bar_v->get_page();
+				int item_center_y = r.position.y + r.size.y / 2;
+				int viewport_center_y = (from_v + to_v) / 2;
 
-				if (r.position.y < from_v) {
-					scroll_bar_v->set_value(r.position.y);
-				} else if (r.position.y + r.size.y > to_v) {
-					scroll_bar_v->set_value(r.position.y + r.size.y - (to_v - from_v));
-				}
+				int offset_y = item_center_y - viewport_center_y;
+				scroll_bar_v->set_value(scroll_bar_v->get_value() + offset_y);
+
+				// Horizontal
 				int from_h = scroll_bar_h->get_value();
 				int to_h = from_h + scroll_bar_h->get_page();
+				int item_center_x = r.position.x + r.size.x / 2;
+				int viewport_center_x = (from_h + to_h) / 2;
 
-				if (r.position.x < from_h) {
-					scroll_bar_h->set_value(r.position.x);
-				} else if (r.position.x + r.size.x > to_h) {
-					scroll_bar_h->set_value(r.position.x + r.size.x - (to_h - from_h));
-				}
+				int offset_x = item_center_x - viewport_center_x;
+				scroll_bar_h->set_value(scroll_bar_h->get_value() + offset_x);
 			}
 
 			ensure_selected_visible = false;
