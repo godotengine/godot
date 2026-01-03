@@ -339,6 +339,22 @@ public:
 		return nullptr;
 	}
 
+	TValue &get_value_ref_or_add_default(const TKey &p_key, bool &r_was_added) {
+		uint32_t element_idx = 0;
+		uint32_t meta_idx = 0;
+		uint32_t hash = _hash(p_key);
+		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
+
+		if (exists) {
+			r_was_added = false;
+			return _elements[element_idx].value;
+		} else {
+			r_was_added = true;
+			element_idx = _insert_element(p_key, TValue(), hash);
+			return _elements[element_idx].value;
+		}
+	}
+
 	bool has(const TKey &p_key) const {
 		uint32_t _idx = 0;
 		uint32_t meta_idx = 0;
@@ -592,17 +608,8 @@ public:
 	}
 
 	TValue &operator[](const TKey &p_key) {
-		uint32_t element_idx = 0;
-		uint32_t meta_idx = 0;
-		uint32_t hash = _hash(p_key);
-		bool exists = _lookup_idx_with_hash(p_key, element_idx, meta_idx, hash);
-
-		if (exists) {
-			return _elements[element_idx].value;
-		} else {
-			element_idx = _insert_element(p_key, TValue(), hash);
-			return _elements[element_idx].value;
-		}
+		bool dummy;
+		return get_value_ref_or_add_default(p_key, dummy);
 	}
 
 	/* Insert */
