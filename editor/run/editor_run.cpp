@@ -60,6 +60,12 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
+	String editor_resource_dir_path = ProjectSettings::get_singleton()->get_editor_resource_path();
+	if (!editor_resource_dir_path.is_empty()) {
+		args.push_back("--editor_resource_path");
+		args.push_back(editor_resource_dir_path);
+	}
+
 	const String debug_uri = EditorDebuggerNode::get_singleton()->get_server_uri();
 	if (debug_uri.size()) {
 		args.push_back("--remote-debug");

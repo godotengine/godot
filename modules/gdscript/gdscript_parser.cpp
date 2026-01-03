@@ -112,6 +112,8 @@ void GDScriptParser::update_project_settings() {
 
 		Dictionary rules = ProjectSettings::get_singleton()->get_setting("debug/gdscript/warnings/directory_rules");
 		rules["res://addons"] = is_excluding_addons ? WarningDirectoryRule::DECISION_EXCLUDE : WarningDirectoryRule::DECISION_INCLUDE;
+		// This will also affect editor scripts that is not an addon.
+		rules["editor://"] = is_excluding_addons ? WarningDirectoryRule::DECISION_EXCLUDE : WarningDirectoryRule::DECISION_INCLUDE;
 		ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/directory_rules", rules);
 	}
 #endif // DISABLE_DEPRECATED
@@ -121,7 +123,7 @@ void GDScriptParser::update_project_settings() {
 	const Dictionary rules = GLOBAL_GET("debug/gdscript/warnings/directory_rules");
 	for (const KeyValue<Variant, Variant> &kv : rules) {
 		String dir = kv.key.operator String().simplify_path();
-		ERR_CONTINUE_MSG(!dir.begins_with("res://"), R"(Paths in the project setting "debug/gdscript/warnings/directory_rules" keys must start with the "res://" prefix.)");
+		ERR_CONTINUE_MSG(!dir.begins_with("res://") && !dir.begins_with("editor://"), R"(Paths in the project setting "debug/gdscript/warnings/directory_rules" keys must start with the "res://" or "editor://" prefix.)");
 		if (!dir.ends_with("/")) {
 			dir += '/';
 		}
