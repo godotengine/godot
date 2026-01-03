@@ -393,7 +393,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		}
 
 		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
-			blend_state = blend_state_blend;
+			blend_state = (uses_color_pass_blend_state) ? color_pass_blend_state : blend_state_blend;
 			if (depth_draw == DEPTH_DRAW_OPAQUE && !uses_alpha_clip) {
 				// Alpha does not write to depth.
 				depth_stencil_state.enable_depth_write = false;
@@ -408,7 +408,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		}
 	} else {
 		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
-			blend_state = blend_state_opaque;
+			blend_state = (uses_color_pass_blend_state) ? color_pass_blend_state : blend_state_opaque;
 		} else if (p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_SHADOW_PASS_DP) {
 			// Contains nothing.
 		} else if (p_pipeline_key.version == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
