@@ -3507,15 +3507,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_RELOAD_SAVED_SCENE: {
-			Node *scene = get_edited_scene();
-
-			if (!scene) {
-				break;
-			}
-
-			String scene_filename = scene->get_scene_file_path();
-			String unsaved_message;
-
+			const String scene_filename = editor_data.get_scene_path(editor_data.get_edited_scene());
 			if (scene_filename.is_empty()) {
 				show_warning(TTR("Can't reload a scene that was never saved."));
 				break;
@@ -3524,7 +3516,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (unsaved_cache) {
 				if (!p_confirmed) {
 					confirmation->set_ok_button_text(TTRC("Save & Reload"));
-					unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+					const String unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
 					confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
 					confirmation->popup_centered();
 					confirmation_button->show();
@@ -4073,11 +4065,8 @@ void EditorNode::_discard_changes(const String &p_str) {
 			_proceed_closing_scene_tabs();
 		} break;
 		case SCENE_RELOAD_SAVED_SCENE: {
-			Node *scene = get_edited_scene();
-
-			String scene_filename = scene->get_scene_file_path();
-
 			int cur_idx = editor_data.get_edited_scene();
+			const String scene_filename = editor_data.get_scene_path(cur_idx);
 
 			_remove_edited_scene();
 
