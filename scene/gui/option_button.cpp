@@ -547,6 +547,7 @@ void OptionButton::show_popup() {
 		rect = xform.xform(rect);
 	}
 	rect.size.height = 0;
+	popup->set_shrink_width(false);
 	popup->popup(rect);
 }
 
