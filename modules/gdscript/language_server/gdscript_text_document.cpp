@@ -165,6 +165,26 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	return arr;
 }
 
+Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
+	Array arr;
+	LSP::TextDocumentPositionParams params;
+	params.load(p_params);
+
+	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if (symbol) {
+		String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(params.textDocument.uri);
+		Vector<LSP::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_usages_in_file(*symbol, path);
+
+		for (const LSP::Location &usage : usages) {
+			LSP::DocumentHighlight highlight;
+			highlight.range = usage.range;
+			highlight.kind = LSP::DocumentHighlightKind::Text;
+			arr.push_back(highlight.to_json());
+		}
+	}
+	return arr;
+}
+
 Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 	Array arr;
 
