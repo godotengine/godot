@@ -489,6 +489,7 @@ public:
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
+	Vector<String> split_lines() const;
 
 	String join(const Vector<String> &parts) const;
 

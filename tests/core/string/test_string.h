@@ -858,6 +858,18 @@ TEST_CASE("[String] Splitting") {
 			CHECK(mk[i] == slices[i]);
 		}
 	}
+
+	{
+		const String s = "123\r\n\r\n456\n789\rABC\r\n\n";
+		const Vector<String> arr = s.split_lines();
+		CHECK(arr.size() == 6);
+		CHECK(arr[0] == "123");
+		CHECK(arr[1] == "");
+		CHECK(arr[2] == "456");
+		CHECK(arr[3] == "789");
+		CHECK(arr[4] == "ABC");
+		CHECK(arr[5] == "");
+	}
 }
 
 TEST_CASE("[String] format") {
