@@ -1107,6 +1107,12 @@
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
 		</member>
+		<member name="editor/3d/preview_environment" type="String" setter="" getter="" default="&quot;&quot;">
+			Path to the [Environment] resource that will be used in the Inspector's material preview. If this is not set, a default environment will be used instead.
+		</member>
+		<member name="editor/3d/preview_floor_material" type="String" setter="" getter="" default="&quot;&quot;">
+			Path to the [BaseMaterial3D] resource that will be assigned to the floor of the Inspector's material preview. If this is not set, a default material will be used instead.
+		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
 			[b]Note:[/b] Because a resource's file extension may change in an exported project, it is heavily recommended to use [method @GDScript.load] or [ResourceLoader] instead of [FileAccess] to load resources dynamically.
