@@ -348,6 +348,7 @@ private:
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true);
+	void _add_create_options(PopupMenu *p_popup, const String &p_base_folder);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
