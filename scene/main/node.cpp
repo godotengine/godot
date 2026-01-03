@@ -1738,16 +1738,6 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
 	ERR_FAIL_COND(p_child->data.parent != this);
 
-	/**
-	 *  Do not change the data.internal_children*cache counters here.
-	 *  Because if nodes are re-added, the indices can remain
-	 *  greater-than-everything indices and children added remain
-	 *  properly ordered.
-	 *
-	 *  All children indices and counters will be updated next time the
-	 *  cache is re-generated.
-	 */
-
 	data.blocked++;
 	p_child->_set_tree(nullptr);
 
@@ -1756,9 +1746,36 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 
 	data.blocked--;
 
-	data.children_cache_dirty = true;
 	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
+
+	bool handled = false;
+	if (!data.children_cache_dirty) {
+		// Removing last (Front, External or Back) have special cases to avoid invalidating the cache.
+		switch (p_child->data.internal_mode) {
+			case INTERNAL_MODE_FRONT: {
+				data.internal_children_front_count_cache--;
+				// Special case when external and back children are empty.
+				handled = p_child->data.index == data.internal_children_front_count_cache && (data.external_children_count_cache + data.internal_children_back_count_cache) == 0;
+			} break;
+			case INTERNAL_MODE_BACK: {
+				data.internal_children_back_count_cache--;
+				// Special case for Removing the last back child.
+				handled = p_child->data.index == data.internal_children_back_count_cache;
+			} break;
+			case INTERNAL_MODE_DISABLED: {
+				data.external_children_count_cache--;
+				// Special case when back children are empty.
+				handled = p_child->data.index == data.external_children_count_cache && data.internal_children_back_count_cache == 0;
+			} break;
+		}
+	}
+
+	if (handled) {
+		data.children_cache.remove_at(data.children_cache.size() - 1);
+	} else {
+		data.children_cache_dirty = true;
+	}
 
 	p_child->data.parent = nullptr;
 	p_child->data.index = -1;
