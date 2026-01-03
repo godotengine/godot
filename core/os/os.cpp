@@ -193,6 +193,10 @@ bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
 
+bool OS::is_stdout_colored() const {
+	return _colored_stdout;
+}
+
 bool OS::is_stdout_enabled() const {
 	return _stdout_enabled;
 }

@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/os/os.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
@@ -1223,7 +1224,7 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	// Disable color codes if stdout is not a TTY.
 	// This prevents Godot from writing ANSI escape codes when redirecting
 	// stdout and stderr to a file.
-	const bool tty = isatty(fileno(stdout));
+	const bool tty = isatty(fileno(stdout)) || OS::get_singleton()->is_stdout_colored();
 	const char *gray = tty ? "\E[0;90m" : "";
 	const char *red = tty ? "\E[0;91m" : "";
 	const char *red_bold = tty ? "\E[1;31m" : "";
