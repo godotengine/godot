@@ -1150,6 +1150,117 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
 }
 
+bool _deep_equals(const Variant &p_a, const Variant &p_b, int p_max_depth) {
+	if (p_max_depth <= 0) {
+		ERR_PRINT("Maximum recursion depth reached");
+		return true;
+	}
+
+	const Variant::Type type_a = p_a.get_type();
+	const Variant::Type type_b = p_b.get_type();
+
+	if (type_a != type_b) {
+		return false;
+	}
+
+	// Handle non-recursive types.
+	if (type_a != Variant::Type::DICTIONARY &&
+			type_a != Variant::Type::OBJECT &&
+			type_a != Variant::Type::ARRAY) {
+		return p_a == p_b;
+	}
+
+	// Handle recursive types, e.g., Array, Dictionary, and Object.
+	if (type_a == Variant::Type::ARRAY) {
+		const Array arr_a = p_a;
+		const Array arr_b = p_b;
+		const int64_t size_a = arr_a.size();
+
+		if (size_a != arr_b.size()) {
+			return false;
+		}
+
+		for (int64_t i = 0; i < size_a; ++i) {
+			if (!_deep_equals(arr_a[i], arr_b[i], p_max_depth - 1)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	if (type_a == Variant::Type::DICTIONARY) {
+		const Dictionary dict_a = p_a;
+		const Dictionary dict_b = p_b;
+
+		const Array keys_a = dict_a.keys();
+		const Array keys_b = dict_b.keys();
+
+		if (keys_a.size() != keys_b.size()) {
+			return false;
+		}
+
+		for (int64_t i = 0; i < keys_a.size(); ++i) {
+			const Variant &key = keys_a[i];
+			if (!dict_b.has(key)) {
+				return false;
+			}
+			if (!_deep_equals(dict_a[key], dict_b[key], p_max_depth - 1)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	if (type_a == Variant::Type::OBJECT) {
+		const Object *obj_a_ptr = p_a;
+		const Object *obj_b_ptr = p_b;
+
+		if (obj_a_ptr == nullptr && obj_b_ptr == nullptr) {
+			return true;
+		}
+		if (obj_a_ptr == nullptr || obj_b_ptr == nullptr) {
+			return false;
+		}
+
+		// Optimization: Check for instance equality.
+		if (obj_a_ptr == obj_b_ptr) {
+			return true;
+		}
+
+		List<PropertyInfo> props_a;
+		obj_a_ptr->get_property_list(&props_a);
+		List<PropertyInfo> props_b;
+		obj_b_ptr->get_property_list(&props_b);
+
+		if (props_a.size() != props_b.size()) {
+			return false;
+		}
+
+		for (const PropertyInfo &prop_info : props_a) {
+			if (props_b.find(prop_info) == nullptr) {
+				return false;
+			}
+		}
+
+		for (const PropertyInfo &prop_info : props_a) {
+			if (!_deep_equals(obj_a_ptr->get(prop_info.name), obj_b_ptr->get(prop_info.name), p_max_depth - 1)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	ERR_PRINT("Unhandled Variant type in deep_equals. This is a bug.");
+	return false;
+}
+
+bool VariantUtilityFunctions::deep_equals(const Variant &a, const Variant &b) {
+	return _deep_equals(a, b, MAX_RECURSION);
+}
+
 String VariantUtilityFunctions::join_string(const Variant **p_args, int p_arg_count) {
 	String s;
 	for (int i = 0; i < p_arg_count; i++) {
@@ -1780,6 +1891,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(is_same, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(deep_equals, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {
