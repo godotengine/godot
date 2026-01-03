@@ -296,12 +296,19 @@ PackedStringArray OS::get_connected_midi_inputs() {
 	return ::OS::get_singleton()->get_connected_midi_inputs();
 }
 
+PackedStringArray OS::get_connected_midi_outputs() {
+	return ::OS::get_singleton()->get_connected_midi_outputs();
+}
+
 void OS::open_midi_inputs() {
 	::OS::get_singleton()->open_midi_inputs();
 }
 
 void OS::close_midi_inputs() {
 	::OS::get_singleton()->close_midi_inputs();
+}
+void OS::send_midi(Ref<InputEventMIDI> p_event) {
+	::OS::get_singleton()->send_midi(p_event);
 }
 
 void OS::set_use_file_access_save_and_swap(bool p_enable) {
@@ -747,8 +754,10 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
 	ClassDB::bind_method(D_METHOD("get_system_ca_certificates"), &OS::get_system_ca_certificates);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &OS::get_connected_midi_inputs);
+	ClassDB::bind_method(D_METHOD("get_connected_midi_outputs"), &OS::get_connected_midi_outputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &OS::close_midi_inputs);
+	ClassDB::bind_method(D_METHOD("send_midi", "event"), &OS::send_midi);
 
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &OS::alert, DEFVAL("Alert!"));
 	ClassDB::bind_method(D_METHOD("crash", "message"), &OS::crash);

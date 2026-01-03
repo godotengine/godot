@@ -74,6 +74,12 @@ Error MIDIDriverCoreMidi::open() {
 		return ERR_CANT_OPEN;
 	}
 
+	result = MIDIOutputPortCreate(client, CFSTR("Godot Output"), &port_out);
+	if (result != noErr) {
+		ERR_PRINT("MIDIOutputPortCreate failed, code: " + itos(result));
+		return ERR_CANT_OPEN;
+	}
+
 	int source_count = MIDIGetNumberOfSources();
 	int connection_index = 0;
 	for (int i = 0; i < source_count; i++) {
@@ -98,6 +104,21 @@ Error MIDIDriverCoreMidi::open() {
 		}
 	}
 
+	int sink_count = MIDIGetNumberOfDestinations();
+	for (int i = 0; i < sink_count; i++) {
+		MIDIEndpointRef sink = MIDIGetDestination(i);
+		if (sink) {
+			CFStringRef nameRef = nullptr;
+			char name[256];
+			MIDIObjectGetStringProperty(sink, kMIDIPropertyDisplayName, &nameRef);
+			CFStringGetCString(nameRef, name, sizeof(name), kCFStringEncodingUTF8);
+			CFRelease(nameRef);
+			connected_output_names.push_back(name);
+		} else {
+			connected_output_names.push_back("ERROR");
+		}
+	}
+
 	return OK;
 }
 
@@ -113,16 +134,46 @@ void MIDIDriverCoreMidi::close() {
 
 	connected_sources.clear();
 	connected_input_names.clear();
+	connected_output_names.clear();
 
 	if (port_in != 0) {
 		MIDIPortDispose(port_in);
 		port_in = 0;
 	}
 
+	if (port_out != 0) {
+		MIDIPortDispose(port_out);
+		port_out = 0;
+	}
+
 	if (client != 0) {
 		MIDIClientDispose(client);
 		client = 0;
 	}
+}
+
+Error MIDIDriverCoreMidi::send(Ref<InputEventMIDI> p_event) {
+	ERR_FAIL_COND_V(p_event.is_null(), ERR_INVALID_PARAMETER);
+	ItemCount device_id = ItemCount(p_event->get_device());
+	ERR_FAIL_INDEX_V(device_id, MIDIGetNumberOfDestinations(), Error::ERR_PARAMETER_RANGE_ERROR);
+	MIDITimeStamp timestamp = 0;
+	Byte buffer[1024];
+	MIDIPacketList *packetlist = (MIDIPacketList *)buffer;
+	MIDIPacket *currentpacket = MIDIPacketListInit(packetlist);
+	PackedByteArray packet = p_event->get_midi_bytes();
+	currentpacket = MIDIPacketListAdd(
+			packetlist,
+			sizeof(buffer),
+			currentpacket,
+			timestamp,
+			packet.size(),
+			packet.ptr());
+
+	OSStatus status = MIDISend(port_out, MIDIGetDestination(device_id), packetlist);
+	if (status) {
+		return Error::FAILED;
+	}
+	return OK;
 }
 
 MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
