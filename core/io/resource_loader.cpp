@@ -1000,7 +1000,7 @@ void ResourceLoader::resource_changed_emit(Resource *p_source) {
 
 	for (const ThreadLoadTask::ResourceChangedConnection &rcc : curr_load_task->resource_changed_connections) {
 		if (unlikely(rcc.source == p_source)) {
-			rcc.callable.call();
+			rcc.callable.call_deferred();
 		}
 	}
 }
