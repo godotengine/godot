@@ -2460,30 +2460,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				draw_style_box(p_item->cells[i].custom_stylebox, r);
 			}
 
-			if (drop_mode_flags && drop_mode_over) {
-				Rect2 r = convert_rtl_rect(cell_rect);
-				if (drop_mode_over == p_item) {
-					if (drop_mode_section == 0 || drop_mode_section == -1) {
-						// Line above.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
-					}
-					if (drop_mode_section == 0) {
-						// Side lines.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, 1, r.size.y), theme_cache.drop_position_color);
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), theme_cache.drop_position_color);
-					}
-					if (drop_mode_section == 0 || (drop_mode_section == 1 && (!p_item->get_first_child() || p_item->is_collapsed()))) {
-						// Line below.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), theme_cache.drop_position_color);
-					}
-				} else if (drop_mode_over == p_item->get_parent()) {
-					if (drop_mode_section == 1 && !p_item->get_prev()) {
-						// Line above.
-						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
-					}
-				}
-			}
-
 			Color cell_color;
 			if (p_item->cells[i].custom_color) {
 				cell_color = p_item->cells[i].color;
@@ -4341,7 +4317,7 @@ void Tree::_determine_hovered_item() {
 }
 
 void Tree::_on_dropping_unfold_timer_timeout() {
-	if (enable_drag_unfolding && drop_mode_over && drop_mode_section == 0) {
+	if (enable_drag_unfolding && drop_mode_over && (drop_mode_section == 0 || drop_mode_section == 2)) {
 		drop_mode_over->set_collapsed(false);
 	}
 }
@@ -5082,6 +5058,171 @@ void Tree::_notification(int p_what) {
 			if (root && get_size().x > 0 && get_size().y > 0) {
 				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
 				draw_item(Point2(), draw_ofs, draw_size, root, self_height);
+
+				// Draw drop position indicator.
+				if (drop_mode_flags && drop_mode_over) {
+					// Y position from get_item_offset, adjusted for title bar.
+					int item_y = get_item_offset(drop_mode_over) - _get_title_button_height();
+
+					// X position based on depth (count parents, excluding root if hidden).
+					int depth = 0;
+					for (TreeItem *iter = drop_mode_over->parent; iter; iter = iter->parent) {
+						if (iter == root && hide_root) {
+							break;
+						}
+						depth += 1;
+					}
+					int item_x = theme_cache.item_margin * depth;
+
+					Point2 item_pos = Point2(item_x, item_y);
+					int item_h = compute_item_height(drop_mode_over) + theme_cache.v_separation;
+
+					// Calculate cell_rect for column 0
+					int col0_ofs = item_pos.x + ((drop_mode_over->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
+					int col0_item_width = get_column_width(0) - col0_ofs;
+					Rect2i col0_cell_rect = Rect2i(Point2i(col0_ofs, item_pos.y) - theme_cache.offset + draw_ofs, Size2i(col0_item_width, item_h));
+					Rect2 r = convert_rtl_rect(col0_cell_rect);
+
+					if (drop_mode_flags == DROP_MODE_ON_ITEM) {
+						// When only "on item" drops are allowed, draw an accent outline around the target node.
+						draw_rect(r, theme_cache.drop_on_item_color, false);
+					} else {
+						// Find the target parent node.
+						TreeItem *target_parent = drop_mode_over->get_parent();
+
+						// Calculate the x position to align with relationship lines.
+						float parent_x = r.position.x;
+						if (target_parent) {
+							float parent_pos_x = item_pos.x - theme_cache.item_margin;
+							parent_x = parent_pos_x + ((target_parent->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin - theme_cache.arrow->get_width() * 0.5);
+							parent_x = parent_x - theme_cache.offset.x + draw_ofs.x;
+						}
+
+						// Calculate total height of all visible descendants.
+						int descendants_height = 0;
+						if (!drop_mode_over->is_collapsed()) {
+							TreeItem *next = drop_mode_over->get_next_visible(true);
+							while (next) {
+								bool is_descendant = false;
+								TreeItem *parent = next->get_parent();
+								while (parent) {
+									if (parent == drop_mode_over) {
+										is_descendant = true;
+										break;
+									}
+									parent = parent->get_parent();
+								}
+
+								if (is_descendant) {
+									descendants_height += compute_item_height(next) + theme_cache.v_separation;
+									next = next->get_next_visible(true);
+								} else {
+									break;
+								}
+							}
+						}
+
+						// Total height includes item height for drop below section.
+						int total_height = (drop_mode_section == 1) ? r.size.y + descendants_height : 0;
+
+						// Draw drop position indicator based on section.
+						// Calculate total width across all columns.
+						float total_columns_width = 0;
+						for (int i = 0; i < columns.size(); i++) {
+							total_columns_width += get_column_width(i);
+						}
+						float line_end_x = total_columns_width - theme_cache.offset.x + draw_ofs.x;
+						float line_width = line_end_x - parent_x;
+						float drop_indicator_width = MAX(1.0, theme_cache.relationship_line_width * Math::round(theme_cache.base_scale));
+						float drop_indicator_shift = int(Math::round(drop_indicator_width * content_scale_factor)) % 2 == 0 ? 0.0 : 0.5;
+
+						if (drop_mode_section == 0 || drop_mode_section == 2) {
+							// Drop on item as last child (section 0) or as first child (section 2).
+							Ref<Texture2D> arrow = theme_cache.arrow;
+							Size2 arrow_full_size = arrow->get_size();
+
+							float item_line_x = item_pos.x + ((drop_mode_over->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin - arrow_full_size.width * 0.5);
+							item_line_x = item_line_x - theme_cache.offset.x + draw_ofs.x;
+
+							// Calculate where to draw the horizontal line.
+							// Section 0 with visible children: use descendants_height to insert as last child.
+							// Section 2: child_height stays 0 to insert as first child.
+							float child_height = (drop_mode_section == 0 && drop_mode_over->first_child && !drop_mode_over->is_collapsed()) ? descendants_height : 0;
+
+							float horizontal_y = r.position.y + r.size.y + child_height;
+							float item_line_width = line_end_x - item_line_x;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(item_line_x, horizontal_y - drop_indicator_width, item_line_width, drop_indicator_width), theme_cache.drop_position_color);
+
+							// Draw vertical line to parent or stub.
+							if (drop_mode_section == 0) {
+								Point2 apos = Point2(item_line_x - arrow_full_size.width * 0.5, r.position.y + (r.size.y - arrow_full_size.height) / 2);
+
+								// Only draw the dropdown arrow if the item doesn't already have children and the folding arrow isn't hidden entirely.
+								if (!drop_mode_over->first_child && !hide_folding) {
+									Size2 arrow_draw_size = arrow_full_size;
+									int out_width = (apos.x + arrow_full_size.width) - (get_column_width(0) - theme_cache.offset.x + draw_ofs.x);
+									if (out_width > 0) {
+										arrow_draw_size.width -= out_width;
+									}
+
+									if (arrow_draw_size.width > 0) {
+										Point2 final_apos = convert_rtl_position(apos, arrow_draw_size.width);
+										Point2 src_pos = Point2();
+										if (cache.rtl) {
+											src_pos = Point2(arrow_full_size.width - arrow_draw_size.width, 0);
+										}
+										Rect2 arrow_rect = Rect2(final_apos, arrow_draw_size);
+										Rect2 arrow_src_rect = Rect2(src_pos, arrow_draw_size);
+										arrow->draw_rect_region(ci, arrow_rect, arrow_src_rect);
+									}
+								}
+
+								if (drop_mode_over->first_child && !drop_mode_over->is_collapsed()) {
+									// Draw line down to end of visible expanded children.
+									float vert_start_y = r.position.y + r.size.y;
+									float vert_height = horizontal_y - vert_start_y;
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(item_line_x - drop_indicator_width * 0.5 + drop_indicator_shift, vert_start_y, drop_indicator_width, vert_height), theme_cache.drop_position_color);
+								} else {
+									// Collapsed children or no children, draw stub.
+									float stub_height = r.size.y * 0.25;
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(item_line_x - drop_indicator_width * 0.5 + drop_indicator_shift, horizontal_y - stub_height, drop_indicator_width, stub_height), theme_cache.drop_position_color);
+								}
+							} else if (drop_mode_section == 2) {
+								// Draw stub.
+								float stub_height = r.size.y * 0.25;
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(item_line_x - drop_indicator_width * 0.5 + drop_indicator_shift, horizontal_y - stub_height, drop_indicator_width, stub_height), theme_cache.drop_position_color);
+							}
+						} else if (target_parent) {
+							// Drop above (section -1) or below (section 1) as sibling.
+
+							// Horizontal line.
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(parent_x, r.position.y + total_height - drop_indicator_width, line_width, drop_indicator_width), theme_cache.drop_position_color);
+
+							// Calculate vertical line length to parent.
+							float vertical_offset = 0;
+							TreeItem *walk = drop_mode_over->get_prev_visible(false);
+							while (walk && walk != target_parent) {
+								vertical_offset += compute_item_height(walk) + theme_cache.v_separation;
+								walk = walk->get_prev_visible(false);
+							}
+
+							// Draw vertical line or stub.
+							float line_height = (drop_mode_section == 1) ? vertical_offset + total_height : vertical_offset;
+
+							if (walk == target_parent && line_height > 0) {
+								// Draw from parent's bottom edge to horizontal line.
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(parent_x - drop_indicator_width * 0.5 + drop_indicator_shift, r.position.y - vertical_offset, drop_indicator_width, line_height), theme_cache.drop_position_color);
+							} else {
+								// Only draw stub if not at root level.
+								bool is_depth_zero = !target_parent || (target_parent == root && hide_root);
+								if (!(is_depth_zero)) {
+									float stub_height = r.size.y * 0.25;
+									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(parent_x - drop_indicator_width * 0.5 + drop_indicator_shift, r.position.y + total_height - stub_height, drop_indicator_width, stub_height), theme_cache.drop_position_color);
+								}
+							}
+						}
+					}
+				}
 			}
 
 			if (show_column_titles) {
@@ -6147,41 +6288,93 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 
 	Point2 pos = p_pos;
 
+	// Calculate target parent based on horizontal mouse position.
+	int indent_width = theme_cache.item_margin;
+	int target_depth = MAX(0, (p_pos.x / indent_width) + 1); // +1 to overlap with relationship lines.
+	int current_item_depth = 0;
+	TreeItem *depth_parent = p_item->get_parent();
+	while (depth_parent) {
+		current_item_depth++;
+		depth_parent = depth_parent->get_parent();
+	}
+	if (hide_root && current_item_depth > 0) {
+		current_item_depth--;
+	}
+
+	if (drop_mode_flags && drop_mode_flags != DROP_MODE_ON_ITEM) {
+		// Clamp maximum depth to current item's depth.
+		target_depth = MIN(target_depth, current_item_depth);
+	} else if (drop_mode_flags == DROP_MODE_ON_ITEM) {
+		// Ignore indent space and always target items directly.
+		target_depth = current_item_depth;
+	}
+
+	bool is_at_target_depth = (drop_mode_flags && current_item_depth == target_depth);
+
 	if ((root != p_item || !hide_root) && p_item->is_visible_in_tree()) {
 		r_height = compute_item_height(p_item) + theme_cache.v_separation;
-		if (pos.y < r_height) {
-			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
-				r_section = 0;
-			} else if (drop_mode_flags == DROP_MODE_INBETWEEN) {
-				r_section = pos.y < r_height / 2 ? -1 : 1;
-			} else if (pos.y < r_height / 4) {
-				r_section = -1;
-			} else if (pos.y >= (r_height * 3 / 4)) {
-				r_section = 1;
-			} else {
-				r_section = 0;
+
+		bool within_vertical_bounds = (pos.y < r_height);
+
+		if (within_vertical_bounds) {
+			bool skip_item = false;
+			if (drop_mode_flags && current_item_depth != target_depth) {
+				// Skip items not at target depth.
+				skip_item = true;
 			}
 
-			for (int i = 0; i < columns.size(); i++) {
-				int col_width = get_column_width(i);
+			if (!skip_item) {
+				// Calculate what is considered "on" a node, while also considering the arrow nodes with children have.
+				int item_content_start_x = current_item_depth * theme_cache.item_margin;
+				if (!p_item->first_child) {
+					item_content_start_x += ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
+				}
+				bool over_content_area = (p_pos.x >= item_content_start_x);
 
-				if (p_item->cells[i].expand_right) {
-					int plus = 1;
-					while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null() && p_item->cells[i + plus].buttons.is_empty()) {
-						col_width += theme_cache.h_separation;
-						col_width += get_column_width(i + plus);
-						plus++;
+				if (drop_mode_flags == DROP_MODE_ON_ITEM) {
+					r_section = 0;
+				} else if (drop_mode_flags == DROP_MODE_INBETWEEN) {
+					r_section = pos.y < r_height / 2 ? -1 : 1;
+				} else if (drop_mode_flags) {
+					// Section 0 (on item) if we're over the actual content area.
+					if (!over_content_area) {
+						// In indent space.
+						// Do not allow dropping above items at depth 0 (root level items like favorites/res).
+						r_section = (pos.y < r_height / 2 && current_item_depth > 0) ? -1 : 1;
+					} else if (pos.y < r_height / 4) {
+						// Drop above, but not if we're at root level.
+						r_section = (current_item_depth > 0) ? -1 : 0;
+					} else if (pos.y >= r_height * 3 / 4) {
+						// If item has children, use section 2 to insert as first child.
+						// Otherwise, use section 1 to insert as next sibling below.
+						r_section = (p_item->first_child) ? 2 : 1;
+					} else {
+						r_section = 0; // Drop on to make new or last child.
 					}
+				} else {
+					r_section = 0;
 				}
 
-				if (pos.x < col_width) {
-					r_column = i;
-					return p_item;
+				for (int i = 0; i < columns.size(); i++) {
+					int col_width = get_column_width(i);
+
+					if (p_item->cells[i].expand_right) {
+						int plus = 1;
+						while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null() && p_item->cells[i + plus].buttons.is_empty()) {
+							col_width += theme_cache.h_separation;
+							col_width += get_column_width(i + plus);
+							plus++;
+						}
+					}
+
+					if (pos.x < col_width) {
+						r_column = i;
+						return p_item;
+					}
+					pos.x -= col_width;
 				}
-				pos.x -= col_width;
+				return nullptr;
 			}
-
-			return nullptr;
 		} else {
 			pos.y -= r_height;
 		}
@@ -6203,6 +6396,32 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 			return r;
 		}
 		n = n->get_next();
+	}
+
+	// Fallback: if in drop mode, at target depth, and mouse is below all nodes (pos.y is now negative after subtracting all children).
+	if (drop_mode_flags && is_at_target_depth && (root != p_item || !hide_root) && p_item->is_visible_in_tree() && pos.y < 0) {
+		// Dropping below the last item at specified depth level.
+		r_section = 1;
+
+		Point2 col_pos = p_pos;
+		for (int i = 0; i < columns.size(); i++) {
+			int col_width = get_column_width(i);
+
+			if (p_item->cells[i].expand_right) {
+				int plus = 1;
+				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null() && p_item->cells[i + plus].buttons.is_empty()) {
+					col_width += theme_cache.h_separation;
+					col_width += get_column_width(i + plus);
+					plus++;
+				}
+			}
+
+			if (col_pos.x < col_width) {
+				r_column = i;
+				return p_item;
+			}
+			col_pos.x -= col_width;
+		}
 	}
 
 	return nullptr;
@@ -6819,6 +7038,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_on_item_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_position_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, v_separation);
