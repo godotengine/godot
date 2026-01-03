@@ -5,16 +5,17 @@
 	</brief_description>
 	<description>
 		A regular expression (or regex) is a compact language that can be used to recognize strings that follow a specific pattern, such as URLs, email addresses, complete sentences, etc. For example, a regex of [code]ab[0-9][/code] would find any string that is [code]ab[/code] followed by any number from [code]0[/code] to [code]9[/code]. For a more in-depth look, you can easily find various tutorials and detailed explanations on the Internet.
-		To begin, the RegEx object needs to be compiled with the search pattern using [method compile] before it can be used.
+		To begin, the RegEx object needs to be compiled with the search pattern using [method compile] before it can be used. Alternatively, the static method [method create_from_string] can be used to create and compile a RegEx object in a single method call.
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\w-(\\d+)")
+		# Shorthand to create and compile a regex (used in the examples below):
+		var regex2 = RegEx.create_from_string("\\w-(\\d+)")
 		[/codeblock]
 		The search pattern must be escaped first for GDScript before it is escaped for the expression. For example, [code]compile("\\d+")[/code] would be read by RegEx as [code]\d+[/code]. Similarly, [code]compile("\"(?:\\\\.|[^\"])*\"")[/code] would be read as [code]"(?:\\.|[^"])*"[/code]. In GDScript, you can also use raw string literals (r-strings). For example, [code]compile(r'"(?:\\.|[^"])*"')[/code] would be read the same.
 		Using [method search], you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using methods such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
 		[codeblock]
-		var regex = RegEx.new()
-		regex.compile("\\w-(\\d+)")
+		var regex = RegEx.create_from_string("\\w-(\\d+)")
 		var result = regex.search("abc n-0123")
 		if result:
 			print(result.get_string()) # Prints "n-0123"
@@ -22,8 +23,7 @@
 		The results of capturing groups [code]()[/code] can be retrieved by passing the group number to the various methods in [RegExMatch]. Group 0 is the default and will always refer to the entire pattern. In the above example, calling [code]result.get_string(1)[/code] would give you [code]0123[/code].
 		This version of RegEx also supports named capturing groups, and the names can be used to retrieve the results. If two or more groups have the same name, the name would only refer to the first one with a match.
 		[codeblock]
-		var regex = RegEx.new()
-		regex.compile("d(?&lt;digit&gt;[0-9]+)|x(?&lt;digit&gt;[0-9a-f]+)")
+		var regex = RegEx.create_from_string("d(?&lt;digit&gt;[0-9]+)|x(?&lt;digit&gt;[0-9a-f]+)")
 		var result = regex.search("the number is x2f")
 		if result:
 			print(result.get_string("digit")) # Prints "2f"
@@ -36,8 +36,7 @@
 		[/codeblock]
 		[b]Example:[/b] Split a string using a RegEx:
 		[codeblock]
-		var regex = RegEx.new()
-		regex.compile("\\S+") # Negated whitespace character class.
+		var regex = RegEx.create_from_string("\\S+") # Negated whitespace character class.
 		var results = []
 		for result in regex.search_all("One  Two \n\tThree"):
 			results.push_back(result.get_string())
