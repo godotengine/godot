@@ -208,6 +208,7 @@ void SplitContainerDragger::_notification(int p_what) {
 				SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 				touch_dragger->set_modulate(sc->theme_cache.touch_dragger_color);
 				touch_dragger->set_texture(sc->_get_touch_dragger_icon());
+				touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 			}
 		} break;
 
