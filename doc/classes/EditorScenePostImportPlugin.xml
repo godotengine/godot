@@ -101,6 +101,12 @@
 				Query the value of an option. This function can only be called from those querying visibility, or processing.
 			</description>
 		</method>
+		<method name="get_option_values" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns all available options and their values. This function can only be called from those querying visibility, or processing.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="INTERNAL_IMPORT_CATEGORY_NODE" value="0" enum="InternalImportCategory">

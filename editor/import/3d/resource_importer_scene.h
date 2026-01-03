@@ -132,6 +132,7 @@ protected:
 
 public:
 	Variant get_option_value(const StringName &p_name) const;
+	Dictionary get_option_values() const;
 	void add_import_option(const String &p_name, const Variant &p_default_value);
 	void add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 
