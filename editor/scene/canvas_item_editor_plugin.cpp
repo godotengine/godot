@@ -72,6 +72,7 @@
 #define DRAG_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
+constexpr real_t ROTATE_HANDLE_DISTANCE = 40;
 
 class SnapDialog : public ConfirmationDialog {
 	GDCLASS(SnapDialog, ConfirmationDialog);
@@ -3919,6 +3920,27 @@ void CanvasItemEditor::_draw_selection() {
 
 			viewport->draw_colored_polygon(points, get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)));
 			viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+
+			viewport->draw_set_transform_matrix(viewport->get_transform());
+		}
+
+		// Draw the rotate handles.
+		if (tool == TOOL_ROTATE) {
+			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
+			Transform2D simple_xform;
+			if (use_local_space) {
+				simple_xform = viewport->get_transform() * unscaled_transform;
+			} else {
+				Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
+				simple_xform = viewport->get_transform() * translation;
+			}
+
+			Size2 move_factor = Size2(MOVE_HANDLE_DISTANCE, MOVE_HANDLE_DISTANCE);
+			viewport->draw_set_transform_matrix(simple_xform);
+
+			viewport->draw_line(Point2(), Point2(move_factor.x * EDSCALE, 0), get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+			viewport->draw_line(Point2(), Point2(0, move_factor.y * EDSCALE), get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor)), Math::round(EDSCALE));
+			viewport->draw_circle(Point2(), ROTATE_HANDLE_DISTANCE, get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor)), false, Math::round(EDSCALE), true);
 
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
