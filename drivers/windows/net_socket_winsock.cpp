@@ -547,10 +547,22 @@ void NetSocketWinSock::set_tcp_no_delay_enabled(bool p_enabled) {
 }
 
 void NetSocketWinSock::set_reuse_address_enabled(bool p_enabled) {
-	ERR_FAIL_COND(!is_open());
+	ERR_FAIL_COND(_sock == INVALID_SOCKET);
 
-	// On Windows, enabling SO_REUSEADDR actually would also enable reuse port, very bad on TCP. Denying...
-	// Windows does not have this option, SO_REUSEADDR in this magical world means SO_REUSEPORT
+	// set_reuse_address_enabled is being left as a NOP function to preserve existing behavior.
+	// However its features are available as part of set_reuse_port_enabled
+}
+
+void NetSocketWinSock::set_reuse_port_enabled(bool p_enabled) {
+	ERR_FAIL_COND(_sock == INVALID_SOCKET);
+
+	// SO_REUSEPORT is not supported on windows, as its features are implemented as part of SO_REUSEADDR
+	// However to keep existing behavior intact set_reuse_address_enabled has been left as a NOP
+
+	int par = p_enabled ? 1 : 0;
+	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&par, sizeof(int)) < 0) {
+		WARN_PRINT("Unable to set socket REUSEADDR option.");
+	}
 }
 
 bool NetSocketWinSock::is_open() const {

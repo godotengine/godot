@@ -45,6 +45,16 @@ void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
 	}
 }
 
+void PacketPeerUDP::set_reuse_address_enabled(bool p_reuse_addr) {
+	ERR_FAIL_COND(udp_server);
+	reuse_addr = p_reuse_addr;
+}
+
+void PacketPeerUDP::set_reuse_port_enabled(bool p_reuse_port) {
+	ERR_FAIL_COND(udp_server);
+	reuse_port = p_reuse_port;
+}
+
 Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
 	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
@@ -194,6 +204,9 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_broadcasting_enabled(broadcast);
+	_sock->set_reuse_address_enabled(reuse_addr);
+	_sock->set_reuse_port_enabled(reuse_port);
+
 	NetSocket::Address addr(p_bind_address, p_port);
 	err = _sock->bind(addr);
 
@@ -370,6 +383,8 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_local_port"), &PacketPeerUDP::get_local_port);
 	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
 	ClassDB::bind_method(D_METHOD("set_broadcast_enabled", "enabled"), &PacketPeerUDP::set_broadcast_enabled);
+	ClassDB::bind_method(D_METHOD("set_reuse_address_enabled", "reuse_address"), &PacketPeerUDP::set_reuse_address_enabled);
+	ClassDB::bind_method(D_METHOD("set_reuse_port_enabled", "reuse_port"), &PacketPeerUDP::set_reuse_port_enabled);
 	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
 	ClassDB::bind_method(D_METHOD("leave_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::leave_multicast_group);
 }
