@@ -663,6 +663,9 @@ DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_drive
 					"Your device seems not to support the required OpenGL ES 3.0 version.",
 					"Unable to initialize OpenGL video driver");
 		}
+
+		memdelete(ds);
+		return nullptr;
 	}
 	return ds;
 }
