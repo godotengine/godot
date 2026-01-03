@@ -1094,6 +1094,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("picker_cursor", "ColorPicker", icons["color_picker_cursor"]);
 	theme->set_icon("picker_cursor_bg", "ColorPicker", icons["color_picker_cursor_bg"]);
 	theme->set_icon("color_script", "ColorPicker", icons["script"]);
+	theme->set_icon("color_copy", "ColorPicker", icons["action_copy"]);
 
 	{
 		const int precision = 7;
