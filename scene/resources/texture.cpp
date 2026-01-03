@@ -33,6 +33,30 @@
 #include "scene/resources/placeholder_textures.h"
 #include "servers/rendering/rendering_server.h"
 
+Ref<Image> Texture2D::get_image() const {
+	Ref<Image> ret;
+	GDVIRTUAL_CALL(_get_image, ret);
+	return ret;
+}
+
+Image::Format Texture2D::get_format() const {
+	Image::Format ret = Image::FORMAT_MAX;
+	GDVIRTUAL_CALL(_get_format, ret);
+	return ret;
+}
+
+int Texture2D::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_mipmap_count, ret);
+	return ret;
+}
+
+bool Texture2D::has_mipmaps() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
+	return ret;
+}
+
 int Texture2D::get_width() const {
 	int ret = 0;
 	GDVIRTUAL_CALL(_get_width, ret);
@@ -96,10 +120,13 @@ Ref<Resource> Texture2D::create_placeholder() const {
 }
 
 void Texture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_format"), &Texture2D::get_format);
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Texture2D::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture2D::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
+	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture2D::has_mipmaps);
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
@@ -108,10 +135,14 @@ void Texture2D::_bind_methods() {
 
 	ADD_GROUP("", "");
 
+	GDVIRTUAL_BIND(_get_image);
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_mipmap_count);
 	GDVIRTUAL_BIND(_get_width);
 	GDVIRTUAL_BIND(_get_height);
 	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
 	GDVIRTUAL_BIND(_has_alpha);
+	GDVIRTUAL_BIND(_has_mipmaps);
 
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
 	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")

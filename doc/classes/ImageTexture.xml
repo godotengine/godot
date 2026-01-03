@@ -36,12 +36,6 @@
 				Creates a new [ImageTexture] and initializes it by allocating and setting the data from an [Image].
 			</description>
 		</method>
-		<method name="get_format" qualifiers="const">
-			<return type="int" enum="Image.Format" />
-			<description>
-				Returns the format of the texture.
-			</description>
-		</method>
 		<method name="set_image">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />

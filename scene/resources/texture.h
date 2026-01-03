@@ -46,6 +46,10 @@ class Texture2D : public Texture {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0RC(Image::Format, _get_format)
+	GDVIRTUAL0RC(Ref<Image>, _get_image)
+	GDVIRTUAL0RC(int, _get_mipmap_count)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
 	GDVIRTUAL0RC_REQUIRED(int, _get_width)
 	GDVIRTUAL0RC_REQUIRED(int, _get_height)
 	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
@@ -56,6 +60,8 @@ protected:
 	GDVIRTUAL6C(_draw_rect_region, RID, Rect2, Rect2, Color, bool, bool)
 
 public:
+	virtual Image::Format get_format() const;
+	virtual int get_mipmap_count() const;
 	virtual int get_width() const;
 	virtual int get_height() const;
 	virtual Size2 get_size() const;
@@ -63,6 +69,7 @@ public:
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 
 	virtual bool has_alpha() const;
+	virtual bool has_mipmaps() const;
 
 	virtual RID get_scaled_rid() const { return get_rid(); }
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
@@ -70,7 +77,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Ref<Image> get_image() const { return Ref<Image>(); }
+	virtual Ref<Image> get_image() const;
 
 	virtual Ref<Resource> create_placeholder() const;
 
