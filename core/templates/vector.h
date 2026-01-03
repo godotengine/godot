@@ -309,9 +309,17 @@ public:
 		return ConstIterator(ptr() + size());
 	}
 
+	template <typename... Args>
+	static Vector make(Args &&...args) {
+		RelocateInitData<Args..., sizeof...(Args)> data(std::forward<Args>(args)...);
+		return Vector(data);
+	}
+
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
+	_FORCE_INLINE_ explicit Vector(RelocateInitList<T> init) :
+			_cowdata(init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 };

@@ -960,6 +960,12 @@ Array::Array(std::initializer_list<Variant> p_init) {
 	_p->array = Vector<Variant>(p_init);
 }
 
+Array::Array(RelocateInitList<Variant> p_init) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = Vector<Variant>(p_init);
+}
+
 Array::Array() {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
