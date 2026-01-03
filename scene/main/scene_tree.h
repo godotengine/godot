@@ -186,7 +186,7 @@ private:
 	int nodes_removed_on_group_call_lock = 0;
 	HashSet<Node *> nodes_removed_on_group_call; // Skip erased nodes.
 
-	List<ObjectID> delete_queue;
+	LocalVector<ObjectID> delete_queue;
 
 	uint64_t accessibility_upd_per_sec = 0;
 	bool accessibility_force_update = true;
