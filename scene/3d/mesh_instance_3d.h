@@ -70,6 +70,12 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+#ifndef DISABLE_DEPRECATED
+	Ref<Material> _get_surface_override_material_bind_compat_96342(int p_surface) const;
+	Ref<Material> _get_active_material_bind_compat_96342(int p_surface) const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
 
@@ -96,8 +102,8 @@ public:
 
 	int get_surface_override_material_count() const;
 	void set_surface_override_material(int p_surface, const Ref<Material> &p_material);
-	Ref<Material> get_surface_override_material(int p_surface) const;
-	Ref<Material> get_active_material(int p_surface) const;
+	Ref<Material> get_surface_override_material(int p_surface = 0) const;
+	Ref<Material> get_active_material(int p_surface = 0) const;
 
 #ifndef PHYSICS_3D_DISABLED
 	Node *create_trimesh_collision_node();
