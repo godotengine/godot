@@ -36,6 +36,9 @@
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
 #include "core/string/ustring.h"
+#include "scene/gui/color_picker.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/option_button.h"
 #include "scene/theme/theme_db.h"
 
 void CodeEdit::_apply_project_settings() {
@@ -2200,6 +2203,76 @@ void CodeEdit::set_code_hint_draw_below(bool p_below) {
 	queue_redraw();
 }
 
+/* Inline Hints */
+void CodeEdit::set_inline_hints_enabled(bool p_enabled) {
+	if (p_enabled) {
+		set_inline_object_handlers(
+				callable_mp(this, &CodeEdit::_inline_hint_provide),
+				callable_mp(this, &CodeEdit::_inline_hint_draw),
+				callable_mp(this, &CodeEdit::_inline_hint_handle_click));
+	} else {
+		set_inline_object_handlers(Callable(), Callable(), Callable());
+	}
+
+	if (inline_hints_enabled != p_enabled) {
+		invalidate_all_line_caches();
+	}
+
+	inline_hints_enabled = p_enabled;
+}
+
+void CodeEdit::set_inline_hint_type_enabled(const StringName &p_type, bool p_enabled) {
+	if (p_enabled) {
+		if (!enabled_hint_types.has(p_type)) {
+			enabled_hint_types.push_back(p_type);
+			invalidate_all_line_caches();
+		}
+	} else {
+		bool was_type_removed = enabled_hint_types.erase(p_type);
+		if (was_type_removed) {
+			invalidate_all_line_caches();
+		}
+	}
+}
+
+void CodeEdit::update_inline_hints(const HashMap<int, TypedArray<Dictionary>> &p_inline_info) {
+	for (const KeyValue<int, TypedArray<Dictionary>> &hints : p_inline_info) {
+		int line_number = hints.key;
+		int line_index = line_number - 1;
+
+		const TypedArray<Dictionary> &info = hints.value;
+		inline_hints[line_number] = info.duplicate(true);
+		inline_hint_line_cache[line_index] = get_line(line_index);
+
+		invalidate_line_cache(line_index, false);
+	}
+
+	LocalVector<int> to_delete;
+	for (const KeyValue<int, TypedArray<Dictionary>> &hints : inline_hints) {
+		int line_number = hints.key;
+
+		if (!p_inline_info.has(line_number)) {
+			to_delete.push_back(line_number);
+		}
+	}
+
+	for (int line : to_delete) {
+		int line_index = line - 1;
+		inline_hints.erase(line);
+		inline_hint_line_cache.erase(line_index);
+		invalidate_line_cache(line_index, false);
+	}
+}
+
+void CodeEdit::set_inline_color_picker_handlers(const Callable &p_options_updater, const Callable &p_change_handler) {
+	inline_color_picker_options_updater = p_options_updater;
+	inline_color_picker_change_handler = p_change_handler;
+}
+
+ColorPicker *CodeEdit::get_inline_color_picker() {
+	return inline_color_picker;
+}
+
 /* Code Completion */
 void CodeEdit::set_code_completion_enabled(bool p_enable) {
 	code_completion_enabled = p_enable;
@@ -3065,6 +3138,11 @@ void CodeEdit::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_hint_style, "panel", "TooltipPanel");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, CodeEdit, code_hint_color, "font_color", "TooltipLabel");
 
+	/* Inline hints */
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, inline_parameter_hint_style, "inline_parameter_hint");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, inline_parameter_hint_font_scale_percentage, "inline_hint_font_scale_percentage");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, CodeEdit, inline_color_hint_alpha_texture, "sample_bg", "ColorPicker");
+
 	/* Line length guideline */
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_length_guideline_color);
 
@@ -3533,6 +3611,228 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 	return r_delimiters;
 }
 
+/* Inline Hints */
+Array CodeEdit::_inline_hint_provide(const String &p_text, int p_line) {
+	Array result;
+
+	int line_number = p_line + 1;
+	if (inline_hints.has(line_number)) {
+		for (Dictionary hint : inline_hints[line_number]) {
+			ERR_CONTINUE(!hint.get("type", Variant()).is_string());
+
+			StringName type = hint["type"];
+
+			if (!enabled_hint_types.has(type)) {
+				continue;
+			}
+
+			if (type == SNAME("parameter")) {
+				int font_size = Math::round(theme_cache.font_size * theme_cache.inline_parameter_hint_font_scale_percentage * 0.01);
+				Size2 hint_size = theme_cache.font->get_string_size(String(hint["name"]) + ": ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+				hint["width"] = hint_size.x;
+				hint["height"] = hint_size.y;
+
+			} else if (type == SNAME("color")) {
+				float space_size = theme_cache.font->get_char_size(' ', theme_cache.font_size).x;
+				hint["is_clickable"] = true;
+				hint["width"] = theme_cache.font_size + space_size;
+				hint["height"] = theme_cache.font_size;
+			}
+			result.append(hint);
+		}
+	}
+
+	return result;
+}
+
+void CodeEdit::_inline_hint_draw(const Dictionary &p_info, const Rect2 &p_rect) {
+	RID text_canvas_item = get_text_canvas_item();
+	const Ref<Font> &font = theme_cache.font;
+
+	const StringName type = p_info.get("type", Variant());
+	if (type == SNAME("parameter")) {
+		const Ref<StyleBox> &stylebox = theme_cache.inline_parameter_hint_style;
+
+		Color font_color = theme_cache.code_hint_color;
+		font_color.a = 0.5;
+
+		int font_size = Math::round(theme_cache.font_size * theme_cache.inline_parameter_hint_font_scale_percentage * 0.01);
+
+		real_t space_width = font->get_char_size(' ', font_size).x;
+		Vector2 text_origin_offset = Vector2(0.5 * space_width, font->get_ascent(font_size));
+
+		Rect2 background_rect = p_rect.grow_side(SIDE_RIGHT, -0.5 * space_width);
+
+		stylebox->draw(text_canvas_item, background_rect);
+		font->draw_string(text_canvas_item, p_rect.position + text_origin_offset, String(p_info["name"]) + ":", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+
+	} else if (type == SNAME("color")) {
+		real_t space_width = font->get_char_size(' ', theme_cache.font_size).x;
+
+		Rect2 base_rect = p_rect.grow_individual(-0.5 * space_width, 0.0, -0.5 * space_width, 0.0);
+
+		Rect2 col_rect = base_rect.grow(-1);
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, base_rect, Color(1, 1, 1));
+		theme_cache.inline_color_hint_alpha_texture->draw_rect(text_canvas_item, col_rect);
+
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, col_rect, Color(p_info["color"]));
+	}
+}
+
+void CodeEdit::_inline_hint_handle_click(const Dictionary &p_info, const Rect2 &p_rect) {
+	const StringName type = p_info.get("type", Variant());
+
+	if (type == SNAME("color")) {
+		inline_color_picker->set_pick_color(p_info["color"]);
+
+		// Reset tooltip hover timer.
+		set_symbol_tooltip_on_hover_enabled(false);
+		set_symbol_tooltip_on_hover_enabled(true);
+
+		inline_color_picker_options_updater.call(p_info, inline_color_options, inline_color_picker);
+		current_inline_color_hint_line = p_info["line"];
+		current_inline_color_hint_column = p_info["column"];
+
+		// Move popup above the line if it's too low.
+		float_t view_h = get_viewport_rect().size.y;
+		float_t pop_h = inline_color_popup->get_contents_minimum_size().y;
+		float_t pop_y = p_rect.get_end().y;
+		float_t pop_x = p_rect.position.x;
+		if (pop_y + pop_h > view_h) {
+			pop_y = p_rect.position.y - pop_h;
+		}
+		// Move popup to the right if it's too high.
+		if (pop_y < 0) {
+			pop_x = p_rect.get_end().x;
+		}
+
+		inline_color_popup->popup(Rect2(pop_x, pop_y, 0, 0));
+	}
+}
+
+void CodeEdit::_update_inline_hint_cache(int p_from_line, int p_to_line) {
+	if (p_to_line == -1) {
+		p_to_line = get_line_count() - 1;
+	}
+
+	int start_line = MIN(p_from_line, p_to_line);
+	int end_line = MAX(p_from_line, p_to_line);
+
+	for (int line_idx = start_line; line_idx <= end_line; line_idx++) {
+		if (!inline_hint_line_cache.has(p_from_line)) {
+			continue;
+		}
+
+		const String new_line = get_line(line_idx);
+		const String &old_line = inline_hint_line_cache[line_idx];
+
+		int max_line_length = MIN(new_line.length(), old_line.length());
+
+		// Get unedited left part of the line.
+		int left_unedited_length = max_line_length;
+		for (int i = 0; i < max_line_length; i++) {
+			if (new_line[i] != old_line[i]) {
+				left_unedited_length = i;
+				break;
+			}
+		}
+
+		// Get unedited right part of the line.
+		int right_unedited_length = max_line_length - left_unedited_length;
+		for (int i = 0; i < max_line_length - left_unedited_length; i++) {
+			int new_idx = new_line.length() - i - 1;
+			int old_idx = old_line.length() - i - 1;
+
+			if (new_line[new_idx] != old_line[old_idx]) {
+				right_unedited_length = i;
+				break;
+			}
+		}
+
+		// Get beginning column of the edit.
+		int edit_begin_column = 1;
+		for (int i = 0; i < left_unedited_length; i++) {
+			edit_begin_column += old_line[i] == '\t' ? get_tab_size() : 1;
+		}
+
+		// Get the column difference.
+		int deleted_column_count = 0;
+		for (int i = left_unedited_length; i < old_line.length() - right_unedited_length; i++) {
+			deleted_column_count += old_line[i] == '\t' ? get_tab_size() : 1;
+		}
+		int added_column_count = 0;
+		for (int i = left_unedited_length; i < new_line.length() - right_unedited_length; i++) {
+			added_column_count += new_line[i] == '\t' ? get_tab_size() : 1;
+		}
+		int column_difference = added_column_count - deleted_column_count;
+
+		TypedArray<Dictionary> line_hints = inline_hints[line_idx + 1];
+		for (int i = line_hints.size() - 1; i >= 0; i--) {
+			Dictionary hint = line_hints[i];
+			int column = hint["column"];
+			if (column > edit_begin_column) {
+				if (column <= edit_begin_column + deleted_column_count) {
+					line_hints.remove_at(i);
+				} else {
+					hint["column"] = column + column_difference;
+				}
+			}
+		}
+		inline_hint_line_cache[line_idx] = new_line;
+		invalidate_line_cache(line_idx, true);
+	}
+}
+
+void CodeEdit::_inline_color_picker_update_text_current() {
+	ERR_FAIL_COND(!inline_hints.has(current_inline_color_hint_line));
+	Variant search_result;
+	for (Dictionary hint : inline_hints[current_inline_color_hint_line]) {
+		int column = hint.get("column", -1);
+		if (column == current_inline_color_hint_column) {
+			search_result = hint;
+			break;
+		}
+	}
+	ERR_FAIL_COND(search_result.get_type() != Variant::DICTIONARY);
+	Dictionary current_hint = search_result;
+
+	_inline_color_picker_update_text(current_hint);
+}
+
+void CodeEdit::_inline_color_picker_update_text(Dictionary &p_hint) {
+	String result = inline_color_options->get_item_text(inline_color_options->get_selected_id());
+	int line_number = p_hint["line"];
+	int column = p_hint["column"];
+	int column_char_offset = get_character_position_from_column(line_number - 1, column);
+	int end = p_hint["color_end"];
+
+	p_hint["color_end"] = column_char_offset + result.length() - 1;
+
+	begin_complex_operation();
+	remove_text(line_number - 1, column_char_offset, line_number - 1, end + 1);
+	insert_text(result, line_number - 1, column_char_offset);
+	end_complex_operation();
+}
+
+void CodeEdit::_inline_color_picker_color_changed(const Color &p_color) {
+	ERR_FAIL_COND(!inline_hints.has(current_inline_color_hint_line));
+	Variant search_result;
+	for (Dictionary hint : inline_hints[current_inline_color_hint_line]) {
+		int column = hint.get("column", -1);
+		if (column == current_inline_color_hint_column) {
+			search_result = hint;
+			break;
+		}
+	}
+	ERR_FAIL_COND(search_result.get_type() != Variant::DICTIONARY);
+	Dictionary current_hint = search_result;
+
+	inline_color_picker_options_updater.call(current_hint, inline_color_options, inline_color_picker);
+	current_hint["color"] = p_color;
+
+	_inline_color_picker_update_text(current_hint);
+}
+
 /* Code Completion */
 void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 	float percent = (float)(p_mouse_y - code_completion_scroll_rect.position.y) / code_completion_scroll_rect.size.height;
@@ -3850,7 +4150,7 @@ bool CodeEdit::_should_reset_selected_option_for_new_options(const Vector<Script
 
 void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 	_update_delimiter_cache(p_from_line, p_to_line);
-
+	_update_inline_hint_cache(p_from_line, p_to_line);
 	if (p_from_line == p_to_line) {
 		return;
 	}
@@ -3960,6 +4260,25 @@ CodeEdit::CodeEdit() {
 	symbol_tooltip_timer->set_one_shot(true);
 	symbol_tooltip_timer->connect("timeout", callable_mp(this, &CodeEdit::_on_symbol_tooltip_timer_timeout));
 	add_child(symbol_tooltip_timer, false, INTERNAL_MODE_FRONT);
+
+	/* Inline color picker */
+	inline_color_popup = memnew(PopupPanel);
+	add_child(inline_color_popup);
+
+	inline_color_picker = memnew(ColorPicker);
+	inline_color_picker->set_mouse_filter(MOUSE_FILTER_STOP);
+	inline_color_picker->set_deferred_mode(true);
+	inline_color_picker->set_hex_visible(false);
+	inline_color_picker->connect("color_changed", callable_mp(this, &CodeEdit::_inline_color_picker_color_changed));
+	inline_color_popup->add_child(inline_color_picker);
+
+	inline_color_options = memnew(OptionButton);
+	inline_color_options->set_h_size_flags(SIZE_FILL);
+	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	inline_color_options->set_fit_to_longest_item(false);
+	inline_color_options->connect("item_selected", callable_mp(this, &CodeEdit::_inline_color_picker_update_text_current).unbind(1));
+
+	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	/* Fold Lines Private signal */
 	add_user_signal(MethodInfo("_fold_line_updated"));

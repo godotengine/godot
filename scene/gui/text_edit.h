@@ -185,7 +185,7 @@ private:
 		String custom_word_separators;
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
-		Callable inline_object_parser;
+		Callable inline_object_provider;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -208,7 +208,7 @@ private:
 		void set_font_size(int p_font_size);
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
-		void set_inline_object_parser(const Callable &p_parser);
+		void set_inline_object_provider(const Callable &p_provider);
 
 		int get_line_height() const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
@@ -231,6 +231,7 @@ private:
 		void set_brk_flags(BitField<TextServer::LineBreakFlag> p_flags);
 		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
+		int get_character_position_from_column(int p_line, int p_column) const;
 
 		const Vector<RID> get_accessibility_elements(int p_line);
 		void update_accessibility(int p_line, RID p_root);
@@ -885,7 +886,12 @@ public:
 	int get_next_visible_line_offset_from(int p_line_from, int p_visible_amount) const;
 	Point2i get_next_visible_line_index_offset_from(int p_line_from, int p_wrap_index_from, int p_visible_amount) const;
 
-	void set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler);
+	int get_character_position_from_column(int p_line, int p_column) const;
+
+	void set_inline_object_handlers(const Callable &p_provider, const Callable &p_drawer, const Callable &p_click_handler);
+
+	void invalidate_line_cache(int p_line, bool p_text_changed = false);
+	void invalidate_all_line_caches();
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode, int p_caret = -1);

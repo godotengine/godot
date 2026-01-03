@@ -1350,9 +1350,6 @@
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
-		<member name="text_editor/appearance/enable_inline_color_picker" type="bool" setter="" getter="">
-			If [code]true[/code], displays a colored button before any [Color] constructor in the script editor. Clicking on them allows the color to be modified through a color picker.
-		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
 		</member>
@@ -1373,6 +1370,15 @@
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers in a gutter at the left.
+		</member>
+		<member name="text_editor/appearance/inline_hints/color_hints_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], displays a colored button before any [Color] constructor in the script editor. Clicking on them allows the color to be modified through a color picker.
+		</member>
+		<member name="text_editor/appearance/inline_hints/inline_hints_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], displays inline hints in code. See [member text_editor/appearance/inline_hints/color_hints_enabled] and [member text_editor/appearance/inline_hints/parameter_hints_enabled].
+		</member>
+		<member name="text_editor/appearance/inline_hints/parameter_hints_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], displays parameter names inline next to their corresponding arguments in function calls.
 		</member>
 		<member name="text_editor/appearance/lines/autowrap_mode" type="int" setter="" getter="">
 			If [member text_editor/appearance/lines/word_wrap] is set to [code]1[/code], sets text wrapping mode. To see how each mode behaves, see [enum TextServer.AutowrapMode].

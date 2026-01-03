@@ -390,6 +390,8 @@ public:
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
 
+	virtual Error generate_inline_info(const String &p_code, const String &p_path, HashMap<int, TypedArray<Dictionary>> *r_inline_info) { return ERR_UNAVAILABLE; }
+
 	/* MULTITHREAD FUNCTIONS */
 
 	//some VMs need to be notified of thread creation/exiting to allocate a stack

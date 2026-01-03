@@ -33,6 +33,9 @@
 #include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
 
+class OptionButton;
+class ColorPicker;
+
 class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
 
@@ -204,6 +207,33 @@ private:
 	bool code_hint_draw_below = true;
 	int code_hint_xpos = -0xFFFF;
 
+	/* Inline Hints */
+	bool inline_hints_enabled = false;
+	LocalVector<StringName> enabled_hint_types;
+
+	HashMap<int, TypedArray<Dictionary>> inline_hints;
+	HashMap<int, String> inline_hint_line_cache;
+
+	PopupPanel *inline_color_popup = nullptr;
+	ColorPicker *inline_color_picker = nullptr;
+	OptionButton *inline_color_options = nullptr;
+
+	Callable inline_color_picker_options_updater;
+	Callable inline_color_picker_change_handler;
+
+	int current_inline_color_hint_line = -1;
+	int current_inline_color_hint_column = -1;
+
+	Array _inline_hint_provide(const String &p_text, int p_line);
+	void _inline_hint_draw(const Dictionary &p_info, const Rect2 &p_rect);
+	void _inline_hint_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
+
+	void _update_inline_hint_cache(int p_from_line, int p_to_line);
+
+	void _inline_color_picker_update_text_current();
+	void _inline_color_picker_update_text(Dictionary &p_hint);
+	void _inline_color_picker_color_changed(const Color &p_color);
+
 	/* Code Completion */
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
@@ -285,6 +315,13 @@ private:
 		/* Code hint */
 		Ref<StyleBox> code_hint_style;
 		Color code_hint_color;
+
+		/* Inline parameter hint */
+		Ref<StyleBox> inline_parameter_hint_style;
+		int inline_parameter_hint_font_scale_percentage = 75;
+
+		/* Inline color hint*/
+		Ref<Texture2D> inline_color_hint_alpha_texture;
 
 		/* Line length guideline */
 		Color line_length_guideline_color;
@@ -477,6 +514,14 @@ public:
 	/* Code hint */
 	void set_code_hint(const String &p_hint);
 	void set_code_hint_draw_below(bool p_below);
+
+	/* Inline hints */
+	void set_inline_hints_enabled(bool p_enabled);
+	void set_inline_hint_type_enabled(const StringName &p_type, bool p_enabled);
+	void update_inline_hints(const HashMap<int, TypedArray<Dictionary>> &p_inline_info);
+	void set_inline_color_picker_handlers(const Callable &p_options_updater, const Callable &p_change_handler);
+
+	ColorPicker *get_inline_color_picker();
 
 	/* Code Completion */
 	void set_code_completion_enabled(bool p_enable);

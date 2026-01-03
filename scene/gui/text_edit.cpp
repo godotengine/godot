@@ -104,8 +104,8 @@ void TextEdit::Text::set_draw_control_chars(bool p_enabled) {
 	is_dirty = true;
 }
 
-void TextEdit::Text::set_inline_object_parser(const Callable &p_parser) {
-	inline_object_parser = p_parser;
+void TextEdit::Text::set_inline_object_provider(const Callable &p_provider) {
+	inline_object_provider = p_provider;
 	is_dirty = true;
 	invalidate_all();
 }
@@ -168,6 +168,23 @@ int TextEdit::Text::get_line_wrap_amount(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	return text[p_line].line_count - 1;
+}
+
+int TextEdit::Text::get_character_position_from_column(int p_line, int p_column) const {
+	ERR_FAIL_COND_V(p_line >= text.size(), -1);
+
+	const String &line = text[p_line].data;
+	int column_count = 0;
+
+	for (int i = 0; i < line.length(); i++) {
+		column_count += (line[i] == '\t') ? get_tab_size() : 1;
+
+		if (column_count >= p_column) {
+			return i;
+		}
+	}
+
+	return line.length();
 }
 
 Vector<Vector2i> TextEdit::Text::get_line_wrap_ranges(int p_line) const {
@@ -255,10 +272,13 @@ inline bool is_inline_info_valid(const Variant &p_info) {
 		return false;
 	}
 	Dictionary info = p_info;
-	if (!info.get_valid("column").is_num() || !info.get_valid("width_ratio").is_num()) {
-		return false;
-	}
-	return true;
+
+	bool is_valid = info.get_valid("line").is_num() &&
+			info.get_valid("column").is_num() &&
+			info.get_valid("width").is_num() &&
+			info.get_valid("height").is_num();
+
+	return is_valid;
 }
 
 void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
@@ -296,30 +316,39 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	const String &text_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_data : text_line.data;
 	const Array &bidi_override_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
 
-	if (p_text_changed) {
-		int from = 0;
-		if (inline_object_parser.is_valid()) {
-			// Insert inline object.
-			Variant parsed_result = inline_object_parser.call(text_with_ime);
-			if (parsed_result.is_array()) {
-				Array object_infos = parsed_result;
-				for (Variant val : object_infos) {
-					if (!is_inline_info_valid(val)) {
-						continue;
-					}
-					Dictionary info = val;
-					int start = info["column"];
-					float width_ratio = info["width_ratio"];
-					String left_string = text_with_ime.substr(from, start - from);
-					text_line.data_buf->add_string(left_string, font, font_size, language);
-					text_line.data_buf->add_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_CENTER, 0);
-					from = start;
+	int from = 0;
+	// Update inline objects.
+	if (inline_object_provider.is_valid()) {
+		Variant inline_objects = inline_object_provider.call(text_with_ime, p_line);
+
+		if (inline_objects.is_array()) {
+			Array object_infos = inline_objects;
+			if (object_infos.size() > 0) {
+				text_line.data_buf->clear();
+				p_text_changed = true;
+			}
+
+			for (Variant val : object_infos) {
+				if (!is_inline_info_valid(val)) {
+					continue;
 				}
+				Dictionary info = val;
+				int start = get_character_position_from_column(p_line, info["column"]);
+				float inline_width = info["width"];
+				float inline_height = info["height"];
+				String left_string = text_with_ime.substr(from, start - from);
+				text_line.data_buf->add_string(left_string, font, font_size, language);
+				text_line.data_buf->add_object(info, Vector2(inline_width, inline_height), INLINE_ALIGNMENT_CENTER, 0);
+				from = start;
 			}
 		}
+	}
+
+	if (p_text_changed) {
 		String remaining_string = text_with_ime.substr(from);
 		text_line.data_buf->add_string(remaining_string, font, font_size, language);
 	}
+
 	if (!bidi_override_with_ime.is_empty()) {
 		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
 	}
@@ -330,18 +359,6 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		int spans = TS->shaped_get_span_count(r);
 		for (int i = 0; i < spans; i++) {
 			TS->shaped_set_span_update_font(r, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-
-		// Update inline object sizes.
-		for (int i = 0; i < text_line.data_buf->get_line_count(); i++) {
-			for (Variant key : text_line.data_buf->get_line_objects(i)) {
-				if (!is_inline_info_valid(key)) {
-					continue;
-				}
-				Dictionary info = key;
-				float width_ratio = info["width_ratio"];
-				text_line.data_buf->resize_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_CENTER, 0);
-			}
 		}
 	}
 
@@ -2406,7 +2423,6 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 							continue;
 						}
 						Dictionary info = inline_key.duplicate();
-						info["line"] = line;
 						Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
 						obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 
@@ -3623,6 +3639,11 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 			if (!is_inline_info_valid(k)) {
 				continue;
 			}
+			Dictionary info = k;
+			if (!info.get("is_clickable", false)) {
+				continue;
+			}
+
 			Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, k);
 			obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 			if (p_pos.x > obj_rect.position.x && p_pos.x < obj_rect.get_end().x) {
@@ -4462,10 +4483,22 @@ Point2i TextEdit::get_next_visible_line_index_offset_from(int p_line_from, int p
 	return Point2i(num_total, wrap_index);
 }
 
-void TextEdit::set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler) {
+int TextEdit::get_character_position_from_column(int p_line, int p_column) const {
+	return text.get_character_position_from_column(p_line, p_column);
+}
+
+void TextEdit::set_inline_object_handlers(const Callable &p_provider, const Callable &p_drawer, const Callable &p_click_handler) {
 	inline_object_drawer = p_drawer;
 	inline_object_click_handler = p_click_handler;
-	text.set_inline_object_parser(p_parser);
+	text.set_inline_object_provider(p_provider);
+}
+
+void TextEdit::invalidate_line_cache(int p_line, bool p_text_changed) {
+	text.invalidate_cache(p_line, false);
+}
+
+void TextEdit::invalidate_all_line_caches() {
+	text.invalidate_all_lines();
 }
 
 // Overridable actions

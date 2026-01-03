@@ -487,6 +487,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "CodeEdit", focus);
 	theme->set_stylebox("read_only", "CodeEdit", style_line_edit_read_only);
 	theme->set_stylebox("completion", "CodeEdit", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox("inline_parameter_hint", "CodeEdit", make_flat_stylebox(Color(1.0, 1.0, 1.0, 0.05), -1, -1, -1, -1, 3));
 
 	theme->set_icon("tab", "CodeEdit", icons["text_edit_tab"]);
 	theme->set_icon("space", "CodeEdit", icons["text_edit_space"]);
@@ -535,6 +536,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("completion_lines", "CodeEdit", 7);
 	theme->set_constant("completion_max_width", "CodeEdit", 50);
 	theme->set_constant("completion_scroll_width", "CodeEdit", 6);
+	theme->set_constant("inline_hint_font_scale_percentage", "CodeEdit", 70);
 	theme->set_constant("line_spacing", "CodeEdit", Math::round(4 * scale));
 	theme->set_constant("outline_size", "CodeEdit", 0);
 
