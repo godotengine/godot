@@ -560,6 +560,8 @@ namespace Godot.NativeInterop
         internal static partial void godotsharp_convert(scoped in godot_variant p_what, int p_type,
             out godot_variant r_ret);
 
+        internal static partial ulong godotsharp_rid_allocate_id();
+
         internal static partial int godotsharp_hash(in godot_variant p_var);
 
         internal static partial IntPtr godotsharp_instance_from_id(ulong p_instance_id);
