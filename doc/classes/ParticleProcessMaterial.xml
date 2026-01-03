@@ -282,6 +282,12 @@
 			Minimum equivalent of [member orbit_velocity_max].
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
 		</member>
+		<member name="rotation_3d_max" type="Vector3" setter="set_rotation_3d_max" getter="get_rotation_3d_max">
+			The maximum 3D orientation, in degrees. Works only in 3D and if [member use_rotation_3d] is enabled.
+		</member>
+		<member name="rotation_3d_min" type="Vector3" setter="set_rotation_3d_min" getter="get_rotation_3d_min">
+			The minimum 3D orientation, in degrees. Works only in 3D and if [member use_rotation_3d] is enabled.
+		</member>
 		<member name="particle_flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			Align Y axis of particle with the direction of its velocity.
 		</member>
@@ -314,6 +320,12 @@
 		<member name="radial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
+		</member>
+		<member name="scale_3d_max" type="Vector3" setter="set_scale_3d_max" getter="get_scale_3d_max">
+			The maximum 2D or 3D scale value.
+		</member>
+		<member name="scale_3d_min" type="Vector3" setter="set_scale_3d_min" getter="get_scale_3d_min">
+			The minimum 2D or 3D scale value.
 		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's scale will vary along this [CurveTexture] over its lifetime. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
@@ -406,6 +418,12 @@
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
 			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
+		</member>
+		<member name="use_rotation_3d" type="bool" setter="set_use_rotation_3d" getter="is_using_rotation_3d" default="false">
+			Enable the usage of [member rotation_3d_max] and [member rotation_3d_min]
+		</member>
+		<member name="use_scale_3d" type="bool" setter="set_use_scale_3d" getter="is_using_scale_3d" default="false">
+			Enable the usage of [member scale_3d_min] and [member scale_3d_max]
 		</member>
 		<member name="velocity_limit_curve" type="Texture2D" setter="set_velocity_limit_curve" getter="get_velocity_limit_curve">
 			A [CurveTexture] that defines the maximum velocity of a particle during its lifetime.
