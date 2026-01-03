@@ -6999,15 +6999,14 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	ERR_FAIL_COND_V(!main_queue, FAILED);
 
 	transfer_queue_family = driver->command_queue_family_get(RDD::COMMAND_QUEUE_FAMILY_TRANSFER_BIT);
-	if (transfer_queue_family) {
-		// Create the transfer queue.
-		transfer_queue = driver->command_queue_create(transfer_queue_family);
-		ERR_FAIL_COND_V(!transfer_queue, FAILED);
-	} else {
-		// Use main queue as the transfer queue.
-		transfer_queue = main_queue;
+	if (!transfer_queue_family) {
+		// Use main queue family if transfer queue family is not supported.
 		transfer_queue_family = main_queue_family;
 	}
+
+	// Create the transfer queue.
+	transfer_queue = driver->command_queue_create(transfer_queue_family);
+	ERR_FAIL_COND_V(!transfer_queue, FAILED);
 
 	if (present_queue_family) {
 		// Create the present queue.
