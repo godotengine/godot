@@ -645,8 +645,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Decal);
 	GDREGISTER_CLASS(VoxelGI);
 	GDREGISTER_CLASS(VoxelGIData);
+	GDREGISTER_CLASS(PlaceholderVoxelGIData);
 	GDREGISTER_CLASS(LightmapGI);
 	GDREGISTER_CLASS(LightmapGIData);
+	GDREGISTER_CLASS(PlaceholderLightmapGIData);
 	GDREGISTER_CLASS(LightmapProbe);
 	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
 	GDREGISTER_CLASS(GPUParticles3D);

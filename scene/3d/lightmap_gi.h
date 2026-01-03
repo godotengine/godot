@@ -37,6 +37,7 @@
 
 class Sky;
 class CameraAttributes;
+class PlaceholderLightmapGIData;
 
 class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);
@@ -138,9 +139,22 @@ public:
 	void clear_shadowmask_textures();
 	bool has_shadowmask_textures();
 
+	Ref<Resource> create_placeholder() const;
+
 	virtual RID get_rid() const override;
 	LightmapGIData();
 	~LightmapGIData();
+};
+
+class PlaceholderLightmapGIData : public LightmapGIData {
+	GDCLASS(PlaceholderLightmapGIData, LightmapGIData);
+
+	RID lightmap;
+
+public:
+	virtual RID get_rid() const override;
+	PlaceholderLightmapGIData();
+	~PlaceholderLightmapGIData();
 };
 
 class LightmapGI : public VisualInstance3D {

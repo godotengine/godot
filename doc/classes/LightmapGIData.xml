@@ -25,6 +25,12 @@
 				Clear all objects that are considered baked within this [LightmapGIData].
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderLightmapGIData]).
+			</description>
+		</method>
 		<method name="get_user_count" qualifiers="const">
 			<return type="int" />
 			<description>

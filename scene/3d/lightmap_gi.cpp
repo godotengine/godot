@@ -323,6 +323,12 @@ Array LightmapGIData::_get_light_textures_data() const {
 }
 #endif
 
+Ref<Resource> LightmapGIData::create_placeholder() const {
+	Ref<PlaceholderLightmapGIData> data;
+	data.instantiate();
+	return data;
+}
+
 void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &LightmapGIData::_set_user_data);
 	ClassDB::bind_method(D_METHOD("_get_user_data"), &LightmapGIData::_get_user_data);
@@ -346,6 +352,8 @@ void LightmapGIData::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &LightmapGIData::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
@@ -375,6 +383,21 @@ LightmapGIData::LightmapGIData() {
 }
 
 LightmapGIData::~LightmapGIData() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	RS::get_singleton()->free_rid(lightmap);
+}
+
+///////////////////////////
+
+RID PlaceholderLightmapGIData::get_rid() const {
+	return lightmap;
+}
+
+PlaceholderLightmapGIData::PlaceholderLightmapGIData() {
+	lightmap = RS::get_singleton()->lightmap_create();
+}
+
+PlaceholderLightmapGIData::~PlaceholderLightmapGIData() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(lightmap);
 }
