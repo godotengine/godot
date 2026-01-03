@@ -1885,8 +1885,29 @@ def format_text_block(
         escape_pre = False
         escape_post = False
 
+        # Tag is a reference to a typed array or dictionary.
+        if tag_text.startswith("Array[") or tag_text.startswith("Dictionary["):
+            if endq_pos + 1 < len(text) and text[endq_pos + 1] == "]":
+                endq_pos += 1
+                post_text = post_text[1:]
+                tag_text += "]"
+
+                if tag_text.startswith("Array["):
+                    tag_text = tag_text[len("Array[") : -len("]")] + "[]"
+
+                tag_text = make_type(tag_text, state)
+
+                escape_pre = True
+                escape_post = True
+            else:
+                print_error(
+                    f"{state.current_class}.xml: Invalid typed array/dictionary reference.",
+                    state,
+                )
+                return ""
+
         # Tag is a reference to a class.
-        if tag_text in state.classes and not inside_code:
+        elif tag_text in state.classes and not inside_code:
             if tag_text == state.current_class:
                 # Don't create a link to the same class, format it as strong emphasis.
                 tag_text = f"**{tag_text}**"

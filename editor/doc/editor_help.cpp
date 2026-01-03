@@ -351,9 +351,9 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				}
 			}
 
-			if (link.contains_char('.')) {
-				const int class_end = link.rfind_char('.');
-				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
+			const int dot_pos = link.rfind_char('.');
+			if (dot_pos >= 0) {
+				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(dot_pos) + ":" + link.substr(dot_pos + 1));
 			}
 		}
 	} else if (p_select.begins_with("http:") || p_select.begins_with("https:")) {
@@ -463,6 +463,50 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 		}
 	}
 	p_rt->pop(); // color
+}
+
+static void _add_container_type_to_rt(const String &p_type, const Color &p_type_color, RichTextLabel *p_rt, const String &p_class) {
+	String type_link;
+	if (!p_class.is_empty()) {
+		const String globalized_type = p_class + "." + p_type;
+		if (EditorHelp::has_doc(globalized_type)) {
+			type_link = "#" + globalized_type;
+		} else {
+			const int dot_pos = globalized_type.rfind(".");
+			if (dot_pos >= 0) {
+				const DocData::ClassDoc *cd = EditorHelp::get_doc(globalized_type.left(dot_pos));
+				if (cd && cd->enums.has(globalized_type.substr(dot_pos + 1))) {
+					type_link = "$" + globalized_type;
+				}
+			}
+		}
+	}
+	if (type_link.is_empty()) {
+		if (EditorHelp::has_doc(p_type)) {
+			type_link = "#" + p_type;
+		} else {
+			const int dot_pos = p_type.rfind(".");
+			if (dot_pos >= 0) {
+				const DocData::ClassDoc *cd = EditorHelp::get_doc(p_type.left(dot_pos));
+				if (cd && cd->enums.has(p_type.substr(dot_pos + 1))) {
+					type_link = "$" + p_type;
+				}
+			}
+		}
+	}
+	if (type_link.is_empty() && CoreConstants::is_global_enum(p_type)) {
+		type_link = "@enum " + p_type;
+	}
+
+	if (type_link.is_empty()) {
+		p_rt->push_color(Color(p_type_color, 0.5));
+		p_rt->add_text(p_type);
+		p_rt->pop(); // color
+	} else {
+		p_rt->push_meta(type_link, RichTextLabel::META_UNDERLINE_ON_HOVER);
+		p_rt->add_text(p_type);
+		p_rt->pop(); // meta
+	}
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is_bitfield) {
@@ -2674,9 +2718,23 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->pop(); // font
 
 			pos = brk_end + 1;
+		} else if (!p_class.is_empty() && EditorHelp::has_doc(p_class + "." + tag)) {
+			// Use a monospace font for class reference tags such as [InnerClass].
+			p_rt->push_font(doc_code_font);
+			p_rt->push_font_size(doc_code_font_size);
+			p_rt->push_color(type_color);
+			p_rt->push_meta("#" + p_class + "." + tag, RichTextLabel::META_UNDERLINE_ON_HOVER);
+
+			p_rt->add_text(tag);
+
+			p_rt->pop(); // meta
+			p_rt->pop(); // color
+			p_rt->pop(); // font_size
+			p_rt->pop(); // font
+
+			pos = brk_end + 1;
 		} else if (EditorHelp::has_doc(tag)) {
 			// Use a monospace font for class reference tags such as [Node2D] or [SceneTree].
-
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
 			p_rt->push_color(type_color);
@@ -2690,6 +2748,79 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->pop(); // font
 
 			pos = brk_end + 1;
+		} else if (tag.begins_with("Array[")) {
+			// Expected:
+			//   [Array[String]]
+			//   ^ brk_pos    ^ brk_end
+			// Nested types (like `Array[Array[int]]`) are not currently supported.
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				String elem_type = tag.substr(6); // len("Array[") == 6
+				if (elem_type.is_empty()) {
+					elem_type = "Variant";
+				}
+
+				p_rt->push_font(doc_code_font);
+				p_rt->push_font_size(doc_code_font_size);
+				p_rt->push_color(type_color);
+
+				p_rt->push_meta("#Array", RichTextLabel::META_UNDERLINE_ON_HOVER);
+				p_rt->add_text("Array");
+				p_rt->pop(); // meta
+
+				p_rt->add_text("[");
+				_add_container_type_to_rt(elem_type, type_color, p_rt, p_class);
+				p_rt->add_text("]");
+
+				p_rt->pop(); // color
+				p_rt->pop(); // font_size
+				p_rt->pop(); // font
+
+				pos = brk_end + 2;
+			} else {
+				p_rt->add_text("["); // Ignore.
+				pos = brk_pos + 1;
+			}
+		} else if (tag.begins_with("Dictionary[")) {
+			// Expected:
+			//   [Dictionary[int, int]]
+			//   ^ brk_pos           ^ brk_end
+			// Nested types (like `Dictionary[int, Array[int]]`) are not currently supported.
+			if (brk_end + 1 < bbcode.length() && bbcode[brk_end + 1] == ']') {
+				const Vector<String> types = tag.substr(11).split(",", true, 1); // len("Dictionary[") == 11
+
+				String key_type = types[0].strip_edges(); // Safe since `types` cannot be empty.
+				if (key_type.is_empty()) {
+					key_type = "Variant";
+				}
+
+				String value_type = (types.size() > 1) ? types[1].strip_edges() : String();
+				if (value_type.is_empty()) {
+					value_type = "Variant";
+				}
+
+				p_rt->push_font(doc_code_font);
+				p_rt->push_font_size(doc_code_font_size);
+				p_rt->push_color(type_color);
+
+				p_rt->push_meta("#Dictionary", RichTextLabel::META_UNDERLINE_ON_HOVER);
+				p_rt->add_text("Dictionary");
+				p_rt->pop(); // meta
+
+				p_rt->add_text("[");
+				_add_container_type_to_rt(key_type, type_color, p_rt, p_class);
+				p_rt->add_text(", ");
+				_add_container_type_to_rt(value_type, type_color, p_rt, p_class);
+				p_rt->add_text("]");
+
+				p_rt->pop(); // color
+				p_rt->pop(); // font_size
+				p_rt->pop(); // font
+
+				pos = brk_end + 2;
+			} else {
+				p_rt->add_text("["); // Ignore.
+				pos = brk_pos + 1;
+			}
 		} else if (tag == "b") {
 			// Use bold font.
 			p_rt->push_font(doc_bold_font);
