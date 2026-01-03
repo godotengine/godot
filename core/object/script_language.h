@@ -179,6 +179,9 @@ public:
 	virtual bool is_tool() const = 0;
 	virtual bool is_valid() const = 0;
 	virtual bool is_abstract() const = 0;
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	virtual bool has_default_constructor() const = 0;
+#endif
 
 	virtual ScriptLanguage *get_language() const = 0;
 

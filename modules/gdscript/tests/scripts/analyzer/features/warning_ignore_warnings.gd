@@ -151,6 +151,34 @@ func test_unsafe_void_return() -> void:
 func get_class():
 	pass
 
+class ReqNode extends Node:
+	@warning_ignore("node_constructor_required_param")
+	func _init(_a:int):
+		pass
+
+@abstract
+class AbstractReqNode extends Node:
+	func _init(_a:int):
+		pass
+
+@warning_ignore("node_constructor_required_param")
+class AbstractReqNodeChild extends AbstractReqNode:
+	pass
+
+class ReqResource extends Resource:
+	@warning_ignore("resource_constructor_required_param")
+	func _init(_a:int):
+		pass
+
+@abstract
+class AbstractReqResource extends Resource:
+	func _init(_a:int):
+		pass
+
+@warning_ignore("resource_constructor_required_param")
+class AbstractReqResourceChild extends AbstractReqResource:
+	pass
+
 # We don't want to execute it because of errors, just analyze.
 func test():
 	pass

@@ -63,6 +63,9 @@ class GDScript : public Script {
 	bool valid = false;
 	bool reloading = false;
 	bool _is_abstract = false;
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	bool _has_default_constructor;
+#endif
 
 	struct MemberInfo {
 		int index = 0;
@@ -279,6 +282,9 @@ public:
 
 	bool is_tool() const override { return tool; }
 	bool is_abstract() const override { return _is_abstract; }
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	bool has_default_constructor() const override { return _has_default_constructor; }
+#endif
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
@@ -482,6 +488,7 @@ class GDScriptLanguage : public ScriptLanguage {
 public:
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
+	bool debug_default_constructor(const String &p_error, GDScriptFunction *p_initializer);
 
 	_FORCE_INLINE_ void enter_function(CallLevel *call_level, GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
 		if (!track_call_stack) {
