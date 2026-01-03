@@ -56,36 +56,6 @@ void basis_universal_init() {
 }
 
 #ifdef TOOLS_ENABLED
-template <typename T>
-inline void _basisu_pad_mipmap(const uint8_t *p_image_mip_data, Vector<uint8_t> &r_mip_data_padded, int p_next_width, int p_next_height, int p_width, int p_height, int64_t p_size) {
-	// Source mip's data interpreted as 32-bit RGBA blocks to help with copying pixel data.
-	const T *mip_src_data = reinterpret_cast<const T *>(p_image_mip_data);
-
-	// Reserve space in the padded buffer.
-	r_mip_data_padded.resize(p_next_width * p_next_height * sizeof(T));
-	T *data_padded_ptr = reinterpret_cast<T *>(r_mip_data_padded.ptrw());
-
-	// Pad mipmap to the nearest block by smearing.
-	int x = 0, y = 0;
-	for (y = 0; y < p_height; y++) {
-		for (x = 0; x < p_width; x++) {
-			data_padded_ptr[p_next_width * y + x] = mip_src_data[p_width * y + x];
-		}
-
-		// First, smear in x.
-		for (; x < p_next_width; x++) {
-			data_padded_ptr[p_next_width * y + x] = data_padded_ptr[p_next_width * y + x - 1];
-		}
-	}
-
-	// Then, smear in y.
-	for (; y < p_next_height; y++) {
-		for (x = 0; x < p_next_width; x++) {
-			data_padded_ptr[p_next_width * y + x] = data_padded_ptr[p_next_width * y + x - p_next_width];
-		}
-	}
-}
-
 Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels, const Image::BasisUniversalPackerParams &p_basisu_params) {
 	init_mutex.lock();
 	if (!initialized) {
@@ -175,53 +145,28 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 
 	// Copy the source image data with mipmaps into BasisU.
 	{
-		const int orig_width = image->get_width();
-		const int orig_height = image->get_height();
+		int next_width = (image->get_width() + 3) & ~0x03;
+		int next_height = (image->get_height() + 3) & ~0x03;
 
-		bool is_res_div_4 = (orig_width % 4 == 0) && (orig_height % 4 == 0);
-
-		// Image's resolution rounded up to the nearest values divisible by 4.
-		int next_width = orig_width <= 2 ? orig_width : (orig_width + 3) & ~3;
-		int next_height = orig_height <= 2 ? orig_height : (orig_height + 3) & ~3;
+		if (image->get_width() != next_width || image->get_height() != next_height) {
+			// Align the image to 4x4 texels.
+			image->resize(next_width, next_height, Image::INTERPOLATE_NEAREST);
+		}
 
 		Vector<uint8_t> image_data = image->get_data();
 		basisu::vector<basisu::image> basisu_mipmaps;
 		basisu::vector<basisu::imagef> basisu_mipmaps_hdr;
 
-		// Buffer for storing padded mipmap data.
-		Vector<uint8_t> mip_data_padded;
-
 		for (int32_t i = 0; i <= image->get_mipmap_count(); i++) {
 			int64_t ofs, size;
-			int width, height;
-			image->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
+			int mip_width, mip_height;
+			image->get_mipmap_offset_size_and_dimensions(i, ofs, size, mip_width, mip_height);
 
 			const uint8_t *image_mip_data = image_data.ptr() + ofs;
 
-			// Pad the mipmap's data if its resolution isn't divisible by 4.
-			if (image->has_mipmaps() && !is_res_div_4 && (width > 2 && height > 2) && (width != next_width || height != next_height)) {
-				if (is_hdr) {
-					_basisu_pad_mipmap<BasisRGBAF>(image_mip_data, mip_data_padded, next_width, next_height, width, height, size);
-				} else {
-					_basisu_pad_mipmap<uint32_t>(image_mip_data, mip_data_padded, next_width, next_height, width, height, size);
-				}
-
-				// Override the image_mip_data pointer with our temporary Vector.
-				image_mip_data = reinterpret_cast<const uint8_t *>(mip_data_padded.ptr());
-
-				// Override the mipmap's properties.
-				width = next_width;
-				height = next_height;
-				size = mip_data_padded.size();
-			}
-
-			// Get the next mipmap's resolution.
-			next_width /= 2;
-			next_height /= 2;
-
 			// Copy the source mipmap's data to a BasisU image.
 			if (is_hdr) {
-				basisu::imagef basisu_image(width, height);
+				basisu::imagef basisu_image(mip_width, mip_height);
 				memcpy(reinterpret_cast<uint8_t *>(basisu_image.get_ptr()), image_mip_data, size);
 
 				if (i == 0) {
@@ -231,7 +176,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 				}
 
 			} else {
-				basisu::image basisu_image(width, height);
+				basisu::image basisu_image(mip_width, mip_height);
 				memcpy(basisu_image.get_ptr(), image_mip_data, size);
 
 				if (i == 0) {

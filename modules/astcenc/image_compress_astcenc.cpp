@@ -79,16 +79,15 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 
 	// Compress image data and (if required) mipmaps.
 	const bool has_mipmaps = r_img->has_mipmaps();
+
 	int width = r_img->get_width();
 	int height = r_img->get_height();
-	int required_width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
-	int required_height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
+	width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
+	height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
 
-	if (width != required_width || height != required_height) {
-		// Resize texture to fit block size.
-		r_img->resize(required_width, required_height);
-		width = required_width;
-		height = required_height;
+	if (r_img->get_width() != width || r_img->get_height() != height) {
+		// Align the image to 4x4 texels.
+		r_img->resize(width, height, Image::INTERPOLATE_NEAREST);
 	}
 
 	print_verbose(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
