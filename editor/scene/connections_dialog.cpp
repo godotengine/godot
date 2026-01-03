@@ -1529,7 +1529,6 @@ void ConnectionsDock::update_tree() {
 	}
 
 	TreeItem *root = tree->create_item();
-	DocTools *doc_data = EditorHelp::get_doc_data();
 	EditorData &editor_data = EditorNode::get_editor_data();
 	StringName native_base = selected_object->get_class();
 	Ref<Script> script_base = selected_object->get_script();
@@ -1546,12 +1545,12 @@ void ConnectionsDock::update_tree() {
 				class_name = script_base->get_path().get_file();
 			}
 
-			doc_class_name = script_base->get_global_name();
+			doc_class_name = script_base->get_doc_class_name();
 			if (doc_class_name.is_empty()) {
-				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
-			}
-			if (!doc_class_name.is_empty() && !doc_data->class_list.find(doc_class_name)) {
-				doc_class_name = String();
+				doc_class_name = script_base->get_global_name();
+				if (doc_class_name.is_empty()) {
+					doc_class_name = script_base->get_path().trim_prefix("res://").quote();
+				}
 			}
 
 			class_icon = editor_data.get_script_icon(script_base->get_path());
@@ -1583,10 +1582,6 @@ void ConnectionsDock::update_tree() {
 		} else {
 			class_name = native_base;
 			doc_class_name = native_base;
-
-			if (!doc_data->class_list.find(doc_class_name)) {
-				doc_class_name = String();
-			}
 
 			if (has_theme_icon(native_base, EditorStringName(EditorIcons))) {
 				class_icon = get_editor_theme_icon(native_base);

@@ -1048,6 +1048,10 @@ Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p
 bool CSharpLanguage::overrides_external_editor() {
 	return get_godotsharp_editor()->call("OverridesExternalEditor");
 }
+
+bool CSharpLanguage::supports_documentation() const {
+	return true;
+}
 #endif
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
@@ -2125,9 +2129,15 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 	GDMonoCache::godotsharp_property_info *props = (GDMonoCache::godotsharp_property_info *)p_props;
 
 #ifdef TOOLS_ENABLED
-	p_script->exported_members_cache.push_back(PropertyInfo(
-			Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
-			p_script->get_path(), PROPERTY_USAGE_CATEGORY));
+	if (p_script->get_path().is_empty()) {
+		p_script->exported_members_cache.push_back(PropertyInfo(
+				Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
+				String("res://") + String(p_script->doc_class_name).lstrip("\"").rstrip("\""), PROPERTY_USAGE_CATEGORY));
+	} else {
+		p_script->exported_members_cache.push_back(PropertyInfo(
+				Variant::NIL, p_script->type_info.class_name, PROPERTY_HINT_NONE,
+				p_script->get_path(), PROPERTY_USAGE_CATEGORY));
+	}
 #endif
 
 	for (int i = 0; i < p_count; i++) {
@@ -2164,6 +2174,38 @@ void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpSc
 
 		p_script->exported_members_defval_cache[name] = value;
 	}
+}
+
+void CSharpScript::get_docs(Ref<CSharpScript> p_script) {
+	Dictionary class_doc_dict;
+	class_doc_dict.~Dictionary();
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetDocs(p_script.ptr(), &class_doc_dict);
+
+	p_script->docs.clear();
+
+	if (class_doc_dict.is_empty()) {
+		// Script has no docs.
+		return;
+	}
+
+	String inherits;
+	Ref<CSharpScript> base = p_script->get_base_script();
+	if (base.is_null()) {
+		// Must be a native base type.
+		inherits = p_script->get_instance_base_type();
+	} else {
+		inherits = base->get_global_name();
+		if (inherits == StringName()) {
+			inherits = base->get_path().trim_prefix("res://").quote();
+		}
+	}
+
+	DocData::ClassDoc class_doc = DocData::ClassDoc().from_dict(class_doc_dict);
+	class_doc.inherits = inherits;
+
+	p_script->doc_class_name = class_doc.name;
+	p_script->docs.append(class_doc);
 }
 #endif
 
@@ -2384,6 +2426,10 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	}
 
 	p_script->base_script = base_script;
+
+#ifdef TOOLS_ENABLED
+	get_docs(p_script);
+#endif
 }
 
 bool CSharpScript::can_instantiate() const {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,6 +47,39 @@ namespace Godot.SourceGenerators
             }
 
             return false;
+        }
+
+        public static void GetDocumentationSummaryText(this ISymbol symbol, out string? briefSummary, out string? fullSummary)
+        {
+            // TODO: Can't use GetDocumentationCommentXml in source generators: https://github.com/dotnet/roslyn/issues/23673
+            var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+            while (syntax is VariableDeclaratorSyntax vds)
+            {
+                syntax = vds.Parent?.Parent;
+            }
+            var trivia = syntax?.GetLeadingTrivia();
+
+            briefSummary = null;
+            fullSummary = null;
+
+            if (trivia == null)
+            {
+                return;
+            }
+
+            try
+            {
+                BBCodeRenderer.RenderXmlDocumentationToBBCode(
+                    trivia.ToString(),
+                    out briefSummary,
+                    out fullSummary
+                );
+            }
+            catch (Exception)
+            {
+                // Ignore any errors in XML doc comments
+                return;
+            }
         }
 
         public static INamedTypeSymbol? GetGodotScriptNativeClass(this INamedTypeSymbol classTypeSymbol)
