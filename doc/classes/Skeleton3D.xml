@@ -215,7 +215,7 @@
 				Returns all bones in the skeleton to their rest poses.
 			</description>
 		</method>
-		<method name="physical_bones_add_collision_exception" deprecated="">
+		<method name="physical_bones_add_collision_exception" deprecated="Use [member PhysicalBoneSimulator3D.physical_bones_add_collision_exception] instead.">
 			<return type="void" />
 			<param index="0" name="exception" type="RID" />
 			<description>
@@ -223,7 +223,7 @@
 				Works just like the [RigidBody3D] node.
 			</description>
 		</method>
-		<method name="physical_bones_remove_collision_exception" deprecated="">
+		<method name="physical_bones_remove_collision_exception" deprecated="Use [member PhysicalBoneSimulator3D.physical_bones_remove_collision_exception] instead.">
 			<return type="void" />
 			<param index="0" name="exception" type="RID" />
 			<description>
@@ -231,7 +231,7 @@
 				Works just like the [RigidBody3D] node.
 			</description>
 		</method>
-		<method name="physical_bones_start_simulation" deprecated="">
+		<method name="physical_bones_start_simulation" deprecated="Use [member PhysicalBoneSimulator3D.physical_bones_start_simulation] instead.">
 			<return type="void" />
 			<param index="0" name="bones" type="StringName[]" default="[]" />
 			<description>
@@ -239,7 +239,7 @@
 				Optionally, a list of bone names can be passed-in, allowing only the passed-in bones to be simulated.
 			</description>
 		</method>
-		<method name="physical_bones_stop_simulation" deprecated="">
+		<method name="physical_bones_stop_simulation" deprecated="Use [member PhysicalBoneSimulator3D.physical_bones_stop_simulation] instead.">
 			<return type="void" />
 			<description>
 				Tells the [PhysicalBone3D] nodes in the Skeleton to stop simulating.
