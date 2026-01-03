@@ -49,6 +49,9 @@ class EventListenerLineEdit : public LineEdit {
 	bool ignore_next_event = true;
 	Ref<InputEvent> event;
 
+	// Accessible mode: explicit listening triggered by ui_accept instead of always-listening.
+	bool accessible_listening = false;
+
 	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
 
 	void gui_input(const Ref<InputEvent> &p_event) override;
