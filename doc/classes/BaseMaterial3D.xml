@@ -665,6 +665,12 @@
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
 		</constant>
+		<constant name="BLEND_MODE_MINIMUM" value="5" enum="BlendMode">
+			Minimum blend mode (keeps the darkest pixel between the foreground's and background's color).
+		</constant>
+		<constant name="BLEND_MODE_MAXIMUM" value="6" enum="BlendMode">
+			Maximum blend mode (keeps the brightest pixel between the foreground's and background's color).
+		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
 			Disables Alpha AntiAliasing for the material.
 		</constant>

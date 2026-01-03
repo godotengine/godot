@@ -516,7 +516,7 @@
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
 		</member>
-		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="2.9802322e-08">
 			The OKHSL hue of this color, on the range 0 to 1.
 		</member>
 		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
