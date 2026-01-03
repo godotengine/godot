@@ -2611,7 +2611,7 @@ void ThemeTypeEditor::_update_type_items() {
 			if (E.value) {
 				item_editor->set_pick_color(edited_theme->get_color(E.key, edited_type));
 				item_editor->connect("color_changed", callable_mp(this, &ThemeTypeEditor::_color_item_changed).bind(E.key));
-				item_editor->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(item_editor->get_picker()));
+				EditorNode::get_singleton()->setup_color_picker(item_editor);
 			} else {
 				item_editor->set_pick_color(ThemeDB::get_singleton()->get_default_theme()->get_color(E.key, edited_type));
 				item_editor->set_disabled(true);

@@ -4645,6 +4645,10 @@ void EditorNode::setup_color_picker(ColorPicker *p_picker) {
 	palette_file_selected_callback = callable_mp(p_picker, &ColorPicker::_quick_open_palette_file_selected);
 }
 
+void EditorNode::setup_color_picker(ColorPickerButton *p_button) {
+	picker->connect(SNAME("picker_created"), callable_mp(this, &EditorNode::_color_picker_popup_created), CONNECT_ONE_SHOT);
+}
+
 bool EditorNode::is_scene_open(const String &p_path) {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == p_path) {
@@ -6345,6 +6349,11 @@ void EditorNode::run_editor_script(const Ref<Script> &p_script) {
 void EditorNode::_immediate_dialog_confirmed() {
 	immediate_dialog_confirmed = true;
 }
+
+void EditorNode::_color_picker_popup_created(ColorPickerButton *p_button) {
+	p_button->get_popup()->connect("about_to_popup", callable_mp(this, &EditorNode::setup_color_picker).bind(p_button->get_picker()));
+}
+
 bool EditorNode::immediate_confirmation_dialog(const String &p_text, const String &p_ok_text, const String &p_cancel_text, uint32_t p_wrap_width) {
 	ConfirmationDialog *cd = memnew(ConfirmationDialog);
 	cd->set_text(p_text);
