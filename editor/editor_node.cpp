@@ -7462,6 +7462,10 @@ bool EditorNode::is_editor_dimmed() const {
 	return dimmed;
 }
 
+void EditorNode::open_export_dialog() {
+	project_export->popup_export();
+}
+
 void EditorNode::open_export_template_manager() {
 	export_template_manager->popup_manager();
 }
@@ -9083,7 +9087,8 @@ EditorNode::EditorNode() {
 	TextEditor::register_editor();
 
 	if (AssetLibraryEditorPlugin::is_available()) {
-		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
+		asset_library_plugin = memnew(AssetLibraryEditorPlugin);
+		add_editor_plugin(asset_library_plugin);
 	} else {
 		print_verbose("Asset Library not available (due to using Web editor, or SSL support disabled).");
 	}
