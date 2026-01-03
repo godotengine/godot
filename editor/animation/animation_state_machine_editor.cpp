@@ -497,11 +497,8 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 		box_selecting_from = box_selecting_to = state_machine_draw->get_local_mouse_position();
 		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
-		if (mb->is_command_or_control_pressed() || mb->is_shift_pressed()) {
+		if (mb->is_shift_pressed() || mb->is_command_or_control_pressed()) {
 			previous_selected = selected_nodes;
-		} else {
-			selected_nodes.clear();
-			previous_selected.clear();
 		}
 	}
 
@@ -509,6 +506,10 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && box_selecting) {
 		box_selecting = false;
 		state_machine_draw->queue_redraw();
+		if (!any_inside_selection) { // During box selection, we add/remove to this variable, if nothing occurred, we can assume we can clear.
+			selected_nodes.clear();
+		}
+		any_inside_selection = false;
 		_update_mode();
 	}
 
@@ -525,15 +526,21 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			if (selected_nodes.has(clicked_node) && mb->is_shift_pressed()) {
 				selected_nodes.erase(clicked_node);
 			} else {
-				if (!mb->is_shift_pressed()) {
+				if (!mb->is_command_or_control_pressed()) {
 					selected_nodes.clear();
 				}
 				selected_nodes.insert(clicked_node);
 			}
 			selected_node = clicked_node;
+			box_selecting = false;
 		} else {
 			// Clicked on empty space.
-			selected_nodes.clear();
+			// If the user is starting a shift/ctrl drag, don't clear the past selection.
+			if (!mb->is_shift_pressed() && !mb->is_command_or_control_pressed()) {
+				previous_selected.clear();
+			} else {
+				previous_selected = selected_nodes;
+			}
 			selected_node = StringName();
 		}
 
@@ -639,16 +646,28 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		box_selecting_rect = Rect2(box_selecting_from.min(box_selecting_to), (box_selecting_from - box_selecting_to).abs());
 
+		if (!selected_node.is_empty()) {
+			box_selecting = false;
+		}
+
 		for (int i = 0; i < node_rects.size(); i++) {
 			bool in_box = node_rects[i].node.intersects(box_selecting_rect);
-
+			// If ctrl/cmd is pressed, only add to our current selection
+			// If shift is pressed, only remove from our current selection
+			bool shift_pressed =
+					Input::get_singleton()->is_key_pressed(Key::SHIFT);
+			bool ctrl_or_cmd_pressed =
+					Input::get_singleton()->is_key_pressed(Key::CTRL) ||
+					Input::get_singleton()->is_key_pressed(Key::META);
 			if (in_box) {
-				if (previous_selected.has(node_rects[i].node_name)) {
+				any_inside_selection = true;
+				if (previous_selected.has(node_rects[i].node_name) && !ctrl_or_cmd_pressed) {
 					selected_nodes.erase(node_rects[i].node_name);
-				} else {
+				} else if (!shift_pressed) {
 					selected_nodes.insert(node_rects[i].node_name);
 				}
 			} else {
+				any_inside_selection = true;
 				if (previous_selected.has(node_rects[i].node_name)) {
 					selected_nodes.insert(node_rects[i].node_name);
 				} else {
@@ -672,10 +691,15 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 				if (node_rects[i].node.has_point(mm->get_position())) {
 					new_hovered_node_name = node_rects[i].node_name;
-					if (node_rects[i].play.has_point(mm->get_position())) {
-						new_hovered_node_area = HOVER_NODE_PLAY;
-					} else if (node_rects[i].edit.has_point(mm->get_position())) {
-						new_hovered_node_area = HOVER_NODE_EDIT;
+					bool ctrl_or_cmd_pressed =
+							Input::get_singleton()->is_key_pressed(Key::CTRL) ||
+							Input::get_singleton()->is_key_pressed(Key::META);
+					if (!ctrl_or_cmd_pressed) {
+						if (node_rects[i].play.has_point(mm->get_position())) {
+							new_hovered_node_area = HOVER_NODE_PLAY;
+						} else if (node_rects[i].edit.has_point(mm->get_position())) {
+							new_hovered_node_area = HOVER_NODE_EDIT;
+						}
 					}
 					break;
 				}
@@ -779,11 +803,14 @@ Control::CursorShape AnimationNodeStateMachineEditor::get_cursor_shape(const Poi
 		// Put ibeam (text cursor) over names to make it clearer that they are editable.
 		Transform2D xform = panel->get_transform() * state_machine_draw->get_transform();
 		Point2 pos = xform.xform_inv(p_pos);
+		bool ctrl_or_cmd_pressed =
+				Input::get_singleton()->is_key_pressed(Key::CTRL) ||
+				Input::get_singleton()->is_key_pressed(Key::META);
 
 		for (int i = node_rects.size() - 1; i >= 0; i--) { // Inverse to draw order.
 			if (node_rects[i].node.has_point(pos)) {
 				if (node_rects[i].name.has_point(pos)) {
-					if (state_machine->can_edit_node(node_rects[i].node_name)) {
+					if (state_machine->can_edit_node(node_rects[i].node_name) && !ctrl_or_cmd_pressed) {
 						cursor_shape = Control::CURSOR_IBEAM;
 					}
 				}

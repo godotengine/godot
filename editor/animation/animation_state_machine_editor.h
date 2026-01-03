@@ -150,6 +150,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	Vector2 add_node_pos;
 
 	bool box_selecting = false;
+	bool any_inside_selection = false;
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
