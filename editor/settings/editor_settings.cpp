@@ -786,7 +786,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Appearance: Whitespace
 	_initial_set("text_editor/appearance/whitespace/draw_tabs", true, true);
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false, true);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "-10,50,1")
 
 	// Behavior
 	// Behavior: General
