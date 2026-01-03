@@ -599,6 +599,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	ScriptEditorBase *get_script_editor(Ref<Script> script) const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 

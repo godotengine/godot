@@ -32,6 +32,7 @@
 
 #include "core/templates/hash_map.h"
 #include "editor/docks/editor_dock.h"
+#include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search
@@ -51,6 +52,7 @@ public:
 	void set_excludes(const HashSet<String> &p_exclude_wildcards);
 
 	String get_search_text() const { return _pattern; }
+	static CodeEdit *get_code_edit(const String &fpath);
 
 	bool is_whole_words() const { return _whole_words; }
 	bool is_match_case() const { return _match_case; }
