@@ -188,6 +188,9 @@ struct SceneData {
 
 	mediump vec4 ambient_light_color_energy;
 
+	mediump vec3 reflection_color;
+	bool use_reflection_color;
+
 	mediump float ambient_color_sky_mix;
 	uint directional_shadow_count;
 	float emissive_exposure_normalization;
@@ -1149,6 +1152,9 @@ struct SceneData {
 	vec2 screen_pixel_size;
 
 	mediump vec4 ambient_light_color_energy;
+
+	mediump vec3 reflection_color;
+	bool use_reflection_color;
 
 	mediump float ambient_color_sky_mix;
 	uint directional_shadow_count;
@@ -2222,6 +2228,8 @@ void main() {
 		specular_light = srgb_to_linear(specular_light);
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data_block.data.ambient_light_color_energy.a;
+	} else if (scene_data_block.data.use_reflection_color) {
+		specular_light = scene_data_block.data.reflection_color.rgb;
 	}
 #endif // USE_RADIANCE_MAP
 
