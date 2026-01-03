@@ -220,6 +220,7 @@ private:
 	};
 
 	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text);
+	void remove_result(TreeItem *p_item);
 	void update_replace_buttons();
 	void update_matches_text();
 	String get_replace_text();
