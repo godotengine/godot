@@ -526,9 +526,17 @@ void EditorNode::_update_from_settings() {
 	scene_root->set_use_debanding(use_debanding);
 	get_viewport()->set_use_debanding(use_debanding);
 
-	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d);
+	// Enable HDR if requested
+	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
+	DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+
+	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+
+	if (hdr_requested && !use_hdr_2d) {
+		WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+	}
 
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);

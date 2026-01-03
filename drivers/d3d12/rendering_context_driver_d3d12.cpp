@@ -280,6 +280,52 @@ DisplayServer::VSyncMode RenderingContextDriverD3D12::surface_get_vsync_mode(Sur
 	return surface->vsync_mode;
 }
 
+void RenderingContextDriverD3D12::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverD3D12::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_reference_luminance = p_reference_luminance;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_reference_luminance;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
+void RenderingContextDriverD3D12::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_linear_luminance_scale;
+}
+
+float RenderingContextDriverD3D12::surface_get_hdr_output_max_value(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return MAX(surface->hdr_max_luminance / MAX(surface->hdr_reference_luminance, 1.0f), 1.0f);
+}
+
 uint32_t RenderingContextDriverD3D12::surface_get_width(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->width;

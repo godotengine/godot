@@ -120,6 +120,41 @@
 				Returns layout direction and text writing direction.
 			</description>
 		</method>
+		<method name="get_output_max_linear_value" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. This value is used by tonemapping and glow effects to ensure that bright colors are presented in the range that can be displayed by this window.
+				When using the Linear tonemapper or no tonemapping, use the returned value to scale content to maximize the display's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest purple color that the display can produce:
+				[codeblocks]
+				[gdscript]
+				func _process(_delta: float):
+					# output_max_linear_value may change often, so do this every frame.
+					# max_linear_value is only valid when using no tonemapping or the
+					# Linear tonemapper.
+					var max_linear_value = get_window().get_output_max_linear_value()
+					# Replace this with your color:
+					var original_color = Color.PURPLE
+					# Normalize to max_linear_value to produce the brightest color possible,
+					# regardless of SDR or HDR output:
+					var bright_color = normalize_color(original_color, max_linear_value)
+
+
+				func normalize_color(srgb_color, max_linear_value = 1.0):
+					# Color must be linear-encoded to use math operations.
+					var linear_color = srgb_color.srgb_to_linear()
+					var max_rgb_value = maxf(linear_color.r, maxf(linear_color.g, linear_color.b))
+					var brightness_scale = max_linear_value / max_rgb_value
+					linear_color *= brightness_scale
+					# Undo changes to the alpha channel, which should not be modified.
+					linear_color.a = srgb_color.a
+					# Convert back to nonlinear sRGB encoding, which is required for Color in
+					# Godot unless stated otherwise.
+					return linear_color.linear_to_srgb()
+				[/gdscript]
+				[/codeblocks]
+				[b]Note:[/b] You will need to convert sRGB colors to linear before multiplying by this value to get correct results.
+			</description>
+		</method>
 		<method name="get_position_with_decorations" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -339,6 +374,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is currently embedded in another window.
+			</description>
+		</method>
+		<method name="is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the window supports HDR output. This depends on the platform, display capabilities, system settings, and the display the window is currently on.
 			</description>
 		</method>
 		<method name="is_layout_rtl" qualifiers="const">
@@ -629,6 +670,9 @@
 		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
+		</member>
+		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
+			If [code]true[/code], requests HDR output for the [Window], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between displays, display capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of this [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window].

@@ -436,6 +436,9 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	// This extension allows us to use the properties2 features to query additional device capabilities.
 	_register_requested_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
+	// This extension allows us to use colorspaces other than SRGB.
+	_register_requested_instance_extension(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME, false);
+
 #if defined(USE_VOLK) && (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
 	_register_requested_instance_extension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
 #endif
@@ -991,6 +994,63 @@ DisplayServer::VSyncMode RenderingContextDriverVulkan::surface_get_vsync_mode(Su
 	return surface->vsync_mode;
 }
 
+void RenderingContextDriverVulkan::surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_output = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverVulkan::surface_get_hdr_output_enabled(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_output;
+}
+
+void RenderingContextDriverVulkan::surface_set_hdr_enforce_gamma(SurfaceID p_surface, bool p_enabled) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->enforce_gamma = p_enabled;
+	surface->needs_resize = true;
+}
+
+bool RenderingContextDriverVulkan::surface_get_hdr_enforce_gamma(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->enforce_gamma;
+}
+
+void RenderingContextDriverVulkan::surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_reference_luminance = p_reference_luminance;
+}
+
+float RenderingContextDriverVulkan::surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_reference_luminance;
+}
+
+void RenderingContextDriverVulkan::surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_max_luminance = p_max_luminance;
+}
+
+float RenderingContextDriverVulkan::surface_get_hdr_output_max_luminance(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_max_luminance;
+}
+
+void RenderingContextDriverVulkan::surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) {
+	Surface *surface = (Surface *)(p_surface);
+	surface->hdr_linear_luminance_scale = p_linear_luminance_scale;
+}
+
+float RenderingContextDriverVulkan::surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return surface->hdr_linear_luminance_scale;
+}
+
+float RenderingContextDriverVulkan::surface_get_hdr_output_max_value(SurfaceID p_surface) const {
+	Surface *surface = (Surface *)(p_surface);
+	return MAX(surface->hdr_max_luminance / MAX(surface->hdr_reference_luminance, 1.0f), 1.0f);
+}
+
 uint32_t RenderingContextDriverVulkan::surface_get_width(SurfaceID p_surface) const {
 	Surface *surface = (Surface *)(p_surface);
 	return surface->width;
@@ -1019,6 +1079,10 @@ void RenderingContextDriverVulkan::surface_destroy(SurfaceID p_surface) {
 
 bool RenderingContextDriverVulkan::is_debug_utils_enabled() const {
 	return enabled_instance_extension_names.has(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+}
+
+bool RenderingContextDriverVulkan::is_colorspace_supported() const {
+	return enabled_instance_extension_names.has(VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
 }
 
 VkInstance RenderingContextDriverVulkan::instance_get() const {

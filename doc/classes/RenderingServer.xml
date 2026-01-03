@@ -5512,10 +5512,12 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
 			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant ENV_TONE_MAPPER_REINHARD]. Slightly slower than [constant ENV_TONE_MAPPER_REINHARD].
+			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR display.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant ENV_TONE_MAPPER_FILMIC].
 			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR display.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_AGX" value="4" enum="EnvironmentToneMapper">
 			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.

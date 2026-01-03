@@ -223,16 +223,14 @@ float RendererEnvironmentStorage::environment_get_exposure(RID p_env) const {
 	return env->exposure;
 }
 
-float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_agx_white) const {
+float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
-
-	const float output_max_value = 1.0; // SDR always has an output_max_value of 1.0.
 
 	// Glow with screen blend mode does not work when white < 1.0, so make sure
 	// it is at least 1.0 for all tonemappers:
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
-		return output_max_value;
+		return p_output_max_value;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC || env->tone_mapper == RS::ENV_TONE_MAPPER_ACES) {
 		// Filmic and ACES only support SDR; their white is stable regardless
 		// of output_max_value.
@@ -247,7 +245,7 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_
 			// Instead of constraining by matching the output_max_value, constrain
 			// by multiplying to ensure the desired non-uniform scaling behavior
 			// is maintained in the shoulder.
-			return agx_white * output_max_value;
+			return agx_white * p_output_max_value;
 		}
 	} else { // Reinhard
 		// The Reinhard tonemapper is not designed to have a white parameter
@@ -255,7 +253,7 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_
 		// in the variable Extended Dynamic Range (EDR) paradigm where the
 		// output max value may change to be greater or less than the white
 		// parameter, depending on the available dynamic range.
-		return MAX(output_max_value, env->white);
+		return MAX(p_output_max_value, env->white);
 	}
 }
 
@@ -271,19 +269,17 @@ float RendererEnvironmentStorage::environment_get_tonemap_agx_contrast(RID p_env
 	return env->tonemap_agx_contrast;
 }
 
-RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const {
+RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, TonemapParameters());
 
-	const float output_max_value = 1.0; // SDR always has an output_max_value of 1.0.
-
-	float white = environment_get_white(p_env, p_limit_agx_white);
+	float white = environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
 	TonemapParameters tonemap_parameters = TonemapParameters();
 
 	if (env->tone_mapper == RS::ENV_TONE_MAPPER_LINEAR) {
 		// Linear has no tonemapping parameters
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_REINHARD) {
-		tonemap_parameters.white_squared = white * white;
+		tonemap_parameters.white_squared = (white * white) / p_output_max_value;
 	} else if (env->tone_mapper == RS::ENV_TONE_MAPPER_FILMIC) {
 		// These constants must match those in the shader code.
 		// exposure_bias: Input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
@@ -319,7 +315,7 @@ RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::enviro
 		const float awp_crossover_point = 0.18;
 		// When output_max_value and/or awp_crossover_point are no longer constant, awp_shoulder_max can
 		// be calculated on the CPU and passed in as tonemap_parameters.tonemap_e.
-		const float awp_shoulder_max = output_max_value - awp_crossover_point;
+		const float awp_shoulder_max = p_output_max_value - awp_crossover_point;
 
 		float awp_high_clip = white;
 

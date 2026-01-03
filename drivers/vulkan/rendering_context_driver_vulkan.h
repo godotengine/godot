@@ -138,12 +138,24 @@ public:
 	virtual void surface_set_size(SurfaceID p_surface, uint32_t p_width, uint32_t p_height) override;
 	virtual void surface_set_vsync_mode(SurfaceID p_surface, DisplayServer::VSyncMode p_vsync_mode) override;
 	virtual DisplayServer::VSyncMode surface_get_vsync_mode(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_enabled(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_output_enabled(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_enforce_gamma(SurfaceID p_surface, bool p_enabled) override;
+	virtual bool surface_get_hdr_enforce_gamma(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_reference_luminance(SurfaceID p_surface, float p_reference_luminance) override;
+	virtual float surface_get_hdr_output_reference_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_max_luminance(SurfaceID p_surface, float p_max_luminance) override;
+	virtual float surface_get_hdr_output_max_luminance(SurfaceID p_surface) const override;
+	virtual void surface_set_hdr_output_linear_luminance_scale(SurfaceID p_surface, float p_linear_luminance_scale) override;
+	virtual float surface_get_hdr_output_linear_luminance_scale(SurfaceID p_surface) const override;
+	virtual float surface_get_hdr_output_max_value(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_width(SurfaceID p_surface) const override;
 	virtual uint32_t surface_get_height(SurfaceID p_surface) const override;
 	virtual void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) override;
 	virtual bool surface_get_needs_resize(SurfaceID p_surface) const override;
 	virtual void surface_destroy(SurfaceID p_surface) override;
 	virtual bool is_debug_utils_enabled() const override;
+	bool is_colorspace_supported() const;
 
 	// Vulkan-only methods.
 	struct Surface {
@@ -152,6 +164,14 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+
+		bool hdr_output = false;
+		bool enforce_gamma = false;
+		// BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200
+		// to be a more pleasant player-facing value.
+		float hdr_reference_luminance = 200.0f;
+		float hdr_max_luminance = 1000.0f;
+		float hdr_linear_luminance_scale = 100.0f;
 	};
 
 	VkInstance instance_get() const;

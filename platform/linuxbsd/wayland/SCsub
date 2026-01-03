@@ -58,6 +58,9 @@ generated_sources = [
     generate_from_xml("viewporter", "#thirdparty/wayland-protocols/stable/viewporter/viewporter.xml"),
     generate_from_xml("xdg_shell", "#thirdparty/wayland-protocols/stable/xdg-shell/xdg-shell.xml"),
     # Staging protocols
+    generate_from_xml(
+        "color_management", "#thirdparty/wayland-protocols/staging/color-management/color-management-v1.xml"
+    ),
     generate_from_xml("cursor_shape", "#thirdparty/wayland-protocols/staging/cursor-shape/cursor-shape-v1.xml"),
     generate_from_xml(
         "fractional_scale", "#thirdparty/wayland-protocols/staging/fractional-scale/fractional-scale-v1.xml"

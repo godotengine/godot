@@ -33,6 +33,14 @@
 RenderingContextDriver::~RenderingContextDriver() {
 }
 
+void RenderingContextDriver::set_colorspace_externally_managed(bool p_externally_managed) {
+	colorspace_externally_managed = p_externally_managed;
+}
+
+bool RenderingContextDriver::get_colorspace_externally_managed() const {
+	return colorspace_externally_managed;
+}
+
 RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServer::WindowID p_window) const {
 	HashMap<DisplayServer::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);
 	if (it != window_surface_map.end()) {
@@ -73,6 +81,96 @@ DisplayServer::VSyncMode RenderingContextDriver::window_get_vsync_mode(DisplaySe
 	} else {
 		return DisplayServer::VSYNC_DISABLED;
 	}
+}
+
+void RenderingContextDriver::window_set_hdr_output_enabled(DisplayServer::WindowID p_window, bool p_enabled) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_output_enabled(surface, p_enabled);
+	}
+}
+
+bool RenderingContextDriver::window_get_hdr_output_enabled(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_output_enabled(surface);
+	} else {
+		return false;
+	}
+}
+
+void RenderingContextDriver::window_set_hdr_enforce_gamma(DisplayServer::WindowID p_window, bool p_enabled) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_enforce_gamma(surface, p_enabled);
+	}
+}
+
+bool RenderingContextDriver::window_get_hdr_enforce_gamma(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_enforce_gamma(surface);
+	} else {
+		return false;
+	}
+}
+
+void RenderingContextDriver::window_set_hdr_output_reference_luminance(DisplayServer::WindowID p_window, float p_reference_luminance) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_output_reference_luminance(surface, p_reference_luminance);
+	}
+}
+
+float RenderingContextDriver::window_get_hdr_output_reference_luminance(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_output_reference_luminance(surface);
+	} else {
+		return 0.0f;
+	}
+}
+
+void RenderingContextDriver::window_set_hdr_output_max_luminance(DisplayServer::WindowID p_window, float p_max_luminance) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_output_max_luminance(surface, p_max_luminance);
+	}
+}
+
+float RenderingContextDriver::window_get_hdr_output_max_luminance(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_output_max_luminance(surface);
+	} else {
+		return 0.0f;
+	}
+}
+
+void RenderingContextDriver::window_set_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window, float p_linear_luminance_scale) {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		surface_set_hdr_output_linear_luminance_scale(surface, p_linear_luminance_scale);
+	}
+}
+
+float RenderingContextDriver::window_get_hdr_output_linear_luminance_scale(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		return surface_get_hdr_output_linear_luminance_scale(surface);
+	} else {
+		return 0.0f;
+	}
+}
+
+float RenderingContextDriver::window_get_output_max_linear_value(DisplayServer::WindowID p_window) const {
+	SurfaceID surface = surface_get_from_window(p_window);
+	if (surface) {
+		if (surface_get_hdr_output_enabled(surface)) {
+			return surface_get_hdr_output_max_value(surface);
+		}
+	}
+	return 1.0f; // SDR
 }
 
 void RenderingContextDriver::window_destroy(DisplayServer::WindowID p_window) {
