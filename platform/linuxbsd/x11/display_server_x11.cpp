@@ -36,6 +36,7 @@
 #include "x11/key_mapping_x11.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/math/math_funcs.h"
 #include "core/os/main_loop.h"
@@ -952,6 +953,29 @@ String DisplayServerX11::clipboard_get() const {
 	}
 
 	return ret;
+}
+
+Vector<String> DisplayServerX11::clipboard_get_files() const {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), Vector<String>());
+
+	Vector<String> out;
+	Vector<String> items = clipboard_get().split("\n");
+	for (const String &it : items) {
+		if (it.begins_with("file://")) {
+			String path = it.replace("file://", "").uri_file_decode();
+			if (da->file_exists(path) || da->dir_exists(path)) {
+				out.push_back(path);
+			}
+		} else if (da->file_exists(it) || da->dir_exists(it)) {
+			out.push_back(it);
+		}
+	}
+	return out;
+}
+
+int DisplayServerX11::clipboard_get_file_count() const {
+	return clipboard_get_files().size();
 }
 
 String DisplayServerX11::clipboard_get_primary() const {
