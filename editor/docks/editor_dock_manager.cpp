@@ -828,15 +828,64 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 
 	p_dock->is_open = false;
 
+	// Handle specific bottom panel needs
 	EditorBottomPanel *bottom_panel = EditorNode::get_bottom_panel();
 	if (get_dock_tab_container(p_dock) == bottom_panel && bottom_panel->get_current_tab_control() == p_dock) {
 		bottom_panel->hide_bottom_panel();
 	}
+
+	// If closing a transient dock, restore previous tab
+	if (p_dock->transient) {
+		TabContainer *tab_container = get_dock_tab_container(p_dock);
+
+		if (tab_container && tab_container != bottom_panel) {
+			// Find which slot this container belongs to
+			for (auto &dock_slot : dock_slots) {
+				if (dock_slot.container == tab_container) {
+					const int previous_tab = dock_slot.previous_non_transient_tab;
+
+					// Validate the saved tab is still valid
+					bool did_restore_tab = false;
+					if (previous_tab >= 0 && previous_tab < tab_container->get_tab_count()) {
+						Control *prev_control = tab_container->get_tab_control(previous_tab);
+						EditorDock *prev_dock = cast_to<EditorDock>(prev_control);
+
+						if (prev_dock && !prev_dock->transient && prev_dock->is_open) {
+							tab_container->set_current_tab(previous_tab);
+							did_restore_tab = true;
+						}
+					}
+
+					// Fallback: Find first non-transient tab
+					if (!did_restore_tab) {
+						_restore_first_non_transient_tab(tab_container);
+					}
+
+					// Reset
+					dock_slot.previous_non_transient_tab = -1;
+					break;
+				}
+			}
+		}
+	}
+
 	// Hide before moving to remove inconsistent signals.
 	p_dock->hide();
 	_move_dock(p_dock, closed_dock_parent);
 
 	_update_layout();
+}
+
+void EditorDockManager::_restore_first_non_transient_tab(TabContainer *p_tab_container) {
+	// Find first non-transient, open dock
+	for (int i = 0; i < p_tab_container->get_tab_count(); i++) {
+		Control *control = p_tab_container->get_tab_control(i);
+		if (const auto *dock = cast_to<EditorDock>(control); dock && !dock->transient && dock->is_open) {
+			p_tab_container->set_current_tab(i);
+			return;
+		}
+	}
+	// If no non-transient tabs found, leave the current selection as-is
 }
 
 void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
@@ -920,7 +969,27 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	if (!tab_container) {
 		return;
 	}
-	int tab_index = tab_container->get_tab_idx_from_control(p_dock);
+
+	// If focusing a transient dock, save current non-transient tab
+	if (p_dock->transient) {
+		if (int current_tab = tab_container->get_current_tab(); current_tab >= 0) {
+			Control *current_control = tab_container->get_tab_control(current_tab);
+			EditorDock *current_dock = cast_to<EditorDock>(current_control);
+
+			// Only save if current is NOT transient
+			if (current_dock && !current_dock->transient) {
+				// Find which slot owns this container
+				for (auto &dock_slot : dock_slots) {
+					if (dock_slot.container == tab_container) {
+						dock_slot.previous_non_transient_tab = current_tab;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	const int tab_index = tab_container->get_tab_idx_from_control(p_dock);
 	tab_container->get_tab_bar()->grab_focus();
 	tab_container->set_current_tab(tab_index);
 }
