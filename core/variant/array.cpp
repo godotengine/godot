@@ -730,6 +730,35 @@ struct _ArrayVariantSort {
 	}
 };
 
+struct _KeySortData {
+	Variant key;
+	size_t index;
+};
+
+struct _ArrayVariantKeySort {
+	_FORCE_INLINE_ bool operator()(const _KeySortData &p_l, const _KeySortData &p_r) const {
+		if (p_l.index > p_r.index) {
+			return _variant_sort(p_l.key, p_r.key);
+		} else {
+			return !_variant_sort(p_r.key, p_l.key);
+		}
+	}
+
+	_ArrayVariantSort _variant_sort;
+};
+
+struct _ArrayVariantKeySortReverse {
+	_FORCE_INLINE_ bool operator()(const _KeySortData &p_l, const _KeySortData &p_r) const {
+		if (p_l.index > p_r.index) {
+			return _variant_sort(p_r.key, p_l.key);
+		} else {
+			return !_variant_sort(p_l.key, p_r.key);
+		}
+	}
+
+	_ArrayVariantSort _variant_sort;
+};
+
 void Array::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<_ArrayVariantSort>();
@@ -738,6 +767,41 @@ void Array::sort() {
 void Array::sort_custom(const Callable &p_callable) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	_p->array.sort_custom<CallableComparator, true>(p_callable);
+}
+
+void Array::sort_by_key(const Callable &p_callable, bool p_reverse) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+
+	Vector<_KeySortData> keys;
+	keys.resize(size());
+	_KeySortData *write_keys = keys.ptrw();
+
+	const Variant *argptrs[1];
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, write_keys[i].key, ce);
+		write_keys[i].index = i;
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_MSG(vformat("Error calling method from 'sort_by_key': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+		}
+	}
+
+	if (p_reverse) {
+		keys.sort_custom<_ArrayVariantKeySortReverse>();
+	} else {
+		keys.sort_custom<_ArrayVariantKeySort>();
+	}
+
+	Vector<Variant> new_array;
+	new_array.resize(size());
+	Variant *write_new = new_array.ptrw();
+
+	for (int i = 0; i < size(); i++) {
+		write_new[i] = _p->array[keys[i].index];
+	}
+	_p->array = new_array;
 }
 
 void Array::shuffle() {

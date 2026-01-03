@@ -134,6 +134,7 @@ public:
 
 	void sort();
 	void sort_custom(const Callable &p_callable);
+	void sort_by_key(const Callable &p_callable, bool p_reverse = false);
 	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true) const;
 	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true) const;
