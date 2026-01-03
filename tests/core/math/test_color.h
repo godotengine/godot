@@ -111,35 +111,35 @@ TEST_CASE("[Color] Reading methods") {
 }
 
 TEST_CASE("[Color] Conversion methods") {
-	constexpr Color cyan = Color(0, 1, 1);
-	constexpr Color cyan_transparent = Color(0, 1, 1, 0);
+	constexpr Color color = Color(0, (10 * 16 + 2) / 255.0f, 1);
+	constexpr Color color_transparent = Color(0, (10 * 16 + 2) / 255.0f, 1, 0);
 
 	CHECK_MESSAGE(
-			cyan.to_html() == "00ffffff",
+			color.to_html() == "00a2ffff",
 			"The returned RGB HTML color code should match the expected value.");
 	CHECK_MESSAGE(
-			cyan_transparent.to_html() == "00ffff00",
+			color_transparent.to_html() == "00a2ff00",
 			"The returned RGBA HTML color code should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_argb32() == 0xff00ffff,
+			color.to_argb32() == 0xff00a2ff,
 			"The returned 32-bit RGB number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_abgr32() == 0xffffff00,
+			color.to_abgr32() == 0xffffa200,
 			"The returned 32-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_rgba32() == 0x00ffffff,
+			color.to_rgba32() == 0x00a2ffff,
 			"The returned 32-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_argb64() == 0xffff'0000'ffff'ffff,
+			color.to_argb64() == 0xffff'0000'a2a2'ffff,
 			"The returned 64-bit RGB number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_abgr64() == 0xffff'ffff'ffff'0000,
+			color.to_abgr64() == 0xffff'ffff'a2a2'0000,
 			"The returned 64-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			cyan.to_rgba64() == 0x0000'ffff'ffff'ffff,
+			color.to_rgba64() == 0x0000'a2a2'ffff'ffff,
 			"The returned 64-bit BGR number should match the expected value.");
 	CHECK_MESSAGE(
-			String(cyan) == "(0.0, 1.0, 1.0, 1.0)",
+			String(Color(0.0, 0.2, 0.4, 1.0)) == "(0.0, 0.2, 0.4, 1.0)",
 			"The string representation should match the expected value.");
 }
 
