@@ -286,6 +286,12 @@ void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
 	}
 }
 
+void Camera2DEditor::_editor_tool_changed() {
+	if (selected_camera) {
+		_update_hover(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
+	}
+}
+
 void Camera2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -301,6 +307,7 @@ void Camera2DEditor::_bind_methods() {
 
 Camera2DEditor::Camera2DEditor(EditorPlugin *p_plugin) {
 	plugin = p_plugin;
+	CanvasItemEditor::get_singleton()->connect("tool_changed", callable_mp(this, &Camera2DEditor::_editor_tool_changed));
 
 	options = memnew(MenuButton);
 	options->set_text(TTRC("Camera2D"));
