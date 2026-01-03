@@ -912,9 +912,10 @@ void ParticleProcessMaterial::_update_shader() {
 		} else {
 			code += "		{\n";
 			code += "			vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
-			code += "			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
-			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
-			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
+			code += "			normal = normal == vec3(0) ? vec3(0, 0, 1) : normalize(normal);\n";
+			code += "			vec3 tangent = cross(vec3(0, 1, 0), normal);\n";
+			code += "			tangent = (pow(tangent.x, 2.0) + pow(tangent.y, 2.0) + pow(tangent.z, 2.0)) < 0.00000001 ? vec3(0, 0, 1) : normalize(tangent);\n";
+			code += "			vec3 bitangent = normalize(cross(normal, tangent));\n";
 			code += "			VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
 			code += "		}\n";
 		}
