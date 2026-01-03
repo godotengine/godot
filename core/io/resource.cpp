@@ -115,6 +115,14 @@ void Resource::set_path_cache(const String &p_path) {
 	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
 
+void Resource::set_editor_description(const String &p_editor_description) {
+	editor_description = p_editor_description;
+}
+
+String Resource::get_editor_description() const {
+	return editor_description;
+}
+
 static thread_local RandomPCG unique_id_gen = RandomPCG(0);
 
 void Resource::seed_scene_unique_id(uint32_t p_seed) {
@@ -721,6 +729,20 @@ String Resource::get_id_for_path(const String &p_referrer_path) const {
 #endif
 }
 
+void Resource::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "editor_description") {
+		if (is_built_in()) {
+			// For sub resources, we store editor description directly in the property map.
+			// As we don't need to show the tooltip when it is not loaded, this simplifies implementation.
+			p_property.usage |= PROPERTY_USAGE_STORAGE;
+			// Therefore, every resource that can be stored as a sub resource automatically supports editor descriptions,
+			// as they will always be serialized with ResourceSaverText or ResourceSaverBinary, depending on the scene or resource owning them.
+		} else if (!ResourceLoader::has_editor_description_support(get_path())) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+}
+
 void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
@@ -739,6 +761,9 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id_for_path", "path"), &Resource::get_id_for_path);
 
 	ClassDB::bind_method(D_METHOD("is_built_in"), &Resource::is_built_in);
+
+	ClassDB::bind_method(D_METHOD("set_editor_description", "editor_description"), &Resource::set_editor_description);
+	ClassDB::bind_method(D_METHOD("get_editor_description"), &Resource::get_editor_description);
 
 	ClassDB::bind_static_method("Resource", D_METHOD("generate_scene_unique_id"), &Resource::generate_scene_unique_id);
 	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
@@ -763,6 +788,9 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
+
+	ADD_GROUP("Editor Description", "editor_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR), "set_editor_description", "get_editor_description");
 
 	GDVIRTUAL_BIND(_setup_local_to_scene);
 	GDVIRTUAL_BIND(_get_rid);

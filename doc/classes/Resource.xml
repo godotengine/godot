@@ -152,6 +152,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="editor_description" type="String" setter="set_editor_description" getter="get_editor_description" default="&quot;&quot;">
+			An optional description for the resource. It will be displayed as a tooltip when hovering over the resource in the filesystem dock and the resource picker.
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" default="false">
 			If [code]true[/code], the resource is duplicated for each instance of all scenes using it. At run-time, the resource can be modified in one scene without affecting other instances (see [method PackedScene.instantiate]).
 			[b]Note:[/b] Changing this property at run-time has no effect on already created duplicate resources.

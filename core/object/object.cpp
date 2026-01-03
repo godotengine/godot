@@ -1869,6 +1869,9 @@ bool Object::editor_is_section_unfolded(const String &p_section) {
 	return editor_section_folding.has(p_section);
 }
 
+bool Object::editor_is_object_or_resource_property(const String &p_name) {
+	return p_name == "script" || p_name == "resource_local_to_scene" || p_name == "resource_name" || p_name == "resource_path" || p_name == "resource_scene_unique_id" || p_name == "editor_description";
+}
 #endif
 
 void Object::clear_internal_resource_paths() {

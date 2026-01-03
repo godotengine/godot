@@ -78,6 +78,7 @@ private:
 
 	String resource_type;
 	String script_class;
+	String editor_description;
 
 	VariantParser::Tag next_tag;
 
@@ -137,6 +138,7 @@ public:
 	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
 	String recognize(Ref<FileAccess> p_f);
 	String recognize_script_class(Ref<FileAccess> p_f);
+	String recognize_editor_description(Ref<FileAccess> p_f);
 	ResourceUID::ID get_uid(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(Ref<FileAccess> p_f, const String &p_path, const HashMap<String, String> &p_map);
@@ -158,6 +160,8 @@ public:
 
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual String get_resource_script_class(const String &p_path) const override;
+	virtual String get_resource_editor_description(const String &p_path) const override;
+	virtual bool has_editor_description_support() const override;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;

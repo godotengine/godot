@@ -2941,13 +2941,17 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
 
 	const String type = ResourceLoader::get_resource_type(p_path);
-	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
-
+	VBoxContainer *default_tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
+	Control *tooltip = default_tooltip;
+	Dictionary preview_metadata = EditorResourcePreview::get_singleton()->get_preview_metadata(p_path);
 	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
 		if (plugin->handles(type)) {
-			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path), tooltip);
+			tooltip = plugin->make_tooltip_for_path(p_path, preview_metadata, tooltip);
 		}
 	}
+
+	// Editor description tooltip goes last, just like Node's editor description.
+	EditorResourceTooltipPlugin::append_editor_description_tooltip(p_path, default_tooltip);
 	return tooltip;
 }
 

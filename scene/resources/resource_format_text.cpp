@@ -1166,6 +1166,10 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 			script_class = tag.fields["script_class"];
 		}
 
+		if (tag.fields.has("editor_description")) {
+			editor_description = String(tag.fields["editor_description"]).c_unescape();
+		}
+
 		res_type = tag.fields["type"];
 
 	} else {
@@ -1349,6 +1353,44 @@ String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
 	return "";
 }
 
+String ResourceLoaderText::recognize_editor_description(Ref<FileAccess> p_f) {
+	error = OK;
+
+	lines = 1;
+	f = p_f;
+
+	stream.f = f;
+
+	ignore_resource_parsing = true;
+
+	VariantParser::Tag tag;
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+
+	if (err) {
+		_printerr();
+		return "";
+	}
+
+	if (tag.fields.has("format")) {
+		int fmt = tag.fields["format"];
+		if (fmt > FORMAT_VERSION) {
+			error_text = "Saved with newer format version";
+			_printerr();
+			return "";
+		}
+	}
+
+	if (tag.name != "gd_resource") {
+		return "";
+	}
+
+	if (tag.fields.has("editor_description")) {
+		return String(tag.fields["editor_description"]).c_unescape();
+	}
+
+	return "";
+}
+
 String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	error = OK;
 
@@ -1460,6 +1502,7 @@ Ref<Resource> ResourceFormatLoaderText::load(const String &p_path, const String 
 		*r_error = err;
 	}
 	if (err == OK) {
+		loader.get_resource()->set_editor_description(loader.editor_description);
 		return loader.get_resource();
 	} else {
 		return Ref<Resource>();
@@ -1549,6 +1592,27 @@ String ResourceFormatLoaderText::get_resource_script_class(const String &p_path)
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	return loader.recognize_script_class(f);
+}
+
+String ResourceFormatLoaderText::get_resource_editor_description(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+	if (ext != "tres") {
+		return String();
+	}
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return String(); // Could not read.
+	}
+
+	ResourceLoaderText loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.recognize_editor_description(f);
+}
+
+bool ResourceFormatLoaderText::has_editor_description_support() const {
+	return true;
 }
 
 ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
@@ -1804,6 +1868,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		if (uid != ResourceUID::INVALID_ID) {
 			title += " uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\"";
+		}
+		String editor_description = p_resource->get_editor_description();
+		if (!editor_description.is_empty()) {
+			title += " editor_description=\"" + editor_description.c_escape() + "\"";
 		}
 
 		f->store_string(title);
