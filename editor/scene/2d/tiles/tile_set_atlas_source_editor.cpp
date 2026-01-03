@@ -68,6 +68,9 @@ int TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::get_id() const {
 }
 
 bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_set(const StringName &p_name, const Variant &p_value) {
+	if (tile_set_atlas_source.is_null()) {
+		return false;
+	}
 	if (p_name == "id") {
 		set_id(p_value);
 		return true;

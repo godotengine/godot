@@ -420,11 +420,7 @@ void LineEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 		if (has_focus() && editable && (k->get_unicode() >= 32)) {
 			selection_delete();
 			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
-			int prev_len = text.length();
 			insert_text_at_caret(ucodestr);
-			if (text.length() != prev_len) {
-				_text_changed();
-			}
 			accept_event();
 		}
 	}
@@ -474,13 +470,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (!paste_buffer.is_empty()) {
 				insert_text_at_caret(paste_buffer);
-
-				if (!text_changed_dirty) {
-					if (is_inside_tree()) {
-						callable_mp(this, &LineEdit::_text_changed).call_deferred();
-					}
-					text_changed_dirty = true;
-				}
 			}
 			accept_event();
 			return;
@@ -1053,16 +1042,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		// Handle Unicode if no modifiers are active.
 		selection_delete();
 		char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
-		int prev_len = text.length();
 		insert_text_at_caret(ucodestr);
-		if (text.length() != prev_len) {
-			if (!text_changed_dirty) {
-				if (is_inside_tree()) {
-					callable_mp(this, &LineEdit::_text_changed).call_deferred();
-				}
-				text_changed_dirty = true;
-			}
-		}
 		accept_event();
 		return;
 	}
@@ -1753,18 +1733,10 @@ void LineEdit::paste_text() {
 	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
 
 	if (!paste_buffer.is_empty()) {
-		int prev_len = text.length();
 		if (selection.enabled) {
 			selection_delete();
 		}
 		insert_text_at_caret(paste_buffer);
-
-		if (!text_changed_dirty) {
-			if (is_inside_tree() && text.length() != prev_len) {
-				callable_mp(this, &LineEdit::_text_changed).call_deferred();
-			}
-			text_changed_dirty = true;
-		}
 	}
 }
 
@@ -2426,6 +2398,13 @@ void LineEdit::insert_text_at_caret(String p_text) {
 
 	if (!ime_text.is_empty()) {
 		_shape();
+	}
+
+	if (p_text.length() > 0) {
+		if (!text_changed_dirty && is_inside_tree()) {
+			text_changed_dirty = true;
+			callable_mp(this, &LineEdit::_text_changed).call_deferred();
+		}
 	}
 }
 
