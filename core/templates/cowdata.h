@@ -396,11 +396,6 @@ Error CowData<T>::resize(Size p_size) {
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
 	const Size prev_size = size();
-	if (p_size == prev_size) {
-		// Caller wants to stay the same size, so we do nothing.
-		return OK;
-	}
-
 	if (p_size > prev_size) {
 		// Caller wants to grow.
 

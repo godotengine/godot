@@ -574,7 +574,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 		// Message is supplied by the subroutine method.
 		return err;
 	}
-	html.resize(0);
+	html.clear();
 
 	// Export splash (why?)
 	Ref<Image> splash = _get_project_splash(p_preset);

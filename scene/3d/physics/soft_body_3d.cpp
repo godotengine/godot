@@ -60,7 +60,7 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 }
 
 void SoftBodyRenderingServerHandler::clear() {
-	buffer.resize(0);
+	buffer.clear();
 	stride = 0;
 	normal_stride = 0;
 	offset_vertices = 0;

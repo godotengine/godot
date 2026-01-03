@@ -2112,7 +2112,7 @@ void TextServerAdvanced::_font_set_data_ptr(const RID &p_font_rid, const uint8_t
 
 	MutexLock lock(fd->mutex);
 	_font_clear_cache(fd);
-	fd->data.resize(0);
+	fd->data.clear();
 	fd->data_ptr = p_data_ptr;
 	fd->data_size = p_data_size;
 }

@@ -113,8 +113,8 @@ void HTTPClientWeb::close() {
 	use_tls = false;
 	status = STATUS_DISCONNECTED;
 	polled_response_code = 0;
-	response_headers.resize(0);
-	response_buffer.resize(0);
+	response_headers.clear();
+	response_buffer.clear();
 	if (js_id) {
 		godot_js_fetch_free(js_id);
 		js_id = 0;
