@@ -54,7 +54,7 @@ class ScriptBacktrace : public RefCounted {
 	LocalVector<StackVariable> global_variables;
 	String language_name;
 
-	static void _store_variables(const List<String> &p_names, const List<Variant> &p_values, LocalVector<StackVariable> &r_variables);
+	static void _store_variables(const LocalVector<Pair<String, Variant>> &p_variables, LocalVector<StackVariable> &r_variables);
 
 protected:
 	static void _bind_methods();

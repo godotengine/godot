@@ -319,17 +319,13 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	}
 }
 
-void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type) {
+void RemoteDebugger::_send_stack_vars(const LocalVector<Pair<String, Variant>> &p_variables, int p_type) {
 	DebuggerMarshalls::ScriptStackVariable stvar;
-	List<String>::Element *E = p_names.front();
-	List<Variant>::Element *F = p_vals.front();
-	while (E) {
-		stvar.name = E->get();
-		stvar.value = F->get();
+	for (const Pair<String, Variant> &E : p_variables) {
+		stvar.name = E.first;
+		stvar.value = E.second;
 		stvar.type = p_type;
 		send_message("stack_frame_var", stvar.serialize());
-		E = E->next();
-		F = F->next();
 	}
 }
 
@@ -497,30 +493,23 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				}
 				int lv = data[0];
 
-				List<String> members;
-				List<Variant> member_vals;
+				LocalVector<Pair<String, Variant>> members;
 				if (ScriptInstance *inst = script_lang->debug_get_stack_level_instance(lv)) {
-					members.push_back("self");
-					member_vals.push_back(inst->get_owner());
+					members.push_back(Pair<String, Variant>("self", inst->get_owner()));
 				}
-				script_lang->debug_get_stack_level_members(lv, &members, &member_vals);
-				ERR_FAIL_COND(members.size() != member_vals.size());
+				script_lang->debug_get_stack_level_members(lv, members);
 
-				List<String> locals;
-				List<Variant> local_vals;
-				script_lang->debug_get_stack_level_locals(lv, &locals, &local_vals);
-				ERR_FAIL_COND(locals.size() != local_vals.size());
+				LocalVector<Pair<String, Variant>> locals;
+				script_lang->debug_get_stack_level_locals(lv, locals);
 
-				List<String> globals;
-				List<Variant> globals_vals;
-				script_lang->debug_get_globals(&globals, &globals_vals);
-				ERR_FAIL_COND(globals.size() != globals_vals.size());
+				LocalVector<Pair<String, Variant>> globals;
+				script_lang->debug_get_globals(globals);
 
-				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() };
+				Array var_size = { locals.size() + members.size() + globals.size() };
 				send_message("stack_frame_vars", var_size);
-				_send_stack_vars(locals, local_vals, 0);
-				_send_stack_vars(members, member_vals, 1);
-				_send_stack_vars(globals, globals_vals, 2);
+				_send_stack_vars(locals, 0);
+				_send_stack_vars(members, 1);
+				_send_stack_vars(globals, 2);
 
 			} else if (command == "reload_scripts") {
 				script_paths_to_reload = data;
@@ -553,30 +542,20 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				PackedStringArray input_names;
 				Array input_vals;
 
-				List<String> locals;
-				List<Variant> local_vals;
-				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
-				ERR_FAIL_COND(locals.size() != local_vals.size());
+				LocalVector<Pair<String, Variant>> locals;
+				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, locals);
 
-				for (const String &S : locals) {
-					input_names.append(S);
+				for (const Pair<String, Variant> &local : locals) {
+					input_names.append(local.first);
+					input_vals.append(local.second);
 				}
 
-				for (const Variant &V : local_vals) {
-					input_vals.append(V);
-				}
+				LocalVector<Pair<String, Variant>> globals;
+				script_debugger->get_break_language()->debug_get_globals(globals);
 
-				List<String> globals;
-				List<Variant> globals_vals;
-				script_debugger->get_break_language()->debug_get_globals(&globals, &globals_vals);
-				ERR_FAIL_COND(globals.size() != globals_vals.size());
-
-				for (const String &S : globals) {
-					input_names.append(S);
-				}
-
-				for (const Variant &V : globals_vals) {
-					input_vals.append(V);
+				for (const Pair<String, Variant> &global : globals) {
+					input_names.append(global.first);
+					input_vals.append(global.second);
 				}
 
 				LocalVector<StringName> native_types;
