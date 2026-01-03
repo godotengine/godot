@@ -3806,7 +3806,6 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 			vscroll->show();
 		} else {
 			scroll_visible = false;
-			scroll_w = 0;
 		}
 
 		main->first_resized_line.store(0);
