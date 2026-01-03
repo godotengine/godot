@@ -58,8 +58,13 @@ public:
 
 	constexpr FixedVector(std::initializer_list<T> p_init) {
 		ERR_FAIL_COND(p_init.size() > CAPACITY);
-		for (const T &element : p_init) {
-			memnew_placement(ptr() + _size++, T(element));
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			memcpy((void *)_data, (void *)p_init.begin(), p_init.size() * sizeof(T));
+			_size = p_init.size();
+		} else {
+			for (const T &element : p_init) {
+				memnew_placement(ptr() + _size++, T(element));
+			}
 		}
 	}
 
