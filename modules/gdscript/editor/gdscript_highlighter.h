@@ -57,6 +57,15 @@ private:
 	Vector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
+	enum StringType {
+		TYPE_NONE,
+		TYPE_STRING,
+		TYPE_STRING_NAME,
+		TYPE_NODE_PATH,
+		TYPE_NODE_REF,
+	};
+	HashMap<int, StringType> unterminated_string_cache;
+
 	HashMap<StringName, Color> class_names;
 	HashMap<StringName, Color> reserved_keywords;
 	HashMap<StringName, Color> member_keywords;

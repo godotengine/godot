@@ -79,8 +79,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	Color keyword_color;
 	Color color;
 
-	color_region_cache[p_line] = -1;
+	int &cached_region = color_region_cache[p_line];
+	cached_region = -1;
 	int in_region = -1;
+
 	if (p_line != 0) {
 		int prev_region_line = p_line - 1;
 		while (prev_region_line > 0 && !color_region_cache.has(prev_region_line)) {
@@ -93,6 +95,18 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			get_line_syntax_highlighting(p_line - 1);
 		}
 		in_region = color_region_cache[p_line - 1];
+		if (in_region != -1 && color_regions[in_region].type == ColorRegion::TYPE_STRING) {
+			StringType *string_type = unterminated_string_cache.getptr(p_line - 1);
+			if (string_type) {
+				if (*string_type == StringType::TYPE_STRING_NAME) {
+					in_string_name = true;
+				} else if (*string_type == StringType::TYPE_NODE_PATH) {
+					in_node_path = true;
+				} else if (*string_type == StringType::TYPE_NODE_REF) {
+					in_node_ref = true;
+				}
+			}
+		}
 	}
 
 	const String &str = text_edit->get_line_with_ime(p_line);
@@ -100,7 +114,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	Color prev_color;
 
 	if (in_region != -1 && line_length == 0) {
-		color_region_cache[p_line] = in_region;
+		cached_region = in_region;
 	}
 	for (int j = 0; j < line_length; j++) {
 		Dictionary highlighter_info;
@@ -184,7 +198,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 							j = line_length;
 							if (!color_regions[c].line_only) {
-								color_region_cache[p_line] = c;
+								cached_region = c;
 							}
 						}
 						break;
@@ -349,7 +363,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						}
 						j = from + (end_key_length - 1);
 						if (region_end_index == -1) {
-							color_region_cache[p_line] = in_region;
+							cached_region = in_region;
 						}
 					}
 
@@ -737,6 +751,21 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color_map[j] = highlighter_info;
 		}
 	}
+
+	if (cached_region != -1 && color_regions[cached_region].type == ColorRegion::TYPE_STRING) {
+		if (in_string_name) {
+			unterminated_string_cache[p_line] = StringType::TYPE_STRING_NAME;
+		} else if (in_node_path) {
+			unterminated_string_cache[p_line] = StringType::TYPE_NODE_PATH;
+		} else if (in_node_ref) {
+			unterminated_string_cache[p_line] = StringType::TYPE_NODE_REF;
+		} else {
+			unterminated_string_cache[p_line] = StringType::TYPE_STRING;
+		}
+	} else {
+		unterminated_string_cache[p_line] = StringType::TYPE_NONE;
+	}
+
 	return color_map;
 }
 
