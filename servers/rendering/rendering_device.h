@@ -1694,6 +1694,7 @@ public:
 
 	void submit();
 	void sync();
+	bool try_sync();
 
 	enum MemoryType {
 		MEMORY_TEXTURES,
