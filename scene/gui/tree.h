@@ -86,6 +86,7 @@ private:
 		int icon_max_w = 0;
 		bool expr = false;
 		bool checked = false;
+		bool visible = true;
 		bool indeterminate = false;
 		bool editable = false;
 		bool selected = false;
@@ -114,6 +115,7 @@ private:
 		struct Button {
 			mutable RID accessibility_button_element;
 			int id = 0;
+			bool visible = true;
 			bool disabled = false;
 			Ref<Texture2D> texture;
 			Color color = Color(1, 1, 1, 1);
@@ -245,6 +247,10 @@ public:
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
 	TreeCellMode get_cell_mode(int p_column) const;
 
+	// Cell visibility.
+	void set_cell_visible(int p_column, bool p_visible);
+	bool is_cell_visible(int p_column) const;
+
 	// Auto translate mode.
 	void set_auto_translate_mode(int p_column, Node::AutoTranslateMode p_mode);
 	Node::AutoTranslateMode get_auto_translate_mode(int p_column) const;
@@ -327,6 +333,8 @@ public:
 	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
 	void set_button_description(int p_column, int p_index, const String &p_description);
 	void set_button_color(int p_column, int p_index, const Color &p_color);
+	void set_button_visible(int p_column, int p_button_index, bool p_visible);
+	bool is_button_visible(int p_column, int p_button_index) const;
 	void set_button_disabled(int p_column, int p_index, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_index) const;
 
