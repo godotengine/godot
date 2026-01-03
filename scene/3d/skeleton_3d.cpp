@@ -462,6 +462,15 @@ void Skeleton3D::_make_modifiers_dirty() {
 	_update_deferred(UPDATE_FLAG_MODIFIER);
 }
 
+void Skeleton3D::_make_bone_modified(int p_bone) {
+	if (modified_bones.has(p_bone)) {
+		return;
+	}
+	modified_bones.push_back(p_bone);
+	// Using bones[p_bone].pose_cache instead of get_bone_pose() is probably safe in the case that retrieve only once at first in the modifier process.
+	mod_old_poses.push_back(bones[p_bone].pose_cache);
+}
+
 void Skeleton3D::_update_bones_nested_set() const {
 	nested_set_offset_to_bone_index.resize(bones.size());
 	bone_global_pose_dirty.resize(bones.size());
@@ -842,7 +851,9 @@ void Skeleton3D::clear_bones() {
 void Skeleton3D::set_bone_pose(int p_bone, const Transform3D &p_pose) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		_make_bone_modified(p_bone);
+	}
 	bones[p_bone].pose_position = p_pose.origin;
 	bones[p_bone].pose_rotation = p_pose.basis.get_rotation_quaternion();
 	bones[p_bone].pose_scale = p_pose.basis.get_scale();
@@ -856,7 +867,9 @@ void Skeleton3D::set_bone_pose(int p_bone, const Transform3D &p_pose) {
 void Skeleton3D::set_bone_pose_position(int p_bone, const Vector3 &p_position) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		_make_bone_modified(p_bone);
+	}
 	bones[p_bone].pose_position = p_position;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -867,7 +880,9 @@ void Skeleton3D::set_bone_pose_position(int p_bone, const Vector3 &p_position) {
 void Skeleton3D::set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		_make_bone_modified(p_bone);
+	}
 	bones[p_bone].pose_rotation = p_rotation;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -878,7 +893,9 @@ void Skeleton3D::set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation
 void Skeleton3D::set_bone_pose_scale(int p_bone, const Vector3 &p_scale) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
-
+	if (modifier_updating) {
+		_make_bone_modified(p_bone);
+	}
 	bones[p_bone].pose_scale = p_scale;
 	bones[p_bone].pose_cache_dirty = true;
 	if (is_inside_tree()) {
@@ -1180,27 +1197,32 @@ void Skeleton3D::_process_modifiers() {
 #endif // TOOLS_ENABLED
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
-			LocalVector<Transform3D> old_poses;
-			for (int i = 0; i < get_bone_count(); i++) {
-				old_poses.push_back(get_bone_pose(i));
-			}
+			modified_bones.clear();
+			mod_old_poses.clear();
+			mod_new_poses.clear();
+			modifier_updating = true;
 			mod->process_modification(update_delta);
-			LocalVector<Transform3D> new_poses;
-			for (int i = 0; i < get_bone_count(); i++) {
-				new_poses.push_back(get_bone_pose(i));
+			modifier_updating = false;
+			for (int bn : modified_bones) {
+				mod_new_poses.push_back(get_bone_pose(bn));
 			}
-			for (int i = 0; i < get_bone_count(); i++) {
-				if (old_poses[i] == new_poses[i]) {
+			for (uint32_t i = 0; i < modified_bones.size(); i++) {
+				if (mod_old_poses[i] == mod_new_poses[i]) {
 					continue; // Avoid unneeded calculation.
 				}
-				set_bone_pose(i, old_poses[i].interpolate_with(new_poses[i], influence));
+				set_bone_pose(modified_bones[i], mod_old_poses[i].interpolate_with(mod_new_poses[i], influence));
 			}
 		} else {
 			mod->process_modification(update_delta);
 		}
 		force_update_all_dirty_bones();
 	}
-	update_delta = 0; // Reset accumulated delta.
+	// Clean up.
+	modified_bones.clear();
+	mod_old_poses.clear();
+	mod_new_poses.clear();
+	// Reset accumulated delta.
+	update_delta = 0;
 }
 
 void Skeleton3D::add_child_notify(Node *p_child) {
