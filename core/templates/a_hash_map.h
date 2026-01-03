@@ -30,43 +30,14 @@
 
 #pragma once
 
-#include "core/os/memory.h"
 #include "core/string/print_string.h"
-#include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
+#include "core/templates/raw_a_hash_table.h"
 
 #include <initializer_list>
 
-class String;
-class StringName;
-class Variant;
-
 /**
- * An array-based implementation of a hash map. It is very efficient in terms of performance and
- * memory usage. Works like a dynamic array, adding elements to the end of the array, and
- * allows you to access array elements by their index by using `get_by_index` method.
- * Example:
- * ```
- *  AHashMap<int, Object *> map;
- *
- *  int get_object_id_by_number(int p_number) {
- *		int id = map.get_index(p_number);
- *		return id;
- *  }
- *
- *  Object *get_object_by_id(int p_id) {
- *		map.get_by_index(p_id).value;
- *  }
- * ```
- * Still, don`t erase the elements because ID can break.
- *
- * When an element erase, its place is taken by the element from the end.
- *
- *        <-------------
- *      |               |
- *  6 8 X 9 32 -1 5 -10 7 X X X
- *  6 8 7 9 32 -1 5 -10 X X X X
- *
+ * An array-based implementation of a hash map. See parent class RawAHashTable for details.
  *
  * Use RBMap if you need to iterate over sorted elements.
  *
@@ -79,163 +50,73 @@ class Variant;
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class AHashMap {
+class AHashMap final : public RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator> {
+	using Base = RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator>;
+
+	using Base::_capacity_mask;
+	using Base::_clear_metadata;
+	using Base::_get_probe_length;
+	using Base::_get_resize_count;
+	using Base::_hash;
+	using Base::_insert_metadata;
+	using Base::_lookup_idx;
+	using Base::_lookup_idx_with_hash;
+	using Base::_metadata;
+	using Base::_resize_and_rehash;
+	using Base::_size;
+
 public:
-	// Must be a power of two.
-	static constexpr uint32_t INITIAL_CAPACITY = 16;
-	static constexpr uint32_t EMPTY_HASH = 0;
-	static_assert(EMPTY_HASH == 0, "EMPTY_HASH must always be 0 for the memcpy() optimization.");
+	using Base::clear;
+	using Base::EMPTY_HASH;
+	using Base::get_capacity;
+	using Base::has;
+	using Base::INITIAL_CAPACITY;
+	using Base::is_empty;
+	using Base::reserve;
+	using Base::reset;
+	using Base::size;
+
+protected:
+	// `friend` declaration is needed, otherwise RawAHashTable was not able to read encapsulated methods.
+	// Type aliases seem to be broken with friend declarations.
+	friend class RawAHashTable<AHashMap<TKey, TValue, Hasher, Comparator>, TKey, Hasher, Comparator>;
+
+	const TKey &_get_key(uint32_t p_idx) const {
+		return _elements[p_idx].key;
+	}
+
+	void _resize_elements(uint32_t p_new_capacity) {
+		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * p_new_capacity));
+	}
+
+	bool _is_elements_valid() const {
+		return _elements != nullptr;
+	}
+
+	void _clear_elements() {
+		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
+			for (uint32_t i = 0; i < _size; i++) {
+				_elements[i].key.~TKey();
+				_elements[i].value.~TValue();
+			}
+		}
+	}
+
+	void _free_elements() {
+		Memory::free_static(_elements);
+		_elements = nullptr;
+	}
 
 private:
-	struct Metadata {
-		uint32_t hash;
-		uint32_t element_idx;
-	};
-
-	static_assert(sizeof(Metadata) == 8);
-
 	typedef KeyValue<TKey, TValue> MapKeyValue;
 	MapKeyValue *_elements = nullptr;
-	Metadata *_metadata = nullptr;
-
-	// Due to optimization, this is `capacity - 1`. Use + 1 to get normal capacity.
-	uint32_t _capacity_mask = 0;
-	uint32_t _size = 0;
-
-	uint32_t _hash(const TKey &p_key) const {
-		uint32_t hash = Hasher::hash(p_key);
-
-		if (unlikely(hash == EMPTY_HASH)) {
-			hash = EMPTY_HASH + 1;
-		}
-
-		return hash;
-	}
-
-	static _FORCE_INLINE_ uint32_t _get_resize_count(uint32_t p_capacity_mask) {
-		return p_capacity_mask ^ (p_capacity_mask + 1) >> 2; // = get_capacity() * 0.75 - 1; Works only if p_capacity_mask = 2^n - 1.
-	}
-
-	static _FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_meta_idx, uint32_t p_hash, uint32_t p_capacity) {
-		const uint32_t original_idx = p_hash & p_capacity;
-		return (p_meta_idx - original_idx + p_capacity + 1) & p_capacity;
-	}
-
-	bool _lookup_idx(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
-		}
-		return _lookup_idx_with_hash(p_key, r_element_idx, r_meta_idx, _hash(p_key));
-	}
-
-	bool _lookup_idx_with_hash(const TKey &p_key, uint32_t &r_element_idx, uint32_t &r_meta_idx, uint32_t p_hash) const {
-		if (unlikely(_elements == nullptr)) {
-			return false; // Failed lookups, no _elements.
-		}
-
-		uint32_t meta_idx = p_hash & _capacity_mask;
-		Metadata metadata = _metadata[meta_idx];
-		if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
-			r_element_idx = metadata.element_idx;
-			r_meta_idx = meta_idx;
-			return true;
-		}
-
-		if (metadata.hash == EMPTY_HASH) {
-			return false;
-		}
-
-		// A collision occurred.
-		meta_idx = (meta_idx + 1) & _capacity_mask;
-		uint32_t distance = 1;
-		while (true) {
-			metadata = _metadata[meta_idx];
-			if (metadata.hash == p_hash && Comparator::compare(_elements[metadata.element_idx].key, p_key)) {
-				r_element_idx = metadata.element_idx;
-				r_meta_idx = meta_idx;
-				return true;
-			}
-
-			if (metadata.hash == EMPTY_HASH) {
-				return false;
-			}
-
-			if (distance > _get_probe_length(meta_idx, metadata.hash, _capacity_mask)) {
-				return false;
-			}
-
-			meta_idx = (meta_idx + 1) & _capacity_mask;
-			distance++;
-		}
-	}
-
-	uint32_t _insert_metadata(uint32_t p_hash, uint32_t p_element_idx) {
-		uint32_t meta_idx = p_hash & _capacity_mask;
-
-		if (_metadata[meta_idx].hash == EMPTY_HASH) {
-			_metadata[meta_idx] = Metadata{ p_hash, p_element_idx };
-			return meta_idx;
-		}
-
-		uint32_t distance = 1;
-		meta_idx = (meta_idx + 1) & _capacity_mask;
-		Metadata metadata;
-		metadata.hash = p_hash;
-		metadata.element_idx = p_element_idx;
-
-		while (true) {
-			if (_metadata[meta_idx].hash == EMPTY_HASH) {
-#ifdef DEV_ENABLED
-				if (unlikely(distance > 12)) {
-					WARN_PRINT("Excessive collision count, is the right hash function being used?");
-				}
-#endif
-				_metadata[meta_idx] = metadata;
-				return meta_idx;
-			}
-
-			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(meta_idx, _metadata[meta_idx].hash, _capacity_mask);
-			if (existing_probe_len < distance) {
-				SWAP(metadata, _metadata[meta_idx]);
-				distance = existing_probe_len;
-			}
-
-			meta_idx = (meta_idx + 1) & _capacity_mask;
-			distance++;
-		}
-	}
-
-	void _resize_and_rehash(uint32_t p_new_capacity) {
-		uint32_t real_old_capacity = _capacity_mask + 1;
-		// Capacity can't be 0 and must be 2^n - 1.
-		_capacity_mask = MAX(4u, p_new_capacity);
-		uint32_t real_capacity = next_power_of_2(_capacity_mask);
-		_capacity_mask = real_capacity - 1;
-
-		Metadata *old_map_data = _metadata;
-
-		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
-		_elements = reinterpret_cast<MapKeyValue *>(Memory::realloc_static(_elements, sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
-
-		if (_size != 0) {
-			for (uint32_t i = 0; i < real_old_capacity; i++) {
-				Metadata metadata = old_map_data[i];
-				if (metadata.hash != EMPTY_HASH) {
-					_insert_metadata(metadata.hash, metadata.element_idx);
-				}
-			}
-		}
-
-		Memory::free_static(old_map_data);
-	}
 
 	int32_t _insert_element(const TKey &p_key, const TValue &p_value, uint32_t p_hash) {
 		if (unlikely(_elements == nullptr)) {
 			// Allocate on demand to save memory.
 
 			uint32_t real_capacity = _capacity_mask + 1;
-			_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static_zeroed(sizeof(Metadata) * real_capacity));
+			_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static_zeroed(sizeof(RawAHashTableMetadata) * real_capacity));
 			_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
 		}
 
@@ -259,7 +140,7 @@ private:
 			return;
 		}
 
-		_metadata = reinterpret_cast<Metadata *>(Memory::alloc_static(sizeof(Metadata) * real_capacity));
+		_metadata = reinterpret_cast<RawAHashTableMetadata *>(Memory::alloc_static(sizeof(RawAHashTableMetadata) * real_capacity));
 		_elements = reinterpret_cast<MapKeyValue *>(Memory::alloc_static(sizeof(MapKeyValue) * (_get_resize_count(_capacity_mask) + 1)));
 
 		if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
@@ -272,34 +153,11 @@ private:
 			}
 		}
 
-		memcpy(_metadata, p_other._metadata, sizeof(Metadata) * real_capacity);
+		memcpy(_metadata, p_other._metadata, sizeof(RawAHashTableMetadata) * real_capacity);
 	}
 
 public:
 	/* Standard Godot Container API */
-
-	_FORCE_INLINE_ uint32_t get_capacity() const { return _capacity_mask + 1; }
-	_FORCE_INLINE_ uint32_t size() const { return _size; }
-
-	_FORCE_INLINE_ bool is_empty() const {
-		return _size == 0;
-	}
-
-	void clear() {
-		if (_elements == nullptr || _size == 0) {
-			return;
-		}
-
-		memset(_metadata, EMPTY_HASH, (_capacity_mask + 1) * sizeof(Metadata));
-		if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
-			for (uint32_t i = 0; i < _size; i++) {
-				_elements[i].key.~TKey();
-				_elements[i].value.~TValue();
-			}
-		}
-
-		_size = 0;
-	}
 
 	TValue &get(const TKey &p_key) {
 		uint32_t element_idx = 0;
@@ -337,12 +195,6 @@ public:
 			return &_elements[element_idx].value;
 		}
 		return nullptr;
-	}
-
-	bool has(const TKey &p_key) const {
-		uint32_t _idx = 0;
-		uint32_t meta_idx = 0;
-		return _lookup_idx(p_key, _idx, meta_idx);
 	}
 
 	bool erase(const TKey &p_key) {
@@ -405,23 +257,6 @@ public:
 		_insert_metadata(hash, element_idx);
 
 		return true;
-	}
-
-	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
-	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
-	void reserve(uint32_t p_new_capacity) {
-		if (_elements == nullptr) {
-			_capacity_mask = MAX(4u, p_new_capacity);
-			_capacity_mask = next_power_of_2(_capacity_mask) - 1;
-			return; // Unallocated yet.
-		}
-		if (p_new_capacity <= get_capacity()) {
-			if (p_new_capacity < size()) {
-				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
-			}
-			return;
-		}
-		_resize_and_rehash(p_new_capacity);
 	}
 
 	/** Iterator API **/
@@ -622,6 +457,10 @@ public:
 	}
 
 	// Inserts an element without checking if it already exists.
+	//
+	// SAFETY: In dev builds, the insertions are checked and causes a crash on bad use.
+	// In release builds, the insertions are not checked, and bad use will cause duplicate
+	// keys, which also affect iterators. Bad use does not cause undefined behavior.
 	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
@@ -692,8 +531,8 @@ public:
 		_capacity_mask = MAX(4u, p_initial_capacity);
 		_capacity_mask = next_power_of_2(_capacity_mask) - 1;
 	}
-	AHashMap() :
-			_capacity_mask(INITIAL_CAPACITY - 1) {
+	AHashMap() {
+		_capacity_mask = (INITIAL_CAPACITY - 1);
 	}
 
 	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
@@ -703,29 +542,7 @@ public:
 		}
 	}
 
-	void reset() {
-		if (_elements != nullptr) {
-			if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
-				for (uint32_t i = 0; i < _size; i++) {
-					_elements[i].key.~TKey();
-					_elements[i].value.~TValue();
-				}
-			}
-			Memory::free_static(_elements);
-			Memory::free_static(_metadata);
-			_elements = nullptr;
-		}
-		_capacity_mask = INITIAL_CAPACITY - 1;
-		_size = 0;
-	}
-
-	~AHashMap() {
+	virtual ~AHashMap() override {
 		reset();
 	}
 };
-
-extern template class AHashMap<int, int>;
-extern template class AHashMap<String, int>;
-extern template class AHashMap<StringName, StringName>;
-extern template class AHashMap<StringName, Variant>;
-extern template class AHashMap<StringName, int>;
