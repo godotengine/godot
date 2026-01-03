@@ -278,6 +278,15 @@ FT_BEGIN_HEADER
 
   /**************************************************************************
    *
+   * Apple EMJC bitmap support.
+   *
+   *   Define this macro if you want to enable this 'feature'.
+   */
+/* #define FT_CONFIG_OPTION_USE_EMJC */
+
+
+  /**************************************************************************
+   *
    * HarfBuzz support.
    *
    *   FreeType uses the HarfBuzz library to improve auto-hinting of OpenType
