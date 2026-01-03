@@ -415,6 +415,8 @@ void register_scene_types() {
 
 		resource_loader_shader.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_shader, true);
+
+		GLOBAL_DEF("filesystem/inline_text_resource_uids/shader", true);
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(ShaderInclude)) {
@@ -423,7 +425,11 @@ void register_scene_types() {
 
 		resource_loader_shader_include.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
+
+		GLOBAL_DEF("filesystem/inline_text_resource_uids/shader_include", true);
 	}
+
+	GLOBAL_DEF("filesystem/inline_text_resource_uids/compatibility/no_inline_text_resource_uids_in_addons", false);
 
 	OS::get_singleton()->yield(); // may take time to init
 
