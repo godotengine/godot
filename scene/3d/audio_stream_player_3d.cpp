@@ -292,6 +292,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				setplayback.unref();
 				setplay.set(-1);
+				// Call `_update_panning()` immediately after starting the stream.
+				// This re-sets bus levels to ensure they are correct for the first few frames.
+				// (These levels may be initialized incorrectly due to the call to start_playback_stream
+				// ignoring the Area3D's bus options.)
+				_update_panning();
 			}
 
 			if (!internal->stream_playbacks.is_empty() && internal->active.is_set()) {
@@ -484,6 +489,8 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus
 				bus_volumes[area->get_audio_bus_name()] = output_volume_vector;
+			} else {
+				bus_volumes[internal->bus] = output_volume_vector;
 			}
 
 			if (area->is_using_reverb_bus()) {
