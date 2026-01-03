@@ -589,11 +589,11 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "}\n\n";
 
-	code += "void calculate_initial_display_params(inout DisplayParameters params, inout uint alt_seed) {\n";
+	code += "void calculate_initial_display_params(inout DisplayParameters params, inout uint alt_seed, vec3 multiply_by_scale) {\n";
 	code += "	// -------------------- DO NOT REORDER OPERATIONS, IT BREAKS VISUAL COMPATIBILITY\n";
 	code += "	// -------------------- ADD NEW OPERATIONS AT THE BOTTOM\n";
 	code += "	float pi = 3.14159;\n";
-	code += "	params.scale = vec3(mix(scale_min, scale_max, rand_from_seed(alt_seed)));\n";
+	code += "	params.scale = vec3(mix(scale_min, scale_max, rand_from_seed(alt_seed))) * multiply_by_scale;\n";
 	code += "	params.scale = sign(params.scale) * max(abs(params.scale), 0.001);\n";
 	code += "	params.hue_rotation = pi * 2.0 * mix(hue_variation_min, hue_variation_max, rand_from_seed(alt_seed));\n";
 	code += "	params.animation_speed = mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n";
@@ -862,7 +862,12 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	uint base_number = NUMBER;\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DisplayParameters params;\n";
-	code += "	calculate_initial_display_params(params, alt_seed);\n";
+	if (particle_flags[PARTICLE_FLAG_INHERIT_EMITTER_SCALE]) {
+		code += "	vec3 emitter_scale = vec3(length(EMISSION_TRANSFORM[0].xyz), length(EMISSION_TRANSFORM[1].xyz), length(EMISSION_TRANSFORM[2].xyz));\n";
+	} else {
+		code += "	vec3 emitter_scale = vec3(1.0, 1.0, 1.0);\n";
+	}
+	code += "	calculate_initial_display_params(params, alt_seed, emitter_scale);\n";
 	code += "	// Reset alt seed?\n";
 	code += "	//alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DynamicsParameters dynamic_params;\n";
@@ -937,7 +942,12 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	//}\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DisplayParameters params;\n";
-	code += "	calculate_initial_display_params(params, alt_seed);\n";
+	if (particle_flags[PARTICLE_FLAG_INHERIT_EMITTER_SCALE]) {
+		code += "	vec3 emitter_scale = vec3(length(EMISSION_TRANSFORM[0].xyz), length(EMISSION_TRANSFORM[1].xyz), length(EMISSION_TRANSFORM[2].xyz));\n";
+	} else {
+		code += "	vec3 emitter_scale = vec3(1.0, 1.0, 1.0);\n";
+	}
+	code += "	calculate_initial_display_params(params, alt_seed, emitter_scale);\n";
 	code += "	DynamicsParameters dynamic_params;\n";
 	code += "	calculate_initial_dynamics_params(dynamic_params, alt_seed);\n";
 	code += "	PhysicalParameters physics_params;\n";
@@ -2208,6 +2218,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_damping_as_friction"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_inherit_emitter_scale"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
 	ADD_GROUP("Spawn", "");
 	ADD_SUBGROUP("Position", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_shape_offset"), "set_emission_shape_offset", "get_emission_shape_offset");
@@ -2337,6 +2348,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);

@@ -291,6 +291,10 @@
 		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles will not move on the z axis.
 		</member>
+		<member name="particle_flag_inherit_emitter_scale" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles will inherit the scale of the emitter.
+			[b]Note:[/b] This has no effect when [member GPUParticles3D.local_coords] is [code]true[/code], since particles in local space are already affected by the emitter's scale.
+		</member>
 		<member name="particle_flag_rotate_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles rotate around Y axis by [member angle_min].
 		</member>
@@ -482,7 +486,9 @@
 		</constant>
 		<constant name="PARTICLE_FLAG_DAMPING_AS_FRICTION" value="3" enum="ParticleFlags">
 		</constant>
-		<constant name="PARTICLE_FLAG_MAX" value="4" enum="ParticleFlags">
+		<constant name="PARTICLE_FLAG_INHERIT_EMITTER_SCALE" value="4" enum="ParticleFlags">
+		</constant>
+		<constant name="PARTICLE_FLAG_MAX" value="5" enum="ParticleFlags">
 			Represents the size of the [enum ParticleFlags] enum.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
