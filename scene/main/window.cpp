@@ -366,6 +366,7 @@ void Window::set_position(const Point2i &p_position) {
 	position = p_position;
 
 	if (embedder) {
+		_update_embedded_position();
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -550,6 +551,7 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 	}
 
 	if (embedder) {
+		_update_embedded_position();
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
@@ -2440,6 +2442,16 @@ void Window::_update_embedded_window() {
 	};
 
 	updating_embedded_window = false;
+}
+
+void Window::_update_embedded_position() {
+	if (embedder) {
+		Rect2i parent_rect = embedder->get_visible_rect();
+		if (parent_rect != Rect2i()) {
+			Rect2i new_rect = fit_rect_in_parent(Rect2i(position, size), parent_rect);
+			position = new_rect.position;
+		}
+	}
 }
 
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
