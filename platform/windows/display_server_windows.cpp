@@ -1072,6 +1072,70 @@ String DisplayServerWindows::clipboard_get() const {
 	return ret;
 }
 
+Vector<String> DisplayServerWindows::clipboard_get_files() const {
+	_THREAD_SAFE_METHOD_
+
+	if (!windows.has(MAIN_WINDOW_ID)) {
+		return Vector<String>();
+	}
+
+	Vector<String> files;
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unable to open clipboard.");
+	}
+
+	if (IsClipboardFormatAvailable(CF_HDROP)) {
+		HGLOBAL mem = GetClipboardData(CF_HDROP);
+		if (mem != nullptr) {
+			HDROP hDropInfo = (HDROP)GlobalLock(mem);
+			if (hDropInfo != nullptr) {
+				int fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+
+				for (int i = 0; i < fcount; i++) {
+					LocalVector<wchar_t> buf;
+					int size;
+					size = DragQueryFileW(hDropInfo, i, nullptr, 0);
+					if (size == 0) {
+						continue;
+					}
+
+					// DragQueryFileW does not return long file paths, so we're gonna convert it to one.
+					// There's no point trying to detect a short path to skip this
+					// GetLongPathNameW will return the correct path anyway.
+					buf.resize(MAX_PATH);
+					DragQueryFileW(hDropInfo, i, buf.ptr(), MAX_PATH);
+
+					// This needs to be +1 because the returned path length doesn't count the terminator, but space is required for it.
+					size = GetLongPathNameW(buf.ptr(), nullptr, 0) + 1;
+					buf.resize(size);
+					GetLongPathNameW(buf.ptr(), buf.ptr(), size);
+					String file = String::utf16((const char16_t *)buf.ptr());
+					files.push_back(file);
+				}
+				GlobalUnlock(mem);
+			}
+		}
+	}
+
+	CloseClipboard();
+
+	return files;
+}
+
+int DisplayServerWindows::clipboard_get_file_count() const {
+	int fcount = 0;
+	if (IsClipboardFormatAvailable(CF_HDROP)) {
+		HGLOBAL mem = GetClipboardData(CF_HDROP);
+		if (mem != nullptr) {
+			HDROP hDropInfo = (HDROP)GlobalLock(mem);
+			if (hDropInfo != nullptr) {
+				fcount = DragQueryFileW(hDropInfo, 0xFFFFFFFF, nullptr, 0);
+			}
+		}
+	}
+	return fcount;
+}
+
 Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 	Ref<Image> image;
 	if (!windows.has(last_focused_window)) {
@@ -1151,6 +1215,10 @@ bool DisplayServerWindows::clipboard_has() const {
 	return (IsClipboardFormatAvailable(CF_TEXT) ||
 			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
 			IsClipboardFormatAvailable(CF_OEMTEXT));
+}
+
+bool DisplayServerWindows::clipboard_has_file() const {
+	return IsClipboardFormatAvailable(CF_HDROP);
 }
 
 bool DisplayServerWindows::clipboard_has_image() const {
