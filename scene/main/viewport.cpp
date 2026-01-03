@@ -1267,6 +1267,7 @@ void Viewport::set_transparent_background(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	transparent_bg = p_enable;
 	RS::get_singleton()->viewport_set_transparent_background(viewport, p_enable);
+	update_configuration_warnings();
 }
 
 bool Viewport::has_transparent_background() const {
@@ -3710,6 +3711,23 @@ PackedStringArray Viewport::get_configuration_warnings() const {
 	if (size.x <= 1 || size.y <= 1) {
 		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
 	}
+
+	if (transparent_bg && use_taa) {
+		warnings.push_back(RTR("TAA is not compatible with transparent Viewports. TAA will be disabled."));
+	}
+
+	if (transparent_bg && scaling_3d_mode != Viewport::SCALING_3D_MODE_BILINEAR) {
+		warnings.push_back(RTR("FSR or MetalFX 3D resolution scaling are not compatible with transparent Viewports. Bilinear 3D resolution scaling will be used instead."));
+	}
+
+	if (use_taa && (scaling_3d_mode == Viewport::SCALING_3D_MODE_FSR2 || scaling_3d_mode == Viewport::SCALING_3D_MODE_METALFX_TEMPORAL)) {
+		warnings.push_back(RTR("FSR 2 or MetalFX Temporal is not compatible with TAA. TAA will be disabled."));
+	}
+
+	if (scaling_3d_scale >= (1.0 + CMP_EPSILON) && scaling_3d_mode != Viewport::SCALING_3D_MODE_BILINEAR) {
+		warnings.push_back(RTR("FSR or MetalFX 3D resolution scaling are not designed for downsampling (resolution scale above 1.0). Bilinear 3D resolution scaling will be used instead."));
+	}
+
 	return warnings;
 }
 
@@ -3795,6 +3813,7 @@ void Viewport::set_use_taa(bool p_use_taa) {
 	}
 	use_taa = p_use_taa;
 	RS::get_singleton()->viewport_set_use_taa(viewport, p_use_taa);
+	update_configuration_warnings();
 }
 
 bool Viewport::is_using_taa() const {
@@ -4860,6 +4879,7 @@ void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 
 	scaling_3d_mode = p_scaling_3d_mode;
 	RS::get_singleton()->viewport_set_scaling_3d_mode(viewport, (RS::ViewportScaling3DMode)(int)p_scaling_3d_mode);
+	update_configuration_warnings();
 }
 
 Viewport::Scaling3DMode Viewport::get_scaling_3d_mode() const {
@@ -4875,6 +4895,7 @@ void Viewport::set_scaling_3d_scale(float p_scaling_3d_scale) {
 	scaling_3d_scale = CLAMP(p_scaling_3d_scale, 0.1, 2.0);
 
 	RS::get_singleton()->viewport_set_scaling_3d_scale(viewport, scaling_3d_scale);
+	update_configuration_warnings();
 }
 
 float Viewport::get_scaling_3d_scale() const {
