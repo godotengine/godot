@@ -205,6 +205,7 @@ private:
 	String full_dir;
 
 	bool is_invalidating = false;
+	bool ensure_visible_after_invalidating = false;
 
 	VBoxContainer *main_vbox = nullptr;
 
