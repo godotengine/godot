@@ -835,11 +835,13 @@ public:
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
 
-	//argsVariant call()
+	[[nodiscard]] bool operator==(const Variant &p_variant) const;
+	[[nodiscard]] bool operator<(const Variant &p_variant) const;
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator!=(const Variant &p_variant) const { return !(*this == p_variant); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<=(const Variant &p_variant) const { return !(p_variant < *this); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const Variant &p_variant) const { return p_variant < *this; }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const Variant &p_variant) const { return !(*this < p_variant); }
 
-	bool operator==(const Variant &p_variant) const;
-	bool operator!=(const Variant &p_variant) const;
-	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
 	uint32_t recursive_hash(int recursion_count) const;
 
