@@ -794,6 +794,21 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	}
 
 	Node *node = p_I->key;
+	Node *parent_node = node->get_parent();
+
+	// If the parent node is a packed scene, skip its owned children
+	int owned_child_count = 0;
+	if (parent_node->is_instance() // packed
+			&& parent_node != get_scene_node() // not inherited
+			&& !get_scene_node()->is_editable_instance(parent_node) // not editable
+	) {
+		for (int i = 0; i < parent_node->get_child_count(false); i++) {
+			Node *sibling = parent_node->get_child(i, false);
+			if (sibling->get_owner() == parent_node) {
+				owned_child_count += 1;
+			}
+		}
+	}
 
 	int current_node_index = node->get_index(false);
 	int current_item_index = -1;
@@ -814,12 +829,12 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		bool already_in_correct_location;
 		if (current_item_index >= 0) {
 			// If we just re-parented we know our index.
-			already_in_correct_location = current_item_index == current_node_index;
+			already_in_correct_location = current_item_index == current_node_index - owned_child_count;
 		} else if (p_correct_prev) {
 			// It's cheaper to check if we're set up correctly by checking via correct_prev if we can
 			already_in_correct_location = item->get_prev() == p_correct_prev;
 		} else {
-			already_in_correct_location = item->get_index() == current_node_index;
+			already_in_correct_location = item->get_index() == current_node_index - owned_child_count;
 		}
 
 		// Are we already in the right place?
@@ -836,7 +851,7 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		} else {
 			TreeItem *prev_item = p_correct_prev;
 			if (!prev_item) {
-				prev_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
+				prev_item = p_parent->get_child(CLAMP(current_node_index - owned_child_count - 1, 0, p_parent->get_child_count() - 1));
 			}
 			item->move_after(prev_item);
 		}

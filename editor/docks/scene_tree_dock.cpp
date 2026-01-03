@@ -855,12 +855,34 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				selection.reverse();
 			}
 
+			HashMap<Node *, int> owned_child_count_cache;
 			bool is_nowhere_to_move = false;
 			for (Node *E : selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
 				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
 
-				if ((MOVING_DOWN && (E->get_index() == E->get_parent()->get_child_count(false) - 1)) || (MOVING_UP && (E->get_index() == 0))) {
+				Node *parent_node = E->get_parent();
+
+				// If the parent node is a packed scene, prevent moving the selection before its owned children
+				int owned_child_count = 0;
+				if (owned_child_count_cache.has(parent_node)) {
+					owned_child_count = owned_child_count_cache.get(parent_node);
+				} else {
+					if (parent_node->is_instance() // packed
+							&& parent_node != edited_scene // not inherited
+							&& !edited_scene->is_editable_instance(parent_node) // not editable
+					) {
+						for (int i = 0; i < parent_node->get_child_count(false); i++) {
+							Node *sibling = parent_node->get_child(i, false);
+							if (sibling->get_owner() == parent_node) {
+								owned_child_count += 1;
+							}
+						}
+					}
+					owned_child_count_cache.insert(parent_node, owned_child_count);
+				}
+
+				if ((MOVING_DOWN && (E->get_index() == parent_node->get_child_count(false) - 1)) || (MOVING_UP && (E->get_index() == owned_child_count))) {
 					is_nowhere_to_move = true;
 					break;
 				}
