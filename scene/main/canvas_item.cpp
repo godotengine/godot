@@ -727,7 +727,12 @@ void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, cons
 		return;
 	}
 
+	constexpr int max_steps = 4096;
 	int steps = (p_aligned) ? Math::ceil(length / p_dash) : Math::floor(length / p_dash);
+	if (steps > max_steps || steps < 0) {
+		WARN_PRINT("The number of dashes created in draw_dashed_line() (" + itos(steps) + ") is invalid, or greater than the maximum amount allowed (" + itos(max_steps) + "). Part of the line will be drawn as a plain line.");
+		steps = max_steps;
+	}
 	if (steps % 2 == 0) {
 		steps--;
 	}
