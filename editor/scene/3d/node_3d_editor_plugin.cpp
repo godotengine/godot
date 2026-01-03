@@ -3330,11 +3330,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 				if (cam != nullptr && cam != previewing) {
 					//then switch the viewport's camera to the scene's viewport camera
 					if (previewing != nullptr) {
-						previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+						previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 						previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					}
 					previewing = cam;
-					previewing->connect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+					previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 					previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 					surface->queue_redraw();
@@ -4502,13 +4502,17 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 
 	if (!previewing_cinema) {
 		if (previewing != nullptr) {
-			previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+			previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 			previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		}
 
 		previewing = nullptr;
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
+
+		preview_camera->disconnect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 		preview_camera->set_pressed(false);
+		preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
+
 		if (!preview) {
 			preview_camera->hide();
 		} else {
@@ -4763,6 +4767,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		if (previewing_cinema) {
 			_update_centered_labels();
 			surface->queue_redraw();
+			preview_camera->hide();
 		}
 	}
 
@@ -4780,7 +4785,9 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			previewing_camera = true;
 			_update_navigation_controls_visibility();
 			preview_camera->set_pressed(true);
-			preview_camera->show();
+			if (!previewing_cinema) {
+				preview_camera->show();
+			}
 		}
 	}
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
