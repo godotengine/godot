@@ -1,0 +1,4 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 8: "TraitA" trait extending "Node" does not match class inheritance.
+>> ERROR at line 13: "ClassA" is not a trait.
+>> ERROR at line 16: "interact" function from trait "Interactable" conflicts with an already-existing member inherited from parent of using class.
