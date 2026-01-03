@@ -45,16 +45,7 @@ void NodePath::_update_hash_cache() const {
 		h = h ^ ssn[i].hash();
 	}
 
-	data->hash_cache_valid = true;
 	data->hash_cache = h;
-}
-
-void NodePath::prepend_period() {
-	if (data->path.size() && data->path[0].operator String() != ".") {
-		data->path.insert(0, ".");
-		data->concatenated_path = StringName();
-		data->hash_cache_valid = false;
-	}
 }
 
 bool NodePath::is_absolute() const {
@@ -117,10 +108,8 @@ bool NodePath::operator==(const NodePath &p_path) const {
 		return false;
 	}
 
-	if (data->hash_cache_valid && p_path.data->hash_cache_valid) {
-		if (data->hash_cache != p_path.data->hash_cache) {
-			return false;
-		}
+	if (data->hash_cache != p_path.data->hash_cache) {
+		return false;
 	}
 
 	if (data->absolute != p_path.data->absolute) {
@@ -360,7 +349,7 @@ void NodePath::simplify() {
 		}
 	}
 	data->concatenated_path = StringName();
-	data->hash_cache_valid = false;
+	_update_hash_cache();
 }
 
 NodePath NodePath::simplified() const {
@@ -378,7 +367,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 	data->refcount.init();
 	data->absolute = p_absolute;
 	data->path = p_path;
-	data->hash_cache_valid = false;
+	_update_hash_cache();
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
@@ -391,7 +380,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->subpath = p_subpath;
-	data->hash_cache_valid = false;
+	_update_hash_cache();
 }
 
 NodePath::NodePath(const NodePath &p_path) {
@@ -455,9 +444,9 @@ NodePath::NodePath(const String &p_path) {
 	data->refcount.init();
 	data->absolute = absolute;
 	data->subpath = subpath;
-	data->hash_cache_valid = false;
 
 	if (slices == 0) {
+		_update_hash_cache();
 		return;
 	}
 	data->path.resize(slices);
@@ -478,6 +467,8 @@ NodePath::NodePath(const String &p_path) {
 			last_is_slash = false;
 		}
 	}
+
+	_update_hash_cache();
 }
 
 NodePath::~NodePath() {
