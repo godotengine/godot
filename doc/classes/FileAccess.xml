@@ -245,7 +245,7 @@
 		<method name="get_length" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the size of the file in bytes. For a pipe, returns the number of bytes available for reading from the pipe.
+				Returns the size of the loaded file's buffer data in memory in bytes. For a pipe, returns the number of bytes available for reading from the pipe. See also [method get_size].
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -326,7 +326,9 @@
 			<return type="int" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the size of the file at the given path, in bytes, or [code]-1[/code] on error.
+				Returns the size of the file at the given path from the file system, in bytes, or [code]-1[/code] on error.
+				[b]Note:[/b] This method returns the size of the file from the file system, so any changes made to the file via the [FileAccess] class will [b]not[/b] change the returned value of this method until [method flush] is called directly or indirectly (for example, via [method seek]), because the changes are stored inside a buffer in memory.
+				If you want to get the length of the file buffer before it's saved to the file system, use [method get_length] instead.
 			</description>
 		</method>
 		<method name="get_unix_permissions" qualifiers="static">
