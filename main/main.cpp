@@ -149,6 +149,10 @@
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
+#ifdef GODOT_USER_TEST_ENABLED
+#include "main/usertest/usertest.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -287,6 +291,9 @@ static bool validate_extension_api = false;
 static String validate_extension_api_file;
 #endif
 bool profile_gpu = false;
+#ifdef GODOT_USER_TEST_ENABLED
+static bool will_run_usertest = false;
+#endif
 
 // Constants.
 
@@ -720,6 +727,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef TESTS_ENABLED
 	print_help_option("--test [--help]", "Run unit tests. Use --test --help for more information.\n");
 #endif // TESTS_ENABLED
+	print_help_option("--user-test", "Run the user test. Note: This is a development tool. By default, the user test does nothing.\n");
 	OS::get_singleton()->print("\n");
 }
 
@@ -1619,6 +1627,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing file to load argument after --validate-extension-api, aborting.");
 				goto error;
 			}
+#ifdef GODOT_USER_TEST_ENABLED
+		} else if (arg == "--user-test") {
+			// Register as an editor instance to use low-end fallback if relevant.
+			editor = true;
+			cmdline_tool = true;
+			will_run_usertest = true;
+			print_line("Running user test");
+			// Hack. Not needed but otherwise we end up detecting that this should
+			// run the project instead of a cmdline tool.
+			// Needs full refactoring to fix properly.
+			main_args.push_back(arg);
+#endif
 		} else if (arg == "--import") {
 			editor = true;
 			cmdline_tool = true;
@@ -4171,6 +4191,18 @@ int Main::start() {
 			return valid ? EXIT_SUCCESS : EXIT_FAILURE;
 		}
 	}
+
+#ifdef GODOT_USER_TEST_ENABLED
+	if (will_run_usertest) {
+		bool valid = run_usertest();
+		if (valid) {
+			print_line("User test succeeded.");
+		} else {
+			ERR_PRINT("User test failed.");
+		}
+		return valid ? EXIT_SUCCESS : EXIT_FAILURE;
+	}
+#endif
 
 #ifndef DISABLE_DEPRECATED
 	if (converting_project) {
