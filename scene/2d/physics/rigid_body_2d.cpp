@@ -639,18 +639,6 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-PackedStringArray RigidBody2D::get_configuration_warnings() const {
-	Transform2D t = get_transform();
-
-	PackedStringArray warnings = PhysicsBody2D::get_configuration_warnings();
-
-	if (Math::abs(t.columns[0].length() - 1.0) > 0.05 || Math::abs(t.columns[1].length() - 1.0) > 0.05) {
-		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
-	}
-
-	return warnings;
-}
-
 void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &RigidBody2D::set_mass);
 	ClassDB::bind_method(D_METHOD("get_mass"), &RigidBody2D::get_mass);

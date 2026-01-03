@@ -45,17 +45,15 @@ void GodotBodyPair2D::_add_contact(const Vector2 &p_point_A, const Vector2 &p_po
 }
 
 void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B) {
-	Vector2 local_A = A->get_inv_transform().basis_xform(p_point_A);
-	Vector2 local_B = B->get_inv_transform().basis_xform(p_point_B - offset_B);
-
 	int new_index = contact_count;
 
 	ERR_FAIL_COND(new_index >= (MAX_CONTACTS + 1));
 
 	Contact contact;
-	contact.local_A = local_A;
-	contact.local_B = local_B;
-	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.position_A = p_point_A;
+	contact.position_B = p_point_B;
+	contact.axis = p_point_A - p_point_B;
+	contact.normal = contact.axis.normalized();
 	contact.used = true;
 
 	// Attempt to determine if the contact will be reused.
@@ -63,8 +61,8 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
-		if (c.local_A.distance_squared_to(local_A) < (recycle_radius_2) &&
-				c.local_B.distance_squared_to(local_B) < (recycle_radius_2)) {
+		if (c.position_A.distance_squared_to(p_point_A) < (recycle_radius_2) &&
+				c.position_B.distance_squared_to(p_point_B) < (recycle_radius_2)) {
 			contact.acc_normal_impulse = c.acc_normal_impulse;
 			contact.acc_tangent_impulse = c.acc_tangent_impulse;
 			contact.acc_bias_impulse = c.acc_bias_impulse;
@@ -77,29 +75,17 @@ void GodotBodyPair2D::_contact_added_callback(const Vector2 &p_point_A, const Ve
 	// Figure out if the contact amount must be reduced to fit the new contact.
 	if (new_index == MAX_CONTACTS) {
 		// Remove the contact with the minimum depth.
-
-		const Transform2D &transform_A = A->get_transform();
-		const Transform2D &transform_B = B->get_transform();
-
 		int least_deep = -1;
 		real_t min_depth;
 
 		// Start with depth for new contact.
 		{
-			Vector2 global_A = transform_A.basis_xform(contact.local_A);
-			Vector2 global_B = transform_B.basis_xform(contact.local_B) + offset_B;
-
-			Vector2 axis = global_A - global_B;
-			min_depth = axis.dot(contact.normal);
+			min_depth = contact.axis.dot(contact.normal);
 		}
 
 		for (int i = 0; i < contact_count; i++) {
 			const Contact &c = contacts[i];
-			Vector2 global_A = transform_A.basis_xform(c.local_A);
-			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
-
-			Vector2 axis = global_A - global_B;
-			real_t depth = axis.dot(c.normal);
+			real_t depth = c.axis.dot(c.normal);
 
 			if (depth < min_depth) {
 				min_depth = depth;
@@ -124,9 +110,6 @@ void GodotBodyPair2D::_validate_contacts() {
 	real_t max_separation = space->get_contact_max_separation();
 	real_t max_separation2 = max_separation * max_separation;
 
-	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform();
-
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
 
@@ -137,12 +120,9 @@ void GodotBodyPair2D::_validate_contacts() {
 		} else {
 			c.used = false;
 
-			Vector2 global_A = transform_A.basis_xform(c.local_A);
-			Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
-			Vector2 axis = global_A - global_B;
-			real_t depth = axis.dot(c.normal);
+			real_t depth = c.axis.dot(c.normal);
 
-			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
+			if (depth < -max_separation || (c.normal * depth - c.axis).length_squared() > max_separation2) {
 				erase = true;
 			}
 		}
@@ -406,9 +386,6 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 	bool do_process = false;
 
 	const Vector2 &offset_A = A->get_transform().get_origin();
-	const Transform2D &transform_A = A->get_transform();
-	const Transform2D &transform_B = B->get_transform();
-
 	real_t inv_inertia_A = collide_A ? A->get_inv_inertia() : 0.0;
 	real_t inv_inertia_B = collide_B ? B->get_inv_inertia() : 0.0;
 
@@ -419,11 +396,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		Contact &c = contacts[i];
 		c.active = false;
 
-		Vector2 global_A = transform_A.basis_xform(c.local_A);
-		Vector2 global_B = transform_B.basis_xform(c.local_B) + offset_B;
-
-		Vector2 axis = global_A - global_B;
-		real_t depth = axis.dot(c.normal);
+		real_t depth = c.axis.dot(c.normal);
 
 		if (depth <= 0.0) {
 			continue;
@@ -431,13 +404,13 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
-			space->add_debug_contact(global_A + offset_A);
-			space->add_debug_contact(global_B + offset_A);
+			space->add_debug_contact(c.position_A + offset_A);
+			space->add_debug_contact(c.position_B + offset_A);
 		}
 #endif
 
-		c.rA = global_A - A->get_center_of_mass();
-		c.rB = global_B - B->get_center_of_mass() - offset_B;
+		c.rA = c.position_A - A->get_center_of_mass();
+		c.rB = c.position_B - B->get_center_of_mass() - offset_B;
 
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
@@ -464,10 +437,10 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			Vector2 crB = Vector2(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x) + B->get_linear_velocity();
 			Vector2 crA = Vector2(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x) + A->get_linear_velocity();
 			if (A->can_report_contacts()) {
-				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+				A->add_contact(c.position_A + offset_A, -c.normal, depth, shape_A, crA, c.position_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
 			}
 			if (B->can_report_contacts()) {
-				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, c.acc_impulse);
+				B->add_contact(c.position_B + offset_A, c.normal, depth, shape_B, crB, c.position_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, c.acc_impulse);
 			}
 		}
 

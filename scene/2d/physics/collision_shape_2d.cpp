@@ -67,13 +67,11 @@ void CollisionShape2D::_notification(int p_what) {
 				_update_in_shape_owner();
 			}
 		} break;
-
-		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
 		} break;
-
 		case NOTIFICATION_UNPARENTED: {
 			if (collision_object) {
 				collision_object->remove_shape_owner(owner_id);
@@ -299,7 +297,7 @@ void CollisionShape2D::_bind_methods() {
 }
 
 CollisionShape2D::CollisionShape2D() {
-	set_notify_local_transform(true);
+	set_notify_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
 }
