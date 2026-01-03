@@ -58,7 +58,7 @@
 			<param index="2" name="extension" type="String" default="&quot;&quot;" />
 			<param index="3" name="keep" type="bool" default="false" />
 			<description>
-				Creates a temporary file. This file will be freed when the returned [FileAccess] is freed.
+				Creates a temporary file and opens it for writing or reading, depending on the [param mode_flags]. See [enum ModeFlags] for possible mode flags. This file will be freed when the returned [FileAccess] is freed.
 				If [param prefix] is not empty, it will be prefixed to the file name, separated by a [code]-[/code].
 				If [param extension] is not empty, it will be appended to the temporary file name.
 				If [param keep] is [code]true[/code], the file is not deleted when the returned [FileAccess] is freed.
@@ -635,7 +635,7 @@
 			<description>
 				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code). This advances the file cursor by the number of bytes written. Returns [code]true[/code] if the operation is successful.
 				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method, as described in the [url=$DOCS_URL/tutorials/io/binary_serialization_api.html]Binary serialization API[/url] documentation.
-				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
+				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for possible usage flags.
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
