@@ -122,21 +122,6 @@ void GDScriptTextDocument::notify_client_show_symbol(const LSP::DocumentSymbol *
 	GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
 }
 
-void GDScriptTextDocument::initialize() {
-	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		for (const KeyValue<StringName, ClassMembers> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members) {
-			const ClassMembers &members = E.value;
-
-			for (const KeyValue<String, const LSP::DocumentSymbol *> &F : members) {
-				const LSP::DocumentSymbol *symbol = members.get(F.key);
-				LSP::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(String(E.key), F.key);
-				native_member_completions.push_back(item.to_json());
-			}
-		}
-	}
-}
-
 Variant GDScriptTextDocument::nativeSymbol(const Dictionary &p_params) {
 	Variant ret;
 
