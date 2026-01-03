@@ -33,6 +33,10 @@
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
 			The mode used to cast shadows from this instance.
 		</member>
+		<member name="culling_mode" type="int" setter="set_culling_mode" getter="get_culling_mode" enum="GeometryInstance3D.CullingMode" default="0">
+			The frustum/occlusion culling mode to use for this instance. See [enum CullingMode] for possible values.
+			[b]Note:[/b] Not to be confused with backface culling on materials (see [member BaseMaterial3D.cull_mode] instead).
+		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			Overrides the bounding box of this node with a custom one. This can be used to avoid the expensive [AABB] recalculation that happens when a skeleton is used with a [MeshInstance3D] or to have precise control over the [MeshInstance3D]'s bounding box. To use the default AABB, set value to an [AABB] with all fields set to [code]0.0[/code]. To avoid frustum culling, set [member custom_aabb] to a very large AABB that covers your entire game world such as [code]AABB(-10000, -10000, -10000, 20000, 20000, 20000)[/code]. To disable all forms of culling (including occlusion culling), call [method RenderingServer.instance_set_ignore_culling] on the [GeometryInstance3D]'s [RID].
 		</member>
@@ -50,7 +54,7 @@
 			The global illumination mode to use for the whole geometry. To avoid inconsistent results, use a mode that matches the purpose of the mesh during gameplay (static/dynamic).
 			[b]Note:[/b] Lights' bake mode will also affect the global illumination rendering. See [member Light3D.light_bake_mode].
 		</member>
-		<member name="ignore_occlusion_culling" type="bool" setter="set_ignore_occlusion_culling" getter="is_ignoring_occlusion_culling" default="false">
+		<member name="ignore_occlusion_culling" type="bool" setter="set_ignore_occlusion_culling" getter="is_ignoring_occlusion_culling" deprecated="Use [member culling_mode] instead.">
 			If [code]true[/code], disables occlusion culling for this instance. Useful for gizmos that must be rendered even when occlusion culling is in use.
 			[b]Note:[/b] [member ignore_occlusion_culling] does not affect frustum culling (which is what happens when an object is not visible given the camera's angle). To avoid frustum culling, set [member custom_aabb] to a very large AABB that covers your entire game world such as [code]AABB(-10000, -10000, -10000, 20000, 20000, 20000)[/code].
 		</member>
@@ -114,6 +118,15 @@
 		</constant>
 		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
 			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED]. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
+		</constant>
+		<constant name="CULLING_MODE_NORMAL" value="0" enum="CullingMode">
+			Perform frustum and occlusion culling. This mode should be used in most cases, as it avoids rendering the object if it isn't visible, which improves performance. Note that occlusion culling requires [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] to be enabled.
+		</constant>
+		<constant name="CULLING_MODE_IGNORE_OCCLUSION_CULLING" value="1" enum="CullingMode">
+			Perform frustum culling only. With large amounts of instances, this can slightly improve performance in situations where you know the object will never be culled by another object. This is because culling has a CPU cost (especially occlusion culling).
+		</constant>
+		<constant name="CULLING_MODE_IGNORE_OCCLUSION_AND_FRUSTUM_CULLING" value="2" enum="CullingMode">
+			Don't perform any kind of culling (neither frustum nor occlusion). With large amounts of instances, this can slightly improve performance in situations where you know the object will never be culled by another object and will always be in the view frustum. This is because culling has a CPU cost (especially occlusion culling). This can also be used to force the object to render regardless of its position, which can be useful to precompile shaders in a loading screen.
 		</constant>
 		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			The standard texel density for lightmapping with [LightmapGI].
