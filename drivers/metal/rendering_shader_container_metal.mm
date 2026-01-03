@@ -282,12 +282,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 		msl_options.ios_support_base_vertex_instance = true;
 	}
 
-	// We don't currently allow argument buffers when using dynamic buffers as
-	// the current implementation does not update the argument buffer each time
-	// the dynamic buffer changes. This is a future TODO.
-	bool argument_buffers_allowed = get_shader_reflection().has_dynamic_buffers == false;
-
-	if (device_profile->features.use_argument_buffers && argument_buffers_allowed) {
+	if (device_profile->features.use_argument_buffers) {
 		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
 		msl_options.argument_buffers = true;
 		mtl_reflection_data.set_uses_argument_buffers(true);

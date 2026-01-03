@@ -3327,6 +3327,9 @@
 			If [code]true[/code], the Forward+ renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented on Windows and macOS.
 		</member>
+		<member name="rendering/rendering_device/metal3/enable_pipeline_barriers" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the Metal 3 renderer use pipeline barriers starting from the 26 release of Apple's OSes. This improves performance on Apple Silicon devices.
+		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.
 			[b]Note:[/b] This property is unable to control the pipeline caching the GPU driver itself does. Only turn this off along with deleting the contents of the driver's cache if you wish to simulate the experience a user will get when starting the game for the first time.

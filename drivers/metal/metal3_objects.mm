@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  metal_objects.mm                                                      */
+/*  metal3_objects.mm                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -48,33 +48,59 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#import "metal_objects.h"
+#import "metal3_objects.h"
 
 #import "metal_utils.h"
 #import "pixel_formats.h"
-#import "rendering_device_driver_metal.h"
+#import "rendering_device_driver_metal3.h"
 #import "rendering_shader_container_metal.h"
 
-#import <os/signpost.h>
 #import <algorithm>
 
 // We have to undefine these macros because they are defined in NSObjCRuntime.h.
 #undef MIN
 #undef MAX
 
+using namespace MTL3;
+
+MDCommandBuffer::MDCommandBuffer(id<MTLCommandQueue> p_queue, ::RenderingDeviceDriverMetal *p_device_driver) :
+		_scratch(p_queue.device), device_driver(p_device_driver), queue(p_queue) {
+	type = MDCommandBufferStateType::None;
+	use_barriers = device_driver->use_barriers;
+	if (use_barriers) {
+		// Already validated availability if use_barriers is true.
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+		MTLResidencySetDescriptor *rs_desc = [MTLResidencySetDescriptor new];
+		[rs_desc setInitialCapacity:10];
+		rs_desc.label = @"Command Residency Set";
+		NSError *error;
+		_frame_state.rs = [p_queue.device newResidencySetWithDescriptor:rs_desc error:&error];
+		CRASH_COND_MSG(error != nil, vformat("Failed to create residency set: %s", String(error.localizedDescription.UTF8String)));
+		GODOT_CLANG_WARNING_POP
+	}
+}
+
 void MDCommandBuffer::begin_label(const char *p_label_name, const Color &p_color) {
 	NSString *s = [[NSString alloc] initWithBytesNoCopy:(void *)p_label_name length:strlen(p_label_name) encoding:NSUTF8StringEncoding freeWhenDone:NO];
-	[commandBuffer pushDebugGroup:s];
+	[command_buffer() pushDebugGroup:s];
 }
 
 void MDCommandBuffer::end_label() {
-	[commandBuffer popDebugGroup];
+	[command_buffer() popDebugGroup];
 }
 
 void MDCommandBuffer::begin() {
 	DEV_ASSERT(commandBuffer == nil && !state_begin);
 	state_begin = true;
+	bzero(pending_after_stages, sizeof(pending_after_stages));
+	bzero(pending_before_queue_stages, sizeof(pending_before_queue_stages));
 	binding_cache.clear();
+	_scratch.reset();
+	release_resources();
+}
+
+MDCommandBuffer::Alloc MDCommandBuffer::allocate_arg_buffer(uint32_t p_size) {
+	return _scratch.allocate(p_size);
 }
 
 void MDCommandBuffer::end() {
@@ -92,10 +118,164 @@ void MDCommandBuffer::end() {
 
 void MDCommandBuffer::commit() {
 	end();
+	if (use_barriers) {
+		if (_scratch.is_changed()) {
+			for (id<MTLBuffer> buf : _scratch.get_buffers()) {
+				[_frame_state.rs addAllocation:buf];
+			}
+			_scratch.clear_changed();
+			[_frame_state.rs commit];
+		}
+	}
 	[commandBuffer commit];
 	commandBuffer = nil;
 	state_begin = false;
 }
+
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+
+static MTLStages convert_src_pipeline_stages_to_metal(BitField<RDD::PipelineStageBits> p_stages) {
+	p_stages.clear_flag(RDD::PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT | RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
+		return MTLStageAll;
+	}
+
+	MTLStages mtlStages = 0;
+
+	// Vertex stage mappings
+	if (p_stages & (RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT | RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT | RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | RDD::PIPELINE_STAGE_GEOMETRY_SHADER_BIT)) {
+		mtlStages |= MTLStageVertex;
+	}
+
+	// Fragment stage mappings (includes resolve, which on Metal is handled in the render pipeline)
+	if (p_stages & (RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT | RDD::PIPELINE_STAGE_RESOLVE_BIT | RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
+		mtlStages |= MTLStageFragment;
+	}
+
+	// Compute stage
+	if (p_stages & RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT) {
+		mtlStages |= MTLStageDispatch;
+	}
+
+	// Blit stage (transfer operations)
+	if (p_stages & (RDD::PIPELINE_STAGE_COPY_BIT)) {
+		mtlStages |= MTLStageBlit;
+	}
+
+	// ALL_GRAPHICS_BIT special case
+	if (p_stages & RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT) {
+		mtlStages |= (MTLStageVertex | MTLStageFragment);
+	}
+
+	return mtlStages;
+}
+
+static MTLStages convert_dst_pipeline_stages_to_metal(BitField<RDD::PipelineStageBits> p_stages) {
+	p_stages.clear_flag(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+
+	if (p_stages.has_flag(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT | RDD::PIPELINE_STAGE_TOP_OF_PIPE_BIT)) {
+		return MTLStageAll;
+	}
+
+	MTLStages mtlStages = 0;
+
+	if (p_stages & (RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT | RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT | RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | RDD::PIPELINE_STAGE_GEOMETRY_SHADER_BIT)) {
+		mtlStages |= MTLStageVertex;
+	}
+
+	if (p_stages & (RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT | RDD::PIPELINE_STAGE_RESOLVE_BIT)) {
+		mtlStages |= MTLStageFragment;
+	}
+
+	if (p_stages & RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT) {
+		mtlStages |= MTLStageDispatch;
+	}
+
+	if (p_stages & (RDD::PIPELINE_STAGE_COPY_BIT | RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
+		mtlStages |= MTLStageBlit;
+	}
+
+	if (p_stages & RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT) {
+		mtlStages |= (MTLStageVertex | MTLStageFragment);
+	}
+
+	return mtlStages;
+}
+
+void MDCommandBuffer::_encode_barrier(id<MTLCommandEncoder> p_enc) {
+	DEV_ASSERT(p_enc);
+
+	static const MTLStages empty_stages[STAGE_MAX] = { 0, 0, 0 };
+	if (memcmp(&pending_before_queue_stages, empty_stages, sizeof(pending_before_queue_stages)) == 0) {
+		return;
+	}
+
+	int stage = STAGE_MAX;
+	if ([p_enc conformsToProtocol:@protocol(MTLRenderCommandEncoder)] && pending_after_stages[STAGE_RENDER] != 0) {
+		stage = STAGE_RENDER;
+	} else if ([p_enc conformsToProtocol:@protocol(MTLComputeCommandEncoder)] && pending_after_stages[STAGE_COMPUTE] != 0) {
+		stage = STAGE_COMPUTE;
+	} else if ([p_enc conformsToProtocol:@protocol(MTLBlitCommandEncoder)] && pending_after_stages[STAGE_BLIT] != 0) {
+		stage = STAGE_BLIT;
+	}
+
+	if (stage == STAGE_MAX) {
+		return;
+	}
+
+	[p_enc barrierAfterQueueStages:pending_after_stages[stage] beforeStages:pending_before_queue_stages[stage]];
+	pending_before_queue_stages[stage] = 0;
+	pending_after_stages[stage] = 0;
+}
+
+void MDCommandBuffer::pipeline_barrier(BitField<RDD::PipelineStageBits> p_src_stages,
+		BitField<RDD::PipelineStageBits> p_dst_stages,
+		VectorView<RDD::MemoryAccessBarrier> p_memory_barriers,
+		VectorView<RDD::BufferBarrier> p_buffer_barriers,
+		VectorView<RDD::TextureBarrier> p_texture_barriers) {
+	MTLStages after_stages = convert_src_pipeline_stages_to_metal(p_src_stages);
+	if (after_stages == 0) {
+		return;
+	}
+
+	MTLStages before_stages = convert_dst_pipeline_stages_to_metal(p_dst_stages);
+	if (before_stages == 0) {
+		return;
+	}
+
+	// Encode intra-encoder memory barrier if an encoder is active for matching stages.
+	if (render.encoder != nil) {
+		MTLRenderStages render_after = static_cast<MTLRenderStages>(after_stages & (MTLStageVertex | MTLStageFragment));
+		MTLRenderStages render_before = static_cast<MTLRenderStages>(before_stages & (MTLStageVertex | MTLStageFragment));
+		if (render_after != 0 && render_before != 0) {
+			[render.encoder memoryBarrierWithScope:MTLBarrierScopeBuffers | MTLBarrierScopeTextures afterStages:render_after beforeStages:render_before];
+		}
+	} else if (compute.encoder != nil) {
+		if (after_stages & MTLStageDispatch) {
+			[compute.encoder memoryBarrierWithScope:MTLBarrierScopeBuffers | MTLBarrierScopeTextures];
+		}
+	}
+	// Blit encoder has no memory barrier API.
+
+	// Also cache for inter-pass barriers.
+	if (after_stages & (MTLStageVertex | MTLStageFragment)) {
+		pending_after_stages[STAGE_RENDER] |= after_stages;
+		pending_before_queue_stages[STAGE_RENDER] |= before_stages;
+	}
+
+	if (after_stages & MTLStageDispatch) {
+		pending_after_stages[STAGE_COMPUTE] |= after_stages;
+		pending_before_queue_stages[STAGE_COMPUTE] |= before_stages;
+	}
+
+	if (after_stages & MTLStageBlit) {
+		pending_after_stages[STAGE_BLIT] |= after_stages;
+		pending_before_queue_stages[STAGE_BLIT] |= before_stages;
+	}
+}
+
+GODOT_CLANG_WARNING_POP
 
 void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 	MDPipeline *p = (MDPipeline *)(p_pipeline.id);
@@ -149,6 +329,7 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 			}
 #endif
 			render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:render.desc];
+			_encode_barrier(render.encoder);
 		}
 
 		if (render.pipeline != rp) {
@@ -159,8 +340,9 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 			// capturing a Metal frame in Xcode.
 			//
 			// If we don't mark as dirty, then some bindings will generate a validation error.
-			binding_cache.clear();
+			// binding_cache.clear();
 			render.mark_uniforms_dirty();
+
 			if (render.pipeline != nullptr && render.pipeline->depth_stencil != rp->depth_stencil) {
 				render.dirty.set_flag(RenderState::DIRTY_DEPTH);
 			}
@@ -230,6 +412,8 @@ id<MTLBlitCommandEncoder> MDCommandBuffer::_ensure_blit_encoder() {
 
 	type = MDCommandBufferStateType::Blit;
 	blit.encoder = command_buffer().blitCommandEncoder;
+	_encode_barrier(blit.encoder);
+
 	return blit.encoder;
 }
 
@@ -256,7 +440,9 @@ void MDCommandBuffer::resolve_texture(RDD::TextureID p_src_texture, RDD::Texture
 	mtlColorAttDesc.slice = p_src_layer;
 	mtlColorAttDesc.resolveLevel = p_dst_mipmap;
 	mtlColorAttDesc.resolveSlice = p_dst_layer;
-	encodeRenderCommandEncoderWithDescriptor(mtlRPD, @"Resolve Image");
+	id<MTLRenderCommandEncoder> enc = get_new_render_encoder_with_descriptor(mtlRPD);
+	enc.label = @"Resolve Image";
+	[enc endEncoding];
 }
 
 void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::TextureLayout p_texture_layout, const Color &p_color, const RDD::TextureSubresourceRange &p_subresources) {
@@ -317,7 +503,9 @@ void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::Texture
 					caDesc.slice = layerStart;
 				}
 				desc.renderTargetArrayLength = layerCnt;
-				encodeRenderCommandEncoderWithDescriptor(desc, @"Clear Image");
+				id<MTLRenderCommandEncoder> enc = get_new_render_encoder_with_descriptor(desc);
+				enc.label = @"Clear Image";
+				[enc endEncoding];
 			} else {
 				for (uint32_t layer = layerStart; layer < layerEnd; layer++) {
 					if (is3D) {
@@ -325,7 +513,9 @@ void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::Texture
 					} else {
 						caDesc.slice = layer;
 					}
-					encodeRenderCommandEncoderWithDescriptor(desc, @"Clear Image");
+					id<MTLRenderCommandEncoder> enc = get_new_render_encoder_with_descriptor(desc);
+					enc.label = @"Clear Image";
+					[enc endEncoding];
 				}
 			}
 		}
@@ -580,7 +770,7 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 	}
 }
 
-void MDCommandBuffer::encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDescriptor *p_desc, NSString *p_label) {
+id<MTLRenderCommandEncoder> MDCommandBuffer::get_new_render_encoder_with_descriptor(MTLRenderPassDescriptor *p_desc) {
 	switch (type) {
 		case MDCommandBufferStateType::None:
 			break;
@@ -596,11 +786,8 @@ void MDCommandBuffer::encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDesc
 	}
 
 	id<MTLRenderCommandEncoder> enc = [command_buffer() renderCommandEncoderWithDescriptor:p_desc];
-	if (p_label != nil) {
-		[enc pushDebugGroup:p_label];
-		[enc popDebugGroup];
-	}
-	[enc endEncoding];
+	_encode_barrier(enc);
+	return enc;
 }
 
 #pragma mark - Render Commands
@@ -784,7 +971,9 @@ void MDCommandBuffer::_render_set_dirty_state() {
 		}
 	}
 
-	render.resource_tracker.encode(render.encoder);
+	if (!use_barriers) {
+		render.resource_tracker.encode(render.encoder);
+	}
 
 	render.dirty.clear();
 }
@@ -966,10 +1155,10 @@ void MDCommandBuffer::_render_bind_uniform_sets() {
 			continue;
 		}
 		if (shader->uses_argument_buffers) {
-			set->bind_uniforms_argument_buffers(shader, render, index, dynamic_offsets, device_driver->frame_index(), device_driver->frame_count());
+			_bind_uniforms_argument_buffers(set, shader, index, dynamic_offsets);
 		} else {
 			DirectEncoder de(render.encoder, binding_cache);
-			set->bind_uniforms_direct(shader, de, index, dynamic_offsets);
+			_bind_uniforms_direct(set, shader, de, index, dynamic_offsets);
 		}
 	}
 }
@@ -1213,6 +1402,7 @@ void MDCommandBuffer::render_next_subpass() {
 		render.desc = desc;
 	} else {
 		render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:desc];
+		_encode_barrier(render.encoder);
 
 		if (!render.is_rendering_entire_area) {
 			_render_clear_render_area();
@@ -1444,6 +1634,7 @@ void MDCommandBuffer::ComputeState::end_encoding() {
 void MDCommandBuffer::_compute_set_dirty_state() {
 	if (compute.dirty.has_flag(ComputeState::DIRTY_PIPELINE)) {
 		compute.encoder = [command_buffer() computeCommandEncoderWithDispatchType:MTLDispatchTypeConcurrent];
+		_encode_barrier(compute.encoder);
 		[compute.encoder setComputePipelineState:compute.pipeline->state];
 	}
 
@@ -1457,7 +1648,9 @@ void MDCommandBuffer::_compute_set_dirty_state() {
 		}
 	}
 
-	compute.resource_tracker.encode(compute.encoder);
+	if (!use_barriers) {
+		compute.resource_tracker.encode(compute.encoder);
+	}
 
 	compute.dirty.clear();
 }
@@ -1485,10 +1678,10 @@ void MDCommandBuffer::_compute_bind_uniform_sets() {
 			continue;
 		}
 		if (shader->uses_argument_buffers) {
-			set->bind_uniforms_argument_buffers(shader, compute, index, dynamic_offsets, device_driver->frame_index(), device_driver->frame_count());
+			_bind_uniforms_argument_buffers_compute(set, shader, index, dynamic_offsets);
 		} else {
 			DirectEncoder de(compute.encoder, binding_cache);
-			set->bind_uniforms_direct(shader, de, index, dynamic_offsets);
+			_bind_uniforms_direct(set, shader, de, index, dynamic_offsets);
 		}
 	}
 }
@@ -1553,8 +1746,10 @@ void MDCommandBuffer::compute_dispatch_indirect(RDD::BufferID p_indirect_buffer,
 }
 
 void MDCommandBuffer::reset() {
+	push_constant_binding = UINT32_MAX;
 	push_constant_data_len = 0;
 	type = MDCommandBufferStateType::None;
+	binding_cache.clear();
 }
 
 void MDCommandBuffer::_end_compute_dispatch() {
@@ -1576,19 +1771,19 @@ void MDCommandBuffer::_end_blit() {
 MDComputeShader::MDComputeShader(CharString p_name,
 		Vector<UniformSet> p_sets,
 		bool p_uses_argument_buffers,
-		MDLibrary *p_kernel) :
-		MDShader(p_name, p_sets, p_uses_argument_buffers), kernel(p_kernel) {
+		std::shared_ptr<MDLibrary> p_kernel) :
+		MDShader(p_name, p_sets, p_uses_argument_buffers), kernel(std::move(p_kernel)) {
 }
 
 MDRenderShader::MDRenderShader(CharString p_name,
 		Vector<UniformSet> p_sets,
 		bool p_needs_view_mask_buffer,
 		bool p_uses_argument_buffers,
-		MDLibrary *_Nonnull p_vert, MDLibrary *_Nonnull p_frag) :
+		std::shared_ptr<MDLibrary> p_vert, std::shared_ptr<MDLibrary> p_frag) :
 		MDShader(p_name, p_sets, p_uses_argument_buffers),
 		needs_view_mask_buffer(p_needs_view_mask_buffer),
-		vert(p_vert),
-		frag(p_frag) {
+		vert(std::move(p_vert)),
+		frag(std::move(p_frag)) {
 }
 
 void DirectEncoder::set(__unsafe_unretained id<MTLTexture> *p_textures, NSRange p_range) {
@@ -1655,30 +1850,62 @@ void DirectEncoder::set(__unsafe_unretained id<MTLSamplerState> *p_samplers, NSR
 	}
 }
 
-void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count) {
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability-new")
+
+void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
-	DEV_ASSERT(p_state.encoder != nil);
-	DEV_ASSERT(p_shader->dynamic_offset_layout.is_empty()); // Argument buffers do not support dynamic offsets.
+	DEV_ASSERT(render.encoder != nil);
 
-	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_state.encoder;
+	id<MTLRenderCommandEncoder> __unsafe_unretained enc = render.encoder;
+	render.resource_tracker.merge_from(p_set->usage_to_resources);
 
-	p_state.resource_tracker.merge_from(usage_to_resources);
+	const UniformSet &shader_set = p_shader->sets[p_set_index];
 
-	[enc setVertexBuffer:arg_buffer
-				  offset:0
-				 atIndex:p_set_index];
-	[enc setFragmentBuffer:arg_buffer offset:0 atIndex:p_set_index];
+	// Check if this set has dynamic uniforms.
+	if (!shader_set.dynamic_uniforms.is_empty()) {
+		// Allocate from the ring buffer.
+		uint32_t buffer_size = p_set->arg_buffer_data.size();
+		MDRingBuffer::Allocation alloc = allocate_arg_buffer(buffer_size);
+
+		// Copy the base argument buffer data.
+		memcpy(alloc.ptr, p_set->arg_buffer_data.ptr(), buffer_size);
+
+		// Update dynamic buffer GPU addresses.
+		uint64_t *ptr = (uint64_t *)alloc.ptr;
+		DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
+		uint32_t dynamic_index = 0;
+
+		for (uint32_t i : shader_set.dynamic_uniforms) {
+			RDD::BoundUniform const &uniform = p_set->uniforms[i];
+			const UniformInfo &ui = shader_set.uniforms[i];
+			const UniformInfo::Indexes &idx = ui.arg_buffer;
+
+			uint32_t shift = layout.get_offset_index_shift(p_set_index, dynamic_index);
+			dynamic_index++;
+			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
+
+			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
+			uint64_t gpu_address = buf_info->metal_buffer.gpuAddress + frame_idx * buf_info->size_bytes;
+			*(MTLGPUAddress *)(ptr + idx.buffer) = gpu_address;
+		}
+
+		[enc setVertexBuffer:alloc.buffer offset:alloc.offset atIndex:p_set_index];
+		[enc setFragmentBuffer:alloc.buffer offset:alloc.offset atIndex:p_set_index];
+	} else {
+		[enc setVertexBuffer:p_set->arg_buffer offset:0 atIndex:p_set_index];
+		[enc setFragmentBuffer:p_set->arg_buffer offset:0 atIndex:p_set_index];
+	}
 }
 
-void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(!p_shader->uses_argument_buffers);
 
 	UniformSet const &set = p_shader->sets[p_set_index];
 	DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
 	uint32_t dynamic_index = 0;
 
-	for (uint32_t i = 0; i < MIN(uniforms.size(), set.uniforms.size()); i++) {
-		RDD::BoundUniform const &uniform = uniforms[i];
+	for (uint32_t i = 0; i < MIN(p_set->uniforms.size(), set.uniforms.size()); i++) {
+		RDD::BoundUniform const &uniform = p_set->uniforms[i];
 		const UniformInfo &ui = set.uniforms[i];
 		const UniformInfo::Indexes &indexes = ui.slot;
 
@@ -1787,624 +2014,47 @@ void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, DirectEncoder p_enc,
 	}
 }
 
-void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count) {
+void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
-	DEV_ASSERT(p_state.encoder != nil);
+	DEV_ASSERT(compute.encoder != nil);
 
-	id<MTLComputeCommandEncoder> enc = p_state.encoder;
+	id<MTLComputeCommandEncoder> enc = compute.encoder;
+	compute.resource_tracker.merge_from(p_set->usage_to_resources);
 
-	p_state.resource_tracker.merge_from(usage_to_resources);
-	[enc setBuffer:arg_buffer
-			 offset:0
-			atIndex:p_set_index];
-}
+	const UniformSet &shader_set = p_shader->sets[p_set_index];
 
-MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const {
-	MTLFmtCaps caps = kMTLFmtCapsNone;
+	// Check if this set has dynamic uniforms.
+	if (!shader_set.dynamic_uniforms.is_empty()) {
+		// Allocate from the ring buffer.
+		uint32_t buffer_size = p_set->arg_buffer_data.size();
+		MDRingBuffer::Allocation alloc = allocate_arg_buffer(buffer_size);
 
-	for (RDD::AttachmentReference const &ar : input_references) {
-		if (ar.attachment == p_index) {
-			flags::set(caps, kMTLFmtCapsRead);
-			break;
+		// Copy the base argument buffer data.
+		memcpy(alloc.ptr, p_set->arg_buffer_data.ptr(), buffer_size);
+
+		// Update dynamic buffer GPU addresses.
+		uint64_t *ptr = (uint64_t *)alloc.ptr;
+		DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
+		uint32_t dynamic_index = 0;
+
+		for (uint32_t i : shader_set.dynamic_uniforms) {
+			RDD::BoundUniform const &uniform = p_set->uniforms[i];
+			const UniformInfo &ui = shader_set.uniforms[i];
+			const UniformInfo::Indexes &idx = ui.arg_buffer;
+
+			uint32_t shift = layout.get_offset_index_shift(p_set_index, dynamic_index);
+			dynamic_index++;
+			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
+
+			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
+			uint64_t gpu_address = buf_info->metal_buffer.gpuAddress + frame_idx * buf_info->size_bytes;
+			*(MTLGPUAddress *)(ptr + idx.buffer) = gpu_address;
 		}
-	}
 
-	for (RDD::AttachmentReference const &ar : color_references) {
-		if (ar.attachment == p_index) {
-			flags::set(caps, kMTLFmtCapsColorAtt);
-			break;
-		}
-	}
-
-	for (RDD::AttachmentReference const &ar : resolve_references) {
-		if (ar.attachment == p_index) {
-			flags::set(caps, kMTLFmtCapsResolve);
-			break;
-		}
-	}
-
-	if (depth_stencil_reference.attachment == p_index) {
-		flags::set(caps, kMTLFmtCapsDSAtt);
-	}
-
-	return caps;
-}
-
-void MDAttachment::linkToSubpass(const MDRenderPass &p_pass) {
-	firstUseSubpassIndex = UINT32_MAX;
-	lastUseSubpassIndex = 0;
-
-	for (MDSubpass const &subpass : p_pass.subpasses) {
-		MTLFmtCaps reqCaps = subpass.getRequiredFmtCapsForAttachmentAt(index);
-		if (reqCaps) {
-			firstUseSubpassIndex = MIN(subpass.subpass_index, firstUseSubpassIndex);
-			lastUseSubpassIndex = MAX(subpass.subpass_index, lastUseSubpassIndex);
-		}
-	}
-}
-
-MTLStoreAction MDAttachment::getMTLStoreAction(MDSubpass const &p_subpass,
-		bool p_is_rendering_entire_area,
-		bool p_has_resolve,
-		bool p_can_resolve,
-		bool p_is_stencil) const {
-	if (!p_is_rendering_entire_area || !isLastUseOf(p_subpass)) {
-		return p_has_resolve && p_can_resolve ? MTLStoreActionStoreAndMultisampleResolve : MTLStoreActionStore;
-	}
-
-	switch (p_is_stencil ? stencilStoreAction : storeAction) {
-		case MTLStoreActionStore:
-			return p_has_resolve && p_can_resolve ? MTLStoreActionStoreAndMultisampleResolve : MTLStoreActionStore;
-		case MTLStoreActionDontCare:
-			return p_has_resolve ? (p_can_resolve ? MTLStoreActionMultisampleResolve : MTLStoreActionStore) : MTLStoreActionDontCare;
-
-		default:
-			return MTLStoreActionStore;
-	}
-}
-
-bool MDAttachment::configureDescriptor(MTLRenderPassAttachmentDescriptor *p_desc,
-		PixelFormats &p_pf,
-		MDSubpass const &p_subpass,
-		id<MTLTexture> p_attachment,
-		bool p_is_rendering_entire_area,
-		bool p_has_resolve,
-		bool p_can_resolve,
-		bool p_is_stencil) const {
-	p_desc.texture = p_attachment;
-
-	MTLLoadAction load;
-	if (!p_is_rendering_entire_area || !isFirstUseOf(p_subpass)) {
-		load = MTLLoadActionLoad;
+		[enc setBuffer:alloc.buffer offset:alloc.offset atIndex:p_set_index];
 	} else {
-		load = p_is_stencil ? stencilLoadAction : loadAction;
-	}
-
-	p_desc.loadAction = load;
-
-	MTLPixelFormat mtlFmt = p_attachment.pixelFormat;
-	bool isDepthFormat = p_pf.isDepthFormat(mtlFmt);
-	bool isStencilFormat = p_pf.isStencilFormat(mtlFmt);
-	if (isStencilFormat && !p_is_stencil && !isDepthFormat) {
-		p_desc.storeAction = MTLStoreActionDontCare;
-	} else {
-		p_desc.storeAction = getMTLStoreAction(p_subpass, p_is_rendering_entire_area, p_has_resolve, p_can_resolve, p_is_stencil);
-	}
-
-	return load == MTLLoadActionClear;
-}
-
-bool MDAttachment::shouldClear(const MDSubpass &p_subpass, bool p_is_stencil) const {
-	// If the subpass is not the first subpass to use this attachment, don't clear this attachment.
-	if (p_subpass.subpass_index != firstUseSubpassIndex) {
-		return false;
-	}
-	return (p_is_stencil ? stencilLoadAction : loadAction) == MTLLoadActionClear;
-}
-
-MDRenderPass::MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses) :
-		attachments(p_attachments), subpasses(p_subpasses) {
-	for (MDAttachment &att : attachments) {
-		att.linkToSubpass(*this);
+		[enc setBuffer:p_set->arg_buffer offset:0 atIndex:p_set_index];
 	}
 }
 
-#pragma mark - Resource Factory
-
-id<MTLFunction> MDResourceFactory::new_func(NSString *p_source, NSString *p_name, NSError **p_error) {
-	@autoreleasepool {
-		NSError *err = nil;
-		MTLCompileOptions *options = [MTLCompileOptions new];
-		id<MTLDevice> device = device_driver->get_device();
-		id<MTLLibrary> mtlLib = [device newLibraryWithSource:p_source
-													 options:options
-													   error:&err];
-		if (err) {
-			if (p_error != nil) {
-				*p_error = err;
-			}
-		}
-		return [mtlLib newFunctionWithName:p_name];
-	}
-}
-
-id<MTLFunction> MDResourceFactory::new_clear_vert_func(ClearAttKey &p_key) {
-	@autoreleasepool {
-		NSString *msl = [NSString stringWithFormat:@R"(
-#include <metal_stdlib>
-using namespace metal;
-
-typedef struct {
-    float4 a_position [[attribute(0)]];
-} AttributesPos;
-
-typedef struct {
-    float4 colors[9];
-} ClearColorsIn;
-
-typedef struct {
-    float4 v_position [[position]];
-    uint layer%s;
-} VaryingsPos;
-
-vertex VaryingsPos vertClear(AttributesPos attributes [[stage_in]], constant ClearColorsIn& ccIn [[buffer(0)]]) {
-    VaryingsPos varyings;
-    varyings.v_position = float4(attributes.a_position.x, -attributes.a_position.y, ccIn.colors[%d].r, 1.0);
-    varyings.layer = uint(attributes.a_position.w);
-    return varyings;
-}
-)", p_key.is_layered_rendering_enabled() ? " [[render_target_array_index]]" : "", ClearAttKey::DEPTH_INDEX];
-
-		return new_func(msl, @"vertClear", nil);
-	}
-}
-
-id<MTLFunction> MDResourceFactory::new_clear_frag_func(ClearAttKey &p_key) {
-	@autoreleasepool {
-		NSMutableString *msl = [NSMutableString stringWithCapacity:2048];
-
-		[msl appendFormat:@R"(
-#include <metal_stdlib>
-using namespace metal;
-
-typedef struct {
-    float4 v_position [[position]];
-} VaryingsPos;
-
-typedef struct {
-    float4 colors[9];
-} ClearColorsIn;
-
-typedef struct {
-)"];
-
-		for (uint32_t caIdx = 0; caIdx < ClearAttKey::COLOR_COUNT; caIdx++) {
-			if (p_key.is_enabled(caIdx)) {
-				NSString *typeStr = get_format_type_string((MTLPixelFormat)p_key.pixel_formats[caIdx]);
-				[msl appendFormat:@"    %@4 color%u [[color(%u)]];\n", typeStr, caIdx, caIdx];
-			}
-		}
-		[msl appendFormat:@R"(} ClearColorsOut;
-
-fragment ClearColorsOut fragClear(VaryingsPos varyings [[stage_in]], constant ClearColorsIn& ccIn [[buffer(0)]]) {
-
-    ClearColorsOut ccOut;
-)"];
-		for (uint32_t caIdx = 0; caIdx < ClearAttKey::COLOR_COUNT; caIdx++) {
-			if (p_key.is_enabled(caIdx)) {
-				NSString *typeStr = get_format_type_string((MTLPixelFormat)p_key.pixel_formats[caIdx]);
-				[msl appendFormat:@"    ccOut.color%u = %@4(ccIn.colors[%u]);\n", caIdx, typeStr, caIdx];
-			}
-		}
-		[msl appendString:@R"(    return ccOut;
-})"];
-
-		return new_func(msl, @"fragClear", nil);
-	}
-}
-
-NSString *MDResourceFactory::get_format_type_string(MTLPixelFormat p_fmt) {
-	switch (device_driver->get_pixel_formats().getFormatType(p_fmt)) {
-		case MTLFormatType::ColorInt8:
-		case MTLFormatType::ColorInt16:
-			return @"short";
-		case MTLFormatType::ColorUInt8:
-		case MTLFormatType::ColorUInt16:
-			return @"ushort";
-		case MTLFormatType::ColorInt32:
-			return @"int";
-		case MTLFormatType::ColorUInt32:
-			return @"uint";
-		case MTLFormatType::ColorHalf:
-			return @"half";
-		case MTLFormatType::ColorFloat:
-		case MTLFormatType::DepthStencil:
-		case MTLFormatType::Compressed:
-			return @"float";
-		case MTLFormatType::None:
-			return @"unexpected_MTLPixelFormatInvalid";
-	}
-}
-
-id<MTLDepthStencilState> MDResourceFactory::new_depth_stencil_state(bool p_use_depth, bool p_use_stencil) {
-	MTLDepthStencilDescriptor *dsDesc = [MTLDepthStencilDescriptor new];
-	dsDesc.depthCompareFunction = MTLCompareFunctionAlways;
-	dsDesc.depthWriteEnabled = p_use_depth;
-
-	if (p_use_stencil) {
-		MTLStencilDescriptor *sDesc = [MTLStencilDescriptor new];
-		sDesc.stencilCompareFunction = MTLCompareFunctionAlways;
-		sDesc.stencilFailureOperation = MTLStencilOperationReplace;
-		sDesc.depthFailureOperation = MTLStencilOperationReplace;
-		sDesc.depthStencilPassOperation = MTLStencilOperationReplace;
-
-		dsDesc.frontFaceStencil = sDesc;
-		dsDesc.backFaceStencil = sDesc;
-	} else {
-		dsDesc.frontFaceStencil = nil;
-		dsDesc.backFaceStencil = nil;
-	}
-
-	return [device_driver->get_device() newDepthStencilStateWithDescriptor:dsDesc];
-}
-
-id<MTLRenderPipelineState> MDResourceFactory::new_clear_pipeline_state(ClearAttKey &p_key, NSError **p_error) {
-	PixelFormats &pixFmts = device_driver->get_pixel_formats();
-
-	id<MTLFunction> vtxFunc = new_clear_vert_func(p_key);
-	id<MTLFunction> fragFunc = new_clear_frag_func(p_key);
-	MTLRenderPipelineDescriptor *plDesc = [MTLRenderPipelineDescriptor new];
-	plDesc.label = @"ClearRenderAttachments";
-	plDesc.vertexFunction = vtxFunc;
-	plDesc.fragmentFunction = fragFunc;
-	plDesc.rasterSampleCount = p_key.sample_count;
-	plDesc.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
-
-	for (uint32_t caIdx = 0; caIdx < ClearAttKey::COLOR_COUNT; caIdx++) {
-		MTLRenderPipelineColorAttachmentDescriptor *colorDesc = plDesc.colorAttachments[caIdx];
-		colorDesc.pixelFormat = (MTLPixelFormat)p_key.pixel_formats[caIdx];
-		colorDesc.writeMask = p_key.is_enabled(caIdx) ? MTLColorWriteMaskAll : MTLColorWriteMaskNone;
-	}
-
-	MTLPixelFormat mtlDepthFormat = p_key.depth_format();
-	if (pixFmts.isDepthFormat(mtlDepthFormat)) {
-		plDesc.depthAttachmentPixelFormat = mtlDepthFormat;
-	}
-
-	MTLPixelFormat mtlStencilFormat = p_key.stencil_format();
-	if (pixFmts.isStencilFormat(mtlStencilFormat)) {
-		plDesc.stencilAttachmentPixelFormat = mtlStencilFormat;
-	}
-
-	MTLVertexDescriptor *vtxDesc = plDesc.vertexDescriptor;
-
-	// Vertex attribute descriptors.
-	MTLVertexAttributeDescriptorArray *vaDescArray = vtxDesc.attributes;
-	MTLVertexAttributeDescriptor *vaDesc;
-	NSUInteger vtxBuffIdx = device_driver->get_metal_buffer_index_for_vertex_attribute_binding(VERT_CONTENT_BUFFER_INDEX);
-	NSUInteger vtxStride = 0;
-
-	// Vertex location.
-	vaDesc = vaDescArray[0];
-	vaDesc.format = MTLVertexFormatFloat4;
-	vaDesc.bufferIndex = vtxBuffIdx;
-	vaDesc.offset = vtxStride;
-	vtxStride += sizeof(simd::float4);
-
-	// Vertex attribute buffer.
-	MTLVertexBufferLayoutDescriptorArray *vbDescArray = vtxDesc.layouts;
-	MTLVertexBufferLayoutDescriptor *vbDesc = vbDescArray[vtxBuffIdx];
-	vbDesc.stepFunction = MTLVertexStepFunctionPerVertex;
-	vbDesc.stepRate = 1;
-	vbDesc.stride = vtxStride;
-
-	return [device_driver->get_device() newRenderPipelineStateWithDescriptor:plDesc error:p_error];
-}
-
-id<MTLRenderPipelineState> MDResourceCache::get_clear_render_pipeline_state(ClearAttKey &p_key, NSError **p_error) {
-	HashMap::ConstIterator it = clear_states.find(p_key);
-	if (it != clear_states.end()) {
-		return it->value;
-	}
-
-	id<MTLRenderPipelineState> state = resource_factory->new_clear_pipeline_state(p_key, p_error);
-	clear_states[p_key] = state;
-	return state;
-}
-
-id<MTLDepthStencilState> MDResourceCache::get_depth_stencil_state(bool p_use_depth, bool p_use_stencil) {
-	id<MTLDepthStencilState> __strong *val;
-	if (p_use_depth && p_use_stencil) {
-		val = &clear_depth_stencil_state.all;
-	} else if (p_use_depth) {
-		val = &clear_depth_stencil_state.depth_only;
-	} else if (p_use_stencil) {
-		val = &clear_depth_stencil_state.stencil_only;
-	} else {
-		val = &clear_depth_stencil_state.none;
-	}
-	DEV_ASSERT(val != nullptr);
-
-	if (*val == nil) {
-		*val = resource_factory->new_depth_stencil_state(p_use_depth, p_use_stencil);
-	}
-	return *val;
-}
-
-static const char *SHADER_STAGE_NAMES[] = {
-	[RD::SHADER_STAGE_VERTEX] = "vert",
-	[RD::SHADER_STAGE_FRAGMENT] = "frag",
-	[RD::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
-	[RD::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
-	[RD::SHADER_STAGE_COMPUTE] = "comp",
-};
-
-void ShaderCacheEntry::notify_free() const {
-	owner.shader_cache_free_entry(key);
-}
-
-@interface MDLibrary ()
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-#ifdef DEV_ENABLED
-							source:(NSString *)source;
-#endif
-;
-@end
-
-/// Loads the MTLLibrary when the library is first accessed.
-@interface MDLazyLibrary : MDLibrary {
-	id<MTLLibrary> _library;
-	NSError *_error;
-	std::shared_mutex _mu;
-	bool _loaded;
-	id<MTLDevice> _device;
-	NSString *_source;
-	MTLCompileOptions *_options;
-}
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-							source:(NSString *)source
-						   options:(MTLCompileOptions *)options;
-@end
-
-/// Loads the MTLLibrary immediately on initialization, using an asynchronous API.
-@interface MDImmediateLibrary : MDLibrary {
-	id<MTLLibrary> _library;
-	NSError *_error;
-	std::mutex _cv_mutex;
-	std::condition_variable _cv;
-	std::atomic<bool> _complete;
-	bool _ready;
-}
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-							source:(NSString *)source
-						   options:(MTLCompileOptions *)options;
-@end
-
-@interface MDBinaryLibrary : MDLibrary {
-	id<MTLLibrary> _library;
-	NSError *_error;
-}
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-#ifdef DEV_ENABLED
-							source:(NSString *)source
-#endif
-							  data:(dispatch_data_t)data;
-@end
-
-@implementation MDLibrary
-
-+ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
-								  device:(id<MTLDevice>)device
-								  source:(NSString *)source
-								 options:(MTLCompileOptions *)options
-								strategy:(ShaderLoadStrategy)strategy {
-	switch (strategy) {
-		case ShaderLoadStrategy::IMMEDIATE:
-			[[fallthrough]];
-		default:
-			return [[MDImmediateLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
-		case ShaderLoadStrategy::LAZY:
-			return [[MDLazyLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
-	}
-}
-
-+ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
-								  device:(id<MTLDevice>)device
-#ifdef DEV_ENABLED
-								  source:(NSString *)source
-#endif
-									data:(dispatch_data_t)data {
-	return [[MDBinaryLibrary alloc] initWithCacheEntry:entry
-												device:device
-#ifdef DEV_ENABLED
-												source:source
-#endif
-												  data:data];
-}
-
-#ifdef DEV_ENABLED
-- (NSString *)originalSource {
-	return _original_source;
-}
-#endif
-
-- (id<MTLLibrary>)library {
-	CRASH_NOW_MSG("Not implemented");
-	return nil;
-}
-
-- (NSError *)error {
-	CRASH_NOW_MSG("Not implemented");
-	return nil;
-}
-
-- (void)setLabel:(NSString *)label {
-}
-
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-#ifdef DEV_ENABLED
-							source:(NSString *)source
-#endif
-{
-	self = [super init];
-	_entry = entry;
-	_entry->library = self;
-#ifdef DEV_ENABLED
-	_original_source = source;
-#endif
-	return self;
-}
-
-- (void)dealloc {
-	_entry->notify_free();
-}
-
-@end
-
-@implementation MDImmediateLibrary
-
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-							source:(NSString *)source
-						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry
-#ifdef DEV_ENABLED
-							  source:source
-#endif
-	];
-	_complete = false;
-	_ready = false;
-
-	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
-	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%X",
-			entry->name.get_data(), SHADER_STAGE_NAMES[entry->stage], entry->key.short_sha());
-
-	[device newLibraryWithSource:source
-						 options:options
-			   completionHandler:^(id<MTLLibrary> library, NSError *error) {
-				   os_signpost_interval_end(LOG_INTERVALS, compile_id, "shader_compile");
-				   self->_library = library;
-				   self->_error = error;
-				   if (error) {
-					   ERR_PRINT(vformat(U"Error compiling shader %s: %s", entry->name.get_data(), error.localizedDescription.UTF8String));
-				   }
-
-				   {
-					   std::lock_guard<std::mutex> lock(self->_cv_mutex);
-					   _ready = true;
-				   }
-				   _cv.notify_all();
-				   _complete = true;
-			   }];
-	return self;
-}
-
-- (id<MTLLibrary>)library {
-	if (!_complete) {
-		std::unique_lock<std::mutex> lock(_cv_mutex);
-		_cv.wait(lock, [&] { return _ready; });
-	}
-	return _library;
-}
-
-- (NSError *)error {
-	if (!_complete) {
-		std::unique_lock<std::mutex> lock(_cv_mutex);
-		_cv.wait(lock, [&] { return _ready; });
-	}
-	return _error;
-}
-
-@end
-
-@implementation MDLazyLibrary
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-							source:(NSString *)source
-						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry
-#ifdef DEV_ENABLED
-							  source:source
-#endif
-	];
-	_device = device;
-	_source = source;
-	_options = options;
-
-	return self;
-}
-
-- (void)load {
-	{
-		std::shared_lock<std::shared_mutex> lock(_mu);
-		if (_loaded) {
-			return;
-		}
-	}
-
-	std::unique_lock<std::shared_mutex> lock(_mu);
-	if (_loaded) {
-		return;
-	}
-
-	__block os_signpost_id_t compile_id = (os_signpost_id_t)(uintptr_t)self;
-	os_signpost_interval_begin(LOG_INTERVALS, compile_id, "shader_compile",
-			"shader_name=%{public}s stage=%{public}s hash=%X",
-			_entry->name.get_data(), SHADER_STAGE_NAMES[_entry->stage], _entry->key.short_sha());
-	NSError *error;
-	_library = [_device newLibraryWithSource:_source options:_options error:&error];
-	os_signpost_interval_end(LOG_INTERVALS, compile_id, "shader_compile");
-	_device = nil;
-	_source = nil;
-	_options = nil;
-	_loaded = true;
-}
-
-- (id<MTLLibrary>)library {
-	[self load];
-	return _library;
-}
-
-- (NSError *)error {
-	[self load];
-	return _error;
-}
-
-@end
-
-@implementation MDBinaryLibrary
-
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
-							device:(id<MTLDevice>)device
-#ifdef DEV_ENABLED
-							source:(NSString *)source
-#endif
-							  data:(dispatch_data_t)data {
-	self = [super initWithCacheEntry:entry
-#ifdef DEV_ENABLED
-							  source:source
-#endif
-	];
-	NSError *error = nil;
-	_library = [device newLibraryWithData:data error:&error];
-	if (error != nil) {
-		_error = error;
-		NSString *desc = [error description];
-		ERR_PRINT(vformat("Unable to load shader library: %s", desc.UTF8String));
-	}
-	return self;
-}
-
-- (id<MTLLibrary>)library {
-	return _library;
-}
-
-- (NSError *)error {
-	return _error;
-}
-
-@end
+GODOT_CLANG_WARNING_POP

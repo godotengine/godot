@@ -30,7 +30,8 @@
 
 #import "rendering_context_driver_metal.h"
 
-#import "rendering_device_driver_metal.h"
+#import "metal3_objects.h"
+#import "rendering_device_driver_metal3.h"
 
 #include "core/templates/sort_array.h"
 
@@ -61,7 +62,7 @@ RenderingContextDriverMetal::~RenderingContextDriverMetal() {
 }
 
 Error RenderingContextDriverMetal::initialize() {
-	if (OS::get_singleton()->get_environment("MTL_CAPTURE_ENABLED") == "1") {
+	if (OS::get_singleton()->get_environment("MTL_CAPTURE_ENABLED") == "1" || OS::get_singleton()->get_environment("MTLCAPTURE_DESTINATION_DEVELOPER_TOOLS_ENABLE") == "1") {
 		capture_available = true;
 	}
 
@@ -92,7 +93,7 @@ uint32_t RenderingContextDriverMetal::device_get_count() const {
 }
 
 RenderingDeviceDriver *RenderingContextDriverMetal::driver_create() {
-	return memnew(RenderingDeviceDriverMetal(this));
+	return memnew(MTL3::RenderingDeviceDriverMetal(this));
 }
 
 void RenderingContextDriverMetal::driver_free(RenderingDeviceDriver *p_driver) {
@@ -179,7 +180,7 @@ public:
 		return RDD::FramebufferID(&frame_buffer);
 	}
 
-	void present(MDCommandBuffer *p_cmd_buffer) override final {
+	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override final {
 		if (count == 0) {
 			return;
 		}
@@ -197,6 +198,27 @@ public:
 		} else {
 			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
 		}
+	}
+
+	id<MTLDrawable> next_drawable() override final {
+		if (count == 0) {
+			return nil;
+		}
+
+		// Release texture and drawable.
+		frame_buffers[front].unset_texture(0);
+		id<MTLDrawable> drawable = drawables[front];
+		drawables[front] = nil;
+
+		count--;
+		front = (front + 1) % frame_buffers.size();
+
+		return drawable;
+	}
+
+	API_AVAILABLE(macos(26.0), ios(26.0))
+	id<MTLResidencySet> get_residency_set() const override final {
+		return layer.residencySet;
 	}
 };
 
@@ -286,7 +308,7 @@ public:
 		return RDD::FramebufferID(&frame_buffers[rear]);
 	}
 
-	void present(MDCommandBuffer *p_cmd_buffer) override final {
+	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override final {
 		MDFrameBuffer *frame_buffer = &frame_buffers[rear];
 
 		if (drawables[rear] != nil) {
@@ -298,6 +320,27 @@ public:
 			frame_buffer->unset_texture(0);
 			count.fetch_add(-1, std::memory_order_relaxed);
 		}];
+	}
+
+	id<MTLDrawable> next_drawable() override final {
+		if (count == 0) {
+			return nil;
+		}
+
+		MDFrameBuffer *frame_buffer = &frame_buffers[rear];
+
+		id<MTLDrawable> next = drawables[rear];
+		drawables[rear] = nil;
+
+		frame_buffer->unset_texture(0);
+		count--;
+
+		return next;
+	}
+
+	API_AVAILABLE(macos(26.0), ios(26.0))
+	id<MTLResidencySet> get_residency_set() const override final {
+		return layer.residencySet;
 	}
 };
 
