@@ -3579,6 +3579,25 @@ RID RenderingDevice::shader_create_placeholder() {
 	return shader_owner.make_rid(shader);
 }
 
+void RenderingDevice::shader_get_description(RID p_shader, RenderingDeviceCommons::ShaderDescription &shader_desc) {
+	_THREAD_SAFE_METHOD_
+
+	const Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL(shader);
+
+	shader_desc.vertex_input_mask = shader->vertex_input_mask;
+	shader_desc.fragment_output_mask = shader->fragment_output_mask;
+	shader_desc.is_compute = shader->is_compute;
+
+	shader_desc.compute_local_size[0] = shader->compute_local_size[0];
+	shader_desc.compute_local_size[1] = shader->compute_local_size[1];
+	shader_desc.compute_local_size[2] = shader->compute_local_size[2];
+
+	shader_desc.push_constant_size = shader->push_constant_size;
+	shader_desc.uniform_sets = shader->uniform_sets;
+	shader_desc.stages = shader->stages;
+}
+
 uint64_t RenderingDevice::shader_get_vertex_input_attribute_mask(RID p_shader) {
 	_THREAD_SAFE_METHOD_
 
@@ -7679,6 +7698,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::shader_create_from_bytecode, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::shader_create_placeholder);
 
+	ClassDB::bind_method(D_METHOD("shader_get_description", "shader"), &RenderingDevice::_shader_get_description);
+
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
@@ -8592,6 +8613,16 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 	return shader_create_from_spirv(stage_data);
 }
 
+Ref<RDShaderDescription> RenderingDevice::_shader_get_description(RID p_shader) {
+	_THREAD_SAFE_METHOD_
+
+	Ref<RDShaderDescription> rd_shader_desc;
+	rd_shader_desc.instantiate();
+	shader_get_description(p_shader, rd_shader_desc->base);
+
+	return rd_shader_desc;
+}
+
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
 	LocalVector<Uniform> uniforms;
 	uniforms.resize(p_uniforms.size());
@@ -8607,32 +8638,13 @@ Error RenderingDevice::_buffer_update_bind(RID p_buffer, uint32_t p_offset, uint
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr());
 }
 
-static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants) {
+Vector<RenderingDevice::PipelineSpecializationConstant> RenderingDevice::_get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants) {
 	Vector<RenderingDevice::PipelineSpecializationConstant> ret;
 	ret.resize(p_constants.size());
 	for (int i = 0; i < p_constants.size(); i++) {
-		Ref<RDPipelineSpecializationConstant> c = p_constants[i];
-		ERR_CONTINUE(c.is_null());
-		RenderingDevice::PipelineSpecializationConstant &sc = ret.write[i];
-		Variant value = c->get_value();
-		switch (value.get_type()) {
-			case Variant::BOOL: {
-				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-				sc.bool_value = value;
-			} break;
-			case Variant::INT: {
-				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-				sc.int_value = value;
-			} break;
-			case Variant::FLOAT: {
-				sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-				sc.float_value = value;
-			} break;
-			default: {
-			}
-		}
-
-		sc.constant_id = c->get_constant_id();
+		Ref<RDPipelineSpecializationConstant> spec_const = p_constants[i];
+		ERR_CONTINUE(spec_const.is_null());
+		ret.write[i] = spec_const->base;
 	}
 	return ret;
 }

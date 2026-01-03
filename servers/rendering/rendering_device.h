@@ -55,6 +55,7 @@ class RDPipelineDepthStencilState;
 class RDPipelineColorBlendState;
 class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
+class RDShaderDescription;
 
 class RenderingDevice : public RenderingDeviceCommons {
 	GDCLASS(RenderingDevice, Object)
@@ -1016,6 +1017,8 @@ public:
 	RID shader_create_placeholder();
 	void shader_destroy_modules(RID p_shader);
 
+	void shader_get_description(RID p_shader, RenderingDeviceCommons::ShaderDescription &shader_desc);
+
 	uint64_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
 	/******************/
@@ -1216,6 +1219,8 @@ private:
 
 	Vector<uint8_t> _load_pipeline_cache();
 	static void _save_pipeline_cache(void *p_data);
+
+	static Vector<PipelineSpecializationConstant> _get_spec_constants(const TypedArray<RDPipelineSpecializationConstant> &p_constants);
 
 	struct ComputePipeline {
 		RID shader;
@@ -1770,6 +1775,8 @@ private:
 	Ref<RDShaderSPIRV> _shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
 	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");
 	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name = "");
+
+	Ref<RDShaderDescription> _shader_get_description(RID p_shader);
 
 	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
