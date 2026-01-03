@@ -373,7 +373,7 @@ struct ObjectGDExtension {
 
 	/// A type for this Object extension.
 	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
-	const GDType *gdtype;
+	GDType *gdtype;
 	void create_gdtype();
 	void destroy_gdtype();
 
@@ -493,16 +493,17 @@ private:                                                                        
 	void operator=(const m_class &p_rval) {}                                                                                                \
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
+	static GDType &get_gdtype_static_mutable() {                                                                                            \
+		static GDType *gdtype = memnew(GDType(&super_type::get_gdtype_static(), StringName(#m_class, true)));                               \
+		return *gdtype;                                                                                                                     \
+	}                                                                                                                                       \
+                                                                                                                                            \
 public:                                                                                                                                     \
 	virtual const GDType &_get_typev() const override {                                                                                     \
 		return get_gdtype_static();                                                                                                         \
 	}                                                                                                                                       \
 	static const GDType &get_gdtype_static() {                                                                                              \
-		static GDType *_class_static;                                                                                                       \
-		if (unlikely(!_class_static)) {                                                                                                     \
-			assign_type_static(&_class_static, #m_class, &super_type::get_gdtype_static());                                                 \
-		}                                                                                                                                   \
-		return *_class_static;                                                                                                              \
+		return get_gdtype_static_mutable();                                                                                                 \
 	}                                                                                                                                       \
 	static const StringName &get_class_static() {                                                                                           \
 		return get_gdtype_static().get_name();                                                                                              \
@@ -519,11 +520,18 @@ protected:                                                                      
 public:                                                                                                                                     \
 	static void initialize_class() {                                                                                                        \
 		static bool initialized = false;                                                                                                    \
+		if (likely(initialized)) {                                                                                                          \
+			return;                                                                                                                         \
+		}                                                                                                                                   \
+                                                                                                                                            \
+		static BinaryMutex __init_mutex;                                                                                                    \
+		MutexLock lock(__init_mutex);                                                                                                       \
 		if (initialized) {                                                                                                                  \
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		_add_class_to_classdb(get_gdtype_static(), &super_type::get_gdtype_static());                                                       \
+		_add_class_to_classdb(get_gdtype_static_mutable(), &super_type::get_gdtype_static());                                               \
+		get_gdtype_static_mutable().initialize();                                                                                           \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -673,6 +681,11 @@ private:
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 
+	static GDType &get_gdtype_static_mutable() {
+		static GDType *gdtype = memnew(GDType(nullptr, StringName("Object", true)));
+		return *gdtype;
+	}
+
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
 	void _remove_user_signal(const StringName &p_name);
@@ -792,7 +805,7 @@ protected:
 	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(const GDType &p_class, const GDType *p_inherits);
+	static void _add_class_to_classdb(GDType &p_class, const GDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -861,15 +874,7 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_type_static(GDType **type_ptr, const char *p_name, const GDType *super_type);
-
-	static const GDType &get_gdtype_static() {
-		static GDType *_class_static;
-		if (unlikely(!_class_static)) {
-			assign_type_static(&_class_static, "Object", nullptr);
-		}
-		return *_class_static;
-	}
+	static const GDType &get_gdtype_static() { return get_gdtype_static_mutable(); }
 
 	const GDType &get_gdtype() const;
 

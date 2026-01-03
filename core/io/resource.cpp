@@ -751,9 +751,9 @@ void Resource::_bind_methods() {
 
 	// For the bindings, it's much more natural to expose this enum from the Variant realm via Resource.
 	// Therefore, we can't use BIND_ENUM_CONSTANT here because we need some customization.
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
