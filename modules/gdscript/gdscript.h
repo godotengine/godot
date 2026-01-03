@@ -63,6 +63,7 @@ class GDScript : public Script {
 	bool valid = false;
 	bool reloading = false;
 	bool _is_abstract = false;
+	bool shallow = true;
 
 	struct MemberInfo {
 		int index = 0;
