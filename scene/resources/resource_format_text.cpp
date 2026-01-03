@@ -240,6 +240,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("instance_placeholder")) {
 				String path = next_tag.fields["instance_placeholder"];
+				// TODO: In the next opportunity to break compatibility, remove the check and always expect a UID.
+				if (path.begins_with("uid://")) {
+					path = ResourceUID::get_singleton()->uid_to_path(path);
+				}
 
 				int path_v = packed_scene->get_state()->add_value(path);
 
@@ -2008,7 +2012,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			PackedInt32Array owner_id_path = state->get_node_owner_id_path(i);
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
-			String instance_placeholder = state->get_node_instance_placeholder(i);
+			String instance_placeholder = ResourceUID::get_singleton()->path_to_uid(state->get_node_instance_placeholder(i));
 			Vector<StringName> groups = state->get_node_groups(i);
 			Vector<String> deferred_node_paths = state->get_node_deferred_nodepath_properties(i);
 
