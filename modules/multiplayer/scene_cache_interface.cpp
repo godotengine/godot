@@ -165,7 +165,7 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	*confirmed = true;
 }
 
-Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers) {
+Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, const LocalVector<int> &p_peers) {
 	// Encode function name.
 	const CharString path = String(multiplayer->get_root_path().rel_path_to(p_node->get_path())).utf8();
 	const int path_len = encode_cstring(path.get_data(), nullptr);
@@ -212,30 +212,28 @@ bool SceneCacheInterface::is_cache_confirmed(Node *p_node, int p_peer) {
 	return confirmed && *confirmed;
 }
 
-int SceneCacheInterface::make_object_cache(Object *p_obj) {
-	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_NULL_V(node, -1);
-	NodeCache &cache = _track(node);
+int SceneCacheInterface::make_object_cache(Node *p_node) {
+	ERR_FAIL_NULL_V(p_node, -1);
+	NodeCache &cache = _track(p_node);
 	if (cache.cache_id == 0) {
 		cache.cache_id = last_send_cache_id++;
-		assigned_ids[cache.cache_id] = p_obj->get_instance_id();
+		assigned_ids[cache.cache_id] = p_node->get_instance_id();
 	}
 	return cache.cache_id;
 }
 
-bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r_id) {
-	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_NULL_V(node, false);
+bool SceneCacheInterface::send_object_cache(Node *p_node, int p_peer_id, int &r_id) {
+	ERR_FAIL_NULL_V(p_node, false);
 	// See if the path is cached.
-	NodeCache &cache = _track(node);
+	NodeCache &cache = _track(p_node);
 	if (cache.cache_id == 0) {
 		cache.cache_id = last_send_cache_id++;
-		assigned_ids[cache.cache_id] = p_obj->get_instance_id();
+		assigned_ids[cache.cache_id] = p_node->get_instance_id();
 	}
 	r_id = cache.cache_id;
 
 	bool has_all_peers = true;
-	List<int> peers_to_add; // If one is missing, take note to add it.
+	LocalVector<int> peers_to_add; // If one is missing, take note to add it.
 
 	if (p_peer_id > 0) {
 		// Fast single peer check.
@@ -266,13 +264,13 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 	}
 
 	if (peers_to_add.size()) {
-		_send_confirm_path(node, cache, peers_to_add);
+		_send_confirm_path(p_node, cache, peers_to_add);
 	}
 
 	return has_all_peers;
 }
 
-Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
+Node *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
 	PeerInfo *pinfo = peers_info.getptr(p_from);
 	ERR_FAIL_NULL_V(pinfo, nullptr);
 

@@ -36,13 +36,13 @@
 
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {
-	if (EngineDebugger::is_profiling("multiplayer:bandwidth")) {
+	if (EngineDebugger::is_profiling(SNAME("multiplayer:bandwidth"))) {
 		Array values = {
 			p_what,
 			OS::get_singleton()->get_ticks_msec(),
 			p_value
 		};
-		EngineDebugger::profiler_add_frame_data("multiplayer:bandwidth", values);
+		EngineDebugger::profiler_add_frame_data(SNAME("multiplayer:bandwidth"), values);
 	}
 }
 #endif
@@ -569,8 +569,8 @@ bool SceneMultiplayer::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
-String SceneMultiplayer::get_rpc_md5(const Object *p_obj) {
-	return rpc->get_rpc_md5(p_obj);
+String SceneMultiplayer::get_rpc_md5(const Node *p_node) {
+	return rpc->get_rpc_md5(p_node);
 }
 
 Error SceneMultiplayer::rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
