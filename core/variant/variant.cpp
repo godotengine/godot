@@ -2270,20 +2270,7 @@ Variant::operator Vector<Face3>() const {
 }
 
 Variant::operator Vector<Variant>() const {
-	Array va = operator Array();
-	Vector<Variant> variants;
-	int va_size = va.size();
-	if (va_size == 0) {
-		return variants;
-	}
-
-	variants.resize(va_size);
-	Variant *w = variants.ptrw();
-	for (int i = 0; i < va_size; i++) {
-		w[i] = va[i];
-	}
-
-	return variants;
+	return Vector(operator Array().as_vector());
 }
 
 Variant::operator Vector<StringName>() const {
