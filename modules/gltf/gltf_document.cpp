@@ -6372,7 +6372,9 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 		}
 		// Get the Godot node and the glTF node index for the animation track.
 		const NodePath track_path = animation->track_get_path(track_index);
-		const Node *anim_player_parent = p_animation_player->get_parent();
+		const NodePath root_node = p_animation_player->get_root_node();
+		const Node *anim_player_parent = p_animation_player->get_node_or_null(root_node);
+		ERR_CONTINUE_MSG(!anim_player_parent, "glTF: Cannot get root node for animation player: " + String(root_node));
 		const Node *animated_node = anim_player_parent->get_node_or_null(track_path);
 		ERR_CONTINUE_MSG(!animated_node, "glTF: Cannot get node for animated track using path: " + String(track_path));
 		const GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::godot_to_gltf_interpolation(animation, track_index);
