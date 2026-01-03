@@ -369,6 +369,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pi.name);
 				param_cache.insert(pi.name, default_value);
 				remap_cache.insert(info.name, pi.name);
+				RS::get_singleton()->material_set_param(_get_material(), pi.name, default_value);
 			}
 			groups[last_group][last_subgroup].push_back(info);
 		}
