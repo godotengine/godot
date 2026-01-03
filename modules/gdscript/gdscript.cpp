@@ -54,8 +54,8 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 
-#ifdef TOOLS_ENABLED
 #include "core/extension/gdextension_manager.h"
+#ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_paths.h"
 #endif
 
@@ -2290,12 +2290,8 @@ void GDScriptLanguage::init() {
 		_add_global(E.name, E.ptr);
 	}
 
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		GDExtensionManager::get_singleton()->connect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
-		GDExtensionManager::get_singleton()->connect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
-	}
-#endif // TOOLS_ENABLED
+	GDExtensionManager::get_singleton()->connect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
+	GDExtensionManager::get_singleton()->connect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
 
 #ifdef DEBUG_ENABLED
 	GDScriptParser::update_project_settings();
@@ -2309,7 +2305,6 @@ void GDScriptLanguage::init() {
 #endif // TESTS_ENABLED
 }
 
-#ifdef TOOLS_ENABLED
 void GDScriptLanguage::_extension_loaded(const Ref<GDExtension> &p_extension) {
 	List<StringName> class_list;
 	ClassDB::get_extension_class_list(p_extension, &class_list);
@@ -2329,7 +2324,6 @@ void GDScriptLanguage::_extension_unloading(const Ref<GDExtension> &p_extension)
 		_remove_global(n);
 	}
 }
-#endif
 
 String GDScriptLanguage::get_type() const {
 	return "GDScript";
@@ -2344,6 +2338,10 @@ void GDScriptLanguage::finish() {
 		return;
 	}
 	finishing = true;
+
+	// To prevent spam in unit tests.
+	GDExtensionManager::get_singleton()->disconnect("extension_loaded", callable_mp(this, &GDScriptLanguage::_extension_loaded));
+	GDExtensionManager::get_singleton()->disconnect("extension_unloading", callable_mp(this, &GDScriptLanguage::_extension_unloading));
 
 	// Clear the cache before parsing the script_list
 	GDScriptCache::clear();
