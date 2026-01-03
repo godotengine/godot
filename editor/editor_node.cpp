@@ -1522,6 +1522,7 @@ void EditorNode::_resave_externally_modified_scenes(String p_str) {
 
 void EditorNode::_reload_modified_scenes() {
 	int current_idx = editor_data.get_edited_scene();
+	Vector<int> modified_scenes;
 
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (editor_data.get_scene_path(i) == "") {
@@ -1532,19 +1533,47 @@ void EditorNode::_reload_modified_scenes() {
 		uint64_t date = FileAccess::get_modified_time(editor_data.get_scene_path(i));
 
 		if (date > last_date) {
-			String filename = editor_data.get_scene_path(i);
-			editor_data.set_edited_scene(i);
+			modified_scenes.push_back(i);
+		}
+	}
+
+	if (modified_scenes.size() > 0) {
+		// Save the current scene's editor states to restore it after the reload
+		// We do this regardless of whether the current scene was modified or not,
+		// because reloading any modified scenes will reset the editor state for the current scene.
+		String current_scene_path = current_idx == -1 ? "" : editor_data.get_scene_path(current_idx);
+		if (!current_scene_path.is_empty()) {
+			// TODO: Should we apply changes in editors here?
+			// editor_data.apply_changes_in_editors();
+			_save_editor_states(current_scene_path, current_idx);
+		}
+
+		for (int idx : modified_scenes) {
+			String filename = editor_data.get_scene_path(idx);
+			editor_data.set_edited_scene(idx);
 			_remove_edited_scene(false);
 
 			Error err = load_scene(filename, false, false, false, true);
 			if (err != OK) {
 				ERR_PRINT(vformat("Failed to load scene: %s", filename));
 			}
-			editor_data.move_edited_scene_to_index(i);
+			editor_data.move_edited_scene_to_index(idx);
+		}
+
+		_set_current_scene(current_idx);
+
+		// If the current edited scene's editor states were not restored via load_scene(), we need to do it here.
+		if (!modified_scenes.has(current_idx) && !current_scene_path.is_empty()) {
+			String config_file_path = EditorPaths::get_singleton()->get_project_settings_dir().path_join(current_scene_path.get_file() + "-editstate-" + current_scene_path.md5_text() + ".cfg");
+			Ref<ConfigFile> editor_state_cf;
+			editor_state_cf.instantiate();
+			Error editor_state_cf_err = editor_state_cf->load(config_file_path);
+			if (editor_state_cf_err == OK || editor_state_cf->has_section("editor_states")) {
+				_load_editor_plugin_states_from_config(editor_state_cf);
+			}
 		}
 	}
 
-	_set_current_scene(current_idx);
 	scene_tabs->update_scene_tabs();
 	disk_changed->hide();
 }
