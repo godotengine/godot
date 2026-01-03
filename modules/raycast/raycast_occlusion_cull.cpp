@@ -334,7 +334,9 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	int vertices_size = occ->vertices.size();
 
 	// Embree requires the last element to be readable by a 16-byte SSE load instruction, so we add padding to be safe.
-	occ_inst->xformed_vertices.resize(3 * vertices_size + 3);
+
+	occ_inst->xformed_vertices.reserve(3 * vertices_size + 3);
+	occ_inst->xformed_vertices.resize(3 * vertices_size);
 
 	const Vector3 *read_ptr = occ->vertices.ptr();
 	float *write_ptr = occ_inst->xformed_vertices.ptr();
