@@ -4191,6 +4191,10 @@ void EditorInspector::update_tree() {
 		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
+		// Metadata entries are accessed by String, so we should show the actual key name directly.
+		if (path.begins_with("metadata/")) {
+			name_style = EditorPropertyNameProcessor::STYLE_RAW;
+		}
 		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style, p.name, doc_name) + feature_tag;
 
 		// Remove the property from the path.
