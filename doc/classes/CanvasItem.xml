@@ -689,6 +689,7 @@
 			If [code]true[/code], this and child [CanvasItem] nodes with a higher Y position are rendered in front of nodes with a lower Y position. If [code]false[/code], this and child [CanvasItem] nodes are rendered normally in scene tree order.
 			With Y-sorting enabled on a parent node ('A') but disabled on a child node ('B'), the child node ('B') is sorted but its children ('C1', 'C2', etc.) render together on the same Y position as the child node ('B'). This allows you to organize the render order of a scene without changing the scene tree.
 			Nodes sort relative to each other only if they are on the same [member z_index].
+			[b]Note:[/b] The Z index and Y sorting do [b]not[/b] affect the order in which [CanvasItem] nodes are processed or the way input events are handled. This is especially important to keep in mind for [Control] nodes.
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
 			If [code]true[/code], this node's final Z index is relative to its parent's Z index.
@@ -696,7 +697,7 @@
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
 			The order in which this node is drawn. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
-			[b]Note:[/b] The Z index does [b]not[/b] affect the order in which [CanvasItem] nodes are processed or the way input events are handled. This is especially important to keep in mind for [Control] nodes.
+			[b]Note:[/b] The Z index and Y sorting do [b]not[/b] affect the order in which [CanvasItem] nodes are processed or the way input events are handled. This is especially important to keep in mind for [Control] nodes.
 		</member>
 	</members>
 	<signals>
