@@ -25,7 +25,7 @@
 		<method name="get_draw_mode" qualifiers="const">
 			<return type="int" enum="BaseButton.DrawMode" />
 			<description>
-				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding _draw() or connecting to "draw" signal. The visual state of the button is defined by the [enum DrawMode] enum.
+				Returns the visual state used to draw the button. This is useful mainly when implementing your own draw code by either overriding [method CanvasItem._draw] or connecting to the [signal CanvasItem.draw] signal. The visual state of the button is defined by the [enum DrawMode] enum. You can override the return value using the [member custom_draw_mode] property.
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
@@ -58,6 +58,9 @@
 		<member name="button_pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active). Only works if [member toggle_mode] is [code]true[/code].
 			[b]Note:[/b] Changing the value of [member button_pressed] will result in [signal toggled] to be emitted. If you want to change the pressed state without emitting that signal, use [method set_pressed_no_signal].
+		</member>
+		<member name="custom_draw_mode" type="int" setter="set_custom_draw_mode" getter="get_custom_draw_mode" enum="BaseButton.DrawMode" default="-1">
+			If a value other than [constant DRAW_AUTO] is set, [method get_draw_mode] will return it instead of using the default logic. This property can be useful for temporarily changing the visual state of the button using custom logic.
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
 			If [code]true[/code], the button is in disabled state and can't be clicked or toggled.
@@ -107,6 +110,9 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="DRAW_AUTO" value="-1" enum="DrawMode">
+			This state is only used with [member custom_draw_mode] to tell [method get_draw_mode] to use the default logic.
+		</constant>
 		<constant name="DRAW_NORMAL" value="0" enum="DrawMode">
 			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
 		</constant>

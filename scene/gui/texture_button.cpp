@@ -164,6 +164,9 @@ void TextureButton::_notification(int p_what) {
 						texdraw = disabled;
 					}
 				} break;
+				case DRAW_AUTO: {
+					// Unreachable.
+				} break;
 			}
 
 			Point2 ofs;

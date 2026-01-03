@@ -264,17 +264,17 @@ void LinkButton::_notification(int p_what) {
 					}
 
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
-
 				} break;
 				case DRAW_HOVER: {
 					color = theme_cache.font_hover_color;
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
-
 				} break;
 				case DRAW_DISABLED: {
 					color = theme_cache.font_disabled_color;
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
-
+				} break;
+				case DRAW_AUTO: {
+					// Unreachable.
 				} break;
 			}
 
