@@ -114,6 +114,29 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		Vector3 inters;
 		// Special case for primary handle, the handle id equals control point id.
 		const int idx = p_id;
+		if (!Path3DEditorPlugin::singleton->_edit.waiting_handle_physics || !Path3DEditorPlugin::singleton->_edit.in_physics_frame) {
+			Path3DEditorPlugin::singleton->_edit.waiting_handle_physics = true;
+			Path3DEditorPlugin::singleton->_edit.gizmo_handle = p_id;
+			Path3DEditorPlugin::singleton->_edit.gizmo_handle_secondary = p_secondary;
+			Path3DEditorPlugin::singleton->_edit.gizmo_camera = p_camera;
+			Path3DEditorPlugin::singleton->_edit.mouse_pos = p_point;
+			return;
+			// Only advances this code if inside physics frame and waiting for physics
+		}
+		if (Path3DEditorPlugin::singleton->snap_to_collider) {
+			PhysicsDirectSpaceState3D *ss = p_camera->get_world_3d()->get_direct_space_state();
+
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = ray_from;
+			ray_params.to = ray_from + ray_dir * p_camera->get_far();
+			PhysicsDirectSpaceState3D::RayResult result;
+			if (ss->intersect_ray(ray_params, result)) {
+				Vector3 local = gi.xform(result.position);
+				c->set_point_position(idx, local);
+				return;
+			}
+			// Will continue and do the plane intersect_ray if doesn't hit anything.
+		}
 		if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 				float snap = Node3DEditor::get_singleton()->get_translate_snap();
@@ -669,9 +692,18 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				} else {
 					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(p_camera->get_transform().basis.get_column(2), origin);
+
 				Vector3 ray_from = viewport->get_ray_pos(mbpos);
 				Vector3 ray_dir = viewport->get_ray(mbpos);
+
+				if (snap_to_collider) {
+					_edit.click_ray_pos = ray_from;
+					_edit.click_ray_dir = ray_dir * p_camera->get_far();
+					_edit.waiting_point_physics = true;
+					return EditorPlugin::AFTER_GUI_INPUT_STOP;
+				}
+
+				Plane p(p_camera->get_transform().basis.get_column(2), origin);
 
 				Vector3 inters;
 				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
@@ -748,6 +780,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 		topmenu_bar->hide();
 		path = nullptr;
 	}
+	set_physics_process(p_visible);
 }
 
 void Path3DEditorPlugin::_mode_changed(int p_mode) {
@@ -790,6 +823,11 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 			bool is_checked = pm->is_item_checked(HANDLE_OPTION_LENGTH);
 			mirror_handle_length = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+		} break;
+		case HANDLE_OPTION_SNAP_COLLIDER: {
+			bool is_checked = pm->is_item_checked(HANDLE_OPTION_SNAP_COLLIDER);
+			snap_to_collider = !is_checked;
+			pm->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 		} break;
 	}
 }
@@ -884,6 +922,47 @@ void Path3DEditorPlugin::_notification(int p_what) {
 
 			path->update_gizmos();
 		} break;
+		case NOTIFICATION_PHYSICS_PROCESS: {
+			if (_edit.waiting_point_physics) {
+				_edit.waiting_point_physics = false;
+				Transform3D gt = path->get_global_transform();
+				Transform3D it = gt.affine_inverse();
+				Ref<Curve3D> c = path->get_curve();
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+				if (ss) {
+					PhysicsDirectSpaceState3D::RayParameters ray_params;
+					PhysicsDirectSpaceState3D::RayResult result;
+					ray_params.from = _edit.click_ray_pos;
+					ray_params.to = ray_params.from + _edit.click_ray_dir;
+					if (ss->intersect_ray(ray_params, result)) {
+						ur->create_action(TTR("Add Point to Curve"));
+						ur->add_do_method(c.ptr(), "add_point", it.xform(result.position), Vector3(), Vector3(), -1);
+						ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+						ur->commit_action();
+					}
+				}
+			}
+			if (_edit.waiting_handle_physics) {
+				_edit.in_physics_frame = true;
+
+				// Find gizmo reference
+				Vector<Ref<Node3DGizmo>> gizmos = path->get_gizmos();
+				for (int i = 0; i < gizmos.size(); i++) {
+					Ref<EditorNode3DGizmo> seg = gizmos[i];
+
+					if (seg.is_null()) {
+						continue;
+					}
+					_edit.gizmo = seg;
+					break;
+				}
+
+				_edit.gizmo->set_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_camera, _edit.mouse_pos);
+				_edit.in_physics_frame = false;
+				_edit.waiting_handle_physics = false;
+			}
+		}
 	}
 }
 
@@ -989,6 +1068,8 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+	menu->add_check_item(TTR("Snap to Colliders"));
+	menu->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed_no_signal(true);
