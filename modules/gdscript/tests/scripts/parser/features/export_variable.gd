@@ -14,6 +14,8 @@ const PreloadedUnnamedClass = preload("./export_variable_unnamed.notest.gd")
 @export var test_color: Color
 @export_color_no_alpha var test_color_no_alpha: Color
 @export_node_path("Sprite2D", "Sprite3D", "Control", "Node") var test_node_path := ^"hello"
+@export_suffix("m") var test_suffix: float
+@export_suffix("degrees", "radians_as_degrees") var test_suffix_extra_hints: float
 
 # Enums.
 @export var test_side: Side

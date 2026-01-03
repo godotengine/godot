@@ -52,6 +52,11 @@
 @export_node_path var test_node_path: Array[NodePath]
 @export_color_no_alpha var test_color: Array[Color]
 @export_color_no_alpha var test_color_packed: PackedColorArray
+@export_suffix("m") var test_suffix: Array[int]
+@export_suffix("m") var test_suffix_vector: Array[Vector3]
+@export_suffix("m") var test_suffix_packed_byte: PackedByteArray
+@export_suffix("m") var test_suffix_packed32: PackedInt32Array
+@export_suffix("m") var test_suffix_packed64: PackedInt64Array
 
 var temp_packed_byte_array: PackedByteArray
 var temp_packed_int32_array: PackedInt32Array

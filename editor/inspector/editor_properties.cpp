@@ -3766,6 +3766,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	if (is_int) {
 		hint.hide_control = false; // Always show controls for ints, unless specified in hint range.
 	}
+	int skip_slices = 0;
 	Vector<String> slices = p_hint_text.split(",");
 	if (p_hint == PROPERTY_HINT_RANGE) {
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
@@ -3800,9 +3801,15 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.exp_range = true;
 			}
 		}
+	} else if (p_hint == PROPERTY_HINT_SUFFIX) {
+		ERR_FAIL_COND_V_MSG(slices.size() < 1, hint,
+				vformat("Invalid PROPERTY_HINT_SUFFIX with hint \"%s\": Missing required suffix.", p_hint_text));
+
+		hint.suffix = " " + slices[0].strip_edges();
+		skip_slices = 1; // Don't reinterpret the suffix slice in case it collides with another hint.
 	}
 	bool degrees = false;
-	for (int i = 0; i < slices.size(); i++) {
+	for (int i = skip_slices; i < slices.size(); i++) {
 		String slice = slices[i].strip_edges();
 		if (slice == "radians_as_degrees"
 #ifndef DISABLE_DEPRECATED

@@ -174,6 +174,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+		register_annotation(MethodInfo("@export_suffix", PropertyInfo(Variant::STRING, "suffix"), PropertyInfo(Variant::STRING, "extra_hints")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_SUFFIX, Variant::FLOAT>, varray(""), true);
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
 		register_annotation(MethodInfo("@export_tool_button", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::STRING, "icon")), AnnotationInfo::VARIABLE, &GDScriptParser::export_tool_button_annotation, varray(""));
@@ -4729,6 +4730,16 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (export_type.builtin_type == Variant::INT) {
 			variable->export_info.type = Variant::INT;
+		}
+	} else if (p_annotation->name == SNAME("@export_suffix")) {
+		use_default_variable_type_check = false;
+
+		Vector<Variant::Type> expected_types = { Variant::FLOAT, Variant::INT, Variant::VECTOR2, Variant::VECTOR2I, Variant::VECTOR3, Variant::VECTOR3I, Variant::VECTOR4, Variant::VECTOR4I };
+		if (expected_types.has(export_type.builtin_type)) {
+			variable->export_info.type = export_type.builtin_type;
+		} else {
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			return false;
 		}
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		use_default_variable_type_check = false;
