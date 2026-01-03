@@ -221,7 +221,21 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 		if (path.begins_with("./") || path.begins_with(".\\")) {
 			// Relative path. Convert to absolute, using executable path as reference.
 			path = path.trim_prefix("./").trim_prefix(".\\");
-			path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
+			const String absolute_path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join(path);
+			if (FileAccess::exists(absolute_path)) {
+				path = absolute_path;
+			}
+		}
+
+		if (!FileAccess::exists(path)) {
+			// The file does not exist. Try on GitHub instead.
+			String branch = "master";
+			if (str_compare(GODOT_VERSION_BUILD, "official") == 0) {
+				// In official builds it's safe to use specific commit hash, so the line number is more accurate.
+				branch = GODOT_VERSION_HASH;
+			}
+			OS::get_singleton()->shell_open(vformat("https://github.com/godotengine/godot/blob/%s/%s#L%d", branch, path, line + 1));
+			return;
 		}
 
 		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
