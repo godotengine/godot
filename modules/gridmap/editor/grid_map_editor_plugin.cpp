@@ -1049,12 +1049,8 @@ void GridMapEditor::update_palette() {
 
 	for (_CGMEItemSort &E : il) {
 		int id = E.id;
-		String name = mesh_library->get_item_name(id);
+		String name = mesh_library->get_item_name(id) + " # " + itos(id);
 		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
-
-		if (name.is_empty()) {
-			name = "#" + itos(id);
-		}
 
 		if (!filter.is_empty() && !filter.is_subsequence_ofn(name)) {
 			continue;
