@@ -478,19 +478,19 @@ float CurveEdit::get_offset_without_collision(int p_current_index, float p_offse
 			continue;
 		}
 
-		if (curve->get_point_position(i).x > safe_offset) {
+		if (curve->get_point_position(i).x > safe_offset || curve->get_point_position(i).x < safe_offset) {
 			break;
 		}
 
 		if (curve->get_point_position(i).x == safe_offset) {
 			if (prioritizing_right) {
-				safe_offset += 0.00001;
+				safe_offset += 0.1;
 				if (safe_offset > 1.0) {
 					safe_offset = 1.0;
 					prioritizing_right = false;
 				}
 			} else {
-				safe_offset -= 0.00001;
+				safe_offset -= 0.1;
 				if (safe_offset < 0.0) {
 					safe_offset = 0.0;
 					prioritizing_right = true;
@@ -499,7 +499,6 @@ float CurveEdit::get_offset_without_collision(int p_current_index, float p_offse
 			i = -1;
 		}
 	}
-
 	return safe_offset;
 }
 
