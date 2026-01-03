@@ -680,36 +680,36 @@ void TextEdit::_accessibility_action_menu(const Variant &p_data) {
 
 void TextEdit::_accessibility_scroll_down(const Variant &p_data) {
 	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 4);
+		v_scroll->set_value(v_scroll->get_target_value() + v_scroll->get_page() / 4);
 	} else {
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page());
+		v_scroll->set_value(v_scroll->get_target_value() + v_scroll->get_page());
 	}
 	queue_accessibility_update();
 }
 
 void TextEdit::_accessibility_scroll_left(const Variant &p_data) {
 	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
-		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 4);
+		h_scroll->set_value(h_scroll->get_target_value() - h_scroll->get_page() / 4);
 	} else {
-		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page());
+		h_scroll->set_value(h_scroll->get_target_value() - h_scroll->get_page());
 	}
 	queue_accessibility_update();
 }
 
 void TextEdit::_accessibility_scroll_right(const Variant &p_data) {
 	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
-		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 4);
+		h_scroll->set_value(h_scroll->get_target_value() + h_scroll->get_page() / 4);
 	} else {
-		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page());
+		h_scroll->set_value(h_scroll->get_target_value() + h_scroll->get_page());
 	}
 	queue_accessibility_update();
 }
 
 void TextEdit::_accessibility_scroll_up(const Variant &p_data) {
 	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
-		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 4);
+		v_scroll->set_value(v_scroll->get_target_value() - v_scroll->get_page() / 4);
 	} else {
-		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page());
+		v_scroll->set_value(v_scroll->get_target_value() - v_scroll->get_page());
 	}
 	queue_accessibility_update();
 }
@@ -722,7 +722,7 @@ void TextEdit::_accessibility_scroll_set(const Variant &p_data) {
 }
 
 void TextEdit::_accessibility_action_scroll_into_view(const Variant &p_data, int p_line, int p_wrap) {
-	double delta = get_scroll_pos_for_line(p_line, p_wrap) - get_v_scroll();
+	double delta = get_scroll_pos_for_line(p_line, p_wrap) - v_scroll->get_target_value();
 	if (delta < 0) {
 		_scroll_up(-delta, false);
 	} else {
@@ -875,8 +875,8 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (scrolling && get_v_scroll() != target_v_scroll) {
-				double target_y = target_v_scroll - get_v_scroll();
+			if (scrolling && get_v_scroll() != target_v_scroll) { //
+				double target_y = target_v_scroll - get_v_scroll(); //
 				double dist = std::abs(target_y);
 				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_process_delta_time();
@@ -892,7 +892,7 @@ void TextEdit::_notification(int p_what) {
 					minimap_clicked = false;
 					set_process_internal(false);
 				} else {
-					set_v_scroll(get_v_scroll() + vel);
+					set_v_scroll(v_scroll->get_value() + vel); //
 				}
 			} else {
 				scrolling = false;
@@ -927,7 +927,7 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = false;
 			}
 
-			_update_scrollbars();
+			_update_scrollbars(); //
 
 			RS::get_singleton()->canvas_item_clear(text_ci);
 			RS::get_singleton()->canvas_item_set_custom_rect(text_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), size));
@@ -2231,8 +2231,8 @@ bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
-	double prev_v_scroll = v_scroll->get_value();
-	double prev_h_scroll = h_scroll->get_value();
+	double prev_v_scroll = v_scroll->get_target_value();
+	double prev_h_scroll = h_scroll->get_target_value();
 
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
@@ -2245,7 +2245,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
 				if (mb->is_shift_pressed()) {
-					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
+					h_scroll->set_value(h_scroll->get_target_value() - (100 * mb->get_factor()));
 					queue_accessibility_update();
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
@@ -2257,7 +2257,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
 				if (mb->is_shift_pressed()) {
-					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
+					h_scroll->set_value(h_scroll->get_target_value() + (100 * mb->get_factor()));
 					queue_accessibility_update();
 				} else if (mb->is_alt_pressed()) {
 					// Scroll 5 times as fast as normal (like in Visual Studio Code).
@@ -2268,11 +2268,11 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
-				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
+				h_scroll->set_value(h_scroll->get_target_value() - (100 * mb->get_factor()));
 				queue_accessibility_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
-				h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
+				h_scroll->set_value(h_scroll->get_target_value() + (100 * mb->get_factor()));
 				queue_accessibility_update();
 			}
 
@@ -2500,8 +2500,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 			_scroll_down(delta, false);
 		}
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
-		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
+		h_scroll->set_value(h_scroll->get_target_value() + pan_gesture->get_delta().x * 100);
+		if (v_scroll->get_target_value() != prev_v_scroll || h_scroll->get_target_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
 		queue_accessibility_update();
@@ -6426,7 +6426,7 @@ Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
 // Scrolling.
 void TextEdit::set_smooth_scroll_enabled(bool p_enabled) {
 	v_scroll->set_smooth_scroll_enabled(p_enabled);
-	smooth_scroll_enabled = p_enabled;
+	//smooth_scroll_enabled = p_enabled;
 }
 
 bool TextEdit::is_smooth_scroll_enabled() const {
@@ -6462,7 +6462,7 @@ void TextEdit::set_v_scroll(double p_scroll) {
 	v_scroll->set_value(p_scroll);
 	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
 	if (p_scroll >= max_v_scroll - 1.0) {
-		_scroll_moved(v_scroll->get_value());
+		_scroll_moved(v_scroll->get_value()); //
 	}
 	queue_accessibility_update();
 }
@@ -8625,7 +8625,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->show();
 		v_scroll->set_max(total_rows);
 		v_scroll->set_page(visible_rows + fractional_visible_rows);
-		set_v_scroll(get_v_scroll());
+		//set_v_scroll(v_scroll->get_target_value());
 	} else {
 		first_visible_line = 0;
 		first_visible_line_wrap_ofs = 0;
@@ -8680,7 +8680,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		// Set line ofs and wrap ofs.
 		bool draw_placeholder = _using_placeholder();
 
-		int v_scroll_i = std::floor(get_v_scroll());
+		int v_scroll_i = std::floor(get_v_scroll()); //
 		int sc = 0;
 		int n_line;
 		for (n_line = 0; n_line < text.size(); n_line++) {
@@ -8726,7 +8726,7 @@ void TextEdit::_scroll_up(real_t p_delta, bool p_animate) {
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll - p_delta);
 	} else {
-		target_v_scroll = (get_v_scroll() - p_delta);
+		target_v_scroll = (v_scroll->get_target_value() - p_delta);
 	}
 
 	if (smooth_scroll_enabled) {
@@ -8754,7 +8754,7 @@ void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll + p_delta);
 	} else {
-		target_v_scroll = (get_v_scroll() + p_delta);
+		target_v_scroll = (v_scroll->get_target_value() + p_delta);
 	}
 
 	if (smooth_scroll_enabled) {
@@ -8779,7 +8779,7 @@ void TextEdit::_scroll_lines_up() {
 	minimap_clicked = false;
 
 	// Adjust the vertical scroll.
-	set_v_scroll(get_v_scroll() - 1);
+	set_v_scroll(v_scroll->get_target_value() - 1);
 
 	// Adjust the caret to viewport.
 	for (int i = 0; i < carets.size(); i++) {
@@ -8801,7 +8801,7 @@ void TextEdit::_scroll_lines_down() {
 	minimap_clicked = false;
 
 	// Adjust the vertical scroll.
-	set_v_scroll(get_v_scroll() + 1);
+	set_v_scroll(v_scroll->get_target_value() + 1);
 
 	// Adjust the caret to viewport.
 	for (int i = 0; i < carets.size(); i++) {
@@ -8933,7 +8933,7 @@ void TextEdit::_update_minimap_click() {
 
 	Point2i next_line = get_next_visible_line_index_offset_from(row, 0, -get_visible_line_count() / 2);
 	int first_line = MAX(0, row - next_line.x + 1);
-	double delta = get_scroll_pos_for_line(first_line, next_line.y) - get_v_scroll();
+	double delta = get_scroll_pos_for_line(first_line, next_line.y) - v_scroll->get_target_value(); //
 	if (delta < 0) {
 		_scroll_up(-delta, true);
 	} else {
@@ -9287,6 +9287,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
+
+	h_scroll->set_use_default_smooth_time();
+	v_scroll->set_use_default_smooth_time();
 
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);

@@ -3702,7 +3702,7 @@ bool Tree::_scroll(bool p_horizontal, float p_pages) {
 	ScrollBar *scroll = p_horizontal ? (ScrollBar *)h_scroll : (ScrollBar *)v_scroll;
 
 	double prev_value = scroll->get_value();
-	scroll->set_value(scroll->get_value() + scroll->get_page() * p_pages);
+	scroll->set_value(scroll->get_target_value() + scroll->get_page() * p_pages);
 
 	bool scroll_happened = scroll->get_value() != prev_value;
 	if (scroll_happened) {
@@ -4231,17 +4231,17 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		double prev_v = v_scroll->get_value();
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		double prev_v = v_scroll->get_target_value();
+		v_scroll->set_value(v_scroll->get_target_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
 
-		double prev_h = h_scroll->get_value();
+		double prev_h = h_scroll->get_target_value();
 		if (is_layout_rtl()) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_target_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
 		} else {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_target_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
 		}
 
-		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
+		if (v_scroll->get_target_value() != prev_v || h_scroll->get_target_value() != prev_h) {
 			accept_event();
 		}
 	}
@@ -6896,6 +6896,9 @@ Tree::Tree() {
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
+
+	h_scroll->set_use_default_smooth_time();
+	v_scroll->set_use_default_smooth_time();
 
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
