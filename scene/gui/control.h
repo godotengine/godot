@@ -330,7 +330,7 @@ private:
 
 	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
-	void _size_changed();
+	void _rect_changed();
 
 	void _top_level_changed() override {} // Controls don't need to do anything, only other CanvasItems.
 	void _top_level_changed_on_parent() override;
