@@ -43,6 +43,15 @@ void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
 }
 
+void EditorDock::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			set_accessibility_region(true);
+			set_accessibility_name(get_display_title());
+		} break;
+	}
+}
+
 void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
 	ClassDB::bind_method(D_METHOD("make_visible"), &EditorDock::make_visible);
@@ -130,6 +139,7 @@ void EditorDock::set_title(const String &p_title) {
 		return;
 	}
 	title = p_title;
+	set_accessibility_name(get_display_title());
 	_emit_changed();
 }
 

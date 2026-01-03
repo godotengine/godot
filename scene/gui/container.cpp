@@ -188,7 +188,10 @@ void Container::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			// Don't override the region role if this container is marked as a region.
+			if (!is_accessibility_region()) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_CONTAINER);
+			}
 		} break;
 
 		case NOTIFICATION_RESIZED:

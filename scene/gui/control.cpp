@@ -2240,6 +2240,18 @@ TypedArray<NodePath> Control::get_accessibility_flow_to_nodes() const {
 	return data.accessibility_flow_to_nodes;
 }
 
+void Control::set_accessibility_region(bool p_region) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.accessibility_region != p_region) {
+		data.accessibility_region = p_region;
+		queue_accessibility_update();
+	}
+}
+
+bool Control::is_accessibility_region() const {
+	return data.accessibility_region;
+}
+
 void Control::set_drag_preview(Control *p_control) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
@@ -3748,6 +3760,9 @@ void Control::_notification(int p_notification) {
 			}
 			DisplayServer::get_singleton()->accessibility_update_set_description(ae, get_accessibility_description());
 			DisplayServer::get_singleton()->accessibility_update_set_live(ae, get_accessibility_live());
+			if (data.accessibility_region) {
+				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_REGION);
+			}
 
 			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
 			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
@@ -4156,6 +4171,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accessibility_labeled_by_nodes"), &Control::get_accessibility_labeled_by_nodes);
 	ClassDB::bind_method(D_METHOD("set_accessibility_flow_to_nodes", "node_path"), &Control::set_accessibility_flow_to_nodes);
 	ClassDB::bind_method(D_METHOD("get_accessibility_flow_to_nodes"), &Control::get_accessibility_flow_to_nodes);
+	ClassDB::bind_method(D_METHOD("set_accessibility_region", "region"), &Control::set_accessibility_region);
+	ClassDB::bind_method(D_METHOD("is_accessibility_region"), &Control::is_accessibility_region);
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
@@ -4306,6 +4323,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_described_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_described_by_nodes", "get_accessibility_described_by_nodes");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_labeled_by_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_labeled_by_nodes", "get_accessibility_labeled_by_nodes");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "accessibility_flow_to_nodes", PROPERTY_HINT_ARRAY_TYPE, "NodePath"), "set_accessibility_flow_to_nodes", "get_accessibility_flow_to_nodes");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accessibility_region"), "set_accessibility_region", "is_accessibility_region");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
