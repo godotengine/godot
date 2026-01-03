@@ -40,8 +40,9 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("use_sowrap", "Dynamically load system libraries", True),
-        BoolVariable("alsa", "Use ALSA", True),
-        BoolVariable("pulseaudio", "Use PulseAudio", True),
+        BoolVariable("alsa", "Use ALSA for audio support", True),
+        BoolVariable("pipewire", "Use PipeWire for camera support", True),
+        BoolVariable("pulseaudio", "Use PulseAudio for audio support", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
         BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
@@ -337,6 +338,17 @@ def configure(env: "SConsEnvironment"):
                 env["alsa"] = False
         else:
             env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+
+    if env["pipewire"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libpipewire-0.3") == 0:  # 0 means found
+                env.ParseConfig("pkg-config libpipewire-0.3 --cflags --libs")
+                env.Append(CPPDEFINES=["PIPEWIRE_ENABLED"])
+            else:
+                print_warning("PipeWire development libraries not found. Disabling PipeWire drivers.")
+                env["pipewire"] = False
+        else:
+            env.Append(CPPDEFINES=["PIPEWIRE_ENABLED", "_REENTRANT"])
 
     if env["pulseaudio"]:
         if not env["use_sowrap"]:
