@@ -2947,6 +2947,23 @@ void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID
 	decal->textures[p_type] = p_texture;
 
 	if (decal->textures[p_type].is_valid()) {
+#ifdef TOOLS_ENABLED
+		Texture *tex = get_texture(p_texture);
+		if (tex->detect_3d_callback) {
+			tex->detect_3d_callback(tex->detect_3d_callback_ud);
+		}
+		if (p_type == RS::DecalTexture::DECAL_TEXTURE_NORMAL && tex->detect_normal_callback) {
+			tex->detect_normal_callback(tex->detect_normal_callback_ud);
+		}
+
+		if (p_type == RS::DecalTexture::DECAL_TEXTURE_NORMAL || p_type == RS::DecalTexture::DECAL_TEXTURE_ORM) {
+			Texture *normal_tex = get_texture(decal->textures[RS::DecalTexture::DECAL_TEXTURE_NORMAL]);
+			Texture *orm_tex = get_texture(decal->textures[RS::DecalTexture::DECAL_TEXTURE_ORM]);
+			if (orm_tex && normal_tex && !normal_tex->path.is_empty() && orm_tex->detect_roughness_callback) {
+				orm_tex->detect_roughness_callback(orm_tex->detect_roughness_callback_ud, normal_tex->path, RS::TEXTURE_DETECT_ROUGHNESS_G);
+			}
+		}
+#endif
 		texture_add_to_decal_atlas(decal->textures[p_type]);
 	}
 
