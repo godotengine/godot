@@ -32,6 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
+#include "scene/main/timer.h"
 
 class AcceptDialog;
 class Button;
@@ -145,7 +146,8 @@ private:
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
-		SKELETON_SHOW_BONES
+		SKELETON_SHOW_BONES,
+		AUTO_RESAMPLE_CANVAS_ITEMS
 	};
 
 	enum DragType {
@@ -226,6 +228,9 @@ private:
 	real_t zoom = 1.0;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
+
+	bool resample = true;
+	real_t resample_delay = 0.3;
 
 	bool selected_from_canvas = false;
 
@@ -394,6 +399,8 @@ private:
 	Ref<Shortcut> reset_transform_scale_shortcut;
 
 	Ref<ViewPanner> panner;
+
+	Timer *resample_timer = nullptr;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -432,6 +439,7 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 	void _reset_transform(TransformType p_type);
+	void _update_oversampling();
 
 public:
 	enum ThemePreviewMode {
