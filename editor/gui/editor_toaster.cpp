@@ -140,7 +140,7 @@ void EditorToaster::_notification(int p_what) {
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			_update_vbox_position();
 			_update_disable_notifications_button();
 		} break;
@@ -544,7 +544,7 @@ EditorToaster *EditorToaster::get_singleton() {
 }
 
 EditorToaster::EditorToaster() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	// VBox.
 	vbox_container = memnew(VBoxContainer);

@@ -672,7 +672,7 @@ void Skeleton2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (is_physics_interpolated_and_enabled()) {
 				_ensure_update_interpolation_data();
 				if (Engine::get_singleton()->is_in_physics_frame()) {
@@ -832,7 +832,7 @@ void Skeleton2D::_bind_methods() {
 
 Skeleton2D::Skeleton2D() {
 	skeleton = RS::get_singleton()->skeleton_create();
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_hide_clip_children(true);
 }
 

@@ -1049,7 +1049,7 @@ void GridMap::_notification(int p_what) {
 			_update_visibility();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
 				break;
@@ -1458,7 +1458,7 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 }
 
 GridMap::GridMap() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 #if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));

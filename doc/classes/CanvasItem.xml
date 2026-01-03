@@ -551,13 +551,19 @@
 				Hide the [CanvasItem] if it's currently visible. This is equivalent to setting [member visible] to [code]false[/code].
 			</description>
 		</method>
+		<method name="is_global_transform_notification_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if global transform notifications are communicated to children.
+			</description>
+		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node receives [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes. This is enabled with [method set_notify_local_transform].
 			</description>
 		</method>
-		<method name="is_transform_notification_enabled" qualifiers="const">
+		<method name="is_transform_notification_enabled" qualifiers="const" deprecated="Use [method is_global_transform_notification_enabled] instead.">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node receives [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes. This is enabled with [method set_notify_transform].
@@ -611,6 +617,13 @@
 				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
 			</description>
 		</method>
+		<method name="set_notify_global_transform">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] when its global transform changes.
+			</description>
+		</method>
 		<method name="set_notify_local_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
@@ -619,11 +632,11 @@
 				[b]Note:[/b] Many canvas items such as [Bone2D] or [CollisionShape2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
-		<method name="set_notify_transform">
+		<method name="set_notify_transform" deprecated="Use [method set_notify_global_transform] instead.">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] whenever its global transform changes.
 				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
@@ -724,9 +737,12 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			Notification received when this node's global transform changes, if [method is_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_transform] and [method get_transform].
+		<constant name="NOTIFICATION_GLOBAL_TRANSFORM_CHANGED" value="2000" keywords="NOTIFICATION_TRANSFORM_CHANGED">
+			Notification received when this node's global transform changes, if [method is_global_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_global_transform] and [method get_transform].
 			[b]Note:[/b] Many canvas items such as [Camera2D] or [CollisionObject2D] automatically enable this in order to function correctly.
+		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000" deprecated="Use [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] instead.">
+			The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_global_transform].
 		</constant>
 		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="35">
 			Notification received when this node's transform changes, if [method is_local_transform_notification_enabled] is [code]true[/code]. This is not received when a parent [Node2D]'s transform changes. See also [method set_notify_local_transform].

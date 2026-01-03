@@ -106,12 +106,12 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 }
 
 void Polygon2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED && !Engine::get_singleton()->is_editor_hint()) {
-		return; // Mesh recreation for NOTIFICATION_TRANSFORM_CHANGED is only needed in editor.
+	if (p_what == NOTIFICATION_GLOBAL_TRANSFORM_CHANGED && !Engine::get_singleton()->is_editor_hint()) {
+		return; // Mesh recreation for NOTIFICATION_GLOBAL_TRANSFORM_CHANGED is only needed in editor.
 	}
 
 	switch (p_what) {
-		case NOTIFICATION_TRANSFORM_CHANGED:
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_DRAW: {
 			if (polygon.size() < 3) {
 				return;

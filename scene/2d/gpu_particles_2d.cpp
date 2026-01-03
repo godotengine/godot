@@ -127,7 +127,7 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
-	set_notify_transform(!p_enable);
+	set_notify_global_transform(!p_enable);
 	if (!p_enable && is_inside_tree()) {
 		_update_particle_emission_transform();
 	}
@@ -766,7 +766,7 @@ void GPUParticles2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			_update_particle_emission_transform();
 		} break;
 

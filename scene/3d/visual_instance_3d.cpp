@@ -87,7 +87,7 @@ void VisualInstance3D::_notification(int p_what) {
 			_update_visibility();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			// ToDo : Can we turn off notify transform for physics interpolated cases?
 			if (_is_vi_visible() && !(is_inside_tree() && get_tree()->is_physics_interpolation_enabled()) && !_is_using_identity_transform()) {
 				// Physics interpolation global off, always send.
@@ -200,7 +200,7 @@ VisualInstance3D::VisualInstance3D() {
 
 	instance = RenderingServer::get_singleton()->instance_create();
 	RenderingServer::get_singleton()->instance_attach_object_instance_id(instance, get_instance_id());
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 VisualInstance3D::~VisualInstance3D() {

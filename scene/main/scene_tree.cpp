@@ -199,7 +199,7 @@ void SceneTree::flush_transform_notifications() {
 		SelfList<Node> *nx = n->next();
 		xform_change_list.remove(n);
 		n = nx;
-		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+		node->notification(NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
 	}
 }
 

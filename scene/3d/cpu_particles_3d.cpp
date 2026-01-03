@@ -1358,7 +1358,7 @@ void CPUParticles3D::_notification(int p_what) {
 			_update_internal();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			inv_emission_transform = get_global_transform().affine_inverse();
 
 			if (!local_coords) {
@@ -1750,7 +1750,7 @@ void CPUParticles3D::_bind_methods() {
 }
 
 CPUParticles3D::CPUParticles3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);

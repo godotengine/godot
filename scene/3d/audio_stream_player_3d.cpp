@@ -271,7 +271,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
@@ -735,13 +735,13 @@ void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 	doppler_tracking = p_tracking;
 
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
-		set_notify_transform(true);
+		set_notify_global_transform(true);
 		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
 		if (is_inside_tree()) {
 			velocity_tracker->reset(get_global_transform().origin);
 		}
 	} else {
-		set_notify_transform(false);
+		set_notify_global_transform(false);
 	}
 }
 
