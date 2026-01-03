@@ -231,6 +231,7 @@ private:
 
 	// Scenes collection sources.
 	ItemList *scene_tiles_list = nullptr;
+	Label *scenes_empty_label = nullptr;
 
 	void _update_scenes_collection_view();
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index);
