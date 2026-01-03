@@ -51,12 +51,60 @@
 		<member name="meshes/create_shadow_meshes" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables the generation of shadow meshes on import. This optimizes shadow rendering without reducing quality by welding vertices together when possible. This in turn reduces the memory bandwidth required to render shadows. Shadow mesh generation currently doesn't support using a lower detail level than the source mesh (but shadow rendering will make use of LODs when relevant).
 		</member>
+		<member name="meshes/decomposition/advanced" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables advanced configuration options for convex decomposition. These make it possible to adjust the decomposition process for complex meshes or specific use cases.
+		</member>
+		<member name="meshes/decomposition/convexhull_approximation" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], uses approximate convex hull generation which is faster but may produce less accurate results. Recommended for complex meshes where performance is more important than precision.
+		</member>
+		<member name="meshes/decomposition/convexhull_downsampling" type="int" setter="" getter="" default="4">
+			The factor by which the mesh is simplified before convex hull generation. Higher values reduce vertex count, speeding up decomposition at the cost of accuracy.
+		</member>
+		<member name="meshes/decomposition/max_concavity" type="float" setter="" getter="" default="1.0">
+			Maximum allowed concavity when splitting concave meshes into convex parts. Lower values produce more convex pieces that better fit concave areas.
+		</member>
+		<member name="meshes/decomposition/max_convex_hulls" type="int" setter="" getter="" default="1">
+			Maximum number of convex hulls to generate. The decomposition process stops when reaching this number, even if concavity remains.
+		</member>
+		<member name="meshes/decomposition/max_num_vertices_per_convex_hull" type="int" setter="" getter="" default="32">
+			Maximum vertices allowed for each convex hull. Lower values create simpler collision shapes that are faster to process in physics simulations.
+		</member>
+		<member name="meshes/decomposition/min_volume_per_convex_hull" type="float" setter="" getter="" default="0.0001">
+			Minimum volume required for a convex hull to be kept. Helps filter out small, insignificant hull fragments.
+		</member>
+		<member name="meshes/decomposition/mode" type="int" setter="" getter="" default="0">
+			The algorithm used for convex decomposition. [b]Voxel[/b] (default) decomposes the mesh using a voxel-based approach, while [b]Tetrahedron[/b] uses tetrahedral meshing for decomposition.
+		</member>
+		<member name="meshes/decomposition/normalize_mesh" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], normalizes the mesh before decomposition.
+		</member>
+		<member name="meshes/decomposition/plane_downsampling" type="int" setter="" getter="" default="4">
+			Controls how much planes are downsampled during decomposition. Higher values reduce processing time but may miss important features. Values range from [code]1[/code] (no downsampling) to [code]16[/code].
+		</member>
+		<member name="meshes/decomposition/precision" type="int" setter="" getter="" default="5">
+			The precision of the decomposition process. Higher values produce more accurate results but increase processing time. Values range from [code]1[/code] to [code]10[/code].
+		</member>
+		<member name="meshes/decomposition/project_hull_vertices" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], projects convex hull vertices onto the original mesh surface. This improves collision shape accuracy but may slightly increase processing time.
+		</member>
+		<member name="meshes/decomposition/resolution" type="int" setter="" getter="" default="10000">
+			The voxel resolution used for voxel-based decomposition. Higher values capture finer details but require more memory and processing power.
+		</member>
+		<member name="meshes/decomposition/revolution_axes_clipping_bias" type="float" setter="" getter="" default="0.05">
+			Controls how much clipping occurs along revolution axes during decomposition. Lower values preserve more detail while higher values simplify the shape.
+		</member>
+		<member name="meshes/decomposition/symmetry_planes_clipping_bias" type="float" setter="" getter="" default="0.05">
+			Controls how much clipping occurs along symmetry planes during decomposition. Lower values preserve symmetry while higher values allow more asymmetry.
+		</member>
 		<member name="meshes/ensure_tangents" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], generate vertex tangents using [url=http://www.mikktspace.com/]Mikktspace[/url] if the input meshes don't have tangent data. When possible, it's recommended to let the 3D modeling software generate tangents on export instead on relying on this option. Tangents are required for correct display of normal and height maps, along with any material/shader features that require tangents.
 			If you don't need material features that require tangents, disabling this can reduce output file size and speed up importing if the source 3D file doesn't contain tangents.
 		</member>
 		<member name="meshes/force_disable_compression" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], mesh compression will not be used. Consider enabling if you notice blocky artifacts in your mesh normals or UVs, or if you have meshes that are larger than a few thousand meters in each direction.
+		</member>
+		<member name="meshes/generate_collisions" type="int" setter="" getter="" default="0">
+			Determines how collision shapes are generated by default for meshes which have no individual physics mode set. [b]Disabled[/b] creates no collisions. [b]Static[/b] generates static [StaticBody3D] nodes with convex collision shapes. For best performance, use [b]Static[/b] for non-moving objects and create custom collisions for dynamic objects.
 		</member>
 		<member name="meshes/generate_lods" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], generates lower detail variants of the mesh which will be displayed in the distance to improve rendering performance. Not all meshes benefit from LOD, especially if they are never rendered from far away. Disabling this can reduce output file size and speed up importing. See [url=$DOCS_URL/tutorials/3d/mesh_lod.html#doc-mesh-lod]Mesh level of detail (LOD)[/url] for more information.
@@ -67,6 +115,33 @@
 		<member name="meshes/lightmap_texel_size" type="float" setter="" getter="" default="0.2">
 			Controls the size of each texel on the baked lightmap. A smaller value results in more precise lightmaps, at the cost of larger lightmap sizes and longer bake times.
 			[b]Note:[/b] Only effective if [member meshes/light_baking] is set to [b]Static Lightmaps[/b].
+		</member>
+		<member name="meshes/physics/layer" type="int" setter="" getter="" default="1">
+			The physics layer(s) assigned to generated collision shapes. Determines which objects can collide with each other based on their masks.
+		</member>
+		<member name="meshes/physics/mask" type="int" setter="" getter="" default="1">
+			The physics mask(s) assigned to generated collision shapes. Determines which layers this object will detect collisions with.
+		</member>
+		<member name="meshes/physics/physics_material_override" type="PhysicsMaterial" setter="" getter="" default="null">
+			A [PhysicsMaterial] resource to override the default physical properties (bounce, friction, etc.) of generated collision shapes.
+		</member>
+		<member name="meshes/physics/shape_type" type="int" setter="" getter="" default="7">
+			The type of collision shape to generate. [b]Automatic[/b] (default) attempts to choose the best shape based on the mesh. Other options include [b]Decompose Convex[/b], [b]Simple Convex[/b], [b]Trimesh[/b], and primitive shapes like [b]Box[/b], [b]Sphere[/b], [b]Cylinder[/b], or [b]Capsule[/b].
+		</member>
+		<member name="meshes/primitive/height" type="float" setter="" getter="" default="1.0">
+			The height of generated primitive shapes. Only used when [member meshes/physics/shape_type] is set to [b]Cylinder[/b] or [b]Capsule[/b].
+		</member>
+		<member name="meshes/primitive/position" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+			Local position offset for generated primitive shapes. Only used when [member meshes/physics/shape_type] is set to a primitive type.
+		</member>
+		<member name="meshes/primitive/radius" type="float" setter="" getter="" default="1.0">
+			The radius of generated primitive shapes. Only used when [member meshes/physics/shape_type] is set to [b]Spheres[/b], [b]Cylinders[/b], and [b]Capsules[/b].
+		</member>
+		<member name="meshes/primitive/rotation" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+			Local rotation ([url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url] in degrees) for generated primitive shapes. Only used when [member meshes/physics/shape_type] is set to a primitive type.
+		</member>
+		<member name="meshes/primitive/size" type="Vector3" setter="" getter="" default="Vector3(2, 2, 2)">
+			The size of generated box primitive shapes. Only used when [member meshes/physics/shape_type] is set to [b]Box[/b].
 		</member>
 		<member name="nodes/apply_root_scale" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [member nodes/root_scale] will be applied to the descendant nodes, meshes, animations, bones, etc. This means that if you add a child node later on within the imported scene, it won't be scaled. If [code]false[/code], [member nodes/root_scale] will multiply the scale of the root node instead.
