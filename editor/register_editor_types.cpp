@@ -83,6 +83,7 @@
 #include "editor/scene/2d/physics/collision_polygon_2d_editor_plugin.h"
 #include "editor/scene/2d/physics/collision_shape_2d_editor_plugin.h"
 #include "editor/scene/2d/polygon_2d_editor_plugin.h"
+#include "editor/scene/2d/scene_paint_2d_editor_plugin.h"
 #include "editor/scene/2d/skeleton_2d_editor_plugin.h"
 #include "editor/scene/2d/sprite_2d_editor_plugin.h"
 #include "editor/scene/2d/tiles/tiles_editor_plugin.h"
@@ -276,6 +277,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<Sprite2DEditorPlugin>();
 	EditorPlugins::add_by_type<TileSetEditorPlugin>();
 	EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	EditorPlugins::add_by_type<ScenePaint2DEditorPlugin>();
 #ifndef DISABLE_DEPRECATED
 	EditorPlugins::add_by_type<ParallaxBackgroundEditorPlugin>();
 #endif
