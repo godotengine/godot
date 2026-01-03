@@ -283,7 +283,11 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	int line_count = lines.size();
 
 	for (int i = 0; i < line_count; i++) {
+#ifdef MODULE_REGEX_ENABLED
+		_process_message(strip_ansi_regex->sub(lines[i], "", true), p_type, i == line_count - 1);
+#else
 		_process_message(lines[i], p_type, i == line_count - 1);
+#endif
 	}
 }
 
@@ -510,6 +514,11 @@ EditorLog::EditorLog() {
 	vb_left->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb_left);
+
+#ifdef MODULE_REGEX_ENABLED
+	strip_ansi_regex.instantiate();
+	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
+#endif // MODULE_REGEX_ENABLED
 
 	// Log - Rich Text Label.
 	log = memnew(RichTextLabel);
