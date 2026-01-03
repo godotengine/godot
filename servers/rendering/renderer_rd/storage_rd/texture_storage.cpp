@@ -749,10 +749,8 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 			t = get_texture(ct->diffuse);
 			if (!t) {
 				ctc.diffuse = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
-				ct->size_cache = Size2i(1, 1);
 			} else {
 				ctc.diffuse = t->rd_texture_srgb.is_valid() && p_use_srgb && !p_texture_is_data ? t->rd_texture_srgb : t->rd_texture;
-				ct->size_cache = Size2i(t->width_2d, t->height_2d);
 				if (t->render_target) {
 					t->render_target->was_used = true;
 				}
@@ -784,6 +782,10 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 				}
 			}
 		}
+	}
+	{
+		t = get_texture(ct->diffuse);
+		ct->size_cache = ctc.diffuse == texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE) ? Size2i(1, 1) : Size2i(t->width_2d, t->height_2d);
 	}
 
 	CanvasTextureInfo res;
