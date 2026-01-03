@@ -35,6 +35,10 @@
 
 #include <climits>
 
+// Represents a path to a node or property in a hierarchy of nodes
+// Note that NodePath is (effectively) const: If you hold a NodePath,
+// you can expect it to remain unchanged, even if you make copies of
+// it. This is achieved through copy-on-write (CoW).
 class [[nodiscard]] NodePath {
 	struct Data {
 		SafeRefCount refcount;
@@ -52,6 +56,10 @@ class [[nodiscard]] NodePath {
 
 	void _update_hash_cache() const;
 
+	// Copies the underlying data.
+	// Every non-const function must call this before starting to mutate data.
+	void _copy_on_write();
+
 public:
 	bool is_absolute() const;
 	int get_name_count() const;
@@ -67,8 +75,6 @@ public:
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;
-
-	void prepend_period();
 
 	_FORCE_INLINE_ uint32_t hash() const {
 		if (!data) {
