@@ -101,6 +101,9 @@ TEST_CASE("[PCKPacker] Pack a PCK file with some files and directories") {
 			pck_packer.add_file("some/directories with spaces/to/create/icon.png", base_dir.path_join("../logo.png")) == OK,
 			"Overriding a non-flushed file to an existing subdirectory in the PCK should return an OK error code.");
 	CHECK_MESSAGE(
+			pck_packer.add_file_from_buffer("buffer/new.txt", String("Hello world!").to_utf8_buffer()) == OK,
+			"Adding a file from a buffer to the PCK in a new subdirectory should return an OK error code.");
+	CHECK_MESSAGE(
 			pck_packer.flush() == OK,
 			"Flushing the PCK should return an OK error code.");
 
