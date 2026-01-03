@@ -39,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/scene/scene_tree_editor.h"
@@ -170,8 +171,11 @@ void ConnectDialog::ok_pressed() {
 	if (!target) {
 		return; // Nothing selected in the tree, not an error.
 	}
-	if (target->get_script().is_null()) {
-		if (!target->has_method(method_name)) {
+	if (target->get_script().is_null() && !target->has_method(method_name)) {
+		// We may still be able to add the method to the target node if it's a source-available GDExtension class.
+		// We can check by trying to get a plugin for the target node, otherwise the plugin retrieved will be null.
+		Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(target);
+		if (source_code_plugin.is_null() || !source_code_plugin->can_edit_class_source()) {
 			error->set_text(TTR("Target method not found. Specify a valid method or attach a script to the target node."));
 			error->popup_centered();
 			return;
@@ -412,9 +416,18 @@ void ConnectDialog::_update_method_tree() {
 		}
 	}
 
+	bool show_class_methods_only = false;
 	if (script_methods_only->is_pressed()) {
-		empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
-		return;
+		// If we're only showing script/class methods, we need to check if the target is a source-available GDExtension class first.
+		// In which case we continue to get the methods from the first class in the hierarchy (which should correspond to the GDExtension class) and then exit the loop.
+		// Otherwise, we can exit the method already, since we already added the script methods.
+		const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(target);
+		if (source_code_plugin.is_valid() && source_code_plugin->can_edit_class_source()) {
+			show_class_methods_only = true;
+		} else {
+			empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
+			return;
+		}
 	}
 
 	// Get methods from each class in the hierarchy.
@@ -437,6 +450,13 @@ void ConnectDialog::_update_method_tree() {
 			class_item->set_custom_color(0, disabled_color);
 		} else {
 			_create_method_tree_items(methods, class_item);
+		}
+		if (show_class_methods_only) {
+			// If we're only showing methods defined in source-available GDExtension classes,
+			// we can exit the loop after the first iteration.
+			class_item->set_visible(!methods.is_empty());
+			empty_tree_label->set_visible(!methods.is_empty());
+			return;
 		}
 		current_class = ClassDB::get_parent_class_nocheck(current_class);
 	} while (current_class != StringName());
@@ -841,7 +861,7 @@ ConnectDialog::ConnectDialog() {
 	empty_tree_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	empty_tree_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 
-	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
+	script_methods_only = memnew(CheckButton(TTR("Script/Extension Methods Only")));
 	method_vbc->add_child(script_methods_only);
 	script_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
 	script_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_script_methods_only", true));
@@ -1020,6 +1040,14 @@ void ConnectionsDock::_make_or_edit_connection() {
 		}
 	}
 
+	// If the target doesn't have a script attached, check if it's a source-available GDExtension class.
+	// In this case we may still be able to add the method to the source code.
+	Ref<EditorExtensionSourceCodePlugin> source_code_plugin;
+	if (scr.is_null() && !target->has_method(cd.method)) {
+		source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_object(target);
+		add_script_function_request = source_code_plugin.is_valid() && source_code_plugin->can_edit_class_source();
+	}
+
 	if (add_script_function_request) {
 		PackedStringArray script_function_args = connect_dialog->get_signal_args();
 		script_function_args.resize(script_function_args.size() - cd.unbinds);
@@ -1066,7 +1094,12 @@ void ConnectionsDock::_make_or_edit_connection() {
 			script_function_args.push_back("extra_arg_" + itos(i) + ": " + Variant::get_type_name(cd.binds[i].get_type()));
 		}
 
-		EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), cd.target, cd.method, script_function_args);
+		if (scr.is_valid()) {
+			EditorNode::get_singleton()->emit_signal(SNAME("script_add_function_request"), cd.target, cd.method, script_function_args);
+		} else {
+			const StringName extension_class_name = target->get_extension_class_name();
+			source_code_plugin->add_method_func(extension_class_name, cd.method, script_function_args);
+		}
 	}
 
 	if (connect_dialog->is_editing()) {

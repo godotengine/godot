@@ -43,6 +43,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/extension/extension_source_code_manager.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
@@ -1322,7 +1323,12 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				EditorNode::get_singleton()->load_resource(fpath);
 			}
 		} else {
-			EditorNode::get_singleton()->load_resource(fpath);
+			const Ref<EditorExtensionSourceCodePlugin> source_code_plugin = ExtensionSourceCodeManager::get_singleton()->get_plugin_for_file(fpath);
+			if (source_code_plugin.is_valid() && source_code_plugin->overrides_external_editor()) {
+				source_code_plugin->open_in_external_editor(fpath, 0, 0);
+			} else {
+				EditorNode::get_singleton()->load_resource(fpath);
+			}
 		}
 	}
 	if (p_navigate) {
@@ -2606,6 +2612,15 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_script_dialog->popup_centered();
 		} break;
 
+		case FILE_MENU_NEW_EXTENSION_CLASS: {
+			String fpath = current_path;
+			if (!fpath.ends_with("/")) {
+				fpath = fpath.get_base_dir();
+			}
+			make_extension_class_dialog->config("Node", fpath);
+			make_extension_class_dialog->popup_centered();
+		} break;
+
 		case FILE_MENU_COPY_PATH: {
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
@@ -3403,6 +3418,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("Script..."), FILE_MENU_NEW_SCRIPT);
 		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
+		new_menu->add_icon_item(get_editor_theme_icon(SNAME("ExtensionClass")), TTRC("Extension class..."), FILE_MENU_NEW_EXTENSION_CLASS);
+		if (!ExtensionSourceCodeManager::get_singleton()->has_plugins_that_can_create_class_source()) {
+			new_menu->set_item_disabled(-1, true);
+			new_menu->set_item_tooltip(-1, "No extension source code plugins available.");
+		}
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("Resource..."), FILE_MENU_NEW_RESOURCE);
 		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 		new_menu->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
@@ -3632,6 +3652,11 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
+	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("ExtensionClass")), TTRC("New extension class..."), FILE_MENU_NEW_EXTENSION_CLASS);
+	if (!ExtensionSourceCodeManager::get_singleton()->has_plugins_that_can_create_class_source()) {
+		tree_popup->set_item_disabled(-1, true);
+		tree_popup->set_item_tooltip(-1, "No extension source code plugins available.");
+	}
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 	tree_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
@@ -3716,6 +3741,11 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_scene"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTRC("New Script..."), FILE_MENU_NEW_SCRIPT);
 	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_script"));
+	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("ExtensionClass")), TTRC("New extension class..."), FILE_MENU_NEW_EXTENSION_CLASS);
+	if (!ExtensionSourceCodeManager::get_singleton()->has_plugins_that_can_create_class_source()) {
+		file_list_popup->set_item_disabled(-1, true);
+		file_list_popup->set_item_tooltip(-1, "No extension source code plugins available.");
+	}
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("Object")), TTRC("New Resource..."), FILE_MENU_NEW_RESOURCE);
 	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_resource"));
 	file_list_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), TTRC("New TextFile..."), FILE_MENU_NEW_TEXTFILE);
@@ -4488,6 +4518,10 @@ FileSystemDock::FileSystemDock() {
 	make_script_dialog->set_title(TTRC("Create Script"));
 	add_child(make_script_dialog);
 	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_or_shader_created));
+
+	make_extension_class_dialog = memnew(ExtensionClassCreateDialog);
+	make_extension_class_dialog->set_title(TTRC("Create Extension Class"));
+	add_child(make_extension_class_dialog);
 
 	make_shader_dialog = memnew(ShaderCreateDialog);
 	add_child(make_shader_dialog);

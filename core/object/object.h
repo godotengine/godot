@@ -889,6 +889,22 @@ public:
 
 	StringName get_class_name_for_extension(const GDExtension *p_library) const;
 
+#ifdef TOOLS_ENABLED
+	const StringName get_extension_class_name() const {
+		if (_extension != nullptr) {
+			return _extension->class_name;
+		}
+		return StringName();
+	}
+
+	const GDExtension *get_extension_library() const {
+		if (_extension != nullptr) {
+			return _extension->library;
+		}
+		return nullptr;
+	}
+#endif
+
 	/* IAPI */
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
