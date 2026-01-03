@@ -107,6 +107,18 @@ public:
 		SWIZZLE_ONE,
 	};
 
+	// Must be identical to EyeVisibility enum definition in OpenXRCompositionLayer.
+	enum EyeVisibility {
+		EYE_VISIBILITY_BOTH,
+		EYE_VISIBILITY_LEFT,
+		EYE_VISIBILITY_RIGHT,
+	};
+
+	enum PoseSpace {
+		POSE_WORLD_LOCKED,
+		POSE_HEAD_LOCKED,
+	};
+
 	struct SwapchainState {
 		Filter min_filter = Filter::FILTER_LINEAR;
 		Filter mag_filter = Filter::FILTER_LINEAR;
@@ -162,6 +174,8 @@ public:
 	OPENXR_LAYER_FUNC1(set_alpha_swizzle, Swizzle);
 	OPENXR_LAYER_FUNC1(set_max_anisotropy, float);
 	OPENXR_LAYER_FUNC1(set_border_color, const Color &);
+	OPENXR_LAYER_FUNC1(set_pose_space, PoseSpace);
+	OPENXR_LAYER_FUNC1(set_eye_visibility, EyeVisibility);
 
 	OPENXR_LAYER_FUNC1(set_quad_size, const Size2 &);
 
@@ -225,6 +239,9 @@ private:
 		} android_surface;
 #endif
 
+		PoseSpace pose_space = POSE_WORLD_LOCKED;
+		XrSpace layer_reference_space = XR_NULL_HANDLE;
+
 		bool use_android_surface = false;
 		bool protected_content = false;
 		Size2i swapchain_size;
@@ -252,6 +269,8 @@ private:
 		void set_alpha_swizzle(Swizzle p_mode);
 		void set_max_anisotropy(float p_value);
 		void set_border_color(const Color &p_color);
+		void set_pose_space(PoseSpace p_pose_space);
+		void set_eye_visibility(EyeVisibility p_eye_visibility);
 
 		void set_quad_size(const Size2 &p_size);
 
@@ -290,6 +309,8 @@ VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::Filter);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::MipmapMode);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::Wrap);
 VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::Swizzle);
+VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::PoseSpace);
+VARIANT_ENUM_CAST(OpenXRCompositionLayerExtension::EyeVisibility);
 
 #undef OPENXR_LAYER_FUNC1
 #undef OPENXR_LAYER_FUNC2
