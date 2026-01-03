@@ -4578,6 +4578,7 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
 	}
 
+	Camera3D *old_camera_3d = camera_3d;
 	camera_3d = p_camera;
 
 	if (camera_3d) {
@@ -4590,6 +4591,7 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 		camera_3d->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
 	}
 
+	emit_signal(SNAME("camera_3d_changed"), old_camera_3d, camera_3d);
 	_update_audio_listener_3d();
 	_camera_3d_transform_changed_notify();
 }
@@ -5222,6 +5224,9 @@ void Viewport::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+#ifndef _3D_DISABLED
+	ADD_SIGNAL(MethodInfo("camera_3d_changed", PropertyInfo(Variant::OBJECT, "old_camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "new_camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D")));
+#endif // _3D_DISABLED
 
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	BIND_ENUM_CONSTANT(SHADOW_ATLAS_QUADRANT_SUBDIV_1);
