@@ -1618,6 +1618,12 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
 			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
 			return OK;
+		} else if (p_flags & CONNECT_PERSIST) {
+#ifdef DEBUG_ENABLED
+			WARN_PRINT(vformat("Signal '%s' already connected to callable '%s'. Skipping duplicate persistent connection.",
+					p_signal, p_callable));
+#endif
+			return OK;
 		} else {
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Signal '%s' is already connected to given callable '%s' in that object.", p_signal, p_callable));
 		}
