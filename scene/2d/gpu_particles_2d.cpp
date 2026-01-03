@@ -723,7 +723,7 @@ void GPUParticles2D::_notification(int p_what) {
 				arr[RS::ARRAY_INDEX] = indices;
 
 				RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
-				RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
+				//RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
 			}
 			RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
