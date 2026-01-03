@@ -3027,6 +3027,11 @@
 		<member name="rendering/gl_compatibility/nvidia_disable_threaded_optimization" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], disables the threaded optimization feature from the NVIDIA drivers, which are known to cause stuttering in most OpenGL applications.
 			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
+			[b]Note:[/b] If [member rendering/gl_compatibility/tune_nvidia_driver] is set to [code]true[/code] the feature will be disabled directly in the driver; if set to [code]false[/code], Godot will attempt to disable the feature indirectly by enabling minimal OpenGL logging.
+		</member>
+		<member name="rendering/gl_compatibility/tune_nvidia_driver" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the NVIDIA drivers are tuned for G-Sync and to control threaded optimization (see [member rendering/gl_compatibility/nvidia_disable_threaded_optimization]).
+			[b]Note:[/b] This setting only works on Windows.
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false" keywords="size">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
