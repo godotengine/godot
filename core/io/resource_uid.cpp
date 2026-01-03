@@ -222,6 +222,9 @@ void ResourceUID::remove_id(ID p_id) {
 		reverse_cache.erase(unique_ids[p_id].cs);
 	}
 	unique_ids.erase(p_id);
+	// To prevent fake entries from being generated the next time the cache file is loaded.
+	changed = true;
+	cache_entries = 0;
 }
 
 String ResourceUID::uid_to_path(const String &p_uid) {
@@ -314,6 +317,11 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 Error ResourceUID::update_cache() {
 	if (!changed) {
 		return OK;
+	}
+
+	// To prevent the number of cached file entries from increasing due to file movement.
+	if (cache_entries >= unique_ids.size()) {
+		cache_entries = 0;
 	}
 
 	if (cache_entries == 0) {
