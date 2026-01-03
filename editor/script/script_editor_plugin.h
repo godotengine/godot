@@ -346,7 +346,10 @@ class ScriptEditor : public PanelContainer {
 	VBoxContainer *overview_vbox = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
 	Button *members_overview_alphabeta_sort_button = nullptr;
+	Button *scripts_sort_by_recent_button = nullptr;
 	bool members_overview_enabled;
+	bool scripts_sort_by_recent = false;
+	bool mouse_over_script_list = false;
 	ItemList *help_overview = nullptr;
 	bool help_overview_enabled;
 	VSplitContainer *list_split = nullptr;
@@ -487,6 +490,9 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
+	void _toggle_scripts_sort_by_recent(bool p_sort_by_recent);
+	void _scripts_list_mouse_entered();
+	void _scripts_list_mouse_exited();
 	void _filter_scripts_text_changed(const String &p_newtext);
 	void _filter_methods_text_changed(const String &p_newtext);
 	void _update_script_names();
