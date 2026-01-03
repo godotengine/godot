@@ -757,6 +757,11 @@ void EditorNode::update_preview_themes(int p_mode) {
 	}
 }
 
+void EditorNode::set_updated_theme(const Ref<Theme> &p_theme) {
+	theme = p_theme;
+	_update_theme(true);
+}
+
 bool EditorNode::_is_project_data_missing() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	const String project_data_dir = EditorPaths::get_singleton()->get_project_data_dir();

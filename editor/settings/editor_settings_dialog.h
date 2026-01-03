@@ -65,6 +65,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	};
 
 	Tree *shortcuts = nullptr;
+	bool shortcuts_dirty = true;
 
 	InputEventConfigurationDialog *shortcut_editor = nullptr;
 
@@ -74,13 +75,17 @@ class EditorSettingsDialog : public AcceptDialog {
 	int current_event_index = -1;
 
 	Timer *timer = nullptr;
+	Timer *theme_timer = nullptr;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;
 
 	void _settings_changed();
+	void _editor_theme_changed();
 	void _settings_property_edited(const String &p_name);
 	void _settings_save();
+	void _preview_theme();
+	void _push_theme_changes();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
@@ -110,6 +115,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
 
 	void _update_shortcuts();
+	void _update_shortcuts_if_dirty();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
 	void _shortcut_cell_double_clicked();
 	static void _set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event);
