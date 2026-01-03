@@ -1350,6 +1350,9 @@
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
 		</member>
+		<member name="text_editor/appearance/drag_and_drop_info/show_drag_and_drop_info" type="bool" setter="" getter="">
+			If [code]true[/code], shows an info label listing available drop options when dragging an object into the script text editor.
+		</member>
 		<member name="text_editor/appearance/enable_inline_color_picker" type="bool" setter="" getter="">
 			If [code]true[/code], displays a colored button before any [Color] constructor in the script editor. Clicking on them allows the color to be modified through a color picker.
 		</member>
