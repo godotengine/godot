@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPanner" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a panner audio effect to an audio bus. Pans sound left or right.
+		Adds a panner audio effect. Pans sound left or right.
 	</brief_description>
 	<description>
-		Determines how much of an audio signal is sent to the left and right buses.
+		Determines how much of an audio signal is sent to the left and right channels.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>

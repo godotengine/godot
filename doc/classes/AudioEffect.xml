@@ -4,8 +4,8 @@
 		Base class for audio effect resources.
 	</brief_description>
 	<description>
-		The base [Resource] for every audio effect. In the editor, an audio effect can be added to the current bus layout through the Audio panel. At run-time, it is also possible to manipulate audio effects through [method AudioServer.add_bus_effect], [method AudioServer.remove_bus_effect], and [method AudioServer.get_bus_effect].
-		When applied on a bus, an audio effect creates a corresponding [AudioEffectInstance]. The instance is directly responsible for manipulating the sound, based on the original audio effect's properties.
+		The base [Resource] for every audio effect. In the editor, an audio effect can be added to the current bus layout through the Audio panel. At run-time, it is also possible to manipulate audio effects on buses through [method AudioServer.add_bus_effect], [method AudioServer.remove_bus_effect], and [method AudioServer.get_bus_effect]. Audio effects can also be added to an [AudioStreamWithEffects] to manipulate the sound of an individual audio stream.
+		When applied on a bus, an audio effect creates a corresponding [AudioEffectInstance]. When applied on an [AudioStreamWithEffects], an [AudioEffectInstance] is created for each stream effect when the stream begins playback. An [AudioEffectInstance] is directly responsible for manipulating the sound, based on the original audio effect's properties.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
@@ -15,7 +15,7 @@
 		<method name="_instantiate" qualifiers="virtual required">
 			<return type="AudioEffectInstance" />
 			<description>
-				Override this method to customize the [AudioEffectInstance] created when this effect is applied on a bus in the editor's Audio panel, or through [method AudioServer.add_bus_effect].
+				Override this method to customize the [AudioEffectInstance] created when this effect is applied on a bus in the editor's Audio panel, through [method AudioServer.add_bus_effect], or when the [AudioStreamWithEffects] this effect is placed on instantiates an [AudioStreamPlaybackWithEffects].
 				[codeblock]
 				extends AudioEffect
 
