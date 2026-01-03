@@ -1500,35 +1500,41 @@ void ItemList::_notification(int p_what) {
 					rcache.size.width = width - rcache.position.x;
 				}
 
-				bool should_draw_selected_bg = items[i].selected && hovered != i;
-				bool should_draw_hovered_selected_bg = items[i].selected && hovered == i;
-				bool should_draw_hovered_bg = hovered == i && !items[i].selected;
-				bool should_draw_custom_bg = items[i].custom_bg.a > 0.001;
+				Rect2 r = rcache;
+				r.position += base_ofs;
 
-				if (should_draw_selected_bg || should_draw_hovered_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
-					Rect2 r = rcache;
-					r.position += base_ofs;
+				if (rtl) {
+					r.position.x = size.width - r.position.x - r.size.x + theme_cache.panel_style->get_margin(SIDE_LEFT) - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+				}
 
-					if (rtl) {
-						r.position.x = size.width - r.position.x - r.size.x + theme_cache.panel_style->get_margin(SIDE_LEFT) - theme_cache.panel_style->get_margin(SIDE_RIGHT);
-					}
+				if (items[i].custom_bg.a > 0.001f) {
+					draw_rect(r, items[i].custom_bg);
+				}
 
-					if (should_draw_selected_bg) {
-						draw_style_box(sbsel, r);
+				Ref<StyleBox> style;
+				bool is_hovered = (hovered == i);
+				bool is_selected = items[i].selected;
+				bool is_disabled = items[i].disabled;
+				bool is_focused = has_focus();
+
+				if (is_disabled) {
+					if (is_hovered) {
+						style = theme_cache.disabled_hovered_style;
+					} else {
+						style = theme_cache.disabled_style;
 					}
-					if (should_draw_hovered_selected_bg) {
-						if (has_focus(true)) {
-							draw_style_box(theme_cache.hovered_selected_focus_style, r);
-						} else {
-							draw_style_box(theme_cache.hovered_selected_style, r);
-						}
+				} else {
+					if (is_hovered && is_selected) {
+						style = is_focused ? theme_cache.hovered_selected_focus_style : theme_cache.hovered_selected_style;
+					} else if (is_hovered) {
+						style = theme_cache.hovered_style;
+					} else if (is_selected) {
+						style = sbsel;
 					}
-					if (should_draw_hovered_bg) {
-						draw_style_box(theme_cache.hovered_style, r);
-					}
-					if (should_draw_custom_bg) {
-						draw_rect(r, items[i].custom_bg);
-					}
+				}
+
+				if (style.is_valid()) {
+					draw_style_box(style, r);
 				}
 
 				Vector2 text_ofs;
@@ -1605,20 +1611,24 @@ void ItemList::_notification(int p_what) {
 
 				if (!items[i].text.is_empty()) {
 					Color txt_modulate;
-					if (items[i].selected && hovered == i) {
-						txt_modulate = theme_cache.font_hovered_selected_color;
+					if (items[i].disabled) {
+						if (hovered == i) {
+							txt_modulate = theme_cache.font_disabled_hovered_color;
+						} else {
+							txt_modulate = theme_cache.font_disabled_color;
+						}
 					} else if (items[i].selected) {
-						txt_modulate = theme_cache.font_selected_color;
+						if (hovered == i) {
+							txt_modulate = theme_cache.font_hovered_selected_color;
+						} else {
+							txt_modulate = theme_cache.font_selected_color;
+						}
 					} else if (hovered == i) {
 						txt_modulate = theme_cache.font_hovered_color;
 					} else if (items[i].custom_fg != Color()) {
 						txt_modulate = items[i].custom_fg;
 					} else {
 						txt_modulate = theme_cache.font_color;
-					}
-
-					if (items[i].disabled) {
-						txt_modulate.a *= 0.5;
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
@@ -2443,6 +2453,8 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ItemList, scroll_hint);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_disabled_hovered_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);
@@ -2453,6 +2465,8 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_focus_style, "selected_focus");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_style, "disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_hovered_style, "disabled_hovered");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
 
 	Item defaults(true);
