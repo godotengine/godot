@@ -113,6 +113,12 @@
 				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
 			</description>
 		</method>
+		<method name="get_physics_step" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two physics ticks in seconds. Unlike the [code]delta[/code] parameter in [method Node._physics_process], this value is not affected by [member time_scale]. See also [method get_process_step].
+			</description>
+		</method>
 		<method name="get_process_frames" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -136,6 +142,12 @@
 				}
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_process_step" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two rendered frames in seconds. Unlike the [code]delta[/code] parameter in [method Node._process], this value is not affected by [member time_scale]. See also [method get_physics_step].
 			</description>
 		</method>
 		<method name="get_script_language" qualifiers="const">
@@ -323,6 +335,7 @@
 		<member name="max_physics_steps_per_frame" type="int" setter="set_max_physics_steps_per_frame" getter="get_max_physics_steps_per_frame" default="8">
 			The maximum number of physics steps that can be simulated each rendered frame.
 			[b]Note:[/b] The default value is tuned to prevent expensive physics simulations from triggering even more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member max_physics_steps_per_frame] if you have increased [member physics_ticks_per_second] significantly above its default value.
+			[b]Note:[/b] [member max_physics_steps_per_frame] is ignored if the [code]--fixed-fps &lt;fps&gt;[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] is used with a positive value, which also occurs when using Movie Maker mode. Simulation will always run at full speed in this scenario.
 		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">
 			How much physics ticks are synchronized with real time. If [code]0[/code] or less, the ticks are fully synchronized. Higher values cause the in-game clock to deviate more from the real clock, but they smooth out framerate jitters.
