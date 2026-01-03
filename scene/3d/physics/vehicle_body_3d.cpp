@@ -542,8 +542,6 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 }
 
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
-	real_t chassisMass = get_mass();
-
 	for (int w_it = 0; w_it < wheels.size(); w_it++) {
 		VehicleWheel3D &wheel_info = *wheels[w_it];
 
@@ -555,8 +553,8 @@ void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 				real_t current_length = wheel_info.m_raycastInfo.m_suspensionLength;
 
 				real_t length_diff = (susp_length - current_length);
-
-				force = wheel_info.m_suspensionStiffness * length_diff * wheel_info.m_clippedInvContactDotSuspension;
+				//stiffness * 1000.0 to convert from N/mm to N/m
+				force = wheel_info.m_suspensionStiffness * 1000.0 * length_diff * wheel_info.m_clippedInvContactDotSuspension;
 			}
 
 			// Damper
@@ -569,12 +567,13 @@ void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 					} else {
 						susp_damping = wheel_info.m_wheelsDampingRelaxation;
 					}
-					force -= susp_damping * projected_rel_vel;
+					//damper * 1000.0 to convert from N/mm/s to N/m/s
+					force -= susp_damping * 1000.0 * projected_rel_vel;
 				}
 			}
 
 			// RESULT
-			wheel_info.m_wheelsSuspensionForce = force * chassisMass;
+			wheel_info.m_wheelsSuspensionForce = force;
 			if (wheel_info.m_wheelsSuspensionForce < real_t(0.)) {
 				wheel_info.m_wheelsSuspensionForce = real_t(0.);
 			}
