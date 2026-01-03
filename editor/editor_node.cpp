@@ -1926,7 +1926,7 @@ int EditorNode::get_resource_count(Ref<Resource> p_res) {
 	return L ? L->size() : 0;
 }
 
-List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
+List<Node *> EditorNode::get_resource_count_list(Ref<Resource> p_res) {
 	List<Node *> *L = resource_count.getptr(p_res);
 	return L == nullptr ? List<Node *>() : *L;
 }
