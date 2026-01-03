@@ -173,6 +173,7 @@ void TileMap::_set_layer_tile_data(int p_layer, const PackedInt32Array &p_data) 
 	_set_tile_map_data_using_compatibility_format(p_layer, format, p_data);
 }
 
+#ifndef PHYSICS_2D_DISABLED
 void TileMap::_notification(int p_what) {
 	switch (p_what) {
 		case TileMap::NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -200,8 +201,11 @@ void TileMap::_notification(int p_what) {
 #endif // TOOLS_ENABLED
 
 			if (is_inside_tree() && collision_animatable && !in_editor) {
-				// Store last valid transform.
+				// Send the new transform to the physics...
 				new_transform = get_global_transform();
+				for (TileMapLayer *layer : layers) {
+					layer->move_physics_bodies(new_transform * layer->get_transform());
+				}
 
 				// ... but then revert changes.
 				set_notify_local_transform(false);
@@ -209,8 +213,15 @@ void TileMap::_notification(int p_what) {
 				set_notify_local_transform(true);
 			}
 		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			Transform2D gl_transform = get_global_transform();
+			new_transform = gl_transform;
+			last_valid_transform = gl_transform;
+		} break;
 	}
 }
+#endif
 
 #ifndef DISABLE_DEPRECATED
 // Deprecated methods.
@@ -403,10 +414,12 @@ void TileMap::set_collision_animatable(bool p_collision_animatable) {
 		return;
 	}
 	collision_animatable = p_collision_animatable;
+#ifndef PHYSICS_2D_DISABLED
 	set_notify_local_transform(p_collision_animatable);
 	set_physics_process_internal(p_collision_animatable);
+#endif
 	for (TileMapLayer *layer : layers) {
-		layer->set_use_kinematic_bodies(layer);
+		layer->set_use_kinematic_bodies(p_collision_animatable);
 	}
 }
 
