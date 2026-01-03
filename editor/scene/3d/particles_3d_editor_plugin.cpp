@@ -144,7 +144,9 @@ void Particles3DEditorPlugin::_menu_callback(int p_idx) {
 
 void Particles3DEditorPlugin::_add_menu_options(PopupMenu *p_menu) {
 	p_menu->add_item(TTR("Generate AABB"), MENU_OPTION_GENERATE_AABB);
+	p_menu->set_item_metadata(-1, "disable_on_multiselect");
 	p_menu->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	p_menu->set_item_metadata(-1, "disable_on_multiselect");
 }
 
 bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals) {
