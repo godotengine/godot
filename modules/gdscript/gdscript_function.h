@@ -601,6 +601,7 @@ public:
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
+	void print_error(const String &p_err_text, const GDScriptInstance *p_instance, const GDScript *p_script, const int p_line, const int p_last_opcode);
 
 #ifdef DEBUG_ENABLED
 	void _profile_native_call(uint64_t p_t_taken, const String &p_function_name, const String &p_instance_class_name = String());
