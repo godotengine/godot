@@ -45,24 +45,35 @@ AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 		BufferDecoder(p_camera_feed) {
 	switch (camera_feed->get_format().pixel_format) {
 		case V4L2_PIX_FMT_YYUV:
-			component_indexes = new int[4]{ 0, 1, 2, 3 };
+			component_indexes[0] = 0;
+			component_indexes[1] = 1;
+			component_indexes[2] = 2;
+			component_indexes[3] = 3;
 			break;
 		case V4L2_PIX_FMT_YVYU:
-			component_indexes = new int[4]{ 0, 2, 3, 1 };
+			component_indexes[0] = 0;
+			component_indexes[1] = 2;
+			component_indexes[2] = 3;
+			component_indexes[3] = 1;
 			break;
 		case V4L2_PIX_FMT_UYVY:
-			component_indexes = new int[4]{ 1, 3, 0, 2 };
+			component_indexes[0] = 1;
+			component_indexes[1] = 3;
+			component_indexes[2] = 0;
+			component_indexes[3] = 2;
 			break;
 		case V4L2_PIX_FMT_VYUY:
-			component_indexes = new int[4]{ 1, 3, 2, 0 };
+			component_indexes[0] = 1;
+			component_indexes[1] = 3;
+			component_indexes[2] = 2;
+			component_indexes[3] = 0;
 			break;
 		default:
-			component_indexes = new int[4]{ 0, 2, 1, 3 };
+			component_indexes[0] = 0;
+			component_indexes[1] = 2;
+			component_indexes[2] = 1;
+			component_indexes[3] = 3;
 	}
-}
-
-AbstractYuyvBufferDecoder::~AbstractYuyvBufferDecoder() {
-	delete[] component_indexes;
 }
 
 SeparateYuyvBufferDecoder::SeparateYuyvBufferDecoder(CameraFeed *p_camera_feed) :
