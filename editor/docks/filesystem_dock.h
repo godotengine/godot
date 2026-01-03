@@ -366,6 +366,7 @@ private:
 	void _preview_invalidated(const String &p_path);
 	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename);
 	void _tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item);
+	Ref<CanvasTexture> _apply_thumbnail_filter(const Ref<Texture2D> p_thumbnail, const String &p_file_path) const;
 
 	void _update_display_mode(bool p_force = false);
 
