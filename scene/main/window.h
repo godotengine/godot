@@ -143,6 +143,7 @@ private:
 	bool clamp_to_embedder = false;
 	bool unparent_when_invisible = false;
 	bool keep_title_visible = false;
+	bool block_input = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -290,6 +291,8 @@ public:
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32
 	};
+
+	void _set_block_input(bool p_block);
 
 	static void set_root_layout_direction(int p_root_dir);
 	static Window *get_from_id(DisplayServer::WindowID p_window_id);

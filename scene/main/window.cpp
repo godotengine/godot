@@ -1831,9 +1831,16 @@ bool Window::_can_consume_input_events() const {
 	return exclusive_child == nullptr;
 }
 
+void Window::_set_block_input(bool p_block) {
+	block_input = p_block;
+}
+
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	ERR_MAIN_THREAD_GUARD;
 
+	if (block_input) {
+		return;
+	}
 	if (exclusive_child != nullptr) {
 		if (nonclient_area.has_area() && is_inside_tree()) {
 			Ref<InputEventMouse> me = p_ev;

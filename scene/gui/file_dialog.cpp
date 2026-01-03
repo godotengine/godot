@@ -79,12 +79,19 @@ void FileDialog::_native_popup() {
 	while (w && w->get_flag(FLAG_POPUP) && w->get_parent_visible_window()) {
 		w = w->get_parent_visible_window();
 	}
-	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	DisplayServer::WindowID wid = (w && is_exclusive()) ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
 
+	Error dlg_err = OK;
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+		dlg_err = DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		dlg_err = DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+	}
+	if (is_exclusive() && dlg_err == OK) {
+		get_parent_visible_window()->_set_block_input(true);
+	}
+	if (dlg_err != OK) { // Fallback to built-in.
+		ConfirmationDialog::set_visible(true);
 	}
 }
 
@@ -136,6 +143,8 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 }
 
 void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
+	get_parent_visible_window()->_set_block_input(false);
+
 	if (!p_ok) {
 		filename_edit->set_text("");
 		emit_signal(SNAME("canceled"));
