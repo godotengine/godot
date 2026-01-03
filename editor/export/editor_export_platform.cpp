@@ -2097,7 +2097,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 
 		// Ensure embedded PCK starts at a 64-bit multiple
-		int pad = f->get_position() % 8;
+		int pad = _get_pad(8, f->get_position());
 		for (int i = 0; i < pad; i++) {
 			f->store_8(0);
 		}
@@ -2191,7 +2191,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	if (p_embed) {
 		// Ensure embedded data ends at a 64-bit multiple.
 		uint64_t embed_end = f->get_position() - embed_pos + 12;
-		uint64_t pad = embed_end % 8;
+		uint64_t pad = _get_pad(8, embed_end);
 		for (uint64_t i = 0; i < pad; i++) {
 			f->store_8(0);
 		}
