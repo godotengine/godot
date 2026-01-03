@@ -1253,8 +1253,9 @@
 		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.
 			- [b]Disable Update Checks[/b] will block the engine from checking updates (see also [member network/connection/network_mode]).
-			- [b]Check Newest Preview[/b] (default for preview versions) will check for the newest available development snapshot.
-			- [b]Check Newest Stable[/b] (default for stable versions) will check for the newest available stable version.
+			- [b]Auto[/b] (default) will check for newest stable or unstable version, depending on which version are you currently using. Switch to another option if you want to lock in.
+			- [b]Check Newest Preview[/b] will check for the newest available development snapshot.
+			- [b]Check Newest Stable[/b] will check for the newest available stable version.
 			- [b]Check Newest Patch[/b] will check for the latest available stable version, but only within the same minor version. E.g. if your version is [code]4.3.stable[/code], you will be notified about [code]4.3.1.stable[/code], but not [code]4.4.stable[/code].
 			All update modes will ignore builds with different major versions (e.g. Godot 4 -&gt; Godot 5).
 		</member>
