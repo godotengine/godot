@@ -1119,12 +1119,23 @@ void EditorNode::_notification(int p_what) {
 void EditorNode::_update_update_spinner() {
 	update_spinner->set_visible(!RenderingServer::get_singleton()->canvas_item_get_debug_redraw() && _should_display_update_spinner());
 
-	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
+	const EditorSettings::UpdatePriority update_priority = EDITOR_GET("interface/editor/update_priority");
 	PopupMenu *update_popup = update_spinner->get_popup();
-	update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_CONTINUOUSLY), update_continuously);
-	update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), !update_continuously);
+	if (update_priority == EditorSettings::UPDATE_CONTINUOUSLY) {
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_CONTINUOUSLY), true);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), false);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_VITAL_ONLY), false);
+	} else if (update_priority == EditorSettings::UPDATE_WHEN_CHANGED) {
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_CONTINUOUSLY), false);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), true);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_VITAL_ONLY), false);
+	} else {
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_CONTINUOUSLY), false);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_WHEN_CHANGED), false);
+		update_popup->set_item_checked(update_popup->get_item_index(SPINNER_UPDATE_VITAL_ONLY), true);
+	}
 
-	if (update_continuously) {
+	if (update_priority == EditorSettings::UPDATE_CONTINUOUSLY) {
 		update_spinner->set_tooltip_text(TTRC("Spins when the editor window redraws.\nUpdate Continuously is enabled, which can increase power usage. Click to disable it."));
 
 		// Use a different color for the update spinner when Update Continuously is enabled,
@@ -1138,7 +1149,12 @@ void EditorNode::_update_update_spinner() {
 		update_spinner->set_self_modulate(Color(1, 1, 1));
 	}
 
-	OS::get_singleton()->set_low_processor_usage_mode(!update_continuously);
+	OS::get_singleton()->set_low_processor_usage_mode(update_priority != EditorSettings::UPDATE_CONTINUOUSLY);
+
+	// Only set low priority redraws to false in the editor.
+	// When we run the project in the editor, we don't want it to prevent
+	// rendering any frames.
+	OS::get_singleton()->set_update_vital_only(update_priority == EditorSettings::UPDATE_VITAL_ONLY);
 }
 
 void EditorNode::_execute_upgrades() {
@@ -3704,12 +3720,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			_discard_changes();
 		} break;
 		case SPINNER_UPDATE_CONTINUOUSLY: {
-			EditorSettings::get_singleton()->set("interface/editor/update_continuously", true);
+			EditorSettings::get_singleton()->set("interface/editor/update_priority", EditorSettings::UPDATE_CONTINUOUSLY);
 			_update_update_spinner();
 			show_accept(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."), TTR("OK"));
 		} break;
 		case SPINNER_UPDATE_WHEN_CHANGED: {
-			EditorSettings::get_singleton()->set("interface/editor/update_continuously", false);
+			EditorSettings::get_singleton()->set("interface/editor/update_priority", EditorSettings::UPDATE_WHEN_CHANGED);
+			_update_update_spinner();
+		} break;
+		case SPINNER_UPDATE_VITAL_ONLY: {
+			EditorSettings::get_singleton()->set("interface/editor/update_priority", EditorSettings::UPDATE_VITAL_ONLY);
 			_update_update_spinner();
 		} break;
 		case SPINNER_UPDATE_SPINNER_HIDE: {
@@ -8855,7 +8875,8 @@ EditorNode::EditorNode() {
 	update_spinner->set_accessibility_name(TTRC("Update Mode"));
 	PopupMenu *p = update_spinner->get_popup();
 	p->add_radio_check_item(TTRC("Update Continuously"), SPINNER_UPDATE_CONTINUOUSLY);
-	p->add_radio_check_item(TTRC("Update When Changed"), SPINNER_UPDATE_WHEN_CHANGED);
+	p->add_radio_check_item(TTRC("Update All Changes"), SPINNER_UPDATE_WHEN_CHANGED);
+	p->add_radio_check_item(TTRC("Update Vital Changes"), SPINNER_UPDATE_VITAL_ONLY);
 	p->add_separator();
 	p->add_item(TTRC("Hide Update Spinner"), SPINNER_UPDATE_SPINNER_HIDE);
 	_update_update_spinner();

@@ -2558,7 +2558,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 	// Make the actual redraw request
 	if (should_request_redraw) {
-		RenderingServerDefault::redraw_request();
+		RenderingServerDefault::redraw_request(false);
 	}
 }
 

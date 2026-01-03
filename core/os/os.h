@@ -52,6 +52,8 @@ class OS {
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _delta_smoothing_enabled = false;
+	bool _update_vital_only = false;
+	bool _update_pending = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
@@ -186,6 +188,29 @@ public:
 
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
+
+	virtual void set_update_vital_only(bool p_enabled) { _update_vital_only = p_enabled; }
+	virtual void set_update_pending(bool p_pending) { _update_pending = p_pending; }
+
+	// Convenience easy switch for turning this off outside tools builds, without littering calling code
+	// with #ifdefs. It will also hopefully be compiled out in release.
+#ifdef TOOLS_ENABLED
+	// This function is used to throttle back updates of animations and particle systems when using UPDATE_VITAL_ONLY mode.
+
+	// CASE 1) We are not in UPDATE_VITAL_ONLY mode - always return true and update.
+	// CASE 2) We are in UPDATE_VITAL_ONLY mode -
+
+	// In most cases this will return false and prevent animations etc updating.
+	// The exception is that we can also choose to receive a true
+	// each time a frame is redrawn as a result of moving the mouse, clicking etc.
+
+	// This enables us to keep e.g. particle systems processing, but ONLY when other
+	// events have caused a redraw.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return !_update_vital_only || (_update_pending && p_include_redraws); }
+#else
+	// Always update when outside the editor, UPDATE_VITAL_ONLY has no effect outside the editor.
+	virtual bool is_update_pending(bool p_include_redraws = false) const { return true; }
+#endif
 
 	virtual Vector<String> get_system_fonts() const { return Vector<String>(); }
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }

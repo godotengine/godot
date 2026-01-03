@@ -4919,7 +4919,16 @@ bool Main::iteration() {
 	if (wants_present || has_pending_resources_for_processing) {
 		wants_present |= force_redraw_requested;
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			if (RenderingServer::get_singleton()->has_changed()) {
+			// We can choose whether to redraw as a result of any redraw request, or redraw only for vital requests.
+			RenderingServer::ChangedPriority priority = (OS::get_singleton()->is_update_pending() ? RenderingServer::CHANGED_PRIORITY_ANY : RenderingServer::CHANGED_PRIORITY_HIGH);
+
+			// Determine whether the scene has changed, to know whether to draw.
+			// If it has changed, inform the update pending system so it can keep
+			// particle systems etc updating when running in vital updates only mode.
+			bool has_changed = RenderingServer::get_singleton()->has_changed(priority);
+			OS::get_singleton()->set_update_pending(has_changed);
+
+			if (has_changed) {
 				RenderingServer::get_singleton()->draw(wants_present, scaled_step); // flush visual commands
 				Engine::get_singleton()->increment_frames_drawn();
 			}

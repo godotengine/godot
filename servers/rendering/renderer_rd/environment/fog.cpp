@@ -786,7 +786,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, kernel_size.x, kernel_size.y, kernel_size.z);
 		}
 		if (any_uses_time || RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env)) {
-			RenderingServerDefault::redraw_request();
+			RenderingServerDefault::redraw_request(false);
 		}
 
 		RD::get_singleton()->draw_command_end_label();

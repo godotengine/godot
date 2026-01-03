@@ -994,7 +994,7 @@
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
-			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
+			[b]Note:[/b] This setting is ignored if [member interface/editor/update_priority] is [code]update_continuously[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/main_font" type="String" setter="" getter="">
 			The font to use for the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
@@ -1035,7 +1035,7 @@
 			If enabled, displays an icon in the top-right corner of the editor that spins when the editor redraws a frame. This can be used to diagnose situations where the engine is constantly redrawing, which should be avoided as this increases CPU and GPU utilization for no good reason. To further troubleshoot these situations, start the editor with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.
 			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
-			[b]Note:[/b] If [member interface/editor/update_continuously] is [code]true[/code], the spinner icon displays in red.
+			[b]Note:[/b] If [member interface/editor/update_priority] is [code]update_continuously[/code], the spinner icon displays in red.
 			[b]Note:[/b] If the editor was started with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], the update spinner will [i]never[/i] display regardless of this setting's value. This is to avoid confusion with what would cause redrawing in real world scenarios.
 		</member>
 		<member name="interface/editor/single_window_mode" type="bool" setter="" getter="">
@@ -1052,10 +1052,11 @@
 		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
-			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
+			[b]Note:[/b] This setting is ignored if [member interface/editor/update_priority] is [code]update_continuously[/code], as enabling that setting disables low-processor mode.
 		</member>
-		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
-			If [code]true[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
+		<member name="interface/editor/update_priority" type="int" setter="" getter="">
+			If [code]update_continuously[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
+			If [code]update_vital_only[/code], only redraws if "high priority" changes have occurred, ignoring "low-priority" changes such as Particles, Animations, and Time-Based shaders.
 			[b]Warning:[/b] This greatly increases CPU and GPU utilization, leading to increased power usage. This should only be enabled for troubleshooting purposes.
 		</member>
 		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
@@ -1761,6 +1762,15 @@
 	<constants>
 		<constant name="NOTIFICATION_EDITOR_SETTINGS_CHANGED" value="10000">
 			Emitted after any editor setting has changed. It's used by various editor plugins to update their visuals on theme changes or logic on configuration changes.
+		</constant>
+		<constant name="UPDATE_CONTINUOUSLY" value="0" enum="UpdatePriority">
+			Defines in-editor redraw behavior, redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
+		</constant>
+		<constant name="UPDATE_WHEN_CHANGED" value="1" enum="UpdatePriority">
+			Defines in-editor redraw behavior, redraws the editor every frame that a change has occurred.
+		</constant>
+		<constant name="UPDATE_VITAL_ONLY" value="2" enum="UpdatePriority">
+			Defines in-editor redraw behavior, only redraws if "high priority" changes have occurred, ignoring "low-priority" changes such as Particles, Animations, and Time-Based shaders.
 		</constant>
 	</constants>
 </class>
