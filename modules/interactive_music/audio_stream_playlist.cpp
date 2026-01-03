@@ -262,6 +262,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 	}
 
 	double time_dec = (1.0 / AudioServer::get_singleton()->get_mix_rate());
+	time_dec *= p_rate_scale * AudioServer::get_singleton()->get_playback_speed_scale();
 	double fade_dec = (1.0 / playlist->fade_time) / AudioServer::get_singleton()->get_mix_rate();
 
 	int todo = p_frames;
@@ -269,9 +270,9 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 	while (todo) {
 		int to_mix = MIN(todo, MIX_BUFFER_SIZE);
 
-		playback[play_order[play_index]]->mix(mix_buffer, 1.0, to_mix);
+		playback[play_order[play_index]]->mix(mix_buffer, p_rate_scale, to_mix);
 		if (fade_index != -1) {
-			playback[fade_index]->mix(fade_buffer, 1.0, to_mix);
+			playback[fade_index]->mix(fade_buffer, p_rate_scale, to_mix);
 		}
 
 		offset += time_dec * to_mix;
@@ -337,7 +338,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 
 				if (restart) {
 					playback[idx]->start(0); // No loop, just cold-restart.
-					playback[idx]->mix(mix_buffer + i, 1.0, to_mix - i); // Fill rest of mix buffer
+					playback[idx]->mix(mix_buffer + i, p_rate_scale, to_mix - i); // Fill rest of mix buffer
 				}
 
 				// Update fade todo.
