@@ -85,7 +85,7 @@ int _get_app_category_value(int category_index);
 
 String _get_app_category_label(int category_index);
 
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd);
+Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const String &p_simplified_source_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd);
 
 // Utility method used to create a directory.
 Error create_directory(const String &p_dir);
@@ -98,12 +98,12 @@ Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data);
 // Note: this will overwrite the file at p_path if it already exists.
 Error store_string_at_path(const String &p_path, const String &p_data);
 
-// Implementation of EditorExportSaveFunction.
+// Implementation of EditorExportPlatform::SaveFileFunction.
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const EditorExportPlatform::SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 
 // Creates strings.xml files inside the gradle project for different locales.
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames);
