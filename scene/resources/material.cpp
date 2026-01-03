@@ -162,6 +162,8 @@ void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
+	ClassDB::bind_method(D_METHOD("get_shader_rid"), &Material::get_shader_rid);
+
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
