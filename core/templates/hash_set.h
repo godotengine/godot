@@ -457,7 +457,7 @@ public:
 		return !(*this == p_other);
 	}
 
-	HashSet(uint32_t p_initial_capacity) {
+	explicit HashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		_capacity_idx = 0;
 		reserve(p_initial_capacity);
