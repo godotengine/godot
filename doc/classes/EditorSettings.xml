@@ -500,6 +500,12 @@
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
 		</member>
+		<member name="editors/3d/selection_outline_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], draws screen-space selection outlines for selected objects in the 3D editor viewport. If [code]false[/code], selection is displayed using 3D selection boxes.
+		</member>
+		<member name="editors/3d/selection_outline_thickness" type="float" setter="" getter="">
+			The outline thickness in screen pixels.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
 		</member>
