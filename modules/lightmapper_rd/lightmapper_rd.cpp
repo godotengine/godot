@@ -1686,6 +1686,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	const int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
 	const int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
 
+	const int lights_per_pass = int(GLOBAL_GET("rendering/lightmapping/bake_performance/max_lights_per_pass"));
+	const int light_pass_count = Math::division_round_up(int(lights.size()), lights_per_pass);
+
 	// Set ray count to the quality used for direct light and bounces.
 	switch (p_quality) {
 		case BAKE_QUALITY_LOW: {
@@ -1761,41 +1764,46 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 			for (int i = 0; i < x_regions; i++) {
 				for (int j = 0; j < y_regions; j++) {
-					int x = i * max_region_size;
-					int y = j * max_region_size;
-					int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
-					int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
+					for (int l = 0; l < light_pass_count; l++) {
+						int x = i * max_region_size;
+						int y = j * max_region_size;
+						int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
+						int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
 
-					push_constant.region_ofs[0] = x;
-					push_constant.region_ofs[1] = y;
+						push_constant.region_ofs[0] = x;
+						push_constant.region_ofs[1] = y;
 
-					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
-					RD::ComputeListID compute_list = rd->compute_list_begin();
-					rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
-					rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-					rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
-					rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-					rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-					rd->compute_list_end();
+						push_constant.light_from = l * lights_per_pass;
+						push_constant.light_to = MIN((l + 1) * lights_per_pass, int(lights.size()));
 
-					rd->submit();
-					rd->sync();
+						group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
+						RD::ComputeListID compute_list = rd->compute_list_begin();
+						rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
+						rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+						rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+						rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+						rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+						rd->compute_list_end();
 
-					count++;
-					if (p_step_function) {
-						int total = (atlas_slices * x_regions * y_regions);
-						int percent = count * 100 / total;
-						float p = float(count) / total * 0.1;
-						if (p_step_function(0.5 + p, vformat(RTR("Plot direct lighting %d%%"), percent), p_bake_userdata, false)) {
-							FREE_TEXTURES
-							FREE_BUFFERS
-							FREE_RASTER_RESOURCES
-							FREE_COMPUTE_RESOURCES
-							memdelete(rd);
-							if (rcd != nullptr) {
-								memdelete(rcd);
+						rd->submit();
+						rd->sync();
+
+						count++;
+						if (p_step_function) {
+							int total = (atlas_slices * x_regions * y_regions * lights.size());
+							int percent = count * 100 / total;
+							float p = float(count) / total * 0.1;
+							if (p_step_function(0.5 + p, vformat(RTR("Plot direct lighting %d%%"), percent), p_bake_userdata, false)) {
+								FREE_TEXTURES
+								FREE_BUFFERS
+								FREE_RASTER_RESOURCES
+								FREE_COMPUTE_RESOURCES
+								memdelete(rd);
+								if (rcd != nullptr) {
+									memdelete(rcd);
+								}
+								return BAKE_ERROR_USER_ABORTED;
 							}
-							return BAKE_ERROR_USER_ABORTED;
 						}
 					}
 				}
