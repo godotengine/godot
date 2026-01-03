@@ -1622,13 +1622,25 @@ bool CanvasItem::get_visibility_layer_bit(uint32_t p_visibility_layer) const {
 	return (visibility_layer & (1 << p_visibility_layer));
 }
 
+CanvasItem *CanvasItem::_get_parent_item_deep() const {
+	Node *parent = get_parent();
+	while (parent) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
+		if (ci) {
+			return ci;
+		}
+		parent = parent->get_parent();
+	}
+	return nullptr;
+}
+
 void CanvasItem::_refresh_texture_filter_cache() const {
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	if (texture_filter == TEXTURE_FILTER_PARENT_NODE) {
-		CanvasItem *parent_item = get_parent_item();
+		CanvasItem *parent_item = _get_parent_item_deep();
 		if (parent_item) {
 			texture_filter_cache = parent_item->texture_filter_cache;
 		} else {
@@ -1684,7 +1696,7 @@ void CanvasItem::_refresh_texture_repeat_cache() const {
 	}
 
 	if (texture_repeat == TEXTURE_REPEAT_PARENT_NODE) {
-		CanvasItem *parent_item = get_parent_item();
+		CanvasItem *parent_item = _get_parent_item_deep();
 		if (parent_item) {
 			texture_repeat_cache = parent_item->texture_repeat_cache;
 		} else {
