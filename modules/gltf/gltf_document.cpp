@@ -4341,27 +4341,11 @@ void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 	gltf_mesh->set_mesh(ImporterMesh::from_mesh(mesh));
 	GLTFMeshIndex mesh_index = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
-	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
-			instance_i++) {
-		Transform3D transform;
-		if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
-			Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
-			transform.origin =
-					Vector3(xform_2d.get_origin().x, 0, xform_2d.get_origin().y);
-			real_t rotation = xform_2d.get_rotation();
-			Quaternion quaternion(Vector3(0, 1, 0), rotation);
-			Size2 scale = xform_2d.get_scale();
-			transform.basis.set_quaternion_scale(quaternion,
-					Vector3(scale.x, 0, scale.y));
-			transform = p_multi_mesh_instance->get_transform() * transform;
-		} else if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_3D) {
-			transform = p_multi_mesh_instance->get_transform() *
-					multi_mesh->get_instance_transform(instance_i);
-		}
+	for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count(); instance_i++) {
 		Ref<GLTFNode> new_gltf_node;
 		new_gltf_node.instantiate();
 		new_gltf_node->mesh = mesh_index;
-		new_gltf_node->transform = transform;
+		new_gltf_node->transform = multi_mesh->get_instance_transform(instance_i);
 		new_gltf_node->set_original_name(p_multi_mesh_instance->get_name());
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_multi_mesh_instance->get_name()));
 		p_gltf_node->children.push_back(p_state->nodes.size());
