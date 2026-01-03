@@ -50,6 +50,8 @@ class KeyMappingXKB {
 	static inline HashMap<Key, unsigned int, HashMapHasherKeys> scancode_map_inv;
 	static inline HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
+	static inline HashMap<xkb_keysym_t, char32_t, HashMapHasherKeys> dead_keysym_unicode_map;
+
 	KeyMappingXKB() {}
 
 public:
@@ -59,4 +61,5 @@ public:
 	static xkb_keycode_t get_xkb_keycode(Key p_keycode);
 	static Key get_scancode(unsigned int p_code);
 	static KeyLocation get_location(unsigned int p_code);
+	static char32_t dead_keysym_get_ucode(xkb_keysym_t p_keysym);
 };

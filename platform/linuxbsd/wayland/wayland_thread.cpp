@@ -316,29 +316,55 @@ void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_
 		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
 		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
 
+		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSING) {
+			char keysym_name[256] = {};
+			xkb_keysym_get_name(keysym, keysym_name, 255);
+
+			char32_t u32_rep = KeyMappingXKB::dead_keysym_get_ucode(keysym);
+			if (!u32_rep) {
+				u32_rep = xkb_keysym_to_utf32(keysym);
+			}
+
+			if (u32_rep) {
+				if (u32_rep >= U'\u0300' && u32_rep <= U'\u036F') {
+					p_ss->composition += U'\u00A0'; // Non-breaking space.
+				}
+
+				p_ss->composition += u32_rep;
+				print_line("Feed accepted key", keysym_name, "New string", p_ss->composition);
+
+				Ref<IMEUpdateEventMessage> ime_msg;
+				ime_msg.instantiate();
+				ime_msg->id = p_ss->focused_id;
+				ime_msg->text = p_ss->composition;
+				ime_msg->selection = Vector2i(p_ss->composition.length() - 1, p_ss->composition.length());
+				wayland_thread->push_message(ime_msg);
+			}
+		}
+
 		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
-			// We need to generate multiple key events to report the composed result, One
-			// per character.
 			char str_xkb[256] = {};
 			int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
 
+			p_ss->composition = String();
+
 			String decoded_str = String::utf8(str_xkb, str_xkb_size);
-			for (int i = 0; i < decoded_str.length(); ++i) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
-				if (k.is_null()) {
-					continue;
-				}
+			Ref<IMECommitEventMessage> ime_msg;
+			ime_msg.instantiate();
+			ime_msg->id = p_ss->focused_id;
+			ime_msg->text = decoded_str;
+			wayland_thread->push_message(ime_msg);
+		}
 
-				k->set_unicode(decoded_str[i]);
-				k->set_echo(p_echo);
+		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_CANCELLED) {
+			p_ss->composition = String();
 
-				Ref<InputEventMessage> msg;
-				msg.instantiate();
-				msg->event = k;
-				wayland_thread->push_message(msg);
-
-				last_key = k->get_keycode();
-			}
+			Ref<IMEUpdateEventMessage> ime_msg;
+			ime_msg.instantiate();
+			ime_msg->id = p_ss->focused_id;
+			ime_msg->text = p_ss->composition;
+			ime_msg->selection = Vector2i(p_ss->composition.length() - 1, p_ss->composition.length());
+			wayland_thread->push_message(ime_msg);
 		}
 	}
 
