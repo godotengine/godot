@@ -398,6 +398,13 @@ layout(set = 1, binding = 13 + 9) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_RE
 layout(set = 1, binding = 13 + 10) uniform sampler SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT;
 
+// Brinck and Maximov 2016, "The Technical Art of Uncharted 4"
+half compute_micro_shadowing(half NoL, half ao, half opacity) {
+	half aperture = half(2.0) * ao * ao;
+	half microshadow = clamp(NoL + aperture - half(1.0), half(0.0), half(1.0));
+	return mix(half(1.0), microshadow, opacity);
+}
+
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
