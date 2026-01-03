@@ -913,6 +913,7 @@ bool EditorFileSystem::_update_scan_actions() {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
 					}
+					ia.new_file->uid = existing_id;
 				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
