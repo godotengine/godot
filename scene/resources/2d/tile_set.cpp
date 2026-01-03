@@ -6399,7 +6399,7 @@ void TileData::remove_collision_polygon(int p_layer_id, int p_polygon_index) {
 void TileData::set_collision_polygon_points(int p_layer_id, int p_polygon_index, Vector<Vector2> p_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
-	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or more than 3 points.");
+	ERR_FAIL_COND_MSG(p_polygon.size() != 0 && p_polygon.size() < 3, "Invalid polygon. Needs either 0 or at least 3 points.");
 
 	TileData::PhysicsLayerTileData::PolygonShapeTileData &polygon_shape_tile_data = physics.write[p_layer_id].polygons.write[p_polygon_index];
 
