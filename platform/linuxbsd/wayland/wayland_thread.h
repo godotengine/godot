@@ -59,6 +59,7 @@
 #include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
+#include "wayland/protocol/pointer_warp.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
 #undef pointer
 #include "wayland/protocol/fractional_scale.gen.h"
@@ -229,6 +230,9 @@ public:
 
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
+
+		struct wp_pointer_warp_v1 *wp_pointer_warp = nullptr;
+		uint32_t wp_pointer_warp_name = 0;
 
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
@@ -1072,6 +1076,7 @@ public:
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
+	void seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
@@ -1131,6 +1136,7 @@ public:
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
+	void pointer_warp(const Point2i &p_to);
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	DisplayServer::WindowID pointer_get_last_pointed_window_id() const;
