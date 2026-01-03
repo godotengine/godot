@@ -153,7 +153,7 @@ Copyright: 2014-present Godot Engine contributors
  1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
 License: Expat and WOL
 
-Files: servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
+Files: servers/rendering/renderer_rd/shaders/effects/fxaa_inc.glsl
 Comment: NVidia's FXAA 3.11, simplified by Simon Rodriguez
 Copyright: 2014-2015, NVIDIA CORPORATION
  2017 Simon Rodriguez
