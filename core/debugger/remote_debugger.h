@@ -46,6 +46,12 @@ public:
 		MESSAGE_TYPE_LOG_RICH,
 	};
 
+	enum BreakOnError {
+		BREAK_ON_ERROR_DISABLED = 0,
+		BREAK_ON_ERROR_ERRORS = 1,
+		BREAK_ON_ERROR_ERRORS_AND_WARNINGS = 2,
+	};
+
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
 

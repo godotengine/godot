@@ -686,6 +686,9 @@
 		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
 			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
 		</member>
+		<member name="debug/settings/debugger/break_on_error" type="int" setter="" getter="" default="0">
+			Controls whether the debugger should automatically break when an error or warning is printed. This can be used to find and resolve errors of any source as they occur. This includes errors from scripts ([method @GlobalScope.push_error] and [method @GlobalScope.push_warning]), as well as any error or warning prrinted by the engine itself.
+		</member>
 		<member name="debug/settings/gdscript/always_track_call_stacks" type="bool" setter="" getter="" default="false">
 			Whether GDScript call stacks will be tracked in release builds, thus allowing [method Engine.capture_script_backtraces] to function.
 			[b]Note:[/b] This setting has no effect on editor builds or debug builds, where GDScript call stacks are tracked regardless.
