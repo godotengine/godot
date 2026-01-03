@@ -638,7 +638,8 @@ bool Window::is_in_edited_scene_root() const {
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServer::INVALID_WINDOW_ID);
 
-	if (transient && transient_to_focused) {
+	bool transient_upd = transient_to_focused || (transient_parent == nullptr && get_flag(FLAG_POPUP_WM_HINT) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS));
+	if (transient && transient_upd) {
 		_make_transient();
 	}
 
@@ -1079,7 +1080,8 @@ void Window::set_transient(bool p_transient) {
 	}
 
 	if (transient) {
-		if (!transient_to_focused) {
+		bool transient_upd = transient_to_focused || (transient_parent != nullptr && get_flag(FLAG_POPUP_WM_HINT) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS));
+		if (!transient_upd) {
 			_make_transient();
 		}
 	} else {
@@ -1560,7 +1562,8 @@ void Window::_notification(int p_what) {
 				}
 			}
 
-			if (transient && !transient_to_focused) {
+			bool transient_upd = transient_to_focused || (transient_parent != nullptr && get_flag(FLAG_POPUP_WM_HINT) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS));
+			if (transient && !transient_upd) {
 				_make_transient();
 			}
 			if (visible) {
@@ -2041,6 +2044,12 @@ void Window::popup_centered_ratio(float p_ratio) {
 
 void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
+
+	bool self_fit = DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	if (visible && self_fit) {
+		set_visible(false);
+	}
+
 	emit_signal(SNAME("about_to_popup"));
 
 	Rect2i screen_rect = p_screen_rect;
@@ -2068,7 +2077,7 @@ void Window::_popup_base(const Rect2i &p_screen_rect) {
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
-	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	bool should_fit = is_embedded() || !self_fit;
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
