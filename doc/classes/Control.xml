@@ -92,6 +92,14 @@
 				Override this method to return a human-readable description of the position of the child [param node] in the custom container, added to the [member accessibility_name].
 			</description>
 		</method>
+		<method name="_get_cursor_shape" qualifiers="virtual const">
+			<return type="int" enum="Control.CursorShape" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns the cursor shape for the position [param at_position] in the control's local coordinates, which will typically be used while hovering over this control. See [method get_cursor_shape].
+				If not overridden, defaults to [member mouse_default_cursor_shape].
+			</description>
+		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
 			<return type="Variant" />
 			<param index="0" name="at_position" type="Vector2" />
@@ -129,7 +137,7 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
+				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in the control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
 				[b]Note:[/b] If this method returns an empty [String] and [method _make_custom_tooltip] is not overridden, no tooltip is displayed.
 			</description>
 		</method>
@@ -173,7 +181,7 @@
 			<param index="0" name="point" type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [param point] is inside this control.
-				If not overridden, default behavior is checking if the point is within control's Rect.
+				If not overridden, default behavior is checking if the point is within the control's Rect.
 				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]Rect2(Vector2.ZERO, size).has_point(point)[/code].
 			</description>
 		</method>
@@ -420,6 +428,7 @@
 			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns the mouse cursor shape for this control when hovered over [param position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic.
+				This method can be overridden to customize its behavior. See [method _get_cursor_shape].
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -603,7 +612,7 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
+				Returns the tooltip text for the position [param at_position] in the control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
 				This method can be overridden to customize its behavior. See [method _get_tooltip].
 				[b]Note:[/b] If this method returns an empty [String] and [method _make_custom_tooltip] is not overridden, no tooltip is displayed.
 			</description>
