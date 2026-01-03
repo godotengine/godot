@@ -68,7 +68,6 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 	if (_points.is_empty()) {
 		_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 		ret = 0;
-
 	} else if (_points.size() == 1) {
 		// TODO Is the `else` able to handle this block already?
 
@@ -81,7 +80,6 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 			_points.insert(0, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 			ret = 0;
 		}
-
 	} else {
 		int i = get_index(p_position.x);
 
@@ -334,6 +332,29 @@ void Curve::set_limits(const Array &p_input) {
 	_max_domain = p_input[3];
 }
 
+Array Curve::get_labels() const {
+	Array output;
+	output.resize(2);
+
+	output[0] = _domain_label;
+	output[1] = _value_label;
+
+	return output;
+}
+
+void Curve::set_labels(const Array &p_input) {
+	if (p_input.size() != 2) {
+		WARN_PRINT_ED(vformat(R"(Could not find Curve label values when deserializing "%s". Resetting labels to default values.)", this->get_path()));
+		_domain_label = "Domain";
+		_value_label = "Value";
+		return;
+	}
+
+	// Do not use setters because we don't want to enforce their logical constraints during deserialization.
+	_domain_label = p_input[0];
+	_value_label = p_input[1];
+}
+
 void Curve::set_min_value(real_t p_min) {
 	_min_value = MIN(p_min, _max_value - MIN_Y_RANGE);
 
@@ -341,6 +362,7 @@ void Curve::set_min_value(real_t p_min) {
 		_min_value = MIN(_min_value, p.position.y);
 	}
 
+	mark_dirty();
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
@@ -351,7 +373,14 @@ void Curve::set_max_value(real_t p_max) {
 		_max_value = MAX(_max_value, p.position.y);
 	}
 
+	mark_dirty();
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
+}
+
+void Curve::set_value_label(String p_label) {
+	_value_label = p_label;
+
+	mark_dirty();
 }
 
 void Curve::set_min_domain(real_t p_min) {
@@ -374,6 +403,12 @@ void Curve::set_max_domain(real_t p_max) {
 
 	mark_dirty();
 	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
+}
+
+void Curve::set_domain_label(String p_label) {
+	_domain_label = p_label;
+
+	mark_dirty();
 }
 
 real_t Curve::sample(real_t p_offset) const {
@@ -683,13 +718,19 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_value"), &Curve::get_max_value);
 	ClassDB::bind_method(D_METHOD("set_max_value", "max"), &Curve::set_max_value);
 	ClassDB::bind_method(D_METHOD("get_value_range"), &Curve::get_value_range);
+	ClassDB::bind_method(D_METHOD("get_value_label"), &Curve::get_value_label);
+	ClassDB::bind_method(D_METHOD("set_value_label", "label"), &Curve::set_value_label);
 	ClassDB::bind_method(D_METHOD("get_min_domain"), &Curve::get_min_domain);
 	ClassDB::bind_method(D_METHOD("set_min_domain", "min"), &Curve::set_min_domain);
 	ClassDB::bind_method(D_METHOD("get_max_domain"), &Curve::get_max_domain);
 	ClassDB::bind_method(D_METHOD("set_max_domain", "max"), &Curve::set_max_domain);
 	ClassDB::bind_method(D_METHOD("get_domain_range"), &Curve::get_domain_range);
+	ClassDB::bind_method(D_METHOD("get_domain_label"), &Curve::get_domain_label);
+	ClassDB::bind_method(D_METHOD("set_domain_label", "label"), &Curve::set_domain_label);
 	ClassDB::bind_method(D_METHOD("_get_limits"), &Curve::get_limits);
 	ClassDB::bind_method(D_METHOD("_set_limits", "data"), &Curve::set_limits);
+	ClassDB::bind_method(D_METHOD("_get_labels"), &Curve::get_labels);
+	ClassDB::bind_method(D_METHOD("_set_labels", "data"), &Curve::set_labels);
 	ClassDB::bind_method(D_METHOD("clean_dupes"), &Curve::clean_dupes);
 	ClassDB::bind_method(D_METHOD("bake"), &Curve::bake);
 	ClassDB::bind_method(D_METHOD("get_bake_resolution"), &Curve::get_bake_resolution);
@@ -701,7 +742,10 @@ void Curve::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_domain", "get_max_domain");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_value", "get_min_value");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "domain_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_domain_label", "get_domain_label");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "value_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_value_label", "get_value_label");
 	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_labels", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_labels", "_get_labels");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
