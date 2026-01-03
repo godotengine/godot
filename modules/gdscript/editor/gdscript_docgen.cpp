@@ -344,13 +344,13 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 	doc.script_path = p_script->get_script_path();
 
 	if (p_script->base.is_valid() && p_script->base->is_valid()) {
-		if (!p_script->base->doc.name.is_empty()) {
-			doc.inherits = p_script->base->doc.name;
+		if (p_script->base->local_name != StringName()) {
+			doc.inherits = p_script->base->local_name;
 		} else {
-			doc.inherits = p_script->base->get_instance_base_type();
+			doc.inherits = p_script->base->get_script_path();
 		}
-	} else if (p_script->native.is_valid()) {
-		doc.inherits = p_script->native->get_name();
+	} else {
+		doc.inherits = p_script->get_instance_base_type();
 	}
 
 	doc.brief_description = p_class->doc_data.brief;
