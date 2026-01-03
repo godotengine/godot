@@ -127,6 +127,8 @@ namespace GodotTools.Build
 
         private void BuildLaunchFailed(BuildInfo buildInfo, string cause)
         {
+            EmitSignal(SignalName.OnBuildLaunchFailed);
+
             IsBuildingOngoing = false;
             BuildResult = Build.BuildResult.Error;
 
@@ -146,6 +148,8 @@ namespace GodotTools.Build
 
         private void BuildStarted(BuildInfo buildInfo)
         {
+            EmitSignal(SignalName.OnBuildStarted);
+
             LastBuildInfo = buildInfo;
             IsBuildingOngoing = true;
             BuildResult = null;
@@ -160,6 +164,8 @@ namespace GodotTools.Build
 
         private void BuildFinished(BuildResult result)
         {
+            EmitSignal(SignalName.OnBuildFinished);
+
             IsBuildingOngoing = false;
             BuildResult = result;
 
@@ -282,6 +288,15 @@ namespace GodotTools.Build
             _buildMenuButton.Icon = GetThemeIcon("BuildCSharp", "EditorIcons");
             _openLogsFolderButton.Icon = GetThemeIcon("Filesystem", "EditorIcons");
         }
+
+        [Signal]
+        public delegate void OnBuildLaunchFailedEventHandler();
+
+        [Signal]
+        public delegate void OnBuildStartedEventHandler();
+
+        [Signal]
+        public delegate void OnBuildFinishedEventHandler();
 
         private void AddBuildEventListeners()
         {
