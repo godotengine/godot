@@ -698,6 +698,15 @@ String EditorDebuggerNode::get_var_value(const String &p_var) const {
 	return get_current_debugger()->get_var_value(p_var);
 }
 
+void EditorDebuggerNode::send_config_value(const String &p_variable, const Variant &p_value) {
+	Array args;
+	args.append(p_value);
+
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->send_message("config:" + p_variable, args);
+	});
+}
+
 // LiveEdit/Inspector
 void EditorDebuggerNode::request_remote_tree() {
 	get_current_debugger()->request_remote_tree();

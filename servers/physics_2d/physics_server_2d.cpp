@@ -802,6 +802,8 @@ void PhysicsServer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer2D::get_process_info);
 
+	ADD_SIGNAL(MethodInfo("_debug_options_changed"));
+
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_RECYCLE_RADIUS);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_MAX_SEPARATION);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION);
