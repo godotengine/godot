@@ -4796,7 +4796,28 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		if (p_subscript->attribute == nullptr) {
 			return;
 		}
+	} else {
+		if (p_subscript->index != nullptr) {
+			reduce_expression(p_subscript->index);
+		} else {
+			return;
+		}
+	}
 
+	bool is_attribute_like = false;
+	GDScriptParser::IdentifierNode *attribute = nullptr;
+	if (p_subscript->is_attribute) {
+		is_attribute_like = true;
+		attribute = p_subscript->attribute;
+	} else if (p_subscript->index && p_subscript->index->is_constant && (p_subscript->index->reduced_value.get_type() == Variant::STRING || p_subscript->index->reduced_value.get_type() == Variant::STRING_NAME)) {
+		is_attribute_like = true;
+		attribute = parser->alloc_node<GDScriptParser::IdentifierNode>();
+		parser->reset_extents(attribute, p_subscript->index);
+		parser->complete_extents(attribute);
+		attribute->name = p_subscript->index->reduced_value;
+	}
+
+	if (is_attribute_like) {
 		GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 		bool valid = false;
 
@@ -4811,23 +4832,23 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					// Makes a metatype from a constant GDScript, since `base_type` is not a metatype.
 					GDScriptParser::DataType base_type_meta = type_from_variant(gdscript, p_subscript);
 					// First try to reduce the attribute from the metatype.
-					reduce_identifier_from_base(p_subscript->attribute, &base_type_meta);
-					GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+					reduce_identifier_from_base(attribute, &base_type_meta);
+					GDScriptParser::DataType attr_type = attribute->get_datatype();
 					if (attr_type.is_set()) {
 						valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
 						result_type = attr_type;
-						p_subscript->is_constant = p_subscript->attribute->is_constant;
-						p_subscript->reduced_value = p_subscript->attribute->reduced_value;
+						p_subscript->is_constant = attribute->is_constant;
+						p_subscript->reduced_value = attribute->reduced_value;
 					}
 					if (!valid) {
 						// If unsuccessful, reset and return to the normal route.
-						p_subscript->attribute->set_datatype(GDScriptParser::DataType());
+						attribute->set_datatype(GDScriptParser::DataType());
 					}
 				}
 			}
 			if (!base_is_gdscript) {
 				// Just try to get it.
-				Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
+				Variant value = p_subscript->base->reduced_value.get_named(attribute->name, valid);
 				if (valid) {
 					p_subscript->is_constant = true;
 					p_subscript->reduced_value = value;
@@ -4845,7 +4866,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				// Special case: it may be a global enum with pseudo base (e.g. Variant.Type).
 				String enum_name;
 				if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
-					enum_name = String(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base)->name) + ENUM_SEPARATOR + String(p_subscript->attribute->name);
+					enum_name = String(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base)->name) + ENUM_SEPARATOR + String(attribute->name);
 				}
 				if (CoreConstants::is_global_enum(enum_name)) {
 					result_type = make_global_enum_type(enum_name, StringName());
@@ -4857,8 +4878,8 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				mark_node_unsafe(p_subscript);
 			}
 		} else {
-			reduce_identifier_from_base(p_subscript->attribute, &base_type);
-			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+			reduce_identifier_from_base(attribute, &base_type);
+			GDScriptParser::DataType attr_type = attribute->get_datatype();
 			if (attr_type.is_set()) {
 				if (base_type.builtin_type == Variant::DICTIONARY && base_type.has_container_element_types()) {
 					Variant::Type key_type = base_type.get_container_element_type_or_variant(0).builtin_type;
@@ -4874,14 +4895,14 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				} else {
 					valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
 					result_type = attr_type;
-					p_subscript->is_constant = p_subscript->attribute->is_constant;
-					p_subscript->reduced_value = p_subscript->attribute->reduced_value;
+					p_subscript->is_constant = attribute->is_constant;
+					p_subscript->reduced_value = attribute->reduced_value;
 				}
 			} else if (!base_type.is_meta_type || !base_type.is_constant) {
 				valid = base_type.kind != GDScriptParser::DataType::BUILTIN;
 #ifdef DEBUG_ENABLED
 				if (valid) {
-					parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, p_subscript->attribute->name, base_type.to_string());
+					parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, attribute->name, base_type.to_string());
 				}
 #endif // DEBUG_ENABLED
 				result_type.kind = GDScriptParser::DataType::VARIANT;
@@ -4890,20 +4911,15 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		}
 
 		if (!valid) {
-			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+			GDScriptParser::DataType attr_type = attribute->get_datatype();
 			if (!p_can_be_pseudo_type && (attr_type.is_pseudo_type || result_type.is_pseudo_type)) {
-				push_error(vformat(R"(Type "%s" in base "%s" cannot be used on its own.)", p_subscript->attribute->name, type_from_metatype(base_type).to_string()), p_subscript->attribute);
+				push_error(vformat(R"(Type "%s" in base "%s" cannot be used on its own.)", attribute->name, type_from_metatype(base_type).to_string()), attribute);
 			} else {
-				push_error(vformat(R"(Cannot find member "%s" in base "%s".)", p_subscript->attribute->name, type_from_metatype(base_type).to_string()), p_subscript->attribute);
+				push_error(vformat(R"(Cannot find member "%s" in base "%s".)", attribute->name, type_from_metatype(base_type).to_string()), attribute);
 			}
 			result_type.kind = GDScriptParser::DataType::VARIANT;
 		}
 	} else {
-		if (p_subscript->index == nullptr) {
-			return;
-		}
-		reduce_expression(p_subscript->index);
-
 		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
 			// Just try to get it.
 			bool valid = false;
