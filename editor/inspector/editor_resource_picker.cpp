@@ -760,13 +760,13 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	}
 	String res_type = p_resource->get_class();
 
-	Ref<Script> res_script = p_resource->get_script();
-	if (res_script.is_null()) {
+	int idx_in_dir = -1;
+	EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(p_resource->get_path(), &idx_in_dir);
+	if (!dir) {
 		return res_type;
 	}
 
-	// TODO: Replace with EditorFileSystem when PR #60606 is merged to use cached resource type.
-	String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
+	String script_type = dir->get_file_resource_script_class(idx_in_dir);
 	if (!script_type.is_empty()) {
 		res_type = script_type;
 	}

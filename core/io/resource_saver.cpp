@@ -75,13 +75,13 @@ bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const 
 		return ret;
 	}
 
-	String extension = p_path.get_extension();
+	const String file = p_path.get_file();
 
 	List<String> extensions;
 	get_recognized_extensions(p_resource, &extensions);
 
 	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+		if (file.right(E.length() + 1).nocasecmp_to("." + E) == 0) {
 			return true;
 		}
 	}

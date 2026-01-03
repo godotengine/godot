@@ -277,7 +277,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	// Check file extension.
-	String extension = p.get_extension();
+	const String file = p.get_file();
 	List<String> extensions;
 
 	// Get all possible extensions for script.
@@ -288,7 +288,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	bool found = false;
 	bool match = false;
 	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+		if (file.right(E.length() + 1).nocasecmp_to("." + E) == 0) {
 			found = true;
 			if (E == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
 				match = true;

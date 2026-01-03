@@ -633,8 +633,6 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 		popup_centered(Size2(500, 350));
 	}
-
-	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void DependencyRemoveDialog::ok_pressed() {
@@ -680,9 +678,7 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	if (dirs_to_delete.is_empty()) {
 		// If we only deleted files we should only need to tell the file system about the files we touched.
-		for (int i = 0; i < files_to_delete.size(); ++i) {
-			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
-		}
+		EditorFileSystem::get_singleton()->update_files(files_to_delete);
 	} else {
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
@@ -693,9 +689,8 @@ void DependencyRemoveDialog::ok_pressed() {
 			} else {
 				emit_signal(SNAME("folder_removed"), dirs_to_delete[i]);
 			}
+			EditorFileSystem::get_singleton()->pending_scan_fs_changes(dirs_to_delete[i].left(-1).get_base_dir(), false);
 		}
-
-		EditorFileSystem::get_singleton()->scan_changes();
 	}
 
 	// If some files/dirs would be deleted, favorite dirs need to be updated
@@ -1031,7 +1026,7 @@ void OrphanResourcesDialog::show() {
 	popup_centered_ratio(0.4);
 }
 
-void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, List<String> &r_paths) {
+void OrphanResourcesDialog::_find_to_delete(TreeItem *p_item, Vector<String> &r_paths) {
 	while (p_item) {
 		if (p_item->get_cell_mode(0) == TreeItem::CELL_MODE_CHECK && p_item->is_checked(0)) {
 			r_paths.push_back(p_item->get_metadata(0));
@@ -1049,8 +1044,8 @@ void OrphanResourcesDialog::_delete_confirm() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (const String &E : paths) {
 		da->remove(E);
-		EditorFileSystem::get_singleton()->update_file(E);
 	}
+	EditorFileSystem::get_singleton()->update_files(paths);
 	refresh();
 }
 

@@ -60,6 +60,7 @@ class ScriptServer {
 
 	struct GlobalScriptClass {
 		StringName language;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 		String path;
 		StringName base;
 		bool is_abstract = false;
@@ -88,11 +89,12 @@ public:
 	static void thread_exit();
 
 	static void global_classes_clear();
-	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, bool p_is_abstract, bool p_is_tool);
+	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, bool p_is_abstract, bool p_is_tool, const ResourceUID::ID &p_uid = ResourceUID::INVALID_ID);
 	static void remove_global_class(const StringName &p_class);
 	static void remove_global_class_by_path(const String &p_path);
 	static bool is_global_class(const StringName &p_class);
 	static StringName get_global_class_language(const StringName &p_class);
+	static ResourceUID::ID get_global_class_uid(const String &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
 	static StringName get_global_class_native_base(const String &p_class);
@@ -101,7 +103,7 @@ public:
 	static void get_global_class_list(LocalVector<StringName> &r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void get_indirect_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
-	static void save_global_classes();
+	static void save_global_classes(const HashMap<StringName, String> &p_script_class_icon_paths = {});
 
 	static Vector<Ref<ScriptBacktrace>> capture_script_backtraces(bool p_include_variables = false);
 
