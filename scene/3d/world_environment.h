@@ -45,6 +45,7 @@ class WorldEnvironment : public Node {
 	void _update_current_environment();
 	void _update_current_camera_attributes();
 	void _update_current_compositor();
+	void _check_sky_warning();
 
 protected:
 	void _notification(int p_what);
@@ -63,4 +64,5 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	WorldEnvironment();
+	~WorldEnvironment();
 };
