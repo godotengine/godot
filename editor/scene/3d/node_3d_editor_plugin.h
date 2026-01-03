@@ -311,6 +311,12 @@ private:
 	Vector3 _get_camera_normal() const;
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
+	real_t _get_gizmo_depth() const;
+	Vector3 _screen_to_world_at_depth(const Vector2 &p_screen_pos, real_t p_z_depth);
+	Vector3 _screen_delta_to_world(const Vector2 &p_screen_delta, real_t p_z_depth);
+	Vector3 _get_axis(int p_col) const;
+	Vector3 _project_onto_axis(const Vector3 &p_vector, const Vector3 &p_axis) const;
+
 	void _select_region();
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
 	void _transform_gizmo_apply(Node3D *p_node, const Transform3D &p_transform, bool p_local);
