@@ -14,5 +14,8 @@
 	</style>
 
 	<style name="GodotEmbeddedGameTheme" parent="@android:style/Theme.DeviceDefault.Panel">
+		<item name="android:windowIsFloating">false</item>
+		<item name="android:statusBarColor">@android:color/transparent</item>
+		<item name="android:navigationBarColor">@android:color/transparent</item>
 	</style>
 </resources>
