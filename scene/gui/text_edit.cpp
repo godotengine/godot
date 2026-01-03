@@ -4225,61 +4225,67 @@ void TextEdit::insert_line_at(int p_line, const String &p_text) {
 
 void TextEdit::remove_line_at(int p_line, bool p_move_carets_down) {
 	ERR_FAIL_INDEX(p_line, text.size());
+	remove_lines(p_line, p_line, p_move_carets_down);
+}
 
-	if (get_line_count() == 1) {
-		// Only one line, just remove contents.
+void TextEdit::remove_lines(int p_from_line, int p_to_line, bool p_move_carets_down) {
+	// Remove entire line range, inclusive.
+	ERR_FAIL_INDEX(p_from_line, text.size());
+	ERR_FAIL_INDEX(p_to_line, text.size());
+
+	if (p_from_line > p_to_line) {
+		SWAP(p_from_line, p_to_line);
+	}
+
+	if (p_from_line == 0 && p_to_line == get_line_count() - 1) {
+		// Remove all lines.
 		begin_complex_operation();
-		int line_length = get_line(p_line).length();
-		_remove_text(p_line, 0, p_line, line_length);
-		collapse_carets(p_line, 0, p_line, line_length, true);
+		remove_secondary_carets();
+		int line_length = get_line(p_to_line).length();
+		_remove_text(p_from_line, 0, p_to_line, line_length);
+		collapse_carets(p_from_line, 0, p_to_line, line_length, true);
 		end_complex_operation();
 		return;
 	}
 
 	begin_complex_operation();
 
-	bool is_last_line = p_line == get_line_count() - 1;
-	int from_line = is_last_line ? p_line - 1 : p_line;
-	int next_line = is_last_line ? p_line : p_line + 1;
-	int from_column = is_last_line ? get_line(from_line).length() : 0;
-	int next_column = is_last_line ? get_line(next_line).length() : 0;
+	bool is_last_line = p_to_line == get_line_count() - 1;
+	int remove_from_line = is_last_line ? p_from_line - 1 : p_from_line;
+	int remove_to_line = is_last_line ? p_to_line : p_to_line + 1;
+	int remove_from_column = is_last_line ? get_line(remove_from_line).length() : 0;
+	int remove_to_column = is_last_line ? get_line(remove_to_line).length() : 0;
 
-	if ((!is_last_line && p_move_carets_down) || (p_line != 0 && !p_move_carets_down)) {
-		// Set the carets column to update their last offset x.
-		for (int i = 0; i < get_caret_count(); i++) {
-			if (get_caret_line(i) == p_line) {
-				set_caret_column(get_caret_column(i), false, i);
-			}
-			if (has_selection(i) && get_selection_origin_line(i) == p_line) {
-				set_selection_origin_column(get_selection_origin_column(i), i);
-			}
+	// Set the carets column to update their last offset x.
+	for (int i = 0; i < get_caret_count(); i++) {
+		if (get_caret_line(i) >= p_from_line && get_caret_line(i) <= p_to_line) {
+			set_caret_column(get_caret_column(i), false, i);
+		}
+		if (has_selection(i) && get_selection_origin_line(i) >= p_from_line && get_selection_origin_line(i) <= p_to_line) {
+			set_selection_origin_column(get_selection_origin_column(i), i);
 		}
 	}
 
-	// Remove line.
-	_remove_text(from_line, from_column, next_line, next_column);
+	// Remove the lines.
+	_remove_text(remove_from_line, remove_from_column, remove_to_line, remove_to_column);
 
 	begin_multicaret_edit();
-	if ((is_last_line && p_move_carets_down) || (p_line == 0 && !p_move_carets_down)) {
-		// Collapse carets.
-		collapse_carets(from_line, from_column, next_line, next_column, true);
-	} else {
-		// Move carets to visually line up.
-		int target_line = p_move_carets_down ? p_line : p_line - 1;
-		for (int i = 0; i < get_caret_count(); i++) {
-			bool selected = has_selection(i);
-			if (get_caret_line(i) == p_line) {
-				set_caret_line(target_line, i == 0, true, 0, i);
-			}
-			if (selected && get_selection_origin_line(i) == p_line) {
-				set_selection_origin_line(target_line, true, 0, i);
-				select(get_selection_origin_line(i), get_selection_origin_column(i), get_caret_line(i), get_caret_column(i), i);
-			}
+	// Move carets to visually line up.
+	int target_line = ((p_move_carets_down && !is_last_line) || p_from_line == 0) ? p_from_line : p_from_line - 1;
+	for (int i = 0; i < get_caret_count(); i++) {
+		bool selected = has_selection(i);
+		if (get_caret_line(i) >= p_from_line && get_caret_line(i) <= p_to_line) {
+			set_caret_line(target_line, i == 0, true, 0, i);
 		}
-
-		merge_overlapping_carets();
+		if (selected && get_selection_origin_line(i) >= p_from_line && get_selection_origin_line(i) <= p_to_line) {
+			set_selection_origin_line(target_line, true, 0, i);
+			select(get_selection_origin_line(i), get_selection_origin_column(i), get_caret_line(i), get_caret_column(i), i);
+		}
 	}
-	_offset_carets_after(next_line, next_column, from_line, from_column);
+	merge_overlapping_carets();
+
+	_offset_carets_after(remove_to_line, remove_to_column, remove_from_line, remove_from_column);
+	_unhide_carets();
 	end_multicaret_edit();
 	end_complex_operation();
 
@@ -7848,11 +7854,7 @@ void TextEdit::_cut_internal(int p_caret) {
 	}
 	int line_offset = 0;
 	for (Point2i line_range : line_ranges) {
-		// Preserve carets on the last line.
-		remove_line_at(line_range.y + line_offset);
-		if (line_range.x != line_range.y) {
-			remove_text(line_range.x + line_offset, 0, line_range.y + line_offset, 0);
-		}
+		remove_lines(line_range.x + line_offset, line_range.y + line_offset);
 		line_offset += line_range.x - line_range.y - 1;
 	}
 	end_multicaret_edit();

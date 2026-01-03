@@ -4750,7 +4750,7 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_caret_column(1) == 3); // In the default font, this is the same position.
 		CHECK_FALSE(code_edit->has_selection(2));
 		CHECK(code_edit->get_caret_line(2) == 0);
-		CHECK(code_edit->get_caret_column(2) == 4);
+		CHECK(code_edit->get_caret_column(2) == 0);
 		code_edit->remove_secondary_carets();
 
 		// Cut on the only line removes the contents.
@@ -5351,7 +5351,7 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		// Delete multiple lines with multiple carets.
 		code_edit->set_text("test\nlines\nto\n\ndelete");
 		code_edit->set_caret_line(0);
-		code_edit->set_caret_column(2);
+		code_edit->set_caret_column(0);
 		code_edit->add_caret(1, 0);
 		code_edit->add_caret(4, 5);
 		code_edit->delete_lines();
@@ -5382,6 +5382,16 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		code_edit->set_text("test");
 		code_edit->set_caret_line(0);
 		code_edit->set_caret_column(4);
+		code_edit->delete_lines();
+		CHECK(code_edit->get_text() == "");
+		CHECK_FALSE(code_edit->has_selection());
+		CHECK(code_edit->get_caret_line() == 0);
+		CHECK(code_edit->get_caret_column() == 0);
+
+		// Delete all lines with selection.
+		code_edit->remove_secondary_carets();
+		code_edit->set_text("test\nlines\nto\n\ndelete");
+		code_edit->select(0, 1, 4, 1);
 		code_edit->delete_lines();
 		CHECK(code_edit->get_text() == "");
 		CHECK_FALSE(code_edit->has_selection());

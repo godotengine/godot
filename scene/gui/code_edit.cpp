@@ -2682,12 +2682,8 @@ void CodeEdit::delete_lines() {
 	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
 	int line_offset = 0;
 	for (Point2i line_range : line_ranges) {
-		// Remove last line of range separately to preserve carets.
 		unfold_line(line_range.y + line_offset);
-		remove_line_at(line_range.y + line_offset);
-		if (line_range.x != line_range.y) {
-			remove_text(line_range.x + line_offset, 0, line_range.y + line_offset, 0);
-		}
+		remove_lines(line_range.x + line_offset, line_range.y + line_offset);
 		line_offset += line_range.x - line_range.y - 1;
 	}
 
