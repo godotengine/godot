@@ -101,10 +101,15 @@ public:
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
 	void set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node);
+	void set_blend_point_name(int p_point, const String &p_name);
+	String get_blend_point_name(int p_point) const;
+	int find_blend_point_by_name(const String &p_name) const;
 	Vector2 get_blend_point_position(int p_point) const;
 	Ref<AnimationRootNode> get_blend_point_node(int p_point) const;
 	void remove_blend_point(int p_point);
 	int get_blend_point_count() const;
+
+	void reorder_blend_point(int p_from_index, int p_to_index);
 
 	bool has_triangle(int p_x, int p_y, int p_z) const;
 	void add_triangle(int p_x, int p_y, int p_z, int p_at_index = -1);
