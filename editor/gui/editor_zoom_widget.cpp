@@ -54,7 +54,12 @@ void EditorZoomWidget::_update_zoom_label() {
 }
 
 void EditorZoomWidget::_button_zoom_minus() {
-	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(Key::ALT));
+	bool by_integer = Input::get_singleton()->is_key_pressed(Key::ALT);
+
+	if (EDITOR_GET("editors/2d/use_integer_zoom_by_default")) {
+		by_integer = !by_integer;
+	}
+	set_zoom_by_increments(-6, by_integer);
 	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
@@ -64,7 +69,12 @@ void EditorZoomWidget::_button_zoom_reset() {
 }
 
 void EditorZoomWidget::_button_zoom_plus() {
-	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(Key::ALT));
+	bool by_integer = Input::get_singleton()->is_key_pressed(Key::ALT);
+
+	if (EDITOR_GET("editors/2d/use_integer_zoom_by_default")) {
+		by_integer = !by_integer;
+	}
+	set_zoom_by_increments(6, by_integer);
 	emit_signal(SNAME("zoom_changed"), zoom);
 }
 
