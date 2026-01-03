@@ -880,6 +880,12 @@ void TextureRegionEditor::_notification(int p_what) {
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_step", snap_step);
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
 				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
+
+				if (res_atlas_texture.is_valid()) {
+					res_atlas_texture->set_snap_mode(snap_mode);
+					res_atlas_texture->set_offset(snap_offset);
+					res_atlas_texture->set_separation(snap_separation);
+				}
 			}
 		} break;
 
@@ -945,6 +951,16 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		if (Object::cast_to<AtlasTexture>(p_obj)) {
 			res_atlas_texture = Ref<AtlasTexture>(p_obj);
 			is_resource = true;
+
+			snap_mode = (SnapMode)res_atlas_texture->get_snap_mode();
+			if (snap_mode == SnapMode::SNAP_GRID) {
+				snap_step = res_atlas_texture->get_region().get_size();
+				snap_separation = res_atlas_texture->get_separation();
+				snap_offset = res_atlas_texture->get_offset();
+			}
+
+			snap_mode_button->select(snap_mode);
+			_set_snap_mode(snap_mode);
 		}
 
 		if (is_resource) {
