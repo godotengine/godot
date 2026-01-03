@@ -222,11 +222,19 @@ private:
 	Node3D *ruler_start_point = nullptr;
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
+	Ref<ImmediateMesh> geometry_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
 	Ref<StandardMaterial3D> ruler_material;
 	Ref<StandardMaterial3D> ruler_material_xray;
+	Ref<StandardMaterial3D> ruler_triangle_material;
+	Ref<StandardMaterial3D> ruler_triangle_material_xray;
+	MeshInstance3D *ruler_triangle_lines = nullptr;
+	MeshInstance3D *ruler_triangle_lines_xray = nullptr;
+	Label *ruler_label_x = nullptr;
+	Label *ruler_label_y = nullptr;
+	Label *ruler_label_z = nullptr;
 
 	int index;
 	ViewType view_type;
