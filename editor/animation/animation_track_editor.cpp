@@ -1873,20 +1873,20 @@ void AnimationTimelineEdit::update_values() {
 
 	switch (animation->get_loop_mode()) {
 		case Animation::LOOP_NONE: {
-			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
-			loop->set_pressed(false);
+			loop->set_button_icon(get_editor_theme_icon(SNAME("NoLoop")));
 		} break;
 		case Animation::LOOP_LINEAR: {
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
-			loop->set_pressed(true);
 		} break;
 		case Animation::LOOP_PINGPONG: {
 			loop->set_button_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
-			loop->set_pressed(true);
 		} break;
 		default:
 			break;
 	}
+
+	loop->set_pressed(false);
+	loop->set_disabled(read_only);
 
 	editing = false;
 }
@@ -2204,7 +2204,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			const Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
-			// Names and icons.
+			// NAMES AND ICONS //
 
 			{
 				Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon(SNAME("checked"), SNAME("CheckBox")) : get_theme_icon(SNAME("unchecked"), SNAME("CheckBox"));
@@ -2271,7 +2271,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				draw_line(Point2(limit, 0), Point2(limit, get_size().height), h_line_color, Math::round(EDSCALE));
 			}
 
-			// Marker sections.
+			// KEYFRAMES //
 
 			{
 				float scale = timeline->get_zoom_scale();
@@ -2371,7 +2371,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			draw_fg(limit, limit_end);
 
-			// Buttons.
+			// BUTTONS //
 
 			{
 				Ref<Texture2D> wrap_icon[2] = {
@@ -2886,7 +2886,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	if (icon_rect.has_point(p_pos)) {
 		return TTR("Select node in scene.");
 	}
-
+	// Don't overlap track keys if they start at 0.
 	// Don't overlap track keys if they start at 0.
 	if (path_rect.has_point(p_pos + Size2(type_icon->get_width(), 0))) {
 		return String(animation->track_get_path(track));
@@ -3119,7 +3119,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					editor_selection->add_node(n);
 				}
 			}
-
+			// Don't overlap track keys if they start at 0.
 			// Don't overlap track keys if they start at 0.
 			if (path_rect.has_point(pos + Size2(type_icon->get_width(), 0))) {
 				clicking_on_name = true;
@@ -3232,7 +3232,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		}
-
+		// First one does it.
 		if (_try_select_at_ui_pos(pos, mb->is_command_or_control_pressed() || mb->is_shift_pressed(), true)) {
 			accept_event();
 		}
@@ -3344,7 +3344,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		const int previous_hovering_key_idx = hovering_key_idx;
 
 		command_or_control_pressed = mm->is_command_or_control_pressed();
-
+		// Hovering compressed keyframes for editing is not possible.
 		// Hovering compressed keyframes for editing is not possible.
 		if (!animation->track_is_compressed(track)) {
 			const float scale = timeline->get_zoom_scale();
@@ -3856,8 +3856,6 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 					draw_rect(rect, Color(0, 0, 0, 0.2));
 				}
 			}
-
-			// Section preview.
 
 			{
 				float scale = timeline->get_zoom_scale();
@@ -4416,7 +4414,7 @@ void AnimationTrackEditor::commit_insert_queue() {
 	}
 
 	// Skip the confirmation dialog if the user holds Shift while clicking the key icon.
-	// If `confirm_insert_track` editor setting is disabled, the behavior is reversed.
+	// Potentially a new key, does not exist.
 	bool confirm_insert = EDITOR_GET("editors/animation/confirm_insert_track");
 	if ((Input::get_singleton()->is_key_pressed(Key::SHIFT) != confirm_insert) && num_tracks > 0) {
 		String dialog_text;
@@ -4738,7 +4736,7 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, bool p_adv
 	if (multi_node_edit.is_valid()) {
 		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 		ERR_FAIL_NULL(edited_scene);
-
+		// Locate track.
 		make_insert_queue();
 
 		for (int i = 0; i < multi_node_edit->get_node_count(); ++i) {
@@ -5950,10 +5948,9 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	id.advance = false;
 	id.track_idx = p_track;
 	id.type = animation->track_get_type(p_track);
-	// TRANSLATORS: This describes the target of new animation track, will be inserted into another string.
+
 	id.query = vformat(TTR("node '%s'"), node->get_name());
 	id.time = p_ofs;
-	// id.value is filled in each case handled below.
 
 	switch (animation->track_get_type(p_track)) {
 		case Animation::TYPE_POSITION_3D: {
@@ -6028,7 +6025,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			id.value = StringName("[stop]");
 		} break;
 		default: {
-			// All track types should be handled by now.
 			DEV_ASSERT(false);
 		}
 	}
@@ -6530,7 +6526,7 @@ void AnimationTrackEditor::_bezier_track_set_key_handle_mode_at_time(Animation *
 	ERR_FAIL_COND(index < 0);
 	_bezier_track_set_key_handle_mode(p_anim, p_track, index, p_mode, p_set_mode);
 }
-
+// Duplicait!
 void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, int p_track) {
 	if (selection.size() && animation.is_valid()) {
 		int top_track = 0x7FFFFFFF;
@@ -6553,7 +6549,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(float p_ofs, bool p_ofs_valid, i
 			bool is_valid_track_selected = _get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count();
 			start_track = is_valid_track_selected ? _get_track_selected() : top_track;
 		}
-
+		//
 		bool all_compatible = true;
 
 		for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
@@ -6770,7 +6766,7 @@ void AnimationTrackEditor::_anim_paste_keys(float p_ofs, bool p_ofs_valid, int p
 		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 
-		// Reselect pasted.
+		// Reselect duplicated.
 		for (const Pair<int, float> &E : new_selection_values) {
 			undo_redo->add_do_method(this, "_select_at_anim", animation, E.first, E.second);
 		}
@@ -7170,7 +7166,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 
-			// 7 - Reselect.
+			// 7-reselect.
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				float oldpos = E->get().pos;
 				float newpos = NEW_POS(oldpos);
@@ -7407,7 +7403,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				if (track_type == Animation::TYPE_ANIMATION || track_type == Animation::TYPE_AUDIO || track_type == Animation::TYPE_METHOD) {
 					continue;
 				}
-
+				// Only add one key per track.
 				// Only add one key per track.
 				if (tracks_added.has(sk.track)) {
 					continue;
@@ -8503,7 +8499,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(scale_dialog);
 
 	scale_dialog->register_text_enter(scale->get_line_edit());
-
+	//
 	//
 	ease_dialog = memnew(ConfirmationDialog);
 	ease_dialog->set_title(TTR("Select Transition and Easing"));
@@ -8618,7 +8614,7 @@ AnimationTrackEditor::~AnimationTrackEditor() {
 	}
 }
 
-// AnimationTrackKeyEditEditorPlugin.
+// AnimationTrackKeyEditEditorPlugin
 
 void AnimationTrackKeyEditEditor::_time_edit_spun() {
 	_time_edit_entered();
