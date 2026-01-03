@@ -732,8 +732,13 @@ StringName EditorProperty::get_edited_property() const {
 Variant EditorProperty::get_edited_property_display_value() const {
 	ERR_FAIL_NULL_V(object, Variant());
 	Control *control = Object::cast_to<Control>(object);
-	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
-		return control->get_used_theme_item(property);
+	Window *wnd = Object::cast_to<Window>(object);
+	if (checkable && !checked && (control || wnd) && String(property).begins_with("theme_override_")) {
+		if (control) {
+			return control->get_used_theme_item(property);
+		} else {
+			return wnd->get_used_theme_item(property);
+		}
 	} else {
 		return get_edited_property_value();
 	}
@@ -5395,8 +5400,13 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 		} else {
 			Variant to_create;
 			Control *control = Object::cast_to<Control>(object);
-			if (control && p_path.begins_with("theme_override_")) {
-				to_create = control->get_used_theme_item(p_path);
+			Window *wnd = Object::cast_to<Window>(object);
+			if ((control || wnd) && p_path.begins_with("theme_override_")) {
+				if (control) {
+					to_create = control->get_used_theme_item(p_path);
+				} else {
+					to_create = wnd->get_used_theme_item(p_path);
+				}
 			} else {
 				List<PropertyInfo> pinfo;
 				object->get_property_list(&pinfo);
