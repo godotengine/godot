@@ -85,6 +85,9 @@ public:
 
 		virtual bool has_joy_light() const { return false; }
 		virtual bool set_joy_light(const Color &p_color) { return false; }
+
+		virtual bool has_joy_axis(JoyAxis p_axis) const { return false; }
+		virtual bool has_joy_button(JoyButton p_button) const { return false; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -182,6 +185,11 @@ private:
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
+		JoyModel model = JoyModel::UNKNOWN;
+		JoyDeviceType device_type = JoyDeviceType::UNKNOWN;
+		int8_t battery_percent = -1;
+		JoyPowerState power_state = JoyPowerState::UNKNOWN;
+		JoyConnectionState connection_state = JoyConnectionState::UNKNOWN;
 		Dictionary info;
 		bool has_light = false;
 		Input::JoypadFeatures *features = nullptr;
@@ -342,6 +350,23 @@ public:
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
 
+	JoyModel get_joy_model(int p_device) const;
+	JoyScheme get_joy_scheme(int p_device) const;
+	JoyScheme get_joy_scheme_model(JoyModel p_model) const;
+	JoyDeviceType get_joy_device_type(int p_device) const;
+
+	JoyPowerState get_joy_power_state(int p_device) const;
+	int get_joy_battery_percent(int p_device) const;
+	JoyConnectionState get_joy_connection_state(int p_device) const;
+
+	String get_joy_axis_string(int p_device, JoyAxis p_axis) const;
+	String get_joy_button_string(int p_device, JoyButton p_button) const;
+	String get_joy_model_axis_string(JoyModel p_model, JoyAxis p_axis) const;
+	String get_joy_model_button_string(JoyModel p_model, JoyButton p_button) const;
+
+	bool has_joy_axis(int p_device, JoyAxis p_axis) const;
+	bool has_joy_button(int p_device, JoyButton p_button) const;
+
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
 	Vector2 get_last_mouse_screen_velocity();
@@ -356,6 +381,15 @@ public:
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
+
+	void set_joy_model(int p_device, JoyModel p_model);
+	void set_joy_scheme(int p_device, JoyScheme p_scheme);
+	void set_joy_device_type(int p_device, JoyDeviceType p_type);
+
+	void set_joy_power_state(int p_device, JoyPowerState p_state);
+	void set_joy_battery_percent(int p_device, int p_percent);
+	void set_joy_connection_state(int p_device, JoyConnectionState p_state);
+
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);

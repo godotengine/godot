@@ -40,6 +40,10 @@
 #include "core/os/thread.h"
 #endif
 
+// These are safe to include, because these files don't use any other SDL code. Copyright (C) Valve Corporation.
+#include "thirdparty/sdl/joystick/controller_list.h"
+#include "thirdparty/sdl/joystick/controller_type.h"
+
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
 	"b",
@@ -71,6 +75,110 @@ static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
 	"righty",
 	"lefttrigger",
 	"righttrigger",
+};
+
+static const char *xbox_face_buttons_strings[] = {
+	"A",
+	"B",
+	"X",
+	"Y",
+};
+
+static const char *nintendo_face_buttons_strings[] = {
+	"B",
+	"A",
+	"Y",
+	"X",
+};
+
+static const char *playstation_face_buttons_strings[] = {
+	"Cross",
+	"Circle",
+	"Square",
+	"Triangle",
+};
+
+static const char *horiz_joycon_face_buttons_strings[] = {
+	"Face South",
+	"Face East",
+	"Face West",
+	"Face North",
+};
+
+static const char *xb360_buttons[] = {
+	"Back",
+	"Guide",
+	"Start",
+};
+
+static const char *xbone_buttons[] = {
+	"View",
+	"Xbox",
+	"Menu",
+};
+
+static const char *steam_deck_buttons[] = {
+	"View",
+	"Steam",
+	"Menu",
+};
+
+static const char *ps3_buttons[] = {
+	"Select",
+	"PS",
+	"Start",
+};
+
+static const char *ps45_buttons[] = {
+	"Share",
+	"PS",
+	"Options",
+};
+
+static const char *switch_pro_buttons[] = {
+	"Minus",
+	"Home",
+	"Plus",
+};
+
+static const char *joycon_left_buttons[] = {
+	"Minus",
+	"Capture",
+	"",
+};
+
+static const char *joycon_right_buttons[] = {
+	"",
+	"Home",
+	"Plus",
+};
+
+static const char *default_paddles[] = {
+	"Paddle 1",
+	"Paddle 2",
+	"Paddle 3",
+	"Paddle 4",
+};
+
+static const char *dualsense_edge_paddles[] = {
+	"Left Function",
+	"Right Function",
+	"Left Paddle",
+	"Right Paddle",
+};
+
+static const char *joycon_paddles[] = {
+	"SR (R)",
+	"SL (L)",
+	"SL (R)",
+	"SR (L)",
+};
+
+static const char *joycon_horizontal_paddles[] = {
+	"R (R)",
+	"L (L)",
+	"ZR (R)",
+	"ZL (L)",
 };
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
@@ -147,6 +255,19 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
 	ClassDB::bind_method(D_METHOD("get_gyroscope"), &Input::get_gyroscope);
+	ClassDB::bind_method(D_METHOD("get_joy_model", "device"), &Input::get_joy_model);
+	ClassDB::bind_method(D_METHOD("get_joy_scheme", "device"), &Input::get_joy_scheme);
+	ClassDB::bind_method(D_METHOD("get_joy_scheme_model", "model"), &Input::get_joy_scheme_model);
+	ClassDB::bind_method(D_METHOD("get_joy_device_type", "device"), &Input::get_joy_device_type);
+	ClassDB::bind_method(D_METHOD("get_joy_power_state", "device"), &Input::get_joy_power_state);
+	ClassDB::bind_method(D_METHOD("get_joy_battery_percent", "device"), &Input::get_joy_battery_percent);
+	ClassDB::bind_method(D_METHOD("get_joy_connection_state", "device"), &Input::get_joy_connection_state);
+	ClassDB::bind_method(D_METHOD("get_joy_axis_string", "device", "axis"), &Input::get_joy_axis_string);
+	ClassDB::bind_method(D_METHOD("get_joy_button_string", "device", "button"), &Input::get_joy_button_string);
+	ClassDB::bind_method(D_METHOD("get_joy_model_axis_string", "model", "axis"), &Input::get_joy_model_axis_string);
+	ClassDB::bind_method(D_METHOD("get_joy_model_button_string", "model", "button"), &Input::get_joy_model_button_string);
+	ClassDB::bind_method(D_METHOD("has_joy_axis", "device", "axis"), &Input::has_joy_axis);
+	ClassDB::bind_method(D_METHOD("has_joy_button", "device", "button"), &Input::has_joy_button);
 	ClassDB::bind_method(D_METHOD("set_gravity", "value"), &Input::set_gravity);
 	ClassDB::bind_method(D_METHOD("set_accelerometer", "value"), &Input::set_accelerometer);
 	ClassDB::bind_method(D_METHOD("set_magnetometer", "value"), &Input::set_magnetometer);
@@ -626,6 +747,43 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
+static JoyModel _get_controller_type(int p_vendor_id, int p_product_id) {
+	unsigned int device_id = MAKE_CONTROLLER_ID(p_vendor_id, p_product_id);
+
+	for (int i = 0; i < sizeof(arrControllers) / sizeof(arrControllers[0]); i++) {
+		const ControllerDescription_t &desc = arrControllers[i];
+		if (desc.m_unDeviceID == device_id) {
+			switch (desc.m_eControllerType) {
+				case k_eControllerType_WiiController:
+					return JoyModel::NINTENDO_GENERIC;
+				case k_eControllerType_XBox360Controller:
+					return JoyModel::XBOX360;
+				case k_eControllerType_XBoxOneController:
+					return JoyModel::XBOXONE;
+				case k_eControllerType_SteamControllerNeptune:
+					return JoyModel::STEAM_DECK;
+				case k_eControllerType_PS3Controller:
+					return JoyModel::PS3;
+				case k_eControllerType_PS4Controller:
+				case k_eControllerType_XInputPS4Controller:
+					return JoyModel::PS4;
+				case k_eControllerType_PS5Controller:
+					return JoyModel::PS5;
+				case k_eControllerType_SwitchProController:
+				case k_eControllerType_XInputSwitchController:
+				case k_eControllerType_SwitchInputOnlyController:
+					return JoyModel::SWITCH_PRO;
+				case k_eControllerType_SwitchJoyConLeft:
+					return JoyModel::JOYCON_LEFT;
+				case k_eControllerType_SwitchJoyConRight:
+					return JoyModel::JOYCON_RIGHT;
+			}
+		}
+	}
+
+	return JoyModel::UNKNOWN;
+}
+
 void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid, const Dictionary &p_joypad_info) {
 	_THREAD_SAFE_METHOD_
 
@@ -675,6 +833,12 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.info.erase("mapping_handled");
 
 		_set_joypad_mapping(js, mapping);
+
+		int vendor_id = p_joypad_info.get("vendor_id", 0).operator int32_t();
+		int product_id = p_joypad_info.get("product_id", 0).operator int32_t();
+		if (vendor_id != 0 && product_id != 0) {
+			js.model = _get_controller_type(vendor_id, product_id);
+		}
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -737,6 +901,305 @@ Vector3 Input::get_gyroscope() const {
 #endif
 
 	return gyroscope;
+}
+
+JoyModel Input::get_joy_model(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyModel::UNKNOWN;
+	}
+	return joypad->model;
+}
+
+JoyScheme Input::get_joy_scheme(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyScheme::UNKNOWN;
+	}
+	return get_joy_scheme_model(joypad->model);
+}
+
+JoyScheme Input::get_joy_scheme_model(JoyModel p_model) const {
+	switch (p_model) {
+		case JoyModel::UNKNOWN:
+			return JoyScheme::UNKNOWN;
+
+		case JoyModel::XBOX_GENERIC:
+		case JoyModel::XBOX360:
+		case JoyModel::XBOXONE:
+		case JoyModel::STEAM_DECK:
+			return JoyScheme::XBOX;
+
+		case JoyModel::PLAYSTATION_GENERIC:
+		case JoyModel::PS3:
+		case JoyModel::PS4:
+		case JoyModel::PS5:
+			return JoyScheme::PLAYSTATION;
+
+		case JoyModel::NINTENDO_GENERIC:
+		case JoyModel::SWITCH_PRO:
+		case JoyModel::JOYCON_PAIR:
+			return JoyScheme::NINTENDO;
+
+		case JoyModel::JOYCON_LEFT:
+		case JoyModel::JOYCON_RIGHT:
+			return JoyScheme::JOYCON_HORIZONTAL;
+
+		default: // Unknown scheme
+			return JoyScheme::UNKNOWN;
+	}
+}
+
+JoyDeviceType Input::get_joy_device_type(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyDeviceType::UNKNOWN;
+	}
+	return joypad->device_type;
+}
+
+JoyPowerState Input::get_joy_power_state(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyPowerState::UNKNOWN;
+	}
+	return joypad->power_state;
+}
+
+int Input::get_joy_battery_percent(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return -1;
+	}
+	return joypad->battery_percent;
+}
+
+JoyConnectionState Input::get_joy_connection_state(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return JoyConnectionState::UNKNOWN;
+	}
+	return joypad->connection_state;
+}
+
+String Input::get_joy_axis_string(int p_device, JoyAxis p_axis) const {
+	return get_joy_model_axis_string(get_joy_model(p_device), p_axis);
+}
+
+String Input::get_joy_button_string(int p_device, JoyButton p_button) const {
+	return get_joy_model_button_string(get_joy_model(p_device), p_button);
+}
+
+String Input::get_joy_model_axis_string(JoyModel p_model, JoyAxis p_axis) const {
+	if (p_model == JoyModel::UNKNOWN) {
+		return "";
+	}
+
+	switch (p_axis) {
+		case JoyAxis::LEFT_X:
+			return "Left Stick X";
+		case JoyAxis::LEFT_Y:
+			return "Left Stick Y";
+		case JoyAxis::RIGHT_X:
+			return "Right Stick X";
+		case JoyAxis::RIGHT_Y:
+			return "Right Stick Y";
+
+		case JoyAxis::TRIGGER_LEFT:
+		case JoyAxis::TRIGGER_RIGHT:
+			switch (p_model) {
+				case JoyModel::XBOX360:
+				case JoyModel::XBOXONE:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "LT" : "RT";
+
+				case JoyModel::PS3:
+				case JoyModel::PS4:
+				case JoyModel::PS5:
+				case JoyModel::STEAM_DECK:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "L2" : "R2";
+
+				case JoyModel::SWITCH_PRO:
+				//case JoyModel::JOYCON_LEFT: // Horizontal joycons don't have "trigger" buttons
+				//case JoyModel::JOYCON_RIGHT:
+				case JoyModel::JOYCON_PAIR:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "ZL" : "ZR";
+
+				default:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "Left Trigger" : "Right Trigger";
+			}
+
+		default:
+			return "";
+	}
+}
+
+String Input::get_joy_model_button_string(JoyModel p_model, JoyButton p_button) const {
+	if (p_model == JoyModel::UNKNOWN) {
+		return "";
+	}
+
+	switch (p_button) {
+		case JoyButton::A:
+		case JoyButton::B:
+		case JoyButton::X:
+		case JoyButton::Y:
+			switch (get_joy_scheme_model(p_model)) {
+				default:
+				case JoyScheme::XBOX:
+					return xbox_face_buttons_strings[(int)p_button - (int)JoyButton::A];
+				case JoyScheme::PLAYSTATION:
+					return playstation_face_buttons_strings[(int)p_button - (int)JoyButton::A];
+				case JoyScheme::NINTENDO:
+					return nintendo_face_buttons_strings[(int)p_button - (int)JoyButton::A];
+				case JoyScheme::JOYCON_HORIZONTAL:
+					return horiz_joycon_face_buttons_strings[(int)p_button - (int)JoyButton::A];
+			}
+
+		case JoyButton::BACK:
+		case JoyButton::GUIDE:
+		case JoyButton::START:
+			switch (p_model) {
+				default:
+				case JoyModel::XBOX_GENERIC:
+				case JoyModel::XBOX360:
+					return xb360_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::XBOXONE:
+					return xbone_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::STEAM_DECK:
+					return steam_deck_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::PLAYSTATION_GENERIC:
+				case JoyModel::PS3:
+					return ps3_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::PS4:
+				case JoyModel::PS5:
+					return ps45_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::NINTENDO_GENERIC:
+				case JoyModel::SWITCH_PRO:
+				case JoyModel::JOYCON_PAIR:
+					return switch_pro_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::JOYCON_LEFT:
+					return joycon_left_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case JoyModel::JOYCON_RIGHT:
+					return joycon_right_buttons[(int)p_button - (int)JoyButton::BACK];
+			}
+
+		case JoyButton::LEFT_STICK:
+			return "Left Stick";
+		case JoyButton::RIGHT_STICK:
+			return "Right Stick";
+
+		case JoyButton::LEFT_SHOULDER:
+		case JoyButton::RIGHT_SHOULDER:
+			switch (p_model) {
+				case JoyModel::XBOX360:
+				case JoyModel::XBOXONE:
+					return p_button == JoyButton::LEFT_SHOULDER ? "LB" : "RB";
+
+				case JoyModel::PLAYSTATION_GENERIC:
+				case JoyModel::PS3:
+				case JoyModel::PS4:
+				case JoyModel::PS5:
+				case JoyModel::STEAM_DECK:
+					return p_button == JoyButton::LEFT_SHOULDER ? "L1" : "R1";
+
+				case JoyModel::NINTENDO_GENERIC:
+				case JoyModel::SWITCH_PRO:
+				case JoyModel::JOYCON_PAIR:
+					return p_button == JoyButton::LEFT_SHOULDER ? "L" : "R";
+				case JoyModel::JOYCON_LEFT:
+				case JoyModel::JOYCON_RIGHT:
+					return p_button == JoyButton::LEFT_SHOULDER ? "SL" : "SR";
+
+				case JoyModel::XBOX_GENERIC:
+				default:
+					return p_button == JoyButton::LEFT_SHOULDER ? "Left Shoulder" : "Right Shoulder";
+			}
+
+		case JoyButton::DPAD_UP:
+			return "D-pad Up";
+		case JoyButton::DPAD_DOWN:
+			return "D-pad Down";
+		case JoyButton::DPAD_LEFT:
+			return "D-pad Left";
+		case JoyButton::DPAD_RIGHT:
+			return "D-pad Right";
+
+		case JoyButton::MISC1:
+			switch (p_model) {
+				case JoyModel::PS5:
+					return "Mute";
+
+				case JoyModel::SWITCH_PRO:
+				//case JoyModel::JOYCON_LEFT: // Horizontal joycons don't have the Misc1 button
+				//case JoyModel::JOYCON_RIGHT:
+				case JoyModel::JOYCON_PAIR:
+					return "Capture";
+
+				default:
+					return "";
+			}
+
+		case JoyButton::PADDLE1:
+		case JoyButton::PADDLE2:
+		case JoyButton::PADDLE3:
+		case JoyButton::PADDLE4:
+			switch (p_model) {
+				case JoyModel::PS5:
+					return dualsense_edge_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				case JoyModel::JOYCON_PAIR:
+					return joycon_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				case JoyModel::JOYCON_LEFT:
+				case JoyModel::JOYCON_RIGHT:
+					return joycon_horizontal_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				default:
+					return default_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+			}
+
+		case JoyButton::TOUCHPAD:
+			switch (p_model) {
+				case JoyModel::PS4:
+				case JoyModel::PS5:
+					return "Touchpad";
+
+				default:
+					return "";
+			}
+
+		default:
+			return "";
+	}
+}
+
+bool Input::has_joy_axis(int p_device, JoyAxis p_axis) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->has_joy_axis(p_axis);
+}
+
+bool Input::has_joy_button(int p_device, JoyButton p_button) const {
+	const Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+	return joypad->features->has_joy_button(p_button);
 }
 
 void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
@@ -1066,6 +1529,51 @@ void Input::set_gyroscope(const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
 	gyroscope = p_gyroscope;
+}
+
+void Input::set_joy_model(int p_device, JoyModel p_model) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->model = p_model;
+}
+
+void Input::set_joy_device_type(int p_device, JoyDeviceType p_type) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->device_type = p_type;
+}
+
+void Input::set_joy_power_state(int p_device, JoyPowerState p_state) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->power_state = p_state;
+}
+
+void Input::set_joy_battery_percent(int p_device, int p_percent) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || p_percent < -1 || p_percent > 100) {
+		return;
+	}
+	joypad->battery_percent = p_percent;
+}
+
+void Input::set_joy_connection_state(int p_device, JoyConnectionState p_state) {
+	_THREAD_SAFE_METHOD_
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr) {
+		return;
+	}
+	joypad->connection_state = p_state;
 }
 
 void Input::set_mouse_position(const Point2 &p_posf) {

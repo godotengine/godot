@@ -117,6 +117,30 @@
 				Returns the current value of the joypad axis at index [param axis].
 			</description>
 		</method>
+		<method name="get_joy_battery_percent" qualifiers="const" experimental="">
+			<return type="int" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the battery percentage of the requested joypad, if available.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="get_joy_connection_state" qualifiers="const" experimental="">
+			<return type="int" enum="JoyConnectionState" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's connection state (i.e. if it's wired or wireless).
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="get_joy_device_type" qualifiers="const" experimental="">
+			<return type="int" enum="JoyDeviceType" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's device type (i.e. if it's a gamepad, a racing wheel controller, a dance pad, etc.).
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="device" type="int" />
@@ -140,11 +164,47 @@
 				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
 			</description>
 		</method>
+		<method name="get_joy_model" qualifiers="const" experimental="">
+			<return type="int" enum="JoyModel" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's model type (i.e. if it's an Xbox 360 controller, a Dualshock 4, a Nintendo Switch Pro Controller, etc.).
+				[b]Note:[/b] The returned value may change for joypads if their specific models were previously missing and in the future more specific models for them are added.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
 		<method name="get_joy_name">
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names.
+			</description>
+		</method>
+		<method name="get_joy_power_state" qualifiers="const" experimental="">
+			<return type="int" enum="JoyPowerState" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's power state (i.e. if it's currently charging, being used on battery, etc.).
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="get_joy_scheme" qualifiers="const" experimental="">
+			<return type="int" enum="JoyScheme" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's scheme layout (i.e. if it's an Xbox controller, a PlayStation controller, a Nintendo controller, etc.).
+				This method is usually used to determine the face buttons' layout.
+				[b]Note:[/b] The returned value may change for joypads if their specific models were previously missing and in the future more specific models for them are added.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="get_joy_scheme_model" qualifiers="const" experimental="">
+			<return type="int" enum="JoyScheme" />
+			<param index="0" name="model" type="int" enum="JoyModel"/>
+			<description>
+				Returns the joypad model's scheme layout (i.e. if it's an Xbox controller, a PlayStation controller, a Nintendo controller, etc.).
+				This method is usually used to determine the face buttons' layout.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="get_joy_vibration_duration">
@@ -198,6 +258,24 @@
 				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
 				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
 				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
+			</description>
+		</method>
+		<method name="has_joy_axis" qualifiers="const" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<description>
+				Returns [code]true[/code] if the specified axis is present on the joypad.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
+			</description>
+		</method>
+		<method name="has_joy_button" qualifiers="const" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="button" type="int" enum="JoyButton" />
+			<description>
+				Returns [code]true[/code] if the specified button is present on the joypad.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="has_joy_light" qualifiers="const">
