@@ -2109,6 +2109,9 @@ SceneTree::SceneTree() {
 	bool snap_2d_vertices = GLOBAL_DEF("rendering/2d/snap/snap_2d_vertices_to_pixel", false);
 	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
 
+	const bool measure_render_time = GLOBAL_DEF("rendering/viewport/measure_render_time", false);
+	RS::get_singleton()->viewport_set_measure_render_time(root->get_viewport_rid(), measure_render_time);
+
 	// We setup VRS for the main viewport here, in the editor this will have little effect.
 	const int vrs_mode = GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/vrs/mode", PROPERTY_HINT_ENUM, String::utf8("Disabled,Texture,XR")), 0);
 	root->set_vrs_mode(Viewport::VRSMode(vrs_mode));

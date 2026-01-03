@@ -3478,6 +3478,11 @@
 			Practically speaking, this means that the end result of the Viewport will not be clamped to the [code]0-1[/code] range and can be used in 3D rendering without color encoding adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
+		<member name="rendering/viewport/measure_render_time" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables CPU/GPU render time measurements on the root viewport using [method RenderingServer.viewport_get_measured_render_time_cpu] and [method RenderingServer.viewport_get_measured_render_time_gpu]. Internally, this calls [method RenderingServer.viewport_set_measure_render_time] with the root viewport's RID as an argument (obtained using [method Viewport.get_viewport_rid]).
+			[b]Note:[/b] Only enable [member rendering/viewport/measure_render_time] if you actually need to query render time, as it has a performance overhead even if the value is never queried. If you only display measurements in a debug menu, consider using [method RenderingServer.viewport_set_measure_render_time] to toggle this value at run-time on the root viewport while leaving [member rendering/viewport/measure_render_time] to [code]false[/code].
+			[b]Note:[/b] This property is only read when the project starts. To toggle render time measurements at runtime, use [method RenderingServer.viewport_set_measure_render_time] on the root [Viewport].
+		</member>
 		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/size/transparent] and [member display/window/per_pixel_transparency/allowed].
 		</member>
