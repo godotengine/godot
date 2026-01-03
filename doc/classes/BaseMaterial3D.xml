@@ -80,6 +80,7 @@
 		</member>
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
+			[b]Note:[/b] [member alpha_hash_scale] has no effect when using the Compatibility renderer, as it does not support alpha hash transparency.
 		</member>
 		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" keywords="alpha_test_threshold">
 			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold].
@@ -589,6 +590,7 @@
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
 			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering.
+			[b]Note:[/b] Only supported on the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4" enum="Transparency">
 			The material will use the texture's alpha value for transparency, but will discard fragments with an alpha of less than 0.99 during the depth prepass and fragments with an alpha less than 0.1 during the shadow pass. This also supports casting shadows.
@@ -666,13 +668,15 @@
 			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
-			Disables Alpha AntiAliasing for the material.
+			Disables alpha antialiasing for the material.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE" value="1" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask.
+			Enables MSAA alpha to coverage. Alpha values in the material are passed to the antialiasing sample mask. Requires [member Viewport.msaa_3d] to be set to [constant Viewport.MSAA_2X] or greater to have a noticeable effect.
+			[b]Note:[/b] Due to OpenGL ES limitations, alpha antialiasing is only supported in the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE" value="2" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
+			Enables MSAA alpha to coverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the antialiasing sample mask. Requires [member Viewport.msaa_3d] to be set to [constant Viewport.MSAA_2X] or greater to have a noticeable effect.
+			[b]Note:[/b] Due to OpenGL ES limitations, alpha antialiasing is only supported in the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
 			Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
