@@ -1571,7 +1571,7 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 			DataType na = p_op->arguments[0]->get_datatype();
 			DataType nb = p_op->arguments[1]->get_datatype();
 			valid = na == nb;
-			ret_type = TYPE_BOOL;
+			ret_type = na;
 		} break;
 		case OP_LESS:
 		case OP_LESS_EQUAL:
