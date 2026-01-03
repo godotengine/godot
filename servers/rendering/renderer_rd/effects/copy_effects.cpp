@@ -43,7 +43,7 @@ CopyEffects *CopyEffects::get_singleton() {
 	return singleton;
 }
 
-CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
+CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects, bool p_prefers_rgb10_a2) {
 	singleton = this;
 	raster_effects = p_raster_effects;
 
@@ -164,6 +164,7 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 		cube_to_octmap.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled());
 	}
 
+	String octmap_format_defines = p_prefers_rgb10_a2 ? "\n#define OCTMAP_FORMAT rgb10_a2\n" : "\n#define OCTMAP_FORMAT rgba16f\n";
 	{
 		// Initialize octmap downsampler.
 		if (raster_effects.has_flag(RASTER_EFFECT_OCTMAP)) {
@@ -173,7 +174,7 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 				octmap_downsampler.raster_pipelines[i].setup(octmap_downsampler.raster_shader.version_get_shader(octmap_downsampler.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 			}
 		} else {
-			octmap_downsampler.compute_shader.initialize({ "", "\n#define USE_HIGH_QUALITY\n" });
+			octmap_downsampler.compute_shader.initialize({ "", "\n#define USE_HIGH_QUALITY\n" }, octmap_format_defines);
 			octmap_downsampler.shader_version = octmap_downsampler.compute_shader.version_create();
 			for (int i = 0; i < DOWNSAMPLER_MODE_MAX; i++) {
 				octmap_downsampler.compute_pipelines[i].create_compute_pipeline(octmap_downsampler.compute_shader.version_get_shader(octmap_downsampler.shader_version, i));
@@ -226,7 +227,7 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 			}
 			filter.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.raster_shader.version_get_shader(filter.shader_version, filter.use_high_quality ? 0 : 1), 1);
 		} else {
-			filter.compute_shader.initialize(cubemap_filter_modes);
+			filter.compute_shader.initialize(cubemap_filter_modes, octmap_format_defines);
 			filter.shader_version = filter.compute_shader.version_create();
 
 			for (int i = 0; i < FILTER_MODE_MAX; i++) {
@@ -259,7 +260,7 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 			roughness.raster_pipeline.setup(roughness.raster_shader.version_get_shader(roughness.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 
 		} else {
-			roughness.compute_shader.initialize(cubemap_roughness_modes);
+			roughness.compute_shader.initialize(cubemap_roughness_modes, octmap_format_defines);
 
 			roughness.shader_version = roughness.compute_shader.version_create();
 

@@ -1746,8 +1746,10 @@ void RendererSceneRenderRD::init() {
 		}
 	}
 
+	bool prefers_rgb10_a2 = (_render_buffers_get_preferred_color_format() == RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32);
+
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
-	copy_effects = memnew(RendererRD::CopyEffects(raster_effects));
+	copy_effects = memnew(RendererRD::CopyEffects(raster_effects, prefers_rgb10_a2));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
 	smaa = memnew(RendererRD::SMAA);

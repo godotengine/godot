@@ -32,7 +32,7 @@ layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) i
 
 layout(set = 0, binding = 0) uniform sampler2D source_octmap;
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_octmap;
+layout(OCTMAP_FORMAT, set = 1, binding = 0) uniform restrict writeonly image2D dest_octmap;
 
 layout(push_constant, std430) uniform Params {
 	float border_size;
