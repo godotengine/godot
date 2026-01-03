@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
-			The sphere's radius in 3D units.
+			The sphere's radius in meters.
 		</member>
 	</members>
 </class>

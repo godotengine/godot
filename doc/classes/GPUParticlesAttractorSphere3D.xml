@@ -12,7 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
-			The attractor sphere's radius in 3D units.
+			The attractor sphere's radius in meters.
 			[b]Note:[/b] Stretched ellipses can be obtained by using non-uniform scaling on the [GPUParticlesAttractorSphere3D] node.
 		</member>
 	</members>

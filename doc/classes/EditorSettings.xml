@@ -381,7 +381,7 @@
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
 		<member name="editors/3d/freelook/freelook_base_speed" type="float" setter="" getter="">
-			The base 3D freelook speed in units per second. This can be adjusted by using the mouse wheel while in freelook mode, or by holding down the "fast" or "slow" modifier keys ([kbd]Shift[/kbd] and [kbd]Alt[/kbd] by default, respectively).
+			The base 3D freelook speed in meters per second. This can be adjusted by using the mouse wheel while in freelook mode, or by holding down the "fast" or "slow" modifier keys ([kbd]Shift[/kbd] and [kbd]Alt[/kbd] by default, respectively).
 		</member>
 		<member name="editors/3d/freelook/freelook_inertia" type="float" setter="" getter="">
 			The inertia of the 3D freelook camera. Higher values make the camera start and stop slower, which looks smoother but adds latency.
@@ -635,7 +635,7 @@
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
 		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
-			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
+			The maximum distance from the camera at which items can be placed on a GridMap, in meters.
 		</member>
 		<member name="editors/grid_map/preview_size" type="int" setter="" getter="">
 			Texture size of mesh previews generated for GridMap's MeshLibrary.

@@ -227,7 +227,7 @@
 			[b]Note:[/b] This property is linked to [member sdfgi_min_cell_size] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
 		</member>
 		<member name="sdfgi_min_cell_size" type="float" setter="set_sdfgi_min_cell_size" getter="get_sdfgi_min_cell_size" default="0.2">
-			The cell size to use for the closest SDFGI cascade (in 3D units). Lower values allow SDFGI to be more precise up close, at the cost of making SDFGI updates more demanding. This can cause stuttering when the camera moves fast. Higher values allow SDFGI to cover more ground, while also reducing the performance impact of SDFGI updates.
+			The cell size to use for the closest SDFGI cascade, in meters. Lower values allow SDFGI to be more precise up close, at the cost of making SDFGI updates more demanding. This can cause stuttering when the camera moves fast. Higher values allow SDFGI to cover more ground, while also reducing the performance impact of SDFGI updates.
 			[b]Note:[/b] This property is linked to [member sdfgi_max_distance] and [member sdfgi_cascade0_distance]. Changing its value will automatically change those properties as well.
 		</member>
 		<member name="sdfgi_normal_bias" type="float" setter="set_sdfgi_normal_bias" getter="get_sdfgi_normal_bias" default="1.1">
