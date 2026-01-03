@@ -81,6 +81,12 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	enum EmissionSources {
+		SURFACE_POINTS,
+		SURFACE_POINTS_AND_NORMAL,
+		VOLUME
+	};
+
 private:
 	bool emitting = false;
 	bool active = false;
@@ -145,6 +151,7 @@ private:
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
+	NodePath node_selected;
 	uint32_t seed = 0;
 	bool use_fixed_seed = false;
 
@@ -205,9 +212,14 @@ private:
 	void _set_redraw(bool p_redraw);
 
 protected:
+	Vector<Face3> geometry;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+
+	bool _generate(Vector<Vector3> &points, Vector<Vector3> &p_normals, int &p_emission_amount, int &p_emission_source);
+	void set_node_selected(const NodePath &p_path);
 
 #ifndef DISABLE_DEPRECATED
 	void _restart_bind_compat_92089();
@@ -330,6 +342,8 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void generate_emission_points(const NodePath &p_path, int p_emission_amount, int p_emission_source);
+
 	void restart(bool p_keep_seed = false);
 
 	void convert_from_particles(Node *p_particles);
@@ -344,3 +358,4 @@ VARIANT_ENUM_CAST(CPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles3D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles3D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles3D::EmissionShape)
+VARIANT_ENUM_CAST(CPUParticles3D::EmissionSources)
