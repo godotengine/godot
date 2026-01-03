@@ -482,6 +482,7 @@ class EditorInspectorSection : public Container {
 		Color font_hover_color;
 		Color font_pressed_color;
 		Color font_hover_pressed_color;
+		Color font_hover_mono_color;
 
 		Ref<Font> font;
 		int font_size = 0;
