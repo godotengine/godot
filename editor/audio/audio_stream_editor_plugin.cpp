@@ -113,6 +113,10 @@ void AudioStreamEditor::_stream_changed() {
 	if (!is_visible()) {
 		return;
 	}
+	String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
+	_duration_label->set_text(text);
+
+	AudioStreamPreviewGenerator::get_singleton()->update_preview(stream);
 	queue_redraw();
 }
 
