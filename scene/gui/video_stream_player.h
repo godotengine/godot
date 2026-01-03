@@ -70,6 +70,20 @@ class VideoStreamPlayer : public Control {
 	static int _audio_mix_callback(void *p_udata, const float *p_data, int p_frames);
 	static void _mix_audios(void *p_self);
 
+public:
+	enum UpdateMode {
+		UPDATE_DISABLED,
+		UPDATE_WHEN_VISIBLE,
+		UPDATE_ALWAYS
+	};
+
+private:
+	UpdateMode update_mode = UPDATE_WHEN_VISIBLE;
+
+	bool on_screen = false;
+	void _visibility_enter();
+	void _visibility_exit();
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
@@ -121,5 +135,10 @@ public:
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 
+	void set_update_mode(UpdateMode p_mode);
+	UpdateMode get_update_mode() const;
+
 	~VideoStreamPlayer();
 };
+
+VARIANT_ENUM_CAST(VideoStreamPlayer::UpdateMode);
