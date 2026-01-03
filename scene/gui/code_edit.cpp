@@ -1331,8 +1331,45 @@ String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) c
 	return String();
 }
 
+/* Code Actions */
+void CodeEdit::apply_text_edit(const ScriptLanguage::TextEditOperation &p_edit) {
+	begin_complex_operation();
+	select(p_edit.start_line - 1, p_edit.start_col - 1, p_edit.end_line - 1, p_edit.end_col - 1);
+	insert_text_at_caret(p_edit.new_text);
+	end_complex_operation();
+}
+
+void CodeEdit::apply_code_action(const ScriptLanguage::CodeActionOperation &p_code_action) {
+	for (const ScriptLanguage::TextEditOperation &edit : p_code_action.edits) {
+		apply_text_edit(edit);
+	}
+}
+
+void CodeEdit::clear_code_actions() {
+	code_action_groups.clear();
+}
+
+void CodeEdit::add_code_action_group(int p_line, const ScriptLanguage::CodeActionGroup &p_code_actions) {
+	if (!code_action_groups.has(p_line)) {
+		code_action_groups.insert(p_line, { p_code_actions });
+	} else {
+		code_action_groups.get(p_line).append(p_code_actions);
+	}
+}
+
+void CodeEdit::_on_code_action_id_pressed(int p_id) {
+	// While this vector could be pre-calculated, there should not be enough
+	// code actions loaded at a time that this would be any kind of bottleneck.
+	Vector<ScriptLanguage::CodeActionOperation> all_ops;
+	for (const ScriptLanguage::CodeActionGroup &g : code_action_groups.get(current_code_action_line)) {
+		all_ops.append_array(g.actions);
+	}
+	apply_code_action(all_ops[p_id]);
+}
+
 /* Main Gutter */
 void CodeEdit::_update_draw_main_gutter() {
+	set_gutter_draw(code_action_gutter, true);
 	set_gutter_draw(main_gutter, draw_breakpoints || draw_bookmarks || draw_executing_lines);
 }
 
@@ -1508,6 +1545,57 @@ PackedInt32Array CodeEdit::get_executing_lines() const {
 		}
 	}
 	return ret;
+}
+
+/* Code Actions */
+void CodeEdit::set_draw_code_actions(bool p_draw) {
+	set_gutter_draw(code_action_gutter, p_draw);
+}
+
+bool CodeEdit::is_draw_code_actions_enabled() const {
+	return is_gutter_drawn(code_action_gutter);
+}
+
+void CodeEdit::show_code_actions(int p_line) {
+	code_action_popup->clear();
+	current_code_action_line = p_line;
+
+	int action_index = 0;
+	for (const ScriptLanguage::CodeActionGroup &action_group : code_action_groups.get(current_code_action_line)) {
+		code_action_popup->add_separator(action_group.title, 0);
+		for (const ScriptLanguage::CodeActionOperation &action : action_group.actions) {
+			code_action_popup->add_item(action.description, action_index);
+			action_index++;
+		}
+	}
+
+	if (action_index == 0) {
+		return;
+	}
+
+	code_action_popup->set_position(get_global_mouse_position() + Vector2(0, 20));
+	code_action_popup->popup();
+}
+
+void CodeEdit::_code_action_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	RID ci = get_text_canvas_item();
+	bool hovering = get_hovered_gutter() == Vector2i(code_action_gutter, p_line);
+	if (theme_cache.code_action_icon.is_valid() && code_action_groups.has(p_line)) {
+		Rect2 icon_region = p_region;
+
+		// Keep icon square and respect the size of the line.
+		icon_region.size.height = icon_region.size.width;
+
+		// Move icon's position to the center of the region.
+		icon_region.position = p_region.position + (p_region.size / 2.0);
+		icon_region.position -= icon_region.size / 2.0;
+
+		Color use_color = theme_cache.code_action_color;
+		if (hovering) {
+			use_color = use_color.lightened(0.3);
+		}
+		theme_cache.code_action_icon->draw_rect(ci, icon_region, false, use_color);
+	}
 }
 
 /* Line numbers */
@@ -2838,6 +2926,10 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_executing_lines"), &CodeEdit::clear_executing_lines);
 	ClassDB::bind_method(D_METHOD("get_executing_lines"), &CodeEdit::get_executing_lines);
 
+	/* Code Action Gutter */
+	ClassDB::bind_method(D_METHOD("set_draw_code_actions", "enable"), &CodeEdit::set_draw_code_actions);
+	ClassDB::bind_method(D_METHOD("is_draw_code_actions_enabled"), &CodeEdit::is_draw_code_actions_enabled);
+
 	/* Line numbers */
 	ClassDB::bind_method(D_METHOD("set_draw_line_numbers", "enable"), &CodeEdit::set_draw_line_numbers);
 	ClassDB::bind_method(D_METHOD("is_draw_line_numbers_enabled"), &CodeEdit::is_draw_line_numbers_enabled);
@@ -2987,6 +3079,8 @@ void CodeEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_executing_lines"), "set_draw_executing_lines_gutter", "is_drawing_executing_lines_gutter");
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_code_actions"), "set_draw_code_actions", "is_draw_code_actions_enabled");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_draw_line_numbers"), "set_draw_line_numbers", "is_draw_line_numbers_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gutters_zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gutters_line_numbers_min_digits", PROPERTY_HINT_RANGE, "1,5,1"), "set_line_numbers_min_digits", "get_line_numbers_min_digits");
@@ -3045,6 +3139,9 @@ void CodeEdit::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, executing_line_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, executing_line_icon, "executing_line");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, code_action_color);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, CodeEdit, code_action_icon, "code_action");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_number_color);
 
@@ -3144,6 +3241,11 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 		return;
 	}
 
+	if (p_gutter == code_action_gutter) {
+		show_code_actions(p_line);
+		return;
+	}
+
 	if (p_gutter == line_number_gutter) {
 		remove_secondary_carets();
 		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE);
@@ -3169,6 +3271,11 @@ void CodeEdit::_update_gutter_indexes() {
 	for (int i = 0; i < get_gutter_count(); i++) {
 		if (get_gutter_name(i) == "main_gutter") {
 			main_gutter = i;
+			continue;
+		}
+
+		if (get_gutter_name(i) == "code_actions") {
+			code_action_gutter = i;
 			continue;
 		}
 
@@ -3938,6 +4045,15 @@ CodeEdit::CodeEdit() {
 	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_main_gutter_draw_callback));
 	gutter_idx++;
 
+	/* Code Action Gutter */
+	add_gutter();
+	set_gutter_name(gutter_idx, "code_actions");
+	set_gutter_draw(gutter_idx, false);
+	set_gutter_overwritable(gutter_idx, true);
+	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
+	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_code_action_gutter_draw_callback));
+	gutter_idx++;
+
 	/* Line numbers */
 	add_gutter();
 	set_gutter_name(gutter_idx, "line_numbers");
@@ -3972,6 +4088,11 @@ CodeEdit::CodeEdit() {
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	connect("gutter_removed", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	_update_gutter_indexes();
+
+	// Popup for Code Actions
+	code_action_popup = memnew(PopupMenu);
+	code_action_popup->connect("id_pressed", callable_mp(this, &CodeEdit::_on_code_action_id_pressed));
+	add_child(code_action_popup);
 }
 
 CodeEdit::~CodeEdit() {

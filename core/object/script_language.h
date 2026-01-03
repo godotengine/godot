@@ -220,12 +220,32 @@ public:
 	virtual String get_extension() const = 0;
 	virtual void finish() = 0;
 
+	/* CODE ACTIONS */
+	struct TextEditOperation {
+		int start_line;
+		int start_col;
+		int end_line;
+		int end_col;
+		String new_text;
+	};
+
+	struct CodeActionOperation {
+		String description;
+		Vector<TextEditOperation> edits;
+	};
+
+	struct CodeActionGroup {
+		String title;
+		Vector<CodeActionOperation> actions;
+	};
+
 	/* EDITOR FUNCTIONS */
 	struct Warning {
 		int start_line = -1, end_line = -1;
 		int code;
 		String string_code;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	struct ScriptError {
@@ -233,6 +253,7 @@ public:
 		int line = -1;
 		int column = -1;
 		String message;
+		CodeActionGroup code_actions;
 	};
 
 	enum TemplateLocation {

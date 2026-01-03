@@ -231,20 +231,20 @@ void GDScriptParser::clear() {
 	*this = GDScriptParser();
 }
 
-void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
+void GDScriptParser::push_error(const String &p_message, const Node *p_origin, const ScriptLanguage::CodeActionGroup &p_code_actions) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
 	// TODO: Improve positional information.
 	if (p_origin == nullptr) {
-		errors.push_back({ p_message, previous.start_line, previous.start_column });
+		errors.push_back({ p_message, previous.start_line, previous.start_column, p_code_actions });
 	} else {
-		errors.push_back({ p_message, p_origin->start_line, p_origin->start_column });
+		errors.push_back({ p_message, p_origin->start_line, p_origin->start_column, p_code_actions });
 	}
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions) {
 	ERR_FAIL_NULL(p_source);
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
@@ -257,11 +257,17 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
+	ScriptLanguage::CodeActionGroup action_group;
+	action_group.title = GDScriptWarning::get_name_from_code(p_code);
+	action_group.actions.append_array(p_code_actions);
+	action_group.actions.append(GDScriptWarning::get_ignore_code_action_from_code(p_source->start_line, p_code));
+
 	PendingWarning pw;
 	pw.source = p_source;
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
+	pw.code_actions = action_group;
 
 	pending_warnings.push_back(pw);
 }
@@ -280,9 +286,10 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.symbols = pw.symbols;
 		warning.start_line = pw.source->start_line;
 		warning.end_line = pw.source->end_line;
+		warning.code_actions = pw.code_actions;
 
 		if (pw.treated_as_error) {
-			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source);
+			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.source, warning.code_actions);
 			continue;
 		}
 
@@ -2139,7 +2146,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						break;
 					case Node::PRELOAD:
 						// `preload` is a function-like keyword.
-						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, {}, "preload");
 						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
@@ -2148,7 +2155,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::LITERAL:
 						// Allow strings as multiline comments.
 						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
-							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION, {});
 						}
 						break;
 					case Node::TERNARY_OPERATOR:
@@ -2206,7 +2213,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, {}, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
 		} else {
 			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
@@ -2792,7 +2799,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier->name.operator String());
 	}
 #endif
 	return identifier;
@@ -3638,7 +3645,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 #ifdef DEBUG_ENABLED
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
-				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
+				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier);
 			}
 #endif
 			get_node->full_path += identifier;

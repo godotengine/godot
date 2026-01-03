@@ -769,6 +769,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/guidelines/line_length_guideline_hard_column", 100, "20,160,1")
 
 	// Appearance: Gutters
+	_initial_set("text_editor/appearance/gutters/show_code_actions", true, true);
 	_initial_set("text_editor/appearance/gutters/show_line_numbers", true, true);
 	_initial_set("text_editor/appearance/gutters/line_numbers_zero_padded", false, true);
 	_initial_set("text_editor/appearance/gutters/highlight_type_safe_lines", true, true);
@@ -1765,6 +1766,7 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/bookmark_color"] = Color(0.08, 0.49, 0.98);
 	colors["text_editor/theme/highlighting/breakpoint_color"] = Color(0.9, 0.29, 0.3);
 	colors["text_editor/theme/highlighting/executing_line_color"] = Color(0.98, 0.89, 0.27);
+	colors["text_editor/theme/highlighting/code_action_color"] = Color(0.98, 0.89, 0.27);
 	colors["text_editor/theme/highlighting/code_folding_color"] = Color(0.8, 0.8, 0.8, 0.8);
 	colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);
 	colors["text_editor/theme/highlighting/search_result_color"] = Color(0.05, 0.25, 0.05, 1);

@@ -900,6 +900,7 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
+	code_editor->clear_code_actions();
 	_update_warnings();
 	_update_errors();
 	_update_background_color();
@@ -940,6 +941,11 @@ void ScriptTextEditor::_update_warnings() {
 		}
 	}
 
+	for (const ScriptLanguage::Warning &warning : warnings) {
+		if (warning.code_actions.actions.size() > 0) {
+			code_editor->add_code_action_group(warning.start_line - 1, warning.code_actions);
+		}
+	}
 	code_editor->set_warning_count(warning_nb);
 
 	if (has_connections_table) {
@@ -999,6 +1005,10 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_text(err.message);
 		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
+
+		if (err.code_actions.actions.size() > 0) {
+			code_editor->add_code_action_group(err.line - 1, err.code_actions);
+		}
 	}
 	errors_panel->pop(); // Table
 
@@ -1032,6 +1042,10 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->push_cell();
 			errors_panel->add_text(err.message);
 			errors_panel->pop(); // Cell.
+
+			if (err.code_actions.actions.size() > 0) {
+				code_editor->add_code_action_group(err.line - 1, err.code_actions);
+			}
 		}
 		errors_panel->pop(); // Table
 		errors_panel->pop(); // Indent.
@@ -2113,6 +2127,7 @@ void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready() && is_visible_in_tree()) {
+				code_editor->clear_code_actions();
 				_update_errors();
 				_update_warnings();
 			}
@@ -2123,6 +2138,7 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
+				code_editor->clear_code_actions();
 				_update_warnings();
 				_update_errors();
 				_update_background_color();

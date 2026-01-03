@@ -160,6 +160,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			w.code = (int)warn.code;
 			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
 			w.message = warn.get_message();
+			w.code_actions = warn.code_actions;
 			r_warnings->push_back(w);
 		}
 	}
@@ -172,6 +173,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 				e.line = pe.line;
 				e.column = pe.column;
 				e.message = pe.message;
+				e.code_actions = pe.code_actions;
 				r_errors->push_back(e);
 			}
 
@@ -183,6 +185,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 					e.line = pe.line;
 					e.column = pe.column;
 					e.message = pe.message;
+					e.code_actions = pe.code_actions;
 					r_errors->push_back(e);
 				}
 			}
