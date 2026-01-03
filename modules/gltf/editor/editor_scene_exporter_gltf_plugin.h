@@ -30,14 +30,13 @@
 
 #pragma once
 
-#include "../gltf_document.h"
-#include "editor_scene_exporter_gltf_settings.h"
-
 #include "editor/plugins/editor_plugin.h"
 
 class ConfirmationDialog;
 class EditorFileDialog;
 class EditorInspector;
+class GLTFDocument;
+class EditorSceneExporterGLTFSettings;
 
 class SceneExporterGLTFPlugin : public EditorPlugin {
 	GDCLASS(SceneExporterGLTFPlugin, EditorPlugin);
@@ -55,7 +54,5 @@ class SceneExporterGLTFPlugin : public EditorPlugin {
 	void _export_scene_as_gltf();
 
 public:
-	virtual String get_plugin_name() const override;
-	bool has_main_screen() const override;
 	SceneExporterGLTFPlugin();
 };
