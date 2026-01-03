@@ -108,20 +108,8 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 		} break;
 
 		case SHAPE_TYPE_BOUNDING_BOX: {
-			const Ref<BoxMesh> box_mesh = p_mesh;
-			if (box_mesh.is_valid()) {
-				Ref<BoxShape3D> box_shape;
-				box_shape.instantiate();
-				box_shape->set_size(box_mesh->get_size().maxf(0.001));
-				shapes.push_back(box_shape);
-			} else {
-				Ref<BoxShape3D> box_shape;
-				box_shape.instantiate();
-				AABB mesh_aabb = p_mesh->get_aabb();
-				box_shape->set_size(mesh_aabb.get_size().maxf(0.001));
-				shapes.push_back(box_shape);
-				shape_offset_transform.origin = mesh_aabb.get_center();
-			}
+			Ref<BoxShape3D> box_shape = create_box_shape(p_mesh, shape_offset_transform);
+			shapes.push_back(box_shape);
 
 			if (p_verbose && shapes.is_empty()) {
 				err_dialog->set_text(TTR("Couldn't create a bounding box shape."));
@@ -130,35 +118,8 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 		} break;
 
 		case SHAPE_TYPE_CAPSULE: {
-			const Ref<CapsuleMesh> capsule_mesh = p_mesh;
-			if (capsule_mesh.is_valid()) {
-				Ref<CapsuleShape3D> capsule_shape;
-				capsule_shape.instantiate();
-				capsule_shape->set_height(capsule_mesh->get_height());
-				capsule_shape->set_radius(MAX(capsule_mesh->get_radius(), 0.001));
-				shapes.push_back(capsule_shape);
-			} else {
-				// Use AABB to estimate shape.
-				Ref<CapsuleShape3D> capsule_shape;
-				capsule_shape.instantiate();
-				AABB mesh_aabb = p_mesh->get_aabb();
-				int axis = shape_axis->get_selected_id();
-				if (axis == (int)SHAPE_AXIS_LONGEST) {
-					axis = mesh_aabb.get_longest_axis_index();
-				}
-				int perpendicular_axis = axis == 0 ? 1 : 0;
-
-				capsule_shape->set_height(mesh_aabb.get_size()[axis]);
-				capsule_shape->set_radius(MAX(mesh_aabb.get_size()[perpendicular_axis] / 2.0, 0.001));
-				shapes.push_back(capsule_shape);
-
-				shape_offset_transform.origin = mesh_aabb.get_center();
-				if (axis == Vector3::AXIS_X) {
-					shape_offset_transform.rotate_basis(Vector3(0, 0, 1), Math::PI / 2.0);
-				} else if (axis == Vector3::AXIS_Z) {
-					shape_offset_transform.rotate_basis(Vector3(1, 0, 0), -Math::PI / 2.0);
-				}
-			}
+			Ref<CapsuleShape3D> capsule = create_capsule_shape(p_mesh, shape_offset_transform, static_cast<ShapeAxis>(shape_axis->get_selected_id()));
+			shapes.push_back(capsule);
 
 			if (p_verbose && shapes.is_empty()) {
 				err_dialog->set_text(TTR("Couldn't create a capsule shape."));
@@ -167,35 +128,8 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 		} break;
 
 		case SHAPE_TYPE_CYLINDER: {
-			const Ref<CylinderMesh> cylinder_mesh = p_mesh;
-			if (cylinder_mesh.is_valid()) {
-				Ref<CylinderShape3D> cylinder_shape;
-				cylinder_shape.instantiate();
-				cylinder_shape->set_height(MAX(cylinder_mesh->get_height(), 0.001));
-				cylinder_shape->set_radius((cylinder_mesh->get_top_radius() + cylinder_mesh->get_bottom_radius()) / 2.0);
-				shapes.push_back(cylinder_shape);
-			} else {
-				// Use AABB to estimate shape.
-				Ref<CylinderShape3D> cylinder_shape;
-				cylinder_shape.instantiate();
-				AABB mesh_aabb = p_mesh->get_aabb();
-				int axis = shape_axis->get_selected_id();
-				if (axis == (int)SHAPE_AXIS_LONGEST) {
-					axis = mesh_aabb.get_longest_axis_index();
-				}
-				int perpendicular_axis = axis == 0 ? 1 : 0;
-
-				cylinder_shape->set_height(MAX(mesh_aabb.get_size()[axis], 0.001));
-				cylinder_shape->set_radius(mesh_aabb.get_size()[perpendicular_axis] / 2.0);
-				shapes.push_back(cylinder_shape);
-
-				shape_offset_transform.origin = mesh_aabb.get_center();
-				if (axis == Vector3::AXIS_X) {
-					shape_offset_transform.rotate_basis(Vector3(0, 0, 1), Math::PI / 2.0);
-				} else if (axis == Vector3::AXIS_Z) {
-					shape_offset_transform.rotate_basis(Vector3(1, 0, 0), -Math::PI / 2.0);
-				}
-			}
+			Ref<CylinderShape3D> cylinder = create_cylinder_shape(p_mesh, shape_offset_transform, static_cast<ShapeAxis>(shape_axis->get_selected_id()));
+			shapes.push_back(cylinder);
 
 			if (p_verbose && shapes.is_empty()) {
 				err_dialog->set_text(TTR("Couldn't create a cylinder shape."));
@@ -204,21 +138,8 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 		} break;
 
 		case SHAPE_TYPE_SPHERE: {
-			const Ref<SphereMesh> sphere_mesh = p_mesh;
-			if (sphere_mesh.is_valid()) {
-				Ref<SphereShape3D> sphere_shape;
-				sphere_shape.instantiate();
-				sphere_shape->set_radius(MAX(sphere_mesh->get_radius(), 0.001));
-				shapes.push_back(sphere_shape);
-			} else {
-				// Use AABB to estimate shape.
-				Ref<SphereShape3D> sphere_shape;
-				sphere_shape.instantiate();
-				AABB mesh_aabb = p_mesh->get_aabb();
-				sphere_shape->set_radius(MAX(mesh_aabb.get_size()[mesh_aabb.get_size().max_axis_index()] / 2.0, 0.001));
-				shapes.push_back(sphere_shape);
-				shape_offset_transform.origin = mesh_aabb.get_center();
-			}
+			const Ref<SphereShape3D> sphere = create_sphere_shape(p_mesh, shape_offset_transform);
+			shapes.push_back(sphere);
 
 			if (p_verbose && shapes.is_empty()) {
 				err_dialog->set_text(TTR("Couldn't create a sphere shape."));
@@ -271,6 +192,94 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 			break;
 	}
 	return shapes;
+}
+
+Ref<CylinderShape3D> MeshInstance3DEditor::create_cylinder_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform, ShapeAxis p_axis) {
+	const Ref<CylinderMesh> cylinder_mesh = p_mesh;
+	Ref<CylinderShape3D> cylinder_shape;
+	cylinder_shape.instantiate();
+	if (cylinder_mesh.is_valid()) {
+		cylinder_shape->set_height(MAX(cylinder_mesh->get_height(), 0.001));
+		cylinder_shape->set_radius((cylinder_mesh->get_top_radius() + cylinder_mesh->get_bottom_radius()) / 2.0);
+	} else {
+		// Use AABB to estimate shape.
+		AABB mesh_aabb = p_mesh->get_aabb();
+		int axis = p_axis;
+		if (axis == (int)SHAPE_AXIS_LONGEST) {
+			axis = mesh_aabb.get_longest_axis_index();
+		}
+		int perpendicular_axis = axis == 0 ? 1 : 0;
+
+		cylinder_shape->set_height(MAX(mesh_aabb.get_size()[axis], 0.001));
+		cylinder_shape->set_radius(mesh_aabb.get_size()[perpendicular_axis] / 2.0);
+
+		r_transform.set_origin(mesh_aabb.get_center());
+		if (axis == Vector3::AXIS_X) {
+			r_transform.rotate_basis(Vector3(0, 0, 1), Math::PI / 2.0);
+		} else if (axis == Vector3::AXIS_Z) {
+			r_transform.rotate_basis(Vector3(1, 0, 0), -Math::PI / 2.0);
+		}
+	}
+	return cylinder_shape;
+}
+
+Ref<SphereShape3D> MeshInstance3DEditor::create_sphere_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform) {
+	const Ref<SphereMesh> sphere_mesh = p_mesh;
+	Ref<SphereShape3D> sphere_shape;
+	sphere_shape.instantiate();
+	if (sphere_mesh.is_valid()) {
+		sphere_shape->set_radius(MAX(sphere_mesh->get_radius(), 0.001));
+	} else {
+		// Use AABB to estimate shape.
+		AABB mesh_aabb = p_mesh->get_aabb();
+		sphere_shape->set_radius(MAX(mesh_aabb.get_size()[mesh_aabb.get_size().max_axis_index()] / 2.0, 0.001));
+		r_transform.set_origin(mesh_aabb.get_center());
+	}
+	return sphere_shape;
+}
+
+Ref<BoxShape3D> MeshInstance3DEditor::create_box_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform) {
+	const Ref<BoxMesh> box_mesh = p_mesh;
+	Ref<BoxShape3D> box_shape;
+	box_shape.instantiate();
+	if (box_mesh.is_valid()) {
+		box_shape->set_size(box_mesh->get_size().maxf(0.001));
+	} else {
+		AABB mesh_aabb = p_mesh->get_aabb();
+		box_shape->set_size(mesh_aabb.get_size().maxf(0.001));
+		r_transform = Transform3D(); // Reset basis
+		r_transform.set_origin(mesh_aabb.get_center());
+	}
+	return box_shape;
+}
+
+Ref<CapsuleShape3D> MeshInstance3DEditor::create_capsule_shape(const Ref<Mesh> &p_mesh, Transform3D &r_transform, ShapeAxis p_axis) {
+	const Ref<CapsuleMesh> capsule_mesh = p_mesh;
+	Ref<CapsuleShape3D> capsule_shape;
+	capsule_shape.instantiate();
+	if (capsule_mesh.is_valid()) {
+		capsule_shape->set_height(capsule_mesh->get_height());
+		capsule_shape->set_radius(MAX(capsule_mesh->get_radius(), 0.001));
+	} else {
+		// Use AABB to estimate shape.
+		AABB mesh_aabb = p_mesh->get_aabb();
+		int axis = p_axis;
+		if (axis == (int)SHAPE_AXIS_LONGEST) {
+			axis = mesh_aabb.get_longest_axis_index();
+		}
+		int perpendicular_axis = axis == 0 ? 1 : 0;
+
+		capsule_shape->set_height(mesh_aabb.get_size()[axis]);
+		capsule_shape->set_radius(MAX(mesh_aabb.get_size()[perpendicular_axis] / 2.0, 0.001));
+
+		r_transform.set_origin(mesh_aabb.get_center());
+		if (axis == Vector3::AXIS_X) {
+			r_transform.rotate_basis(Vector3(0, 0, 1), Math::PI / 2.0);
+		} else if (axis == Vector3::AXIS_Z) {
+			r_transform.rotate_basis(Vector3(1, 0, 0), -Math::PI / 2.0);
+		}
+	}
+	return capsule_shape;
 }
 
 void MeshInstance3DEditor::_shape_dialog_about_to_popup() {
