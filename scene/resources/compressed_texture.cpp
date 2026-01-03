@@ -360,8 +360,6 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			sh = MAX(sh >> 1, 1);
 		}
 
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
-
 		Ref<Image> image;
 		image.instantiate();
 
