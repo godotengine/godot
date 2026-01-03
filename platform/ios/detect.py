@@ -181,3 +181,10 @@ def configure(env: "SConsEnvironment"):
                 "$APPLE_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
             ]
         )
+
+    if env["sdl"]:
+        if env["builtin_sdl"]:
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        else:
+            print_warning("`builtin_sdl` was explicitly disabled. Disabling SDL input driver support.")
+            env["sdl"] = False

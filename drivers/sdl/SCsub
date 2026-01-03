@@ -188,6 +188,26 @@ if env["builtin_sdl"]:
             "timer/windows/SDL_systimer.c",
         ]
 
+    elif env["platform"] in ["ios", "visionos"]:
+        if env["platform"] == "ios":
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_IOS"])
+        else:
+            env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_VISIONOS"])
+
+        thirdparty_sources += [
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/dummy/SDL_syshaptic.c",
+            "joystick/apple/SDL_mfijoystick.m",
+            "thread/pthread/SDL_syscond.c",
+            "thread/pthread/SDL_sysmutex.c",
+            "thread/pthread/SDL_sysrwlock.c",
+            "thread/pthread/SDL_syssem.c",
+            "thread/pthread/SDL_systhread.c",
+            "thread/pthread/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
+        ]
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_thirdparty = env_sdl.Clone()
