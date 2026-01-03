@@ -2774,14 +2774,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
 				glBindTexture(GL_TEXTURE_2D, backbuffer);
 			}
 			if (scene_state.used_depth_texture) {
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
 				glBindTexture(GL_TEXTURE_2D, backbuffer_depth);
 			}
 		}
@@ -3578,6 +3578,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 								material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_TEXTURE_SIZE, light_texture_size, shader->version, instance_variant, spec_constants);
 							}
 
+							// Shadowmasks
 							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SHADOWMASK_MODE, (uint32_t)lm->shadowmask_mode, shader->version, instance_variant, spec_constants);
 
 							if (lm->shadow_texture.is_valid()) {
@@ -3610,6 +3611,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
 						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
 
+						// Base lightmap
 						GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->light_texture);
 						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
 						glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
@@ -3632,6 +3634,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_EXPOSURE_NORMALIZATION, exposure_normalization, shader->version, instance_variant, spec_constants);
 
 						if (lm->uses_spherical_harmonics) {
+							// Directional
+							if (lm->directional_texture.is_valid()) {
+								tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->directional_texture);
+							} else {
+								tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(GLES3::TextureStorage::get_singleton()->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE));
+							}
+
+							glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+							glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+
 							Basis to_lm = li->transform.basis.inverse() * p_render_data->cam_transform.basis;
 							to_lm = to_lm.inverse().transposed();
 							GLfloat matrix[9] = {
@@ -3680,7 +3692,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[0], shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
-						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 9);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[0]));
 					}
 
@@ -3699,7 +3711,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[1], shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
-						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 9);
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 10);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[1]));
 
 						spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
