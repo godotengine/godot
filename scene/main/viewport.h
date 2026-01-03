@@ -830,6 +830,8 @@ private:
 	void _own_world_3d_changed();
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
+	void _prepare_for_new_world_3d();
+	void _finish_world_3d_change();
 
 public:
 	AudioListener3D *get_audio_listener_3d() const;
