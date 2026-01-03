@@ -63,6 +63,7 @@ public:
 
 	virtual ShapeType get_type() const = 0;
 	virtual bool is_convex() const = 0;
+	virtual bool allows_one_way_collision() const { return true; }
 
 	virtual Variant get_data() const = 0;
 	virtual void set_data(const Variant &p_data) = 0;

@@ -303,6 +303,7 @@ public:
 	EXBIND3(body_set_shape, RID, int, RID)
 	EXBIND3(body_set_shape_transform, RID, int, const Transform3D &)
 	EXBIND3(body_set_shape_disabled, RID, int, bool)
+	EXBIND4(body_set_shape_as_one_way_collision, RID, int, bool, real_t)
 
 	EXBIND1RC(int, body_get_shape_count, RID)
 	EXBIND2RC(RID, body_get_shape, RID, int)

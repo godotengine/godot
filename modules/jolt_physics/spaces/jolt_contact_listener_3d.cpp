@@ -35,10 +35,49 @@
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
 #include "../objects/jolt_soft_body_3d.h"
+#include "../shapes/jolt_shape_3d.h"
 #include "jolt_space_3d.h"
 
+#include "Jolt/Physics/Collision/CollideShape.h"
 #include "Jolt/Physics/Collision/EstimateCollisionResponse.h"
 #include "Jolt/Physics/SoftBody/SoftBodyManifold.h"
+
+JPH::ValidateResult JoltContactListener3D::OnContactValidate(const JPH::Body &p_body1, const JPH::Body &p_body2, JPH::RVec3Arg p_base_offset, const JPH::CollideShapeResult &p_collision_result) {
+	const JoltBody3D *body1 = reinterpret_cast<JoltBody3D *>(p_body1.GetUserData());
+	const JoltBody3D *body2 = reinterpret_cast<JoltBody3D *>(p_body2.GetUserData());
+
+	if (!body1 || !body2) {
+		return JPH::ValidateResult::AcceptContact;
+	}
+
+	const int shape1_idx = body1->find_shape_index(p_collision_result.mSubShapeID1);
+	const int shape2_idx = body2->find_shape_index(p_collision_result.mSubShapeID2);
+
+	if (shape1_idx == -1 || shape2_idx == -1) {
+		return JPH::ValidateResult::AcceptContact;
+	}
+
+	const JoltShape3D *shape1 = body1->get_shape(shape1_idx);
+	const JoltShape3D *shape2 = body2->get_shape(shape2_idx);
+
+	Vector3 contact_normal = to_godot(-p_collision_result.mPenetrationAxis.Normalized());
+
+	if (shape2->allows_one_way_collision() && body1->is_shape_set_as_one_way_collision(shape1_idx)) {
+		Vector3 direction = -body1->get_shape_transform_scaled(shape1_idx).basis[1].normalized();
+		if (contact_normal.dot(direction) < CMP_EPSILON) {
+			return JPH::ValidateResult::RejectContact;
+		}
+	}
+
+	if (shape1->allows_one_way_collision() && body2->is_shape_set_as_one_way_collision(shape2_idx)) {
+		Vector3 direction = -body2->get_shape_transform_scaled(shape2_idx).basis[1].normalized();
+		if (contact_normal.dot(direction) > -CMP_EPSILON) {
+			return JPH::ValidateResult::RejectContact;
+		}
+	}
+
+	return JPH::ValidateResult::AcceptContact;
+}
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
 	_try_override_collision_response(p_body1, p_body2, p_settings);
