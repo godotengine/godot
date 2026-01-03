@@ -4558,6 +4558,13 @@ void EditorNode::_set_current_scene(int p_idx) {
 }
 
 void EditorNode::_set_current_scene_nocheck(int p_idx) {
+	if (editor_data.remove_dummy_flag(p_idx)) {
+		Error err;
+		Ref<PackedScene> sdata = ResourceLoader::load(editor_data.get_scene_path(p_idx), "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
+		Node *new_scene = sdata->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		editor_data.set_scene_root(p_idx, new_scene);
+	}
+
 	// Save the folding in case the scene gets reloaded.
 	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx)) {
 		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
@@ -4667,7 +4674,7 @@ int EditorNode::new_scene() {
 	if (editor_data.get_edited_scene_count() > 1) {
 		for (int i = 0; i < editor_data.get_edited_scene_count() - 1; i++) {
 			bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
-			if (!unsaved && editor_data.get_scene_path(i).is_empty() && editor_data.get_edited_scene_root(i) == nullptr) {
+			if (!unsaved && editor_data.is_scene_empty(i)) {
 				editor_data.remove_scene(i);
 				idx--;
 			}
@@ -4853,6 +4860,16 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		_add_to_recent_scenes(lpath);
 	}
 
+	return OK;
+}
+
+Error EditorNode::load_dummy_scene(const String &p_scene) {
+	const String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
+	if (!lpath.begins_with("res://")) {
+		show_accept(TTRC("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTRC("OK"));
+		return ERR_FILE_NOT_FOUND;
+	}
+	editor_data.add_dummy_scene(p_scene);
 	return OK;
 }
 
@@ -6208,7 +6225,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout) {
 	PackedStringArray scenes = p_layout->get_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes");
 	for (int i = 0; i < scenes.size(); i++) {
 		if (FileAccess::exists(scenes[i])) {
-			load_scene(scenes[i]);
+			load_dummy_scene(scenes[i]);
 		}
 	}
 

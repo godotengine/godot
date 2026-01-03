@@ -611,10 +611,6 @@ int EditorData::add_edited_scene(int p_at_pos) {
 		p_at_pos = edited_scene.size();
 	}
 	EditedScene es;
-	es.root = nullptr;
-	es.path = String();
-	es.file_modified_time = 0;
-	es.history_current = -1;
 	es.live_edit_root = NodePath(String("/root"));
 	es.history_id = last_created_scene++;
 
@@ -628,6 +624,16 @@ int EditorData::add_edited_scene(int p_at_pos) {
 		current_edited_scene = 0;
 	}
 	return p_at_pos;
+}
+
+void EditorData::add_dummy_scene(const String &p_path) {
+	int idx = 0;
+	if (edited_scene.size() > 1 || !is_scene_empty(0)) {
+		idx = add_edited_scene(-1);
+	}
+	edited_scene.write[idx].path = p_path;
+	edited_scene.write[idx].file_modified_time = FileAccess::get_modified_time(p_path);
+	edited_scene.write[idx].dummy = true;
 }
 
 void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
@@ -838,6 +844,25 @@ String EditorData::get_scene_type(int p_idx) const {
 	return edited_scene[p_idx].root->get_class();
 }
 
+bool EditorData::is_scene_empty(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), true);
+	return !edited_scene[p_idx].dummy && edited_scene[p_idx].path.is_empty() && edited_scene[p_idx].root == nullptr;
+}
+
+bool EditorData::is_scene_dummy(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
+	return edited_scene[p_idx].dummy;
+}
+
+bool EditorData::remove_dummy_flag(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
+	if (edited_scene[p_idx].dummy) {
+		edited_scene.write[p_idx].dummy = false;
+		return true;
+	}
+	return false;
+}
+
 void EditorData::move_edited_scene_to_index(int p_idx) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
@@ -866,14 +891,16 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 
 String EditorData::get_scene_title(int p_idx, bool p_always_strip_extension) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
-	if (!edited_scene[p_idx].root) {
-		return TTR("[empty]");
-	}
-	if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
-		return TTR("[unsaved]");
+	if (!edited_scene[p_idx].dummy) {
+		if (!edited_scene[p_idx].root) {
+			return TTR("[empty]");
+		}
+		if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
+			return TTR("[unsaved]");
+		}
 	}
 
-	const String filename = edited_scene[p_idx].root->get_scene_file_path().get_file();
+	const String filename = edited_scene[p_idx].path.get_file();
 	const String basename = filename.get_basename();
 
 	if (p_always_strip_extension) {
@@ -887,7 +914,7 @@ String EditorData::get_scene_title(int p_idx, bool p_always_strip_extension) con
 			continue;
 		}
 
-		if (edited_scene[i].root && basename == edited_scene[i].root->get_scene_file_path().get_file().get_basename()) {
+		if (edited_scene[i].root && basename == edited_scene[i].path.get_file().get_basename()) {
 			return filename;
 		}
 	}
@@ -904,6 +931,11 @@ void EditorData::set_scene_path(int p_idx, const String &p_path) {
 		return;
 	}
 	edited_scene[p_idx].root->set_scene_file_path(p_path);
+}
+
+void EditorData::set_scene_root(int p_idx, Node *p_node) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	edited_scene.write[p_idx].root = p_node;
 }
 
 String EditorData::get_scene_path(int p_idx) const {

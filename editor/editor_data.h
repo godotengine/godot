@@ -117,7 +117,8 @@ public:
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorSelectionHistory::HistoryElement> history_stored;
-		int history_current = 0;
+		int history_current = -1;
+		bool dummy = false;
 		Dictionary custom_state;
 		NodePath live_edit_root;
 		int history_id = 0;
@@ -186,8 +187,6 @@ public:
 	void remove_move_array_element_function(const StringName &p_class);
 	Callable get_move_array_element_function(const StringName &p_class) const;
 
-	void save_editor_global_states();
-
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	Variant instantiate_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
@@ -199,6 +198,7 @@ public:
 	void instantiate_object_properties(Object *p_object);
 
 	int add_edited_scene(int p_at_pos);
+	void add_dummy_scene(const String &p_path);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
 	void remove_scene(int p_idx);
 	void set_edited_scene(int p_idx);
@@ -212,7 +212,11 @@ public:
 	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
 	String get_scene_type(int p_idx) const;
+	bool is_scene_empty(int p_idx) const;
+	bool is_scene_dummy(int p_idx) const;
+	bool remove_dummy_flag(int p_idx);
 	void set_scene_path(int p_idx, const String &p_path);
+	void set_scene_root(int p_idx, Node *p_node);
 	Ref<Script> get_scene_root_script(int p_idx) const;
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
 	uint64_t get_scene_modified_time(int p_idx) const;
