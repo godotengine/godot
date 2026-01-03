@@ -5005,8 +5005,12 @@ bool Main::iteration() {
 		return exit;
 	}
 
+#ifdef ACCESSKIT_ENABLED
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
+#else
+	bool wake_for_events = false;
+#endif // ACCESSKIT_ENABLED
 
 	GodotProfileZoneGrouped(_profile_zone, "OS::add_frame_delay");
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
