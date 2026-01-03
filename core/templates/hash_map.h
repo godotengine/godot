@@ -400,6 +400,35 @@ public:
 		return true;
 	}
 
+	// Renew the entry with the given key, making it the newest entry in insertion order.
+	// Equals to erase(key) followed by insert(key, value).
+	TValue *renew_key(const TKey &p_key) {
+		// This function is unually not guraded by existence checks, so lookup failures are expected.
+		// Not using ERR_FAIL_COND_V here to prevent errors explosion.
+		uint32_t pos = 0;
+		if (elements == nullptr || num_elements == 0 || !_lookup_pos(p_key, pos)) {
+			return nullptr;
+		}
+		HashMapElement<TKey, TValue> *element = elements[pos];
+		// Move element to the end.
+		if (element != tail_element) {
+			if (element->prev) {
+				element->prev->next = element->next;
+			}
+			if (element->next) {
+				element->next->prev = element->prev;
+			}
+			if (head_element == element) {
+				head_element = element->next;
+			}
+			tail_element->next = element;
+			element->prev = tail_element;
+			element->next = nullptr;
+			tail_element = element;
+		}
+		return &element->data.value;
+	}
+
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
