@@ -1098,7 +1098,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		} else {
 			p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			p_parent->set_selectable(0, false);
-			p_parent->deselect(0);
 		}
 	}
 	if (is_root) {
@@ -1115,9 +1114,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				// Needs to be deferred to account for possible root visibility change.
 				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
 			}
-		} else if (n) {
-			editor_selection->remove_node(n);
-			p_parent->deselect(0);
 		}
 	}
 
