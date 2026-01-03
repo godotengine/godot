@@ -735,6 +735,10 @@ Transform2D Control::get_transform() const {
 	return xform;
 }
 
+void Control::update_canvas_item_rect() {
+	RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
+}
+
 void Control::_top_level_changed_on_parent() {
 	// Update root control status.
 	_notification(NOTIFICATION_EXIT_CANVAS);
@@ -1796,9 +1800,11 @@ void Control::_size_changed() {
 
 	if (pos_changed) {
 		data.pos_cache = new_pos_cache;
+		_update_canvas_item_transform();
 	}
 	if (size_changed) {
 		data.size_cache = new_size_cache;
+		update_canvas_item_rect();
 	}
 
 	if (is_inside_tree()) {
@@ -1811,10 +1817,6 @@ void Control::_size_changed() {
 			if (approx_size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
-		}
-
-		if (pos_changed && !approx_size_changed) {
-			_update_canvas_item_transform();
 		}
 
 		queue_accessibility_update();
@@ -2900,6 +2902,7 @@ void Control::set_disable_visibility_clip(bool p_ignore) {
 		return;
 	}
 	data.disable_visibility_clip = p_ignore;
+	update_canvas_item_rect();
 	queue_redraw();
 }
 
@@ -3936,8 +3939,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			_update_canvas_item_transform();
-			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
 		} break;
 

@@ -313,6 +313,8 @@ private:
 	void _update_canvas_item_transform();
 	Transform2D _get_internal_transform() const;
 
+	void update_canvas_item_rect();
+
 	void _set_anchor(Side p_side, real_t p_anchor);
 	void _set_position(const Point2 &p_point);
 	void _set_global_position(const Point2 &p_point);
