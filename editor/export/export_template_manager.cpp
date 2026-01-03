@@ -841,6 +841,17 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		f->store_line(get_android_template_identifier(p_preset));
 	}
 
+	// This directory should never be committed to git.
+	const String parent_dir_gitignore = parent_dir.path_join(".gitignore");
+	if (!FileAccess::exists(parent_dir_gitignore)) {
+		Ref<FileAccess> f = FileAccess::open(parent_dir_gitignore, FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line("*");
+		} else {
+			ERR_PRINT("Failed to create file " + parent_dir_gitignore.quote() + ".");
+		}
+	}
+
 	// Create the android build directory.
 	Error err = da->make_dir_recursive(build_dir);
 	ERR_FAIL_COND_V(err != OK, err);

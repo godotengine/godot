@@ -366,8 +366,9 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 			ERR_FAIL_MSG("Couldn't create .gitignore in project path.");
 		} else {
 			f->store_line("# Godot 4+ specific ignores");
-			f->store_line(".godot/");
-			f->store_line("/android/");
+			f->store_line("# The following directories are ignored in each directory's `.gitignore`.");
+			f->store_line("#.godot/");
+			f->store_line("#/android/");
 		}
 		f = FileAccess::open(p_dir.path_join(".gitattributes"), FileAccess::WRITE);
 		if (f.is_null()) {
