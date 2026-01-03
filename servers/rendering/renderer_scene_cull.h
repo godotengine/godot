@@ -40,6 +40,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/instance_uniforms.h"
+#include "servers/rendering/light_cull_planes.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
@@ -877,7 +878,6 @@ public:
 	PagedArrayPool<RID> rid_cull_page_pool;
 
 	PagedArray<Instance *> instance_cull_result;
-	PagedArray<Instance *> instance_shadow_cull_result;
 
 	struct InstanceCullResult {
 		PagedArray<RenderGeometryInstance *> geometry_instances;
@@ -1077,7 +1077,31 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	struct CullPositionalLightGroupData {
+		Scenario *scenario = nullptr;
+		uint32_t visible_layers = 0;
+	};
+
+	struct CullPositionalLightData {
+		Instance *instance = nullptr;
+		LightCullPlanes light_cull_planes;
+		uint32_t render_shadow_data_index = 0;
+		void (RendererSceneCull::*cull_method)(const CullPositionalLightGroupData &, RendererSceneCull::CullPositionalLightData &) = nullptr;
+		PagedArray<Instance *> instance_shadow_cull_result;
+		PagedArray<RID> mesh_instances;
+		bool animated_material_found = false;
+		std::atomic<bool> acquired = false;
+	} cull_positional_light_data[MAX_UPDATE_SHADOWS];
+
+	uint32_t cull_positional_light_data_count = 0;
+
+	void _cull_positional_lights(uint32_t p_thread, const CullPositionalLightGroupData &p_group_data);
+
+	void _cull_omni_light_dual_paraboloid(const CullPositionalLightGroupData &p_group_data, CullPositionalLightData &p_data);
+	void _cull_omni_light_cube(const CullPositionalLightGroupData &p_group_data, CullPositionalLightData &p_data);
+	void _cull_spot_light(const CullPositionalLightGroupData &p_group_data, CullPositionalLightData &p_data);
+
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const LightCullPlanes &p_light_cull_planes, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 	RID _render_get_compositor(RID p_camera, RID p_scenario);
