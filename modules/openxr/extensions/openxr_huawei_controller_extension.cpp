@@ -38,7 +38,7 @@ HashMap<String, bool *> OpenXRHuaweiControllerExtension::get_requested_extension
 
 	request_extensions[XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRHuaweiControllerExtension::is_available() {

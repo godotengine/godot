@@ -40,7 +40,7 @@ HashMap<String, bool *> OpenXRMxInkExtension::get_requested_extensions(XrVersion
 
 	request_extensions[XR_LOGITECH_MX_INK_STYLUS_INTERACTION_EXTENSION_NAME] = &available;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRMxInkExtension::is_available() {

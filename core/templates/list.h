@@ -688,7 +688,7 @@ public:
 	/**
 	 * copy constructor for the list
 	 */
-	List(const List &p_list) {
+	explicit List(const List &p_list) {
 		const Element *it = p_list.front();
 		while (it) {
 			push_back(it->get());

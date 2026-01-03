@@ -256,7 +256,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 	// For each index set with a size > 1, we need to disambiguate.
 	for (int i = 0; i < index_sets.size(); i++) {
-		RBSet<int> iset = index_sets[i];
+		RBSet<int> iset = RBSet<int>(index_sets[i]);
 		while (iset.size() > 1) {
 			// Append the parent folder to each scene name.
 			for (const int &E : iset) {
@@ -1928,7 +1928,10 @@ int EditorNode::get_resource_count(Ref<Resource> p_res) {
 
 List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
 	List<Node *> *L = resource_count.getptr(p_res);
-	return L == nullptr ? List<Node *>() : *L;
+	if (L == nullptr) {
+		return List<Node *>();
+	}
+	return List<Node *>(*L);
 }
 
 void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {
@@ -4886,7 +4889,7 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 		}
 	}
 
-	return modified_property_map;
+	return HashMap<StringName, Variant>(modified_property_map);
 }
 
 HashMap<StringName, Variant> EditorNode::get_modified_properties_reference_to_nodes(Node *p_node, List<Node *> &p_nodes_referenced_by) {
@@ -4907,7 +4910,7 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_reference_to_no
 		}
 	}
 
-	return modified_property_map;
+	return HashMap<StringName, Variant>(modified_property_map);
 }
 
 void EditorNode::update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification) {
@@ -8098,7 +8101,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	HashMap<String, Variant> settings;
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
-	return settings;
+	return HashMap<String, Variant>(settings);
 }
 
 EditorNode::EditorNode() {

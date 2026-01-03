@@ -255,7 +255,7 @@ void GDScriptCache::remove_parser(const String &p_path) {
 	singleton->parser_map.erase(p_path);
 
 	// Have to copy while iterating, because parser_inverse_dependencies is modified.
-	HashSet<String> ideps = singleton->parser_inverse_dependencies[p_path];
+	HashSet<String> ideps = HashSet<String>(singleton->parser_inverse_dependencies[p_path]);
 	singleton->parser_inverse_dependencies.erase(p_path);
 	for (String idep_path : ideps) {
 		remove_parser(idep_path);
@@ -423,10 +423,10 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->full_gdscript_cache[p_owner] = script;
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
-	HashSet<String> depends = singleton->dependencies[p_owner];
+	HashSet<String> depends_copy = HashSet<String>(singleton->dependencies[p_owner]);
 
 	Error err = OK;
-	for (const String &E : depends) {
+	for (const String &E : depends_copy) {
 		Error this_err = OK;
 		// No need to save the script. We assume it's already referenced in the owner.
 		get_full_script(E, this_err);

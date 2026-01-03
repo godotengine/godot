@@ -40,7 +40,7 @@ HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions(XrVersion
 
 	request_extensions[XR_KHR_METAL_ENABLE_EXTENSION_NAME] = nullptr;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRMetalExtension::on_instance_created(const XrInstance p_instance) {

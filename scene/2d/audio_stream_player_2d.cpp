@@ -125,7 +125,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 	Vector2 global_pos = get_global_position();
 
-	HashSet<Viewport *> viewports = world_2d->get_viewports();
+	const HashSet<Viewport *> viewports = HashSet<Viewport *>(world_2d->get_viewports());
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);

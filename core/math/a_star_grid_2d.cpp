@@ -158,7 +158,7 @@ void AStarGrid2D::update() {
 			solid_mask.push_back(false);
 		}
 		solid_mask.push_back(true);
-		points.push_back(line);
+		points.push_back(LocalVector<Point>(line));
 	}
 
 	for (int32_t x = region.position.x; x < end_x + 2; x++) {

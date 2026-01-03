@@ -137,7 +137,7 @@ TEST_CASE("[AHashMap] Const iteration") {
 	map.insert(123485, 1238888);
 	map.insert(123, 111111);
 
-	const AHashMap<int, int> const_map = map;
+	const AHashMap<int, int> const_map = AHashMap<int, int>(map);
 
 	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));

@@ -6801,7 +6801,7 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 			supported_extensions.insert(ext_supported_extensions[i]);
 		}
 	}
-	return supported_extensions;
+	return HashSet<String>(supported_extensions);
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {

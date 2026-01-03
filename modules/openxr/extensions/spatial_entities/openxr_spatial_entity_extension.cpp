@@ -113,7 +113,7 @@ HashMap<String, bool *> OpenXRSpatialEntityExtension::get_requested_extensions(X
 		request_extensions[XR_EXT_SPATIAL_ENTITY_EXTENSION_NAME] = &spatial_entity_ext;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRSpatialEntityExtension::on_instance_created(const XrInstance p_instance) {

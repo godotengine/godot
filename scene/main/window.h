@@ -403,7 +403,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
-	HashSet<Window *> get_transient_children() const { return transient_children; }
+	HashSet<Window *> get_transient_children() const { return HashSet<Window *>(transient_children); }
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;

@@ -123,7 +123,7 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 		case CompletionKind::NODE_PATHS: {
 			{
 				// Autoloads.
-				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = HashMap<StringName, ProjectSettings::AutoloadInfo>(ProjectSettings::get_singleton()->get_autoload_list());
 
 				for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
 					const ProjectSettings::AutoloadInfo &info = E.value;

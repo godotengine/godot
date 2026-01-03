@@ -275,7 +275,7 @@ Vector<Ref<Shape3D>> MeshInstance3DEditor::create_shape_from_mesh(Ref<Mesh> p_me
 
 void MeshInstance3DEditor::_shape_dialog_about_to_popup() {
 	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	List<Node *> selection = List<Node *>(editor_selection->get_top_selected_node_list());
 	if (selection.is_empty()) {
 		selection.push_back(node);
 	}
@@ -355,7 +355,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			break;
 	}
 
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	List<Node *> selection = List<Node *>(editor_selection->get_top_selected_node_list());
 
 	bool verbose = false;
 	if (selection.is_empty()) {

@@ -2513,7 +2513,7 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, T
 		ordered_items[E] = items[E];
 	}
 
-	return ordered_items;
+	return HashMap<StringName, bool>(ordered_items);
 }
 
 HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_type, String p_item_name, bool p_editable) {

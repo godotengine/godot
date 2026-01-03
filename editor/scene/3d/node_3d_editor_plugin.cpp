@@ -8630,7 +8630,7 @@ HashSet<T *> _get_child_nodes(Node *parent_node) {
 		}
 	}
 
-	return nodes;
+	return HashSet<T *>(nodes);
 }
 
 HashSet<RID> _get_physics_bodies_rid(Node *node) {
@@ -8644,7 +8644,7 @@ HashSet<RID> _get_physics_bodies_rid(Node *node) {
 		rids.insert(I->get_rid());
 	}
 
-	return rids;
+	return HashSet<RID>(rids);
 }
 
 void Node3DEditor::snap_selected_nodes_to_floor() {

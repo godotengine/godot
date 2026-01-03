@@ -655,7 +655,7 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 		}
 	}
 
-	return result;
+	return HashSet<String>(result);
 }
 
 EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {

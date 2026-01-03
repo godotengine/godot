@@ -42,7 +42,7 @@ HashMap<String, bool *> OpenXRD3D12Extension::get_requested_extensions(XrVersion
 
 	request_extensions[XR_KHR_D3D12_ENABLE_EXTENSION_NAME] = nullptr;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRD3D12Extension::on_instance_created(const XrInstance p_instance) {

@@ -1206,7 +1206,7 @@ LocalVector<ObjectID> SpringBoneSimulator3D::get_valid_collision_instance_ids(in
 	if (collisions_dirty) {
 		_find_collisions();
 	}
-	return settings[p_index]->cached_collisions;
+	return LocalVector<ObjectID>(settings[p_index]->cached_collisions);
 }
 
 void SpringBoneSimulator3D::set_external_force(const Vector3 &p_force) {

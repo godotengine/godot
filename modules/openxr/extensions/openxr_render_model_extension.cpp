@@ -84,7 +84,7 @@ HashMap<String, bool *> OpenXRRenderModelExtension::get_requested_extensions(XrV
 		request_extensions[XR_EXT_INTERACTION_RENDER_MODEL_EXTENSION_NAME] = &interaction_render_model_ext;
 	}
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 void OpenXRRenderModelExtension::on_instance_created(const XrInstance p_instance) {

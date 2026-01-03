@@ -1920,7 +1920,7 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_added_patte
 		}
 	}
 
-	return output;
+	return RBSet<TerrainConstraint>(output);
 }
 
 RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cells_list(const RBSet<Vector2i> &p_painted, int p_terrain_set, bool p_ignore_empty_terrains) const {
@@ -2007,7 +2007,7 @@ RBSet<TerrainConstraint> TileMapLayer::_get_terrain_constraints_from_painted_cel
 		}
 	}
 
-	return constraints;
+	return RBSet<TerrainConstraint>(constraints);
 }
 
 void TileMapLayer::_tile_set_changed() {
@@ -2382,7 +2382,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 	}
 
 	// Copy the constraints set.
-	RBSet<TerrainConstraint> constraints = p_constraints;
+	RBSet<TerrainConstraint> constraints = RBSet<TerrainConstraint>(p_constraints);
 
 	// Output map.
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
@@ -2420,7 +2420,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 
 		output[coords] = pattern;
 	}
-	return output;
+	return HashMap<Vector2i, TileSet::TerrainsPattern>(output);
 }
 
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) const {
@@ -2546,7 +2546,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 				}
 			}
 		}
-		ERR_FAIL_COND_V_MSG(found_bit == TileSet::CELL_NEIGHBOR_MAX, output, vformat("Invalid terrain path, %s is not a neighboring tile of %s", p_coords_array[i + 1], p_coords_array[i]));
+		ERR_FAIL_COND_V_MSG(found_bit == TileSet::CELL_NEIGHBOR_MAX, (HashMap<Vector2i, TileSet::TerrainsPattern>(output)), vformat("Invalid terrain path, %s is not a neighboring tile of %s", p_coords_array[i + 1], p_coords_array[i]));
 		neighbor_list.push_back(found_bit);
 	}
 
@@ -3649,7 +3649,7 @@ HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coor
 				output[tile_set->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_SIDE;
 				break;
 			default:
-				ERR_FAIL_V(output);
+				ERR_FAIL_V((HashMap<Vector2i, TileSet::CellNeighbor>(output)));
 		}
 	} else if (shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 		switch (bit) {
@@ -3668,7 +3668,7 @@ HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coor
 				output[tile_set->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
 				break;
 			default:
-				ERR_FAIL_V(output);
+				ERR_FAIL_V((HashMap<Vector2i, TileSet::CellNeighbor>(output)));
 		}
 	} else {
 		// Half offset shapes.
@@ -3698,7 +3698,7 @@ HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coor
 					output[tile_set->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
 					break;
 				default:
-					ERR_FAIL_V(output);
+					ERR_FAIL_V((HashMap<Vector2i, TileSet::CellNeighbor>(output)));
 			}
 		} else {
 			switch (bit) {
@@ -3725,11 +3725,11 @@ HashMap<Vector2i, TileSet::CellNeighbor> TerrainConstraint::get_overlapping_coor
 					output[tile_set->get_neighbor_cell(base_cell_coords, TileSet::CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)] = TileSet::CELL_NEIGHBOR_TOP_RIGHT_SIDE;
 					break;
 				default:
-					ERR_FAIL_V(output);
+					ERR_FAIL_V((HashMap<Vector2i, TileSet::CellNeighbor>(output)));
 			}
 		}
 	}
-	return output;
+	return HashMap<Vector2i, TileSet::CellNeighbor>(output);
 }
 
 TerrainConstraint::TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain) {

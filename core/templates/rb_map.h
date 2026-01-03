@@ -760,7 +760,7 @@ public:
 		_copy_from(p_map);
 	}
 
-	RBMap(const RBMap &p_map) {
+	explicit RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
 	}
 

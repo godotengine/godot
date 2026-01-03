@@ -349,7 +349,7 @@ public:
 			push_back(element);
 		}
 	}
-	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
+	_FORCE_INLINE_ explicit LocalVector(const LocalVector &p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < p_from.count; i++) {
 			data[i] = p_from.data[i];

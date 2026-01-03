@@ -523,7 +523,7 @@ private:
 			const Point2 p_value,
 			const Transform2D p_transform_to_snap,
 			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
-			const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+			const SnapTarget p_snap_target, const List<const CanvasItem *> p_exceptions,
 			const Node *p_current);
 
 	VBoxContainer *controls_vb = nullptr;

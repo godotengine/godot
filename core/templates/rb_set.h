@@ -697,7 +697,7 @@ public:
 		_copy_from(p_set);
 	}
 
-	RBSet(const RBSet &p_set) {
+	explicit RBSet(const RBSet &p_set) {
 		_copy_from(p_set);
 	}
 

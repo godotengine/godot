@@ -44,7 +44,7 @@ HashMap<String, bool *> OpenXRWMRControllerExtension::get_requested_extensions(X
 	}
 	request_extensions[XR_MSFT_HAND_INTERACTION_EXTENSION_NAME] = &available[WMR_HAND_INTERACTION];
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRWMRControllerExtension::is_available(WMRControllers p_type) {

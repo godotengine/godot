@@ -273,7 +273,7 @@ void OS_MacOS::set_cmdline_platform_args(const List<String> &p_args) {
 }
 
 List<String> OS_MacOS::get_cmdline_platform_args() const {
-	return launch_service_args;
+	return List<String>(launch_service_args);
 }
 
 void OS_MacOS::load_shell_environment() const {
@@ -868,7 +868,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 			// Project started from the editor, inject "path" argument to set instance working directory.
 			char cwd[PATH_MAX];
 			if (::getcwd(cwd, sizeof(cwd)) != nullptr) {
-				List<String> arguments = p_arguments;
+				List<String> arguments = List<String>(p_arguments);
 				arguments.push_back("--path");
 				arguments.push_back(String::utf8(cwd));
 				return create_process(path, arguments, r_child_id, false);

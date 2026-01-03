@@ -478,7 +478,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 		const float max_mesh_error = 1.0f; // We only need LODs that can be selected by error threshold.
 		const unsigned min_target_indices = 12;
 
-		LocalVector<int> current_indices = merged_indices;
+		LocalVector<int> current_indices = LocalVector<int>(merged_indices);
 		float current_error = 0.0f;
 		bool allow_prune = true;
 

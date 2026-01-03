@@ -60,7 +60,7 @@ HashMap<String, bool *> OpenXRValveAnalogThresholdExtension::get_requested_exten
 	request_extensions[XR_KHR_BINDING_MODIFICATION_EXTENSION_NAME] = &binding_modifier_ext;
 	request_extensions[XR_VALVE_ANALOG_THRESHOLD_EXTENSION_NAME] = &threshold_ext;
 
-	return request_extensions;
+	return HashMap<String, bool *>(request_extensions);
 }
 
 bool OpenXRValveAnalogThresholdExtension::is_available() {
