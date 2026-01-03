@@ -125,7 +125,10 @@ int ENetPacketPeer::get_remote_port() const {
 }
 
 bool ENetPacketPeer::is_active() const {
-	return peer != nullptr;
+	if (peer) {
+		return peer->state != ENET_PEER_STATE_DISCONNECTED;
+	}
+	return false;
 }
 
 double ENetPacketPeer::get_statistic(PeerStatistic p_stat) {
