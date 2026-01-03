@@ -1200,14 +1200,14 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the control's (or any child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
+				Emitted when the mouse cursor enters the control's visible area. This area is defined as the node's own area plus the area of all its child controls, minus the parts that are occluded behind other Controls or Windows. The control's and its children's [member mouse_filter] must be configured such that the mouse event can reach this node. The signal is emitted regardless of whether this control currently has focus or not.
+				[b]Note:[/b] For the purpose of [signal mouse_entered], whether a control's area occludes another control is determined by scene tree order. [member CanvasItem.z_index] doesn't affect this.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor leaves the control's (and all child control's) visible area, that is not occluded behind other Controls or Windows, provided its [member mouse_filter] lets the event reach it and regardless if it's currently focused or not.
-				[b]Note:[/b] [member CanvasItem.z_index] doesn't affect, which Control receives the signal.
+				Emitted when the mouse cursor leaves the control's visible area. This area is defined as the node's own area plus the area of all its child controls, minus the parts that are occluded behind other Controls or Windows. The control's and its children's [member mouse_filter] must be configured such that the mouse event can reach this node. The signal is emitted regardless of whether this control currently has focus or not.
+				[b]Note:[/b] For the purpose of [signal mouse_exited], whether a control's area occludes another control is determined by scene tree order. [member CanvasItem.z_index] doesn't affect this.
 				[b]Note:[/b] If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
 				[codeblock]
 				func _on_mouse_exited():
