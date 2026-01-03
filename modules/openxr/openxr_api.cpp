@@ -2405,6 +2405,13 @@ void OpenXRAPI::pre_render() {
 
 	// That is not possible yet but worth investigating in the future.
 
+	LocalVector<XrView> located_views;
+	located_views.resize(render_state.views.size());
+	for (uint32_t i = 0; i < located_views.size(); i++) {
+		located_views[i].type = XR_TYPE_VIEW;
+		located_views[i].next = nullptr;
+	}
+
 	XrViewLocateInfo view_locate_info = {
 		XR_TYPE_VIEW_LOCATE_INFO, // type
 		view_locate_info_next_pointer, // next
@@ -2418,7 +2425,7 @@ void OpenXRAPI::pre_render() {
 		0 // viewStateFlags
 	};
 	uint32_t view_count_output;
-	XrResult result = xrLocateViews(session, &view_locate_info, &view_state, render_state.views.size(), &view_count_output, render_state.views.ptr());
+	XrResult result = xrLocateViews(session, &view_locate_info, &view_state, render_state.views.size(), &view_count_output, located_views.ptr());
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Couldn't locate views [", get_error_string(result), "]");
 		return;
@@ -2431,13 +2438,25 @@ void OpenXRAPI::pre_render() {
 			pose_valid = false;
 		}
 	}
-	if (render_state.view_pose_valid != pose_valid) {
-		render_state.view_pose_valid = pose_valid;
-		if (!render_state.view_pose_valid) {
+	if (pose_valid) {
+		for (uint32_t i = 0; i < render_state.views.size(); i++) {
+			render_state.views[i] = located_views[i];
+		}
+		render_state.view_pose_initialized = true;
+	}
+
+	if (render_state.view_pose_currently_valid != pose_valid) {
+		render_state.view_pose_currently_valid = pose_valid;
+		if (!pose_valid) {
 			print_verbose("OpenXR View pose became invalid");
 		} else {
 			print_verbose("OpenXR View pose became valid");
 		}
+	}
+
+	bool has_usable_views = pose_valid || render_state.view_pose_initialized;
+	if (render_state.view_pose_valid != has_usable_views) {
+		render_state.view_pose_valid = has_usable_views;
 	}
 
 	// We should get our frame no from the rendering server, but this will do.
