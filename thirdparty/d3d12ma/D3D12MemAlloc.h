@@ -24,7 +24,7 @@
 
 /** \mainpage D3D12 Memory Allocator
 
-<b>Version 2.1.0-development</b> (2024-07-05)
+<b>Version 3.1.0-development</b> (2025-XX-XX)
 
 Copyright (c) 2019-2025 Advanced Micro Devices, Inc. All rights reserved. \n
 License: MIT
@@ -33,6 +33,7 @@ Documentation of all members: D3D12MemAlloc.h
 
 \section main_table_of_contents Table of contents
 
+- \subpage faq
 - \subpage quick_start
     - [Project setup](@ref quick_start_project_setup)
     - [Creating resources](@ref quick_start_creating_resources)
@@ -63,7 +64,7 @@ Documentation of all members: D3D12MemAlloc.h
         
 \section main_see_also Web links
 
-- [Direct3D 12 Memory Allocator at GPUOpen.com](https://gpuopen.com/gaming-product/d3d12-memory-allocator/) - product page
+- [Direct3D 12 Memory Allocator at GPUOpen.com](https://gpuopen.com/d3d12-memory-allocator/) - product page
 - [GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator at GitHub.com](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator) - source code repository
 */
 
@@ -124,7 +125,7 @@ Documentation of all members: D3D12MemAlloc.h
 
 #ifndef D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS
     /// Set of flags recommended for use in D3D12MA::ALLOCATOR_DESC::Flags for optimal performance.
-    #define D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS (ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED)
+    #define D3D12MA_RECOMMENDED_ALLOCATOR_FLAGS (D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED | D3D12MA::ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED)
 #endif
 
 #ifndef D3D12MA_RECOMMENDED_HEAP_FLAGS
@@ -138,7 +139,7 @@ Documentation of all members: D3D12MemAlloc.h
 
 #ifndef D3D12MA_RECOMMENDED_POOL_FLAGS
     /// Set of flags recommended for use in D3D12MA::POOL_DESC::Flags for optimal performance.
-    #define D3D12MA_RECOMMENDED_POOL_FLAGS (POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED)
+    #define D3D12MA_RECOMMENDED_POOL_FLAGS (D3D12MA::POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED)
 #endif
 
 
@@ -1111,8 +1112,19 @@ enum ALLOCATOR_FLAGS
     which may take longer than creating placed resources in existing heaps.
     Passing this flag will disable this committed preference globally for the allocator.
     It can also be disabled for a single allocation by using #ALLOCATION_FLAG_STRATEGY_MIN_TIME.
+
+    If the tight resource alignment feature is used by the library (which happens automatically whenever supported,
+    unless you use flag #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT), then small buffers are not preferred as committed.
+    Long story short, you don't need to specify any of these flags.
+    The library chooses the most optimal method automatically.
     */
     ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED = 0x10,
+    /** Disables the use of the tight alignment feature even when it is supported on the current system.
+    By default, the feature is used whenever available.
+
+    Support can be checked by D3D12MA::Allocator::IsTightAlignmentSupported() regardless of using this flag.
+    */
+    ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x20,
 };
 
 /// \brief Parameters of created Allocator object. To be used with CreateAllocator().
@@ -1188,6 +1200,12 @@ public:
     This flag is fetched from `D3D12_FEATURE_D3D12_OPTIONS16::GPUUploadHeapSupported`.
     */
     BOOL IsGPUUploadHeapSupported() const;
+    /** \brief Returns true if resource tight alignment is supported on the current system.
+    When supported, it is automatically used by the library, unless
+    #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT flag was specified on allocator creation.
+    This flag is fetched from `D3D12_FEATURE_DATA_TIGHT_ALIGNMENT::SupportTier`.
+    */
+    BOOL IsTightAlignmentSupported() const;
     /** \brief Returns total amount of memory of specific segment group, in bytes.
     
     \param memorySegmentGroup use `DXGI_MEMORY_SEGMENT_GROUP_LOCAL` or `DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL`.
@@ -1267,13 +1285,14 @@ public:
     It internally uses `ID3D12Device10::CreateCommittedResource3` or `ID3D12Device10::CreatePlacedResource2`.
 
     To work correctly, `ID3D12Device10` interface must be available in the current system. Otherwise, `E_NOINTERFACE` is returned.
+    If you use `pCastableFormats`, `ID3D12Device12` must albo be available.
     */
     HRESULT CreateResource3(const ALLOCATION_DESC* pAllocDesc,
         const D3D12_RESOURCE_DESC1* pResourceDesc,
         D3D12_BARRIER_LAYOUT InitialLayout,
         const D3D12_CLEAR_VALUE* pOptimizedClearValue,
         UINT32 NumCastableFormats,
-        DXGI_FORMAT* pCastableFormats,
+        const DXGI_FORMAT* pCastableFormats,
         Allocation** ppAllocation,
         REFIID riidResource,
         void** ppvResource);
@@ -1352,11 +1371,12 @@ public:
 
 #ifdef __ID3D12Device10_INTERFACE_DEFINED__
     /** \brief Similar to Allocator::CreateAliasingResource1, but there are initial layout instead of state and 
-    castable formats list
+    castable formats list.
 
     It internally uses `ID3D12Device10::CreatePlacedResource2`.
 
     To work correctly, `ID3D12Device10` interface must be available in the current system. Otherwise, `E_NOINTERFACE` is returned.
+    If you use `pCastableFormats`, `ID3D12Device12` must albo be available.
     */
     HRESULT CreateAliasingResource2(Allocation* pAllocation,
         UINT64 AllocationLocalOffset,
@@ -1364,7 +1384,7 @@ public:
         D3D12_BARRIER_LAYOUT InitialLayout,
         const D3D12_CLEAR_VALUE* pOptimizedClearValue,
         UINT32 NumCastableFormats,
-        DXGI_FORMAT* pCastableFormats,
+        const DXGI_FORMAT* pCastableFormats,
         REFIID riidResource,
         void** ppvResource);
 #endif  // #ifdef __ID3D12Device10_INTERFACE_DEFINED__
@@ -1797,6 +1817,221 @@ DEFINE_ENUM_FLAG_OPERATORS(D3D12MA::VIRTUAL_ALLOCATION_FLAGS);
 /// \endcond
 
 /**
+\page faq Frequently asked questions
+
+<b>What is %D3D12MA?</b>
+
+D3D12 Memory Allocator (%D3D12MA) is a software library for developers who use the DirectX(R) 12 graphics API in their code.
+It is written in C++.
+
+<b>What is the license of %D3D12MA?</b>
+
+%D3D12MA is licensed under MIT, which means it is open source and free software.
+
+<b>What is the purpose of %D3D12MA?</b>
+
+%D3D12MA helps with handling one aspect of DX12 usage, which is GPU memory management -
+allocation of `ID3D12Heap` objects and creation of `ID3D12Resource` objects - buffers and textures.
+
+<b>Do I need to use %D3D12MA?</b>
+
+You don't need to, but it may be beneficial in many cases.
+DX12 is a complex and low-level API, so libraries like this that abstract certain aspects of the API
+and bring them to a higher level are useful.
+When developing any non-trivial graphics application, you may benefit from using a memory allocator.
+Using %D3D12MA can save time compared to implementing your own.
+
+In DX12 you can create each resource separately with its own implicit memory heap by calling `CreateCommittedResource`,
+but this may not be the optimal solution.
+For more information, see [Committed versus placed resources](@ref optimal_allocation_committed_vs_placed).
+
+<b>When should I not use %D3D12MA?</b>
+
+While %D3D12MA is useful for many applications that use the DX12 API, there are cases
+when it may be a better choice not to use it.
+For example, if the application is very simple, e.g. serving as a sample or a learning exercise
+to help you understand or teach others the basics of DX12,
+and it creates only a small number of buffers and textures, then including %D3D12MA may be an overkill.
+Developing your own memory allocator may also be a good learning exercise.
+
+<b>What are the benefits of using %D3D12MA?</b>
+
+-# %D3D12MA allocates large blocks of `ID3D12Heap` memory and sub-allocates parts of them to create your placed resources.
+   Allocating a new block of GPU memory may be a time-consuming operation.
+   Sub-allocating parts of a memory block requires implementing an allocation algorithm,
+   which is a non-trivial task.
+   %D3D12MA does that, using an advanced and efficient algorithm that works well in various use cases.
+-# %D3D12MA offers a simple API that allows creating placed buffers and textures within one function call
+   like D3D12MA::Allocator::CreateResource.
+
+The library is doing much more under the hood.
+For example, it keeps buffers separate from textures when needed, respecting `D3D12_RESOURCE_HEAP_TIER`.
+It also makes use of the "small texture alignment" automatically, so you don't need to think about it.
+
+<b>Which version should I pick?</b>
+
+You can just pick [the latest version from the "master" branch](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator).
+It is kept in a good shape most of the time, compiling and working correctly,
+with no compatibility-breaking changes and no unfinished code.
+
+If you want an even more stable version, you can pick
+[the latest official release](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator/releases).
+Current code from the master branch is occasionally tagged as a release,
+with [CHANGELOG](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator/blob/master/CHANGELOG.md)
+carefully curated to enumerate all important changes since the previous version.
+
+The library uses [Semantic Versioning](https://semver.org/),
+which means versions that only differ in the patch number are forward and backward compatible
+(e.g., only fixing some bugs), while versions that differ in the minor number are backward compatible
+(e.g., only adding new functions to the API, but not removing or changing existing ones).
+
+<b>How to integrate it with my code?</b>
+
+%D3D12MA is an small library fully implemented in a single pair of CPP + H files.
+
+You can pull the entire GitHub repository, e.g. using Git submodules.
+The repository contains ancillary files like the Cmake script, Doxygen config file,
+sample application, test suite, and others.
+You can compile it as a library and link with your project.
+
+However, a simpler way is taking only files "include\D3D12MemAlloc.h", "src\D3D12MemAlloc.cpp"
+and including them in your project.
+These files contain all you need: a copyright notice,
+declarations of the public library interface (API), its internal implementation,
+and even the documentation in form of Doxygen-style comments.
+
+<b>I am not a fan of modern C++. Can I still use it?</b>
+
+Very likely yes.
+We acknowledge that many C++ developers, especially in the games industry,
+do not appreciate all the latest features that the language has to offer.
+
+- %D3D12MA doesn't throw or catch any C++ exceptions.
+  It reports errors by returning a `HRESULT` value instead, just like DX12.
+  If you don't use exceptions in your project, your code is not exception-safe,
+  or even if you disable exception handling in the compiler options, you can still use %D3D12MA.
+- %D3D12MA doesn't use C++ run-time type information like `typeid` or `dynamic_cast`,
+  so if you disable RTTI in the compiler options, you can still use the library.
+- %D3D12MA uses only a limited subset of standard C and C++ library.
+  It doesn't use STL containers like `std::vector`, `map`, or `string`,
+  either in the public interface nor in the internal implementation.
+  It implements its own containers instead.
+- If you don't use the default heap memory allocator through `malloc/free` or `new/delete`
+  but implement your own allocator instead, you can pass it to %D3D12MA as
+  D3D12MA::ALLOCATOR_DESC::pAllocationCallbacks
+  and the library will use your functions for every dynamic heap allocation made internally.
+
+<b>Is it available for other programming languages?</b>
+
+%D3D12MA is a C++ library in similar style as DX12.
+Bindings to other programming languages are out of scope of this project,
+but they are welcome as external projects.
+Some of them are listed in [README.md, "See also" section](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator/?tab=readme-ov-file#see-also),
+including binding to C.
+Before using any of them, please check if they are still maintained and updated to use a recent version of %D3D12MA.
+
+<b>What platforms does it support?</b>
+
+%D3D12MA relies only on DX12 and some parts of the standard C and C++ library,
+so it could support any platform where a C++ compiler and DX12 are available.
+However, it is developed and tested only on Microsoft(R) Windows(R).
+
+<b>Does it only work on AMD GPUs?</b>
+
+No! While %D3D12MA is published by AMD, it works on any GPU that supports DX12,
+whether a discrete PC graphics card or a processor integrated graphics.
+It doesn't give AMD GPUs any advantage over any other GPUs.
+
+<b>What DirectX 12 versions are supported?</b>
+
+%D3D12MA is updated to support latest versions of DirectX 12, as available through recent retail versions of the
+[DirectX 12 Agility SDK](https://devblogs.microsoft.com/directx/directx12agility/).
+Support for new features added in the preview version of the Agility SDK is developed on separate branches until they are included in the retail version.
+
+The library also supports older versions down to the base DX12 shipping with Windows SDK.
+Features added by later versions of the Agility SDK are automatically enabled conditionally using
+`#ifdef` preprocessor macros depending on the version of the SDK that you compile your project with.
+
+<b>Does it support other graphics APIs, like Vulkan(R)?</b>
+
+No, but we offer an equivalent library for Vulkan:
+[Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator).
+It uses the same core allocation algorithm.
+It also shares many features with %D3D12MA, like the support for custom pools and virtual allocator.
+However, it is not identical in terms of the features supported.
+Its API also looks different, because while the interface of %D3D12MA is similar in style to DX12,
+the interface of VMA is similar to Vulkan.
+
+<b>Is the library lightweight?</b>
+
+Yes.
+%D3D12MA is implemented with high-performance and real-time applications like video games in mind.
+The CPU performance overhead of using this library is low.
+It uses a high-quality allocation algorithm called Two-Level Segregated Fit (TLSF),
+which in most cases can find a free place for a new allocation in few steps.
+The library also doesn't perform too many CPU heap allocations.
+In many cases, the allocation happens with 0 new CPU heap allocations performed by the library.
+Even the creation of a D3D12MA::Allocation object doesn't typically feature an CPU allocation,
+because these objects are returned out of a dedicated memory pool.
+
+That said, %D3D12MA needs some extra memory and extra time
+to maintain the metadata about the occupied and free regions of the memory blocks,
+and the algorithms and data structures used must be generic enough to work well in most cases.
+
+<b>Does it have a documentation?</b>
+
+Yes! %D3D12MA comes with full documentation of all elements of the API (classes, structures, enums),
+as well as many generic chapters that provide an introduction,
+describe core concepts of the library, good practices, etc.
+The entire documentation is written in form of code comments inside "D3D12MemAlloc.h", in Doxygen format.
+You can access it in multiple ways:
+
+- Browsable online: https://gpuopen-librariesandsdks.github.io/D3D12MemoryAllocator/html/
+- Local HTML pages available after you clone the repository and open file "docs\html\index.html".
+- You can rebuild the documentation in HTML or some other format from the source code using Doxygen.
+  Configuration file "Doxyfile" is part of the repository.
+- Finally, you can just read the comments preceding declarations of any public classes and functions of the library.
+
+<b>Is it a mature project?</b>
+
+Yes! The library is in development since May 2019, has over 300 commits, and multiple contributors.
+It is used by many software projects, including some large and popular ones like Qt or Godot Engine,
+as well as some AAA games.
+
+<b>How can I contribute to the project?</b>
+
+If you have an idea for improvement or a feature request,
+you can go to [the library repository](https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator)
+and create an Issue ticket, describing your idea.
+You can also implement it yourself by forking the repository, making changes to the code,
+and creating a Pull request.
+
+If you want to ask a question, you can also create a ticket the same way.
+Before doing this, please make sure you read the relevant part of the DX12 documentation and %D3D12MA documentation,
+where you may find the answers to your question.
+
+If you want to report a suspected bug, you can also create a ticket the same way.
+Before doing this, please put some effort into the investigation of whether the bug is really
+in the library and not in your code or in the DX12 implementation (the GPU driver) on your platform:
+
+- Enable D3D Debug Layer and make sure it is free from any errors.
+- Make sure `D3D12MA_ASSERT` is defined to an implementation that can report a failure and not ignore it.
+- Try making your allocation using pure DX12 functions like `CreateCommittedResource()` rather than %D3D12MA and see if the bug persists.
+
+<b>I found some compilation warnings. How can we fix them?</b>
+
+Seeing compiler warnings may be annoying to some developers,
+but it is a design decision to not fix all of them.
+Due to the nature of the C++ language, certain preprocessor macros can make some variables unused,
+function parameters unreferenced, or conditional expressions constant in some configurations.
+The code of this library should not be bigger or more complicated just to silence these warnings.
+It is recommended to disable such warnings instead.
+For more information, see [Features not supported](@ref general_considerations_features_not_supported).
+
+However, if you observe a warning that is really dangerous, e.g.,
+about an implicit conversion from a larger to a smaller integer type, please report it and it will be fixed ASAP.
+
+
 \page quick_start Quick start
 
 \section quick_start_project_setup Project setup and initialization
@@ -2646,6 +2881,23 @@ and D3D12MA::POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED on the creation of any cus
 With those flags, the alignment of the heaps created by %D3D12MA can be lower, but any MSAA textures are created as committed.
 You should always use these flags in your code unless you really need to create some MSAA textures as placed.
 
+With DirectX 12 Agility SDK 1.618.1, Microsoft added a new feature called **"tight alignment"**.
+Note this is a separate feature than the "small alignment" described earlier.
+When using this new SDK and a compatible graphics driver, the API exposes support for this new feature.
+Then, a new flag `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` can be added when creating a resource.
+D3D12 can then return the alignment required for the resource smaller than the default ones described above.
+This library automatically makes use of the tight alignment feature when available and adds that new resource flag.
+When the tight alignment is enabled, the heuristics that creates small buffers as committed described above is deactivated,
+as it is no longer needed.
+
+You can check if the tight alignment it is available in the current system by calling D3D12MA::Allocator::IsTightAlignmentSupported().
+You can tell the library to not use it by specifying D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT.
+Typically, you don't need to do any of those.
+
+The library automatically aligns all buffers to at least 256 B, even when the system supports smaller alignment.
+This is the alignment required for constant buffers, expressed by `D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT` constant.
+You can override this logic for \subpage custom_pools with a specific D3D12MA::POOL_DESC::MinAllocationAlignment.
+
 \page defragmentation Defragmentation
 
 Interleaved allocations and deallocations of many objects of varying size can
@@ -3340,7 +3592,7 @@ Features deliberately excluded from the scope of this library:
 - **Descriptor allocation.** Although also called "heaps", objects that represent
   descriptors are separate part of the D3D12 API from buffers and textures.
   You can still use \ref virtual_allocator to manage descriptors and their ranges inside a descriptor heap.
-- **Support for reserved (tiled) resources.** We don't recommend using them.
+- **Support for reserved (tiled) resources.** We don't recommend using them. For more information, see [1].
 - Support for `ID3D12Device::Evict` and `MakeResident`. We don't recommend using them.
   You can call them on the D3D12 objects manually.
   Plese keep in mind, however, that eviction happens on the level of entire `ID3D12Heap` memory blocks
@@ -3357,4 +3609,6 @@ Features deliberately excluded from the scope of this library:
   It is recommended to disable such warnings instead.
 - This is a C++ library. **Bindings or ports to any other programming languages** are welcome as external projects but
   are not going to be included into this repository.
+
+[1] Antoine Richermoz, Fabrice Neyret. The Sad State of Hardware Virtual Textures. UGA - Universite Grenoble Alpes; INRIA Grenoble - Rhone-Alpes. 2025, pp.13. hal-05138369
 */
