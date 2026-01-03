@@ -260,8 +260,6 @@ private:
 
 	void clear_internal();
 
-	void _editor_settings_changed();
-
 	void _swap_current_input_direction();
 	void _move_caret_left(bool p_select, bool p_move_by_word = false);
 	void _move_caret_right(bool p_select, bool p_move_by_word = false);
@@ -466,3 +464,8 @@ public:
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
 VARIANT_ENUM_CAST(LineEdit::ExpandMode);
+
+#ifdef TOOLS_ENABLED
+void postinitialize_handler_in_editor(LineEdit *);
+void predelete_handler_in_editor(LineEdit *);
+#endif

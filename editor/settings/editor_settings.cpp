@@ -49,6 +49,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/project_manager/engine_update_label.h"
+#include "editor/settings/editor_settings_helper.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation.h"
 #include "main/main.h"
@@ -791,6 +792,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+	_initial_set("text_editor/behavior/general/middle_mouse_paste", true, true);
 
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
@@ -1312,6 +1314,8 @@ void EditorSettings::create() {
 		singleton->_remove_deprecated_settings();
 #endif
 
+		EditorSettingsHelper::create();
+
 		return;
 	}
 
@@ -1334,6 +1338,8 @@ fail:
 	singleton->setup_language(true);
 	singleton->setup_network();
 	singleton->update_text_editor_themes_list();
+
+	EditorSettingsHelper::create();
 }
 
 void EditorSettings::setup_language(bool p_initial_setup) {
@@ -1430,6 +1436,8 @@ void EditorSettings::mark_setting_changed(const String &p_setting) {
 }
 
 void EditorSettings::destroy() {
+	EditorSettingsHelper::destroy();
+
 	if (!singleton.ptr()) {
 		return;
 	}

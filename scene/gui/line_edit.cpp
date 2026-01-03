@@ -43,10 +43,6 @@
 #include "servers/display/display_server.h"
 #include "servers/text/text_server.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/settings/editor_settings.h"
-#endif
-
 void LineEdit::edit(bool p_hide_focus) {
 	_edit(true, p_hide_focus);
 }
@@ -1210,18 +1206,6 @@ void LineEdit::_accessibility_action_menu(const Variant &p_data) {
 
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
-#ifdef TOOLS_ENABLED
-		case NOTIFICATION_ENTER_TREE: {
-			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
-				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-
-				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
-					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
-				}
-			}
-		} break;
-#endif
 		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			accessibility_text_root_element = RID();
@@ -2856,16 +2840,6 @@ PopupMenu *LineEdit::get_menu() const {
 		const_cast<LineEdit *>(this)->_generate_context_menu();
 	}
 	return menu;
-}
-
-void LineEdit::_editor_settings_changed() {
-#ifdef TOOLS_ENABLED
-	if (!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/appearance/caret")) {
-		return;
-	}
-	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-#endif
 }
 
 void LineEdit::set_expand_to_text_length_enabled(bool p_enabled) {
