@@ -94,6 +94,7 @@ public:
 
 	struct PackData {
 		String path;
+		String salt;
 		Ref<FileAccess> f;
 		Vector<SavedData> file_ofs;
 		EditorProgress *ep = nullptr;
@@ -101,7 +102,7 @@ public:
 		bool use_sparse_pck = false;
 	};
 
-	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs);
+	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt);
 	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
 	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const String &p_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool &r_encrypt);
 	String _get_script_encryption_key(const Ref<EditorExportPreset> &p_preset) const;

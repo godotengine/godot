@@ -39,6 +39,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/math/random_pcg.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_log.h"
@@ -815,7 +816,12 @@ Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &
 		return err;
 	}
 
-	const String dst_path = String("assets/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (ed->pd.salt.length() == 32) {
+		dst_path = String("assets/") + (simplified_path + ed->pd.salt).sha256_text();
+	} else {
+		dst_path = String("assets/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
 	store_in_apk(ed, dst_path, enc_data, _should_compress_asset(simplified_path, enc_data) ? Z_DEFLATED : 0);
 
@@ -3535,7 +3541,7 @@ Error EditorExportPlatformAndroid::_generate_sparse_pck_metadata(const Ref<Edito
 	int64_t pck_start_pos = ftmp->get_position();
 	uint64_t file_base_ofs = 0;
 	uint64_t dir_base_ofs = 0;
-	EditorExportPlatform::_store_header(ftmp, p_preset->get_enc_pck() && p_preset->get_enc_directory(), true, file_base_ofs, dir_base_ofs);
+	EditorExportPlatform::_store_header(ftmp, p_preset->get_enc_pck() && p_preset->get_enc_directory(), true, file_base_ofs, dir_base_ofs, p_pack_data.salt);
 
 	// Write directory.
 	uint64_t dir_offset = ftmp->get_position();
@@ -3718,6 +3724,12 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			} else {
 				user_data.pd.path = "assets.sparsepck";
 				user_data.pd.use_sparse_pck = true;
+				if (p_preset->get_enc_directory()) {
+					RandomPCG rng = RandomPCG(p_preset->get_seed());
+					for (int i = 0; i < 32; i++) {
+						user_data.pd.salt += String::chr(1 + rng.rand() % 254);
+					}
+				}
 				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
 
 				Vector<uint8_t> enc_data;
@@ -4224,6 +4236,12 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			ed.apk = unaligned_apk;
 			ed.pd.path = "assets.sparsepck";
 			ed.pd.use_sparse_pck = true;
+			if (p_preset->get_enc_directory()) {
+				RandomPCG rng = RandomPCG(p_preset->get_seed());
+				for (int i = 0; i < 32; i++) {
+					ed.pd.salt += String::chr(1 + rng.rand() % 254);
+				}
+			}
 			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
 
 			Vector<uint8_t> enc_data;
