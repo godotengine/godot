@@ -3790,6 +3790,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
 		Vector<String> android_dependencies_maven_repos;
+		Vector<String> android_gradle_plugins;
 
 #ifndef DISABLE_DEPRECATED
 		Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
@@ -3815,6 +3816,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 				PackedStringArray export_plugin_android_dependencies_maven_repos = export_plugins[i]->get_android_dependencies_maven_repos(Ref<EditorExportPlatform>(this), p_debug);
 				android_dependencies_maven_repos.append_array(export_plugin_android_dependencies_maven_repos);
+
+				PackedStringArray export_plugin_android_gradle_plugins = export_plugins[i]->get_android_gradle_plugins(Ref<EditorExportPlatform>(this), p_debug);
+				android_gradle_plugins.append_array(export_plugin_android_gradle_plugins);
 			}
 
 			PackedStringArray features = export_plugins[i]->get_export_features(Ref<EditorExportPlatform>(this), p_debug);
@@ -3827,6 +3831,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String combined_android_libraries = String("|").join(android_libraries);
 		String combined_android_dependencies = String("|").join(android_dependencies);
 		String combined_android_dependencies_maven_repos = String("|").join(android_dependencies_maven_repos);
+		String combined_android_gradle_plugins = String("|").join(android_gradle_plugins);
 
 		List<String> cmdline;
 		cmdline.push_back("validateJavaVersion");
@@ -3860,6 +3865,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pplugins_local_binaries=" + combined_android_libraries); // argument to specify the list of android libraries provided by plugins.
 		cmdline.push_back("-Pplugins_remote_binaries=" + combined_android_dependencies); // argument to specify the list of android dependencies provided by plugins.
 		cmdline.push_back("-Pplugins_maven_repos=" + combined_android_dependencies_maven_repos); // argument to specify the list of maven repos for android dependencies provided by plugins.
+		cmdline.push_back("-Pplugins_remote_gradle_plugins=" + combined_android_gradle_plugins); // argument to specify the list of android plugins provided by plugins.
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
