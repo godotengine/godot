@@ -3671,7 +3671,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			}
 		} else if (!is_self && base_type.is_meta_type && !p_call->is_static) {
 			base_type.is_meta_type = false; // For `to_string()`.
-			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance instead.)*", p_call->function_name, base_type.to_string()), p_call);
+			const String base_class_name = base_type.to_string();
+			push_error(vformat(R"*(Cannot call non-static function "%s()" on the class "%s" directly. Make an instance using "var %s = %s.new()" and call functions on this instance.)*", p_call->function_name, base_class_name, base_class_name.to_snake_case(), base_class_name), p_call);
 		} else if (is_self && !p_call->is_static) {
 			mark_lambda_use_self();
 		}
