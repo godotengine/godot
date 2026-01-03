@@ -148,7 +148,7 @@ private:
 		List<Branch> branches;
 		Branch *current_branch = nullptr;
 		int condition_depth = 0;
-		RBSet<String> includes;
+		HashSet<String> includes;
 		List<uint64_t> cyclic_include_hashes; // Holds code hash of includes.
 		int include_depth = 0;
 		String current_filename;

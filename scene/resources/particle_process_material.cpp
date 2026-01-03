@@ -36,7 +36,7 @@ Mutex ParticleProcessMaterial::dirty_materials_mutex;
 SelfList<ParticleProcessMaterial>::List ParticleProcessMaterial::dirty_materials;
 Mutex ParticleProcessMaterial::shader_map_mutex;
 HashMap<ParticleProcessMaterial::MaterialKey, ParticleProcessMaterial::ShaderData, ParticleProcessMaterial::MaterialKey> ParticleProcessMaterial::shader_map;
-RBSet<String> ParticleProcessMaterial::min_max_properties;
+HashSet<String> ParticleProcessMaterial::min_max_properties;
 ParticleProcessMaterial::ShaderNames *ParticleProcessMaterial::shader_names = nullptr;
 
 void ParticleProcessMaterial::init_shaders() {

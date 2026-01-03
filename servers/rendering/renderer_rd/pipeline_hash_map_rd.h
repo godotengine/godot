@@ -45,7 +45,7 @@ private:
 	RBMap<uint32_t, RID> hash_map;
 	LocalVector<Pair<uint32_t, RID>> compiled_queue;
 	Mutex compiled_queue_mutex;
-	RBSet<uint32_t> compilation_set;
+	HashSet<uint32_t> compilation_set;
 	HashMap<uint32_t, WorkerThreadPool::TaskID> compilation_tasks;
 	Mutex local_mutex;
 
