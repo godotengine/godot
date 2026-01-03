@@ -32,10 +32,13 @@
 
 #include "../../openxr_api.h"
 #include "core/config/project_settings.h"
-#include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/xr/xr_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/resources/3d/box_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationPlaneTracking
@@ -279,7 +282,9 @@ void OpenXRPlaneTracker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mesh_offset"), &OpenXRPlaneTracker::get_mesh_offset);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &OpenXRPlaneTracker::get_mesh);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_shape", "thickness"), &OpenXRPlaneTracker::get_shape, DEFVAL(0.01));
+#endif // PHYSICS_3D_DISABLED
 
 	ADD_SIGNAL(MethodInfo("mesh_changed"));
 }
@@ -384,7 +389,9 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 
 		if (has_changed) {
 			mesh.mesh.unref();
+#ifndef PHYSICS_3D_DISABLED
 			mesh.shape3d.unref();
+#endif // PHYSICS_3D_DISABLED
 
 			emit_signal(SNAME("mesh_changed"));
 		}
@@ -393,7 +400,9 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 
 void OpenXRPlaneTracker::clear_mesh_data() {
 	mesh.mesh.unref();
+#ifndef PHYSICS_3D_DISABLED
 	mesh.shape3d.unref();
+#endif // PHYSICS_3D_DISABLED
 
 	if (mesh.has_mesh_data) {
 		mesh.has_mesh_data = false;
@@ -473,6 +482,7 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 	return mesh.mesh;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Ref<Shape3D> OpenXRPlaneTracker::get_shape(real_t p_thickness) {
 	// We've already created this? Just return it!
 	if (mesh.shape3d.is_valid()) {
@@ -561,6 +571,7 @@ Ref<Shape3D> OpenXRPlaneTracker::get_shape(real_t p_thickness) {
 
 	return mesh.shape3d;
 }
+#endif // PHYSICS_3D_DISABLED
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialPlaneTrackingCapability
