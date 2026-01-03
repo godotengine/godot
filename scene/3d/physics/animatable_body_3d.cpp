@@ -80,7 +80,7 @@ void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
-	_on_transform_changed();
+	_on_transform_changed(true);
 }
 
 void AnimatableBody3D::_notification(int p_what) {
@@ -110,7 +110,7 @@ void AnimatableBody3D::_notification(int p_what) {
 			set_notify_local_transform(false);
 			set_global_transform(last_valid_transform);
 			set_notify_local_transform(true);
-			_on_transform_changed();
+			_on_transform_changed(false);
 		} break;
 	}
 }

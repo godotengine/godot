@@ -76,6 +76,10 @@ void CollisionObject2D::_notification(int p_what) {
 			_update_pickable();
 		} break;
 
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_fti_physics_reset_requested = true;
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -539,6 +543,13 @@ void CollisionObject2D::_mouse_shape_enter(int p_shape) {
 void CollisionObject2D::_mouse_shape_exit(int p_shape) {
 	GDVIRTUAL_CALL(_mouse_shape_exit, p_shape);
 	emit_signal(SceneStringName(mouse_shape_exited), p_shape);
+}
+
+void CollisionObject2D::_on_physics_callback() {
+	if (_fti_physics_reset_requested) {
+		reset_physics_interpolation();
+		_fti_physics_reset_requested = false;
+	}
 }
 
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {

@@ -81,6 +81,10 @@ private:
 	RBMap<uint32_t, ShapeData> shapes;
 	bool only_update_transform_changes = false; // This is used for sync to physics.
 
+	// Physics bodies using sync to physics defer setting global xform until callbacks from the physics.
+	// In these cases, resets should also be deferred until the callback, because global_xforms will be stale.
+	bool _fti_physics_reset_requested = false;
+
 	void _apply_disabled();
 	void _apply_enabled();
 
@@ -104,6 +108,8 @@ protected:
 
 	void _mouse_shape_enter(int p_shape);
 	void _mouse_shape_exit(int p_shape);
+
+	void _on_physics_callback();
 
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
