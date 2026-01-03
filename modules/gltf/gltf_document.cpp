@@ -233,6 +233,11 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> p_state) {
 	// Godot only supports one scene per glTF file.
 	Array scenes;
 	Dictionary scene_dict;
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_scene(p_state, scene_dict);
+		ERR_CONTINUE(err != OK);
+	}
 	scenes.append(scene_dict);
 	p_state->json["scenes"] = scenes;
 	p_state->json["scene"] = 0;
@@ -554,6 +559,16 @@ Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
 		}
 		if (_naming_version == 0) {
 			p_state->scene_name = _gen_unique_name(p_state, p_state->scene_name);
+		}
+
+		if (scene_dict.has("extensions")) {
+			Dictionary extensions = scene_dict["extensions"];
+
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				ERR_CONTINUE(ext.is_null());
+				Error err = ext->parse_scene_extensions(p_state, extensions);
+				ERR_CONTINUE_MSG(err != OK, "glTF: Encountered error " + itos(err) + " when parsing scene extensions in file " + p_state->filename + ". Continuing.");
+			}
 		}
 	}
 

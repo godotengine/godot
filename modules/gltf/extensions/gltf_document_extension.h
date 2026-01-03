@@ -44,6 +44,7 @@ public:
 	// Import process.
 	virtual Error import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions);
 	virtual Vector<String> get_supported_extensions();
+	virtual Error parse_scene_extensions(Ref<GLTFState> p_state, const Dictionary &p_extensions);
 	virtual Error parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions);
 	virtual Error parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image);
 	virtual String get_image_file_extension();
@@ -65,11 +66,13 @@ public:
 	virtual Error save_image_at_path(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_file_path, const String &p_image_format, float p_lossy_quality);
 	virtual Error serialize_texture_json(Ref<GLTFState> p_state, Dictionary &r_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format);
 	virtual Error export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
+	virtual Error export_scene(Ref<GLTFState> p_state, Dictionary &r_json);
 	virtual Error export_post(Ref<GLTFState> p_state);
 
 	// Import process.
 	GDVIRTUAL2R(Error, _import_preflight, Ref<GLTFState>, Vector<String>);
 	GDVIRTUAL0R(Vector<String>, _get_supported_extensions);
+	GDVIRTUAL2R(Error, _parse_scene_extensions, Ref<GLTFState>, Dictionary);
 	GDVIRTUAL3R(Error, _parse_node_extensions, Ref<GLTFState>, Ref<GLTFNode>, Dictionary);
 	GDVIRTUAL4R(Error, _parse_image_data, Ref<GLTFState>, PackedByteArray, String, Ref<Image>);
 	GDVIRTUAL0R(String, _get_image_file_extension);
@@ -91,5 +94,6 @@ public:
 	GDVIRTUAL5R(Error, _save_image_at_path, Ref<GLTFState>, Ref<Image>, String, String, float);
 	GDVIRTUAL4R(Error, _serialize_texture_json, Ref<GLTFState>, Dictionary, Ref<GLTFTexture>, String);
 	GDVIRTUAL4R(Error, _export_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);
+	GDVIRTUAL2R(Error, _export_scene, Ref<GLTFState>, Dictionary);
 	GDVIRTUAL1R(Error, _export_post, Ref<GLTFState>);
 };
