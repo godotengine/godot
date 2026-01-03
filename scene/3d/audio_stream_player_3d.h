@@ -97,7 +97,7 @@ private:
 #endif // PHYSICS_3D_DISABLED
 	Vector<AudioFrame> _update_panning();
 
-	uint32_t area_mask = 1;
+	uint32_t area_mask = 0;
 
 	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 

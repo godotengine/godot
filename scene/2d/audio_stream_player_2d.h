@@ -68,7 +68,7 @@ private:
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
-	uint32_t area_mask = 1;
+	uint32_t area_mask = 0;
 
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
