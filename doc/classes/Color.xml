@@ -546,7 +546,7 @@
 			Antique white color.
 		</constant>
 		<constant name="AQUA" value="Color(0, 1, 1, 1)">
-			Aqua color.
+			Aqua color. This is the same as [constant CYAN].
 		</constant>
 		<constant name="AQUAMARINE" value="Color(0.49803922, 1, 0.83137256, 1)">
 			Aquamarine color.
@@ -600,7 +600,7 @@
 			Crimson color.
 		</constant>
 		<constant name="CYAN" value="Color(0, 1, 1, 1)">
-			Cyan color.
+			Cyan color. This is the same as [constant AQUA].
 		</constant>
 		<constant name="DARK_BLUE" value="Color(0, 0, 0.54509807, 1)">
 			Dark blue color.
@@ -611,7 +611,7 @@
 		<constant name="DARK_GOLDENROD" value="Color(0.72156864, 0.5254902, 0.043137256, 1)">
 			Dark goldenrod color.
 		</constant>
-		<constant name="DARK_GRAY" value="Color(0.6627451, 0.6627451, 0.6627451, 1)">
+		<constant name="DARK_GRAY" value="Color(0.6627451, 0.6627451, 0.6627451, 1)" keywords="dark_grey">
 			Dark gray color.
 		</constant>
 		<constant name="DARK_GREEN" value="Color(0, 0.39215687, 0, 1)">
@@ -659,7 +659,7 @@
 		<constant name="DEEP_SKY_BLUE" value="Color(0, 0.7490196, 1, 1)">
 			Deep sky blue color.
 		</constant>
-		<constant name="DIM_GRAY" value="Color(0.4117647, 0.4117647, 0.4117647, 1)">
+		<constant name="DIM_GRAY" value="Color(0.4117647, 0.4117647, 0.4117647, 1)" keywords="dim_grey">
 			Dim gray color.
 		</constant>
 		<constant name="DODGER_BLUE" value="Color(0.11764706, 0.5647059, 1, 1)">
@@ -675,7 +675,7 @@
 			Forest green color.
 		</constant>
 		<constant name="FUCHSIA" value="Color(1, 0, 1, 1)">
-			Fuchsia color.
+			Fuchsia color. This is the same as [constant MAGENTA].
 		</constant>
 		<constant name="GAINSBORO" value="Color(0.8627451, 0.8627451, 0.8627451, 1)">
 			Gainsboro color.
@@ -689,11 +689,11 @@
 		<constant name="GOLDENROD" value="Color(0.85490197, 0.64705884, 0.1254902, 1)">
 			Goldenrod color.
 		</constant>
-		<constant name="GRAY" value="Color(0.74509805, 0.74509805, 0.74509805, 1)">
+		<constant name="GRAY" value="Color(0.74509805, 0.74509805, 0.74509805, 1)" keywords="grey">
 			Gray color.
 		</constant>
 		<constant name="GREEN" value="Color(0, 1, 0, 1)">
-			Green color.
+			Green color. This is the same as [constant LIME].
 		</constant>
 		<constant name="GREEN_YELLOW" value="Color(0.6784314, 1, 0.18431373, 1)">
 			Green yellow color.
@@ -740,7 +740,7 @@
 		<constant name="LIGHT_GOLDENROD" value="Color(0.98039216, 0.98039216, 0.8235294, 1)">
 			Light goldenrod color.
 		</constant>
-		<constant name="LIGHT_GRAY" value="Color(0.827451, 0.827451, 0.827451, 1)">
+		<constant name="LIGHT_GRAY" value="Color(0.827451, 0.827451, 0.827451, 1)" keywords="light_grey">
 			Light gray color.
 		</constant>
 		<constant name="LIGHT_GREEN" value="Color(0.5647059, 0.93333334, 0.5647059, 1)">
@@ -758,7 +758,7 @@
 		<constant name="LIGHT_SKY_BLUE" value="Color(0.5294118, 0.80784315, 0.98039216, 1)">
 			Light sky blue color.
 		</constant>
-		<constant name="LIGHT_SLATE_GRAY" value="Color(0.46666667, 0.53333336, 0.6, 1)">
+		<constant name="LIGHT_SLATE_GRAY" value="Color(0.46666667, 0.53333336, 0.6, 1)" keywords="light_slate_grey">
 			Light slate gray color.
 		</constant>
 		<constant name="LIGHT_STEEL_BLUE" value="Color(0.6901961, 0.76862746, 0.87058824, 1)">
@@ -768,7 +768,7 @@
 			Light yellow color.
 		</constant>
 		<constant name="LIME" value="Color(0, 1, 0, 1)">
-			Lime color.
+			Lime color. This is the same as [constant GREEN].
 		</constant>
 		<constant name="LIME_GREEN" value="Color(0.19607843, 0.8039216, 0.19607843, 1)">
 			Lime green color.
@@ -777,7 +777,7 @@
 			Linen color.
 		</constant>
 		<constant name="MAGENTA" value="Color(1, 0, 1, 1)">
-			Magenta color.
+			Magenta color. This is the same as [constant FUCHSIA].
 		</constant>
 		<constant name="MAROON" value="Color(0.6901961, 0.1882353, 0.3764706, 1)">
 			Maroon color.
@@ -824,7 +824,7 @@
 		<constant name="NAVAJO_WHITE" value="Color(1, 0.87058824, 0.6784314, 1)">
 			Navajo white color.
 		</constant>
-		<constant name="NAVY_BLUE" value="Color(0, 0, 0.5019608, 1)">
+		<constant name="NAVY_BLUE" value="Color(0, 0, 0.5019608, 1)" keywords="navy">
 			Navy blue color.
 		</constant>
 		<constant name="OLD_LACE" value="Color(0.99215686, 0.9607843, 0.9019608, 1)">
@@ -917,7 +917,7 @@
 		<constant name="SLATE_BLUE" value="Color(0.41568628, 0.3529412, 0.8039216, 1)">
 			Slate blue color.
 		</constant>
-		<constant name="SLATE_GRAY" value="Color(0.4392157, 0.5019608, 0.5647059, 1)">
+		<constant name="SLATE_GRAY" value="Color(0.4392157, 0.5019608, 0.5647059, 1)" keywords="slate_grey">
 			Slate gray color.
 		</constant>
 		<constant name="SNOW" value="Color(1, 0.98039216, 0.98039216, 1)">
@@ -950,7 +950,7 @@
 		<constant name="VIOLET" value="Color(0.93333334, 0.50980395, 0.93333334, 1)">
 			Violet color.
 		</constant>
-		<constant name="WEB_GRAY" value="Color(0.5019608, 0.5019608, 0.5019608, 1)">
+		<constant name="WEB_GRAY" value="Color(0.5019608, 0.5019608, 0.5019608, 1)" keywords="web_grey">
 			Web gray color.
 		</constant>
 		<constant name="WEB_GREEN" value="Color(0, 0.5019608, 0, 1)">
