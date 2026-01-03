@@ -175,6 +175,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
 	E->value.nodes.push_back(p_node);
 	E->value.changed = true;
+	emit_signal(SNAME("node_added_to_group"), p_group, p_node);
 	return &E->value;
 }
 
@@ -187,6 +188,7 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	E->value.nodes.erase(p_node);
 	if (E->value.nodes.is_empty()) {
 		group_map.remove(E);
+		emit_signal(SNAME("node_removed_from_group"), p_group, p_node);
 	}
 }
 
@@ -1957,6 +1959,8 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_added_to_group", PropertyInfo(Variant::STRING_NAME, "group"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_removed_from_group", PropertyInfo(Variant::STRING_NAME, "group"), PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
