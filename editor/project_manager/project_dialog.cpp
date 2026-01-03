@@ -843,6 +843,14 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 	if (mode == MODE_IMPORT && !p_is_confirmed) {
 		return;
 	}
+
+	Size2 popup_size = Size2(500, 0) * EDSCALE;
+
+	if (mode == MODE_NEW && !p_is_confirmed) {
+		popup_centered(popup_size);
+		return;
+	}
+
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -970,7 +978,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 
 	_validate_path();
 
-	popup_centered(Size2(500, 0) * EDSCALE);
+	popup_centered(popup_size);
 }
 
 void ProjectDialog::_notification(int p_what) {
