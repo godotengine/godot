@@ -128,7 +128,12 @@ void EditorImportPlugin::get_import_options(const String &p_path, List<ResourceI
 			usage = d["usage"];
 		}
 
-		ImportOption option(PropertyInfo(default_value.get_type(), name, hint, hint_string, usage), default_value);
+		Variant::Type type = default_value.get_type();
+		if (type == Variant::NIL && hint == PROPERTY_HINT_RESOURCE_TYPE) {
+			type = Variant::OBJECT;
+		}
+
+		ImportOption option(PropertyInfo(type, name, hint, hint_string, usage), default_value);
 		r_options->push_back(option);
 	}
 }
