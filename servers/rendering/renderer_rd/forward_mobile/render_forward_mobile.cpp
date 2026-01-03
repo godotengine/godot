@@ -847,7 +847,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RID framebuffer;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool merge_transparent_pass = true; // If true: we can do our transparent pass in the same pass as our opaque pass.
-	bool using_subpass_post_process = true; // If true: we can do our post processing in a subpass
+	bool using_subpass_post_process = !avoid_subpass_post_process; // If true: we can do our post processing in a subpass
 	RendererRD::MaterialStorage::Samplers samplers;
 	bool hdr_render_target = false;
 
@@ -3453,6 +3453,14 @@ RenderForwardMobile::RenderForwardMobile() {
 	const bool root_hdr_render_target = GLOBAL_GET("rendering/viewport/hdr_2d");
 	global_pipeline_data_required.use_hdr_render_target = root_hdr_render_target;
 	global_pipeline_data_required.use_ldr_render_target = !root_hdr_render_target;
+
+	// GH-112530 avoid post processing in a subpass
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
+	ERR_FAIL_NULL(rendering_device);
+
+	avoid_subpass_post_process = rendering_device->get_device_workarounds().avoid_subpass_post_process;
 }
 
 RenderForwardMobile::~RenderForwardMobile() {

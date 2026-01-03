@@ -77,6 +77,7 @@ public:
 
 	struct Workarounds {
 		bool avoid_compute_after_draw = false;
+		bool avoid_subpass_post_process = false;
 	};
 
 	struct Device {
