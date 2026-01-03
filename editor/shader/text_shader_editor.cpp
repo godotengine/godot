@@ -941,6 +941,34 @@ void TextShaderEditor::_reload() {
 	}
 }
 
+void TextShaderEditor::_file_system_changed(const Vector<String> &p_resources) {
+	// Check if the currently edited shader or shader include was externally modified.
+	String shader_path;
+	uint64_t last_modified_time = 0;
+
+	if (shader_inc.is_valid()) {
+		shader_path = shader_inc->get_path();
+		last_modified_time = shader_inc->get_last_modified_time();
+	} else if (shader.is_valid() && !shader->is_built_in()) {
+		shader_path = shader->get_path();
+		last_modified_time = shader->get_last_modified_time();
+	}
+
+	if (shader_path.is_empty() || !p_resources.has(shader_path)) {
+		return;
+	}
+
+	if (last_modified_time == FileAccess::get_modified_time(shader_path)) {
+		return;
+	}
+
+	if (EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change").booleanize()) {
+		_reload();
+	} else {
+		callable_mp((Window *)disk_changed, &Window::popup_centered).call_deferred(Size2i());
+	}
+}
+
 void TextShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
@@ -1190,6 +1218,7 @@ TextShaderEditor::TextShaderEditor() {
 	code_editor->connect(CoreStringName(script_changed), callable_mp(this, &TextShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
+	EditorFileSystem::get_singleton()->connect("resources_reload", callable_mp(this, &TextShaderEditor::_file_system_changed));
 
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
