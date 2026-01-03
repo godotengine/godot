@@ -460,6 +460,26 @@ TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
 	return cells[p_column].autowrap_mode;
 }
 
+void TreeItem::set_autowrap_trim_flags(int p_column, BitField<TextServer::LineBreakFlag> p_flags) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	// Only trim-related flags are valid for this property.
+	BitField<TextServer::LineBreakFlag> masked_flags = p_flags & TextServer::BREAK_TRIM_MASK;
+	if (cells[p_column].autowrap_trim_flags == masked_flags) {
+		return;
+	}
+
+	cells.write[p_column].autowrap_trim_flags = masked_flags;
+	cells.write[p_column].dirty = true;
+	_changed_notify(p_column);
+	cells.write[p_column].cached_minimum_size_dirty = true;
+}
+
+BitField<TextServer::LineBreakFlag> TreeItem::get_autowrap_trim_flags(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
+	return cells[p_column].autowrap_trim_flags;
+}
+
 void TreeItem::set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -1810,6 +1830,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "column", "flags"), &TreeItem::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags", "column"), &TreeItem::get_autowrap_trim_flags);
+
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "column", "overrun_behavior"), &TreeItem::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior", "column"), &TreeItem::get_text_overrun_behavior);
 
@@ -2218,7 +2241,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 	const String &lang = p_item->cells[p_col].language.is_empty() ? _get_locale() : p_item->cells[p_col].language;
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, lang);
 
-	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | p_item->cells[p_col].autowrap_trim_flags;
 	switch (p_item->cells.write[p_col].autowrap_mode) {
 		case TextServer::AUTOWRAP_OFF:
 			break;
