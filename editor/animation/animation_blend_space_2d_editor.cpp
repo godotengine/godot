@@ -472,14 +472,14 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
 	blend_space_draw->draw_line(Point2(0, 0), Point2(5 * EDSCALE, 0), linecolor, Math::round(EDSCALE));
-	if (blend_space->get_min_space().y < 0) {
+	if (blend_space->get_min_space().y <= 0 && blend_space->get_max_space().y >= 0) {
 		int y = (blend_space->get_max_space().y / (blend_space->get_max_space().y - blend_space->get_min_space().y)) * s.height;
 		blend_space_draw->draw_line(Point2(0, y), Point2(5 * EDSCALE, y), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(2 * EDSCALE, y - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
 		blend_space_draw->draw_line(Point2(5 * EDSCALE, y), Point2(s.width, y), linecolor_soft, Math::round(EDSCALE));
 	}
 
-	if (blend_space->get_min_space().x < 0) {
+	if (blend_space->get_min_space().x <= 0 && blend_space->get_max_space().x >= 0) {
 		int x = (-blend_space->get_min_space().x / (blend_space->get_max_space().x - blend_space->get_min_space().x)) * s.width;
 		blend_space_draw->draw_line(Point2(x, s.height - 1), Point2(x, s.height - 5 * EDSCALE), linecolor, Math::round(EDSCALE));
 		blend_space_draw->draw_string(font, Point2(x + 2 * EDSCALE, s.height - 2 * EDSCALE - font->get_height(font_size) + font->get_ascent(font_size)), "0", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, linecolor);
@@ -491,7 +491,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		if (blend_space->get_snap().x > 0) {
 			int prev_idx = 0;
-			for (int i = 0; i < s.x; i++) {
+			for (int i = 0; i <= s.x; i++) {
 				float v = blend_space->get_min_space().x + i * (blend_space->get_max_space().x - blend_space->get_min_space().x) / s.x;
 				int idx = int(v / blend_space->get_snap().x);
 
@@ -505,7 +505,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		if (blend_space->get_snap().y > 0) {
 			int prev_idx = 0;
-			for (int i = 0; i < s.y; i++) {
+			for (int i = 0; i <= s.y; i++) {
 				float v = blend_space->get_max_space().y - i * (blend_space->get_max_space().y - blend_space->get_min_space().y) / s.y;
 				int idx = int(v / blend_space->get_snap().y);
 
@@ -684,6 +684,12 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	}
 
 	updating = true;
+
+	min_x_value->set_max(max_x_value->get_value() - 0.01);
+	max_x_value->set_min(min_x_value->get_value() + 0.01);
+	min_y_value->set_max(max_y_value->get_value() - 0.01);
+	max_y_value->set_min(min_y_value->get_value() + 0.01);
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change BlendSpace2D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
@@ -1038,11 +1044,11 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		left_vbox->add_child(min_y_value);
 
 		max_y_value->set_max(10000);
-		max_y_value->set_min(0.01);
+		max_y_value->set_min(-10000);
 		max_y_value->set_step(0.01);
 
 		min_y_value->set_min(-10000);
-		min_y_value->set_max(0);
+		min_y_value->set_max(10000);
 		min_y_value->set_step(0.01);
 	}
 
@@ -1077,11 +1083,11 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		bottom_vbox->add_child(max_x_value);
 
 		max_x_value->set_max(10000);
-		max_x_value->set_min(0.01);
+		max_x_value->set_min(-10000);
 		max_x_value->set_step(0.01);
 
 		min_x_value->set_min(-10000);
-		min_x_value->set_max(0);
+		min_x_value->set_max(10000);
 		min_x_value->set_step(0.01);
 	}
 
