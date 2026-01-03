@@ -2405,6 +2405,15 @@ def format_text_block(
             state,
         )
 
+    # Remove extraneous empty lines.
+    pattern = re.compile(r"(?m)^\n+$")
+    text = pattern.sub("", text)
+    # Replace with removeprefix("\n").removesuffix("\n") when minimum Python version changes to >= 3.9
+    if text[0] == "\n":
+        text = text[1:]
+    if text[-1] == "\n":
+        text = text[:-1]
+
     return text
 
 
