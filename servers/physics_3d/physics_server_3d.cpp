@@ -797,6 +797,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer3D::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer3D::body_get_param);
 
+	ClassDB::bind_method(D_METHOD("body_set_mass_properties", "body", "mass", "center_of_mass", "inertia", "product_of_inertia"), &PhysicsServer3D::body_set_mass_properties);
 	ClassDB::bind_method(D_METHOD("body_reset_mass_properties", "body"), &PhysicsServer3D::body_reset_mass_properties);
 
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer3D::body_set_state);
@@ -1097,6 +1098,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP_MODE);
 	BIND_ENUM_CONSTANT(BODY_PARAM_LINEAR_DAMP);
 	BIND_ENUM_CONSTANT(BODY_PARAM_ANGULAR_DAMP);
+	BIND_ENUM_CONSTANT(BODY_PARAM_PROD_INERTIA);
 	BIND_ENUM_CONSTANT(BODY_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BODY_DAMP_MODE_COMBINE);

@@ -70,6 +70,7 @@ private:
 	Transform3D kinematic_transform;
 
 	Vector3 inertia;
+	Vector3 product_of_inertia;
 	Vector3 center_of_mass_custom;
 	Vector3 constant_force;
 	Vector3 constant_torque;
@@ -210,6 +211,7 @@ public:
 
 	void add_contact(const JoltBody3D *p_collider, float p_depth, int p_shape_index, int p_collider_shape_index, const Vector3 &p_normal, const Vector3 &p_position, const Vector3 &p_collider_position, const Vector3 &p_velocity, const Vector3 &p_collider_velocity, const Vector3 &p_impulse);
 
+	void set_mass_properties(real_t p_mass, const Vector3 &p_center_of_mass, const Vector3 &p_inertia, const Vector3 &p_product_of_inertia);
 	void reset_mass_properties();
 
 	void apply_force(const Vector3 &p_force, const Vector3 &p_position);
@@ -269,6 +271,9 @@ public:
 
 	Vector3 get_inertia() const { return inertia; }
 	void set_inertia(const Vector3 &p_inertia);
+
+	Vector3 get_product_of_inertia() const { return product_of_inertia; }
+	void set_product_of_inertia(const Vector3 &p_product_of_inertia);
 
 	float get_bounce() const;
 	void set_bounce(float p_bounce);

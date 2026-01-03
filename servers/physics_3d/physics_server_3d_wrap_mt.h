@@ -220,6 +220,7 @@ public:
 	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
 	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
 
+	FUNC5(body_set_mass_properties, RID, real_t, const Vector3 &, const Vector3 &, const Vector3 &);
 	FUNC1(body_reset_mass_properties, RID);
 
 	FUNC3(body_set_state, RID, BodyState, const Variant &);

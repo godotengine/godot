@@ -512,6 +512,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="_body_set_mass_properties" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="mass" type="float" />
+			<param index="2" name="center_of_mass" type="Vector3" />
+			<param index="3" name="inertia" type="Vector3" />
+			<param index="4" name="product_of_inertia" type="Vector3" />
+			<description>
+				Sets all mass properties for the body in a single function call.
+			</description>
+		</method>
 		<method name="_body_set_max_contacts_reported" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
