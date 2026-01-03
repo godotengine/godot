@@ -3082,6 +3082,15 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
 				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
 			}
+
+			if (bct.has("texCoord")) {
+				const int &text_coord = bct["texCoord"];
+
+				// only two UV coordinates are supported so anything higher than zero means UV2
+				if (text_coord > 0) {
+					material->set_flag(BaseMaterial3D::FLAG_AO_ON_UV2, true);
+				}
+			}
 		}
 
 		if (material_dict.has("emissiveFactor")) {
