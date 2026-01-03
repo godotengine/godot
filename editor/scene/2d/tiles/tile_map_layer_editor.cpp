@@ -290,14 +290,14 @@ void TileMapLayerEditorTilesPlugin::_update_source_display() {
 		TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 
 		if (atlas_source) {
-			tile_atlas_view->show();
 			scene_tiles_list->hide();
 			invalid_source_label->hide();
+			tile_atlas_view->show();
 			_update_atlas_view();
 		} else if (scenes_collection_source) {
 			tile_atlas_view->hide();
-			scene_tiles_list->show();
 			invalid_source_label->hide();
+			scene_tiles_list->show();
 			_update_scenes_collection_view();
 		} else {
 			tile_atlas_view->hide();
