@@ -202,6 +202,9 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
 			<description>
+				Updates the vertex buffer of this mesh's surface with the given [param data]. The expected data per vertex is 12 or 8 bytes (4 bytes per float, 3 floats per [Vector3] and 2 floats per [Vector2]) depending on if the mesh is using [Vector3] or [Vector2] vertices. This value can be determined with [method mesh_surface_get_format_vertex_stride].
+				The starting point of the updates can be changed with [param offset]. The value of [param offset] in most cases should be a multiple of 12 bytes to align to each vertex.
+				A [PackedVector3Array] of vertex locations can be converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array()] for use in [param data].
 			</description>
 		</method>
 	</methods>
