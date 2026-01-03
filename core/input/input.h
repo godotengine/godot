@@ -111,7 +111,7 @@ private:
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
-	bool disable_input = false;
+	bool input_disabled = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -413,7 +413,7 @@ public:
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
 
-	void set_disable_input(bool p_disable);
+	void set_input_disabled(bool p_disable);
 	bool is_input_disabled() const;
 
 	Input();
