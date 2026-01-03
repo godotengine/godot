@@ -215,6 +215,8 @@ public:
 	int add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
 	int add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
+	void insert_item(int p_idx, const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
 

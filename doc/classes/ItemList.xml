@@ -179,6 +179,18 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
+		<method name="insert_item">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="icon" type="Texture2D" default="null" />
+			<param index="3" name="selectable" type="bool" default="true" />
+			<description>
+				Inserts an item with the specified text at the specified index in the item list.
+				Specify an [param icon], or use [code]null[/code] as the [param icon] for a list item with no icon.
+				If [param selectable] is [code]true[/code], the list item will be selectable.
+			</description>
+		</method>
 		<method name="is_anything_selected">
 			<return type="bool" />
 			<description>
