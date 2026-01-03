@@ -806,6 +806,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="pitch_scale_to_semitones">
+			<return type="float" />
+			<param index="0" name="scale" type="float" />
+			<description>
+				Converts from pitch scale multipliers to semitones.
+			</description>
+		</method>
 		<method name="posmod">
 			<return type="int" />
 			<param index="0" name="x" type="int" />
@@ -1182,6 +1189,17 @@
 				// a and b are now identical
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="semitones_to_pitch_scale">
+			<return type="float" />
+			<param index="0" name="semitones" type="float" />
+			<description>
+				Converts a number of semitones to a pitch scale multiplier.
+				[b]Example:[/b] Tune an [AudioStreamPlayer] down a major third, in equal temperament:
+				[codeblock]
+				player.pitch_scale = semitones_to_pitch_scale(-4)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="sign">
