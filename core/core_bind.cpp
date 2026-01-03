@@ -1021,6 +1021,90 @@ TypedArray<PackedVector2Array> Geometry2D::exclude_polygons(const Vector<Vector2
 	return ret;
 }
 
+TypedArray<PackedVector2Array> Geometry2D::merge_polygons_complex(const TypedArray<Vector<Vector2>> &p_polygon_a, const TypedArray<Vector<Vector2>> &p_polygon_b) {
+	Vector<Vector<Vector2>> polygon_a;
+	for (int i = 0; i < p_polygon_a.size(); i++) {
+		polygon_a.push_back(p_polygon_a[i]);
+	}
+
+	Vector<Vector<Vector2>> polygon_b;
+	for (int i = 0; i < p_polygon_b.size(); i++) {
+		polygon_b.push_back(p_polygon_b[i]);
+	}
+
+	Vector<Vector<Vector2>> polys = ::Geometry2D::merge_polygons_complex(polygon_a, polygon_b);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+TypedArray<PackedVector2Array> Geometry2D::clip_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b) {
+	Vector<Vector<Vector2>> polygon_a;
+	for (int i = 0; i < p_polygon_a.size(); i++) {
+		polygon_a.push_back(p_polygon_a[i]);
+	}
+
+	Vector<Vector<Vector2>> polygon_b;
+	for (int i = 0; i < p_polygon_b.size(); i++) {
+		polygon_b.push_back(p_polygon_b[i]);
+	}
+
+	Vector<Vector<Vector2>> polys = ::Geometry2D::clip_polygons_complex(polygon_a, polygon_b);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+TypedArray<PackedVector2Array> Geometry2D::intersect_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b) {
+	Vector<Vector<Vector2>> polygon_a;
+	for (int i = 0; i < p_polygon_a.size(); i++) {
+		polygon_a.push_back(p_polygon_a[i]);
+	}
+
+	Vector<Vector<Vector2>> polygon_b;
+	for (int i = 0; i < p_polygon_b.size(); i++) {
+		polygon_b.push_back(p_polygon_b[i]);
+	}
+
+	Vector<Vector<Vector2>> polys = ::Geometry2D::intersect_polygons_complex(polygon_a, polygon_b);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
+TypedArray<PackedVector2Array> Geometry2D::exclude_polygons_complex(const TypedArray<PackedVector2Array> &p_polygon_a, const TypedArray<PackedVector2Array> &p_polygon_b) {
+	Vector<Vector<Vector2>> polygon_a;
+	for (int i = 0; i < p_polygon_a.size(); i++) {
+		polygon_a.push_back(p_polygon_a[i]);
+	}
+
+	Vector<Vector<Vector2>> polygon_b;
+	for (int i = 0; i < p_polygon_b.size(); i++) {
+		polygon_b.push_back(p_polygon_b[i]);
+	}
+
+	Vector<Vector<Vector2>> polys = ::Geometry2D::exclude_polygons_complex(polygon_a, polygon_b);
+
+	TypedArray<PackedVector2Array> ret;
+
+	for (int i = 0; i < polys.size(); ++i) {
+		ret.push_back(polys[i]);
+	}
+	return ret;
+}
+
 TypedArray<PackedVector2Array> Geometry2D::clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 	Vector<Vector<Point2>> polys = ::Geometry2D::clip_polyline_with_polygon(p_polyline, p_polygon);
 
@@ -1127,6 +1211,11 @@ void Geometry2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clip_polygons", "polygon_a", "polygon_b"), &Geometry2D::clip_polygons);
 	ClassDB::bind_method(D_METHOD("intersect_polygons", "polygon_a", "polygon_b"), &Geometry2D::intersect_polygons);
 	ClassDB::bind_method(D_METHOD("exclude_polygons", "polygon_a", "polygon_b"), &Geometry2D::exclude_polygons);
+
+	ClassDB::bind_method(D_METHOD("merge_polygons_complex", "polygon_a", "polygon_b"), &Geometry2D::merge_polygons_complex);
+	ClassDB::bind_method(D_METHOD("clip_polygons_complex", "polygon_a", "polygon_b"), &Geometry2D::clip_polygons_complex);
+	ClassDB::bind_method(D_METHOD("intersect_polygons_complex", "polygon_a", "polygon_b"), &Geometry2D::intersect_polygons_complex);
+	ClassDB::bind_method(D_METHOD("exclude_polygons_complex", "polygon_a", "polygon_b"), &Geometry2D::exclude_polygons_complex);
 
 	ClassDB::bind_method(D_METHOD("clip_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::clip_polyline_with_polygon);
 	ClassDB::bind_method(D_METHOD("intersect_polyline_with_polygon", "polyline", "polygon"), &Geometry2D::intersect_polyline_with_polygon);
