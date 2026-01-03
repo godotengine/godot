@@ -1096,6 +1096,38 @@ TEST_CASE("[SceneTree][Control] Anchoring") {
 	memdelete(test_control);
 }
 
+TEST_CASE("[SceneTree][Control] Set position does not cause size side-effects") {
+	Control *test_control = memnew(Control);
+	test_control->set_size(Size2(1, 1));
+	test_control->set_custom_minimum_size(Size2(2, 2));
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_control);
+
+	SUBCASE("Shrinks after setting position and smaller custom minimum size (without keeping offsets)") {
+		test_control->set_position(Point2(10, 10), false);
+		SceneTree::get_singleton()->process(0);
+
+		test_control->set_custom_minimum_size(Size2(0, 0));
+		SceneTree::get_singleton()->process(0);
+		CHECK_MESSAGE(
+				test_control->get_size().is_equal_approx(Vector2(1, 1)),
+				"Should shrink to original size after setting a smaller custom minimum size.");
+	}
+
+	SUBCASE("Shrinks after setting position and smaller custom minimum size (while keeping offsets)") {
+		test_control->set_position(Point2(10, 10), true);
+		SceneTree::get_singleton()->process(0);
+
+		test_control->set_custom_minimum_size(Size2(0, 0));
+		SceneTree::get_singleton()->process(0);
+		CHECK_MESSAGE(
+				test_control->get_size().is_equal_approx(Vector2(1, 1)),
+				"Should shrink to original size after setting a smaller custom minimum size.");
+	}
+
+	memdelete(test_control);
+}
+
 TEST_CASE("[SceneTree][Control] Custom minimum size") {
 	Control *test_control = memnew(Control);
 	test_control->set_custom_minimum_size(Size2(4, 2));
@@ -1210,6 +1242,306 @@ TEST_CASE("[SceneTree][Control] Grow direction") {
 	}
 
 	memdelete(test_control);
+}
+
+TEST_CASE("[SceneTree][Control] Set global position") {
+	Control *test_parent = memnew(Control);
+
+	Control *test_child = memnew(Control);
+	test_parent->add_child(test_child);
+
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_parent);
+
+	SUBCASE("Parent at 0,0, unscaled, and no rotation") {
+		test_parent->set_global_position(Vector2(0, 0));
+		test_parent->set_scale(Vector2(1, 1));
+		test_parent->set_rotation(0);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(2, 2)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent translated") {
+		test_parent->set_global_position(Vector2(4, 4));
+		test_parent->set_scale(Vector2(1, 1));
+		test_parent->set_rotation_degrees(0);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(-2, -2)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent scaled") {
+		test_parent->set_global_position(Vector2(0, 0));
+		test_parent->set_scale(Vector2(2, 2));
+		test_parent->set_rotation_degrees(0);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(1, 1)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent rotated") {
+		test_parent->set_global_position(Vector2(0, 0));
+		test_parent->set_scale(Vector2(1, 1));
+		test_parent->set_rotation_degrees(90);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(2, -2)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent translated and scaled") {
+		test_parent->set_global_position(Vector2(4, 4));
+		test_parent->set_scale(Vector2(2, 2));
+		test_parent->set_rotation_degrees(0);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(-1, -1)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent translated and rotated") {
+		test_parent->set_global_position(Vector2(4, 4));
+		test_parent->set_scale(Vector2(1, 1));
+		test_parent->set_rotation_degrees(90);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(-2, 2)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent scaled and rotated") {
+		test_parent->set_global_position(Vector2(0, 0));
+		test_parent->set_scale(Vector2(2, 2));
+		test_parent->set_rotation_degrees(90);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(1, -1)),
+				"Incorrect local position.");
+	}
+
+	SUBCASE("Parent translated, scaled, and rotated") {
+		test_parent->set_global_position(Vector2(4, 4));
+		test_parent->set_scale(Vector2(2, 2));
+		test_parent->set_rotation_degrees(90);
+		test_child->set_global_position(Vector2(2, 2));
+		CHECK_MESSAGE(test_child->get_position().is_equal_approx(Vector2(-1, 1)),
+				"Incorrect local position.");
+	}
+
+	memdelete(test_parent);
+}
+
+TEST_CASE("[SceneTree][Control] Set position with grow direction") {
+	Control *test_control = memnew(Control);
+	test_control->set_size(Size2(1, 1));
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_control);
+
+	SUBCASE("Horizontal grow direction begin without keep offsets") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction begin without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction end without keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction end without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction both without keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction both without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction begin with keep offsets") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction begin with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction end with keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction end with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction both with keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction both with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	memdelete(test_control);
+}
+
+TEST_CASE("[SceneTree][Control] Set position with grow direction in rtl") {
+	Control *rtl_control = memnew(Control);
+	rtl_control->set_layout_direction(Control::LAYOUT_DIRECTION_RTL);
+	rtl_control->set_size(Size2(100, 100));
+
+	Control *test_control = memnew(Control);
+	test_control->set_size(Size2(1, 1));
+	rtl_control->add_child(test_control);
+
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(rtl_control);
+
+	SUBCASE("Horizontal grow direction begin without keep offsets") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction begin without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction end without keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction end without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction both without keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction both without keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), false);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position without keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction begin with keep offsets") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction begin with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction end with keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction end with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_END);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Horizontal grow direction both with keep offsets.") {
+		test_control->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	SUBCASE("Vertical grow direction both with keep offsets.") {
+		test_control->set_v_grow_direction(Control::GROW_DIRECTION_BOTH);
+		test_control->set_custom_minimum_size(Size2(2, 2));
+		test_control->set_position(Vector2(10, 10), true);
+		CHECK_MESSAGE(test_control->get_position().is_equal_approx(Vector2(10, 10)),
+				"Failed to set position with keep offsets.");
+	}
+
+	memdelete(rtl_control);
 }
 
 } // namespace TestControl
