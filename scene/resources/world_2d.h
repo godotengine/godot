@@ -40,6 +40,7 @@ class VisibleOnScreenNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;
 
+// World2D is needed for Viewport for CanvasItem rendering even when 2D is disabled.
 class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 

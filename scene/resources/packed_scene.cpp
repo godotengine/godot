@@ -37,11 +37,14 @@
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
-#include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
+
+#ifndef _2D_DISABLED
+#include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -334,8 +337,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 						if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 							obj = memnew(Control);
+#ifndef _2D_DISABLED
 						} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 							obj = memnew(Node2D);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 							obj = memnew(Node3D);
