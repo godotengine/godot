@@ -648,6 +648,15 @@
 			The mode in which this node clips its children, acting as a mask.
 			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
 		</member>
+		<member name="clear_margin" type="float" setter="set_clear_margin" getter="get_clear_margin" default="10.0">
+			Sets the size of the margin used to expand the clearing rect of this [CanvasItem]. This expands the area of the backbuffer that will be used by the [CanvasItem]. A smaller margin will reduce the area of the backbuffer used which can increase performance, however if [member use_mipmaps] is enabled, a small margin may result in mipmap errors at the edge of the group. Accordingly, this should be left as small as possible, but should be increased if artifacts appear along the edges of the canvas group.
+		</member>
+		<member name="fit_margin" type="float" setter="set_fit_margin" getter="get_fit_margin" default="10.0">
+			Sets the size of a margin used to expand the drawable rect of this [CanvasItem]. If the [CanvasItem] is empty, the size of the group is determined by fitting a rect around its children then expanding that rect by [member fit_margin]. This increases both the backbuffer area used and the area covered by the [CanvasItem] both of which can reduce performance. This should be kept as small as possible and should only be expanded when an increased size is needed (e.g. for custom shader effects).
+		</member>
+		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="is_using_mipmaps" default="false">
+			If [code]true[/code], calculates mipmaps for the backbuffer before drawing the [CanvasItem] so that mipmaps can be used in a custom [ShaderMaterial] attached to the [CanvasItem]. Generating mipmaps has a performance cost so this should not be enabled unless required.
+		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
 		</member>
@@ -801,7 +810,10 @@
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
 			This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
 		</constant>
-		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
+		<constant name="CLIP_CHILDREN_GROUP" value="3" enum="ClipChildrenMode">
+			This node is used as a mask and is also drawn in multiplicative blending mode [constant CanvasItemMaterial.BLEND_MODE_MUL]. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are drawn as a single object and clipped to the parent's drawn area.
+		</constant>
+		<constant name="CLIP_CHILDREN_MAX" value="4" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.
 		</constant>
 	</constants>
