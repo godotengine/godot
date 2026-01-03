@@ -1646,9 +1646,9 @@ void TileMapLayer::_scenes_update_cell(CellData &r_cell_data) {
 #endif // TOOLS_ENABLED
 					if (tile_map_node) {
 						// Compatibility with TileMap.
-						tile_map_node->add_child(scene);
+						tile_map_node->add_child(scene, true);
 					} else {
-						add_child(scene);
+						add_child(scene, true);
 					}
 					r_cell_data.scene = scene->get_name();
 				}
