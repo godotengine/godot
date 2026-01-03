@@ -39,9 +39,6 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
-//#define print_bl(m_what) print_line(m_what)
-#define print_bl(m_what) (void)(m_what)
-
 enum {
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
@@ -172,7 +169,6 @@ StringName ResourceLoaderBinary::_get_string() {
 
 Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 	uint32_t prop_type = f->get_32();
-	print_bl("find property of type: " + itos(prop_type));
 
 	switch (prop_type) {
 		case VARIANT_NIL: {
@@ -1004,24 +1000,13 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	}
 
 	bool big_endian = f->get_32();
-	bool use_real64 = f->get_32();
+	f->get_32(); // use_real64
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
 	ver_format = f->get_32();
-
-	print_bl("big endian: " + itos(big_endian));
-#ifdef BIG_ENDIAN_ENABLED
-	print_bl("endian swap: " + itos(!big_endian));
-#else
-	print_bl("endian swap: " + itos(big_endian));
-#endif
-	print_bl("real64: " + itos(use_real64));
-	print_bl("major: " + itos(ver_major));
-	print_bl("minor: " + itos(ver_minor));
-	print_bl("format: " + itos(ver_format));
 
 	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
@@ -1030,8 +1015,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	}
 
 	type = get_unicode_string();
-
-	print_bl("type: " + type);
 
 	importmd_ofs = f->get_64();
 	uint32_t flags = f->get_32();
@@ -1069,8 +1052,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		string_map.write[i] = s;
 	}
 
-	print_bl("strings: " + itos(string_table_size));
-
 	uint32_t ext_resources_size = f->get_32();
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
 		ExtResource er;
@@ -1098,7 +1079,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		external_resources.push_back(er);
 	}
 
-	print_bl("ext resources: " + itos(ext_resources_size));
 	uint32_t int_resources_size = f->get_32();
 
 	for (uint32_t i = 0; i < int_resources_size; i++) {
@@ -1107,8 +1087,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		ir.offset = f->get_64();
 		internal_resources.push_back(ir);
 	}
-
-	print_bl("int resources: " + itos(int_resources_size));
 
 	if (f->eof_reached()) {
 		error = ERR_FILE_CORRUPT;
