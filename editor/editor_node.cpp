@@ -8514,9 +8514,14 @@ EditorNode::EditorNode() {
 
 	editor_dock_manager->set_hsplit(main_hsplit);
 
-	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
-		editor_dock_manager->register_dock_slot((DockConstants::DockSlot)i, dock_slot[i], DockConstants::DOCK_LAYOUT_VERTICAL);
-	}
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_LEFT_UL, dock_slot[DockConstants::DOCK_SLOT_LEFT_UL], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(0, 0, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_LEFT_BL, dock_slot[DockConstants::DOCK_SLOT_LEFT_BL], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(0, 3, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_LEFT_UR, dock_slot[DockConstants::DOCK_SLOT_LEFT_UR], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(1, 0, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_LEFT_BR, dock_slot[DockConstants::DOCK_SLOT_LEFT_BR], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(1, 3, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_RIGHT_UL, dock_slot[DockConstants::DOCK_SLOT_RIGHT_UL], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(4, 0, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_RIGHT_BL, dock_slot[DockConstants::DOCK_SLOT_RIGHT_BL], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(4, 3, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_RIGHT_UR, dock_slot[DockConstants::DOCK_SLOT_RIGHT_UR], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(5, 0, 1, 3));
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_RIGHT_BR, dock_slot[DockConstants::DOCK_SLOT_RIGHT_BR], DockConstants::DOCK_LAYOUT_VERTICAL, Rect2i(5, 3, 1, 3));
 
 	editor_layout_save_delay_timer = memnew(Timer);
 	add_child(editor_layout_save_delay_timer);
@@ -8921,7 +8926,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(EditorBottomPanel);
-	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_BOTTOM, bottom_panel, DockConstants::DOCK_LAYOUT_HORIZONTAL);
+	editor_dock_manager->register_dock_slot(DockConstants::DOCK_SLOT_BOTTOM, bottom_panel, DockConstants::DOCK_LAYOUT_HORIZONTAL, Rect2i(2, 4, 2, 2));
 	bottom_panel->set_theme_type_variation("BottomPanel");
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);

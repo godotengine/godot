@@ -52,6 +52,7 @@ public:
 private:
 	friend class EditorDockManager;
 	friend class DockContextPopup;
+	friend class DockSlotGrid;
 	friend class DockShortcutHandler;
 
 	String title;
