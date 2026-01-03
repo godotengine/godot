@@ -352,7 +352,7 @@
 		</method>
 		<method name="get_line_column_at_pos" qualifiers="const">
 			<return type="Vector2i" />
-			<param index="0" name="position" type="Vector2i" />
+			<param index="0" name="position" type="Vector2" />
 			<param index="1" name="clamp_line" type="bool" default="true" />
 			<param index="2" name="clamp_column" type="bool" default="true" />
 			<description>
@@ -1372,7 +1372,7 @@
 		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
 			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
 		</member>
-		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+		<member name="scroll_horizontal" type="float" setter="set_h_scroll" getter="get_h_scroll" default="0.0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
 		</member>
 		<member name="scroll_past_end_of_file" type="bool" setter="set_scroll_past_end_of_file_enabled" getter="is_scroll_past_end_of_file_enabled" default="false">
