@@ -490,7 +490,7 @@
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
+				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]'s coordinate system.
 			</description>
 		</method>
 		<method name="get_instance_shader_parameter" qualifiers="const">

@@ -14,7 +14,7 @@
 			<return type="void" />
 			<description>
 				Used for drawing [b]editor-only[/b] modification gizmos. This function will only be called in the Godot editor and can be overridden to draw custom gizmos.
-				[b]Note:[/b] You will need to use the Skeleton2D from [method SkeletonModificationStack2D.get_skeleton] and it's draw functions, as the [SkeletonModification2D] resource cannot draw on its own.
+				[b]Note:[/b] You will need to use the Skeleton2D from [method SkeletonModificationStack2D.get_skeleton] and its draw functions, as the [SkeletonModification2D] resource cannot draw on its own.
 			</description>
 		</method>
 		<method name="_execute" qualifiers="virtual">

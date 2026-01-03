@@ -436,13 +436,13 @@
 		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
-			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
-			To query the value that is being used at run-time (which may be overridden by command-line arguments or headless mode), use [method AudioServer.get_driver_name].
+			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS's audio mixer.
+			To query the value that is being used at runtime (which may be overridden by command-line arguments or headless mode), use [method AudioServer.get_driver_name].
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
-			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS' privacy settings.
+			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS's privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
@@ -754,10 +754,10 @@
 			When set to [code]true[/code], produces a warning when a varying is never used.
 		</member>
 		<member name="debug/shapes/avoidance/2d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
-			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+			Color of the avoidance agents' radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/2d/enable_agents_radius" type="bool" setter="" getter="" default="true">
-			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+			If enabled, displays avoidance agents' radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/2d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
@@ -781,10 +781,10 @@
 			Color of the static avoidance obstacles faces when their vertices are winded in order to push agents out, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
-			Color of the avoidance agents radius, visible when "Visible Avoidance" is enabled in the Debug menu.
+			Color of the avoidance agents' radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/enable_agents_radius" type="bool" setter="" getter="" default="true">
-			If enabled, displays avoidance agents radius when "Visible Avoidance" is enabled in the Debug menu.
+			If enabled, displays avoidance agents' radius when "Visible Avoidance" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/avoidance/3d/enable_obstacles_radius" type="bool" setter="" getter="" default="true">
 			If enabled, displays avoidance obstacles radius when "Visible Avoidance" is enabled in the Debug menu.
@@ -1105,7 +1105,7 @@
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
-			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+			Change this value to set up a multi-project scenario where there are multiple [code].csproj[/code] files. Keep in mind that the Godot project is considered one of the C# projects in the workspace and its root directory should contain the [code]project.godot[/code] and [code].csproj[/code] files next to each other.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
@@ -3119,7 +3119,7 @@
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The [b]Soft Very Low[/b] option will automatically multiply all [i]constant[/i] shadow blur by [code]0.75[/code] to reduce the amount of noticeable noise. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]'s [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply [i]constant[/i] shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
@@ -3148,7 +3148,7 @@
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality" type="int" setter="" getter="" default="2">
 			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
-			[b]Note:[/b] The Soft Very Low setting will automatically multiply [i]constant[/i] shadow blur by 0.75x to reduce the amount of noise visible. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]s' [member Light3D.light_angular_distance].
+			[b]Note:[/b] The [b]Soft Very Low[/b] option will automatically multiply all [i]constant[/i] shadow blur by [code]0.75[/code] to reduce the amount of noticeable noise. This automatic blur change only affects the constant blur factor defined in [member Light3D.shadow_blur], not the variable blur performed by [DirectionalLight3D]'s [member Light3D.light_angular_distance].
 			[b]Note:[/b] The Soft High and Soft Ultra settings will automatically multiply shadow blur by 1.5× and 2× respectively to make better use of the increased sample count. This increased blur also improves stability of dynamic object shadows.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
