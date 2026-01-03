@@ -68,6 +68,9 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 
 void AudioStreamPlayer::set_volume_db(float p_volume) {
 	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
+	if (Math::is_equal_approx(internal->volume_db, p_volume)) {
+		return;
+	}
 	internal->volume_db = p_volume;
 
 	Vector<AudioFrame> volume_vector = _get_volume_vector();
