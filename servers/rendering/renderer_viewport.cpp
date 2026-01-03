@@ -1549,6 +1549,10 @@ float RendererViewport::viewport_get_measured_render_time_cpu(RID p_viewport) co
 }
 
 float RendererViewport::viewport_get_measured_render_time_gpu(RID p_viewport) const {
+	if (using_metal) {
+		WARN_PRINT_ONCE("Querying the viewport GPU render time is not supported when using the Metal rendering driver. Returning `0.0`.");
+		return 0.0;
+	}
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, 0);
 
@@ -1709,4 +1713,5 @@ int RendererViewport::get_num_viewports_with_motion_vectors() const {
 
 RendererViewport::RendererViewport() {
 	occlusion_rays_per_thread = GLOBAL_GET("rendering/occlusion_culling/occlusion_rays_per_thread");
+	using_metal = RS::get_singleton()->get_current_rendering_driver_name() == "metal";
 }
