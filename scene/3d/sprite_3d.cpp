@@ -1147,7 +1147,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
 							if (frames->get_animation_loop(animation)) {
-								frame = 0;
+								if (frames->get_ping_pong(animation)) {
+									// ping pong backwards
+									frame = last_frame;
+									custom_speed_scale *= -1;
+								} else {
+									frame = 0;
+								}
 								emit_signal("animation_looped");
 							} else {
 								frame = last_frame;
@@ -1171,7 +1177,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 					if (frame_progress <= 0) {
 						if (frame <= 0) {
 							if (frames->get_animation_loop(animation)) {
-								frame = last_frame;
+								if (frames->get_ping_pong(animation)) {
+									// ping pong forwards
+									frame = 0;
+									custom_speed_scale *= -1;
+								} else {
+									frame = last_frame;
+								}
 								emit_signal("animation_looped");
 							} else {
 								frame = 0;

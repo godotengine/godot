@@ -94,6 +94,13 @@
 				Returns the texture of the frame [param idx] in the [param anim] animation.
 			</description>
 		</method>
+		<method name="get_ping_pong" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="anim" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given animation is configured to play in ping-pong mode, alternating direction each time it reaches an end. Otherwise, returns [code]false[/code].
+			</description>
+		</method>
 		<method name="has_animation" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="anim" type="StringName" />
@@ -148,6 +155,14 @@
 			<param index="3" name="duration" type="float" default="1.0" />
 			<description>
 				Sets the [param texture] and the [param duration] of the frame [param idx] in the [param anim] animation. [param duration] specifies the relative duration, see [method get_frame_duration] for details.
+			</description>
+		</method>
+		<method name="set_ping_pong">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" />
+			<param index="1" name="ping_pong" type="bool" />
+			<description>
+				If [param ping_pong] is [code]true[/code], the [param anim] animation will play forward, then reverse direction when it reaches the end, repeating this back-and-forth behavior instead of restarting from the beginning.
 			</description>
 		</method>
 	</methods>
