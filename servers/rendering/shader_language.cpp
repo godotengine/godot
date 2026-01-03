@@ -10321,6 +10321,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					if (error != OK) {
 						return error;
 					}
+					if (type == TYPE_VOID) {
+						_set_error(vformat(RTR("Array of `%s` type is not allowed."), "void"));
+						return ERR_PARSE_ERROR;
+					}
 					fixed_array_size = true;
 					prev_pos = _get_tkpos();
 				}
@@ -10355,7 +10359,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					while (true) {
 						ShaderNode::Constant constant;
 						constant.name = name;
-						constant.type = is_struct ? TYPE_STRUCT : type;
+						constant.type = type;
 						constant.struct_name = struct_name;
 						constant.precision = precision;
 						constant.initializer = nullptr;
