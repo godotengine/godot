@@ -141,6 +141,9 @@ private:
 	virtual void _top_level_changed();
 	virtual void _top_level_changed_on_parent();
 
+	void _visibility_layer_changed();
+	void _visibility_layer_changed_on_parent();
+
 	void _redraw_callback();
 
 	void _enter_canvas();
