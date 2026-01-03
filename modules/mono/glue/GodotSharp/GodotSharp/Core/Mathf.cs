@@ -1118,6 +1118,7 @@ namespace Godot
         ///
         /// Similar to <see cref="Lerp(float, float, float)"/>,
         /// but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// See also <see cref="RotateToward(float, float, float)"/>.
         /// </summary>
         /// <param name="from">The start angle for interpolation.</param>
         /// <param name="to">The destination angle for interpolation.</param>
@@ -1133,6 +1134,7 @@ namespace Godot
         ///
         /// Similar to <see cref="Lerp(double, double, double)"/>,
         /// but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// See also <see cref="RotateToward(double, double, double)"/>.
         /// </summary>
         /// <param name="from">The start angle for interpolation.</param>
         /// <param name="to">The destination angle for interpolation.</param>
@@ -1458,8 +1460,9 @@ namespace Godot
 
         /// <summary>
         /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
-        /// Similar to <see cref="MoveToward(float, float, float)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
-        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// Similar to <see cref="MoveToward(float, float, float)"/> but intended for use with rotations.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>. However, it will have no destination, so it may oscillate if called repeatedly.
+        /// See also <see cref="LerpAngle(float, float, float)"/>.
         /// </summary>
         /// <param name="from">The start angle.</param>
         /// <param name="to">The angle to move towards.</param>
@@ -1468,14 +1471,18 @@ namespace Godot
         public static float RotateToward(float from, float to, float delta)
         {
             float difference = AngleDifference(from, to);
-            float absDifference = Math.Abs(difference);
-            return from + Math.Clamp(delta, absDifference - MathF.PI, absDifference) * (difference >= 0.0f ? 1.0f : -1.0f);
+            if (delta < 0.0f && IsZeroApprox(difference))
+            {
+                return from + delta;
+            }
+            return MoveToward(from, from + difference, delta);
         }
 
         /// <summary>
         /// Rotates <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
-        /// Similar to <see cref="MoveToward(double, double, double)"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
-        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>, toward the opposite angle, and will not go past the opposite angle.
+        /// Similar to <see cref="MoveToward(double, double, double)"/> but intended for use with rotations.
+        /// If <paramref name="delta"/> is negative, this function will rotate away from <paramref name="to"/>. However, it will have no destination, so it may oscillate if called repeatedly.
+        /// See also <see cref="LerpAngle(double, double, double)"/>.
         /// </summary>
         /// <param name="from">The start angle.</param>
         /// <param name="to">The angle to move towards.</param>
@@ -1484,8 +1491,11 @@ namespace Godot
         public static double RotateToward(double from, double to, double delta)
         {
             double difference = AngleDifference(from, to);
-            double absDifference = Math.Abs(difference);
-            return from + Math.Clamp(delta, absDifference - Math.PI, absDifference) * (difference >= 0.0 ? 1.0 : -1.0);
+            if (delta < 0.0 && IsZeroApprox(difference))
+            {
+                return from + delta;
+            }
+            return MoveToward(from, from + difference, delta);
         }
 
         /// <summary>

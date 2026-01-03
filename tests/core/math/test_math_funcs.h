@@ -440,6 +440,8 @@ TEST_CASE_TEMPLATE("[Math] rotate_toward", T, float, double) {
 	CHECK(Math::rotate_toward((T)-2.0, (T)1.0, (T)2.5) == doctest::Approx((T)0.5));
 	CHECK(Math::rotate_toward((T)-2.0, (T)Math::PI, (T)Math::PI) == doctest::Approx((T)-Math::PI));
 	CHECK(Math::rotate_toward((T)1.0, (T)Math::PI, (T)20.0) == doctest::Approx((T)Math::PI));
+	CHECK(Math::rotate_toward((T)Math::PI, (T)Math::PI, (T)0.0) == doctest::Approx((T)Math::PI));
+	CHECK(Math::rotate_toward((T)0.0, (T)Math::TAU, (T)Math::TAU) == doctest::Approx((T)0.0));
 
 	// Rotate away.
 	CHECK(Math::rotate_toward((T)0.0, (T)0.0, (T)-1.5) == doctest::Approx((T)-1.5));

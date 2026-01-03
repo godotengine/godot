@@ -648,6 +648,7 @@
 					elapsed += delta
 				[/codeblock]
 				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
+				See also [method rotate_toward].
 			</description>
 		</method>
 		<method name="lerpf">
@@ -1125,8 +1126,9 @@
 			<param index="2" name="delta" type="float" />
 			<description>
 				Rotates [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
-				Similar to [method move_toward], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
-				If [param delta] is negative, this function will rotate away from [param to], toward the opposite angle, and will not go past the opposite angle.
+				Similar to [method move_toward], but intended for use with rotations.
+				If [param delta] is negative, this function will rotate away from [param to]. However, it will have no destination, so it may oscillate if called repeatedly.
+				See also [method lerp_angle].
 			</description>
 		</method>
 		<method name="round">
