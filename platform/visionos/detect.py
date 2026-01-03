@@ -82,7 +82,7 @@ def configure(env: "SConsEnvironment"):
     if "OSXCROSS_VISIONOS" in os.environ:
         env["osxcross"] = True
 
-    env["ENV"]["PATH"] = env["APPLE_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
+    env.PrependENVPath("PATH", env["APPLE_TOOLCHAIN_PATH"] + "/Developer/usr/bin/")
 
     compiler_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}"
 
