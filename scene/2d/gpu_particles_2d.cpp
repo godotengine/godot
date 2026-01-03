@@ -88,6 +88,10 @@ void GPUParticles2D::set_one_shot(bool p_enable) {
 		set_process_internal(true);
 		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
+			signal_canceled = true;
+		} else if (!active) {
+			active = true;
+			signal_canceled = false;
 		}
 	}
 
