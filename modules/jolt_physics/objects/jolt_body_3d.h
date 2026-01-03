@@ -155,6 +155,7 @@ public:
 	JoltBody3D();
 	virtual ~JoltBody3D() override;
 
+	virtual Transform3D get_transform_unscaled() const override;
 	void set_transform(Transform3D p_transform);
 
 	Variant get_state(PhysicsServer3D::BodyState p_state) const;
