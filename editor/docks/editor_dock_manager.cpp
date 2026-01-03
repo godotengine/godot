@@ -38,6 +38,7 @@
 #include "scene/main/window.h"
 
 #include "editor/docks/editor_dock.h"
+#include "editor/docks/floating_dock_container.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
@@ -69,7 +70,7 @@ void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data)
 	if (drop_tabbar->get_rect().has_point(p_point)) {
 		drop_tabbar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
 	} else {
-		dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_manager->dock_slots[occupied_slot].container, drop_tabbar->get_tab_count());
+		dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), occupied_slot.container, drop_tabbar->get_tab_count());
 	}
 }
 
@@ -78,7 +79,7 @@ void EditorDockDragHint::_drag_move_tab(int p_from_index, int p_to_index) {
 }
 
 void EditorDockDragHint::_drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
-	dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_manager->dock_slots[occupied_slot].container, p_to_index);
+	dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), occupied_slot.container, p_to_index);
 }
 
 void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
@@ -96,9 +97,9 @@ void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorDockDragHint::set_slot(DockConstants::DockSlot p_slot) {
+void EditorDockDragHint::set_slot(EditorDockManager::DockSlot p_slot) {
 	occupied_slot = p_slot;
-	drop_tabbar = dock_manager->dock_slots[occupied_slot].container->get_tab_bar();
+	drop_tabbar = occupied_slot.container->get_tab_bar();
 }
 
 void EditorDockDragHint::_notification(int p_what) {
@@ -128,7 +129,7 @@ void EditorDockDragHint::_notification(int p_what) {
 				return;
 			}
 
-			can_drop_dock = dragged_dock->get_available_layouts() & (EditorDock::DockLayout)EditorDockManager::get_singleton()->dock_slots[occupied_slot].layout;
+			can_drop_dock = dragged_dock->get_available_layouts() & (EditorDock::DockLayout)occupied_slot.layout;
 
 			dock_drop_highlight->set_border_color(valid_drop_color);
 			dock_drop_highlight->set_bg_color(valid_drop_color * Color(1, 1, 1, 0.1));
@@ -276,6 +277,10 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 				dock_slots[i].drag_hint->show();
 			}
 		}
+		for (DockSlot &slot : floating_slots) {
+			slot.drag_hint->set_rect(slot.container->get_global_rect());
+			slot.drag_hint->show();
+		}
 
 		return dock_tab_dragged;
 	}
@@ -317,6 +322,21 @@ void EditorDockManager::_update_layout() {
 	dock_context_popup->docks_updated();
 	update_docks_menu();
 	EditorNode::get_singleton()->save_editor_layout_delayed();
+}
+
+void EditorDockManager::_setup_tab_container(TabContainer *p_tab_container, DockConstants::DockSlot p_dock_slot, DockConstants::DockLayout p_layout) {
+	p_tab_container->set_popup(dock_context_popup);
+	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_tab_container));
+	p_tab_container->get_tab_bar()->set_switch_on_release(true);
+	p_tab_container->get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &EditorDockManager::_dock_container_popup).bind(p_tab_container));
+	p_tab_container->set_drag_to_rearrange_enabled(true);
+	p_tab_container->set_tabs_rearrange_group(1);
+	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
+	p_tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(p_tab_container));
+	p_tab_container->hide();
+	p_tab_container->set_meta("dock_slot", p_dock_slot);
+	p_tab_container->set_meta("dock_layout", p_layout);
 }
 
 void EditorDockManager::update_docks_menu() {
@@ -405,25 +425,35 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 	Size2 dock_size = p_dock->get_size() + borders * 2;
 	Point2 dock_screen_pos = p_dock->get_screen_position();
 
-	WindowWrapper *wrapper = memnew(WindowWrapper);
-	wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
-	wrapper->set_margins_enabled(true);
+	FloatingDockContainer *floating_container = memnew(FloatingDockContainer);
+	_setup_tab_container(floating_container, DockConstants::DOCK_SLOT_NONE, DockConstants::DOCK_LAYOUT_FLOATING);
+	// wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR(p_dock->get_display_title())));
+	// wrapper->set_margins_enabled(true);
 
-	EditorNode::get_singleton()->get_gui_base()->add_child(wrapper);
+	EditorNode::get_singleton()->get_gui_base()->add_child(floating_container->window);
 
-	_move_dock(p_dock, nullptr);
+	_move_dock(p_dock, floating_container);
 	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
-	wrapper->set_wrapped_control(p_dock);
+	// wrapper->set_wrapped_control(p_dock);
 
-	p_dock->dock_window = wrapper;
+	// p_dock->dock_window = wrapper;
 	p_dock->is_open = true;
 	p_dock->show();
 
-	wrapper->connect("window_close_requested", callable_mp(this, &EditorDockManager::_window_close_request).bind(wrapper));
-	dock_windows.push_back(wrapper);
+	// wrapper->connect("window_close_requested", callable_mp(this, &EditorDockManager::_window_close_request).bind(wrapper));
+	// dock_windows.push_back(wrapper);
+
+	DockSlot slot;
+	slot.container = floating_container;
+	slot.drag_hint = memnew(EditorDockDragHint);
+	slot.drag_hint->hide();
+	slot.drag_hint->set_slot(slot);
+	slot.layout = DockConstants::DOCK_LAYOUT_FLOATING;
+
+	floating_slots.push_back(slot);
 
 	if (p_show_window) {
-		wrapper->restore_window(Rect2i(dock_screen_pos, dock_size), EditorNode::get_singleton()->get_gui_base()->get_window()->get_current_screen());
+		floating_container->window->restore_window(Rect2i(dock_screen_pos, dock_size), EditorNode::get_singleton()->get_gui_base()->get_window()->get_current_screen());
 		_update_layout();
 		if (p_reset_size) {
 			// Use a default size of one third the current window size.
@@ -433,6 +463,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 		}
 		p_dock->get_window()->grab_focus();
 	}
+	p_dock->get_window()->add_child(slot.drag_hint);
 }
 
 void EditorDockManager::_restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump) {
@@ -1003,18 +1034,7 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 	slot.layout = p_layout;
 
 	slot.container = p_tab_container;
-	p_tab_container->set_popup(dock_context_popup);
-	p_tab_container->connect("pre_popup_pressed", callable_mp(dock_context_popup, &DockContextPopup::select_current_dock_in_dock_slot).bind(p_dock_slot));
-	p_tab_container->get_tab_bar()->set_switch_on_release(true);
-	p_tab_container->get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &EditorDockManager::_dock_container_popup).bind(p_tab_container));
-	p_tab_container->set_drag_to_rearrange_enabled(true);
-	p_tab_container->set_tabs_rearrange_group(1);
-	p_tab_container->connect("tab_changed", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
-	p_tab_container->connect("active_tab_rearranged", callable_mp(this, &EditorDockManager::_update_layout).unbind(1));
-	p_tab_container->connect("child_order_changed", callable_mp(this, &EditorDockManager::_dock_container_update_visibility).bind(p_tab_container));
-	p_tab_container->hide();
-	p_tab_container->set_meta("dock_slot", p_dock_slot);
-	p_tab_container->set_meta("dock_layout", p_layout);
+	_setup_tab_container(p_tab_container, p_dock_slot, p_layout);
 
 	if (p_layout == DockConstants::DOCK_LAYOUT_VERTICAL) {
 		p_tab_container->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
@@ -1028,7 +1048,7 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 	EditorNode::get_singleton()->get_gui_base()->add_child(slot.drag_hint);
 
 	dock_slots[p_dock_slot] = slot;
-	slot.drag_hint->set_slot(p_dock_slot);
+	slot.drag_hint->set_slot(slot);
 }
 
 int EditorDockManager::get_vsplit_count() const {
@@ -1291,8 +1311,8 @@ void DockContextPopup::_update_buttons() {
 	reset_size();
 }
 
-void DockContextPopup::select_current_dock_in_dock_slot(int p_dock_slot) {
-	context_dock = Object::cast_to<EditorDock>(dock_manager->dock_slots[p_dock_slot].container->get_current_tab_control());
+void DockContextPopup::select_current_dock_in_dock_slot(TabContainer *p_container) {
+	context_dock = Object::cast_to<EditorDock>(p_container->get_current_tab_control());
 	_update_buttons();
 }
 

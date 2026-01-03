@@ -95,6 +95,8 @@ private:
 	};
 
 	DockSlot dock_slots[DockConstants::DOCK_SLOT_MAX];
+	LocalVector<DockSlot> floating_slots;
+
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
 	HashSet<EditorDock *> dirty_docks;
@@ -113,6 +115,7 @@ private:
 	void _dock_container_popup(int p_tab_idx, TabContainer *p_dock_container);
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
+	void _setup_tab_container(TabContainer *p_tab_container, DockConstants::DockSlot p_dock_slot, DockConstants::DockLayout p_layout);
 
 	void _docks_menu_option(int p_id);
 
@@ -166,7 +169,7 @@ class EditorDockDragHint : public Control {
 
 private:
 	EditorDockManager *dock_manager = nullptr;
-	DockConstants::DockSlot occupied_slot = DockConstants::DOCK_SLOT_MAX;
+	EditorDockManager::DockSlot occupied_slot;
 	TabBar *drop_tabbar = nullptr;
 
 	Color valid_drop_color;
@@ -186,7 +189,7 @@ protected:
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 public:
-	void set_slot(DockConstants::DockSlot p_slot);
+	void set_slot(EditorDockManager::DockSlot p_slot);
 
 	EditorDockDragHint();
 };
@@ -226,7 +229,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void select_current_dock_in_dock_slot(int p_dock_slot);
+	void select_current_dock_in_dock_slot(TabContainer *p_container);
 	void set_dock(EditorDock *p_dock);
 	EditorDock *get_dock() const;
 	void docks_updated();
