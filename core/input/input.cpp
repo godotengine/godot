@@ -1415,10 +1415,12 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
+#ifndef ANDROID_ENABLED // Android trigger values are already between 0.0f and 1.0f.
 		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
+#endif
 		_axis_event(p_device, axis, value);
 		return;
 	}
