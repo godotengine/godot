@@ -36,18 +36,15 @@
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_physics_process_internal(true);
-			}
+			_update_process_callback();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_physics_process_internal(false);
-			}
+			_update_process_callback();
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			process_spring();
 		} break;
 	}
@@ -72,10 +69,20 @@ void SpringArm3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &SpringArm3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &SpringArm3D::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_process_callback", "process_callback"), &SpringArm3D::set_process_callback);
+	ClassDB::bind_method(D_METHOD("get_process_callback"), &SpringArm3D::get_process_callback);
+
+	ClassDB::bind_method(D_METHOD("process_spring"), &SpringArm3D::process_spring);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spring_length", PROPERTY_HINT_NONE, "suffix:m"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_NONE, "suffix:m"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,None"), "set_process_callback", "get_process_callback");
+
+	BIND_ENUM_CONSTANT(SPRINGARM3D_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(SPRINGARM3D_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(SPRINGARM3D_PROCESS_NONE);
 }
 
 real_t SpringArm3D::get_length() const {
@@ -128,6 +135,19 @@ void SpringArm3D::clear_excluded_objects() {
 
 real_t SpringArm3D::get_hit_length() {
 	return current_spring_length;
+}
+
+void SpringArm3D::set_process_callback(SpringArm3DProcessCallback p_mode) {
+	if (process_callback == p_mode) {
+		return;
+	}
+
+	process_callback = p_mode;
+	_update_process_callback();
+}
+
+SpringArm3D::SpringArm3DProcessCallback SpringArm3D::get_process_callback() const {
+	return process_callback;
 }
 
 void SpringArm3D::process_spring() {
@@ -197,6 +217,21 @@ void SpringArm3D::process_spring() {
 		if (child) {
 			child_transform.basis = child->get_global_transform().basis;
 			child->set_global_transform(child_transform);
+		}
+	}
+}
+
+void SpringArm3D::_update_process_callback() {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		if (process_callback == SPRINGARM3D_PROCESS_PHYSICS) {
+			set_physics_process_internal(true);
+			set_process_internal(false);
+		} else if (process_callback == SPRINGARM3D_PROCESS_IDLE) {
+			set_physics_process_internal(false);
+			set_process_internal(true);
+		} else {
+			set_physics_process_internal(false);
+			set_process_internal(false);
 		}
 	}
 }
