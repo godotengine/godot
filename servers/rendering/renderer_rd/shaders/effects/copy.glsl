@@ -194,8 +194,8 @@ void main() {
 #endif
 		color *= params.glow_exposure;
 
-		float luminance = max(color.r, max(color.g, color.b));
-		float feedback = max(smoothstep(params.glow_hdr_threshold, params.glow_hdr_threshold + params.glow_hdr_scale, luminance), params.glow_bloom);
+		float max_value = max(color.r, max(color.g, color.b));
+		float feedback = max(smoothstep(params.glow_hdr_threshold, params.glow_hdr_threshold + params.glow_hdr_scale, max_value), params.glow_bloom);
 
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
 	}
