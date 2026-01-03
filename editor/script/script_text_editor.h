@@ -109,11 +109,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
-	PopupPanel *color_panel = nullptr;
-	ColorPicker *color_picker = nullptr;
-	Vector3i color_position;
-	String color_args;
-
 	bool theme_loaded = false;
 
 	enum {
@@ -168,16 +163,6 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_EMOJI_AND_SYMBOL,
 	};
 
-	enum COLOR_MODE {
-		MODE_RGB,
-		MODE_STRING,
-		MODE_HSV,
-		MODE_OKHSL,
-		MODE_RGB8,
-		MODE_HEX,
-		MODE_MAX
-	};
-
 	void _enable_code_editor();
 
 	struct DraggedExport {
@@ -219,7 +204,7 @@ protected:
 	Array _inline_object_parse(const String &p_text);
 	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
 	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
-	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);
+	void _open_picker();
 	void _picker_color_changed(const Color &p_color);
 	void _update_color_constructor_options();
 	void _update_background_color();
@@ -232,9 +217,8 @@ protected:
 
 	void _edit_option(int p_op);
 	void _edit_option_toggle_inline_comment();
-	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
+	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
-	void _color_changed(const Color &p_color);
 	void _prepare_edit_menu();
 
 	void _goto_line(int p_line) { goto_line(p_line); }
