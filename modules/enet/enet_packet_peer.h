@@ -98,6 +98,7 @@ public:
 	int get_available_packet_count() const override;
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	void free_packet();
 
 	void peer_disconnect(int p_data = 0);
 	void peer_disconnect_later(int p_data = 0);
