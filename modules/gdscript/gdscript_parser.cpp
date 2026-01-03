@@ -1980,6 +1980,8 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 
 	} while ((multiline || previous.type == GDScriptTokenizer::Token::SEMICOLON) && !check(GDScriptTokenizer::Token::DEDENT) && !lambda_ended && !is_at_end());
 
+	suite->has_only_pass = suite->statements.size() == 1 && suite->statements[0] != nullptr && suite->statements[0]->type == Node::PASS;
+
 	complete_extents(suite);
 
 	if (multiline) {

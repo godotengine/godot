@@ -1779,7 +1779,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		resolve_parameter(p_function->parameters[i]);
 		method_info.arguments.push_back(p_function->parameters[i]->get_datatype().to_property_info(p_function->parameters[i]->identifier->name));
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
+		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract && !p_function->body->has_only_pass) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
@@ -1818,7 +1818,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #endif
 		}
 #ifdef DEBUG_ENABLED
-		if (p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_") && !p_function->is_abstract) {
+		// Don't warn for unused rest parameters in functions that only contain a pass statement
+		if (p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_") && !p_function->is_abstract && !p_function->body->has_only_pass) {
 			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->rest_parameter->identifier->name);
 		}
 		is_shadowing(p_function->rest_parameter->identifier, "function parameter", true);
