@@ -1638,6 +1638,9 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 	if (p_flags & CONNECT_REFERENCE_COUNTED) {
 		slot.reference_count = 1;
 	}
+	if (p_flags & CONNECT_AND_CALL) {
+		p_callable.call();
+	}
 
 	//use callable version as key, so binds can be ignored
 	s->slot_map[*p_callable.get_base_comparator()] = slot;
@@ -2050,6 +2053,7 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
 	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
+	BIND_ENUM_CONSTANT(CONNECT_AND_CALL);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {

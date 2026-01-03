@@ -1053,5 +1053,8 @@
 		<constant name="CONNECT_APPEND_SOURCE_OBJECT" value="16" enum="ConnectFlags">
 			The source object is automatically bound when a [PackedScene] is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
 		</constant>
+		<constant name="CONNECT_AND_CALL" value="64" enum="ConnectFlags">
+			The callable is called immediately upon connecting.
+		</constant>
 	</constants>
 </class>
