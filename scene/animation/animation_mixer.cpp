@@ -1877,29 +1877,39 @@ void AnimationMixer::_blend_apply() {
 					if (!t_skeleton) {
 						return;
 					}
-					if (t->loc_used) {
-						t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
-					}
-					if (t->rot_used) {
-						t_skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
-					}
-					if (t->scale_used) {
-						t_skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
-					}
 
+					if (t->loc_used && t->rot_used && t->scale_used) {
+						t_skeleton->set_bone_pose_components(t->bone_idx, t->loc, t->rot, t->scale);
+					} else {
+						if (t->loc_used) {
+							t_skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+						}
+						if (t->rot_used) {
+							t_skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
+						}
+						if (t->scale_used) {
+							t_skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
+						}
+					}
 				} else if (!t->skeleton_id.is_valid()) {
 					Node3D *t_node_3d = ObjectDB::get_instance<Node3D>(t->object_id);
 					if (!t_node_3d) {
 						return;
 					}
-					if (t->loc_used) {
-						t_node_3d->set_position(t->loc);
-					}
-					if (t->rot_used) {
-						t_node_3d->set_rotation(t->rot.get_euler());
-					}
-					if (t->scale_used) {
-						t_node_3d->set_scale(t->scale);
+
+					if (t->loc_used && t->rot_used && t->scale_used) {
+						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						t_node_3d->set_transform(transform);
+					} else {
+						if (t->loc_used) {
+							t_node_3d->set_position(t->loc);
+						}
+						if (t->rot_used) {
+							t_node_3d->set_rotation(t->rot.get_euler());
+						}
+						if (t->scale_used) {
+							t_node_3d->set_scale(t->scale);
+						}
 					}
 				}
 #endif // _3D_DISABLED
