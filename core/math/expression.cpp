@@ -739,46 +739,125 @@ Expression::ENode *Expression::_parse_expression() {
 				expr = constant;
 			} break;
 			case TK_BASIC_TYPE: {
-				//constructor..
-
 				Variant::Type bt = Variant::Type(int(tk.value));
+				int cofs = str_ofs;
 				_get_token(tk);
-				if (tk.type != TK_PARENTHESIS_OPEN) {
-					_set_error("Expected '('");
-					return nullptr;
-				}
+				if (tk.type == TK_PARENTHESIS_OPEN) {
+					//constructor
+					ConstructorNode *constructor = alloc_node<ConstructorNode>();
+					constructor->data_type = bt;
 
-				ConstructorNode *constructor = alloc_node<ConstructorNode>();
-				constructor->data_type = bt;
+					while (true) {
+						cofs = str_ofs;
+						_get_token(tk);
+						if (tk.type == TK_PARENTHESIS_CLOSE) {
+							break;
+						}
+						str_ofs = cofs; //revert
+						//parse an expression
+						ENode *subexpr = _parse_expression();
+						if (!subexpr) {
+							return nullptr;
+						}
 
-				while (true) {
-					int cofs = str_ofs;
-					_get_token(tk);
-					if (tk.type == TK_PARENTHESIS_CLOSE) {
-						break;
+						constructor->arguments.push_back(subexpr);
+
+						cofs = str_ofs;
+						_get_token(tk);
+						if (tk.type == TK_COMMA) {
+							//all good
+						} else if (tk.type == TK_PARENTHESIS_CLOSE) {
+							str_ofs = cofs;
+						} else {
+							_set_error("Expected ',' or ')'");
+						}
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
-					ENode *subexpr = _parse_expression();
-					if (!subexpr) {
-						return nullptr;
-					}
 
-					constructor->arguments.push_back(subexpr);
-
+					expr = constructor;
+				} else if (tk.type == TK_PERIOD) {
+					//static member
 					cofs = str_ofs;
 					_get_token(tk);
-					if (tk.type == TK_COMMA) {
-						//all good
-					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-						str_ofs = cofs;
-					} else {
-						_set_error("Expected ',' or ')'");
+					if (tk.type == TK_IDENTIFIER) {
+						String identifier = tk.value;
+						cofs = str_ofs;
+						_get_token(tk);
+						if (tk.type == TK_PARENTHESIS_OPEN) {
+							//function call
+							BasicTypeFuncNode *bt_func = alloc_node<BasicTypeFuncNode>();
+							bt_func->data_type = bt;
+							bt_func->func = tk.value;
+
+							while (true) {
+								int cofs2 = str_ofs;
+								_get_token(tk);
+								if (tk.type == TK_PARENTHESIS_CLOSE) {
+									break;
+								}
+								str_ofs = cofs2; //revert
+								//parse an expression
+								ENode *subexpr = _parse_expression();
+								if (!subexpr) {
+									return nullptr;
+								}
+
+								bt_func->arguments.push_back(subexpr);
+
+								cofs2 = str_ofs;
+								_get_token(tk);
+								if (tk.type == TK_COMMA) {
+									//all good
+								} else if (tk.type == TK_PARENTHESIS_CLOSE) {
+									str_ofs = cofs2;
+								} else {
+									_set_error("Expected ',' or ')'");
+								}
+							}
+
+							expr = bt_func;
+						} else {
+							//constant or enum
+							if (Variant::has_constant(bt, identifier)) {
+								str_ofs = cofs;
+
+								BasicTypeConstNode *bt_const = alloc_node<BasicTypeConstNode>();
+								bt_const->data_type = bt;
+								bt_const->name = identifier;
+
+								expr = bt_const;
+							} else if (Variant::has_enum(bt, identifier)) {
+								cofs = str_ofs;
+								_get_token(tk);
+								if (tk.type == TK_IDENTIFIER) {
+									BasicTypeEnumNode *bt_enum = alloc_node<BasicTypeEnumNode>();
+									bt_enum->data_type = bt;
+									bt_enum->enum_name = identifier;
+									bt_enum->enumeration = tk.value;
+
+									expr = bt_enum;
+								} else {
+									_set_error("Expected enumeration name after enum");
+								}
+							} else {
+								const StringName enum_name = Variant::get_enum_for_enumeration(bt, identifier);
+								if (enum_name != StringName()) {
+									str_ofs = cofs;
+
+									BasicTypeEnumNode *bt_enum = alloc_node<BasicTypeEnumNode>();
+									bt_enum->data_type = bt;
+									bt_enum->enum_name = enum_name;
+									bt_enum->enumeration = identifier;
+
+									expr = bt_enum;
+								} else {
+									_set_error("Unknown static identifier of basic type");
+								}
+							}
+						}
 					}
+				} else {
+					_set_error("Expected '.' or '(' after basic type");
 				}
-
-				expr = constructor;
-
 			} break;
 			case TK_BUILTIN_FUNC: {
 				//builtin function
@@ -1459,6 +1538,52 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 				return true;
 			}
 
+		} break;
+		case Expression::ENode::TYPE_BASIC_TYPE_FUNC: {
+			const Expression::BasicTypeFuncNode *bt_func = static_cast<const Expression::BasicTypeFuncNode *>(p_node);
+
+			Vector<Variant> arr;
+			Vector<const Variant *> argp;
+			arr.resize(bt_func->arguments.size());
+			argp.resize(bt_func->arguments.size());
+
+			for (int i = 0; i < bt_func->arguments.size(); i++) {
+				Variant value;
+				bool ret = _execute(p_inputs, p_instance, bt_func->arguments[i], value, p_const_calls_only, r_error_str);
+				if (ret) {
+					return true;
+				}
+				arr.write[i] = value;
+				argp.write[i] = &arr[i];
+			}
+
+			r_ret = Variant(); //may not return anything
+			Callable::CallError ce;
+			Variant::call_static(bt_func->data_type, bt_func->func, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				r_error_str = "Basic type static call failed: " + Variant::get_call_error_text(bt_func->func, (const Variant **)argp.ptr(), argp.size(), ce);
+				return true;
+			}
+		} break;
+		case Expression::ENode::TYPE_BASIC_TYPE_CONSTANT: {
+			const Expression::BasicTypeConstNode *bt_const = static_cast<const Expression::BasicTypeConstNode *>(p_node);
+
+			bool valid;
+			r_ret = Variant::get_constant_value(bt_const->data_type, bt_const->name, &valid);
+			if (!valid) {
+				r_error_str = vformat(RTR("Invalid basic type constant '%s'.'%s'"), Variant::get_type_name(bt_const->data_type), bt_const->name);
+				return true;
+			}
+		} break;
+		case Expression::ENode::TYPE_BASIC_TYPE_ENUM: {
+			const Expression::BasicTypeEnumNode *bt_const = static_cast<const Expression::BasicTypeEnumNode *>(p_node);
+
+			bool valid;
+			r_ret = Variant::get_enum_value(bt_const->data_type, bt_const->enum_name, bt_const->enumeration, &valid);
+			if (!valid) {
+				r_error_str = vformat(RTR("Invalid basic type enum '%s'.'%s'"), Variant::get_type_name(bt_const->data_type), bt_const->enum_name);
+				return true;
+			}
 		} break;
 	}
 	return false;
