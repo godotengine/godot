@@ -35,15 +35,11 @@
 #include "godot_lsp.h"
 
 #include "core/variant/variant.h"
-#include "editor/file_system/editor_file_system.h"
 
 class GDScriptWorkspace : public RefCounted {
 	GDCLASS(GDScriptWorkspace, RefCounted);
 
 private:
-	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
-	Node *_get_owner_scene_node(String p_path);
-
 #ifndef DISABLE_DEPRECATED
 	void didDeleteFiles() {}
 	Error parse_script(const String &p_path, const String &p_content) {
