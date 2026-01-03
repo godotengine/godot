@@ -56,18 +56,33 @@ public:
 	EXBIND1RC(bool, inherits_script, const Ref<Script> &)
 	EXBIND0RC(StringName, get_instance_base_type)
 
-	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<void>, _instance_create, Object *)
+	GDVIRTUAL1R_REQUIRED(GDExtensionPtr<void>, _instance_create, Object *)
 	virtual ScriptInstance *instance_create(Object *p_this) override {
 		GDExtensionPtr<void> ret = nullptr;
+#ifndef DISABLE_DEPRECATED
+		if (GDVIRTUAL_CALL(_instance_create_109928, p_this, ret)) {
+			return reinterpret_cast<ScriptInstance *>(ret.operator void *());
+		}
+#endif
 		GDVIRTUAL_CALL(_instance_create, p_this, ret);
 		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
 	}
-	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<void>, _placeholder_instance_create, Object *)
+	GDVIRTUAL1R_REQUIRED(GDExtensionPtr<void>, _placeholder_instance_create, Object *)
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override {
 		GDExtensionPtr<void> ret = nullptr;
+#ifndef DISABLE_DEPRECATED
+		if (GDVIRTUAL_CALL(_placeholder_instance_create_109928, p_this, ret)) {
+			return reinterpret_cast<PlaceHolderScriptInstance *>(ret.operator void *());
+		}
+#endif
 		GDVIRTUAL_CALL(_placeholder_instance_create, p_this, ret);
 		return reinterpret_cast<PlaceHolderScriptInstance *>(ret.operator void *());
 	}
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL1RC_COMPAT(_instance_create_109928, GDExtensionPtr<void>, _instance_create, Object *)
+	GDVIRTUAL1RC_COMPAT(_placeholder_instance_create_109928, GDExtensionPtr<void>, _placeholder_instance_create, Object *)
+#endif // DISABLE_DEPRECATED
 
 	EXBIND1RC(bool, instance_has, const Object *)
 	EXBIND0RC(bool, has_source_code)
