@@ -2714,8 +2714,23 @@ void main() {
 #endif // SHADOWS_DISABLED
 
 #ifndef USE_VERTEX_LIGHTING
+	vec3 tint = vec3(1.0);
+#ifdef DEBUG_DRAW_PSSM_SPLITS
+	if (-vertex.z < directional_shadows[directional_shadow_index].shadow_split_offsets.x) {
+		tint = vec3(1.0, 0.0, 0.0);
+	} else if (-vertex.z < directional_shadows[directional_shadow_index].shadow_split_offsets.y) {
+		tint = vec3(0.0, 1.0, 0.0);
+	} else if (-vertex.z < directional_shadows[directional_shadow_index].shadow_split_offsets.z) {
+		tint = vec3(0.0, 0.0, 1.0);
+	} else {
+		tint = vec3(1.0, 1.0, 0.0);
+	}
+	tint = mix(tint, vec3(1.0), directional_shadow);
+	directional_shadow = 1.0f;
+#endif // DEBUG_DRAW_PSSM_SPLITS
+
 	if (bool(directional_lights[directional_shadow_index].mask & layer_mask)) {
-		light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, directional_shadow, f0, roughness, metallic, directional_lights[directional_shadow_index].specular, albedo, alpha, screen_uv,
+		light_compute(normal, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].size, directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy * tint, true, directional_shadow, f0, roughness, metallic, directional_lights[directional_shadow_index].specular, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif

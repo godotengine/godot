@@ -700,7 +700,6 @@
 		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14" enum="DebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order (from closest to furthest from the camera), they are colored red, green, blue, and yellow.
 			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
 		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
