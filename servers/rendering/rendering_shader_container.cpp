@@ -467,22 +467,31 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						SpvReflectSpecializationConstant *spc = spec_constants[j];
 						sconst.set_spv_reflect(stage, spc);
 
+						if (spc->default_value_size != 4) {
+							ERR_FAIL_V_MSG(FAILED, vformat("Reflection of SPIR-V shader stage '%s' failed because the specialization constant #%d's default value is not 4 bytes long (%d) and is currently not supported.", RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage], spc->constant_id, spc->default_value_size));
+						}
+
 						sconst.constant_id = spc->constant_id;
 						sconst.int_value = 0; // Clear previous value JIC.
-						switch (spc->constant_type) {
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
+
+						switch (spc->type_description->op) {
+							case SpvOpTypeBool:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-								sconst.bool_value = spc->default_value.int_bool_value != 0;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
+								sconst.bool_value = *(uint32_t *)(spc->default_value);
+								break;
+							case SpvOpTypeInt:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-								sconst.int_value = spc->default_value.int_bool_value;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
+								sconst.int_value = *(uint32_t *)(spc->default_value);
+								break;
+							case SpvOpTypeFloat:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-								sconst.float_value = spc->default_value.float_value;
-							} break;
+								sconst.float_value = *(float *)(spc->default_value);
+								break;
+							default:
+								ERR_FAIL_V_MSG(FAILED, vformat("Reflection of SPIR-V shader stage '%s' failed because the specialization constant #%d does not use a known operation (%d).", RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage], spc->constant_id, spc->type_description->op));
+								break;
 						}
+
 						sconst.stages.set_flag(stage_flag);
 
 						for (uint32_t k = 0; k < reflection.specialization_constants.size(); k++) {

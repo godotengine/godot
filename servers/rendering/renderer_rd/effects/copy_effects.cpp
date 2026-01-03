@@ -1206,7 +1206,6 @@ void CopyEffects::octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_o
 	OctmapFilterPushConstant push_constant;
 	push_constant.border_size[0] = p_border_size;
 	push_constant.border_size[1] = 1.0f - p_border_size * 2.0f;
-	push_constant.size = 320;
 
 	Vector<RD::Uniform> uniforms;
 	for (int i = 0; i < p_dest_octmap.size(); i++) {

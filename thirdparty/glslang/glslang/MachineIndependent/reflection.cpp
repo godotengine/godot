@@ -1138,8 +1138,10 @@ void TReflection::buildAttributeReflection(EShLanguage stage, const TIntermediat
 {
     if (stage == EShLangCompute) {
         // Remember thread dimensions
-        for (int dim=0; dim<3; ++dim)
+        for (int dim=0; dim<3; ++dim) {
             localSize[dim] = intermediate.getLocalSize(dim);
+            tileShadingRateQCOM[dim] = intermediate.getTileShadingRateQCOM(dim);
+        }
     }
 }
 
@@ -1270,13 +1272,18 @@ void TReflection::dump()
         indexToPipeOutput[i].dump();
     printf("\n");
 
+    static const char* axis[] = { "X", "Y", "Z" };
     if (getLocalSize(0) > 1) {
-        static const char* axis[] = { "X", "Y", "Z" };
-
         for (int dim=0; dim<3; ++dim)
             if (getLocalSize(dim) > 1)
                 printf("Local size %s: %u\n", axis[dim], getLocalSize(dim));
 
+        printf("\n");
+    }
+
+    if (getTileShadingRateQCOM(0) > 1 || getTileShadingRateQCOM(1) > 1) {
+        for (int dim=0; dim<3; ++dim)
+            printf("Tile shading rate QCOM %s: %u\n", axis[dim], getTileShadingRateQCOM(dim));
         printf("\n");
     }
 
