@@ -44,9 +44,12 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
+#include "scene/resources/3d/skin.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
@@ -1215,6 +1218,10 @@ void EditorResourcePicker::set_resource_owner(Object *p_object) {
 	resource_owner = p_object;
 }
 
+Object *EditorResourcePicker::get_resource_owner() const {
+	return resource_owner;
+}
+
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
 	assign_button->set_disabled(!editable && edited_resource.is_null());
@@ -1596,6 +1603,50 @@ ShaderMaterial *EditorShaderPicker::get_edited_material() const {
 
 void EditorShaderPicker::set_preferred_mode(int p_mode) {
 	preferred_mode = p_mode;
+}
+
+// EditorSkinPicker
+
+void EditorSkinPicker::set_create_options(Object *p_menu_node) {
+	PopupMenu *menu_node = Object::cast_to<PopupMenu>(p_menu_node);
+	if (!menu_node) {
+		return;
+	}
+
+	menu_node->add_icon_item(get_editor_theme_icon(SNAME("Skin")), TTR("Rest Skin"), OBJ_MENU_REST_SKIN);
+	menu_node->add_separator();
+}
+
+bool EditorSkinPicker::handle_menu_selected(int p_which) {
+	Ref<Skin> skin = get_rest_skin();
+
+	switch (p_which) {
+		case OBJ_MENU_REST_SKIN: {
+			if (rest_skin.is_valid()) {
+				if (Object::cast_to<MeshInstance3D>(get_resource_owner())) {
+					MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(get_resource_owner());
+					mi->set_skin(skin);
+				} else if (Object::cast_to<ImporterMeshInstance3D>(get_resource_owner())) {
+					ImporterMeshInstance3D *imi = Object::cast_to<ImporterMeshInstance3D>(get_resource_owner());
+					imi->set_skin(skin);
+				} else {
+					return false;
+				}
+				return true;
+			}
+		} break;
+		default:
+			break;
+	}
+	return false;
+}
+
+void EditorSkinPicker::set_rest_skin(Ref<Skin> p_rest_skin) {
+	rest_skin = p_rest_skin;
+}
+
+Ref<Skin> EditorSkinPicker::get_rest_skin() const {
+	return rest_skin;
 }
 
 //////////////
