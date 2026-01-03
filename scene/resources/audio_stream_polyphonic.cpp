@@ -346,12 +346,25 @@ void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePla
 	}
 }
 
+void AudioStreamPlaybackPolyphonic::set_sample_bus(const StringName &p_bus) {
+	sample_bus = p_bus;
+}
+
+StringName AudioStreamPlaybackPolyphonic::get_sample_bus() const {
+	return sample_bus;
+}
+
 void AudioStreamPlaybackPolyphonic::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale", "playback_type", "bus"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0), DEFVAL(0), DEFVAL(SceneStringName(Master)));
+	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale", "playback_type"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_stream_volume", "stream", "volume_db"), &AudioStreamPlaybackPolyphonic::set_stream_volume);
 	ClassDB::bind_method(D_METHOD("set_stream_pitch_scale", "stream", "pitch_scale"), &AudioStreamPlaybackPolyphonic::set_stream_pitch_scale);
 	ClassDB::bind_method(D_METHOD("is_stream_playing", "stream"), &AudioStreamPlaybackPolyphonic::is_stream_playing);
 	ClassDB::bind_method(D_METHOD("stop_stream", "stream"), &AudioStreamPlaybackPolyphonic::stop_stream);
+
+	ClassDB::bind_method(D_METHOD("set_sample_bus", "bus"), &AudioStreamPlaybackPolyphonic::set_sample_bus);
+	ClassDB::bind_method(D_METHOD("get_sample_bus"), &AudioStreamPlaybackPolyphonic::get_sample_bus);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "sample_bus"), "set_sample_bus", "get_sample_bus");
 
 	BIND_CONSTANT(INVALID_ID);
 }
