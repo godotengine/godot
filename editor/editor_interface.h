@@ -202,6 +202,9 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
+	void _on_project_run_started();
+	void _on_project_run_stopped();
+
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	// Base.

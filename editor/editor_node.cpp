@@ -8788,6 +8788,8 @@ EditorNode::EditorNode() {
 	title_bar->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
+	project_run_bar->connect("play_pressed", callable_mp(EditorInterface::get_singleton(), &EditorInterface::_on_project_run_started));
+	project_run_bar->connect("stop_pressed", callable_mp(EditorInterface::get_singleton(), &EditorInterface::_on_project_run_stopped));
 
 	right_menu_hb = memnew(HBoxContainer);
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);

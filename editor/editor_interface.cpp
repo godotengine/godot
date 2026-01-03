@@ -808,6 +808,16 @@ bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
+// Callback for EditorRunBar Play buttons.
+void EditorInterface::_on_project_run_started() {
+	emit_signal(SNAME("scene_started"));
+}
+
+// Callback for EditorRunBar Stop buttons.
+void EditorInterface::_on_project_run_stopped() {
+	emit_signal(SNAME("scene_stopped"));
+}
+
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
@@ -932,6 +942,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
 	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
+
+	ADD_SIGNAL(MethodInfo("scene_started"));
+	ADD_SIGNAL(MethodInfo("scene_stopped"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_maker_enabled"), "set_movie_maker_enabled", "is_movie_maker_enabled");
 }
