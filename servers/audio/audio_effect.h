@@ -51,11 +51,19 @@ public:
 class AudioEffect : public Resource {
 	GDCLASS(AudioEffect, Resource);
 
+	int channel;
+
 protected:
 	GDVIRTUAL0R_REQUIRED(Ref<AudioEffectInstance>, _instantiate)
+	GDVIRTUAL1(_set_channel_count, int)
 	static void _bind_methods();
 
 public:
 	virtual Ref<AudioEffectInstance> instantiate();
+	virtual void set_channel_count(int p_channel_count);
+
+	void set_channel(int p_channel) { channel = p_channel; }
+	int get_channel() const { return channel; }
+
 	AudioEffect();
 };

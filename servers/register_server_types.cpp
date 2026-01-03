@@ -209,10 +209,12 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectPitchShift);
 		GDREGISTER_CLASS(AudioEffectPhaser);
 		GDREGISTER_CLASS(AudioEffectRecord);
+		GDREGISTER_ABSTRACT_CLASS(AudioEffectRecordInstance);
 		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
 		GDREGISTER_ABSTRACT_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
 		GDREGISTER_CLASS(AudioEffectCapture);
+		GDREGISTER_ABSTRACT_CLASS(AudioEffectCaptureInstance);
 
 #ifndef DISABLE_DEPRECATED
 		GDREGISTER_CLASS(AudioEffectLimiter);
