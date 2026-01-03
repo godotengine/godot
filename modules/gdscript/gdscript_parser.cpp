@@ -1190,6 +1190,13 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 					push_error(R"(The "master" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" and perform a check inside the function instead.)");
 				} else if (previous.get_identifier() == "mastersync") {
 					push_error(R"(The "mastersync" keyword was removed in Godot 4. Use the "@rpc" annotation with "any_peer" and "call_local", and perform a check inside the function instead.)");
+				} else if (previous.get_identifier() == "namespace" || previous.get_identifier() == "trait" || previous.get_identifier() == "yield") {
+					// `yield` has a dedicated warning for projects being converted from Godot 3, but top-level usage of `yield` wasn't valid in Godot 3 anyway.
+					push_error(vformat(R"(The "%s" keyword is reserved for future use, but is currently unimplemented in GDScript.)", previous.get_name()));
+				} else if (GDScriptLanguage::get_singleton()->get_reserved_words().has(previous.get_identifier())) {
+					push_error(vformat(R"(Top-level %s is not allowed in GDScript. Place it within a function instead.)", previous.get_debug_name()));
+				} else if (String(previous.get_name()) == "Indent") {
+					push_error(R"(Unexpected indentation in class body.)");
 				} else {
 					push_error(vformat(R"(Unexpected %s in class body.)", previous.get_debug_name()));
 				}
@@ -2121,7 +2128,12 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					has_ended_lambda = true;
 				} else {
 					advance();
-					push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
+					if (previous.get_identifier() == "namespace" || previous.get_identifier() == "trait") {
+						// `yield` is also reserved for future use, but has a dedicated warning for projects being converted from Godot 3.
+						push_error(vformat(R"(The "%s" keyword is reserved for future use, but is currently unimplemented in GDScript.)", previous.get_name()));
+					} else {
+						push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
+					}
 				}
 			} else {
 				end_statement("expression");
