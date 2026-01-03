@@ -155,6 +155,13 @@ _ALWAYS_INLINE_ float sqrt(float p_x) {
 	return std::sqrt(p_x);
 }
 
+_ALWAYS_INLINE_ double cbrt(double p_x) {
+	return std::cbrt(p_x);
+}
+_ALWAYS_INLINE_ float cbrt(float p_x) {
+	return std::cbrt(p_x);
+}
+
 _ALWAYS_INLINE_ double fmod(double p_x, double p_y) {
 	return std::fmod(p_x, p_y);
 }
