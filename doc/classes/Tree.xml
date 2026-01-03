@@ -209,6 +209,12 @@
 				If [param from] is [code]null[/code], this returns the first selected item.
 			</description>
 		</method>
+		<method name="get_popup_editor" qualifiers="const">
+			<return type="Popup" />
+			<description>
+				Returns the [Popup] used when editing a tree item.
+			</description>
+		</method>
 		<method name="get_pressed_button" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -255,6 +261,12 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns [code]true[/code] if the column has enabled expanding (see [method set_column_expand]).
+			</description>
+		</method>
+		<method name="is_editing">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a cell is currently being edited.
 			</description>
 		</method>
 		<method name="scroll_to_item">

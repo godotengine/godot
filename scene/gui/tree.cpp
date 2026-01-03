@@ -4494,6 +4494,10 @@ bool Tree::is_editing() {
 	return popup_editor->is_visible();
 }
 
+Popup *Tree::get_popup_editor() const {
+	return popup_editor;
+}
+
 void Tree::set_editor_selection(int p_from_line, int p_to_line, int p_from_column, int p_to_column, int p_caret) {
 	if (p_from_column == -1 || p_to_column == -1) {
 		line_editor->select(p_from_line, p_to_line);
@@ -6663,6 +6667,8 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited"), &Tree::get_edited);
 	ClassDB::bind_method(D_METHOD("get_edited_column"), &Tree::get_edited_column);
 	ClassDB::bind_method(D_METHOD("edit_selected", "force_edit"), &Tree::edit_selected, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_editing"), &Tree::is_editing);
+	ClassDB::bind_method(D_METHOD("get_popup_editor"), &Tree::get_popup_editor);
 	ClassDB::bind_method(D_METHOD("get_custom_popup_rect"), &Tree::get_custom_popup_rect);
 	ClassDB::bind_method(D_METHOD("get_item_area_rect", "item", "column", "button_index"), &Tree::get_item_rect, DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position"), &Tree::get_item_at_position);
