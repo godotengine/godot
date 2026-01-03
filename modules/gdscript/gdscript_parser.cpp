@@ -1323,8 +1323,14 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 				getter_used = true;
 			}
 		} else {
-			// TODO: Update message to only have the missing one if it's the case.
-			push_error(R"(Expected "get" or "set" for property declaration.)");
+			if (getter_used && !setter_used) {
+				push_error(R"(Expected "set" after "get" in property declaration.)", function);
+			} else if (setter_used && !getter_used) {
+				push_error(R"(Expected "get" after "set" in property declaration.)", function);
+			} else {
+				push_error(R"(Expected "get" or "set" for property declaration.)", function);
+			}
+			break;
 		}
 
 		if (i == 0 && p_variable->property == VariableNode::PROP_SETGET) {
@@ -2205,11 +2211,32 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 #ifdef DEBUG_ENABLED
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
+		String context;
+
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			if (current_function->identifier) {
+				String name = current_function->identifier->name;
+				if (name.begins_with("@")) {
+					if (name.ends_with("_getter")) {
+						context = vformat("the getter of property \"%s\"", name.trim_prefix("@").trim_suffix("_getter"));
+					} else if (name.ends_with("_setter")) {
+						context = vformat("the setter of property \"%s\"", name.trim_prefix("@").trim_suffix("_setter"));
+					} else {
+						context = vformat("internal function \"%s\"", name);
+					}
+				} else {
+					context = vformat("function \"%s()\"", name);
+				}
+			} else {
+				context = "an anonymous lambda";
+			}
+		} else if (current_class && current_class->identifier) {
+			context = vformat("the initializer of class \"%s\"", current_class->identifier->name);
 		} else {
-			// TODO: Properties setters and getters with unreachable code are not being warned
+			context = "the script initializer";
 		}
+
+		push_warning(result, GDScriptWarning::UNREACHABLE_CODE, context);
 	}
 #endif
 
