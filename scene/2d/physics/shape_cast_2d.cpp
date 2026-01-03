@@ -247,7 +247,7 @@ void ShapeCast2D::_notification(int p_what) {
 			if (target_position != Vector2()) {
 				const real_t max_arrow_size = 6;
 				const real_t line_width = 1.4;
-				bool no_line = target_position.length() < line_width;
+				const bool no_line = target_position.length() < line_width;
 				real_t arrow_size = CLAMP(target_position.length() * 2 / 3, line_width, max_arrow_size);
 
 				if (no_line) {

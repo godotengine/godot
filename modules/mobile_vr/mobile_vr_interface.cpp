@@ -139,34 +139,34 @@ void MobileVRInterface::set_position_from_sensors() {
 	// make copies of our inputs
 	bool has_grav = false;
 	Vector3 acc = input->get_accelerometer();
-	Vector3 gyro = input->get_gyroscope();
+	const Vector3 gyro = input->get_gyroscope();
 	Vector3 grav = input->get_gravity();
 	Vector3 magneto = scale_magneto(input->get_magnetometer()); // this may be overkill on iOS because we're already getting a calibrated magnetometer reading
 
 	if (sensor_first) {
 		sensor_first = false;
 	} else {
-		acc = scrub(acc, last_accerometer_data, 2, 0.2);
-		magneto = scrub(magneto, last_magnetometer_data, 3, 0.3);
+		acc = scrub(acc, last_accerometer_data, 2, 0.2f);
+		magneto = scrub(magneto, last_magnetometer_data, 3, 0.3f);
 	};
 
 	last_accerometer_data = acc;
 	last_magnetometer_data = magneto;
 
-	if (grav.length() < 0.1) {
+	if (grav.length() < 0.1f) {
 		// not ideal but use our accelerometer, this will contain shaky user behavior
 		// maybe look into some math but I'm guessing that if this isn't available, it's because we lack the gyro sensor to actually work out
 		// what a stable gravity vector is
 		grav = acc;
-		if (grav.length() > 0.1) {
+		if (grav.length() > 0.1f) {
 			has_grav = true;
 		};
 	} else {
 		has_grav = true;
 	};
 
-	bool has_magneto = magneto.length() > 0.1;
-	if (gyro.length() > 0.1) {
+	const bool has_magneto = magneto.length() > 0.1f;
+	if (gyro.length() > 0.1f) {
 		/* this can return to 0.0 if the user doesn't move the phone, so once on, it's on */
 		has_gyro = true;
 	};

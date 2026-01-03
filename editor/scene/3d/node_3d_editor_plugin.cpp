@@ -364,9 +364,9 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 		// Draw axis lines for the positive axes.
 		const Vector2 center = get_size() / 2.0;
 		const Vector2 diff = p_axis.screen_point - center;
-		const float line_length = MAX(diff.length() - AXIS_CIRCLE_RADIUS - 0.5 * EDSCALE, 0);
+		const real_t line_length = MAX(diff.length() - (AXIS_CIRCLE_RADIUS + 0.5f * EDSCALE), 0);
 
-		draw_line(center + diff.limit_length(0.5 * EDSCALE), center + diff.limit_length(line_length), c, 1.5 * EDSCALE, true);
+		draw_line(center + diff.limit_length(0.5f * EDSCALE), center + diff.limit_length(line_length), c, 1.5f * EDSCALE, true);
 
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
 
@@ -396,8 +396,8 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 }
 
 void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
-	const Vector2 center = get_size() / 2.0;
-	const real_t radius = get_size().x / 2.0 - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
+	const Vector2 center = get_size() / 2.0f;
+	const real_t radius = get_size().x / 2.0f - (AXIS_CIRCLE_RADIUS + 2.0f * EDSCALE);
 	const Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
 
 	for (int i = 0; i < 3; ++i) {
@@ -452,7 +452,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	Point2 mouse_pos = get_local_mouse_position();
-	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4.0f * EDSCALE;
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -2333,7 +2333,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
 			} else {
-				movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8.0f * EDSCALE;
 
 				if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid()) {
 					cursor.region_select = true;
