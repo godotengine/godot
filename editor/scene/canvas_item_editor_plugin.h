@@ -46,7 +46,11 @@ class HSplitContainer;
 class MenuButton;
 class PanelContainer;
 class StyleBoxTexture;
+class SubViewport;
+class SubViewportContainer;
+class TextureRect;
 class ViewPanner;
+class Viewport;
 class VScrollBar;
 class VSeparator;
 class VSplitContainer;
@@ -199,6 +203,10 @@ private:
 	Tool tool = TOOL_SELECT;
 	Control *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
+	SubViewportContainer *scene_tree = nullptr;
+	SubViewport *scene_view_display = nullptr;
+	TextureRect *scene_view = nullptr;
+	Viewport *current_viewport = nullptr;
 
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
@@ -345,6 +353,7 @@ private:
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
 
+	Button *override_viewport_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
@@ -432,6 +441,12 @@ private:
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
 	void _reset_transform(TransformType p_type);
+
+	void _set_viewport_override(Viewport *p_viewport);
+	void _update_viewport_size();
+	bool _is_usable_viewport(const Viewport *p_viewport) const;
+	bool _is_viewport_overridden() const;
+	Vector2 _get_screen_size() const;
 
 public:
 	enum ThemePreviewMode {
@@ -535,7 +550,11 @@ private:
 	void _button_toggle_local_space(bool p_status);
 	void _button_toggle_smart_snap(bool p_status);
 	void _button_toggle_grid_snap(bool p_status);
+	void _button_override_viewport(bool p_pressed);
 	void _button_tool_select(int p_index);
+
+	void _update_override_viewport_button(Viewport *p_viewport);
+	void _cleanup_scene();
 
 	HSplitContainer *left_panel_split = nullptr;
 	HSplitContainer *right_panel_split = nullptr;
@@ -572,6 +591,7 @@ public:
 	real_t snap_angle(real_t p_target, real_t p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
+	static Transform2D get_canvas_item_transform(const CanvasItem *p_item);
 
 	static CanvasItemEditor *get_singleton() { return singleton; }
 	Dictionary get_state() const;
@@ -599,6 +619,7 @@ public:
 	void set_current_tool(Tool p_tool);
 
 	void edit(CanvasItem *p_canvas_item);
+	void edit_viewport(Viewport *p_viewport);
 
 	void focus_selection();
 	void center_at(const Point2 &p_pos);
