@@ -1476,6 +1476,7 @@ void Thread::_start_func(void *ud) {
 	if (t.is_valid()) {
 		t->ret = ret;
 		t->running.clear();
+		t->call_deferred("emit_signal", SNAME("finished"));
 	} else {
 		// We could print a warning here, but the Thread object will be eventually destroyed
 		// noticing wait_to_finish() hasn't been called on it, and it will print a warning itself.
@@ -1540,6 +1541,8 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
 	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
