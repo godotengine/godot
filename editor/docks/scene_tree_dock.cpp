@@ -3083,6 +3083,7 @@ void SceneTreeDock::_create() {
 		}
 
 		ur->commit_action(false);
+		tree_clicked = false;
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
 		const List<Node *> selection = editor_selection->get_top_selected_node_list();
 		ERR_FAIL_COND(selection.is_empty());
