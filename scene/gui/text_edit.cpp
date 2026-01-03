@@ -8818,7 +8818,7 @@ void TextEdit::_scroll_lines_down() {
 }
 
 void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximize_selection) {
-	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
+	if (!h_scroll->is_visible()) {
 		first_visible_col = 0;
 		h_scroll->set_value(first_visible_col);
 		queue_redraw();
