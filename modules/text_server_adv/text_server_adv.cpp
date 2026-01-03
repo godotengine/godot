@@ -3971,6 +3971,9 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	if (p_index == 0) {
 		return; // Non visual character, skip.
 	}
+
+	_THREAD_SAFE_METHOD_
+
 	FontAdvanced *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
 
