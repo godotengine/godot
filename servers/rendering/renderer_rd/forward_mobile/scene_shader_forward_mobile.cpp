@@ -77,6 +77,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_vertex = false;
 	uses_sss = false;
 	uses_transmittance = false;
+	uses_sheen = false;
 	uses_time = false;
 	writes_modelview_or_projection = false;
 	uses_world_coordinates = false;
@@ -129,6 +130,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+
+	actions.usage_flag_pointers["SHEEN"] = &uses_sheen;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -211,6 +214,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	if (uses_transmittance) {
 		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
+	}
+
+	if (uses_sheen) {
+		WARN_PRINT_ONCE_ED("Sheen shading is only available when using the Forward+ renderer.");
 	}
 #endif
 
@@ -686,6 +693,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["ROUGHNESS"] = "roughness_highp";
 		actions.renames["RIM"] = "rim_highp";
 		actions.renames["RIM_TINT"] = "rim_tint_highp";
+		actions.renames["SHEEN"] = "sheen_highp";
+		actions.renames["SHEEN_ROUGHNESS"] = "sheen_roughness_highp";
+		actions.renames["SHEEN_COLOR"] = "sheen_color_highp";
 		actions.renames["CLEARCOAT"] = "clearcoat_highp";
 		actions.renames["CLEARCOAT_ROUGHNESS"] = "clearcoat_roughness_highp";
 		actions.renames["ANISOTROPY"] = "anisotropy_highp";
@@ -739,6 +749,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["BINORMAL"] = "@TANGENT";
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
+		actions.usage_defines["SHEEN"] = "#define LIGHT_SHEEN_USED\n";
+		actions.usage_defines["SHEEN_ROUGHNESS"] = "@SHEEN";
+		actions.usage_defines["SHEEN_COLOR"] = "@SHEEN";
 		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
 		actions.usage_defines["CLEARCOAT_ROUGHNESS"] = "@CLEARCOAT";
 		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_ANISOTROPY_USED\n";

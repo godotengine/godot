@@ -324,6 +324,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_position;
 	bool uses_sss;
 	bool uses_transmittance;
+	bool uses_sheen;
 	bool uses_screen_texture;
 	bool uses_screen_texture_mipmaps;
 	bool uses_depth_texture;

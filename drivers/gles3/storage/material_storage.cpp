@@ -1295,6 +1295,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["ROUGHNESS"] = "roughness";
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
+		actions.renames["SHEEN"] = "sheen";
+		actions.renames["SHEEN_ROUGNESS"] = "sheen_roughness";
+		actions.renames["SHEEN_COLOR"] = "sheen_color";
 		actions.renames["CLEARCOAT"] = "clearcoat";
 		actions.renames["CLEARCOAT_ROUGHNESS"] = "clearcoat_roughness";
 		actions.renames["ANISOTROPY"] = "anisotropy";
@@ -1348,6 +1351,9 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["BINORMAL"] = "@TANGENT";
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
+		actions.usage_defines["SHEEN"] = "#define LIGHT_SHEEN_USED\n";
+		actions.usage_defines["SHEEN_ROUGNESS"] = "@SHEEN";
+		actions.usage_defines["SHEEN_COLOR"] = "@SHEEN";
 		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
 		actions.usage_defines["CLEARCOAT_ROUGHNESS"] = "@CLEARCOAT";
 		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_ANISOTROPY_USED\n";
@@ -2939,6 +2945,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_position = false;
 	uses_sss = false;
 	uses_transmittance = false;
+	uses_sheen = false;
 	uses_screen_texture = false;
 	uses_screen_texture_mipmaps = false;
 	uses_depth_texture = false;
@@ -3019,6 +3026,8 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+
+	actions.usage_flag_pointers["SHEEN"] = &uses_sheen;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -3123,6 +3132,10 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	if (uses_normal_texture) {
 		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderer.");
+	}
+
+	if (uses_sheen) {
+		WARN_PRINT_ONCE_ED("Sheen shading is only available when using the Forward+ renderer.");
 	}
 #endif
 
