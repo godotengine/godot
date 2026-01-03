@@ -4705,6 +4705,24 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	vkCmdClearColorImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
 }
 
+void RenderingDeviceDriverVulkan::command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) {
+	VkClearDepthStencilValue vk_depth_stencil = {};
+	vk_depth_stencil.depth = p_depth;
+	vk_depth_stencil.stencil = p_stencil;
+
+	VkImageSubresourceRange vk_subresources = {};
+	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
+
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_texture must not be used in command_clear_depth_stencil_texture. Use a clear store action pass instead.");
+	}
+#endif
+	vkCmdClearDepthStencilImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_depth_stencil, 1, &vk_subresources);
+}
+
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
 

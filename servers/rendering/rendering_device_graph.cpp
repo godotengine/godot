@@ -1095,9 +1095,13 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 					driver->command_end_render_pass(r_command_buffer);
 				}
 			} break;
-			case RecordedCommand::TYPE_TEXTURE_CLEAR: {
-				const RecordedTextureClearCommand *texture_clear_command = reinterpret_cast<const RecordedTextureClearCommand *>(command);
-				driver->command_clear_color_texture(r_command_buffer, texture_clear_command->texture, RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL, texture_clear_command->color, texture_clear_command->range);
+			case RecordedCommand::TYPE_TEXTURE_CLEAR_COLOR: {
+				const RecordedTextureClearColorCommand *texture_clear_color_command = reinterpret_cast<const RecordedTextureClearColorCommand *>(command);
+				driver->command_clear_color_texture(r_command_buffer, texture_clear_color_command->texture, RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL, texture_clear_color_command->color, texture_clear_color_command->range);
+			} break;
+			case RecordedCommand::TYPE_TEXTURE_CLEAR_DEPTH_STENCIL: {
+				const RecordedTextureClearDepthStencilCommand *texture_clear_depth_stencil_command = reinterpret_cast<const RecordedTextureClearDepthStencilCommand *>(command);
+				driver->command_clear_depth_stencil_texture(r_command_buffer, texture_clear_depth_stencil_command->texture, RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL, texture_clear_depth_stencil_command->depth, texture_clear_depth_stencil_command->stencil, texture_clear_depth_stencil_command->range);
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_COPY: {
 				const RecordedTextureCopyCommand *texture_copy_command = reinterpret_cast<const RecordedTextureCopyCommand *>(command);
@@ -1179,7 +1183,8 @@ void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_comm
 					case RecordedCommand::TYPE_BUFFER_COPY:
 					case RecordedCommand::TYPE_BUFFER_GET_DATA:
 					case RecordedCommand::TYPE_BUFFER_UPDATE:
-					case RecordedCommand::TYPE_TEXTURE_CLEAR:
+					case RecordedCommand::TYPE_TEXTURE_CLEAR_COLOR:
+					case RecordedCommand::TYPE_TEXTURE_CLEAR_DEPTH_STENCIL:
 					case RecordedCommand::TYPE_TEXTURE_COPY:
 					case RecordedCommand::TYPE_TEXTURE_GET_DATA:
 					case RecordedCommand::TYPE_TEXTURE_RESOLVE:
@@ -1379,9 +1384,13 @@ void RenderingDeviceGraph::_print_render_commands(const RecordedCommandSort *p_s
 				const RecordedDrawListCommand *draw_list_command = reinterpret_cast<const RecordedDrawListCommand *>(command);
 				print_line(command_index, "LEVEL", command_level, "DRAW LIST SIZE", draw_list_command->instruction_data_size);
 			} break;
-			case RecordedCommand::TYPE_TEXTURE_CLEAR: {
-				const RecordedTextureClearCommand *texture_clear_command = reinterpret_cast<const RecordedTextureClearCommand *>(command);
-				print_line(command_index, "LEVEL", command_level, "TEXTURE CLEAR", itos(texture_clear_command->texture.id), "COLOR", texture_clear_command->color);
+			case RecordedCommand::TYPE_TEXTURE_CLEAR_COLOR: {
+				const RecordedTextureClearColorCommand *texture_clear_color_command = reinterpret_cast<const RecordedTextureClearColorCommand *>(command);
+				print_line(command_index, "LEVEL", command_level, "TEXTURE CLEAR COLOR", itos(texture_clear_color_command->texture.id), "COLOR", texture_clear_color_command->color);
+			} break;
+			case RecordedCommand::TYPE_TEXTURE_CLEAR_DEPTH_STENCIL: {
+				const RecordedTextureClearDepthStencilCommand *texture_clear_depth_stencil_command = reinterpret_cast<const RecordedTextureClearDepthStencilCommand *>(command);
+				print_line(command_index, "LEVEL", command_level, "TEXTURE CLEAR DEPTH STENCIL", itos(texture_clear_depth_stencil_command->texture.id), "DEPTH", rtos(texture_clear_depth_stencil_command->depth), "STENCIL", itos(texture_clear_depth_stencil_command->stencil));
 			} break;
 			case RecordedCommand::TYPE_TEXTURE_COPY: {
 				const RecordedTextureCopyCommand *texture_copy_command = reinterpret_cast<const RecordedTextureCopyCommand *>(command);
@@ -2087,12 +2096,12 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	_add_command_to_graph(draw_instruction_list.command_trackers.ptr(), draw_instruction_list.command_tracker_usages.ptr(), draw_instruction_list.command_trackers.size(), command_index, command);
 }
 
-void RenderingDeviceGraph::add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range) {
+void RenderingDeviceGraph::add_texture_clear_color(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range) {
 	DEV_ASSERT(p_dst_tracker != nullptr);
 
 	int32_t command_index;
-	RecordedTextureClearCommand *command = static_cast<RecordedTextureClearCommand *>(_allocate_command(sizeof(RecordedTextureClearCommand), command_index));
-	command->type = RecordedCommand::TYPE_TEXTURE_CLEAR;
+	RecordedTextureClearColorCommand *command = static_cast<RecordedTextureClearColorCommand *>(_allocate_command(sizeof(RecordedTextureClearColorCommand), command_index));
+	command->type = RecordedCommand::TYPE_TEXTURE_CLEAR_COLOR;
 	command->texture = p_dst;
 	command->color = p_color;
 	command->range = p_range;
@@ -2111,6 +2120,31 @@ void RenderingDeviceGraph::add_texture_clear(RDD::TextureID p_dst, ResourceTrack
 			command->self_stages = RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT;
 			usage = RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE;
 		}
+	}
+
+	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
+}
+
+void RenderingDeviceGraph::add_texture_clear_depth_stencil(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_range) {
+	DEV_ASSERT(p_dst_tracker != nullptr);
+
+	int32_t command_index;
+	RecordedTextureClearDepthStencilCommand *command = static_cast<RecordedTextureClearDepthStencilCommand *>(_allocate_command(sizeof(RecordedTextureClearDepthStencilCommand), command_index));
+	command->type = RecordedCommand::TYPE_TEXTURE_CLEAR_DEPTH_STENCIL;
+	command->texture = p_dst;
+	command->depth = p_depth;
+	command->stencil = p_stencil;
+	command->range = p_range;
+
+	ResourceUsage usage;
+	if (driver_clears_with_copy_engine) {
+		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
+		usage = RESOURCE_USAGE_COPY_TO;
+	} else {
+		// If the driver is uncapable of using the copy engine for clearing the image (e.g. D3D12), we must transition the
+		// resource to a depth stencil as that's the only way it can perform the operation.
+		command->self_stages = RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		usage = RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE;
 	}
 
 	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
@@ -2328,7 +2362,8 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			1, // TYPE_BUFFER_UPDATE
 			4, // TYPE_COMPUTE_LIST
 			3, // TYPE_DRAW_LIST
-			2, // TYPE_TEXTURE_CLEAR
+			2, // TYPE_TEXTURE_CLEAR_COLOR
+			2, // TYPE_TEXTURE_CLEAR_DEPTH_STENCIL
 			2, // TYPE_TEXTURE_COPY
 			2, // TYPE_TEXTURE_GET_DATA
 			2, // TYPE_TEXTURE_RESOLVE
