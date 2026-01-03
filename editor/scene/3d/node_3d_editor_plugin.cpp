@@ -1568,14 +1568,16 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 	}
 }
 
-Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal, bool p_view_axis) {
+Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const Transform3D &p_original, const Transform3D &p_original_local, const Basis &p_relative_basis, Vector3 p_motion, double p_extra, bool p_local, bool p_orthogonal, bool p_view_axis, bool p_relative) {
 	switch (p_mode) {
 		case TRANSFORM_SCALE: {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				p_motion.snapf(p_extra);
 			}
+
 			Transform3D s;
-			if (p_local) {
+
+			if (p_local && !p_relative) {
 				s.basis = p_original_local.basis.scaled_local(p_motion + Vector3(1, 1, 1));
 				s.origin = p_original_local.origin;
 			} else {
@@ -1597,6 +1599,10 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			}
 
 			if (p_local) {
+				if (p_relative) {
+					return Transform3D(p_original_local.basis, p_original_local.origin + p_relative_basis.xform(p_motion));
+				}
+
 				return p_original_local.translated_local(p_motion);
 			}
 
@@ -1615,8 +1621,29 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 			}
 
 			if (p_local) {
-				r.basis = Basis(axis.normalized(), p_extra) * p_original_local.basis;
-				r.origin = p_original_local.origin;
+				if (p_relative) {
+					Basis relative_rotation = p_relative_basis.orthonormalized();
+					Vector3 relative_axis = relative_rotation.xform(p_motion).normalized();
+					Basis new_basis = Basis(relative_axis, p_extra) * p_original_local.basis.orthonormalized();
+
+					Vector3 original_scale = Vector3(
+							p_original_local.basis.get_column(0).length(),
+							p_original_local.basis.get_column(1).length(),
+							p_original_local.basis.get_column(2).length());
+
+					new_basis = Basis(
+							new_basis.get_column(0) * original_scale.x,
+							new_basis.get_column(1) * original_scale.y,
+							new_basis.get_column(2) * original_scale.z);
+
+					r.basis = new_basis;
+					r.origin = p_original_local.origin;
+
+				} else {
+					Vector3 local_axis = p_original_local.basis.xform(p_motion);
+					r.basis = Basis(local_axis.normalized(), p_extra) * p_original_local.basis;
+					r.origin = p_original_local.origin;
+				}
 			} else {
 				r.basis = parent_global_basis * Basis(axis.normalized(), p_extra) * p_original_local.basis;
 				r.origin = Basis(p_motion, p_extra).xform(p_original.origin - _edit.center) + _edit.center;
@@ -5620,9 +5647,22 @@ void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 	bool is_global_view_plane = (_edit.plane == TRANSFORM_VIEW) &&
 			((_edit.mode != TRANSFORM_ROTATE) || !spatial_editor->are_local_coords_enabled());
 
+	bool relative_transform = spatial_editor->is_relative_transform_enabled();
+
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	Node3D *active_node = spatial_editor->get_active_node();
+	Basis last_basis;
+
+	if (selection.is_empty() || !active_node) {
+		return;
+	}
+
+	last_basis = active_node->get_global_basis();
+
 	for (Node *E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E);
+		bool is_relative = true;
+
 		if (!sp) {
 			continue;
 		}
@@ -5636,17 +5676,21 @@ void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 			continue;
 		}
 
+		if (active_node == sp || !relative_transform) {
+			is_relative = false;
+		}
+
 		if (se->gizmo.is_valid()) {
 			for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 				Transform3D xform = GE.value;
-				Transform3D new_xform = _compute_transform(_edit.mode, se->original * xform, xform, p_motion, p_snap, local_coords, _edit.plane != TRANSFORM_VIEW, is_global_view_plane); // Force orthogonal with subgizmo.
+				Transform3D new_xform = _compute_transform(_edit.mode, se->original * xform, xform, last_basis, p_motion, p_snap, local_coords, _edit.plane != TRANSFORM_VIEW, is_global_view_plane, is_relative); // Force orthogonal with subgizmo.
 				if (!local_coords) {
 					new_xform = se->original.affine_inverse() * new_xform;
 				}
 				se->gizmo->set_subgizmo_transform(GE.key, new_xform);
 			}
 		} else {
-			Transform3D new_xform = _compute_transform(_edit.mode, se->original, se->original_local, p_motion, p_snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS && _edit.plane != TRANSFORM_VIEW, is_global_view_plane);
+			Transform3D new_xform = _compute_transform(_edit.mode, se->original, se->original_local, last_basis, p_motion, p_snap, local_coords, sp->get_rotation_edit_mode() != Node3D::ROTATION_EDIT_MODE_BASIS && _edit.plane != TRANSFORM_VIEW, is_global_view_plane, is_relative);
 			_transform_gizmo_apply(se->sp, new_xform, local_coords);
 		}
 	}
@@ -5751,7 +5795,6 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			set_message(TTR("Scaling:") + " (" + String::num(motion_snapped.x, snap_step_decimals) + ", " +
 					String::num(motion_snapped.y, snap_step_decimals) + ", " + String::num(motion_snapped.z, snap_step_decimals) + ")");
 			if (local_coords) {
-				// TODO: needed?
 				motion = _edit.original.basis.inverse().xform(motion);
 			}
 
@@ -7021,6 +7064,7 @@ Dictionary Node3DEditor::get_state() const {
 	d["scale_snap"] = snap_scale_value;
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
+	d["relative_transform"] = tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->is_pressed();
 
 	int vc = 0;
 	if (view_layout_menu->get_popup()->is_item_checked(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT))) {
@@ -7110,9 +7154,12 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 
 	_snap_update();
 
+	if (d.has("relative_transform")) {
+		tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_pressed(d["relative_transform"]);
+	}
+
 	if (d.has("local_coords")) {
-		tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(d["local_coords"]);
-		update_transform_gizmo();
+		set_local_coords_enabled(d["local_coords"]);
 	}
 
 	if (d.has("viewport_mode")) {
@@ -7336,6 +7383,12 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 	switch (p_option) {
 		case MENU_TOOL_LOCAL_COORDS: {
 			tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(pressed);
+			tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_disabled(!pressed);
+			update_transform_gizmo();
+		} break;
+
+		case MENU_TOOL_RELATIVE_TRANSFORM: {
+			tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_pressed(pressed);
 			update_transform_gizmo();
 		} break;
 
@@ -7344,6 +7397,12 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 			snap_enabled = pressed;
 		} break;
 	}
+}
+
+void Node3DEditor::set_local_coords_enabled(bool p_on) {
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_pressed(p_on);
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_disabled(!p_on);
+	update_transform_gizmo();
 }
 
 void Node3DEditor::_menu_gizmo_toggled(int p_option) {
@@ -8511,6 +8570,7 @@ void Node3DEditor::_selection_changed() {
 		}
 
 		if (sp == editor_selection->get_top_selected_node_list().back()->get()) {
+			active_node = sp;
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
@@ -8880,6 +8940,7 @@ void Node3DEditor::_update_theme() {
 	tool_button[TOOL_RULER]->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_button_icon(get_editor_theme_icon(SNAME("Object")));
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("RelativeTransform")));
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
 
 	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_editor_theme_icon(SNAME("Panels1")));
@@ -9842,6 +9903,16 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTRC("Use Local Space"), Key::T));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_accessibility_name(TTRC("Use Local Space"));
+
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM] = memnew(Button);
+	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]);
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_toggle_mode(true);
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_RELATIVE_TRANSFORM));
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/relative_transform", TTRC("Transform Relative to Active Node"), Key::A, true));
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_shortcut_context(this);
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_tooltip_text(TTRC("Only effective when Use Local Space is enabled."));
+	tool_option_button[TOOL_OPT_RELATIVE_TRANSFORM]->set_disabled(true);
 
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
 	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
