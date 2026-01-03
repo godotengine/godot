@@ -220,6 +220,7 @@ void CSGShape3D::_make_dirty(bool p_parent_removing) {
 #ifndef PHYSICS_3D_DISABLED
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
 		callable_mp(this, &CSGShape3D::update_shape).call_deferred(); // Must be deferred; otherwise, is_root_shape() will use the previous parent.
+		dirty = true;
 	}
 #endif // PHYSICS_3D_DISABLED
 
