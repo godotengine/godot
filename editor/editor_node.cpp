@@ -4060,9 +4060,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 	switch (current_menu_option) {
 		case SCENE_CLOSE:
 		case SCENE_TAB_CLOSE: {
-			Node *scene = editor_data.get_edited_scene_root(tab_closing_idx);
-			if (scene != nullptr) {
-				_update_prev_closed_scenes(scene->get_scene_file_path(), true);
+			const String path = editor_data.get_scene_path(tab_closing_idx);
+			if (!path.is_empty()) {
+				_update_prev_closed_scenes(path, true);
 			}
 
 			// Don't close tabs when exiting the editor (required for "restore_scenes_on_load" setting).
