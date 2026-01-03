@@ -2045,7 +2045,6 @@ SceneTree::SceneTree() {
 	root->set_name("root");
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		root->set_wrap_controls(true);
 		root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
 	} else {
 		root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
