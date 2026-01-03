@@ -1140,6 +1140,7 @@ void CodeTextEditor::update_editor_settings() {
 
 	// Behavior: Navigation
 	text_editor->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
+	text_editor->set_scroll_past_end_of_line_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_line"));
 	text_editor->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 	text_editor->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));

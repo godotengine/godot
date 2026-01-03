@@ -6446,6 +6446,18 @@ bool TextEdit::is_scroll_past_end_of_file_enabled() const {
 	return scroll_past_end_of_file_enabled;
 }
 
+void TextEdit::set_scroll_past_end_of_line_enabled(bool p_enabled) {
+	if (scroll_past_end_of_line_enabled == p_enabled) {
+		return;
+	}
+	scroll_past_end_of_line_enabled = p_enabled;
+	queue_redraw();
+}
+
+bool TextEdit::is_scroll_past_end_of_line_enabled() const {
+	return scroll_past_end_of_line_enabled;
+}
+
 RID TextEdit::get_text_canvas_item() const {
 	return text_ci;
 }
@@ -7429,6 +7441,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scroll_past_end_of_file_enabled", "enable"), &TextEdit::set_scroll_past_end_of_file_enabled);
 	ClassDB::bind_method(D_METHOD("is_scroll_past_end_of_file_enabled"), &TextEdit::is_scroll_past_end_of_file_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_past_end_of_line_enabled", "enable"), &TextEdit::set_scroll_past_end_of_line_enabled);
+	ClassDB::bind_method(D_METHOD("is_scroll_past_end_of_line_enabled"), &TextEdit::is_scroll_past_end_of_line_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_v_scroll_speed", "speed"), &TextEdit::set_v_scroll_speed);
 	ClassDB::bind_method(D_METHOD("get_v_scroll_speed"), &TextEdit::get_v_scroll_speed);
 
@@ -7566,6 +7581,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_smooth"), "set_smooth_scroll_enabled", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_v_scroll_speed", PROPERTY_HINT_NONE, "suffix:lines/s"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_file"), "set_scroll_past_end_of_file_enabled", "is_scroll_past_end_of_file_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_past_end_of_line"), "set_scroll_past_end_of_line_enabled", "is_scroll_past_end_of_line_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:lines"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_fit_content_height"), "set_fit_content_height_enabled", "is_fit_content_height_enabled");
@@ -8606,6 +8622,10 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_width = size.width - style->get_minimum_size().width;
 	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding;
+
+	if (scroll_past_end_of_line_enabled && !fit_content_width) {
+		total_width += visible_width;
+	}
 
 	if (draw_minimap) {
 		total_width += minimap_width;

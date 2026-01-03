@@ -1378,6 +1378,9 @@
 		<member name="scroll_past_end_of_file" type="bool" setter="set_scroll_past_end_of_file_enabled" getter="is_scroll_past_end_of_file_enabled" default="false">
 			Allow scrolling past the last line into "virtual" space.
 		</member>
+		<member name="scroll_past_end_of_line" type="bool" setter="set_scroll_past_end_of_line_enabled" getter="is_scroll_past_end_of_line_enabled" default="false">
+			Allow scrolling past the last character into "horizontal" space.
+		</member>
 		<member name="scroll_smooth" type="bool" setter="set_smooth_scroll_enabled" getter="is_smooth_scroll_enabled" default="false">
 			Scroll smoothly over the text rather than jumping to the next location.
 		</member>

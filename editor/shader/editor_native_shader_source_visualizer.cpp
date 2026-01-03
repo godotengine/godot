@@ -130,6 +130,7 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 
 			// Behavior: Navigation
 			code_edit->set_scroll_past_end_of_file_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_file"));
+			code_edit->set_scroll_past_end_of_line_enabled(EDITOR_GET("text_editor/behavior/navigation/scroll_past_end_of_line"));
 			code_edit->set_smooth_scroll_enabled(EDITOR_GET("text_editor/behavior/navigation/smooth_scrolling"));
 			code_edit->set_v_scroll_speed(EDITOR_GET("text_editor/behavior/navigation/v_scroll_speed"));
 			code_edit->set_drag_and_drop_selection_enabled(EDITOR_GET("text_editor/behavior/navigation/drag_and_drop_selection"));
