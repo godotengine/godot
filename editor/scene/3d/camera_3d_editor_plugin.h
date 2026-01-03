@@ -33,7 +33,9 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/texture/texture_editor_plugin.h"
 
+class AspectRatioContainer;
 class Camera3D;
+class MarginContainer;
 class SubViewport;
 
 class Camera3DEditor : public Control {
@@ -52,13 +54,18 @@ public:
 	Camera3DEditor();
 };
 
-class Camera3DPreview : public TexturePreview {
-	GDCLASS(Camera3DPreview, TexturePreview);
+class Camera3DPreview : public MarginContainer {
+	GDCLASS(Camera3DPreview, MarginContainer);
 
 	Camera3D *camera = nullptr;
+	AspectRatioContainer *centering_container = nullptr;
 	SubViewport *sub_viewport = nullptr;
 
+	static bool camera_preview_folded;
+
 	void _update_sub_viewport_size();
+	void _camera_exiting();
+	void _toggle_folding(bool p_folded);
 
 public:
 	Camera3DPreview(Camera3D *p_camera);
