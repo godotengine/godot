@@ -43,6 +43,13 @@
 				- [code]license[/code] - The license applied to this component (such as "[url=https://en.wikipedia.org/wiki/MIT_License#Ambiguity_and_variants]Expat[/url]" or "[url=https://creativecommons.org/licenses/by/4.0/]CC-BY-4.0[/url]").
 			</description>
 		</method>
+		<method name="get_delta_time">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two rendered frames in seconds. This functions identically to the [code]delta[/code] parameter in [method Node._process], meaning this is affected by [member time_scale]. Use [method get_unscaled_delta_time] for an unscaled delta time.
+				See also [method get_physics_delta_time].
+			</description>
+		</method>
 		<method name="get_donor_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -80,6 +87,13 @@
 			<description>
 				Returns the instance of the [MainLoop]. This is usually the main [SceneTree] and is the same as [method Node.get_tree].
 				[b]Note:[/b] The type instantiated as the main loop can changed with [member ProjectSettings.application/run/main_loop_type].
+			</description>
+		</method>
+		<method name="get_physics_delta_time">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two physics ticks in seconds. This functions identically to the [code]delta[/code] parameter in [method Node._physics_process], meaning this is affected by [member time_scale]. Use [method get_unscaled_physics_delta_time] for an unscaled delta time.
+				See also [method get_delta_time].
 			</description>
 		</method>
 		<method name="get_physics_frames" qualifiers="const">
@@ -163,6 +177,20 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns a list of names of all available global singletons. See also [method get_singleton].
+			</description>
+		</method>
+		<method name="get_unscaled_delta_time">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two rendered frames in seconds. Unlike the [code]delta[/code] parameter in [method Node._process], this value is not affected by [member time_scale]. Use [method get_delta_time] for a scaled delta time.
+				See also [method get_unscaled_physics_delta_time].
+			</description>
+		</method>
+		<method name="get_unscaled_physics_delta_time">
+			<return type="float" />
+			<description>
+				Returns the time spent between the last two physics ticks in seconds. Unlike the [code]delta[/code] parameter in [method Node._physics_process], this value is not affected by [member time_scale]. Use [method get_physics_delta_time] for a scaled delta time.
+				See also [method get_unscaled_physics_delta_time].
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
