@@ -361,20 +361,43 @@ void EditorVCSInterface::set_singleton(EditorVCSInterface *p_singleton) {
 
 void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir) {
 	if (p_vcs_metadata_type == VCSMetadata::GIT) {
-		Ref<FileAccess> f = FileAccess::open(p_dir.path_join(".gitignore"), FileAccess::WRITE);
-		if (f.is_null()) {
-			ERR_FAIL_MSG("Couldn't create .gitignore in project path.");
+		String path = p_dir.path_join(".gitignore");
+		Ref<FileAccess> f;
+		if (FileAccess::exists(path)) {
+			f = FileAccess::open(path, FileAccess::READ_WRITE);
 		} else {
+			f = FileAccess::open(path, FileAccess::WRITE);
+		}
+		ERR_FAIL_COND_MSG(f.is_null(), "Could not open .gitignore for writing.");
+		String current_content = f->get_as_text();
+
+		if (!current_content.contains(".godot/")) {
+			f->seek_end();
+			if (!current_content.is_empty()) {
+				f->store_line("");
+			}
 			f->store_line("# Godot 4+ specific ignores");
 			f->store_line(".godot/");
 			f->store_line("/android/");
 		}
-		f = FileAccess::open(p_dir.path_join(".gitattributes"), FileAccess::WRITE);
-		if (f.is_null()) {
-			ERR_FAIL_MSG("Couldn't create .gitattributes in project path.");
+		f->close();
+		path = p_dir.path_join(".gitattributes");
+		f = Ref<FileAccess>();
+		if (FileAccess::exists(path)) {
+			f = FileAccess::open(path, FileAccess::READ_WRITE);
 		} else {
+			f = FileAccess::open(path, FileAccess::WRITE);
+		}
+		ERR_FAIL_COND_MSG(f.is_null(), "Could not open .gitattributes for writing.");
+		current_content = f->get_as_text();
+		if (!current_content.contains("* text=auto eol=lf")) {
+			f->seek_end();
+			if (!current_content.is_empty()) {
+				f->store_line("");
+			}
 			f->store_line("# Normalize EOL for all files that Git considers text files.");
 			f->store_line("* text=auto eol=lf");
 		}
+		f->close();
 	}
 }
