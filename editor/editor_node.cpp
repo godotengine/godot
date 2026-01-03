@@ -9135,6 +9135,10 @@ EditorNode::EditorNode() {
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
 
+		Ref<BlitMaterialConversionPlugin> blit_mat_convert;
+		blit_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(blit_mat_convert);
+
 		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(particles_mat_convert);

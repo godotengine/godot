@@ -3804,6 +3804,45 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. This way, the texture's format and usage can be controlled more effectively.
 			</description>
 		</method>
+		<method name="texture_drawable_blit_rect">
+			<return type="void" />
+			<param index="0" name="textures" type="RID[]" />
+			<param index="1" name="rect" type="Rect2i" />
+			<param index="2" name="material" type="RID" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="source_textures" type="RID[]" />
+			<param index="5" name="to_mipmap" type="int" default="0" />
+			<description>
+				Draws to [param rect] on up to 4 given Drawable [param textures], using a TextureBlit Shader from [param material]. [param modulate] and up to 4 [param source_textures] are uniforms for the Shader to process with. [param to_mipmap] can specify to perform this draw to a lower mipmap level.
+				[b]Note:[/b] All [param textures] must be the same size and format.
+			</description>
+		</method>
+		<method name="texture_drawable_create">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="with_mipmaps" type="bool" default="false" />
+			<description>
+				Creates a 2-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_drawable*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [DrawableTexture2D].
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Calculates new MipMaps for the given Drawable [param texture].
+			</description>
+		</method>
+		<method name="texture_drawable_get_default_material" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns a ShaderMaterial with the default texture_blit Shader.
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4589,6 +4628,19 @@
 		<constant name="CUBEMAP_LAYER_BACK" value="5" enum="CubeMapLayer">
 			Back face of a [Cubemap].
 		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8" value="0" enum="TextureDrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="TextureDrawableFormat">
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			When drawn to, an sRGB to linear color space conversion is performed.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="2" enum="TextureDrawableFormat">
+			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
+		</constant>
+		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAF" value="3" enum="TextureDrawableFormat">
+			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point value.
+		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.
 		</constant>
@@ -4604,7 +4656,10 @@
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
 			Shader is a 3D fog shader.
 		</constant>
-		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
+		<constant name="SHADER_TEXTURE_BLIT" value="5" enum="ShaderMode">
+			Shader is a texture_blit shader.
+		</constant>
+		<constant name="SHADER_MAX" value="6" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">

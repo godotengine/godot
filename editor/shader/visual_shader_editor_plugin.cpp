@@ -1731,6 +1731,10 @@ void VisualShaderEditor::_get_current_mode_limits(int &r_begin_type, int &r_end_
 		} break;
 		case Shader::MODE_FOG: {
 			r_begin_type = VisualShader::TYPE_FOG;
+			r_end_type = VisualShader::TYPE_TEXTURE_BLIT;
+		} break;
+		case Shader::MODE_TEXTURE_BLIT: {
+			r_begin_type = VisualShader::TYPE_TEXTURE_BLIT;
 			r_end_type = VisualShader::TYPE_MAX;
 		} break;
 		default: {
@@ -2469,6 +2473,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(true);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_sky;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2478,6 +2483,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(false);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(true);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_fog;
 		custom_mode_box->set_visible(false);
 		varying_button->hide();
@@ -2487,6 +2493,7 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		edit_type_particles->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_particles;
 		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
 			custom_mode_box->set_visible(false);
@@ -2495,11 +2502,26 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		}
 		varying_button->hide();
 		mode = MODE_FLAGS_PARTICLES;
+	} else if (p_which == VisualShader::MODE_TEXTURE_BLIT) {
+		edit_type_standard->set_visible(false);
+		edit_type_particles->set_visible(false);
+		edit_type_sky->set_visible(false);
+		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(true);
+		edit_type = edit_type_texture_blit;
+		if ((edit_type->get_selected() + 3) > VisualShader::TYPE_PROCESS) {
+			custom_mode_box->set_visible(false);
+		} else {
+			custom_mode_box->set_visible(true);
+		}
+		varying_button->hide();
+		mode = MODE_FLAGS_TEXTURE_BLIT;
 	} else {
 		edit_type_particles->set_visible(false);
 		edit_type_standard->set_visible(true);
 		edit_type_sky->set_visible(false);
 		edit_type_fog->set_visible(false);
+		edit_type_texture_blit->set_visible(false);
 		edit_type = edit_type_standard;
 		custom_mode_box->set_visible(false);
 		varying_button->show();
@@ -2518,6 +2540,9 @@ void VisualShaderEditor::_set_mode(int p_which) {
 		upper_type = VisualShader::TYPE_FOG;
 	} else if (mode & MODE_FLAGS_FOG) {
 		default_type = VisualShader::TYPE_FOG;
+		upper_type = VisualShader::TYPE_TEXTURE_BLIT;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		default_type = VisualShader::TYPE_TEXTURE_BLIT;
 		upper_type = VisualShader::TYPE_MAX;
 	}
 
@@ -5678,6 +5703,8 @@ void VisualShaderEditor::_type_selected(int p_id) {
 		offset = VisualShader::TYPE_SKY;
 	} else if (mode & MODE_FLAGS_FOG) {
 		offset = VisualShader::TYPE_FOG;
+	} else if (mode & MODE_FLAGS_TEXTURE_BLIT) {
+		offset = VisualShader::TYPE_TEXTURE_BLIT;
 	}
 
 	set_current_shader_type(VisualShader::Type(p_id + offset));
@@ -6685,6 +6712,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	edit_type_fog->select(0);
 	edit_type_fog->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
 
+	edit_type_texture_blit = memnew(OptionButton);
+	edit_type_texture_blit->add_item(TTR("Blit"));
+	edit_type_texture_blit->select(0);
+	edit_type_texture_blit->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_type_selected));
+
 	edit_type = edit_type_standard;
 
 	toolbar_hflow->add_child(custom_mode_box);
@@ -6697,6 +6729,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar_hflow->move_child(edit_type_sky, 0);
 	toolbar_hflow->add_child(edit_type_fog);
 	toolbar_hflow->move_child(edit_type_fog, 0);
+	toolbar_hflow->add_child(edit_type_texture_blit);
+	toolbar_hflow->move_child(edit_type_texture_blit, 0);
 
 	add_node = memnew(Button);
 	add_node->set_theme_type_variation(SceneStringName(FlatButton));
@@ -7190,6 +7224,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_fragment_shader_mode = TTR("'%s' input parameter for fragment shader mode.") + translation_gdsl;
 	const String input_param_for_sky_shader_mode = TTR("'%s' input parameter for sky shader mode.") + translation_gdsl;
 	const String input_param_for_fog_shader_mode = TTR("'%s' input parameter for fog shader mode.") + translation_gdsl;
+	const String input_param_for_texture_blit_shader_mode = TTR("'%s' input parameter for blit shader mode.") + translation_gdsl;
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.") + translation_gdsl;
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.") + translation_gdsl;
 	const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.") + translation_gdsl;
@@ -7337,6 +7372,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Time", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "time", "TIME"), { "time" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("UVW", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "uvw", "UVW"), { "uvw" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
 	add_options.push_back(AddOption("WorldPosition", "Input/Fog", "VisualShaderNodeInput", vformat(input_param_for_fog_shader_mode, "world_position", "WORLD_POSITION"), { "world_position" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FOG, Shader::MODE_FOG));
+
+	// TEXTURE BLIT INPUTS
+	add_options.push_back(AddOption("UV", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "uv", "UV"), { "uv" }, VisualShaderNode::PORT_TYPE_VECTOR_2D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Modulate", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Modulate", "MODULATE"), { "Modulate" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Fragcoord", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Fragcoord", "FRAGCOORD"), { "Fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture", "source_texture"), { "Source Texture" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 2", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 2", "source_texture2"), { "Source Texture 2" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 3", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 3", "source_texture3"), { "Source Texture 3" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
+	add_options.push_back(AddOption("Source Texture 4", "Input/Texture_blit", "VisualShaderNodeInput", vformat(input_param_for_texture_blit_shader_mode, "Source Texture 4", "source_texture4"), { "Source Texture 4" }, VisualShaderNode::PORT_TYPE_SAMPLER, TYPE_FLAGS_BLIT, Shader::MODE_TEXTURE_BLIT));
 
 	// PARTICLES INPUTS
 
@@ -8285,7 +8329,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	}
 
 	//4. delete varyings (if needed)
-	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG) {
+	if (p_which == VisualShader::MODE_PARTICLES || p_which == VisualShader::MODE_SKY || p_which == VisualShader::MODE_FOG || p_which == VisualShader::MODE_TEXTURE_BLIT) {
 		int var_count = visual_shader->get_varyings_count();
 
 		if (var_count > 0) {

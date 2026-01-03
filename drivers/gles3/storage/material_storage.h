@@ -43,6 +43,7 @@
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
+#include "drivers/gles3/shaders/tex_blit.glsl.gen.h"
 
 namespace GLES3 {
 
@@ -423,6 +424,52 @@ struct ParticleProcessMaterialData : public MaterialData {
 
 MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
+/* Texture Blit Shader */
+
+struct TexBlitShaderData : public ShaderData {
+	enum BlendMode { // Used internally.
+		BLEND_MODE_MIX,
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MUL,
+		BLEND_MODE_DISABLED,
+	};
+
+	bool valid;
+	RID version;
+
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size;
+
+	String code;
+
+	BlendMode blend_mode;
+
+	virtual void set_code(const String &p_code);
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	TexBlitShaderData();
+	virtual ~TexBlitShaderData();
+};
+
+ShaderData *_create_tex_blit_shader_func();
+
+struct TexBlitMaterialData : public MaterialData {
+	TexBlitShaderData *shader_data = nullptr;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~TexBlitMaterialData();
+};
+
+MaterialData *_create_tex_blit_material_func(ShaderData *p_shader);
+
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
 	enum {
@@ -560,11 +607,13 @@ public:
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
 		ParticlesShaderGLES3 particles_process_shader;
+		TexBlitShaderGLES3 tex_blit_shader;
 
 		ShaderCompiler compiler_canvas;
 		ShaderCompiler compiler_scene;
 		ShaderCompiler compiler_particles;
 		ShaderCompiler compiler_sky;
+		ShaderCompiler compiler_tex_blit;
 	} shaders;
 
 	/* GLOBAL SHADER UNIFORM API */

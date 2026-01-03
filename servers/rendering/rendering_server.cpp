@@ -2328,10 +2328,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_3d_create", "format", "width", "height", "depth", "mipmaps", "data"), &RenderingServer::_texture_3d_create);
 	ClassDB::bind_method(D_METHOD("texture_proxy_create", "base"), &RenderingServer::texture_proxy_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_native_handle", "type", "format", "native_handle", "width", "height", "depth", "layers", "layered_type"), &RenderingServer::texture_create_from_native_handle, DEFVAL(1), DEFVAL(TEXTURE_LAYERED_2D_ARRAY));
+	ClassDB::bind_method(D_METHOD("texture_drawable_create", "width", "height", "format", "color", "with_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);
 	ClassDB::bind_method(D_METHOD("texture_3d_update", "texture", "data"), &RenderingServer::_texture_3d_update);
 	ClassDB::bind_method(D_METHOD("texture_proxy_update", "texture", "proxy_to"), &RenderingServer::texture_proxy_update);
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_blit_rect", "textures", "rect", "material", "modulate", "source_textures", "to_mipmap"), &RenderingServer::texture_drawable_blit_rect, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("texture_2d_placeholder_create"), &RenderingServer::texture_2d_placeholder_create);
 	ClassDB::bind_method(D_METHOD("texture_2d_layered_placeholder_create", "layered_type"), &RenderingServer::texture_2d_layered_placeholder_create);
@@ -2340,6 +2343,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_2d_get", "texture"), &RenderingServer::texture_2d_get);
 	ClassDB::bind_method(D_METHOD("texture_2d_layer_get", "texture", "layer"), &RenderingServer::texture_2d_layer_get);
 	ClassDB::bind_method(D_METHOD("texture_3d_get", "texture"), &RenderingServer::_texture_3d_get);
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture"), &RenderingServer::texture_drawable_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("texture_drawable_get_default_material"), &RenderingServer::texture_drawable_get_default_material);
 
 	ClassDB::bind_method(D_METHOD("texture_replace", "texture", "by_texture"), &RenderingServer::texture_replace);
 	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height"), &RenderingServer::texture_set_size_override);
@@ -2369,6 +2375,11 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_FRONT);
 	BIND_ENUM_CONSTANT(CUBEMAP_LAYER_BACK);
 
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAH);
+	BIND_ENUM_CONSTANT(TEXTURE_DRAWABLE_FORMAT_RGBAF);
+
 	/* SHADER */
 
 	ClassDB::bind_method(D_METHOD("shader_create"), &RenderingServer::shader_create);
@@ -2386,6 +2397,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADER_PARTICLES);
 	BIND_ENUM_CONSTANT(SHADER_SKY);
 	BIND_ENUM_CONSTANT(SHADER_FOG);
+	BIND_ENUM_CONSTANT(SHADER_TEXTURE_BLIT);
 	BIND_ENUM_CONSTANT(SHADER_MAX);
 
 	/* MATERIAL */

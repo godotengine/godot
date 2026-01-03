@@ -164,6 +164,7 @@ void RendererCompositorRD::initialize() {
 uint64_t RendererCompositorRD::frame = 1;
 
 void RendererCompositorRD::finalize() {
+	texture_storage->_tex_blit_shader_free();
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(fog);
@@ -318,6 +319,7 @@ RendererCompositorRD::RendererCompositorRD() {
 	particles_storage = memnew(RendererRD::ParticlesStorage);
 	fog = memnew(RendererRD::Fog);
 	canvas = memnew(RendererCanvasRenderRD());
+	texture_storage->_tex_blit_shader_initialize();
 
 	String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	uint64_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);

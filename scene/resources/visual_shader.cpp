@@ -37,7 +37,7 @@
 #include "visual_shader_particle_nodes.h"
 
 String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
-	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
+	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog", "texture_blit" };
 	return p_name + "_" + String(typepf[p_type]) + "_" + itos(p_id);
 }
 
@@ -1718,6 +1718,7 @@ static const char *type_string[VisualShader::TYPE_MAX] = {
 	"process_custom",
 	"sky",
 	"fog",
+	"texture_blit",
 };
 
 bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
@@ -1958,7 +1959,7 @@ void VisualShader::reset_state() {
 
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
-	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles,Sky,Fog"));
+	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Spatial,CanvasItem,Particles,Sky,Fog,TextureBlit"));
 	//render modes
 
 	HashMap<String, String> blend_mode_enums;
@@ -2683,7 +2684,7 @@ void VisualShader::_update_shader() const {
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
 	HashSet<StringName> classes;
 	HashMap<int, int> insertion_pos;
-	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog" };
+	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles", "sky", "fog", "texture_blit" };
 
 	global_code += String() + "shader_type " + shader_mode_str[shader_mode] + ";\n";
 
@@ -2786,13 +2787,20 @@ void VisualShader::_update_shader() const {
 		global_code += "stencil_mode " + stencil_mode + ";\n\n";
 	}
 
-	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
+	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog", "blit" };
 
 	String global_expressions;
 	HashSet<String> used_parameter_names;
 	List<VisualShaderNodeParameter *> parameters;
 	HashMap<int, List<int>> emitters;
 	HashMap<int, List<int>> varying_setters;
+
+	if (shader_mode == Shader::MODE_TEXTURE_BLIT) {
+		global_code += "uniform sampler2D source_texture0 : hint_blit_source0;\n";
+		global_code += "uniform sampler2D source_texture1 : hint_blit_source1;\n";
+		global_code += "uniform sampler2D source_texture2 : hint_blit_source2;\n";
+		global_code += "uniform sampler2D source_texture3 : hint_blit_source3;\n\n";
+	}
 
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 		if (!has_func_name(RenderingServer::ShaderMode(shader_mode), func_name[i])) {
@@ -2905,7 +2913,7 @@ void VisualShader::_update_shader() const {
 		HashSet<int> processed;
 
 		bool is_empty_func = false;
-		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG) {
+		if (shader_mode != Shader::MODE_PARTICLES && shader_mode != Shader::MODE_SKY && shader_mode != Shader::MODE_FOG && shader_mode != Shader::MODE_TEXTURE_BLIT) {
 			is_empty_func = true;
 		}
 
@@ -3221,6 +3229,7 @@ void VisualShader::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_PROCESS_CUSTOM);
 	BIND_ENUM_CONSTANT(TYPE_SKY);
 	BIND_ENUM_CONSTANT(TYPE_FOG);
+	BIND_ENUM_CONSTANT(TYPE_TEXTURE_BLIT);
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(VARYING_MODE_VERTEX_TO_FRAG_LIGHT);
@@ -3543,6 +3552,15 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "uvw", "UVW" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "world_position", "WORLD_POSITION" },
 
+	// Blit, Blit
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "fragcoord", "FRAGCOORD" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "modulate", "MODULATE" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture", "source_texture" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture2", "source_texture2" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture3", "source_texture3" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture4", "source_texture4" },
+
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
@@ -3622,6 +3640,11 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	// Fog
 
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
+
+	// Blit
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "modulate", "MODULATE" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "uv", "UV" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_SAMPLER, "source_texture", "source_texture" },
 
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
@@ -4257,6 +4280,14 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "Density", "DENSITY" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "Albedo", "ALBEDO" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "Emission", "EMISSION" },
+
+	////////////////////////////////////////////////////////////////////////
+	// Blit, Blit.
+	////////////////////////////////////////////////////////////////////////
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color0", "COLOR0" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color1", "COLOR1" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color2", "COLOR2" },
+	{ Shader::MODE_TEXTURE_BLIT, VisualShader::TYPE_TEXTURE_BLIT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "Color3", "COLOR3" },
 
 	////////////////////////////////////////////////////////////////////////
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },

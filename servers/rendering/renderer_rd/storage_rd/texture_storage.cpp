@@ -32,7 +32,9 @@
 
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
+#include "../uniform_set_cache_rd.h"
 #include "material_storage.h"
+#include "render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 
 using namespace RendererRD;
@@ -633,6 +635,92 @@ TextureStorage::~TextureStorage() {
 	singleton = nullptr;
 }
 
+// Has to be a separate call from TextureStorage initialization due to interacting with Material Storage
+void TextureStorage::_tex_blit_shader_initialize() {
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+	{
+		Vector<String> tex_blit_modes;
+		tex_blit_modes.push_back(""); // Only 1 Output
+		tex_blit_modes.push_back("\n#define USE_OUTPUT1\n"); // 2 Outputs
+		tex_blit_modes.push_back("\n#define USE_OUTPUT1\n#define USE_OUTPUT2\n"); // 3 Outputs
+		tex_blit_modes.push_back("\n#define USE_OUTPUT1\n#define USE_OUTPUT2\n#define USE_OUTPUT3\n"); // 4 Outputs
+		String global_defines;
+		global_defines += "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
+		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		tex_blit_shader.shader.initialize(tex_blit_modes, global_defines);
+	}
+	material_storage->shader_set_data_request_function(MaterialStorage::SHADER_TYPE_TEXTURE_BLIT, MaterialStorage::_create_tex_blit_shader_funcs);
+	material_storage->material_set_data_request_function(MaterialStorage::SHADER_TYPE_TEXTURE_BLIT, MaterialStorage::_create_tex_blit_material_funcs);
+
+	{
+		// Setup TextureBlit compiler
+		ShaderCompiler::DefaultIdentifierActions actions;
+
+		actions.renames["TIME"] = "data.time";
+		actions.renames["PI"] = _MKSTR(Math_PI);
+		actions.renames["TAU"] = _MKSTR(Math_TAU);
+		actions.renames["E"] = _MKSTR(Math_E);
+
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+
+		actions.renames["UV"] = "uv";
+		actions.renames["MODULATE"] = "data.modulate";
+
+		actions.renames["COLOR0"] = "color0";
+		actions.renames["COLOR1"] = "color1";
+		actions.renames["COLOR2"] = "color2";
+		actions.renames["COLOR3"] = "color3";
+
+		actions.base_uniform_string = "material.";
+		actions.base_texture_binding_index = 1;
+		actions.texture_layout_set = 1;
+
+		tex_blit_shader.compiler.initialize(actions);
+	}
+
+	{
+		// default material and shader for Texture Blit shader
+		tex_blit_shader.default_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(tex_blit_shader.default_shader);
+		material_storage->shader_set_code(tex_blit_shader.default_shader, R"(
+// Default Texture Blit shader.
+
+shader_type texture_blit;
+render_mode blend_mix;
+
+uniform sampler2D source_texture0 : hint_blit_source0;
+uniform sampler2D source_texture1 : hint_blit_source1;
+uniform sampler2D source_texture2 : hint_blit_source2;
+uniform sampler2D source_texture3 : hint_blit_source3;
+
+void blit() {
+	// Copies from each whole source texture to a rect on each output texture.
+	COLOR0 = texture(source_texture0, UV) * MODULATE;
+	COLOR1 = texture(source_texture1, UV) * MODULATE;
+	COLOR2 = texture(source_texture2, UV) * MODULATE;
+	COLOR3 = texture(source_texture3, UV) * MODULATE;
+}
+)");
+		tex_blit_shader.default_material = material_storage->material_allocate();
+		material_storage->material_initialize(tex_blit_shader.default_material);
+		material_storage->material_set_shader(tex_blit_shader.default_material, tex_blit_shader.default_shader);
+	}
+
+	tex_blit_shader.initialized = true;
+}
+
+// Has to be a separate call from TextureStorage destruction due to interacting with Material Storage
+void TextureStorage::_tex_blit_shader_free() {
+	if (tex_blit_shader.initialized) {
+		MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+		print_verbose("Freeing Default Tex_Blit Shader");
+		material_storage->material_free(tex_blit_shader.default_material);
+		material_storage->shader_free(tex_blit_shader.default_shader);
+	}
+}
+
 bool TextureStorage::free(RID p_rid) {
 	if (owns_texture(p_rid)) {
 		texture_free(p_rid);
@@ -1164,6 +1252,106 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	tex->proxies.push_back(p_texture);
 }
 
+void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RS::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) {
+	// Near identical to  Texture_2D_initialize, Generates an empty white image based on parameters
+
+	// GUARDRAIL: Bad Widths/Heights
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_height <= 0, "Drawable Texture Width or Height cannot be less than 1.");
+	ERR_FAIL_COND_MSG(p_width >= 16384 || p_height >= 16384, "Drawable Texture Width or Height cannot be greater than 16383.");
+
+	Image::Format format;
+	switch (p_format) {
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAH:
+			format = Image::FORMAT_RGBAH;
+			break;
+		case RS::TEXTURE_DRAWABLE_FORMAT_RGBAF:
+			format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			format = Image::FORMAT_RGBA8;
+	}
+
+	Ref<Image> image = Image::create_empty(p_width, p_height, p_with_mipmaps, format);
+	image->fill(p_color);
+	TextureToRDFormat ret_format;
+
+	Ref<Image> valid_image = _validate_texture_format(image, ret_format);
+	Texture texture;
+
+	texture.type = TextureStorage::TYPE_2D;
+
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = 1;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.depth = 1;
+	texture.format = image->get_format();
+	texture.validated_format = image->get_format();
+
+	texture.rd_type = RD::TEXTURE_TYPE_2D;
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = 1;
+		rd_format.array_layers = 1;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.texture_type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		// The Color Attachment Usage bit here is what differentiates a DrawableTexture from a regular Texture2D
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+
+	Vector<uint8_t> data = image->get_data(); //use image data
+	Vector<Vector<uint8_t>> data_slices;
+	data_slices.push_back(data);
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND(texture.rd_texture.is_null());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free_rid(texture.rd_texture);
+			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
+		}
+	}
+
+	// Used for Drawable Textures.
+	for (int i = 0; i < texture.mipmaps; i++) {
+		texture.cached_rd_slices.append(RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture.rd_texture, 0, i));
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	texture_owner.initialize_rid(p_texture, texture);
+}
+
 // Note: We make some big assumptions about format and usage. If developers need more control,
 // they should use RD::texture_create_from_extension() instead.
 RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Image::Format p_format, uint64_t p_native_handle, int p_width, int p_height, int p_depth, int p_layers, RS::TextureLayeredType p_layered_type) {
@@ -1474,6 +1662,145 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	}
 }
 
+// Output textures in p_textures must ALL BE THE SAME SIZE
+void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
+	ERR_FAIL_COND_MSG(!tex_blit_shader.initialized, "Texture Blit shader & materials not yet initialized.");
+	ERR_FAIL_COND_MSG(p_textures.is_empty() || p_source_textures.is_empty(), "Blit Rect texture output and source arrays must contain at least 1 texture.");
+	const RID default_tex_rid = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	RendererRD::MaterialStorage::TexBlitMaterialData *m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(p_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
+	if (!m) {
+		m = static_cast<RendererRD::MaterialStorage::TexBlitMaterialData *>(material_storage->material_get_data(tex_blit_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_TEXTURE_BLIT));
+	}
+	// GUARDRAIL:: p_material MUST BE ShaderType TextureBlit
+	ERR_FAIL_NULL(m);
+
+	RendererRD::MaterialStorage::TexBlitShaderData *shader_data = m->shader_data;
+	ERR_FAIL_NULL(shader_data);
+	material_storage->_update_queued_materials();
+	RID shaderRD = tex_blit_shader.shader.version_get_shader(shader_data->version, p_source_textures.size() - 1);
+
+	RID tar_textures[4];
+	Texture *src_textures[4];
+
+	RID uniform_texture_set;
+	int TEX_BLIT_MATERIAL_SET = 1;
+	int TEX_BLIT_TEXTURE_SET = 0;
+	int srgb_mask = 0;
+	const int srgbMaskArray[4] = { 1, 2, 4, 8 };
+	LocalVector<RD::Uniform> texture_uniforms;
+
+	int i = 0;
+	while (i < 4) {
+		// Load Target Textures
+		if (i < p_textures.size()) {
+			Texture *tex = get_texture(p_textures[i]);
+			srgb_mask += get_texture(p_textures[i])->drawable_type == RS::TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB ? srgbMaskArray[i] : 0;
+			ERR_FAIL_NULL_MSG(tex, "Drawable Texture target cannot be null.");
+			ERR_FAIL_COND_MSG(p_to_mipmap >= tex->mipmaps || p_to_mipmap >= tex->cached_rd_slices.size(), vformat("Drawable Texture Target does not have mipmap level %d.", p_to_mipmap));
+			if (i > 0) {
+				ERR_FAIL_COND_MSG(texture_2d_get_size(p_textures[i - 1]) != texture_2d_get_size(p_textures[i]), "All Blit_Rect output textures must be same size.");
+			}
+			tar_textures[i] = tex->cached_rd_slices[p_to_mipmap];
+		}
+
+		// Load and bind source textures, load default Black if source is bad.
+		RD::Uniform u;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = i;
+		if (i < p_source_textures.size()) {
+			src_textures[i] = get_texture(p_source_textures[i]);
+			if (!src_textures[i]) {
+				u.append_id(default_tex_rid);
+			} else {
+				u.append_id(src_textures[i]->rd_texture);
+			}
+		} else {
+			u.append_id(default_tex_rid);
+		}
+		texture_uniforms.push_back(u);
+
+		i += 1;
+	}
+
+	// Calculates the Rects Offset & Size in UV space for Shader to scale Vertex Quad correctly
+	Vector2i size = texture_2d_get_size(p_textures[0]);
+	Vector2 offset = Vector2(float(p_rect.position.x) / size.x, float(p_rect.position.y) / size.y);
+	Vector2 rect_size = Vector2(float(p_rect.size.x) / size.x, float(p_rect.size.y) / size.y);
+
+	// Select Pipeline based on # of targets.
+	RID tex_blit_fb;
+	PipelineCacheRD *pipeline;
+	switch (p_textures.size()) {
+		case 1:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0]);
+			pipeline = &shader_data->pipelines[0];
+			break;
+		case 2:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1]);
+			pipeline = &shader_data->pipelines[1];
+			break;
+		case 3:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2]);
+			pipeline = &shader_data->pipelines[2];
+			break;
+		case 4:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2], tar_textures[3]);
+			pipeline = &shader_data->pipelines[3];
+			break;
+		default:
+			tex_blit_fb = FramebufferCacheRD::get_singleton()->get_cache(tar_textures[0], tar_textures[1], tar_textures[2], tar_textures[3]);
+			pipeline = &shader_data->pipelines[3];
+	}
+
+	// Bind uniforms via push_constant
+	TexBlitPushConstant push_constant;
+	memset(&push_constant, 0, sizeof(TexBlitPushConstant));
+
+	push_constant.offset[0] = offset.x;
+	push_constant.offset[1] = offset.y;
+	push_constant.size[0] = rect_size.x;
+	push_constant.size[1] = rect_size.y;
+	push_constant.modulate[0] = p_modulate.r;
+	push_constant.modulate[1] = p_modulate.g;
+	push_constant.modulate[2] = p_modulate.b;
+	push_constant.modulate[3] = p_modulate.a;
+	push_constant.convert_to_srgb = srgb_mask;
+	push_constant.time = RSG::rasterizer->get_total_time();
+
+	Rect2i tex_blit_rr;
+
+	RD::get_singleton()->draw_command_begin_label("Blit Rect");
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(tex_blit_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0u, tex_blit_rr);
+
+	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(tex_blit_fb);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline->get_render_pipeline(RD::INVALID_ID, fb_format, false, 0));
+
+	material_storage->samplers_rd_get_default().append_uniforms(texture_uniforms, 4);
+
+	uniform_texture_set = UniformSetCacheRD::get_singleton()->get_cache_vec(shaderRD, TEX_BLIT_TEXTURE_SET, texture_uniforms);
+
+	{
+		// Push Constants
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(TexBlitPushConstant));
+
+		// Material Uniforms
+		if (m->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(m->uniform_set)) { // Material may not have a uniform set.
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, m->uniform_set, TEX_BLIT_MATERIAL_SET);
+		}
+
+		// Texture Uniforms
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_texture_set, TEX_BLIT_TEXTURE_SET);
+	}
+
+	// DRAW!!
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 6u);
+
+	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->draw_command_end_label();
+}
+
 //these two APIs can be used together or in combination with the others.
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
@@ -1597,6 +1924,38 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 	}
 
 	return ret;
+}
+
+void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture) {
+	Texture *tex = get_texture(p_texture);
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+
+	uint32_t mipmaps = tex->mipmaps;
+	int width = tex->width;
+	int height = tex->height;
+
+	RID source = tex->rd_texture;
+	RID dest = tex->cached_rd_slices[0];
+
+	for (uint32_t m = 1; m < mipmaps; m++) {
+		width = MAX(1, width >> 1);
+		height = MAX(1, height >> 1);
+
+		source = dest;
+		dest = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), source, 0, m, 1, RD::TEXTURE_SLICE_2D);
+
+		if (copy_effects->get_prefer_raster_effects()) {
+			copy_effects->make_mipmap_raster(source, dest, Size2i(width, height));
+		} else {
+			copy_effects->make_mipmap(source, dest, Size2i(width, height));
+		}
+	}
+}
+
+RID TextureStorage::texture_drawable_get_default_material() const {
+	// Return a material with a default Texture_Blit shader for DrawableTexture2D to use
+	return tex_blit_shader.default_material;
 }
 
 void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
