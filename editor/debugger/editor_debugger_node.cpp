@@ -30,6 +30,7 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/debugger/debugger_marshalls.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
@@ -44,6 +45,8 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/shader/shader_editor_plugin.h"
+#include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
@@ -543,7 +546,34 @@ void EditorDebuggerNode::_debug_data(const String &p_msg, const Array &p_data, i
 		remote_scene_tree_wait = false;
 	} else if (p_msg == "scene:inspect_objects") {
 		inspect_edited_object_wait = false;
+	} else if (p_msg == "error") {
+		DebuggerMarshalls::OutputError oe;
+		ERR_FAIL_COND_MSG(!oe.deserialize(p_data), "Failed to deserialize error message.");
+		if (oe.error_type == ERR_HANDLER_SHADER) {
+			open_file_in_editor(oe.source_file, oe.source_line);
+		}
 	}
+}
+
+Error EditorDebuggerNode::open_file_in_editor(const String p_file, int p_line) {
+	if (!ResourceLoader::exists(p_file)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+	const Ref<Resource> res = ResourceLoader::load(p_file);
+	InspectorDock::get_singleton()->edit_resource(res);
+	if (p_line == -1) {
+		return OK;
+	}
+	if (p_file.get_extension() == "gd" || p_file.get_extension() == "cs") {
+		ScriptEditor::get_singleton()->edit(res, p_line - 1, 0);
+	} else {
+		ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
+		TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(shader_editor->get_shader_editor(res));
+		if (text_shader_editor) {
+			text_shader_editor->goto_line_selection(p_line - 1, 0, 0);
+		}
+	}
+	return OK;
 }
 
 void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {

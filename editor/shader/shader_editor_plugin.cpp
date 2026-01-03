@@ -240,16 +240,28 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	Array shaders = p_layout->get_value("ShaderEditor", "open_shaders");
 	int selected_shader_idx = 0;
+	Control *prev_control = shader_tabs->get_current_tab_control();
 	String selected_shader = p_layout->get_value("ShaderEditor", "selected_shader");
 	for (int i = 0; i < shaders.size(); i++) {
 		String path = shaders[i];
 		Ref<Resource> res = ResourceLoader::load(path);
 		if (res.is_valid()) {
 			edit(res.ptr());
+			// move already existing tabs to correct position
+			Control *active_tab_control = shader_tabs->get_current_tab_control();
+			if (active_tab_control) {
+				int from = shader_tabs->get_tab_idx_from_control(active_tab_control);
+				_move_shader_tab(from, shader_tabs->get_tab_count() - 1);
+			}
 		}
 		if (selected_shader == path) {
 			selected_shader_idx = i;
 		}
+	}
+
+	// recover tab if it was changed previously
+	if (selected_changed) {
+		selected_shader_idx = shader_tabs->get_tab_idx_from_control(prev_control);
 	}
 
 	if (p_layout->has_section_key("ShaderEditor", "split_offset")) {
@@ -780,6 +792,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool p_focus)
 			text_shader_editor->get_code_editor()->get_text_editor()->grab_focus();
 		}
 	}
+	selected_changed = true;
 }
 
 void ShaderEditorPlugin::_file_removed(const String &p_removed_file) {
