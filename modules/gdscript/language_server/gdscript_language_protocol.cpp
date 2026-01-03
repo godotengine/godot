@@ -238,7 +238,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	if (!_initialized) {
 		workspace->initialize();
-		text_document->initialize();
 		_initialized = true;
 	}
 

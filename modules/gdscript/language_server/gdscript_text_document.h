@@ -44,8 +44,6 @@ protected:
 
 	Ref<FileAccess> file_checker;
 
-	Array native_member_completions;
-
 private:
 	Array find_symbols(const LSP::TextDocumentPositionParams &p_location, List<const LSP::DocumentSymbol *> &r_list);
 	void notify_client_show_symbol(const LSP::DocumentSymbol *symbol);
@@ -75,8 +73,6 @@ public:
 	Array definition(const Dictionary &p_params);
 	Variant declaration(const Dictionary &p_params);
 	Variant signatureHelp(const Dictionary &p_params);
-
-	void initialize();
 
 	GDScriptTextDocument();
 };

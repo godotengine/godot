@@ -870,30 +870,6 @@ const List<LSP::DocumentLink> &ExtendGDScriptParser::get_document_links() const 
 	return document_links;
 }
 
-const Array &ExtendGDScriptParser::get_member_completions() {
-	if (member_completions.is_empty()) {
-		for (const KeyValue<String, const LSP::DocumentSymbol *> &E : members) {
-			const LSP::DocumentSymbol *symbol = E.value;
-			LSP::CompletionItem item = symbol->make_completion_item();
-			item.data = JOIN_SYMBOLS(path, E.key);
-			member_completions.push_back(item.to_json());
-		}
-
-		for (const KeyValue<String, ClassMembers> &E : inner_classes) {
-			const ClassMembers *inner_class = &E.value;
-
-			for (const KeyValue<String, const LSP::DocumentSymbol *> &F : *inner_class) {
-				const LSP::DocumentSymbol *symbol = F.value;
-				LSP::CompletionItem item = symbol->make_completion_item();
-				item.data = JOIN_SYMBOLS(path, JOIN_SYMBOLS(E.key, F.key));
-				member_completions.push_back(item.to_json());
-			}
-		}
-	}
-
-	return member_completions;
-}
-
 Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::FunctionNode *p_func) const {
 	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
