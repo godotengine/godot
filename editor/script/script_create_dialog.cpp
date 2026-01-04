@@ -547,6 +547,7 @@ void ScriptCreateDialog::_update_template_menu() {
 		// Get all ancestor node for selected base node.
 		// There templates will also fit the base node.
 		Vector<String> hierarchy = _get_hierarchy(inherits_base_type);
+		int default_template = -1;
 		int last_used_template = -1;
 		int preselected_template = -1;
 		int previous_ancestor_level = -1;
@@ -584,16 +585,22 @@ void ScriptCreateDialog::_update_template_menu() {
 					for (ScriptLanguage::ScriptTemplate &t : templates_found) {
 						template_menu->add_item(t.inherit + ": " + t.name);
 						int id = template_menu->get_item_count() - 1;
-						// Check if this template should be preselected if node isn't in the last used dictionary.
-						if (ancestor_level < previous_ancestor_level || previous_ancestor_level == -1) {
-							previous_ancestor_level = ancestor_level;
-							preselected_template = id;
-						}
-						// Check for last used template for this node in project settings then in global settings.
-						if (last_local_templates.has(parent_name->get_text()) && t.get_hash() == String(last_local_templates[parent_name->get_text()])) {
-							last_used_template = id;
-						} else if (last_used_template == -1 && last_global_templates.has(parent_name->get_text()) && t.get_hash() == String(last_global_templates[parent_name->get_text()])) {
-							last_used_template = id;
+						// Conveniently, the search order of Project > Editor > Built-in
+						// means we don't have to change the default template if one is found.
+						if (default_template == -1 && t.is_default) {
+							default_template = id;
+						} else {
+							// Check if this template should be preselected if node isn't in the last used dictionary.
+							if (ancestor_level < previous_ancestor_level || previous_ancestor_level == -1) {
+								previous_ancestor_level = ancestor_level;
+								preselected_template = id;
+							}
+							// Check for last used template for this node in project settings then in global settings.
+							if (last_local_templates.has(parent_name->get_text()) && t.get_hash() == String(last_local_templates[parent_name->get_text()])) {
+								last_used_template = id;
+							} else if (last_used_template == -1 && last_global_templates.has(parent_name->get_text()) && t.get_hash() == String(last_global_templates[parent_name->get_text()])) {
+								last_used_template = id;
+							}
 						}
 						t.id = id;
 						template_list.push_back(t);
@@ -605,7 +612,9 @@ void ScriptCreateDialog::_update_template_menu() {
 			}
 		}
 
-		if (last_used_template != -1) {
+		if (default_template != -1) {
+			template_menu->select(default_template);
+		} else if (last_used_template != -1) {
 			template_menu->select(last_used_template);
 		} else if (preselected_template != -1) {
 			template_menu->select(preselected_template);
@@ -789,6 +798,16 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 						}
 					} else {
 						WARN_PRINT(vformat("Template meta-space-indent need to be a valid integer value. Found %s.", indent_value));
+					}
+				} else if (line.begins_with("default:")) {
+					String is_default_value = line.substr(8).strip_edges();
+					// Case insensitive because whatever the template language is might use True instead of true.
+					if (is_default_value.nocasecmp_to("true") == 0) {
+						script_template.is_default = true;
+					} else if (is_default_value.nocasecmp_to("false") == 0) {
+						script_template.is_default = false;
+					} else {
+						WARN_PRINT(vformat(R"(Template meta-default needs to be a valid boolean value. Found "%s".)", is_default_value));
 					}
 				}
 			} else {
