@@ -1245,6 +1245,8 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 	const int max_size = 64 * EDSCALE;
 
 	thumbnail = memnew(TextureRect);
+	thumbnail->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	thumbnail->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	thumbnail->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_custom_minimum_size(Size2i(max_size, max_size));
@@ -1270,16 +1272,6 @@ void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_cand
 				name->add_highlight(_get_name_interval(interval, p_candidate.result->dir_index));
 			}
 		}
-	}
-
-	bool uses_icon = p_candidate.thumbnail->get_width() < (32 * EDSCALE);
-
-	if (uses_icon || p_candidate.thumbnail->get_height() <= thumbnail->get_custom_minimum_size().y) {
-		thumbnail->set_expand_mode(TextureRect::EXPAND_KEEP_SIZE);
-		thumbnail->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
-	} else {
-		thumbnail->set_expand_mode(TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL);
-		thumbnail->set_stretch_mode(TextureRect::StretchMode::STRETCH_SCALE);
 	}
 }
 
