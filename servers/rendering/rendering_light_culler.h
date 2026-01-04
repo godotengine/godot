@@ -43,7 +43,7 @@ struct Transform3D;
 // Uncomment LIGHT_CULLER_DEBUG_LOGGING to get periodic print of the number of casters culled before / after.
 // Uncomment LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT to get periodic print of the number of casters culled for the directional light..
 
-//  #define LIGHT_CULLER_DEBUG_LOGGING
+// #define LIGHT_CULLER_DEBUG_LOGGING
 // #define LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
 // #define LIGHT_CULLER_DEBUG_REGULAR_LIGHT
 // #define LIGHT_CULLER_DEBUG_FLASH
@@ -84,6 +84,9 @@ private:
 			type = ST_UNKNOWN;
 			angle = 0.0f;
 			range = FLT_MAX;
+			cascade_count = 0;
+			cascade_splits[0] = cascade_splits[1] = cascade_splits[2] = 0;
+			blend_splits = false;
 		}
 
 		// All in world space, culling done in world space.
@@ -93,6 +96,18 @@ private:
 
 		float angle; // For spotlight.
 		float range;
+
+		int cascade_count;
+		float cascade_splits[3]; // Max 4 cascades, which only has 3 splits.
+		bool blend_splits;
+	};
+
+	// Directional lights have separate cull frustums for each cascade, so this struct is needed to specify which one to use for each cull step.
+	struct CullFrustumData {
+		// Functions expect this to store a frustum, so it must be ALWAYS at least Plane[6]. Undefined behavior otherwise.
+		const Plane *frustum_planes = nullptr;
+		// Functions expect this to store frustum corners, so it must be ALWAYS at least Vector3[8]. UB otherwise.
+		const Vector3 *frustum_points = nullptr;
 	};
 
 	// Same order as godot.
@@ -144,7 +159,7 @@ public:
 	void prepare_directional_light(const RendererSceneCull::Instance *p_instance, int32_t p_directional_light_id);
 
 	// Return false if the instance is to be culled.
-	bool cull_directional_light(const RendererSceneCull::InstanceBounds &p_bound, int32_t p_directional_light_id);
+	bool cull_directional_light(const RendererSceneCull::InstanceBounds &p_bound, int32_t p_directional_light_id, int32_t p_cascade);
 
 	// Can turn on and off from the engine if desired.
 	void set_caster_culling_active(bool p_active) { data.caster_culling_active = p_active; }
@@ -160,11 +175,20 @@ private:
 #endif
 	};
 
+	struct DirectionalCullPlanes {
+		LightCullPlanes planes[4]; // One set of cull planes per cascade
+	};
+
 	bool _prepare_light(const RendererSceneCull::Instance &p_instance, int32_t p_directional_light_id = -1);
 
 	// Avoid adding extra culling planes derived from near colinear triangles.
 	// The normals derived from these will be inaccurate, and can lead to false
 	// culling of objects that should be within the light volume.
+	// See:
+	// - issue GH-89702 "Tighter Shadow Caster Culling causes some object shadows to not render for a Frame"
+	// - issue GH-89560 "Directional Shadows disappear with large Camera Z Far values at some angles"
+	// - issue GH-91976 "SpotLight3D shadows exhibit flickering when moved around."
+	// - PR GH-92078 which gave it the current value.
 	bool _is_colinear_tri(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c) const {
 		// Lengths of sides a, b and c.
 		float la = (p_b - p_a).length();
@@ -187,6 +211,14 @@ private:
 			float ld = ((la + lb) - lc) / lc;
 
 			// ld will be close to zero for colinear tris.
+
+			// Long frustums are made out of significantly stretched-out triangles,
+			// so large threshold will produce large amounts of cullable but unculled meshes.
+			// For example: 0.001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~50m at certain view angles.
+			// 0.0001 fails to cull cullable meshes with camera FOV of 70 and ortho shadows at ~500m at certain view angles.
+			// ...These apply less to cascades since they have large near planes in comparison to far planes, unlike ortho lights.
+			// If you're reading this and the value for directional lights is still 0.001f,
+			// that is fine as is and it only means GH-115176 didn't make it.
 			return ld < 0.001f;
 		}
 
@@ -196,14 +228,17 @@ private:
 	}
 
 	// Internal version uses LightSource.
-	bool _add_light_camera_planes(LightCullPlanes &r_cull_planes, const LightSource &p_light_source);
+	bool _add_light_camera_planes(LightCullPlanes &r_cull_planes, const LightSource &p_light_source, const CullFrustumData &p_cull_frustum);
 
 	// Directional light gives parallel culling planes (as opposed to point lights).
-	bool add_light_camera_planes_directional(LightCullPlanes &r_cull_planes, const LightSource &p_light_source);
+	bool add_light_camera_planes_directional(LightCullPlanes &r_cull_planes, const LightSource &p_light_source, const CullFrustumData &p_cull_frustum);
 
 	// Is the light culler active? maybe not in the editor...
 	bool is_caster_culling_active() const { return data.caster_culling_active; }
 	bool is_light_culling_active() const { return data.light_culling_active; }
+
+	// Ensure result is at least a Plane[6] for the frustum input and Vector3[8] to store result before calling. If not, undefined behavior.
+	bool create_frustum_points(const Plane *p_frustum_planes, Vector3 *r_result) const;
 
 	// Do we want to log some debug output?
 	bool is_logging() const { return data.debug_count == 0; }
@@ -220,7 +255,10 @@ private:
 		// chops and changes between culling different lights
 		// instead of doing one by one, and we don't want to prepare
 		// lights multiple times per frame.
-		LocalVector<LightCullPlanes> directional_cull_planes;
+		LocalVector<DirectionalCullPlanes> directional_cull_planes;
+
+		Transform3D camera_transform;
+		Projection camera_projection;
 
 		// Single threaded cull planes for regular lights
 		// (OMNI, SPOT). These lights reuse the same set of cull plane data.
