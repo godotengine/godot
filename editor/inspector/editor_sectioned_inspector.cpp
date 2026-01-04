@@ -367,6 +367,7 @@ SectionedInspector::SectionedInspector() :
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
 	sections->set_theme_type_variation("TreeSecondary");
+	sections->set_accessibility_name(TTRC("Categories"));
 
 	left_vb->add_child(sections, true);
 

@@ -901,7 +901,6 @@ void EditorPropertyCheck::update_property() {
 
 EditorPropertyCheck::EditorPropertyCheck() {
 	checkbox = memnew(CheckBox);
-	checkbox->set_text(TTR("On"));
 	add_child(checkbox);
 	add_focusable(checkbox);
 	checkbox->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyCheck::_checkbox_pressed));
@@ -2032,7 +2031,6 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 
 		if (grid) {
@@ -2126,7 +2124,6 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 
 		if (grid) {
@@ -2219,7 +2216,6 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyPlane::_value_changed).bind(desc[i]));
@@ -2390,7 +2386,6 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		default_layout->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyQuaternion::_value_changed).bind(desc[i]));
@@ -2506,7 +2501,6 @@ EditorPropertyAABB::EditorPropertyAABB() {
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 
 		g->add_child(spin[i]);
@@ -2588,7 +2582,6 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 		if (p_include_origin || i % 3 != 2) {
 			g->add_child(spin[i]);
@@ -2672,7 +2665,6 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2763,7 +2755,6 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2862,7 +2853,6 @@ EditorPropertyProjection::EditorPropertyProjection() {
 	for (int i = 0; i < 16; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
-		spin[i]->set_accessibility_name(desc[i]);
 		spin[i]->set_flat(true);
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);

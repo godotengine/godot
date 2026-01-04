@@ -1165,6 +1165,9 @@ void EditorSettingsPropertyWrapper::setup(const String &p_property, EditorProper
 	editor_property = p_editor_property;
 	add_child(editor_property);
 
+	// Wrapper is not focusable - focus goes directly to the actual control.
+	set_focus_mode(FOCUS_NONE);
+
 	_update_override();
 
 	connect(SNAME("property_overridden"), callable_mp(this, &EditorSettingsPropertyWrapper::_create_override));
@@ -1193,7 +1196,9 @@ bool EditorSettingsInspectorPlugin::parse_property(Object *p_object, const Varia
 	real_property->set_name_split_ratio(0.0);
 	editor->setup(property, real_property, p_hint, p_hint_text, p_usage);
 
-	add_property_editor(p_path, editor);
+	// Generate label from property path for accessibility.
+	String label = EditorPropertyNameProcessor::get_singleton()->process_name(p_path, EditorPropertyNameProcessor::STYLE_CAPITALIZED, property, "");
+	add_property_editor(p_path, editor, false, label);
 	current_object = nullptr;
 	return true;
 }
