@@ -76,7 +76,6 @@ protected:
 
 	virtual void _validate_bone_names() override;
 
-	void _rest_updated();
 	virtual void _make_all_joints_dirty();
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index);
 	virtual void _update_joints(int p_index);

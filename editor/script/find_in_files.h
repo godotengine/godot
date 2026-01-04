@@ -297,3 +297,48 @@ public:
 
 	FindInFilesPanel *get_panel_for_results(const String &p_label);
 };
+
+class PopupMenu;
+class TabContainer;
+
+// Contains several FindInFilesPanels. A FindInFilesPanel contains the results of a
+// `Find in Files` search or a `Replace in Files` search, while a
+// FindInFilesContainer can contain several FindInFilesPanels so that multiple search
+// results can remain at the same time.
+class FindInFilesContainer : public EditorDock {
+	GDCLASS(FindInFilesContainer, EditorDock);
+
+	enum {
+		PANEL_CLOSE,
+		PANEL_CLOSE_OTHERS,
+		PANEL_CLOSE_RIGHT,
+		PANEL_CLOSE_ALL,
+	};
+
+	void _on_theme_changed();
+	void _on_tab_close_pressed(int p_tab);
+	void _update_bar_visibility();
+	void _bar_menu_option(int p_option);
+	void _bar_input(const Ref<InputEvent> &p_input);
+	void _on_dock_closed();
+
+	TabContainer *_tabs = nullptr;
+	bool _update_bar = true;
+	PopupMenu *_tabs_context_menu = nullptr;
+
+	FindInFilesPanel *_create_new_panel();
+	FindInFilesPanel *_get_current_panel();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	void _on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end);
+	void _on_find_in_files_modified_files(const PackedStringArray &p_paths);
+	void _on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel);
+
+public:
+	FindInFilesContainer();
+
+	FindInFilesPanel *get_panel_for_results(const String &p_label);
+};

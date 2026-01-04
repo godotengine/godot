@@ -419,7 +419,6 @@ private:
 	// Bottom panel.
 	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
-	PanelContainer *tabs_panel = nullptr;
 	LocalVector<TileMapLayerSubEditorPlugin::TabData> tabs_data;
 	LocalVector<TileMapLayerSubEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();

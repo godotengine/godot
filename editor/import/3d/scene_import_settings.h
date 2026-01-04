@@ -246,6 +246,7 @@ protected:
 public:
 	ResourceImporterScene *get_resource_importer_scene() const { return _resource_importer_scene; }
 	void request_generate_collider();
+	void regenerate_collisions(const MeshInstance3D *p_mesh_node, bool p_fit_to_mesh = false);
 	void update_view();
 	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
 	static SceneImportSettingsDialog *get_singleton();

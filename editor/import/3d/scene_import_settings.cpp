@@ -573,96 +573,14 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		open_settings(base_path);
 		return;
 	}
-	for (const KeyValue<String, NodeData> &e : node_map) {
+	for (KeyValue<String, NodeData> &e : node_map) {
 		// Skip import nodes that aren't MeshInstance3D.
 		const MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
 		if (mesh_node == nullptr || mesh_node->get_mesh().is_null()) {
 			continue;
 		}
-
-		// Determine if the mesh collider should be visible.
-		bool show_collider_view = false;
-		if (e.value.settings.has(SNAME("generate/physics"))) {
-			show_collider_view = e.value.settings[SNAME("generate/physics")];
-		}
-
-		// Get the collider_view MeshInstance3D.
-		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
-		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
-		MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
-
-		// Regenerate the physics collider for this MeshInstance3D if either:
-		// - A regeneration is requested for the selected import node.
-		// - The collider is being made visible.
-		if ((generate_collider && e.key == selected_id) || (show_collider_view && !collider_view->is_visible())) {
-			// This collider_view doesn't have a mesh so we need to generate a new one.
-			Ref<ImporterMesh> mesh;
-			mesh.instantiate();
-			// ResourceImporterScene::get_collision_shapes() expects ImporterMesh, not Mesh.
-			// TODO: Duplicate code with EditorSceneFormatImporterESCN::import_scene()
-			// Consider making a utility function to convert from Mesh to ImporterMesh.
-			Ref<Mesh> mesh_3d_mesh = mesh_node->get_mesh();
-			Ref<ArrayMesh> array_mesh_3d_mesh = mesh_3d_mesh;
-			if (array_mesh_3d_mesh.is_valid()) {
-				// For the MeshInstance3D nodes, we need to convert the ArrayMesh to an ImporterMesh specially.
-				mesh->set_name(array_mesh_3d_mesh->get_name());
-				for (int32_t blend_i = 0; blend_i < array_mesh_3d_mesh->get_blend_shape_count(); blend_i++) {
-					mesh->add_blend_shape(array_mesh_3d_mesh->get_blend_shape_name(blend_i));
-				}
-				for (int32_t surface_i = 0; surface_i < array_mesh_3d_mesh->get_surface_count(); surface_i++) {
-					mesh->add_surface(array_mesh_3d_mesh->surface_get_primitive_type(surface_i),
-							array_mesh_3d_mesh->surface_get_arrays(surface_i),
-							array_mesh_3d_mesh->surface_get_blend_shape_arrays(surface_i),
-							array_mesh_3d_mesh->surface_get_lods(surface_i),
-							array_mesh_3d_mesh->surface_get_material(surface_i),
-							array_mesh_3d_mesh->surface_get_name(surface_i),
-							array_mesh_3d_mesh->surface_get_format(surface_i));
-				}
-				mesh->set_blend_shape_mode(array_mesh_3d_mesh->get_blend_shape_mode());
-			} else if (mesh_3d_mesh.is_valid()) {
-				// For the MeshInstance3D nodes, we need to convert the Mesh to an ImporterMesh specially.
-				mesh->set_name(mesh_3d_mesh->get_name());
-				for (int32_t surface_i = 0; surface_i < mesh_3d_mesh->get_surface_count(); surface_i++) {
-					mesh->add_surface(mesh_3d_mesh->surface_get_primitive_type(surface_i),
-							mesh_3d_mesh->surface_get_arrays(surface_i),
-							Array(),
-							mesh_3d_mesh->surface_get_lods(surface_i),
-							mesh_3d_mesh->surface_get_material(surface_i),
-							mesh_3d_mesh->surface_get_material(surface_i).is_valid() ? mesh_3d_mesh->surface_get_material(surface_i)->get_name() : String(),
-							mesh_3d_mesh->surface_get_format(surface_i));
-				}
-			}
-
-			// Generate the mesh collider.
-			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh, e.value.settings, 1.0);
-			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
-
-			Ref<ArrayMesh> collider_view_mesh;
-			collider_view_mesh.instantiate();
-			for (Ref<Shape3D> shape : shapes) {
-				Ref<ArrayMesh> debug_shape_mesh;
-				if (shape.is_valid()) {
-					debug_shape_mesh = shape->get_debug_mesh();
-				}
-				if (debug_shape_mesh.is_valid()) {
-					collider_view_mesh->add_surface_from_arrays(
-							debug_shape_mesh->surface_get_primitive_type(0),
-							debug_shape_mesh->surface_get_arrays(0));
-
-					collider_view_mesh->surface_set_material(
-							collider_view_mesh->get_surface_count() - 1,
-							collider_mat);
-				}
-			}
-
-			collider_view->set_mesh(collider_view_mesh);
-			collider_view->set_transform(transform);
-		}
-
-		// Set the collider visibility.
-		collider_view->set_visible(show_collider_view);
+		regenerate_collisions(mesh_node);
 	}
-
 	generate_collider = false;
 }
 
@@ -845,6 +763,91 @@ Node *SceneImportSettingsDialog::get_selected_node() {
 		return nullptr;
 	}
 	return node_map[selected_id].node;
+}
+
+void SceneImportSettingsDialog::regenerate_collisions(const MeshInstance3D *p_mesh_node, bool p_fit_to_mesh) {
+	if (!p_mesh_node || !node_map.has(selected_id)) {
+		return;
+	}
+
+	TypedArray<Node> descendants = p_mesh_node->find_children("collider_view", "MeshInstance3D");
+	CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
+	MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
+
+	// Determine if the mesh collider should be visible.
+	bool show_collider_view = false;
+	if (node_map[selected_id].settings.has(SNAME("generate/physics"))) {
+		show_collider_view = node_map[selected_id].settings[SNAME("generate/physics")];
+	}
+
+	// Regenerate the physics collider for this MeshInstance3D if either:
+	// - A regeneration is requested for the selected import node.
+	// - The collider is being made visible.
+	if ((generate_collider && get_selected_node() == p_mesh_node) || (show_collider_view && !collider_view->is_visible())) {
+		// This collider_view doesn't have a mesh so we need to generate a new one.
+		Ref<ImporterMesh> mesh;
+		mesh.instantiate();
+		// ResourceImporterScene::get_collision_shapes() expects ImporterMesh, not Mesh.
+		// TODO: Duplicate code with EditorSceneFormatImporterESCN::import_scene()
+		// Consider making a utility function to convert from Mesh to ImporterMesh.
+		Ref<Mesh> mesh_3d_mesh = p_mesh_node->get_mesh();
+		Ref<ArrayMesh> array_mesh_3d_mesh = mesh_3d_mesh;
+		if (array_mesh_3d_mesh.is_valid()) {
+			// For the MeshInstance3D nodes, we need to convert the ArrayMesh to an ImporterMesh specially.
+			mesh->set_name(array_mesh_3d_mesh->get_name());
+			for (int32_t blend_i = 0; blend_i < array_mesh_3d_mesh->get_blend_shape_count(); blend_i++) {
+				mesh->add_blend_shape(array_mesh_3d_mesh->get_blend_shape_name(blend_i));
+			}
+			for (int32_t surface_i = 0; surface_i < array_mesh_3d_mesh->get_surface_count(); surface_i++) {
+				mesh->add_surface(array_mesh_3d_mesh->surface_get_primitive_type(surface_i),
+						array_mesh_3d_mesh->surface_get_arrays(surface_i),
+						array_mesh_3d_mesh->surface_get_blend_shape_arrays(surface_i),
+						array_mesh_3d_mesh->surface_get_lods(surface_i),
+						array_mesh_3d_mesh->surface_get_material(surface_i),
+						array_mesh_3d_mesh->surface_get_name(surface_i),
+						array_mesh_3d_mesh->surface_get_format(surface_i));
+			}
+			mesh->set_blend_shape_mode(array_mesh_3d_mesh->get_blend_shape_mode());
+		} else if (mesh_3d_mesh.is_valid()) {
+			// For the MeshInstance3D nodes, we need to convert the Mesh to an ImporterMesh specially.
+			mesh->set_name(mesh_3d_mesh->get_name());
+			for (int32_t surface_i = 0; surface_i < mesh_3d_mesh->get_surface_count(); surface_i++) {
+				mesh->add_surface(mesh_3d_mesh->surface_get_primitive_type(surface_i),
+						mesh_3d_mesh->surface_get_arrays(surface_i),
+						Array(),
+						mesh_3d_mesh->surface_get_lods(surface_i),
+						mesh_3d_mesh->surface_get_material(surface_i),
+						mesh_3d_mesh->surface_get_material(surface_i).is_valid() ? mesh_3d_mesh->surface_get_material(surface_i)->get_name() : String(),
+						mesh_3d_mesh->surface_get_format(surface_i));
+			}
+		}
+		// Generate the mesh collider.
+		Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(p_mesh_node->get_mesh(), node_map[selected_id].settings, 1.0, p_fit_to_mesh);
+		const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(node_map[selected_id].settings);
+
+		Ref<ArrayMesh> collider_view_mesh;
+		collider_view_mesh.instantiate();
+		for (Ref<Shape3D> shape : shapes) {
+			Ref<ArrayMesh> debug_shape_mesh;
+			if (shape.is_valid()) {
+				debug_shape_mesh = shape->get_debug_mesh();
+			}
+			if (debug_shape_mesh.is_valid()) {
+				collider_view_mesh->add_surface_from_arrays(
+						debug_shape_mesh->surface_get_primitive_type(0),
+						debug_shape_mesh->surface_get_arrays(0));
+
+				collider_view_mesh->surface_set_material(
+						collider_view_mesh->get_surface_count() - 1,
+						collider_mat);
+			}
+		}
+		collider_view->set_mesh(collider_view_mesh);
+		collider_view->set_transform(transform);
+	}
+
+	// Set the collider visibility.
+	collider_view->set_visible(show_collider_view);
 }
 
 void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, const String &p_id) {

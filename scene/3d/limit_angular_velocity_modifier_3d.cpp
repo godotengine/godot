@@ -58,8 +58,9 @@ bool LimitAngularVelocityModifier3D::_get(const StringName &p_path, Variant &r_r
 
 	if (path.begins_with("chains/")) {
 		int which = path.get_slicec('/', 1).to_int();
-		ERR_FAIL_INDEX_V(which, (int)chains.size(), false);
 		String what = path.get_slicec('/', 2);
+		ERR_FAIL_INDEX_V(which, (int)chains.size(), false);
+
 		if (what == "root_bone_name") {
 			r_ret = get_root_bone_name(which);
 		} else if (what == "root_bone") {
@@ -74,12 +75,10 @@ bool LimitAngularVelocityModifier3D::_get(const StringName &p_path, Variant &r_r
 	}
 	if (path.begins_with("joints/")) {
 		int which = path.get_slicec('/', 1).to_int();
-		ERR_FAIL_INDEX_V(which, (int)joints.size(), false);
 		String what = path.get_slicec('/', 2);
+		ERR_FAIL_COND_V(!joints.has(which), false);
 		if (what == "bone_name") {
-			r_ret = get_joint_bone_name(which);
-		} else if (what == "bone") {
-			r_ret = get_joint_bone(which);
+			r_ret = _get_joint_bone_name(which);
 		} else {
 			return false;
 		}
@@ -102,10 +101,9 @@ void LimitAngularVelocityModifier3D::_get_property_list(List<PropertyInfo> *p_li
 		p_list->push_back(PropertyInfo(Variant::INT, path + "end_bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
-	for (uint32_t i = 0; i < joints.size(); i++) {
-		String path = "joints/" + itos(i) + "/";
+	for (const KeyValue<int, StringName> &E : joints) {
+		String path = "joints/" + itos(E.key) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-		p_list->push_back(PropertyInfo(Variant::INT, path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 	}
 }
 
@@ -193,6 +191,7 @@ void LimitAngularVelocityModifier3D::set_end_bone(int p_index, int p_bone) {
 	if (changed) {
 		_make_joints_dirty();
 	}
+	notify_property_list_changed();
 }
 
 int LimitAngularVelocityModifier3D::get_end_bone(int p_index) const {
@@ -204,6 +203,7 @@ void LimitAngularVelocityModifier3D::set_chain_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 	chains.resize(p_count);
 	_make_joints_dirty();
+	notify_property_list_changed();
 }
 
 int LimitAngularVelocityModifier3D::get_chain_count() const {
@@ -214,14 +214,9 @@ void LimitAngularVelocityModifier3D::clear_chains() {
 	set_chain_count(0);
 }
 
-String LimitAngularVelocityModifier3D::get_joint_bone_name(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)joints.size(), String());
-	return joints[p_index].name;
-}
-
-int LimitAngularVelocityModifier3D::get_joint_bone(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)joints.size(), -1);
-	return joints[p_index].bone;
+String LimitAngularVelocityModifier3D::_get_joint_bone_name(int p_bone) const {
+	ERR_FAIL_COND_V(!joints.has(p_bone), String());
+	return joints[p_bone];
 }
 
 int LimitAngularVelocityModifier3D::_get_joint_count() const {
@@ -310,17 +305,6 @@ void LimitAngularVelocityModifier3D::_make_joints_dirty() {
 	callable_mp(this, &LimitAngularVelocityModifier3D::_update_joints).call_deferred();
 }
 
-bool LimitAngularVelocityModifier3D::_is_joint_contained(int p_bone) {
-	bool ret = false;
-	for (const BoneJoint &joint : joints) {
-		if (joint.bone == p_bone) {
-			ret = true;
-			break;
-		}
-	}
-	return ret;
-}
-
 void LimitAngularVelocityModifier3D::_update_joints() {
 	joints.clear();
 	bones.clear();
@@ -328,7 +312,6 @@ void LimitAngularVelocityModifier3D::_update_joints() {
 	Skeleton3D *sk = get_skeleton();
 	if (!sk) {
 		joints_dirty = false;
-		notify_property_list_changed();
 		return;
 	}
 
@@ -351,7 +334,7 @@ void LimitAngularVelocityModifier3D::_update_joints() {
 			current_bone = sk->get_bone_parent(current_bone);
 		}
 		if (!valid) {
-			ERR_PRINT_ED("Chains[" + itos(i) + "]: End bone must be the same as or a child of root bone.");
+			ERR_FAIL_EDMSG("Chains[" + itos(i) + "]: End bone must be the same as or a child of root bone.");
 			continue;
 		}
 		current_bone = cn.end_bone.bone;
@@ -360,21 +343,17 @@ void LimitAngularVelocityModifier3D::_update_joints() {
 			current_bone = sk->get_bone_parent(current_bone);
 		}
 		tmp_joints.push_back(current_bone);
-		tmp_joints.reverse();
 		for (uint32_t j = 0; j < tmp_joints.size(); j++) {
 			int bn = tmp_joints[j];
-			if (!_is_joint_contained(bn)) {
-				BoneJoint bj;
-				bj.bone = bn;
-				bj.name = sk->get_bone_name(bn);
-				joints.push_back(bj);
+			if (!joints.has(bn)) {
+				joints.insert(bn, sk->get_bone_name(bn));
 			}
 		}
 	}
 
 	if (exclude) {
 		for (int b = 0; b < sk->get_bone_count(); b++) {
-			if (_is_joint_contained(b)) {
+			if (joints.has(b)) {
 				continue;
 			}
 			BoneRot br;
@@ -383,18 +362,16 @@ void LimitAngularVelocityModifier3D::_update_joints() {
 			bones.push_back(br);
 		}
 	} else {
-		for (const BoneJoint &E : joints) {
+		for (const KeyValue<int, StringName> &E : joints) {
 			BoneRot br;
-			br.first = E.bone;
-			br.second = sk->get_bone_pose_rotation(E.bone);
+			br.first = E.key;
+			br.second = sk->get_bone_pose_rotation(E.key);
 			bones.push_back(br);
 		}
 	}
 
 	joints_dirty = false;
 	reset();
-
-	notify_property_list_changed();
 }
 
 void LimitAngularVelocityModifier3D::_process_modification(double p_delta) {

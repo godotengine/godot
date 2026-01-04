@@ -51,12 +51,7 @@
 
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
-	if (p_type == MESSAGE_ERROR) {
-		invalid_flags.set_flag(ValidationFlags::INVALID_PATH_INPUT);
-	} else {
-		invalid_flags.clear_flag(ValidationFlags::INVALID_PATH_INPUT);
-	}
-	get_ok_button()->set_disabled(!invalid_flags.is_empty());
+	get_ok_button()->set_disabled(p_type == MESSAGE_ERROR);
 
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
@@ -515,14 +510,11 @@ void ProjectDialog::_renderer_selected() {
 	}
 
 	rd_not_supported->set_visible(rd_error);
+	get_ok_button()->set_disabled(rd_error);
 	if (rd_error) {
 		// Needs to be set here since theme colors aren't available at startup.
 		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		invalid_flags.set_flag(ValidationFlags::INVALID_RENDERER_SELECT);
-	} else {
-		invalid_flags.clear_flag(ValidationFlags::INVALID_RENDERER_SELECT);
 	}
-	get_ok_button()->set_disabled(!invalid_flags.is_empty());
 }
 
 void ProjectDialog::_nonempty_confirmation_ok_pressed() {
@@ -1167,7 +1159,7 @@ ProjectDialog::ProjectDialog() {
 
 	rd_not_supported = memnew(Label);
 	rd_not_supported->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	rd_not_supported->set_text(vformat(TTR("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
+	rd_not_supported->set_text(vformat(TTRC("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);

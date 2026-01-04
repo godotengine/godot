@@ -1788,14 +1788,7 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	if ([wd.window_object isMiniaturized]) {
 		return;
 	} else if (wd.no_focus) {
-		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
-			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
-		} else if (p_id != MAIN_WINDOW_ID) {
-			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
-		} else {
-			[wd.window_object orderFront:nil];
-		}
+		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
@@ -1987,14 +1980,7 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
 				[wd_parent.window_object removeChildWindow:wd.window_object];
 				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-				if (wd.transient_parent != INVALID_WINDOW_ID) {
-					WindowData &wd_parent = windows[wd.transient_parent];
-					[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
-				} else if (p_window != MAIN_WINDOW_ID) {
-					[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
-				} else {
-					[wd.window_object orderFront:nil];
-				}
+				[wd.window_object orderFront:nil];
 			}
 		}
 	}
@@ -2591,14 +2577,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
-					if (wd.transient_parent != INVALID_WINDOW_ID) {
-						WindowData &wd_parent = windows[wd.transient_parent];
-						[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
-					} else if (p_window != MAIN_WINDOW_ID) {
-						[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
-					} else {
-						[wd.window_object orderFront:nil];
-					}
+					[wd.window_object orderFront:nil];
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
 				}
@@ -2721,14 +2700,7 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 	if (wd.no_focus || wd.is_popup) {
-		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
-			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
-		} else if (p_window != MAIN_WINDOW_ID) {
-			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
-		} else {
-			[wd.window_object orderFront:nil];
-		}
+		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}

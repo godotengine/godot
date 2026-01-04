@@ -496,6 +496,10 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			action_item->select(selected_item.second);
 		}
 
+		if (selected_item.first == action_info.name) {
+			action_item->select(selected_item.second);
+		}
+
 		for (int evnt_idx = 0; evnt_idx < events.size(); evnt_idx++) {
 			Ref<InputEvent> event = events[evnt_idx];
 			if (event.is_null()) {

@@ -356,7 +356,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_config.window_style->set_corner_radius_all(0);
 
 			p_config.window_complex_style = p_config.window_style->duplicate();
-			p_config.window_complex_style->set_bg_color(p_config.surface_lowest_color);
+			p_config.window_complex_style->set_bg_color(p_config.surface_popup_color);
 
 			p_config.dialog_style = p_config.base_style->duplicate();
 			p_config.dialog_style->set_content_margin_all(p_config.popup_margin);
@@ -1435,9 +1435,6 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("slot", "GraphNode", gn_slot_style);
 			p_theme->set_stylebox("slot_selected", "GraphNode", p_config.focus_style);
 
-			const Color gn_separator_color = gn_frame_bg.lerp(p_config.mono_color, 0.1);
-			p_theme->set_stylebox("separator", "GraphNode", EditorThemeManager::make_line_stylebox(gn_separator_color, Math::round(2 * EDSCALE)));
-
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
 			p_theme->set_constant("port_h_offset", "GraphNode", 1);
@@ -1793,7 +1790,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad_movie = p_config.base_style->duplicate();
-		style_launch_pad_movie->set_content_margin_all(p_config.base_margin * EDSCALE);
 		style_launch_pad_movie->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.2));
 		style_launch_pad_movie->set_border_color(p_config.accent_color * Color(1, 1, 1, 0.8));
 		style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
@@ -1979,7 +1975,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// TabContainerOdd variation.
 		{
-			// Used for tabs against the base color background in the classic theme.
+			// Can be used on tabs against the base color background (e.g. nested tabs).
 			p_theme->set_type_variation("TabContainerOdd", "TabContainer");
 
 			Ref<StyleBoxFlat> style_tab_selected_odd = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
@@ -1991,49 +1987,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "TabContainerOdd", style_panel_odd);
 
 			p_theme->set_stylebox("tabbar_background", "TabContainerOdd", p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
-		}
-
-		// TabContainerInner, TabBarInner, PanelContainerTabbarInner variations.
-		{
-			// Used for tabs against the base color background in the modern theme.
-			p_theme->set_type_variation("TabContainerInner", "TabContainer");
-			p_theme->set_type_variation("TabBarInner", "TabBar");
-			p_theme->set_type_variation("PanelContainerTabbarInner", "PanelContainer");
-
-			Ref<StyleBoxFlat> style_tab_selected_inner = p_theme->get_stylebox(SNAME("tab_selected"), SNAME("TabContainer"))->duplicate();
-			style_tab_selected_inner->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
-			style_tab_selected_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE);
-			p_theme->set_stylebox("tab_selected", "TabContainerInner", style_tab_selected_inner);
-			p_theme->set_stylebox("tab_selected", "TabBarInner", style_tab_selected_inner);
-
-			Color background_color = p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15);
-
-			Ref<StyleBoxFlat> style_tab_unselected_inner = style_tab_selected_inner->duplicate();
-			style_tab_unselected_inner->set_bg_color(background_color);
-			p_theme->set_stylebox("tab_unselected", "TabContainerInner", style_tab_unselected_inner);
-			p_theme->set_stylebox("tab_unselected", "TabBarInner", style_tab_unselected_inner);
-
-			Ref<StyleBoxFlat> style_tab_hovered_inner = style_tab_selected_inner->duplicate();
-			style_tab_hovered_inner->set_bg_color(background_color.lerp(p_config.mono_color, 0.05));
-			p_theme->set_stylebox("tab_hovered", "TabContainerInner", style_tab_hovered_inner);
-			p_theme->set_stylebox("tab_hovered", "TabBarInner", style_tab_hovered_inner);
-
-			Ref<StyleBoxFlat> style_tab_disabled_inner = style_tab_selected_inner->duplicate();
-			style_tab_disabled_inner->set_bg_color(background_color);
-			p_theme->set_stylebox("tab_disabled", "TabContainerInner", style_tab_disabled_inner);
-			p_theme->set_stylebox("tab_disabled", "TabBarInner", style_tab_disabled_inner);
-
-			Ref<StyleBoxFlat> style_tabbar_background_inner = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
-			style_tabbar_background_inner->set_content_margin_all(p_config.base_margin * EDSCALE);
-			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE + p_config.base_margin * EDSCALE);
-			style_tabbar_background_inner->set_bg_color(background_color);
-
-			p_theme->set_stylebox("tabbar_background", "TabContainerInner", style_tabbar_background_inner);
-
-			p_theme->set_constant("tab_separation", "TabContainerInner", p_config.separation_margin);
-			p_theme->set_constant("tab_separation", "TabBarInner", p_config.separation_margin);
-
-			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
 		}
 
 		// TreeLineEdit.
@@ -2096,6 +2049,24 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 				style_audio_bus_effect_tree->set_border_color(p_config.extra_border_color_2);
 			}
 			p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusEffectsTree", style_audio_bus_effect_tree);
+		}
+
+		// ForegroundPanel.
+		{
+			p_theme->set_type_variation("PanelForeground", "Panel");
+			p_theme->set_type_variation("EditorInspectorForeground", "EditorInspector");
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
+		}
+
+		// ForegroundPanel.
+		{
+			p_theme->set_type_variation("PanelForeground", "Panel");
+			p_theme->set_type_variation("EditorInspectorForeground", "EditorInspector");
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
+			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
 		}
 
 		// ForegroundPanel.
@@ -2203,9 +2174,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			category_bg->set_border_color(p_config.extra_border_color_2);
 		}
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
-
-		// EditorInspectorArray.
-		p_theme->set_color("bg", "EditorInspectorArray", p_config.surface_base_color);
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
