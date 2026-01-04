@@ -250,7 +250,7 @@
 			<return type="Callable" />
 			<param index="0" name="argcount" type="int" />
 			<description>
-				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows to use the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
+				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows using the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
 				[codeblock]
 				func _ready():
