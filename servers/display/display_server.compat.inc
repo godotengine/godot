@@ -42,10 +42,15 @@ RID DisplayServer::_accessibility_create_sub_text_edit_elements_bind_compat_1134
 	return accessibility_create_sub_text_edit_elements(p_parent_rid, p_shaped_text, p_min_height, p_insert_pos, false);
 }
 
+void DisplayServer::_accessibility_update_set_text_decorations_bind_compat_114596(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) {
+	accessibility_update_set_text_decorations(p_id, p_underline, p_strikethrough, p_overline, Color(0, 0, 0, 1));
+}
+
 void DisplayServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::_file_dialog_show_bind_compat_98194);
 	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::_file_dialog_with_options_show_bind_compat_98194);
 	ClassDB::bind_compatibility_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos"), &DisplayServer::_accessibility_create_sub_text_edit_elements_bind_compat_113459, DEFVAL(-1));
+	ClassDB::bind_compatibility_method(D_METHOD("accessibility_update_set_text_decorations", "id", "underline", "strikethrough", "overline"), &DisplayServer::_accessibility_update_set_text_decorations_bind_compat_114596);
 }
 
 #endif

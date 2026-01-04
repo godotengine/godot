@@ -312,11 +312,8 @@ enum accesskit_role
   ACCESSKIT_ROLE_CONTENT_INFO,
   ACCESSKIT_ROLE_DEFINITION,
   ACCESSKIT_ROLE_DESCRIPTION_LIST,
-  ACCESSKIT_ROLE_DESCRIPTION_LIST_DETAIL,
-  ACCESSKIT_ROLE_DESCRIPTION_LIST_TERM,
   ACCESSKIT_ROLE_DETAILS,
   ACCESSKIT_ROLE_DIALOG,
-  ACCESSKIT_ROLE_DIRECTORY,
   ACCESSKIT_ROLE_DISCLOSURE_TRIANGLE,
   ACCESSKIT_ROLE_DOCUMENT,
   ACCESSKIT_ROLE_EMBEDDED_OBJECT,
@@ -325,12 +322,11 @@ enum accesskit_role
   ACCESSKIT_ROLE_FIGURE_CAPTION,
   ACCESSKIT_ROLE_FIGURE,
   ACCESSKIT_ROLE_FOOTER,
-  ACCESSKIT_ROLE_FOOTER_AS_NON_LANDMARK,
   ACCESSKIT_ROLE_FORM,
   ACCESSKIT_ROLE_GRID,
+  ACCESSKIT_ROLE_GRID_CELL,
   ACCESSKIT_ROLE_GROUP,
   ACCESSKIT_ROLE_HEADER,
-  ACCESSKIT_ROLE_HEADER_AS_NON_LANDMARK,
   ACCESSKIT_ROLE_HEADING,
   ACCESSKIT_ROLE_IFRAME,
   ACCESSKIT_ROLE_IFRAME_PRESENTATIONAL,
@@ -352,8 +348,6 @@ enum accesskit_role
   ACCESSKIT_ROLE_NAVIGATION,
   ACCESSKIT_ROLE_NOTE,
   ACCESSKIT_ROLE_PLUGIN_OBJECT,
-  ACCESSKIT_ROLE_PORTAL,
-  ACCESSKIT_ROLE_PRE,
   ACCESSKIT_ROLE_PROGRESS_INDICATOR,
   ACCESSKIT_ROLE_RADIO_GROUP,
   ACCESSKIT_ROLE_REGION,
@@ -364,6 +358,8 @@ enum accesskit_role
   ACCESSKIT_ROLE_SCROLL_VIEW,
   ACCESSKIT_ROLE_SEARCH,
   ACCESSKIT_ROLE_SECTION,
+  ACCESSKIT_ROLE_SECTION_FOOTER,
+  ACCESSKIT_ROLE_SECTION_HEADER,
   ACCESSKIT_ROLE_SLIDER,
   ACCESSKIT_ROLE_SPIN_BUTTON,
   ACCESSKIT_ROLE_SPLITTER,
@@ -519,19 +515,19 @@ enum accesskit_text_align
 typedef uint8_t accesskit_text_align;
 #endif  // __cplusplus
 
-enum accesskit_text_decoration
+enum accesskit_text_decoration_style
 #ifdef __cplusplus
     : uint8_t
 #endif  // __cplusplus
 {
-  ACCESSKIT_TEXT_DECORATION_SOLID,
-  ACCESSKIT_TEXT_DECORATION_DOTTED,
-  ACCESSKIT_TEXT_DECORATION_DASHED,
-  ACCESSKIT_TEXT_DECORATION_DOUBLE,
-  ACCESSKIT_TEXT_DECORATION_WAVY,
+  ACCESSKIT_TEXT_DECORATION_STYLE_SOLID,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DOTTED,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DASHED,
+  ACCESSKIT_TEXT_DECORATION_STYLE_DOUBLE,
+  ACCESSKIT_TEXT_DECORATION_STYLE_WAVY,
 };
 #ifndef __cplusplus
-typedef uint8_t accesskit_text_decoration;
+typedef uint8_t accesskit_text_decoration_style;
 #endif  // __cplusplus
 
 enum accesskit_text_direction
@@ -630,6 +626,24 @@ typedef struct accesskit_opt_node_id {
 } accesskit_opt_node_id;
 
 /**
+ * A 128-bit identifier for a tree, represented as a UUID in big-endian byte
+ * order.
+ */
+typedef struct accesskit_tree_id {
+  uint8_t bytes[16];
+} accesskit_tree_id;
+
+/**
+ * Represents an optional value.
+ *
+ * If `has_value` is false, do not read the `value` field.
+ */
+typedef struct accesskit_opt_tree_id {
+  bool has_value;
+  struct accesskit_tree_id value;
+} accesskit_opt_tree_id;
+
+/**
  * Represents an optional value.
  *
  * If `has_value` is false, do not read the `value` field.
@@ -644,10 +658,30 @@ typedef struct accesskit_opt_double {
  *
  * If `has_value` is false, do not read the `value` field.
  */
+typedef struct accesskit_opt_float {
+  bool has_value;
+  float value;
+} accesskit_opt_float;
+
+/**
+ * Represents an optional value.
+ *
+ * If `has_value` is false, do not read the `value` field.
+ */
 typedef struct accesskit_opt_index {
   bool has_value;
   size_t value;
 } accesskit_opt_index;
+
+/**
+ * A color represented in 8-bit sRGB plus alpha.
+ */
+typedef struct accesskit_color {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t alpha;
+} accesskit_color;
 
 /**
  * Represents an optional value.
@@ -656,8 +690,16 @@ typedef struct accesskit_opt_index {
  */
 typedef struct accesskit_opt_color {
   bool has_value;
-  uint32_t value;
+  struct accesskit_color value;
 } accesskit_opt_color;
+
+/**
+ * The style and color for a type of text decoration.
+ */
+typedef struct accesskit_text_decoration {
+  accesskit_text_decoration_style style;
+  struct accesskit_color color;
+} accesskit_text_decoration;
 
 /**
  * Represents an optional value.
@@ -666,7 +708,7 @@ typedef struct accesskit_opt_color {
  */
 typedef struct accesskit_opt_text_decoration {
   bool has_value;
-  accesskit_text_decoration value;
+  struct accesskit_text_decoration value;
 } accesskit_opt_text_decoration;
 
 typedef struct accesskit_lengths {
@@ -947,7 +989,8 @@ typedef struct accesskit_opt_action_data {
 
 typedef struct accesskit_action_request {
   accesskit_action action;
-  accesskit_node_id target;
+  struct accesskit_tree_id target_tree;
+  accesskit_node_id target_node;
   struct accesskit_opt_action_data data;
 } accesskit_action_request;
 
@@ -1019,6 +1062,8 @@ typedef struct accesskit_opt_lresult {
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+extern const struct accesskit_tree_id ACCESSKIT_TREE_ID_ROOT;
 
 accesskit_role accesskit_node_role(const struct accesskit_node *node);
 
@@ -1121,12 +1166,6 @@ bool accesskit_node_is_disabled(const struct accesskit_node *node);
 void accesskit_node_set_disabled(struct accesskit_node *node);
 
 void accesskit_node_clear_disabled(struct accesskit_node *node);
-
-bool accesskit_node_is_bold(const struct accesskit_node *node);
-
-void accesskit_node_set_bold(struct accesskit_node *node);
-
-void accesskit_node_clear_bold(struct accesskit_node *node);
 
 bool accesskit_node_is_italic(const struct accesskit_node *node);
 
@@ -1343,6 +1382,14 @@ void accesskit_node_set_popup_for(struct accesskit_node *node,
                                   accesskit_node_id value);
 
 void accesskit_node_clear_popup_for(struct accesskit_node *node);
+
+struct accesskit_opt_tree_id accesskit_node_tree_id(
+    const struct accesskit_node *node);
+
+void accesskit_node_set_tree_id(struct accesskit_node *node,
+                                struct accesskit_tree_id value);
+
+void accesskit_node_clear_tree_id(struct accesskit_node *node);
 
 /**
  * Only call this function with a string that originated from AccessKit.
@@ -1694,6 +1741,46 @@ void accesskit_node_set_column_index_text_with_length(
 
 void accesskit_node_clear_column_index_text(struct accesskit_node *node);
 
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_node_braille_label(const struct accesskit_node *node);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_label(struct accesskit_node *node,
+                                      const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_label_with_length(struct accesskit_node *node,
+                                                  const char *value,
+                                                  size_t length);
+
+void accesskit_node_clear_braille_label(struct accesskit_node *node);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_node_braille_role_description(
+    const struct accesskit_node *node);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_role_description(struct accesskit_node *node,
+                                                 const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_braille_role_description_with_length(
+    struct accesskit_node *node, const char *value, size_t length);
+
+void accesskit_node_clear_braille_role_description(struct accesskit_node *node);
+
 struct accesskit_opt_double accesskit_node_scroll_x(
     const struct accesskit_node *node);
 
@@ -1776,17 +1863,17 @@ void accesskit_node_set_numeric_value_jump(struct accesskit_node *node,
 
 void accesskit_node_clear_numeric_value_jump(struct accesskit_node *node);
 
-struct accesskit_opt_double accesskit_node_font_size(
+struct accesskit_opt_float accesskit_node_font_size(
     const struct accesskit_node *node);
 
-void accesskit_node_set_font_size(struct accesskit_node *node, double value);
+void accesskit_node_set_font_size(struct accesskit_node *node, float value);
 
 void accesskit_node_clear_font_size(struct accesskit_node *node);
 
-struct accesskit_opt_double accesskit_node_font_weight(
+struct accesskit_opt_float accesskit_node_font_weight(
     const struct accesskit_node *node);
 
-void accesskit_node_set_font_weight(struct accesskit_node *node, double value);
+void accesskit_node_set_font_weight(struct accesskit_node *node, float value);
 
 void accesskit_node_clear_font_weight(struct accesskit_node *node);
 
@@ -1858,7 +1945,7 @@ struct accesskit_opt_color accesskit_node_color_value(
     const struct accesskit_node *node);
 
 void accesskit_node_set_color_value(struct accesskit_node *node,
-                                    uint32_t value);
+                                    struct accesskit_color value);
 
 void accesskit_node_clear_color_value(struct accesskit_node *node);
 
@@ -1866,7 +1953,7 @@ struct accesskit_opt_color accesskit_node_background_color(
     const struct accesskit_node *node);
 
 void accesskit_node_set_background_color(struct accesskit_node *node,
-                                         uint32_t value);
+                                         struct accesskit_color value);
 
 void accesskit_node_clear_background_color(struct accesskit_node *node);
 
@@ -1874,7 +1961,7 @@ struct accesskit_opt_color accesskit_node_foreground_color(
     const struct accesskit_node *node);
 
 void accesskit_node_set_foreground_color(struct accesskit_node *node,
-                                         uint32_t value);
+                                         struct accesskit_color value);
 
 void accesskit_node_clear_foreground_color(struct accesskit_node *node);
 
@@ -1882,7 +1969,7 @@ struct accesskit_opt_text_decoration accesskit_node_overline(
     const struct accesskit_node *node);
 
 void accesskit_node_set_overline(struct accesskit_node *node,
-                                 accesskit_text_decoration value);
+                                 struct accesskit_text_decoration value);
 
 void accesskit_node_clear_overline(struct accesskit_node *node);
 
@@ -1890,7 +1977,7 @@ struct accesskit_opt_text_decoration accesskit_node_strikethrough(
     const struct accesskit_node *node);
 
 void accesskit_node_set_strikethrough(struct accesskit_node *node,
-                                      accesskit_text_decoration value);
+                                      struct accesskit_text_decoration value);
 
 void accesskit_node_clear_strikethrough(struct accesskit_node *node);
 
@@ -1898,7 +1985,7 @@ struct accesskit_opt_text_decoration accesskit_node_underline(
     const struct accesskit_node *node);
 
 void accesskit_node_set_underline(struct accesskit_node *node,
-                                  accesskit_text_decoration value);
+                                  struct accesskit_text_decoration value);
 
 void accesskit_node_clear_underline(struct accesskit_node *node);
 
@@ -1913,16 +2000,16 @@ void accesskit_node_set_character_lengths(struct accesskit_node *node,
 
 void accesskit_node_clear_character_lengths(struct accesskit_node *node);
 
-struct accesskit_lengths accesskit_node_word_lengths(
+struct accesskit_lengths accesskit_node_word_starts(
     const struct accesskit_node *node);
 
 /**
  * Caller is responsible for freeing `values`.
  */
-void accesskit_node_set_word_lengths(struct accesskit_node *node, size_t length,
-                                     const uint8_t *values);
+void accesskit_node_set_word_starts(struct accesskit_node *node, size_t length,
+                                    const uint8_t *values);
 
-void accesskit_node_clear_word_lengths(struct accesskit_node *node);
+void accesskit_node_clear_word_starts(struct accesskit_node *node);
 
 struct accesskit_opt_coords accesskit_node_character_positions(
     const struct accesskit_node *node);
@@ -2212,6 +2299,12 @@ void accesskit_tree_update_clear_tree(struct accesskit_tree_update *update);
 
 void accesskit_tree_update_set_focus(struct accesskit_tree_update *update,
                                      accesskit_node_id focus);
+
+struct accesskit_tree_id accesskit_tree_update_get_tree_id(
+    const struct accesskit_tree_update *update);
+
+void accesskit_tree_update_set_tree_id(struct accesskit_tree_update *update,
+                                       struct accesskit_tree_id tree_id);
 
 /**
  * Caller must call `accesskit_string_free` with the return value.

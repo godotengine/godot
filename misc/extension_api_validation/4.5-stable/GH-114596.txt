@@ -1,0 +1,5 @@
+GH-114596
+---------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/accessibility_update_set_text_decorations/arguments': size changed value in new API, from 4 to 5.
+
+Optional argument added. Compatibility method registered.
