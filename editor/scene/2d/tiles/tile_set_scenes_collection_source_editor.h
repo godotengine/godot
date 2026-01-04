@@ -130,6 +130,7 @@ private:
 	void _update_tile_inspector();
 	void _update_scenes_list();
 	void _update_action_buttons();
+	void _update_all();
 
 	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
