@@ -1054,7 +1054,7 @@ void ProjectManager::_apply_project_tags() {
 	} else {
 		tags.sort();
 		cfg->set("application/config/tags", tags);
-		Error err = cfg->save_custom(project_godot);
+		Error err = cfg->save_custom(project_godot, ProjectSettings::CustomMap(), Vector<String>(), true, false);
 		memdelete(cfg);
 
 		if (err != OK) {

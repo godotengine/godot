@@ -1208,37 +1208,39 @@ bool _csproj_exists(const String &p_root_dir) {
 }
 #endif // TOOLS_ENABLED
 
-Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
+Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current, bool p_update_features) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
 #ifdef TOOLS_ENABLED
-	PackedStringArray project_features = get_setting("application/config/features");
-	// If there is no feature list currently present, force one to generate.
-	if (project_features.is_empty()) {
-		project_features = ProjectSettings::get_required_features();
-	}
-	// Check the rendering API.
-	const String rendering_api = has_setting("rendering/renderer/rendering_method") ? (String)get_setting("rendering/renderer/rendering_method") : String();
-	if (!rendering_api.is_empty()) {
-		// Add the rendering API as a project feature if it doesn't already exist.
-		if (!project_features.has(rendering_api)) {
-			project_features.append(rendering_api);
+	if (p_update_features) {
+		PackedStringArray project_features = get_setting("application/config/features");
+		// If there is no feature list currently present, force one to generate.
+		if (project_features.is_empty()) {
+			project_features = ProjectSettings::get_required_features();
 		}
-	}
-	// Check for the existence of a csproj file.
-	if (_csproj_exists(get_resource_path())) {
-		// If there is a csproj file, add the C# feature if it doesn't already exist.
-		if (!project_features.has("C#")) {
-			project_features.append("C#");
+		// Check the rendering API.
+		const String rendering_api = has_setting("rendering/renderer/rendering_method") ? (String)get_setting("rendering/renderer/rendering_method") : String();
+		if (!rendering_api.is_empty()) {
+			// Add the rendering API as a project feature if it doesn't already exist.
+			if (!project_features.has(rendering_api)) {
+				project_features.append(rendering_api);
+			}
 		}
-	} else {
-		// If there isn't a csproj file, remove the C# feature if it exists.
-		if (project_features.has("C#")) {
-			project_features.remove_at(project_features.find("C#"));
+		// Check for the existence of a csproj file.
+		if (_csproj_exists(get_resource_path())) {
+			// If there is a csproj file, add the C# feature if it doesn't already exist.
+			if (!project_features.has("C#")) {
+				project_features.append("C#");
+			}
+		} else {
+			// If there isn't a csproj file, remove the C# feature if it exists.
+			if (project_features.has("C#")) {
+				project_features.remove_at(project_features.find("C#"));
+			}
 		}
+		project_features = _trim_to_supported_features(project_features);
+		set_setting("application/config/features", project_features);
 	}
-	project_features = _trim_to_supported_features(project_features);
-	set_setting("application/config/features", project_features);
 #endif // TOOLS_ENABLED
 
 	RBSet<_VCSort> vclist;
