@@ -23,7 +23,7 @@
 			</description>
 		</method>
 		<method name="initialize" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
-			<return type="Dictionary" />
+			<return type="Variant" />
 			<param index="0" name="params" type="Dictionary" />
 			<description>
 			</description>
