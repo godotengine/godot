@@ -130,8 +130,8 @@ private:
 	static void _key_callback(const String &p_key_event_code, const String &p_key_event_key, int p_pressed, int p_repeat, int p_modifiers);
 	WASM_EXPORT static void vk_input_text_callback(const char *p_text, int p_cursor);
 	static void _vk_input_text_callback(const String &p_text, int p_cursor);
-	WASM_EXPORT static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
-	static void _gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid);
+	WASM_EXPORT static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid, int p_vendor_id, int p_product_id);
+	static void _gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid, int p_vendor_id, int p_product_id);
 	WASM_EXPORT static void js_utterance_callback(int p_event, int64_t p_id, int p_pos);
 	static void _js_utterance_callback(int p_event, int64_t p_id, int p_pos);
 	WASM_EXPORT static void ime_callback(int p_type, const char *p_text);

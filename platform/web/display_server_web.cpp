@@ -838,21 +838,21 @@ void DisplayServerWeb::_window_blur_callback() {
 }
 
 // Gamepad
-void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid) {
+void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid, int p_vendor_id, int p_product_id) {
 	String id = p_id;
 	String guid = p_guid;
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid);
+		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid, p_vendor_id, p_product_id);
 		return;
 	}
 #endif
 
-	_gamepad_callback(p_index, p_connected, id, guid);
+	_gamepad_callback(p_index, p_connected, id, guid, p_vendor_id, p_product_id);
 }
 
-void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
+void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid, int p_vendor_id, int p_product_id) {
 	if (p_connected) {
 		DisplayServerWeb::get_singleton()->gamepad_count += 1;
 	} else {
@@ -861,7 +861,12 @@ void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const Str
 
 	Input *input = Input::get_singleton();
 	if (p_connected) {
-		input->joy_connection_changed(p_index, true, p_id, p_guid);
+		Dictionary joypad_info;
+		joypad_info["raw_name"] = p_id;
+		joypad_info["vendor_id"] = itos(p_vendor_id);
+		joypad_info["product_id"] = itos(p_product_id);
+
+		input->joy_connection_changed(p_index, true, p_id, p_guid, joypad_info);
 	} else {
 		input->joy_connection_changed(p_index, false, "");
 	}
