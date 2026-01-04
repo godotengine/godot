@@ -56,6 +56,9 @@ class MenuBar : public Control {
 		RID submenu_rid;
 		NativeMenu::SystemMenus sysmenu_id = NativeMenu::INVALID_MENU_ID;
 
+		mutable RID accessibility_element;
+		mutable bool accessibility_dirty = true;
+
 		Menu(const String &p_name) {
 			name = p_name;
 			text_buf.instantiate();
@@ -67,7 +70,6 @@ class MenuBar : public Control {
 	};
 	Vector<Menu> menu_cache;
 
-	int focused_menu = -1;
 	int selected_menu = -1;
 	int active_menu = -1;
 
