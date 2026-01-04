@@ -45,9 +45,6 @@
 #define accesskit_node_is_disabled accesskit_node_is_disabled_dylibloader_orig_libaccesskit
 #define accesskit_node_set_disabled accesskit_node_set_disabled_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_disabled accesskit_node_clear_disabled_dylibloader_orig_libaccesskit
-#define accesskit_node_is_bold accesskit_node_is_bold_dylibloader_orig_libaccesskit
-#define accesskit_node_set_bold accesskit_node_set_bold_dylibloader_orig_libaccesskit
-#define accesskit_node_clear_bold accesskit_node_clear_bold_dylibloader_orig_libaccesskit
 #define accesskit_node_is_italic accesskit_node_is_italic_dylibloader_orig_libaccesskit
 #define accesskit_node_set_italic accesskit_node_set_italic_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_italic accesskit_node_clear_italic_dylibloader_orig_libaccesskit
@@ -198,6 +195,14 @@
 #define accesskit_node_set_column_index_text accesskit_node_set_column_index_text_dylibloader_orig_libaccesskit
 #define accesskit_node_set_column_index_text_with_length accesskit_node_set_column_index_text_with_length_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_column_index_text accesskit_node_clear_column_index_text_dylibloader_orig_libaccesskit
+#define accesskit_node_braille_label accesskit_node_braille_label_dylibloader_orig_libaccesskit
+#define accesskit_node_set_braille_label accesskit_node_set_braille_label_dylibloader_orig_libaccesskit
+#define accesskit_node_set_braille_label_with_length accesskit_node_set_braille_label_with_length_dylibloader_orig_libaccesskit
+#define accesskit_node_clear_braille_label accesskit_node_clear_braille_label_dylibloader_orig_libaccesskit
+#define accesskit_node_braille_role_description accesskit_node_braille_role_description_dylibloader_orig_libaccesskit
+#define accesskit_node_set_braille_role_description accesskit_node_set_braille_role_description_dylibloader_orig_libaccesskit
+#define accesskit_node_set_braille_role_description_with_length accesskit_node_set_braille_role_description_with_length_dylibloader_orig_libaccesskit
+#define accesskit_node_clear_braille_role_description accesskit_node_clear_braille_role_description_dylibloader_orig_libaccesskit
 #define accesskit_node_scroll_x accesskit_node_scroll_x_dylibloader_orig_libaccesskit
 #define accesskit_node_set_scroll_x accesskit_node_set_scroll_x_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_scroll_x accesskit_node_clear_scroll_x_dylibloader_orig_libaccesskit
@@ -285,9 +290,9 @@
 #define accesskit_node_character_lengths accesskit_node_character_lengths_dylibloader_orig_libaccesskit
 #define accesskit_node_set_character_lengths accesskit_node_set_character_lengths_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_character_lengths accesskit_node_clear_character_lengths_dylibloader_orig_libaccesskit
-#define accesskit_node_word_lengths accesskit_node_word_lengths_dylibloader_orig_libaccesskit
-#define accesskit_node_set_word_lengths accesskit_node_set_word_lengths_dylibloader_orig_libaccesskit
-#define accesskit_node_clear_word_lengths accesskit_node_clear_word_lengths_dylibloader_orig_libaccesskit
+#define accesskit_node_word_starts accesskit_node_word_starts_dylibloader_orig_libaccesskit
+#define accesskit_node_set_word_starts accesskit_node_set_word_starts_dylibloader_orig_libaccesskit
+#define accesskit_node_clear_word_starts accesskit_node_clear_word_starts_dylibloader_orig_libaccesskit
 #define accesskit_node_character_positions accesskit_node_character_positions_dylibloader_orig_libaccesskit
 #define accesskit_node_set_character_positions accesskit_node_set_character_positions_dylibloader_orig_libaccesskit
 #define accesskit_node_clear_character_positions accesskit_node_clear_character_positions_dylibloader_orig_libaccesskit
@@ -486,9 +491,6 @@
 #undef accesskit_node_is_disabled
 #undef accesskit_node_set_disabled
 #undef accesskit_node_clear_disabled
-#undef accesskit_node_is_bold
-#undef accesskit_node_set_bold
-#undef accesskit_node_clear_bold
 #undef accesskit_node_is_italic
 #undef accesskit_node_set_italic
 #undef accesskit_node_clear_italic
@@ -639,6 +641,14 @@
 #undef accesskit_node_set_column_index_text
 #undef accesskit_node_set_column_index_text_with_length
 #undef accesskit_node_clear_column_index_text
+#undef accesskit_node_braille_label
+#undef accesskit_node_set_braille_label
+#undef accesskit_node_set_braille_label_with_length
+#undef accesskit_node_clear_braille_label
+#undef accesskit_node_braille_role_description
+#undef accesskit_node_set_braille_role_description
+#undef accesskit_node_set_braille_role_description_with_length
+#undef accesskit_node_clear_braille_role_description
 #undef accesskit_node_scroll_x
 #undef accesskit_node_set_scroll_x
 #undef accesskit_node_clear_scroll_x
@@ -726,9 +736,9 @@
 #undef accesskit_node_character_lengths
 #undef accesskit_node_set_character_lengths
 #undef accesskit_node_clear_character_lengths
-#undef accesskit_node_word_lengths
-#undef accesskit_node_set_word_lengths
-#undef accesskit_node_clear_word_lengths
+#undef accesskit_node_word_starts
+#undef accesskit_node_set_word_starts
+#undef accesskit_node_clear_word_starts
 #undef accesskit_node_character_positions
 #undef accesskit_node_set_character_positions
 #undef accesskit_node_clear_character_positions
@@ -928,9 +938,6 @@ void (*accesskit_node_clear_read_only_dylibloader_wrapper_libaccesskit)(struct a
 bool (*accesskit_node_is_disabled_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_disabled_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 void (*accesskit_node_clear_disabled_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-bool (*accesskit_node_is_bold_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_bold_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-void (*accesskit_node_clear_bold_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 bool (*accesskit_node_is_italic_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_italic_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 void (*accesskit_node_clear_italic_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
@@ -1081,6 +1088,14 @@ char *(*accesskit_node_column_index_text_dylibloader_wrapper_libaccesskit)(const
 void (*accesskit_node_set_column_index_text_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *);
 void (*accesskit_node_set_column_index_text_with_length_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *, size_t);
 void (*accesskit_node_clear_column_index_text_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
+char *(*accesskit_node_braille_label_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
+void (*accesskit_node_set_braille_label_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *);
+void (*accesskit_node_set_braille_label_with_length_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *, size_t);
+void (*accesskit_node_clear_braille_label_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
+char *(*accesskit_node_braille_role_description_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
+void (*accesskit_node_set_braille_role_description_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *);
+void (*accesskit_node_set_braille_role_description_with_length_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, const char *, size_t);
+void (*accesskit_node_clear_braille_role_description_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_double (*accesskit_node_scroll_x_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_scroll_x_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, double);
 void (*accesskit_node_clear_scroll_x_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
@@ -1114,11 +1129,11 @@ void (*accesskit_node_clear_numeric_value_step_dylibloader_wrapper_libaccesskit)
 struct accesskit_opt_double (*accesskit_node_numeric_value_jump_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_numeric_value_jump_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, double);
 void (*accesskit_node_clear_numeric_value_jump_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-struct accesskit_opt_double (*accesskit_node_font_size_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_font_size_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, double);
+struct accesskit_opt_float (*accesskit_node_font_size_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
+void (*accesskit_node_set_font_size_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, float);
 void (*accesskit_node_clear_font_size_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-struct accesskit_opt_double (*accesskit_node_font_weight_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_font_weight_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, double);
+struct accesskit_opt_float (*accesskit_node_font_weight_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
+void (*accesskit_node_set_font_weight_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, float);
 void (*accesskit_node_clear_font_weight_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_index (*accesskit_node_row_count_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_row_count_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t);
@@ -1148,13 +1163,13 @@ struct accesskit_opt_index (*accesskit_node_position_in_set_dylibloader_wrapper_
 void (*accesskit_node_set_position_in_set_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t);
 void (*accesskit_node_clear_position_in_set_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_color (*accesskit_node_color_value_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_color_value_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, uint32_t);
+void (*accesskit_node_set_color_value_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, struct accesskit_color);
 void (*accesskit_node_clear_color_value_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_color (*accesskit_node_background_color_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_background_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, uint32_t);
+void (*accesskit_node_set_background_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, struct accesskit_color);
 void (*accesskit_node_clear_background_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_color (*accesskit_node_foreground_color_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_foreground_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, uint32_t);
+void (*accesskit_node_set_foreground_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, struct accesskit_color);
 void (*accesskit_node_clear_foreground_color_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_text_decoration (*accesskit_node_overline_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_overline_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, accesskit_text_decoration);
@@ -1168,9 +1183,9 @@ void (*accesskit_node_clear_underline_dylibloader_wrapper_libaccesskit)(struct a
 struct accesskit_lengths (*accesskit_node_character_lengths_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_character_lengths_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t, const uint8_t *);
 void (*accesskit_node_clear_character_lengths_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
-struct accesskit_lengths (*accesskit_node_word_lengths_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
-void (*accesskit_node_set_word_lengths_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t, const uint8_t *);
-void (*accesskit_node_clear_word_lengths_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
+struct accesskit_lengths (*accesskit_node_word_starts_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
+void (*accesskit_node_set_word_starts_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t, const uint8_t *);
+void (*accesskit_node_clear_word_starts_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
 struct accesskit_opt_coords (*accesskit_node_character_positions_dylibloader_wrapper_libaccesskit)(const struct accesskit_node *);
 void (*accesskit_node_set_character_positions_dylibloader_wrapper_libaccesskit)(struct accesskit_node *, size_t, const float *);
 void (*accesskit_node_clear_character_positions_dylibloader_wrapper_libaccesskit)(struct accesskit_node *);
@@ -1645,30 +1660,6 @@ int initialize_libaccesskit(int verbose, void *handle) {
   }
 // accesskit_node_clear_disabled
   *(void **) (&accesskit_node_clear_disabled_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_disabled");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_is_bold
-  *(void **) (&accesskit_node_is_bold_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_is_bold");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_set_bold
-  *(void **) (&accesskit_node_set_bold_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_bold");
-  if (verbose) {
-    error = dlerror();
-    if (error != NULL) {
-      fprintf(stderr, "%s\n", error);
-    }
-  }
-// accesskit_node_clear_bold
-  *(void **) (&accesskit_node_clear_bold_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_bold");
   if (verbose) {
     error = dlerror();
     if (error != NULL) {
@@ -2875,6 +2866,70 @@ int initialize_libaccesskit(int verbose, void *handle) {
       fprintf(stderr, "%s\n", error);
     }
   }
+// accesskit_node_braille_label
+  *(void **) (&accesskit_node_braille_label_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_braille_label");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_set_braille_label
+  *(void **) (&accesskit_node_set_braille_label_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_braille_label");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_set_braille_label_with_length
+  *(void **) (&accesskit_node_set_braille_label_with_length_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_braille_label_with_length");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_clear_braille_label
+  *(void **) (&accesskit_node_clear_braille_label_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_braille_label");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_braille_role_description
+  *(void **) (&accesskit_node_braille_role_description_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_braille_role_description");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_set_braille_role_description
+  *(void **) (&accesskit_node_set_braille_role_description_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_braille_role_description");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_set_braille_role_description_with_length
+  *(void **) (&accesskit_node_set_braille_role_description_with_length_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_braille_role_description_with_length");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
+// accesskit_node_clear_braille_role_description
+  *(void **) (&accesskit_node_clear_braille_role_description_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_braille_role_description");
+  if (verbose) {
+    error = dlerror();
+    if (error != NULL) {
+      fprintf(stderr, "%s\n", error);
+    }
+  }
 // accesskit_node_scroll_x
   *(void **) (&accesskit_node_scroll_x_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_scroll_x");
   if (verbose) {
@@ -3571,24 +3626,24 @@ int initialize_libaccesskit(int verbose, void *handle) {
       fprintf(stderr, "%s\n", error);
     }
   }
-// accesskit_node_word_lengths
-  *(void **) (&accesskit_node_word_lengths_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_word_lengths");
+// accesskit_node_word_starts
+  *(void **) (&accesskit_node_word_starts_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_word_starts");
   if (verbose) {
     error = dlerror();
     if (error != NULL) {
       fprintf(stderr, "%s\n", error);
     }
   }
-// accesskit_node_set_word_lengths
-  *(void **) (&accesskit_node_set_word_lengths_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_word_lengths");
+// accesskit_node_set_word_starts
+  *(void **) (&accesskit_node_set_word_starts_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_set_word_starts");
   if (verbose) {
     error = dlerror();
     if (error != NULL) {
       fprintf(stderr, "%s\n", error);
     }
   }
-// accesskit_node_clear_word_lengths
-  *(void **) (&accesskit_node_clear_word_lengths_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_word_lengths");
+// accesskit_node_clear_word_starts
+  *(void **) (&accesskit_node_clear_word_starts_dylibloader_wrapper_libaccesskit) = dlsym(handle, "accesskit_node_clear_word_starts");
   if (verbose) {
     error = dlerror();
     if (error != NULL) {

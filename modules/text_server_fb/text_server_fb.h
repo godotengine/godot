@@ -376,6 +376,7 @@ class TextServerFallback : public TextServerExtension {
 
 	struct TextRun {
 		Vector2i range;
+		Vector2i gl_range;
 		RID font_rid;
 		int font_size = 0;
 		int64_t span_index = -1;
@@ -818,6 +819,7 @@ public:
 	MODBIND1RC(int64_t, shaped_get_run_count, const RID &);
 	MODBIND2RC(String, shaped_get_run_text, const RID &, int64_t);
 	MODBIND2RC(Vector2i, shaped_get_run_range, const RID &, int64_t);
+	MODBIND2RC(Vector2i, shaped_get_run_glyph_range, const RID &, int64_t);
 	MODBIND2RC(RID, shaped_get_run_font_rid, const RID &, int64_t);
 	MODBIND2RC(int, shaped_get_run_font_size, const RID &, int64_t);
 	MODBIND2RC(String, shaped_get_run_language, const RID &, int64_t);

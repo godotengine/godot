@@ -486,6 +486,7 @@ public:
 	virtual int64_t shaped_get_run_count(const RID &p_shaped) const override;
 	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const override;
 	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const override;
+	virtual Vector2i shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const override;
 	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const override;
 	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const override;
 	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const override;
@@ -494,6 +495,7 @@ public:
 	GDVIRTUAL1RC(int64_t, _shaped_get_run_count, RID);
 	GDVIRTUAL2RC(String, _shaped_get_run_text, RID, int64_t);
 	GDVIRTUAL2RC(Vector2i, _shaped_get_run_range, RID, int64_t);
+	GDVIRTUAL2RC(Vector2i, _shaped_get_run_glyph_range, RID, int64_t);
 	GDVIRTUAL2RC(RID, _shaped_get_run_font_rid, RID, int64_t);
 	GDVIRTUAL2RC(int, _shaped_get_run_font_size, RID, int64_t);
 	GDVIRTUAL2RC(String, _shaped_get_run_language, RID, int64_t);

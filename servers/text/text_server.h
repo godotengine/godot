@@ -507,6 +507,7 @@ public:
 	virtual int64_t shaped_get_run_count(const RID &p_shaped) const = 0;
 	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Vector2i shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const = 0;
