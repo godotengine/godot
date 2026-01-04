@@ -61,8 +61,17 @@ void SpinBoxLineEdit::_notification(int p_what) {
 			SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
 			if (parent_sb) {
 				DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPIN_BUTTON);
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, parent_sb->get_accessibility_name());
-				DisplayServer::get_singleton()->accessibility_update_set_description(ae, parent_sb->get_accessibility_description());
+				// Prefer own accessibility_name (may be set directly), fall back to parent's.
+				String name = get_accessibility_name();
+				if (name.is_empty()) {
+					name = parent_sb->get_accessibility_name();
+				}
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
+				String desc = get_accessibility_description();
+				if (desc.is_empty()) {
+					desc = parent_sb->get_accessibility_description();
+				}
+				DisplayServer::get_singleton()->accessibility_update_set_description(ae, desc);
 				DisplayServer::get_singleton()->accessibility_update_set_live(ae, parent_sb->get_accessibility_live());
 				DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, parent_sb->get_value());
 				DisplayServer::get_singleton()->accessibility_update_set_num_range(ae, parent_sb->get_min(), parent_sb->get_max());
@@ -428,6 +437,20 @@ inline int SpinBox::_get_widest_button_icon_width() {
 
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			// Propagate accessibility properties to internal LineEdit if it doesn't have its own.
+			if (line_edit) {
+				String name = get_accessibility_name();
+				if (!name.is_empty() && line_edit->get_accessibility_name().is_empty()) {
+					line_edit->set_accessibility_name(name);
+				}
+				String desc = get_accessibility_description();
+				if (!desc.is_empty() && line_edit->get_accessibility_description().is_empty()) {
+					line_edit->set_accessibility_description(desc);
+				}
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			_update_text(true);
 			_compute_sizes();
