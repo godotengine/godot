@@ -109,4 +109,4 @@ SteamTracker::~SteamTracker() {
 	}
 }
 
-#endif // STEAMAPI_ENABLED
+#endif // STEAMAPI_ENABLED 
