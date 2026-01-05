@@ -858,7 +858,7 @@ void main() {
 		vec3 light;
 		vec3 light_dir;
 		float shadow;
-		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space, shadow);
+		trace_direct_light(position, normal, i, false, light, light_dir, noise, texel_size_world_space, shadow);
 
 		if (lights.data[i].static_bake) {
 			light_for_texture += light;
