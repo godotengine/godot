@@ -68,6 +68,10 @@ Error GDScriptParserRef::raise_status(Status p_new_status) {
 	ERR_FAIL_COND_V(clearing, ERR_BUG);
 	ERR_FAIL_COND_V(parser == nullptr && status != EMPTY, ERR_BUG);
 
+	if (p_new_status < status) {
+		return OK;
+	}
+
 	while (result == OK && p_new_status > status) {
 		switch (status) {
 			case EMPTY: {
