@@ -72,6 +72,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
 #include "editor/inspector/input_event_editor_plugin.h"
+#include "editor/inspector/multi_resource_edit.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
@@ -179,6 +180,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorInspector);
 	GDREGISTER_CLASS(EditorInspectorPlugin);
 	GDREGISTER_CLASS(EditorProperty);
+	GDREGISTER_CLASS(MultiResourceEdit);
 	GDREGISTER_CLASS(ScriptCreateDialog);
 	GDREGISTER_CLASS(EditorFeatureProfile);
 	GDREGISTER_CLASS(EditorSpinSlider);
