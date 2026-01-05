@@ -1737,7 +1737,7 @@ float LightmapGI::get_bounce_indirect_energy() const {
 }
 
 void LightmapGI::set_bias(float p_bias) {
-	ERR_FAIL_COND(p_bias < 0.00001);
+	ERR_FAIL_COND(p_bias < 0.0000001);
 	bias = p_bias;
 }
 
