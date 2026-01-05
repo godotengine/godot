@@ -31,8 +31,7 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup.h"
+#include "scene/gui/popup_button.h"
 #include "scene/resources/shader.h"
 
 class AspectRatioContainer;
@@ -503,19 +502,18 @@ class ColorPickerPopupPanel : public PopupPanel {
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 };
 
-class ColorPickerButton : public Button {
-	GDCLASS(ColorPickerButton, Button);
+class ColorPickerButton : public PopupButton {
+	GDCLASS(ColorPickerButton, PopupButton);
 
 	// Initialization is now done deferred,
 	// this improves performance in the inspector as the color picker
 	// can be expensive to initialize.
 
-	PopupPanel *popup = nullptr;
+	PopupPanel *popup_panel = nullptr;
 	ColorPicker *picker = nullptr;
 	Color color;
 	bool edit_alpha = true;
 	bool edit_intensity = true;
-	bool popup_was_open = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -524,18 +522,18 @@ class ColorPickerButton : public Button {
 		Ref<Texture2D> overbright_indicator;
 	} theme_cache;
 
-	void _about_to_popup();
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
-
-	virtual void pressed() override;
-
-	void _update_picker();
 
 protected:
 	void _notification(int);
 	static void _bind_methods();
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	virtual Popup *create_popup() override;
+
+	virtual void about_to_popup() override;
+	virtual void setup_popup_position() override;
+	virtual void post_popup() override;
 
 public:
 	void set_pick_color(const Color &p_color);
@@ -549,8 +547,6 @@ public:
 
 	ColorPicker *get_picker();
 	PopupPanel *get_popup();
-
-	ColorPickerButton(const String &p_text = String());
 };
 
 VARIANT_ENUM_CAST(ColorPicker::PickerShapeType);

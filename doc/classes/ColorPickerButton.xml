@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ColorPickerButton" inherits="Button" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ColorPickerButton" inherits="PopupButton" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a [ColorPicker] when pressed.
 	</brief_description>
@@ -38,7 +38,6 @@
 		<member name="edit_intensity" type="bool" setter="set_edit_intensity" getter="is_editing_intensity" default="true">
 			If [code]true[/code], the intensity slider in the displayed [ColorPicker] will be visible.
 		</member>
-		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<signals>
 		<signal name="color_changed">

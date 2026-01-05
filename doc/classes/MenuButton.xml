@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MenuButton" inherits="Button" keywords="dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MenuButton" inherits="PopupButton" keywords="dropdown" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A button that brings up a [PopupMenu] when clicked.
 	</brief_description>
@@ -24,30 +24,12 @@
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
 			</description>
 		</method>
-		<method name="show_popup">
-			<return type="void" />
-			<description>
-				Adjusts popup position and sizing for the [MenuButton], then shows the [PopupMenu]. Prefer this over using [code]get_popup().popup()[/code].
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" overrides="BaseButton" enum="BaseButton.ActionMode" default="0" />
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" overrides="Button" default="true" />
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
-		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="false">
-			If [code]true[/code], when the cursor hovers above another [MenuButton] within the same parent which also has [member switch_on_hover] enabled, it will close the current [MenuButton] and open the other one.
-		</member>
-		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
-	<signals>
-		<signal name="about_to_popup">
-			<description>
-				Emitted when the [PopupMenu] of this MenuButton is about to show.
-			</description>
-		</signal>
-	</signals>
 </class>
