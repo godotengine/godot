@@ -945,6 +945,11 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
@@ -976,9 +981,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
 	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	add_child(tree, true);
+	mc->add_child(tree, true);
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {

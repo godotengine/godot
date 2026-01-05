@@ -736,7 +736,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 			if (no_downloads == downloads_scroll->is_visible()) {
 				downloads_scroll->set_visible(!no_downloads);
 
-				library_mc->set_theme_type_variation(no_downloads ? "NoBorderHorizontalBottom" : "NoBorderHorizontal");
+				library_mc->set_theme_type_variation(no_downloads ? (Engine::get_singleton()->is_project_manager_hint() ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLib") : "NoBorderHorizontal");
 				library_scroll->set_scroll_hint_mode(no_downloads ? ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT : ScrollContainer::SCROLL_HINT_MODE_ALL);
 			}
 
@@ -1735,7 +1735,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	/////////
 
 	library_mc = memnew(MarginContainer);
-	library_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	library_mc->set_theme_type_variation(Engine::get_singleton()->is_project_manager_hint() ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLib");
 	library_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	library_main->add_child(library_mc);
 

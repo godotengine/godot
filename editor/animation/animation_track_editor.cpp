@@ -5568,6 +5568,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_LINEAR), get_editor_theme_icon(SNAME("BezierHandlesLinear")));
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), get_editor_theme_icon(SNAME("BezierHandlesBalanced")));
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), get_editor_theme_icon(SNAME("BezierHandlesMirror")));
+
+			_update_timeline_margins();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -7880,14 +7882,17 @@ float AnimationTrackEditor::get_snap_unit() {
 	return snap_unit;
 }
 
-void AnimationTrackEditor::_update_timeline_rtl_spacer() {
+void AnimationTrackEditor::_update_timeline_margins() {
+	int margin_left = timeline_mc->get_theme_constant(SNAME("margin_left"), SNAME("AnimationTrackMargins"));
+	int margin_right = timeline_mc->get_theme_constant(SNAME("margin_right"), SNAME("AnimationTrackMargins"));
+
+	// Prevent the timeline cursor from misaligning with the tracks on the right-to-left layout.
 	if (scroll->get_v_scroll_bar()->is_visible() && is_layout_rtl()) {
-		int spacer_width = scroll->get_v_scroll_bar()->get_minimum_size().width;
-		timeline_rtl_spacer->set_custom_minimum_size(Size2(spacer_width, 0));
-		timeline_rtl_spacer->show();
-	} else {
-		timeline_rtl_spacer->hide();
+		margin_left += scroll->get_v_scroll_bar()->get_minimum_size().width;
 	}
+
+	timeline_mc->add_theme_constant_override(SNAME("margin_left"), margin_left);
+	timeline_mc->add_theme_constant_override(SNAME("margin_right"), margin_right);
 }
 
 void AnimationTrackEditor::_add_animation_player() {
@@ -8067,13 +8072,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_animation_player->set_h_size_flags(SIZE_SHRINK_CENTER);
 	add_animation_player->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_add_animation_player));
 
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->add_theme_constant_override(SNAME("separation"), 0);
-	timeline_vbox->add_child(hbox);
+	timeline_mc = memnew(MarginContainer);
+	timeline_mc->set_h_size_flags(SIZE_EXPAND_FILL);
+	timeline_vbox->add_child(timeline_mc);
 
 	timeline = memnew(AnimationTimelineEdit);
-	timeline->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbox->add_child(timeline);
+	timeline_mc->add_child(timeline);
 	timeline->set_editor(this);
 	timeline->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEditor::_name_limit_changed));
@@ -8081,11 +8085,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
-
-	// If the animation editor is changed to take right-to-left into account, this won't be needed anymore.
-	timeline_rtl_spacer = memnew(Control);
-	timeline_rtl_spacer->hide();
-	hbox->add_child(timeline_rtl_spacer);
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
@@ -8125,8 +8124,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	// Must be updated from here, so it guarantees that the scrollbar theme has already changed.
-	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer), CONNECT_DEFERRED);
-	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_rtl_spacer));
+	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_margins), CONNECT_DEFERRED);
+	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_margins));
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
 	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 
@@ -8139,9 +8138,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->add_child(hscroll);
 	timeline->set_hscroll(hscroll);
 
+	mc = memnew(MarginContainer);
+	mc->set_h_size_flags(SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("AnimationTrackMargins");
+	scroll->add_child(mc);
+
 	track_vbox = memnew(VBoxContainer);
-	scroll->add_child(track_vbox);
-	track_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	mc->add_child(track_vbox);
 	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);

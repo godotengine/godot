@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/tree.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
@@ -668,19 +669,20 @@ void PropertySelector::_bind_methods() {
 PropertySelector::PropertySelector() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
+
 	search_box = memnew(LineEdit);
 	search_box->set_accessibility_name(TTRC("Search:"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	vbc->add_margin_child(TTRC("Search:"), search_box);
+
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
-	set_ok_button_text(TTRC("Open"));
-	get_ok_button()->set_disabled(true);
-	register_text_enter(search_box);
-	set_hide_on_ok(false);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	MarginContainer *mc = vbc->add_margin_child(TTRC("Matches:"), search_options, true);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+
 	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
@@ -689,4 +691,9 @@ PropertySelector::PropertySelector() {
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 	vbc->add_margin_child(TTRC("Description:"), help_bit);
+
+	set_ok_button_text(TTRC("Open"));
+	get_ok_button()->set_disabled(true);
+	register_text_enter(search_box);
+	set_hide_on_ok(false);
 }

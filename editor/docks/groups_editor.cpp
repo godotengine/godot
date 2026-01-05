@@ -912,7 +912,7 @@ GroupsEditor::GroupsEditor() {
 	hbc->add_child(filter);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	holder->add_child(mc);
 
