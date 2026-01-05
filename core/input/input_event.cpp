@@ -119,6 +119,7 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_echo"), &InputEvent::is_echo);
 
 	ClassDB::bind_method(D_METHOD("as_text"), &InputEvent::as_text);
+	ClassDB::bind_method(D_METHOD("as_text_alt"), &InputEvent::as_text_alt);
 
 	ClassDB::bind_method(D_METHOD("is_match", "event", "exact_match"), &InputEvent::is_match, DEFVAL(true));
 
@@ -272,6 +273,29 @@ String InputEventWithModifiers::as_text() const {
 
 	if (!mod_names.is_empty()) {
 		return String("+").join(mod_names);
+	} else {
+		return "";
+	}
+}
+
+String InputEventWithModifiers::as_text_alt() const {
+	Vector<String> mod_names;
+
+	if (is_ctrl_pressed()) {
+		mod_names.push_back(String::utf8(find_keycode_name_alt(Key::CTRL)));
+	}
+	if (is_shift_pressed()) {
+		mod_names.push_back(String::utf8(find_keycode_name_alt(Key::SHIFT)));
+	}
+	if (is_alt_pressed()) {
+		mod_names.push_back(String::utf8(find_keycode_name_alt(Key::ALT)));
+	}
+	if (is_meta_pressed()) {
+		mod_names.push_back(String::utf8(find_keycode_name_alt(Key::META)));
+	}
+
+	if (!mod_names.is_empty()) {
+		return String(" ").join(mod_names);
 	} else {
 		return "";
 	}
@@ -489,6 +513,27 @@ String InputEventKey::as_text() const {
 
 	String mods_text = InputEventWithModifiers::as_text();
 	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_alt() const {
+	String kc;
+
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		kc = keycode_get_string_alt(key_label) + " (Unicode)";
+	} else if (keycode != Key::NONE) {
+		kc = keycode_get_string_alt(keycode);
+	} else if (physical_keycode != Key::NONE) {
+		kc = keycode_get_string_alt(physical_keycode) + " (" + RTR("Physical") + ")";
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text_alt();
+	return mods_text.is_empty() ? kc : mods_text + " " + kc;
 }
 
 String InputEventKey::_to_string() {
@@ -1653,6 +1698,21 @@ String InputEventAction::as_text() const {
 	for (const Ref<InputEvent> &E : *events) {
 		if (E.is_valid()) {
 			return E->as_text();
+		}
+	}
+
+	return String();
+}
+
+String InputEventAction::as_text_alt() const {
+	const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(action);
+	if (!events) {
+		return String();
+	}
+
+	for (const Ref<InputEvent> &E : *events) {
+		if (E.is_valid()) {
+			return E->as_text_alt();
 		}
 	}
 
