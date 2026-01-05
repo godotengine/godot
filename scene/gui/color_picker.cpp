@@ -2092,6 +2092,7 @@ ColorPicker::ColorPicker() {
 
 	btn_shape = memnew(MenuButton);
 	btn_shape->set_flat(false);
+	btn_shape->set_theme_type_variation("FlatMenuButton");
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
@@ -2142,10 +2143,12 @@ ColorPicker::ColorPicker() {
 
 	btn_mode = memnew(MenuButton);
 	btn_mode->set_flat(false);
+	btn_mode->set_theme_type_variation("FlatMenuButton");
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
 	btn_mode->set_accessibility_name(ETR("Select a picker mode."));
 	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
+	btn_mode->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_mode->set_focus_mode(FOCUS_ALL);
 
 	mode_popup = btn_mode->get_popup();
@@ -2247,6 +2250,7 @@ ColorPicker::ColorPicker() {
 
 	menu_btn = memnew(MenuButton);
 	menu_btn->set_flat(false);
+	menu_btn->set_theme_type_variation("FlatMenuButton");
 	menu_btn->set_focus_mode(FOCUS_ALL);
 	menu_btn->set_tooltip_text(ETR("Show all options available."));
 	menu_btn->connect("about_to_popup", callable_mp(this, &ColorPicker::_update_menu_items));

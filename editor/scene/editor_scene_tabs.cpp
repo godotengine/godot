@@ -471,6 +471,7 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	scene_list = memnew(MenuButton);
 	scene_list->set_flat(false);
+	scene_list->set_theme_type_variation("FlatMenuButton");
 	scene_list->set_accessibility_name(TTRC("Show Opened Scenes List"));
 	scene_list->set_shortcut(ED_SHORTCUT("editor/show_opened_scenes_list", TTRC("Show Opened Scenes List"), KeyModifierMask::ALT | Key::T));
 	scene_list->get_popup()->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

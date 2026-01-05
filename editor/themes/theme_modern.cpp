@@ -488,16 +488,6 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("outline_size", "Button", 0);
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
-		// MenuButton.
-
-		p_theme->set_stylebox(CoreStringName(normal), "MenuButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(hover), "MenuButton", p_config.flat_button_hover);
-		p_theme->set_stylebox(SceneStringName(pressed), "MenuButton", p_config.flat_button_pressed);
-		p_theme->set_stylebox("focus", "MenuButton", p_config.focus_style);
-		p_theme->set_stylebox("disabled", "MenuButton", p_config.base_empty_wide_style);
-
-		p_theme->set_constant("outline_size", "MenuButton", 0);
-
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
