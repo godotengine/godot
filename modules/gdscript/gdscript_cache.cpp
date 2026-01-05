@@ -310,8 +310,13 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 
 	const String remapped_path = ResourceLoader::path_remap(p_path);
 
-	Ref<GDScript> script;
-	script.instantiate();
+	// HACK: When this code runs there should not be an entry in the resource cache. However some bug with cyclic references
+	// can lead to a partially destructed script in the cache: GH-98141. We reconstruct the script in the same place
+	// to prevent the creation of a duplicate.
+	Ref<GDScript> script = ResourceCache::get_ref(p_path);
+	if (script.is_null()) {
+		script.instantiate();
+	}
 
 	script->set_path_cache(p_path);
 	if (remapped_path.has_extension("gdc")) {
