@@ -1104,6 +1104,14 @@ bool TabContainer::get_switch_on_drag_hover() const {
 	return tab_bar->get_switch_on_drag_hover();
 }
 
+void TabContainer::set_continuous_scroll_enabled(bool p_enabled) {
+	tab_bar->set_continuous_scroll_enabled(p_enabled);
+}
+
+bool TabContainer::get_continuous_scroll_enabled() {
+	return tab_bar->get_continuous_scroll_enabled();
+}
+
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
 	drag_to_rearrange_enabled = p_enabled;
 }
@@ -1183,6 +1191,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("set_continuous_scroll_enabled", "enabled"), &TabContainer::set_continuous_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("get_continuous_scroll_enabled"), &TabContainer::get_continuous_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_switch_on_drag_hover", "enabled"), &TabContainer::set_switch_on_drag_hover);
 	ClassDB::bind_method(D_METHOD("get_switch_on_drag_hover"), &TabContainer::get_switch_on_drag_hover);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);
@@ -1210,6 +1220,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_scroll_enabled"), "set_continuous_scroll_enabled", "get_continuous_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");

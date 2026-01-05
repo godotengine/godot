@@ -229,6 +229,8 @@ public:
 
 	void set_switch_on_drag_hover(bool p_enabled);
 	bool get_switch_on_drag_hover() const;
+	void set_continuous_scroll_enabled(bool p_enabled);
+	bool get_continuous_scroll_enabled();
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);

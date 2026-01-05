@@ -32,10 +32,15 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/scroll_bar.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
 
 static inline Color _select_color(const Color &p_override_color, const Color &p_default_color) {
 	return p_override_color.a > 0 ? p_override_color : p_default_color;
@@ -180,7 +185,11 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT)) && !mb->is_command_or_control_pressed()) {
-			if (scrolling_enabled && buttons_visible) {
+			if (hscroll) {
+				hscroll->scroll(-hscroll->get_page() / 8 * mb->get_factor());
+				_update_cache();
+				queue_redraw();
+			} else if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
 					offset--;
 					_update_cache();
@@ -190,7 +199,11 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (is_layout_rtl() ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT)) && !mb->is_command_or_control_pressed()) {
-			if (scrolling_enabled && buttons_visible) {
+			if (hscroll) {
+				hscroll->scroll(hscroll->get_page() / 8 * mb->get_factor());
+				_update_cache();
+				queue_redraw();
+			} else if (scrolling_enabled && buttons_visible) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
 					_update_cache();
@@ -232,13 +245,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x < theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							if (hscroll && tabs.size() > 0) {
+								hscroll->scroll_to(tabs[MIN(tabs.size() - 1, offset)].ofs_cache + hscroll->get_value());
+							}
 							_update_cache();
 							queue_redraw();
 						}
 						return;
 					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
-						if (offset > 0) {
+						if (offset > 0 || (hscroll && hscroll->get_value() > 0)) {
 							offset--;
+							if (hscroll && tabs.size() > 0) {
+								hscroll->scroll_to(tabs[MAX(0, offset)].ofs_cache + hscroll->get_value());
+							}
 							_update_cache();
 							queue_redraw();
 						}
@@ -249,13 +268,19 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							if (hscroll && tabs.size() > 0) {
+								hscroll->scroll_to(tabs[MIN(tabs.size() - 1, offset)].ofs_cache + hscroll->get_value());
+							}
 							_update_cache();
 							queue_redraw();
 						}
 						return;
 					} else if (pos.x > limit) {
-						if (offset > 0) {
+						if (offset > 0 || (hscroll && hscroll->get_value() > 0)) {
 							offset--;
+							if (hscroll && tabs.size() > 0) {
+								hscroll->scroll_to(tabs[MAX(0, offset)].ofs_cache + hscroll->get_value());
+							}
 							_update_cache();
 							queue_redraw();
 						}
@@ -397,6 +422,11 @@ void TabBar::_accessibility_action_focus(const Variant &p_data, int p_index) {
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
+				set_continuous_scroll_enabled(EDITOR_GET("interface/editor/continuous_tab_scroll"));
+			}
+#endif // TOOLS_ENABLED
 			if (scroll_to_selected) {
 				ensure_tab_visible(current);
 			}
@@ -508,6 +538,16 @@ void TabBar::_notification(int p_what) {
 			}
 		} break;
 
+#ifdef TOOLS_ENABLED
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (Engine::get_singleton()->is_editor_hint() && !is_part_of_edited_scene()) {
+				if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/continuous_tab_scroll")) {
+					set_continuous_scroll_enabled(EDITOR_GET("interface/editor/continuous_tab_scroll"));
+				}
+			}
+		} break;
+#endif // TOOLS_ENABLED
+
 		case NOTIFICATION_DRAW: {
 			bool rtl = is_layout_rtl();
 			Vector2 size = get_size();
@@ -523,6 +563,9 @@ void TabBar::_notification(int p_what) {
 			}
 
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+			if (hscroll) {
+				RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), true, Rect2(0, 0, limit_minus_buttons, size.y));
+			}
 
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
@@ -561,6 +604,9 @@ void TabBar::_notification(int p_what) {
 				_draw_tab(sb, col, theme_cache.icon_selected_color, current, rtl ? (size.width - tabs[current].ofs_cache - tabs[current].size_cache) : tabs[current].ofs_cache, has_focus(true));
 			}
 
+			if (hscroll) {
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+			}
 			if (buttons_visible) {
 				int vofs = (size.height - theme_cache.increment_icon->get_size().height) / 2;
 
@@ -571,13 +617,13 @@ void TabBar::_notification(int p_what) {
 						draw_texture(theme_cache.decrement_icon, Point2(0, vofs), Color(1, 1, 1, 0.5));
 					}
 
-					if (offset > 0) {
+					if (offset > 0 || (hscroll && hscroll->get_value() > 0)) {
 						draw_texture(highlight_arrow == 0 ? theme_cache.increment_hl_icon : theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs));
 					} else {
 						draw_texture(theme_cache.increment_icon, Point2(theme_cache.increment_icon->get_size().width, vofs), Color(1, 1, 1, 0.5));
 					}
 				} else {
-					if (offset > 0) {
+					if (offset > 0 || (hscroll && hscroll->get_value() > 0)) {
 						draw_texture(highlight_arrow == 0 ? theme_cache.decrement_hl_icon : theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs));
 					} else {
 						draw_texture(theme_cache.decrement_icon, Point2(limit_minus_buttons, vofs), Color(1, 1, 1, 0.5));
@@ -593,6 +639,10 @@ void TabBar::_notification(int p_what) {
 
 			if (dragging_valid_tab) {
 				_draw_tab_drop(get_canvas_item());
+			}
+
+			if (hscroll) {
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 		} break;
 	}
@@ -867,7 +917,7 @@ int TabBar::get_next_available(int p_idx) const {
 
 bool TabBar::select_previous_available() {
 	const int previous_available = get_previous_available();
-	if (previous_available != -1) {
+	if (previous_available >= 0) {
 		set_current_tab(previous_available);
 	}
 	return previous_available != -1;
@@ -1203,8 +1253,22 @@ void TabBar::_update_cache(bool p_update_hover) {
 	int limit_minus_buttons = limit - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 	int w = 0;
+	if (hscroll) {
+		int max_w = 0;
+		for (int i = 0; i < tabs.size(); i++) {
+			if (!tabs[i].hidden) {
+				max_w += tabs[i].size_cache;
+				max_w += theme_cache.tab_separation;
+			}
+		}
+		hscroll->set_page(limit_minus_buttons);
+		hscroll->set_max(max_w);
+		w = -hscroll->get_value();
+		offset = 0;
+	}
 
 	max_drawn_tab = tabs.size() - 1;
+	bool found_max = false;
 
 	for (int i = 0; i < tabs.size(); i++) {
 		tabs.write[i].text_buf->set_width(-1);
@@ -1222,7 +1286,17 @@ void TabBar::_update_cache(bool p_update_hover) {
 			tabs.write[i].size_cache = size_textless + tabs[i].size_text;
 		}
 
-		if (i < offset || i > max_drawn_tab) {
+		int w_next = w + tabs[i].size_cache;
+
+		if (hscroll) {
+			if (w <= 0 && w_next >= 0) {
+				offset = i;
+			}
+			if (!found_max && w_next >= limit) {
+				max_drawn_tab = i;
+				found_max = true;
+			}
+		} else if (i < offset || i > max_drawn_tab) {
 			tabs.write[i].ofs_cache = 0;
 			continue;
 		}
@@ -1233,10 +1307,18 @@ void TabBar::_update_cache(bool p_update_hover) {
 			continue;
 		}
 
+		if (found_max) {
+			continue;
+		}
+
+		if (hscroll && w >= limit) {
+			continue;
+		}
 		w += tabs[i].size_cache;
 
 		// Check if all tabs would fit inside the area.
-		if (clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons))) {
+		bool too_large = clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons));
+		if (!hscroll && too_large) {
 			tabs.write[i].ofs_cache = 0;
 
 			w -= tabs[i].size_cache;
@@ -1261,9 +1343,15 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 
 	missing_right = max_drawn_tab < tabs.size() - 1;
+	if (hscroll) {
+		missing_right = hscroll->get_value() < (hscroll->get_max() - hscroll->get_page());
+	}
 	buttons_visible = offset > 0 || missing_right;
+	if (hscroll) {
+		buttons_visible = hscroll->get_value() > 0 || missing_right;
+	}
 
-	if (tab_alignment == ALIGNMENT_LEFT) {
+	if (tab_alignment == ALIGNMENT_LEFT || hscroll) {
 		if (p_update_hover) {
 			_update_hover();
 		}
@@ -1292,6 +1380,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 
 void TabBar::_hover_switch_timeout() {
 	set_current_tab(hover);
+}
+
+void TabBar::_scrolled(double) {
+	_update_cache();
+	queue_redraw();
 }
 
 void TabBar::_on_mouse_exited() {
@@ -1880,7 +1973,27 @@ void TabBar::ensure_tab_visible(int p_idx) {
 	}
 	ERR_FAIL_INDEX(p_idx, tabs.size());
 
-	if (tabs[p_idx].hidden || (p_idx >= offset && p_idx <= max_drawn_tab)) {
+	if (tabs[p_idx].hidden) {
+		return;
+	}
+
+	if (hscroll) {
+		int tofs = tabs[p_idx].ofs_cache;
+		if (tofs < 0) {
+			hscroll->set_value(tofs + hscroll->get_value());
+			_update_cache();
+			queue_redraw();
+			return;
+		}
+		if ((tofs + tabs[p_idx].size_cache) > hscroll->get_page()) {
+			hscroll->set_value(tofs + hscroll->get_value() - hscroll->get_page() + tabs[p_idx].size_cache);
+			_update_cache();
+			queue_redraw();
+			return;
+		}
+	}
+
+	if (p_idx >= offset && p_idx <= max_drawn_tab) {
 		return;
 	}
 
@@ -1994,6 +2107,25 @@ bool TabBar::get_scrolling_enabled() const {
 	return scrolling_enabled;
 }
 
+void TabBar::set_continuous_scroll_enabled(bool p_enabled) {
+	if (p_enabled && !hscroll) {
+		hscroll = memnew(HScrollBar);
+		hscroll->set_step(.001);
+		hscroll->set_visible(false);
+		hscroll->connect(SceneStringName(value_changed), callable_mp(this, &TabBar::_scrolled));
+		add_child(hscroll);
+		set_clip_contents(true);
+	} else if (!p_enabled && hscroll) {
+		hscroll->queue_free();
+		hscroll = nullptr;
+		set_clip_contents(false);
+	}
+}
+
+bool TabBar::get_continuous_scroll_enabled() {
+	return hscroll != nullptr;
+}
+
 void TabBar::set_drag_to_rearrange_enabled(bool p_enabled) {
 	drag_to_rearrange_enabled = p_enabled;
 }
@@ -2099,6 +2231,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_tab_width"), &TabBar::get_max_tab_width);
 	ClassDB::bind_method(D_METHOD("set_scrolling_enabled", "enabled"), &TabBar::set_scrolling_enabled);
 	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &TabBar::get_scrolling_enabled);
+	ClassDB::bind_method(D_METHOD("set_continuous_scroll_enabled", "enabled"), &TabBar::set_continuous_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("get_continuous_scroll_enabled"), &TabBar::get_continuous_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabBar::set_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabBar::get_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("set_switch_on_drag_hover", "enabled"), &TabBar::set_switch_on_drag_hover);
@@ -2129,6 +2263,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "continuous_scroll_enabled"), "set_continuous_scroll_enabled", "get_continuous_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
