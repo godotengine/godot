@@ -976,7 +976,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_renderer_selected();
+			if (rendering_device_checked) {
+				_renderer_selected();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
