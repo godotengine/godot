@@ -339,7 +339,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	int preferred_type = -1;
 	// Select preferred type if specified.
 	for (int i = 0; i < type_menu->get_item_count(); i++) {
-		if (type_menu->get_item_text(i) == p_preferred_type) {
+		if (type_menu->get_item_text(i) == p_preferred_type && !(p_load_enabled && p_preferred_type.contains("Include"))) {
 			preferred_type = i;
 			break;
 		}
@@ -350,7 +350,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 		if (!last_lang.is_empty()) {
 			for (int i = 0; i < type_menu->get_item_count(); i++) {
-				if (type_menu->get_item_text(i) == last_lang) {
+				if (type_menu->get_item_text(i) == last_lang && !(p_load_enabled && last_lang.contains("Include"))) {
 					preferred_type = i;
 					break;
 				}
