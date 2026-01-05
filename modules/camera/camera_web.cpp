@@ -151,6 +151,8 @@ Array CameraFeedWeb::get_formats() const {
 		dictionary["width"] = feed_format.width;
 		dictionary["height"] = feed_format.height;
 		dictionary["format"] = feed_format.format;
+		dictionary["frame_numerator"] = feed_format.frame_numerator;
+		dictionary["frame_denominator"] = feed_format.frame_denominator;
 		result.push_back(dictionary);
 	}
 	return result;
@@ -173,6 +175,12 @@ CameraFeedWeb::CameraFeedWeb(const CameraInfo &info) {
 		feed_format.width = info.formats[i].width;
 		feed_format.height = info.formats[i].height;
 		feed_format.format = String("RGBA");
+		// Web API provides frame rate as integer (max fps).
+		// Use frame_numerator/frame_denominator format consistent with other platforms.
+		if (info.formats[i].frame_rate > 0) {
+			feed_format.frame_numerator = info.formats[i].frame_rate;
+			feed_format.frame_denominator = 1;
+		}
 		formats.append(feed_format);
 	}
 }

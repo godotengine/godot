@@ -40,6 +40,7 @@
 struct FormatInfo {
 	int width;
 	int height;
+	int frame_rate;
 };
 
 struct CameraInfo {

@@ -85,16 +85,24 @@ const GodotCamera = {
 		/**
 		 * Gets supported formats based on capabilities.
 		 * @param {Object} capabilities MediaTrackCapabilities object
-		 * @returns {Array<{width: number, height: number}>} Supported resolutions
+		 * @returns {Array<{width: number, height: number, frameRate: number}>} Supported resolutions with frame rate
 		 */
 		getSupportedFormats: function (capabilities) {
 			const widthRange = capabilities.width || this.defaultMinimumCapabilities.width;
 			const heightRange = capabilities.height || this.defaultMinimumCapabilities.height;
+			const frameRateRange = capabilities.frameRate || { min: 1, max: 30 };
+			const maxFrameRate = frameRateRange.max || 30;
 
-			return this.commonResolutions.filter((res) => res.width >= (widthRange.min || 1)
-				&& res.width <= (widthRange.max || 9999)
-				&& res.height >= (heightRange.min || 1)
-				&& res.height <= (heightRange.max || 9999));
+			return this.commonResolutions
+				.filter((res) => res.width >= (widthRange.min || 1)
+					&& res.width <= (widthRange.max || 9999)
+					&& res.height >= (heightRange.min || 1)
+					&& res.height <= (heightRange.max || 9999))
+				.map((res) => ({
+					width: res.width,
+					height: res.height,
+					frameRate: maxFrameRate,
+				}));
 		},
 
 		/**

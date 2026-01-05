@@ -38,6 +38,7 @@ namespace {
 const String KEY_CAMERAS("cameras");
 const String KEY_ERROR("error");
 const String KEY_FORMATS("formats");
+const String KEY_FRAME_RATE("frameRate");
 const String KEY_HEIGHT("height");
 const String KEY_ID("id");
 const String KEY_INDEX("index");
@@ -130,11 +131,13 @@ void CameraDriverWeb::_on_get_cameras_callback(void *context, void *callback, co
 
 				int width = _get_int_value(format_dict.get(KEY_WIDTH, Variant()));
 				int height = _get_int_value(format_dict.get(KEY_HEIGHT, Variant()));
+				int frame_rate = _get_int_value(format_dict.get(KEY_FRAME_RATE, Variant()));
 
 				if (width > 0 && height > 0) {
 					FormatInfo format_info;
 					format_info.width = width;
 					format_info.height = height;
+					format_info.frame_rate = frame_rate;
 					info.formats.push_back(format_info);
 				}
 			}
