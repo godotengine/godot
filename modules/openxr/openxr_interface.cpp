@@ -36,6 +36,7 @@
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
+#include "extensions/openxr_user_presence_extension.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #include <openxr/openxr.h>
@@ -57,6 +58,12 @@ void OpenXRInterface::_bind_methods() {
 
 	// State
 	ClassDB::bind_method(D_METHOD("get_session_state"), &OpenXRInterface::get_session_state);
+
+	// User presence
+	ADD_SIGNAL(MethodInfo("user_presence_changed", PropertyInfo(Variant::BOOL, "is_user_present")));
+
+	ClassDB::bind_method(D_METHOD("is_user_presence_supported"), &OpenXRInterface::is_user_presence_supported);
+	ClassDB::bind_method(D_METHOD("is_user_present"), &OpenXRInterface::is_user_present);
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -1446,6 +1453,26 @@ OpenXRInterface::SessionState OpenXRInterface::get_session_state() {
 	}
 
 	return SESSION_STATE_UNKNOWN;
+}
+
+/** User Presence. */
+bool OpenXRInterface::is_user_presence_supported() const {
+	if (!openxr_api || !openxr_api->is_initialized()) {
+		return false;
+	} else {
+		OpenXRUserPresenceExtension *user_presence_ext = OpenXRUserPresenceExtension::get_singleton();
+		return user_presence_ext && user_presence_ext->is_active();
+	}
+}
+
+bool OpenXRInterface::is_user_present() const {
+	// If extension is unavailable or unsupported, we default to user is present.
+	if (!is_user_presence_supported()) {
+		return true;
+	} else {
+		OpenXRUserPresenceExtension *user_presence_ext = OpenXRUserPresenceExtension::get_singleton();
+		return user_presence_ext->is_user_present();
+	}
 }
 
 /** Hand tracking. */

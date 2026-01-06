@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRUserPresenceExtension" inherits="OpenXRExtensionWrapper" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		This class implements the OpenXR User Presence Extension.
+	</brief_description>
+	<description>
+		This class implements the OpenXR User Presence Extension.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
