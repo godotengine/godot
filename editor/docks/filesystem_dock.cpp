@@ -2214,6 +2214,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Show the file/folder in the OS explorer.
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
@@ -2224,6 +2227,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_OPEN_EXTERNAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
@@ -2261,6 +2267,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
