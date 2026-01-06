@@ -106,10 +106,4 @@ void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringN
 	if (!p_import_params.has("fbx/importer")) {
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF;
 	}
-	if (!p_import_params.has("fbx/naming_version")) {
-		// If a .fbx's existing import file is missing the FBX
-		// naming compatibility version, we need to use version 1.
-		// Version 1 is the behavior before this option was added.
-		p_import_params["fbx/naming_version"] = 1;
-	}
 }
