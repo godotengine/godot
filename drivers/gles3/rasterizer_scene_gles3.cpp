@@ -2597,7 +2597,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		//pre z pass
 
 		if (render_data.render_region != Rect2i()) {
-			glViewport(render_data.render_region.position.x, render_data.render_region.position.y, render_data.render_region.size.width, render_data.render_region.size.height);
+			int32_t start_y = flip_y ? render_data.render_region.position.y : (rb->internal_size.y - (render_data.render_region.position.y + render_data.render_region.size.height));
+			glViewport(render_data.render_region.position.x, start_y, render_data.render_region.size.width, render_data.render_region.size.height);
 		}
 
 		scene_state.enable_gl_depth_test(true);
@@ -2685,7 +2686,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	uint64_t spec_constant_base_flags = 0;
 
 	if (render_data.render_region != Rect2i()) {
-		glViewport(render_data.render_region.position.x, render_data.render_region.position.y, render_data.render_region.size.width, render_data.render_region.size.height);
+		int32_t start_y = flip_y ? render_data.render_region.position.y : (rb->internal_size.y - (render_data.render_region.position.y + render_data.render_region.size.height));
+		glViewport(render_data.render_region.position.x, start_y, render_data.render_region.size.width, render_data.render_region.size.height);
 	}
 
 	{
