@@ -2424,6 +2424,17 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
+						if (instance->array_index >= 0) {
+							int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+							if (vis_idx != -1) {
+								const InstanceVisibilityData &vis = p_scenario->instance_visibility[vis_idx];
+								float dist = p_cam_transform.origin.distance_to(vis.position);
+								if ((vis.range_end > 0.0f && dist > vis.range_end) || (vis.range_begin > 0.0f && dist < vis.range_begin)) {
+									continue;
+								}
+							}
+						}
+
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
@@ -2506,6 +2517,17 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 							}
 						}
 
+						if (instance->array_index >= 0) {
+							int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+							if (vis_idx != -1) {
+								const InstanceVisibilityData &vis = p_scenario->instance_visibility[vis_idx];
+								float dist = p_cam_transform.origin.distance_to(vis.position);
+								if ((vis.range_end > 0.0f && dist > vis.range_end) || (vis.range_begin > 0.0f && dist < vis.range_begin)) {
+									continue;
+								}
+							}
+						}
+
 						shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 					}
 
@@ -2574,6 +2596,18 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						RSG::mesh_storage->mesh_instance_check_for_update(instance->mesh_instance);
 					}
 				}
+
+				if (instance->array_index >= 0) {
+					int32_t vis_idx = p_scenario->instance_data[instance->array_index].visibility_index;
+					if (vis_idx != -1) {
+						const InstanceVisibilityData &vis = p_scenario->instance_visibility[vis_idx];
+						float dist = p_cam_transform.origin.distance_to(vis.position);
+						if ((vis.range_end > 0.0f && dist > vis.range_end) || (vis.range_begin > 0.0f && dist < vis.range_begin)) {
+							continue;
+						}
+					}
+				}
+
 				shadow_data.instances.push_back(static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance);
 			}
 
