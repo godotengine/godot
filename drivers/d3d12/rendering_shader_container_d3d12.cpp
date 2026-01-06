@@ -66,6 +66,9 @@ GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'boo
 #include <spirv_to_dxil.h>
 extern "C" {
 #include <dxil_spirv_nir.h>
+
+void dxil_reassign_driver_locations(nir_shader *s, nir_variable_mode modes,
+		uint64_t other_stage_mask, const BITSET_WORD *other_stage_frac_mask);
 }
 
 GODOT_GCC_WARNING_POP
@@ -430,6 +433,10 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				break;
 			}
 		}
+		if (prev_shader) {
+			dxil_spirv_metadata dxil_metadata = {};
+			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &dxil_metadata);
+		}
 		// There is a bug in the Direct3D runtime during creation of a PSO with view instancing. If a fragment
 		// shader uses front/back face detection (SV_IsFrontFace), its signature must include the pixel position
 		// builtin variable (SV_Position), otherwise an Internal Runtime error will occur.
@@ -448,11 +455,12 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				nir_variable *const pos = nir_variable_create(shader, nir_var_shader_in, glsl_vec4_type(), "gl_FragCoord");
 				pos->data.location = VARYING_SLOT_POS;
 				shader->info.inputs_read |= VARYING_BIT_POS;
+
+				if (prev_shader) {
+					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, NULL);
+					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, NULL);
+				}
 			}
-		}
-		if (prev_shader) {
-			dxil_spirv_metadata dxil_metadata = {};
-			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &dxil_metadata);
 		}
 	}
 
