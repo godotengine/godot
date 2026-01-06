@@ -1069,6 +1069,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
 	bool test_rd_support = false;
+	String test_gl_driver;
 #endif
 	bool skip_breakpoints = false;
 	bool ignore_error_breaks = false;
@@ -1840,6 +1841,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			test_rd_support = true;
 		} else if (arg == "--test-rd-creation") {
 			test_rd_creation = true;
+			if (N) {
+				test_gl_driver = N->get();
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing GL driver argument, aborting.\n");
+				goto error;
+			}
 #endif // defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--remote-debug") {
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
@@ -2129,7 +2137,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Test OpenGL context and Rendering Device simultaneous creation and exit.
 
 		OS::get_singleton()->set_crash_handler_silent();
-		if (OS::get_singleton()->_test_create_rendering_device_and_gl(display_driver)) {
+		if (OS::get_singleton()->_test_create_rendering_device_and_gl(display_driver, test_gl_driver)) {
 			exit_err = ERR_HELP;
 		} else {
 			exit_err = ERR_UNAVAILABLE;

@@ -39,6 +39,8 @@
 
 class Texture2D;
 class AccessibilityDriver;
+class RenderingDevice;
+class RenderingContextDriver;
 
 class DisplayServer : public Object {
 	GDCLASS(DisplayServer, Object)
@@ -898,8 +900,13 @@ public:
 	static inline RenderingDeviceCreationStatus created_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
 	static bool can_create_rendering_device();
 
+private:
+	static RenderingContextDriver *local_rcd;
+
+public:
 	static inline RenderingDeviceCreationStatus supported_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
 	static bool is_rendering_device_supported();
+	static RenderingDevice *create_local_rendering_device_with_fallback();
 
 	DisplayServer();
 	~DisplayServer();

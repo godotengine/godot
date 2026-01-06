@@ -47,6 +47,7 @@
 #endif
 
 DisplayServer *DisplayServer::singleton = nullptr;
+RenderingContextDriver *DisplayServer::local_rcd = nullptr;
 
 DisplayServer::AccessibilityMode DisplayServer::accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
 
@@ -1968,6 +1969,58 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 
+RenderingDevice *DisplayServer::create_local_rendering_device_with_fallback() {
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	if (rd == nullptr) {
+#ifdef METAL_ENABLED
+		if (local_rcd == nullptr) {
+			GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
+			// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+			local_rcd = memnew(RenderingContextDriverMetal);
+			if (local_rcd) {
+				if (local_rcd->initialize() != OK) {
+					memdelete(local_rcd);
+					local_rcd = nullptr;
+				}
+			}
+			GODOT_CLANG_WARNING_POP
+		}
+#endif
+#ifdef D3D12_ENABLED
+		if (local_rcd == nullptr) {
+			local_rcd = memnew(RenderingContextDriverD3D12);
+			if (local_rcd) {
+				if (local_rcd->initialize() != OK) {
+					memdelete(local_rcd);
+					local_rcd = nullptr;
+				}
+			}
+		}
+#endif
+#if defined(VULKAN_ENABLED)
+		if (local_rcd == nullptr) {
+			local_rcd = memnew(RenderingContextDriverVulkan);
+			if (local_rcd) {
+				if (local_rcd->initialize() != OK) {
+					memdelete(local_rcd);
+					local_rcd = nullptr;
+				}
+			}
+		}
+#endif
+		if (local_rcd != nullptr) {
+			rd = memnew(RenderingDevice);
+			if (rd != nullptr) {
+				if (rd->initialize(local_rcd) != OK) {
+					memdelete(rd);
+					rd = nullptr;
+				}
+			}
+		}
+	}
+	return rd;
+}
+
 bool DisplayServer::is_rendering_device_supported() {
 #if defined(RD_ENABLED)
 	RenderingDevice *device = RenderingDevice::get_singleton();
@@ -1981,8 +2034,6 @@ bool DisplayServer::is_rendering_device_supported() {
 		return false;
 	}
 
-	Error err;
-
 #if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
 	// On some drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
 	List<String> arguments;
@@ -1994,58 +2045,25 @@ bool DisplayServer::is_rendering_device_supported() {
 
 	String pipe;
 	int exitcode = 0;
-	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	Error err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
 	if (err == OK && exitcode == 0) {
 		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
 		return true;
 	} else {
 		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
 	}
-#else // WINDOWS_ENABLED
+#else // defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
 
-	RenderingContextDriver *rcd = nullptr;
-
-#if defined(VULKAN_ENABLED)
-	rcd = memnew(RenderingContextDriverVulkan);
-#endif
-#ifdef D3D12_ENABLED
-	if (rcd == nullptr) {
-		rcd = memnew(RenderingContextDriverD3D12);
-	}
-#endif
-#ifdef METAL_ENABLED
-	if (rcd == nullptr) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
-		rcd = memnew(RenderingContextDriverMetal);
-		GODOT_CLANG_WARNING_POP
-	}
-#endif
-
-	if (rcd != nullptr) {
-		err = rcd->initialize();
-		if (err == OK) {
-			RenderingDevice *rd = memnew(RenderingDevice);
-			err = rd->initialize(rcd);
-			memdelete(rd);
-			rd = nullptr;
-			if (err == OK) {
-				// Creating a RenderingDevice is quite slow.
-				// Cache the result for future usage, so that it's much faster on subsequent calls.
-				supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
-				memdelete(rcd);
-				rcd = nullptr;
-				return true;
-			} else {
-				supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
-			}
-		}
-
-		memdelete(rcd);
-		rcd = nullptr;
+	RenderingDevice *rd = create_local_rendering_device_with_fallback();
+	if (rd) {
+		memdelete(rd);
+		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
 	}
 
-#endif // WINDOWS_ENABLED
+#endif // defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
 #endif // RD_ENABLED
 	return false;
 }
@@ -2067,16 +2085,15 @@ bool DisplayServer::can_create_rendering_device() {
 		return false;
 	}
 
-	Error err;
-
 #ifdef WINDOWS_ENABLED
 	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
 	List<String> arguments;
 	arguments.push_back("--test-rd-creation");
+	arguments.push_back(OS::get_singleton()->get_current_rendering_driver_name());
 
 	String pipe;
 	int exitcode = 0;
-	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	Error err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
 	if (err == OK && exitcode == 0) {
 		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
 		return true;
@@ -2085,48 +2102,14 @@ bool DisplayServer::can_create_rendering_device() {
 	}
 #else // WINDOWS_ENABLED
 
-	RenderingContextDriver *rcd = nullptr;
-
-#if defined(VULKAN_ENABLED)
-	rcd = memnew(RenderingContextDriverVulkan);
-#endif
-#ifdef D3D12_ENABLED
-	if (rcd == nullptr) {
-		rcd = memnew(RenderingContextDriverD3D12);
+	RenderingDevice *rd = create_local_rendering_device_with_fallback();
+	if (rd) {
+		memdelete(rd);
+		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
 	}
-#endif
-#ifdef METAL_ENABLED
-	if (rcd == nullptr) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
-		rcd = memnew(RenderingContextDriverMetal);
-		GODOT_CLANG_WARNING_POP
-	}
-#endif
-
-	if (rcd != nullptr) {
-		err = rcd->initialize();
-		if (err == OK) {
-			RenderingDevice *rd = memnew(RenderingDevice);
-			err = rd->initialize(rcd);
-			memdelete(rd);
-			rd = nullptr;
-			if (err == OK) {
-				// Creating a RenderingDevice is quite slow.
-				// Cache the result for future usage, so that it's much faster on subsequent calls.
-				created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
-				memdelete(rcd);
-				rcd = nullptr;
-				return true;
-			} else {
-				created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
-			}
-		}
-
-		memdelete(rcd);
-		rcd = nullptr;
-	}
-
 #endif // WINDOWS_ENABLED
 #endif // RD_ENABLED
 	return false;
@@ -2147,4 +2130,8 @@ DisplayServer::DisplayServer() {
 
 DisplayServer::~DisplayServer() {
 	singleton = nullptr;
+	if (local_rcd != nullptr) {
+		memdelete(local_rcd);
+		local_rcd = nullptr;
+	}
 }

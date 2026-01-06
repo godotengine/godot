@@ -377,7 +377,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
-	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver, const String &p_gl_driver) const { return true; }
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
 #endif
 

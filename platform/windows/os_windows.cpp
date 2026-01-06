@@ -70,6 +70,7 @@
 #endif
 
 #if defined(GLES3_ENABLED)
+#include "gl_manager_windows_angle.h"
 #include "gl_manager_windows_native.h"
 #endif
 
@@ -2664,12 +2665,12 @@ bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) c
 	Error err;
 	RenderingContextDriver *rcd = nullptr;
 
-#if defined(VULKAN_ENABLED)
-	rcd = memnew(RenderingContextDriverVulkan);
-#endif
 #ifdef D3D12_ENABLED
+	rcd = memnew(RenderingContextDriverD3D12);
+#endif
+#if defined(VULKAN_ENABLED)
 	if (rcd == nullptr) {
-		rcd = memnew(RenderingContextDriverD3D12);
+		rcd = memnew(RenderingContextDriverVulkan);
 	}
 #endif
 	if (rcd != nullptr) {
@@ -2691,7 +2692,7 @@ bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) c
 	return ok;
 }
 
-bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_driver, const String &p_gl_driver) const {
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 
 	WNDCLASSEXW wc_probe;
@@ -2720,11 +2721,22 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 
 	bool ok = true;
 #ifdef GLES3_ENABLED
-	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
-		RasterizerGLES3::make_current(true);
+	GLManagerANGLE_Windows *test_gl_manager_angle = nullptr;
+	GLManagerNative_Windows *test_gl_manager_native = nullptr;
+	if (p_gl_driver == "opengl3_angle") {
+		test_gl_manager_angle = memnew(GLManagerANGLE_Windows);
+		if (test_gl_manager_angle->window_create(DisplayServer::MAIN_WINDOW_ID, nullptr, hWnd, 800, 600) == OK) {
+			RasterizerGLES3::make_current(true);
+		} else {
+			ok = false;
+		}
 	} else {
-		ok = false;
+		test_gl_manager_native = memnew(GLManagerNative_Windows);
+		if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+			RasterizerGLES3::make_current(true);
+		} else {
+			ok = false;
+		}
 	}
 #endif
 
@@ -2739,6 +2751,9 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	}
 
 #ifdef GLES3_ENABLED
+	if (test_gl_manager_angle) {
+		memdelete(test_gl_manager_angle);
+	}
 	if (test_gl_manager_native) {
 		memdelete(test_gl_manager_native);
 	}

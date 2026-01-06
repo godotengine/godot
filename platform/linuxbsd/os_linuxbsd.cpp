@@ -1259,7 +1259,7 @@ bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) 
 	return ok;
 }
 
-bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
+bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_driver, const String &p_gl_driver) const {
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some drivers.
 
 #ifdef GLES3_ENABLED
