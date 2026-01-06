@@ -1,8 +1,9 @@
+using Godot.NativeInterop;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using Godot.NativeInterop;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -25,16 +26,19 @@ namespace Godot
         /// <summary>
         /// The color's red component, typically on the range of 0 to 1.
         /// </summary>
+        [JsonInclude]
         public float R;
 
         /// <summary>
         /// The color's green component, typically on the range of 0 to 1.
         /// </summary>
+        [JsonInclude]
         public float G;
 
         /// <summary>
         /// The color's blue component, typically on the range of 0 to 1.
         /// </summary>
+        [JsonInclude]
         public float B;
 
         /// <summary>
@@ -42,12 +46,14 @@ namespace Godot
 		/// A value of 0 means that the color is fully transparent.
 		/// A value of 1 means that the color is fully opaque.
         /// </summary>
+        [JsonInclude]
         public float A;
 
         /// <summary>
         /// Wrapper for <see cref="R"/> that uses the range 0 to 255 instead of 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        [JsonIgnore]
         public int R8
         {
             readonly get
@@ -64,6 +70,7 @@ namespace Godot
         /// Wrapper for <see cref="G"/> that uses the range 0 to 255 instead of 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        [JsonIgnore]
         public int G8
         {
             readonly get
@@ -80,6 +87,7 @@ namespace Godot
         /// Wrapper for <see cref="B"/> that uses the range 0 to 255 instead of 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        [JsonIgnore]
         public int B8
         {
             readonly get
@@ -96,6 +104,7 @@ namespace Godot
         /// Wrapper for <see cref="A"/> that uses the range 0 to 255 instead of 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to multiplying by 255 and rounding. Setting is equivalent to dividing by 255.</value>
+        [JsonIgnore]
         public int A8
         {
             readonly get
@@ -112,6 +121,7 @@ namespace Godot
         /// The HSV hue of this color, on the range 0 to 1.
         /// </summary>
         /// <value>Getting is a long process, refer to the source code for details. Setting uses <see cref="FromHsv"/>.</value>
+        [JsonIgnore]
         public float H
         {
             readonly get
@@ -160,6 +170,7 @@ namespace Godot
         /// The HSV saturation of this color, on the range 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to the ratio between the min and max RGB value. Setting uses <see cref="FromHsv"/>.</value>
+        [JsonIgnore]
         public float S
         {
             readonly get
@@ -181,6 +192,7 @@ namespace Godot
         /// The HSV value (brightness) of this color, on the range 0 to 1.
         /// </summary>
         /// <value>Getting is equivalent to using <see cref="Math.Max(float, float)"/> on the RGB components. Setting uses <see cref="FromHsv"/>.</value>
+        [JsonIgnore]
         public float V
         {
             readonly get
@@ -196,6 +208,7 @@ namespace Godot
         /// <summary>
         /// The OKHSL hue of this color, on the range 0 to 1.
         /// </summary>
+        [JsonIgnore]
         public float OkHslH
         {
             readonly get
@@ -211,6 +224,7 @@ namespace Godot
         /// <summary>
         /// The OKHSL saturation of this color, on the range 0 to 1.
         /// </summary>
+        [JsonIgnore]
         public float OkHslS
         {
             readonly get
@@ -226,6 +240,7 @@ namespace Godot
         /// <summary>
         /// The OKHSL lightness of this color, on the range 0 to 1.
         /// </summary>
+        [JsonIgnore]
         public float OkHslL
         {
             readonly get
@@ -246,6 +261,7 @@ namespace Godot
         /// return an accurate relative luminance value. If the color is in the sRGB color space
         /// use <see cref="SrgbToLinear"/> to convert it to the linear color space first.
         /// </summary>
+        [JsonIgnore]
         public readonly float Luminance
         {
             get { return 0.2126f * R + 0.7152f * G + 0.0722f * B; }
@@ -260,6 +276,7 @@ namespace Godot
         /// <c>[2]</c> is equivalent to <see cref="B"/>,
         /// <c>[3]</c> is equivalent to <see cref="A"/>.
         /// </value>
+        [JsonIgnore]
         public float this[int index]
         {
             readonly get
