@@ -2541,6 +2541,18 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	debugger_panel_style->set_border_width(SIDE_BOTTOM, 0);
 	p_theme->set_stylebox("DebuggerPanel", EditorStringName(EditorStyles), debugger_panel_style);
 
+	// ObjectDB.
+	{
+		Ref<StyleBoxFlat> style_content_wrapper = p_config.panel_container_style->duplicate();
+		style_content_wrapper->set_draw_center(true);
+		style_content_wrapper->set_bg_color(p_config.dark_color_2);
+		p_theme->set_stylebox("ObjectDBContentWrapper", EditorStringName(EditorStyles), style_content_wrapper);
+
+		Ref<StyleBoxFlat> style_title = style_content_wrapper->duplicate();
+		style_title->set_bg_color(p_config.dark_color_3);
+		p_theme->set_stylebox("ObjectDBTitle", EditorStringName(EditorStyles), style_title);
+	}
+
 	// Resource and node editors.
 	{
 		// TextureRegion editor.

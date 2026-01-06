@@ -82,6 +82,7 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	refs_list->set_hide_root(true);
 	refs_list->set_columns(diff_data ? 7 : 6);
 	refs_list->set_column_titles_visible(true);
+	refs_list->set_theme_type_variation("TreeSecondary");
 
 	if (diff_data) {
 		refs_list->set_column_title(0, TTRC("Snapshot"));
