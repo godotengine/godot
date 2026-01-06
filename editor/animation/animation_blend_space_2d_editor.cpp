@@ -49,6 +49,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/main/window.h"
@@ -126,9 +127,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			List<StringName> names;
-			tree->get_animation_list(&names);
-			for (const StringName &E : names) {
+			for (const StringName &E : tree->get_sorted_animation_list()) {
 				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
 				animations_to_add.push_back(E);
 			}
@@ -813,7 +812,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
 			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
@@ -835,22 +834,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 				return;
 			}
 
-			String error;
-
-			error = tree->get_editor_error_message();
-
-			if (error.is_empty() && blend_space->get_triangle_count() == 0) {
-				error = TTR("No triangles exist, so no blending can take place.");
-			}
-
-			if (error != error_label->get_text()) {
-				error_label->set_text(error);
-				if (!error.is_empty()) {
-					error_panel->show();
-				} else {
-					error_panel->hide();
-				}
-			}
+			update_error_message(tree, error_panel, error_label);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1096,8 +1080,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
-	error_label = memnew(Label);
-	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	error_label = create_error_label_node();
 	error_panel->add_child(error_label);
 	error_panel->hide();
 

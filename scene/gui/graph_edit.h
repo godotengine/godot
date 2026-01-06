@@ -529,6 +529,7 @@ public:
 	bool is_connection_lines_antialiased() const;
 
 	HBoxContainer *get_menu_hbox();
+	void pan_to(const Vector2 &p_scroll_vec);
 	Ref<ViewPanner> get_panner();
 	void set_warped_panning(bool p_warped);
 	void update_warped_panning();

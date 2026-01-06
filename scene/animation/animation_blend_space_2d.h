@@ -93,10 +93,12 @@ protected:
 	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	void validate_node(const AnimationTree *p_tree, const StringName &p_path) const override;
+
+	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual void get_child_nodes(LocalVector<ChildNode> *r_child_nodes) override;
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
@@ -127,7 +129,7 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);

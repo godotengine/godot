@@ -74,7 +74,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Control *blend_space_draw = nullptr;
 
 	PanelContainer *error_panel = nullptr;
-	Label *error_label = nullptr;
+	RichTextLabel *error_label = nullptr;
 
 	bool updating = false;
 
@@ -91,7 +91,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
 	PopupMenu *menu = nullptr;
 	PopupMenu *animations_menu = nullptr;
-	Vector<String> animations_to_add;
+	Vector<StringName> animations_to_add;
 	float add_point_pos = 0.0f;
 	Vector<real_t> points;
 
