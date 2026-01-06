@@ -92,6 +92,7 @@ func _init():
 }
 
 TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
+	GDScriptLanguage::get_singleton()->init();
 	const String path = TestUtils::get_temp_path("gdscript_load_test.gd");
 
 	{
