@@ -2125,7 +2125,7 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 		}
 	}
 
-	TileMapLayer *new_tile_map_layer = ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
+	TileMapLayer *new_tile_map_layer = ObjectDB::get_instance<TileMapLayer>(p_tile_map_layer_id);
 	Ref<TileSet> new_tile_set;
 	if (new_tile_map_layer) {
 		new_tile_set = new_tile_map_layer->get_tile_set();
