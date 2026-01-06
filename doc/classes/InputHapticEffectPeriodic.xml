@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectPeriodic" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect that represents a periodic force.
+	</brief_description>
+	<description>
+		A haptic effect that represents a periodic force. The type can be one either [constant InputHapticEffect.HAPTIC_EFFECT_SINE], [constant InputHapticEffect.HAPTIC_EFFECT_SQUARE], [constant InputHapticEffect.HAPTIC_EFFECT_TRIANGLE], [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_UP], or [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_DOWN].
+		You can apply an envelope to a constant force to give it shape, see also [member attack_length], [member attack_level], [member fade_length] and [member fade_level].
+		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_effect_type">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="InputHapticEffect.Type" />
+			<description>
+				Sets the haptic effect type.
+				The type for a periodic haptic effect can be either [constant InputHapticEffect.HAPTIC_EFFECT_SINE], [constant InputHapticEffect.HAPTIC_EFFECT_SQUARE], [constant InputHapticEffect.HAPTIC_EFFECT_TRIANGLE], [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_UP], or [constant InputHapticEffect.HAPTIC_EFFECT_SAWTOOTH_DOWN].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="attack_length" type="float" setter="set_attack_length" getter="get_attack_length" default="1.0">
+			Attack time, in seconds.
+		</member>
+		<member name="attack_level" type="float" setter="set_attack_level" getter="get_attack_level" default="0.5">
+			Initial attack level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="fade_length" type="float" setter="set_fade_length" getter="get_fade_length" default="1.0">
+			Fade time, in seconds.
+		</member>
+		<member name="fade_level" type="float" setter="set_fade_level" getter="get_fade_level" default="0.5">
+			Fade level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="magnitude" type="float" setter="set_magnitude" getter="get_magnitude" default="1.0">
+			Magnitude of the effect (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="offset" type="float" setter="set_offset" getter="get_offset" default="0.0">
+			Offset of the effect (between [code]-1.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="period" type="float" setter="set_period" getter="get_period" default="1.0">
+			Period of the effect, in seconds.
+		</member>
+		<member name="phase" type="float" setter="set_phase" getter="get_phase" default="0.0">
+			Phase of the effect, in radians.
+		</member>
+	</members>
+</class>

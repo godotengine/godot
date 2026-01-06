@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffect" inherits="RefCounted" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for input haptic (force feedback) effects.
+	</brief_description>
+	<description>
+		Abstract base class of all types of input haptic (force feedback) effects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_effect_type" qualifiers="const">
+			<return type="int" enum="InputHapticEffect.Type" />
+			<description>
+				Returns the haptic effect type.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="direction" type="Vector3i" setter="set_direction" getter="get_direction" default="Vector3i(1,0,0)">
+			Direction of the effect expressed in cartesian coordinates.
+			Cartesian coordinates are similar to 3D vectors.
+			If you draw a straight line on graph paper with an origin of [code](0, 0)[/code] at the center of the page, the direction of the line can be defined by the coordinates of any intersection that it crosses, regardless of the distance from the origin.
+			A direction of [code](1, -2)[/code] and a direction of [code](5, -10)[/code] are exactly the same.
+			[b]Note:[/b] The coordinates used in creating force-feedback effects define only direction, not magnitude or distance.
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee417536(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="duration" type="float" setter="set_duration" getter="get_duration" default="1.0">
+			Duration of the effect, in seconds.
+		</member>
+	</members>
+	<constants>
+		<constant name="HAPTIC_EFFECT_CONSTANT" value="0" enum="Type">
+			A haptic effect that represents a constant force. See also [InputHapticEffectConstant].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416339(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_SINE" value="1" enum="Type">
+			A haptic effect that represents a periodic force with sine waveform. See also [InputHapticEffectPeriodic].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_SQUARE" value="2" enum="Type">
+			A haptic effect that represents a periodic force with square waveform. See also [InputHapticEffectPeriodic].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_TRIANGLE" value="3" enum="Type">
+			A haptic effect that represents a periodic force with triangle waveform. See also [InputHapticEffectPeriodic].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_SAWTOOTH_UP" value="4" enum="Type">
+			A haptic effect that represents a periodic force with sawtooth up waveform (the waveform drops vertically after it reaches maximum positive force). See also [InputHapticEffectPeriodic].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_SAWTOOTH_DOWN" value="5" enum="Type">
+			A haptic effect that represents a periodic force with sawtooth down waveform (the waveform rises vertically after it reaches maximum negative force). See also [InputHapticEffectPeriodic].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418719(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_RAMP" value="6" enum="Type">
+			A haptic effect that represents a ramp force. See also [InputHapticEffectRamp].
+			A ramp force is a force with defined starting and ending magnitudes and a finite duration. A ramp force can continue in a single direction, or it can start as a strong push in one direction, weaken, stop, and then strengthen in the opposite direction.
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418773(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_SPRING" value="7" enum="Type">
+			A haptic effect that represents a conditional force with spring condition effect (the force increases in proportion to the distance of the axis from a defined neutral point). See also [InputHapticEffectCondition].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_DAMPER" value="8" enum="Type">
+			A haptic effect that represents a conditional force with damper condition effect (the force increases in proportion to the velocity with which the user moves the axis). See also [InputHapticEffectCondition].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_INERTIA" value="9" enum="Type">
+			A haptic effect that represents a conditional force with inertia condition effect (the force increases in proportion to the acceleration of the axis). See also [InputHapticEffectCondition].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_FRICTION" value="10" enum="Type">
+			A haptic effect that represents a conditional force with friction condition effect (the force is applied when the axis is moved and depends on the defined friction coefficient). See also [InputHapticEffectCondition].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+		<constant name="HAPTIC_EFFECT_LEFT_RIGHT" value="11" enum="Type">
+			A haptic effect for direct control over high/low frequency motors. See also [InputHapticEffectLeftRight].
+		</constant>
+		<constant name="HAPTIC_EFFECT_CUSTOM" value="12" enum="Type">
+			A haptic effect that represents a custom force. See also [InputHapticEffectCustom].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416371(v=vs.85)]DirectInput documentation[/url] for more information.
+		</constant>
+	</constants>
+</class>

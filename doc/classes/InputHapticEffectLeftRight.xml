@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectLeftRight" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect for direct control over high/low frequency motors.
+	</brief_description>
+	<description>
+		A haptic effect for direct control over high/low frequency motors (with type of [constant InputHapticEffect.HAPTIC_EFFECT_LEFT_RIGHT]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="large_magnitude" type="float" setter="set_large_magnitude" getter="get_large_magnitude" default="0.5">
+			Control of the large controller motor (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="small_magnitude" type="float" setter="set_small_magnitude" getter="get_small_magnitude" default="0.5">
+			Control of the small controller motor (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+	</members>
+</class>

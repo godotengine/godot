@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectConstant" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect that represents a constant force.
+	</brief_description>
+	<description>
+		A haptic effect that represents a constant force (with type of [constant InputHapticEffect.HAPTIC_EFFECT_CONSTANT]). A constant force is a force with a defined magnitude and duration.
+		You can apply an envelope to a constant force to give it shape, see also [member attack_length], [member attack_level], [member fade_length] and [member fade_level].
+		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416339(v=vs.85)]DirectInput documentation[/url] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attack_length" type="float" setter="set_attack_length" getter="get_attack_length" default="1.0">
+			Attack time, in seconds.
+		</member>
+		<member name="attack_level" type="float" setter="set_attack_level" getter="get_attack_level" default="0.5">
+			Initial attack level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="fade_length" type="float" setter="set_fade_length" getter="get_fade_length" default="1.0">
+			Fade time, in seconds.
+		</member>
+		<member name="fade_level" type="float" setter="set_fade_level" getter="get_fade_level" default="0.5">
+			Fade level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="force" type="float" setter="set_force" getter="get_force" default="0.5">
+			Nominal magnitude of the effect (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+	</members>
+</class>

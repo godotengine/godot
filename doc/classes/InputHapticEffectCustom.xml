@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectCustom" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect that represents a custom force.
+	</brief_description>
+	<description>
+		A haptic effect that represents a custom force (with type of [constant InputHapticEffect.HAPTIC_EFFECT_CUSTOM]).
+		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416371(v=vs.85)]DirectInput documentation[/url] and [url=https://wiki.libsdl.org/SDL3/SDL_HapticCustom]SDL documentation[/url] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attack_length" type="float" setter="set_attack_length" getter="get_attack_length" default="1.0">
+			Attack time, in seconds.
+		</member>
+		<member name="attack_level" type="float" setter="set_attack_level" getter="get_attack_level" default="0.5">
+			Initial attack level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="channels" type="int" setter="set_channels" getter="get_channels" default="0">
+			Axes to use, minimum of one.
+		</member>
+		<member name="data" type="PackedInt32Array" setter="set_data" getter="get_data" default="PackedInt32Array()">
+			Sample data, should contain [member channels]*[member samples] items.
+		</member>
+		<member name="fade_length" type="float" setter="set_fade_length" getter="get_fade_length" default="1.0">
+			Fade time, in seconds.
+		</member>
+		<member name="fade_level" type="float" setter="set_fade_level" getter="get_fade_level" default="0.5">
+			Fade level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="period" type="float" setter="set_period" getter="get_period" default="0.0">
+			Period of the effect, in seconds.
+		</member>
+		<member name="samples" type="int" setter="set_samples" getter="get_samples" default="0">
+			Amount of samples.
+		</member>
+	</members>
+</class>

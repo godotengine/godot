@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectRamp" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect that represents a ramp force.
+	</brief_description>
+	<description>
+		A haptic effect that represents a ramp force (with type of [constant InputHapticEffect.HAPTIC_EFFECT_RAMP]).
+		A ramp force is a force with defined starting and ending magnitudes and a finite duration. A ramp force can continue in a single direction, or it can start as a strong push in one direction, weaken, stop, and then strengthen in the opposite direction.
+		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418773(v=vs.85)]DirectInput documentation[/url] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="attack_length" type="float" setter="set_attack_length" getter="get_attack_length" default="1.0">
+			Attack time, in seconds.
+		</member>
+		<member name="attack_level" type="float" setter="set_attack_level" getter="get_attack_level" default="0.5">
+			Initial attack level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="end_strength" type="float" setter="set_end_strength" getter="get_end_strength" default="1.0">
+			Finishing strength of the effect (between [code]-1.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="fade_length" type="float" setter="set_fade_length" getter="get_fade_length" default="1.0">
+			Fade time, in seconds.
+		</member>
+		<member name="fade_level" type="float" setter="set_fade_level" getter="get_fade_level" default="0.5">
+			Fade level (between [code]0.0[/code] and [code]1.0[/code]).
+		</member>
+		<member name="start_strength" type="float" setter="set_start_strength" getter="get_start_strength" default="0.0">
+			Starting strength of the effect (between [code]-1.0[/code] and [code]1.0[/code]).
+		</member>
+	</members>
+</class>

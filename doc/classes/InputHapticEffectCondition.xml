@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputHapticEffectCondition" inherits="InputHapticEffect" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A haptic effect that represents a conditional force.
+	</brief_description>
+	<description>
+		A haptic effect that represents a conditional force. The type can be one either [constant InputHapticEffect.HAPTIC_EFFECT_SPRING], [constant InputHapticEffect.HAPTIC_EFFECT_DAMPER], [constant InputHapticEffect.HAPTIC_EFFECT_INERTIA], or [constant InputHapticEffect.HAPTIC_EFFECT_FRICTION].
+		Conditions are forces applied in response to current sensor values within the device. In other words, conditions require information about device motion, such as position or velocity of a joystick handle.
+		In general, conditions are not associated with individual events during a game or other application. They represent ambient phenomena, such as the stiffness or looseness of a flight stick, or the tendency of a steering wheel to return to a straight-ahead position.
+		A condition does not have a predefined magnitude. The magnitude is scaled in proportion to the movement or position of the input object.
+		[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_effect_type">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="InputHapticEffect.Type" />
+			<description>
+				Sets the haptic effect type.
+				The type for a conditional haptic effect can be either [constant InputHapticEffect.HAPTIC_EFFECT_SPRING], [constant InputHapticEffect.HAPTIC_EFFECT_DAMPER], [constant InputHapticEffect.HAPTIC_EFFECT_INERTIA], or [constant InputHapticEffect.HAPTIC_EFFECT_FRICTION].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="center" type="Vector3" setter="set_center" getter="get_center" default="Vector3(0, 0, 0)">
+			The offset from the zero reading of the appropriate sensor value at which the condition begins to be applied.
+			For a spring effect, the neutral point - that is, the point along the axis at which the spring would be considered at rest - would be defined by the offset for the condition.
+			For a damper, the offset would define the greatest velocity value for which damping force is zero.
+			Offset is not normally used for inertia or friction effects.
+			Each of the axis values are between between [code]-1.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="deadband" type="Vector3" setter="set_deadband" getter="get_deadband" default="Vector3(0, 0, 0)">
+			The deadband is a zone around the offset of an axis at which the condition is not active.
+			In the case of a spring that is at rest in the middle of an axis, the deadband enlarges this area of rest.
+			Not all devices support deadband.
+			Each of the axis values are between between [code]0.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="left_coef" type="Vector3" setter="set_left_coef" getter="get_left_coef" default="Vector3(0, 0, 0)">
+			A multiplier that scales the effect towards the negative side.
+			Each of the axis values are between between [code]-1.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="left_level" type="Vector3" setter="set_left_level" getter="get_left_level" default="Vector3(0, 0, 0)">
+			Level when joystick is at the negative side.
+			Each of the axis values are between between [code]0.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="right_coef" type="Vector3" setter="set_right_coef" getter="get_right_coef" default="Vector3(0, 0, 0)">
+			A multiplier that scales the effect towards the positive side.
+			Each of the axis values are between between [code]-1.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+		<member name="right_level" type="Vector3" setter="set_right_level" getter="get_right_level" default="Vector3(0, 0, 0)">
+			Level when joystick is at the positive side.
+			Each of the axis values are between between [code]0.0[/code] and [code]1.0[/code].
+			[b]Note:[/b] See [url=https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416335(v=vs.85)]DirectInput documentation[/url] for more information.
+		</member>
+	</members>
+</class>
