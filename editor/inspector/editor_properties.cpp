@@ -1548,6 +1548,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 
 	layers = memnew(PopupMenu);
 	add_child(layers);
+	layers->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyLayers::_menu_pressed));
 	layers->connect("popup_hide", callable_mp((BaseButton *)button, &BaseButton::set_pressed).bind(false));
