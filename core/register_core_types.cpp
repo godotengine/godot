@@ -41,6 +41,7 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/extension/godot_instance.h"
 #include "core/input/input.h"
+#include "core/input/input_haptic_effect.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
@@ -197,6 +198,12 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
 	GDREGISTER_CLASS(InputEventMIDI);
+	GDREGISTER_ABSTRACT_CLASS(InputHapticEffect);
+	GDREGISTER_CLASS(InputHapticEffectConstant);
+	GDREGISTER_CLASS(InputHapticEffectPeriodic);
+	GDREGISTER_CLASS(InputHapticEffectCondition);
+	GDREGISTER_CLASS(InputHapticEffectLeftRight);
+	GDREGISTER_CLASS(InputHapticEffectCustom);
 
 	// Network
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
