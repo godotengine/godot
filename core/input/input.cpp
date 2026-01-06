@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/default_controller_mappings.h"
+#include "core/input/input_haptic_effect.h"
 #include "core/input/input_map.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -161,6 +162,11 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("set_ignore_joypad_on_unfocused_application", "enable"), &Input::set_ignore_joypad_on_unfocused_application);
 	ClassDB::bind_method(D_METHOD("is_ignoring_joypad_on_unfocused_application"), &Input::is_ignoring_joypad_on_unfocused_application);
+	ClassDB::bind_method(D_METHOD("create_joy_haptic_effect", "device", "effect"), &Input::create_joy_haptic_effect);
+	ClassDB::bind_method(D_METHOD("start_joy_haptic_effect", "device", "effect_id"), &Input::start_joy_haptic_effect);
+	ClassDB::bind_method(D_METHOD("update_joy_haptic_effect", "device", "effect_id", "effect"), &Input::update_joy_haptic_effect);
+	ClassDB::bind_method(D_METHOD("stop_joy_haptic_effect", "device", "effect_id"), &Input::stop_joy_haptic_effect);
+	ClassDB::bind_method(D_METHOD("remove_joy_haptic_effect", "device", "effect_id"), &Input::remove_joy_haptic_effect);
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
 	ClassDB::bind_method(D_METHOD("get_magnetometer"), &Input::get_magnetometer);
@@ -1330,6 +1336,59 @@ void Input::set_ignore_joypad_on_unfocused_application(bool p_ignore) {
 
 bool Input::is_ignoring_joypad_on_unfocused_application() const {
 	return ignore_joypad_on_unfocused_application;
+}
+
+int Input::create_joy_haptic_effect(int p_device, RequiredParam<InputHapticEffect> rp_effect) {
+	_THREAD_SAFE_METHOD_
+
+	EXTRACT_PARAM_OR_FAIL_V(p_effect, rp_effect, -1);
+
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return -1;
+	}
+
+	return joypad->features->create_joy_haptic_effect(*p_effect.ptr());
+}
+
+void Input::start_joy_haptic_effect(int p_device, int p_effect_id) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return;
+	}
+
+	joypad->features->start_joy_haptic_effect(p_effect_id);
+}
+
+bool Input::update_joy_haptic_effect(int p_device, int p_effect_id, RequiredParam<InputHapticEffect> rp_effect) {
+	_THREAD_SAFE_METHOD_
+
+	EXTRACT_PARAM_OR_FAIL_V(p_effect, rp_effect, false);
+
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return false;
+	}
+
+	return joypad->features->update_joy_haptic_effect(p_effect_id, *p_effect.ptr());
+}
+
+void Input::stop_joy_haptic_effect(int p_device, int p_effect_id) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return;
+	}
+
+	joypad->features->stop_joy_haptic_effect(p_effect_id);
+}
+
+void Input::remove_joy_haptic_effect(int p_device, int p_effect_id) {
+	Joypad *joypad = joy_names.getptr(p_device);
+	if (joypad == nullptr || joypad->features == nullptr) {
+		return;
+	}
+
+	joypad->features->remove_joy_haptic_effect(p_effect_id);
 }
 
 void Input::set_gravity(const Vector3 &p_gravity) {
