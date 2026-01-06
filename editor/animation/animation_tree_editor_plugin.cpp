@@ -235,26 +235,19 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 	return false;
 }
 
-Vector<String> AnimationTreeEditor::get_animation_list() {
+LocalVector<StringName> AnimationTreeEditor::get_animation_list() {
 	// This can be called off the main thread due to resource preview generation. Quit early in that case.
 	if (!singleton->tree || !Thread::is_main_thread() || !singleton->is_visible()) {
 		// When tree is empty, singleton not in the main thread.
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
 	AnimationTree *tree = singleton->tree;
 	if (!tree) {
-		return Vector<String>();
+		return LocalVector<StringName>();
 	}
 
-	List<StringName> anims;
-	tree->get_animation_list(&anims);
-	Vector<String> ret;
-	for (const StringName &E : anims) {
-		ret.push_back(E);
-	}
-
-	return ret;
+	return tree->get_sorted_animation_list();
 }
 
 AnimationTreeEditor::AnimationTreeEditor() {

@@ -115,6 +115,15 @@ public:
 		virtual ~Track() {}
 	};
 
+	struct KeyCursor {
+		// Used by _interpolate to avoid binary searching every time.
+		int last_key_idx = -1;
+
+		_ALWAYS_INLINE_ void reset() {
+			last_key_idx = -1;
+		}
+	};
+
 private:
 	struct Key {
 		real_t transition = 1.0;
@@ -260,6 +269,30 @@ private:
 
 	inline int _find(const LocalVector<K> &p_keys, double p_time, bool p_backward = false, bool p_limit = false) const;
 
+	template <typename K>
+	inline int _find_from_hint(const LocalVector<K> &p_keys, double p_t, bool p_backward, int p_hint) const;
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ static void _warn_find_from_hint_failed(bool p_backward, double p_time, double p_first_key_time, double p_last_key_time, int p_key_count, int p_hint, int p_start_index, int p_end_index) {
+		const int delta = p_end_index - p_start_index;
+		constexpr int WARN_KEYS = 200;
+		if (unlikely(Math::abs(delta) > WARN_KEYS)) {
+			static const char *const message = R"(Animation::_find_from_hint failed after large scan
+	direction:	%s
+	time:	%f
+	first_key_time:	%f
+	last_key_time:	%f
+	key_count:	%d
+	hint:	%d
+	start_index:	%d
+	end_index:	%d
+	delta:	%d
+)";
+			const char *direction = p_backward ? "backward" : "forward";
+			print_verbose(vformat(message, direction, p_time, p_first_key_time, p_last_key_time, p_key_count, p_hint, p_start_index, p_end_index, delta));
+		}
+	}
+#endif
+
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Quaternion _interpolate(const Quaternion &p_a, const Quaternion &p_b, real_t p_c) const;
 	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, real_t p_c) const;
@@ -273,10 +306,10 @@ private:
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
 	template <typename T>
-	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
+	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false, KeyCursor *r_cursor = nullptr) const;
 
 	template <typename T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, LocalVector<int> *r_indices, bool p_is_backward) const;
 
 	double length = 1.0;
 	real_t step = DEFAULT_STEP;
@@ -364,7 +397,7 @@ private:
 	bool _fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const;
 	int _get_compressed_key_count(uint32_t p_compressed_track) const;
 	template <uint32_t COMPONENTS>
-	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const;
+	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, LocalVector<int> *r_indices) const;
 	_FORCE_INLINE_ Quaternion _uncompress_quaternion(const Vector3i &p_value) const;
 	_FORCE_INLINE_ Vector3 _uncompress_pos_scale(uint32_t p_compressed_track, const Vector3i &p_value) const;
 	_FORCE_INLINE_ float _uncompress_blend_shape(const Vector3i &p_value) const;
@@ -448,17 +481,17 @@ public:
 
 	int position_track_insert_key(int p_track, double p_time, const Vector3 &p_position);
 	Error position_track_get_key(int p_track, int p_key, Vector3 *r_position) const;
-	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Error try_position_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false, KeyCursor *r_cursor = nullptr) const;
 	Vector3 position_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int rotation_track_insert_key(int p_track, double p_time, const Quaternion &p_rotation);
 	Error rotation_track_get_key(int p_track, int p_key, Quaternion *r_rotation) const;
-	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation, bool p_backward = false) const;
+	Error try_rotation_track_interpolate(int p_track, double p_time, Quaternion *r_interpolation, bool p_backward = false, KeyCursor *r_cursor = nullptr) const;
 	Quaternion rotation_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int scale_track_insert_key(int p_track, double p_time, const Vector3 &p_scale);
 	Error scale_track_get_key(int p_track, int p_key, Vector3 *r_scale) const;
-	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false) const;
+	Error try_scale_track_interpolate(int p_track, double p_time, Vector3 *r_interpolation, bool p_backward = false, KeyCursor *r_cursor = nullptr) const;
 	Vector3 scale_track_interpolate(int p_track, double p_time, bool p_backward = false) const;
 
 	int blend_shape_track_insert_key(int p_track, double p_time, float p_blend);
@@ -512,7 +545,7 @@ public:
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, LocalVector<int> *r_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
 	void add_marker(const StringName &p_name, double p_time);
 	void remove_marker(const StringName &p_name);
@@ -525,11 +558,11 @@ public:
 	Color get_marker_color(const StringName &p_name) const;
 	void set_marker_color(const StringName &p_name, const Color &p_color);
 
-	void set_length(real_t p_length);
-	real_t get_length() const;
+	void set_length(double p_length);
+	_FORCE_INLINE_ double get_length() const { return length; }
 
 	void set_loop_mode(LoopMode p_loop_mode);
-	LoopMode get_loop_mode() const;
+	_FORCE_INLINE_ LoopMode get_loop_mode() const { return loop_mode; }
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
@@ -545,6 +578,7 @@ public:
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool needs_type_cast(const Variant &p_from, const Variant &p_to);
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
