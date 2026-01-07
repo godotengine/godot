@@ -32,9 +32,6 @@
 
 #include "core/math/math_funcs.h"
 
-AudioStreamSynchronized::AudioStreamSynchronized() {
-}
-
 Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
 	Ref<AudioStreamPlaybackSynchronized> playback_playlist;
 	playback_playlist.instantiate();
@@ -174,9 +171,6 @@ void AudioStreamSynchronized::_bind_methods() {
 
 //////////////////////
 //////////////////////
-
-AudioStreamPlaybackSynchronized::AudioStreamPlaybackSynchronized() {
-}
 
 AudioStreamPlaybackSynchronized::~AudioStreamPlaybackSynchronized() {
 	if (stream.is_valid()) {

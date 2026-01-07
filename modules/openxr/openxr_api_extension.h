@@ -130,8 +130,6 @@ public:
 
 	void set_emulate_environment_blend_mode_alpha_blend(bool p_enabled);
 	OpenXRAlphaBlendModeSupport is_environment_blend_mode_alpha_blend_supported();
-
-	OpenXRAPIExtension();
 };
 
 VARIANT_ENUM_CAST(OpenXRAPIExtension::OpenXRAlphaBlendModeSupport);

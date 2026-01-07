@@ -73,7 +73,6 @@ public:
 	virtual int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const override;
 	virtual int delete_port_mapping(int port, String proto = "UDP") const override;
 
-	UPNPDeviceMiniUPNP() {}
 	virtual ~UPNPDeviceMiniUPNP() {}
 };
 

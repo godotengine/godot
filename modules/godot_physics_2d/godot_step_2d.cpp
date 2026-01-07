@@ -302,6 +302,3 @@ GodotStep2D::GodotStep2D() {
 	constraint_islands.reserve(ISLAND_COUNT_RESERVE);
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);
 }
-
-GodotStep2D::~GodotStep2D() {
-}

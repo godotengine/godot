@@ -87,7 +87,6 @@ private:
 	Error _initialize(int p_self_id, NetworkMode p_mode, const Array &p_channels_config = Array());
 
 public:
-	WebRTCMultiplayerPeer() {}
 	~WebRTCMultiplayerPeer();
 
 	Error create_server(const Array &p_channels_config = Array());

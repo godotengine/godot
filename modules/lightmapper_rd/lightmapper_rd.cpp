@@ -2414,6 +2414,3 @@ Vector<Color> LightmapperRD::get_bake_probe_sh(int p_probe) const {
 	memcpy(ret.ptrw(), &probe_values[p_probe * 9], sizeof(Color) * 9);
 	return ret;
 }
-
-LightmapperRD::LightmapperRD() {
-}

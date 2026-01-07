@@ -118,9 +118,6 @@ public:
 
 	double get_heartbeat_interval() const;
 	void set_heartbeat_interval(double p_interval);
-
-	WebSocketPeer();
-	~WebSocketPeer();
 };
 
 VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);

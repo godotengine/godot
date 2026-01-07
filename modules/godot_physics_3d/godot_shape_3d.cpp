@@ -163,9 +163,6 @@ Variant GodotWorldBoundaryShape3D::get_data() const {
 	return plane;
 }
 
-GodotWorldBoundaryShape3D::GodotWorldBoundaryShape3D() {
-}
-
 //
 
 real_t GodotSeparationRayShape3D::get_length() const {
@@ -241,8 +238,6 @@ Variant GodotSeparationRayShape3D::get_data() const {
 	return d;
 }
 
-GodotSeparationRayShape3D::GodotSeparationRayShape3D() {}
-
 /********** SPHERE *************/
 
 real_t GodotSphereShape3D::get_radius() const {
@@ -304,8 +299,6 @@ void GodotSphereShape3D::set_data(const Variant &p_data) {
 Variant GodotSphereShape3D::get_data() const {
 	return radius;
 }
-
-GodotSphereShape3D::GodotSphereShape3D() {}
 
 /********** BOX *************/
 
@@ -489,8 +482,6 @@ Variant GodotBoxShape3D::get_data() const {
 	return half_extents;
 }
 
-GodotBoxShape3D::GodotBoxShape3D() {}
-
 /********** CAPSULE *************/
 
 void GodotCapsuleShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
@@ -650,8 +641,6 @@ Variant GodotCapsuleShape3D::get_data() const {
 	return d;
 }
 
-GodotCapsuleShape3D::GodotCapsuleShape3D() {}
-
 /********** CYLINDER *************/
 
 void GodotCylinderShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
@@ -802,8 +791,6 @@ Variant GodotCylinderShape3D::get_data() const {
 	d["height"] = height;
 	return d;
 }
-
-GodotCylinderShape3D::GodotCylinderShape3D() {}
 
 /********** CONVEX POLYGON *************/
 
@@ -1147,9 +1134,6 @@ Variant GodotConvexPolygonShape3D::get_data() const {
 		vertices.write[i] = mesh.vertices[i];
 	}
 	return vertices;
-}
-
-GodotConvexPolygonShape3D::GodotConvexPolygonShape3D() {
 }
 
 /********** FACE POLYGON *************/
@@ -1667,9 +1651,6 @@ Variant GodotConcavePolygonShape3D::get_data() const {
 	d["backface_collision"] = backface_collision;
 
 	return d;
-}
-
-GodotConcavePolygonShape3D::GodotConcavePolygonShape3D() {
 }
 
 /* HEIGHT MAP SHAPE */
@@ -2248,7 +2229,4 @@ Variant GodotHeightMapShape3D::get_data() const {
 	d["heights"] = heights;
 
 	return d;
-}
-
-GodotHeightMapShape3D::GodotHeightMapShape3D() {
 }

@@ -54,9 +54,6 @@ OpenXRCompositionLayerEquirect::OpenXRCompositionLayerEquirect() {
 	}
 }
 
-OpenXRCompositionLayerEquirect::~OpenXRCompositionLayerEquirect() {
-}
-
 void OpenXRCompositionLayerEquirect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &OpenXRCompositionLayerEquirect::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &OpenXRCompositionLayerEquirect::get_radius);

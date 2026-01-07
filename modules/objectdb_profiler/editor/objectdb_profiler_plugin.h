@@ -57,8 +57,6 @@ protected:
 	void _request_object_snapshot(int p_request_id);
 
 public:
-	ObjectDBProfilerDebuggerPlugin() {}
-
 	virtual bool has_capture(const String &p_capture) const override;
 	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
 	virtual void setup_session(int p_session_id) override;

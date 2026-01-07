@@ -111,6 +111,4 @@ public:
 	Node *spawn(const Variant &p_data = Variant());
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);
-
-	MultiplayerSpawner() {}
 };

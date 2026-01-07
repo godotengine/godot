@@ -36,10 +36,6 @@
 class OpenXRHapticBase : public Resource {
 	GDCLASS(OpenXRHapticBase, Resource);
 
-private:
-protected:
-	static void _bind_methods();
-
 public:
 	virtual const XrHapticBaseHeader *get_xr_structure() = 0;
 };

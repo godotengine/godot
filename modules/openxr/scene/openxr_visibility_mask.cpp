@@ -34,9 +34,6 @@
 #include "../openxr_interface.h"
 #include "scene/3d/xr/xr_nodes.h"
 
-void OpenXRVisibilityMask::_bind_methods() {
-}
-
 void OpenXRVisibilityMask::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

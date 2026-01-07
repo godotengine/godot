@@ -60,9 +60,6 @@ public:
 	void set_node_names(const PackedStringArray &p_node_names);
 	PackedStringArray get_node_names() const;
 	const String get_node_name(uint32_t p_node_index) const;
-
-	OpenXRRenderModelData();
-	~OpenXRRenderModelData();
 };
 
 class OpenXRRenderModelExtension : public OpenXRExtensionWrapper {

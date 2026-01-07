@@ -152,7 +152,6 @@ public:
 	void compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const;
 
 	GodotArea2D();
-	~GodotArea2D();
 };
 
 void GodotArea2D::add_body_to_query(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {

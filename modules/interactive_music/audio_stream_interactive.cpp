@@ -32,9 +32,6 @@
 
 #include "core/math/math_funcs.h"
 
-AudioStreamInteractive::AudioStreamInteractive() {
-}
-
 Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 	Ref<AudioStreamPlaybackInteractive> playback_transitioner;
 	playback_transitioner.instantiate();
@@ -537,12 +534,6 @@ void AudioStreamInteractive::_bind_methods() {
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
-AudioStreamPlaybackInteractive::AudioStreamPlaybackInteractive() {
-}
-
-AudioStreamPlaybackInteractive::~AudioStreamPlaybackInteractive() {
-}
-
 void AudioStreamPlaybackInteractive::stop() {
 	if (!active) {
 		return;

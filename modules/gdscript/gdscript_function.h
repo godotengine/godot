@@ -256,8 +256,6 @@ public:
 	GDScriptDataType(const GDScriptDataType &p_other) {
 		*this = p_other;
 	}
-
-	~GDScriptDataType() {}
 };
 
 class GDScriptFunction {

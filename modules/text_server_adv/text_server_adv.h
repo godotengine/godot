@@ -817,8 +817,6 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 protected:
-	static void _bind_methods() {}
-
 	void full_copy(ShapedTextDataAdvanced *p_shaped);
 	void invalidate(ShapedTextDataAdvanced *p_shaped, bool p_text = false);
 

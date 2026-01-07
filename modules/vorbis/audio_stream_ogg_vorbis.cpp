@@ -736,7 +736,3 @@ void AudioStreamOggVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
-
-AudioStreamOggVorbis::AudioStreamOggVorbis() {}
-
-AudioStreamOggVorbis::~AudioStreamOggVorbis() {}

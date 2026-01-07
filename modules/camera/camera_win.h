@@ -39,5 +39,4 @@ private:
 
 public:
 	CameraWindows();
-	~CameraWindows() {}
 };

@@ -104,7 +104,6 @@ public:
 	virtual bool was_string_packet() const override;
 	virtual void set_no_delay(bool p_enabled) override;
 
-	EMWSPeer();
 	~EMWSPeer();
 };
 

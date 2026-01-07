@@ -254,8 +254,6 @@ public:
 		DataType(const DataType &p_other) {
 			*this = p_other;
 		}
-
-		~DataType() {}
 	};
 
 	struct ParserError {

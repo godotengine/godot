@@ -824,7 +824,3 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 	}
 	return ERR_METHOD_NOT_FOUND;
 }
-
-GDScriptWorkspace::GDScriptWorkspace() {}
-
-GDScriptWorkspace::~GDScriptWorkspace() {}

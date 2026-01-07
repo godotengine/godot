@@ -235,9 +235,6 @@ void EMWSPeer::set_no_delay(bool p_enabled) {
 	ERR_FAIL_MSG("'set_no_delay' is not supported in Web export.");
 }
 
-EMWSPeer::EMWSPeer() {
-}
-
 EMWSPeer::~EMWSPeer() {
 	_clear();
 }

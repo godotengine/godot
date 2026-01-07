@@ -73,7 +73,6 @@ public:
 	virtual void close() = 0;
 
 	WebRTCDataChannel();
-	~WebRTCDataChannel();
 };
 
 VARIANT_ENUM_CAST(WebRTCDataChannel::WriteMode);

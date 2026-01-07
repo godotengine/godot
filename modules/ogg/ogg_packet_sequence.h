@@ -86,7 +86,6 @@ public:
 
 	Ref<OggPacketSequencePlayback> instantiate_playback();
 
-	OggPacketSequence() {}
 	virtual ~OggPacketSequence() {}
 };
 

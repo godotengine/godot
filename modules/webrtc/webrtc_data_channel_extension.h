@@ -70,6 +70,4 @@ public:
 	/** GDExtension **/
 	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
 	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
-
-	WebRTCDataChannelExtension() {}
 };

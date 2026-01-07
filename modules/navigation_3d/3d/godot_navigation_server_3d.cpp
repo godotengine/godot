@@ -80,8 +80,6 @@ using namespace NavigationDefaults3D;
 	}                                                                 \
 	void GodotNavigationServer3D::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-GodotNavigationServer3D::GodotNavigationServer3D() {}
-
 GodotNavigationServer3D::~GodotNavigationServer3D() {
 	flush_queries();
 }

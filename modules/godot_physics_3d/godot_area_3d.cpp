@@ -341,6 +341,3 @@ GodotArea3D::GodotArea3D() :
 	_set_static(true); //areas are never active
 	set_ray_pickable(false);
 }
-
-GodotArea3D::~GodotArea3D() {
-}

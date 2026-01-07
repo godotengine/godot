@@ -390,8 +390,6 @@ struct CSharpScriptBinding {
 	StringName type_name;
 	MonoGCHandleData gchandle;
 	Object *owner = nullptr;
-
-	CSharpScriptBinding() {}
 };
 
 class ManagedCallableMiddleman : public Object {

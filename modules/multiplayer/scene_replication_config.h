@@ -102,8 +102,6 @@ public:
 	const List<NodePath> &get_spawn_properties();
 	const List<NodePath> &get_sync_properties();
 	const List<NodePath> &get_watch_properties();
-
-	SceneReplicationConfig() {}
 };
 
 VARIANT_ENUM_CAST(SceneReplicationConfig::ReplicationMode);

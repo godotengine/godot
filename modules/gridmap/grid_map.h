@@ -146,9 +146,6 @@ class GridMap : public Node3D {
 		_FORCE_INLINE_ bool operator==(const OctantKey &p_key) const {
 			return key == p_key.key;
 		}
-
-		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
-		OctantKey() {}
 	};
 
 	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;

@@ -412,7 +412,6 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance() {}
 	~GDScriptInstance();
 };
 

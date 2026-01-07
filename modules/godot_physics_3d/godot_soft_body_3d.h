@@ -276,5 +276,4 @@ public:
 	void update_bounds();
 
 	GodotSoftBodyShape3D(GodotSoftBody3D *p_soft_body);
-	~GodotSoftBodyShape3D() {}
 };

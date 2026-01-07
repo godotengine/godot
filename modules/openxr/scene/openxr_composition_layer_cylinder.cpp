@@ -53,9 +53,6 @@ OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {
 	}
 }
 
-OpenXRCompositionLayerCylinder::~OpenXRCompositionLayerCylinder() {
-}
-
 void OpenXRCompositionLayerCylinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &OpenXRCompositionLayerCylinder::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &OpenXRCompositionLayerCylinder::get_radius);

@@ -128,7 +128,6 @@ private:
 
 public:
 	FastNoiseLite();
-	~FastNoiseLite();
 
 	// General noise settings.
 

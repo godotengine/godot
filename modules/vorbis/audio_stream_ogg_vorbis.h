@@ -108,7 +108,6 @@ public:
 	virtual Ref<AudioSamplePlayback> get_sample_playback() const override;
 	virtual void set_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 
-	AudioStreamPlaybackOggVorbis() {}
 	~AudioStreamPlaybackOggVorbis();
 };
 
@@ -177,6 +176,5 @@ public:
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
 
-	AudioStreamOggVorbis();
-	virtual ~AudioStreamOggVorbis();
+	virtual ~AudioStreamOggVorbis() {}
 };

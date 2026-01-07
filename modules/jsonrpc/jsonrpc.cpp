@@ -33,12 +33,6 @@
 
 #include "core/io/json.h"
 
-JSONRPC::JSONRPC() {
-}
-
-JSONRPC::~JSONRPC() {
-}
-
 void JSONRPC::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_method", "name", "callback"), &JSONRPC::set_method);
 	ClassDB::bind_method(D_METHOD("process_action", "action", "recurse"), &JSONRPC::process_action, DEFVAL(false));

@@ -69,7 +69,6 @@ public:
 	Error write_file(const Vector<uint8_t> &p_data);
 	Error close_file();
 
-	ZIPPacker();
 	~ZIPPacker();
 };
 
