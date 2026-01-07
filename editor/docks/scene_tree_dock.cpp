@@ -4414,6 +4414,9 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			ur->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
 		} else {
 			ur->add_do_method(paste_parent, "add_child", dup, true);
+			if (paste_sibling) {
+				ur->add_do_method(paste_parent, "move_child", dup, paste_sibling->get_index() + 1);
+			}
 		}
 
 		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
