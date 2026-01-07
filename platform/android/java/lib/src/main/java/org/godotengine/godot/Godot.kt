@@ -197,6 +197,7 @@ class Godot private constructor(val context: Context) {
 	private var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
 	private var orientation = Configuration.ORIENTATION_UNDEFINED
+	private var disableGodotSplash = false
 
 	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -269,6 +270,8 @@ class Godot private constructor(val context: Context) {
 					newArgs.add(commandLine[i])
 				} else if (commandLine[i] == "--background_color") {
 					setWindowColor(commandLine[i + 1])
+				} else if (commandLine[i] == "--disable_godot_splash") {
+					disableGodotSplash = true
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -362,6 +365,8 @@ class Godot private constructor(val context: Context) {
 		}
 		return isNativeInitialized()
 	}
+
+	fun isGodotSplashDisabled() = disableGodotSplash
 
 	/**
 	 * Enable edge-to-edge.

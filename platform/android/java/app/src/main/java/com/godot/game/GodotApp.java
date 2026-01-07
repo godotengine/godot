@@ -39,11 +39,14 @@ import android.util.Log;
 import androidx.activity.EdgeToEdge;
 import androidx.core.splashscreen.SplashScreen;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Template activity for Godot Android builds.
  * Feel free to extend and modify this class for your custom logic.
  */
 public class GodotApp extends GodotActivity {
+	private final AtomicBoolean isAppReady = new AtomicBoolean(false);
 	static {
 		// .NET libraries.
 		if (BuildConfig.FLAVOR.equals("mono")) {
@@ -67,9 +70,14 @@ public class GodotApp extends GodotActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		SplashScreen.installSplashScreen(this);
+		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
 		EdgeToEdge.enable(this);
 		super.onCreate(savedInstanceState);
+
+		Godot godot = getGodot();
+		if (godot != null && godot.isGodotSplashDisabled()) {
+			splashScreen.setKeepOnScreenCondition(() -> !isAppReady.get());
+		}
 	}
 
 	@Override
@@ -82,6 +90,7 @@ public class GodotApp extends GodotActivity {
 	public void onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted();
 		runOnUiThread(updateWindowAppearance);
+		isAppReady.set(true);
 	}
 
 	@Override

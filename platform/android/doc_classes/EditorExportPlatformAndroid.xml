@@ -640,6 +640,9 @@
 			Native splash screen branding image file. If left empty, no branding image will be used. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
 			[b]Note:[/b] Can be used to set an image to be shown at the bottom of the splash screen. However, the Android design guidelines recommend against using a branding image.
 		</member>
+		<member name="splash_screen/disable_godot_boot_splash" type="bool" setter="" getter="">
+			If [code]true[/code], Godot's boot splash will not be shown, and the native boot splash will remain visible for a longer time, until Godot finishes loading.
+		</member>
 		<member name="splash_screen/icon" type="String" setter="" getter="">
 			Native splash screen icon file. If left empty, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432]. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
 			[b]Note:[/b] You can provide an [url=https://developer.android.com/reference/android/graphics/drawable/AnimatedVectorDrawable]AnimatedVectorDrawable (AVD)[/url] XML. However, the XML file will only be used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled. If not, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432].

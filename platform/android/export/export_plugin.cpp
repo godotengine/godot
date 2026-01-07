@@ -242,6 +242,7 @@ static const String THEMED_ICON_XML_PATH = "res/mipmap-anydpi-v26/themed_icon.xm
 static const String ANDROID_SPLASH_ICON_PATH = "res/drawable/splash_icon.webp";
 static const String ANDROID_SPLASH_BRANDING_IMAGE_PATH = "res/drawable/splash_branding_image.webp";
 
+static const char *DISABLE_GODOT_SPLASH_OPTION = PNAME("splash_screen/disable_godot_boot_splash");
 static const char *ANDROID_SPLASH_ICON_OPTION = PNAME("splash_screen/icon");
 static const char *ANDROID_SPLASH_BACKGROUND_COLOR_OPTION = PNAME("splash_screen/background_color");
 static const char *ANDROID_SPLASH_BRANDING_IMAGE_OPTION = PNAME("splash_screen/branding_image");
@@ -2251,6 +2252,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "screen/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, DISABLE_GODOT_SPLASH_OPTION), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, ANDROID_SPLASH_ICON_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.xml"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, ANDROID_SPLASH_BACKGROUND_COLOR_OPTION, PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, ANDROID_SPLASH_BRANDING_IMAGE_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
@@ -3270,6 +3272,11 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	}
 	command_line_strings.push_back("--background_color");
 	command_line_strings.push_back(background_color);
+
+	bool disable_godot_splash = p_preset->get(DISABLE_GODOT_SPLASH_OPTION);
+	if (disable_godot_splash) {
+		command_line_strings.push_back("--disable_godot_splash");
+	}
 
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");
 	if (debug_opengl) {
