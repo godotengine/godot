@@ -339,8 +339,6 @@ public:
 
 	virtual const Variant get_rpc_config() const override;
 
-	void unload_static() const;
-
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
 #endif

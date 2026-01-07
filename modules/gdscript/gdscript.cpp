@@ -927,10 +927,6 @@ const Variant GDScript::get_rpc_config() const {
 	return rpc_config;
 }
 
-void GDScript::unload_static() const {
-	GDScriptCache::remove_script(fully_qualified_name);
-}
-
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *top = this;
 	while (top) {
