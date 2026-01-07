@@ -114,7 +114,8 @@ public:
 		return _cowdata.template resize<true>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and keep memory uninitialized.
+	/// This means that any newly added elements have an unknown value, and are expected to be set after the `resize_uninitialized` call.
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ Error resize_uninitialized(Size p_size) {
 		// resize() statically asserts that T is compatible, no need to do it ourselves.
