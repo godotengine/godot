@@ -73,6 +73,7 @@ class CreateDialog : public ConfirmationDialog {
 	HashSet<StringName> type_blacklist;
 	HashSet<StringName> custom_type_blocklist;
 
+	void _popup_common();
 	void _update_search();
 	bool _should_hide_type(const StringName &p_type) const;
 	void _add_type(const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword);
@@ -125,8 +126,11 @@ public:
 	void set_type_blocklist(const HashSet<StringName> &p_blocklist) { custom_type_blocklist = p_blocklist; }
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_current_type = "", const String &p_current_name = "");
-	void for_inherit();
+	void set_search_type(const String &p_search);
+
+	void popup_create(bool p_dont_clear);
+	void popup_replace(const String &p_current_type = "", const String &p_current_name = "");
+	void popup_inherit(bool p_dont_clear);
 
 	CreateDialog();
 };

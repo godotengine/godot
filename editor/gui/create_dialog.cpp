@@ -38,31 +38,54 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
-	_fill_type_list();
-
-	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
-
+void CreateDialog::popup_create(bool p_dont_clear) {
 	if (p_dont_clear) {
 		search_box->select_all();
 	} else {
 		search_box->clear();
 	}
 
-	if (p_replace_mode) {
-		search_box->set_text(p_current_type);
+	set_title(vformat(TTR("Create New %s"), base_type));
+	set_ok_button_text(TTR("Create"));
+
+	allow_abstract_scripts = false;
+
+	_popup_common();
+}
+
+void CreateDialog::popup_replace(const String &p_current_type, const String &p_current_name) {
+	search_box->set_text(p_current_type);
+
+	set_title(vformat(TTR("Change Type of \"%s\""), p_current_name));
+	set_ok_button_text(TTR("Change"));
+
+	allow_abstract_scripts = false;
+
+	_popup_common();
+}
+
+void CreateDialog::popup_inherit(bool p_dont_clear) {
+	if (p_dont_clear) {
+		search_box->select_all();
+	} else {
+		search_box->clear();
 	}
+
+	set_title(vformat(TTR("Inherit %s"), base_type));
+	set_ok_button_text(TTR("Inherit"));
+
+	allow_abstract_scripts = true;
+
+	_popup_common();
+}
+
+void CreateDialog::_popup_common() {
+	_fill_type_list();
+
+	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
 	search_box->grab_focus();
 	_update_search();
-
-	if (p_replace_mode) {
-		set_title(vformat(TTR("Change Type of \"%s\""), p_current_name));
-		set_ok_button_text(TTR("Change"));
-	} else {
-		set_title(vformat(TTR("Create New %s"), base_type));
-		set_ok_button_text(TTR("Create"));
-	}
 
 	_load_favorites_and_history();
 	_save_and_update_favorite_list();
@@ -76,8 +99,9 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	}
 }
 
-void CreateDialog::for_inherit() {
-	allow_abstract_scripts = true;
+void CreateDialog::set_search_type(const String &p_search) {
+	search_box->set_text(p_search);
+	_update_search();
 }
 
 void CreateDialog::_fill_type_list() {

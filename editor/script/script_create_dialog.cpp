@@ -498,9 +498,7 @@ void ScriptCreateDialog::_create() {
 
 void ScriptCreateDialog::_browse_class_in_tree() {
 	select_class->set_base_type(base_type);
-	select_class->popup_create(true);
-	select_class->set_title(vformat(TTR("Inherit %s"), base_type));
-	select_class->set_ok_button_text(TTR("Inherit"));
+	select_class->popup_inherit(true);
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
@@ -995,7 +993,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	select_class = memnew(CreateDialog);
 	select_class->connect("create", callable_mp(this, &ScriptCreateDialog::_create));
-	select_class->for_inherit();
 	add_child(select_class);
 
 	file_browse = memnew(EditorFileDialog);
