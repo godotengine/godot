@@ -290,7 +290,7 @@ void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance)
 }
 
 void BonePropertiesEditor::_update_properties() {
-	if (!skeleton) {
+	if (!skeleton || !Skeleton3DEditor::get_singleton()) {
 		return;
 	}
 	int selected = Skeleton3DEditor::get_singleton()->get_selected_bone();
