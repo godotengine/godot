@@ -48,8 +48,14 @@
 		<method name="get_accelerometer" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the acceleration in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
-				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
+				Returns the acceleration, including the force of gravity, in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO]. See also [method get_gravity].
+				For a device held in front of you, the returned axes are defined as follows:
+				+X ... -X: left ... right;
+				+Y ... -Y: bottom ... top;
+				+Z ... -Z: farther ... closer.
+				The gravity part value is measured as a vector with length of about [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
+				See the image of the axes on the [url=https://developer.android.com/develop/sensors-and-location/sensors/sensors_overview#sensors-coords]Android documentation[/url] for more information (the image is also applicable to iOS).
+				[b]Note:[/b] Contrary to the information on the Android documentation page, Godot changes the axes when the device's screen orientation changes, that is, for example, the Y axis is always aligned with the natural vertical axis of the device's current screen orientation.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer] must be enabled.
 			</description>
@@ -96,7 +102,14 @@
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO]. See also [method get_accelerometer].
+				For a device held in front of you, the returned axes are defined as follows:
+				+X ... -X: left ... right;
+				+Y ... -Y: bottom ... top;
+				+Z ... -Z: farther ... closer.
+				The gravity part value is measured as a vector with length of about [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
+				See the image of the axes on the [url=https://developer.android.com/develop/sensors-and-location/sensors/sensors_overview#sensors-coords]Android documentation[/url] for more information (the image is also applicable to iOS).
+				[b]Note:[/b] Contrary to the information on the Android documentation page, Godot changes the axes when the device's screen orientation changes, that is, for example, the Y axis is always aligned with the natural vertical axis of the device's current screen orientation.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gravity] must be enabled.
 			</description>
@@ -105,6 +118,13 @@
 			<return type="Vector3" />
 			<description>
 				Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the gyroscope sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				The rotation is positive in the counter-clockwise direction.
+				For a device held in front of you, the returned axes are defined as follows:
+				X: Angular speed around the X axis (pitch);
+				Y: Angular speed around the Y axis (yaw);
+				Z: Angular speed around the Z axis (roll).
+				See the image of the axes on the [url=https://developer.android.com/develop/sensors-and-location/sensors/sensors_overview#sensors-coords]Android documentation[/url] for more information (the image is also applicable to iOS).
+				[b]Note:[/b] Contrary to the information on the Android documentation page, Godot changes the axes when the device's screen orientation changes, that is, for example, the Y axis is always aligned with the natural vertical axis of the device's current screen orientation.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gyroscope] must be enabled.
 			</description>
@@ -176,7 +196,37 @@
 		<method name="get_magnetometer" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				Returns the magnetic field strength in micro-Tesla, as well as its direction, for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
+				For a device held in front of you, the returned axes are defined as follows:
+				+X ... -X: left ... right;
+				+Y ... -Y: bottom ... top;
+				+Z ... -Z: farther ... closer.
+				[b]Note:[/b] While measuring the Earth's magnetic field, due to how the Earth's magnetic field works, you should know that the returned vector may [b]not[/b] point directly to the north depending on where you're located.
+				In the northern hemisphere, this vector points into the ground, but is tilted towards the north.
+				On the equator, it should point directly to the north.
+				In the southern hemisphere, the vector should point away from the ground, and it's also tilted towards the north.
+				[b]Note:[/b] To calculate the rotation of the device along the Y axis (yaw) relative to the direction of the North Pole regardless of the device's pitch and roll, you need to take the Earth's gravity direction into account. You can use the following example:
+				[codeblocks]
+				[gdscript]
+				var gravity: Vector3 = Input.get_gravity()
+				var roll = atan2(-gravity.x, -gravity.y)
+				gravity = gravity.rotated(-Vector3.FORWARD, roll)
+				var pitch = atan2(gravity.z, -gravity.y)
+				var magnet: Vector3 = Input.get_magnetometer().rotated(-Vector3.FORWARD, roll).rotated(Vector3.RIGHT, pitch)
+				var yaw = atan2(-magnet.x, magnet.z)
+				print(yaw)
+				[/gdscript]
+				[csharp]
+				Vector3 gravity = Input.GetGravity();
+				double roll = Mathf.Atan2(-gravity.X, -gravity.Y);
+				gravity = gravity.Rotated(-Vector3.Forward, roll);
+				double pitch = Mathf.Atan2(gravity.Z, -gravity.Y);
+				Vector3 magnet = Input.GetMagnetometer().Rotated(-Vector3.Forward, roll).Rotated(Vector3.Right, pitch);
+				double yaw = Mathf.Atan2(-magnet.X, magnet.Z);
+				GD.Print(yaw);
+				[/csharp]
+				[/codeblocks]
+				Here, if the value of [code]yaw[/code] variable is close to [code]0.0[/code], the device is looking at the direction of the North Pole.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
 				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 			</description>
