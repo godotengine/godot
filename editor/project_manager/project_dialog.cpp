@@ -51,12 +51,12 @@
 
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
+
 	if (p_type == MESSAGE_ERROR) {
-		invalid_flags.set_flag(ValidationFlags::INVALID_PATH_INPUT);
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
 	} else {
-		invalid_flags.clear_flag(ValidationFlags::INVALID_PATH_INPUT);
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
 	}
-	get_ok_button()->set_disabled(!invalid_flags.is_empty());
 
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
@@ -79,6 +79,12 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	} else if (p_input_type == INSTALL_PATH) {
 		install_status_rect->set_texture(new_icon);
 	}
+
+	_update_ok_button();
+}
+
+void ProjectDialog::_update_ok_button() {
+	get_ok_button()->set_disabled(!invalid_state_flags.is_empty());
 }
 
 static bool is_zip_file(Ref<DirAccess> p_d, const String &p_path) {
@@ -518,11 +524,12 @@ void ProjectDialog::_renderer_selected() {
 	if (rd_error) {
 		// Needs to be set here since theme colors aren't available at startup.
 		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		invalid_flags.set_flag(ValidationFlags::INVALID_RENDERER_SELECT);
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
 	} else {
-		invalid_flags.clear_flag(ValidationFlags::INVALID_RENDERER_SELECT);
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
 	}
-	get_ok_button()->set_disabled(!invalid_flags.is_empty());
+
+	_update_ok_button();
 }
 
 void ProjectDialog::_nonempty_confirmation_ok_pressed() {
@@ -840,6 +847,8 @@ void ProjectDialog::ask_for_path_and_show() {
 }
 
 void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+	_update_ok_button();
+
 	if (mode == MODE_IMPORT && !p_is_confirmed) {
 		return;
 	}
