@@ -369,26 +369,26 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 			Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 			if (buffer.is_empty()) {
 				r_error = ERR_FILE_CANT_READ;
-				return script;
+				goto finish;
 			}
 			script->set_binary_tokens_source(buffer);
 		} else {
 			r_error = script->load_source_code(remapped_path);
 			if (r_error) {
-				return script;
+				goto finish;
 			}
 		}
 	}
 
 	// Allowing lifting the lock might cause a script to be reloaded multiple times,
 	// which, as a last resort deadlock prevention strategy, is a good tradeoff.
-	uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
-	r_error = script->reload(true);
-	WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
-	if (r_error) {
-		return script;
+	{
+		uint32_t allowance_id = WorkerThreadPool::thread_enter_unlock_allowance_zone(singleton->mutex);
+		r_error = script->reload(true);
+		WorkerThreadPool::thread_exit_unlock_allowance_zone(allowance_id);
 	}
 
+finish:
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
 
