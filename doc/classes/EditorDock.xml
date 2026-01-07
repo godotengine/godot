@@ -18,7 +18,7 @@
 			dock = EditorDock.new()
 			dock.title = "My Dock"
 			dock.dock_icon = preload("./dock_icon.png")
-			dock.default_slot = EditorPlugin.DOCK_SLOT_RIGHT_UL
+			dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_UL
 			var dock_content = preload("./dock_content.tscn").instantiate()
 			dock.add_child(dock_content)
 			add_dock(dock)
