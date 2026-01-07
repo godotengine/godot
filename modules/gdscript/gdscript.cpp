@@ -1261,69 +1261,6 @@ GDScript *GDScript::get_root_script() {
 	return result;
 }
 
-RBSet<GDScript *> GDScript::get_dependencies() {
-	RBSet<GDScript *> dependencies;
-
-	_collect_dependencies(dependencies, this);
-	dependencies.erase(this);
-
-	return dependencies;
-}
-
-HashMap<GDScript *, RBSet<GDScript *>> GDScript::get_all_dependencies() {
-	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies;
-
-	List<GDScript *> scripts;
-	{
-		MutexLock lock(GDScriptLanguage::singleton->mutex);
-
-		SelfList<GDScript> *elem = GDScriptLanguage::singleton->script_list.first();
-		while (elem) {
-			scripts.push_back(elem->self());
-			elem = elem->next();
-		}
-	}
-
-	for (GDScript *scr : scripts) {
-		if (scr == nullptr || scr->destructing) {
-			continue;
-		}
-		all_dependencies.insert(scr, scr->get_dependencies());
-	}
-
-	return all_dependencies;
-}
-
-RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
-	RBSet<GDScript *> dependencies = get_dependencies();
-	RBSet<GDScript *> must_clear_dependencies;
-	HashMap<GDScript *, RBSet<GDScript *>> all_dependencies = get_all_dependencies();
-
-	RBSet<GDScript *> cant_clear;
-	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : all_dependencies) {
-		if (dependencies.has(E.key)) {
-			continue;
-		}
-		for (GDScript *F : E.value) {
-			if (dependencies.has(F)) {
-				cant_clear.insert(F);
-			}
-		}
-	}
-
-	for (GDScript *E : dependencies) {
-		if (cant_clear.has(E) || ScriptServer::is_global_class(E->get_fully_qualified_name())) {
-			continue;
-		}
-		must_clear_dependencies.insert(E);
-	}
-
-	cant_clear.clear();
-	dependencies.clear();
-	all_dependencies.clear();
-	return must_clear_dependencies;
-}
-
 bool GDScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal)) {
 		return true;
@@ -1370,55 +1307,60 @@ GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
 	return Object::cast_to<GDScript>(obj);
 }
 
-void GDScript::_collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
+void GDScript::_collect_function_dependencies(GDScriptFunction *p_func, RBMap<GDScript *, int> &r_dependencies) {
 	if (p_func == nullptr) {
 		return;
 	}
 	for (GDScriptFunction *lambda : p_func->lambdas) {
-		_collect_function_dependencies(lambda, p_dependencies, p_except);
+		_collect_function_dependencies(lambda, r_dependencies);
 	}
 	for (const Variant &V : p_func->constants) {
 		GDScript *scr = _get_gdscript_from_variant(V);
-		if (scr != nullptr && scr != p_except) {
-			scr->_collect_dependencies(p_dependencies, p_except);
+		if (scr != nullptr) {
+			r_dependencies[scr] += 1;
 		}
 	}
 }
 
-void GDScript::_collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
-	if (p_dependencies.has(this)) {
-		return;
-	}
-	if (this != p_except) {
-		p_dependencies.insert(this);
-	}
-
+void GDScript::count_dependencies(RBMap<GDScript *, int> &r_res) {
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
-		_collect_function_dependencies(E.value, p_dependencies, p_except);
+		_collect_function_dependencies(E.value, r_res);
 	}
 
 	if (implicit_initializer) {
-		_collect_function_dependencies(implicit_initializer, p_dependencies, p_except);
+		_collect_function_dependencies(implicit_initializer, r_res);
 	}
 
 	if (implicit_ready) {
-		_collect_function_dependencies(implicit_ready, p_dependencies, p_except);
+		_collect_function_dependencies(implicit_ready, r_res);
 	}
 
 	if (static_initializer) {
-		_collect_function_dependencies(static_initializer, p_dependencies, p_except);
+		_collect_function_dependencies(static_initializer, r_res);
+	}
+
+	for (KeyValue<StringName, MemberInfo> &E : member_indices) {
+		Ref<GDScript> ref = E.value.data_type.script_type_ref;
+		if (ref.is_valid()) {
+			r_res[*ref] += 1;
+		}
+	}
+
+	for (KeyValue<StringName, MemberInfo> &E : static_variables_indices) {
+		Ref<GDScript> ref = E.value.data_type.script_type_ref;
+		if (ref.is_valid()) {
+			r_res[*ref] += 1;
+		}
 	}
 
 	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		if (E.value != p_except) {
-			E.value->_collect_dependencies(p_dependencies, p_except);
-		}
+		r_res[*E.value] += 1;
 	}
 
 	for (const KeyValue<StringName, Variant> &E : constants) {
 		GDScript *scr = _get_gdscript_from_variant(E.value);
-		if (scr != nullptr && scr != p_except) {
-			scr->_collect_dependencies(p_dependencies, p_except);
+		if (scr != nullptr) {
+			r_res[scr] += 1;
 		}
 	}
 }
@@ -1434,7 +1376,7 @@ GDScript::GDScript() :
 	path = vformat("gdscript://%d.gd", get_instance_id());
 }
 
-void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
+void GDScript::_save_orphaned_subclasses() {
 	struct ClassRefWithName {
 		ObjectID id;
 		String fully_qualified_name;
@@ -1450,17 +1392,8 @@ void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 	}
 
 	// clear subclasses to allow unused subclasses to be deleted
-	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
-		p_clear_data->scripts.insert(E.value);
-	}
 	subclasses.clear();
 	// subclasses are also held by constants, clear those as well
-	for (KeyValue<StringName, Variant> &E : constants) {
-		GDScript *gdscr = _get_gdscript_from_variant(E.value);
-		if (gdscr != nullptr) {
-			p_clear_data->scripts.insert(gdscr);
-		}
-	}
 	constants.clear();
 
 	// keep orphan subclass only for subclasses that are still in use
@@ -1546,6 +1479,83 @@ void GDScript::_recurse_replace_function_ptrs(const HashMap<GDScriptFunction *, 
 	}
 }
 
+/**
+ * Implementation of Tarjan's Algorithm to find strongly connected dependency clusters (e.g. cycles): https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+ *
+ * The implementation is not generalized and omits part of the algorithm, e.g. safeguards for disconnected graphs.
+ */
+class DependencyCyclesTarjanScc {
+	struct Data {
+		int index;
+		int lowlink;
+		int scc;
+	};
+
+	RBMap<GDScript *, Data> script_data;
+	LocalVector<GDScript *> stack;
+	int next_index = 0;
+	int next_scc_id = 0;
+
+	void _strong_connect(GDScript *p_script) {
+		if (!script_data.has(p_script)) {
+			script_data.insert(p_script, Data());
+		}
+
+		{
+			Data &data = script_data[p_script];
+			data.index = next_index;
+			data.lowlink = next_index;
+			data.scc = -1;
+		}
+
+		next_index += 1;
+		stack.push_back(p_script);
+
+		RBMap<GDScript *, int> dependencies;
+		p_script->count_dependencies(dependencies);
+		for (KeyValue<GDScript *, int> &dependency : dependencies) {
+			if (dependency.key == p_script) {
+				continue;
+			}
+
+			if (!script_data.has(dependency.key)) {
+				_strong_connect(dependency.key);
+				Data &data = script_data[p_script];
+				data.lowlink = MIN(data.lowlink, script_data[dependency.key].lowlink);
+			} else { // Omission from the original algorithm: Check whether `dependency.key` is on the stack. -> This condition can never be `false` when only starting from one node.
+				Data &data = script_data[p_script];
+				data.lowlink = MIN(data.lowlink, script_data[dependency.key].lowlink);
+			}
+		}
+
+		Data &data = script_data[p_script];
+		if (data.lowlink == data.index) {
+			RBSet<GDScript *> scc;
+			GDScript *head;
+			do {
+				head = stack[stack.size() - 1];
+				stack.resize(stack.size() - 1);
+				scc.insert(head);
+				script_data[head].scc = next_scc_id;
+			} while (head != p_script);
+			sccs.push_back(scc);
+			next_scc_id += 1;
+		}
+	}
+
+public:
+	LocalVector<RBSet<GDScript *>> sccs;
+
+	DependencyCyclesTarjanScc(GDScript *p_from) {
+		// Omission from the original algorithm: Repeat for all not yet visited nodes. -> We only care about the subgraph of transitive dependencies.
+		_strong_connect(p_from);
+	}
+
+	int get_scc(GDScript *p_script) {
+		return script_data[p_script].scc;
+	}
+};
+
 void GDScript::clear(ClearData *p_clear_data) {
 	if (clearing) {
 		return;
@@ -1557,7 +1567,7 @@ void GDScript::clear(ClearData *p_clear_data) {
 	bool is_root = false;
 
 	// If `clear_data` is `nullptr`, it means that it's the root.
-	// The root is in charge to clear functions and scripts of itself and its dependencies
+	// The root is in charge to clear functions and scripts of itself and its orphaned dependencies.
 	if (clear_data == nullptr) {
 		clear_data = &data;
 		is_root = true;
@@ -1571,12 +1581,58 @@ void GDScript::clear(ClearData *p_clear_data) {
 	}
 
 	// If we're in the process of shutting things down then every single script will be cleared
-	// anyway, so we can safely skip this very costly operation.
-	if (!GDScriptLanguage::singleton->finishing) {
-		RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
-		for (GDScript *E : must_clear_dependencies) {
-			clear_data->scripts.insert(E);
-			E->clear(clear_data);
+	// anyway, so we can safely skip this very costly operation. And if another root is clearing
+	// us up, it will take care of our deps as well.
+	if (is_root && !GDScriptLanguage::singleton->finishing) {
+		// The transitive dependencies of this script form a graph.
+		// 1. Use Tarjan DFS to find the graph and strongly connected components (SCC) in it. This also topologically sorts the SCCs.
+		DependencyCyclesTarjanScc tarjan(this);
+
+		// 2. For each SCC calculate: sum of refcounts - sum of internal refs - (sum of incoming refs from previous SCCs which could be freed).
+		// If this count is > 0, there are references from outside of gdscript (e.g. user code) or other scripts that are not dependencies of this script.
+
+		TightLocalVector<int> counts;
+		counts.resize_initialized(tarjan.sccs.size());
+
+		// Iterate backwards to start with the scc which has no incoming refs from other SCCs and which contains this node. It is the root to unwinding this mess.
+		for (int i = tarjan.sccs.size() - 1; i >= 0; i--) {
+			RBMap<GDScript *, int> dependencies;
+			for (GDScript *scr : tarjan.sccs[i]) {
+				counts[i] += scr->get_reference_count();
+
+				if (GDScriptCache::get_cached_script(scr->path) == scr) {
+					// The GDScriptCache references the script, but that's no reason to keep it alive.
+					// An additional ref is hold for static scripts which is unaffected by this.
+					counts[i] -= 1;
+				}
+
+				scr->count_dependencies(dependencies);
+			}
+
+			for (KeyValue<GDScript *, int> &dependency : dependencies) {
+				// The script is a transitive dep of this script so it was visited during SCC detection. It's present in the index.
+				if (tarjan.get_scc(dependency.key) == i) {
+					// Script is part of this SCC. Decrease refcount by internal refs.
+					counts[i] -= dependency.value;
+				}
+			}
+
+			if (counts[i] > 0) {
+				// There are external refs. This SCC can not be freed.
+				continue;
+			}
+
+			// Remove references from this SCC.
+			for (KeyValue<GDScript *, int> &dependency : dependencies) {
+				int scc = tarjan.get_scc(dependency.key);
+				if (scc != i) {
+					counts[scc] -= dependency.value;
+				}
+			}
+
+			for (GDScript *scr : tarjan.sccs[i]) {
+				clear_data->scripts.insert(scr);
+			}
 		}
 	}
 
@@ -1585,15 +1641,6 @@ void GDScript::clear(ClearData *p_clear_data) {
 	}
 	member_functions.clear();
 
-	for (KeyValue<StringName, MemberInfo> &E : member_indices) {
-		clear_data->scripts.insert(E.value.data_type.script_type_ref);
-		E.value.data_type.script_type_ref = Ref<Script>();
-	}
-
-	for (KeyValue<StringName, MemberInfo> &E : static_variables_indices) {
-		clear_data->scripts.insert(E.value.data_type.script_type_ref);
-		E.value.data_type.script_type_ref = Ref<Script>();
-	}
 	static_variables.clear();
 	static_variables_indices.clear();
 
@@ -1612,7 +1659,7 @@ void GDScript::clear(ClearData *p_clear_data) {
 		static_initializer = nullptr;
 	}
 
-	_save_orphaned_subclasses(clear_data);
+	_save_orphaned_subclasses();
 
 #ifdef TOOLS_ENABLED
 	// Clearing inner class doc, script doc only cleared when the script source deleted.
@@ -1623,15 +1670,17 @@ void GDScript::clear(ClearData *p_clear_data) {
 
 	// If it's not the root, skip clearing the data
 	if (is_root) {
-		// All dependencies have been accounted for
-		for (GDScriptFunction *E : clear_data->functions) {
-			memdelete(E);
-		}
 		for (Ref<Script> &E : clear_data->scripts) {
 			Ref<GDScript> gdscr = E;
 			if (gdscr.is_valid()) {
+				// TODO: Only root scripts should be removed from the cache. But the information needed to decide whether this was a root script was already cleared.
 				GDScriptCache::remove_script(gdscr->get_path());
+				gdscr->clear(clear_data);
 			}
+		}
+		// All dependencies have been accounted for
+		for (GDScriptFunction *E : clear_data->functions) {
+			memdelete(E);
 		}
 		clear_data->clear();
 	}
