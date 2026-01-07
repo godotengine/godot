@@ -845,11 +845,12 @@ void EditorPropertyClassName::_set_read_only(bool p_read_only) {
 	property->set_disabled(p_read_only);
 }
 
-void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
+void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type, TypeFilter p_type_filter) {
 	base_type = p_base_type;
 	dialog->set_base_type(base_type);
 	selected_type = p_selected_type;
 	property->set_text(selected_type);
+	type_filter = p_type_filter;
 }
 
 void EditorPropertyClassName::update_property() {
@@ -859,7 +860,7 @@ void EditorPropertyClassName::update_property() {
 }
 
 void EditorPropertyClassName::_property_selected() {
-	dialog->popup_replace(get_edited_property_value(), get_edited_property());
+	dialog->popup_choose_type(get_edited_property_value(), get_edited_property(), static_cast<CreateDialog::TypeFilter>(type_filter));
 }
 
 void EditorPropertyClassName::_dialog_created() {
@@ -3994,7 +3995,18 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
-				editor->setup(p_hint_text, p_hint_text);
+				Vector<String> hints = p_hint_text.split(",");
+				String type_name = hints[0];
+				hints.remove_at(0);
+				using CN = EditorPropertyClassName;
+				CN::TypeFilter type_filter = CN::TYPE_FILTER_ALLOW_CONCRETE;
+				if (hints.has("allow_script_abstract")) {
+					type_filter = CN::TYPE_FILTER_ALLOW_SCRIPT_ABSTRACT;
+				}
+				if (hints.has("allow_abstract")) {
+					type_filter = CN::TYPE_FILTER_ALLOW_ALL;
+				}
+				editor->setup(type_name, type_name, type_filter);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);

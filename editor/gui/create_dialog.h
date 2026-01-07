@@ -40,6 +40,14 @@
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
 
+public:
+	enum TypeFilter {
+		TYPE_FILTER_ALLOW_CONCRETE,
+		TYPE_FILTER_ALLOW_SCRIPT_ABSTRACT,
+		TYPE_FILTER_ALLOW_ALL,
+	};
+
+private:
 	enum TypeCategory {
 		CPP_TYPE,
 		PATH_TYPE,
@@ -56,7 +64,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	String base_type;
 	bool is_base_type_node = false;
-	bool allow_abstract_scripts = false;
+	TypeFilter type_filter = TYPE_FILTER_ALLOW_CONCRETE;
 	String icon_fallback;
 	String preferred_search_result_type;
 
@@ -131,6 +139,7 @@ public:
 	void popup_create(bool p_dont_clear);
 	void popup_replace(const String &p_current_type = "", const String &p_current_name = "");
 	void popup_inherit(bool p_dont_clear);
+	void popup_choose_type(const String &p_current_type = "", const String &p_prop_name = "", TypeFilter p_type_filter = TYPE_FILTER_ALLOW_CONCRETE);
 
 	CreateDialog();
 };

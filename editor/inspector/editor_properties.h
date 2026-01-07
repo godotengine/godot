@@ -245,11 +245,19 @@ public:
 class EditorPropertyClassName : public EditorProperty {
 	GDCLASS(EditorPropertyClassName, EditorProperty);
 
+public:
+	enum TypeFilter {
+		TYPE_FILTER_ALLOW_CONCRETE,
+		TYPE_FILTER_ALLOW_SCRIPT_ABSTRACT,
+		TYPE_FILTER_ALLOW_ALL,
+	};
+
 private:
 	CreateDialog *dialog = nullptr;
 	Button *property = nullptr;
 	String selected_type;
 	String base_type;
+	TypeFilter type_filter = TYPE_FILTER_ALLOW_CONCRETE;
 	void _property_selected();
 	void _dialog_created();
 
@@ -257,7 +265,7 @@ protected:
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
-	void setup(const String &p_base_type, const String &p_selected_type);
+	void setup(const String &p_base_type, const String &p_selected_type, TypeFilter p_type_filter = TYPE_FILTER_ALLOW_CONCRETE);
 	virtual void update_property() override;
 	EditorPropertyClassName();
 };

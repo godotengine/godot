@@ -2856,6 +2856,7 @@
 			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
 			If a property is [Array], hints the editor how to show elements. The [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code].
 			If a property is [Dictionary], hints the editor how to show elements. The [code]hint_string[/code] is the same as [Array], with a [code]";"[/code] separating the key and value.
+			Additional hints may be placed after the base class name, in the form [code]"ClassName,hint1,hint2"[/code]. Allowed hints are: [code]"allow_abstract"[/code] to include non-instantiatiable/abstract classes, and [code]"allow_script_abstract"[/code] to only include abstract classes from scripts.
 			[codeblocks]
 			[gdscript]
 			# Array of elem_type.

@@ -48,7 +48,7 @@ void CreateDialog::popup_create(bool p_dont_clear) {
 	set_title(vformat(TTR("Create New %s"), base_type));
 	set_ok_button_text(TTR("Create"));
 
-	allow_abstract_scripts = false;
+	type_filter = TYPE_FILTER_ALLOW_CONCRETE;
 
 	_popup_common();
 }
@@ -59,7 +59,7 @@ void CreateDialog::popup_replace(const String &p_current_type, const String &p_c
 	set_title(vformat(TTR("Change Type of \"%s\""), p_current_name));
 	set_ok_button_text(TTR("Change"));
 
-	allow_abstract_scripts = false;
+	type_filter = TYPE_FILTER_ALLOW_CONCRETE;
 
 	_popup_common();
 }
@@ -74,7 +74,18 @@ void CreateDialog::popup_inherit(bool p_dont_clear) {
 	set_title(vformat(TTR("Inherit %s"), base_type));
 	set_ok_button_text(TTR("Inherit"));
 
-	allow_abstract_scripts = true;
+	type_filter = TYPE_FILTER_ALLOW_SCRIPT_ABSTRACT;
+
+	_popup_common();
+}
+
+void CreateDialog::popup_choose_type(const String &p_current_type, const String &p_prop_name, TypeFilter p_type_filter) {
+	search_box->set_text(p_current_type);
+
+	set_title(vformat(TTR("Choose Object Type for \"%s\""), p_prop_name));
+	set_ok_button_text(TTR("Choose"));
+
+	type_filter = p_type_filter;
 
 	_popup_common();
 }
@@ -198,7 +209,9 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
-			return true; // Can't create abstract or virtual class.
+			if (type_filter != TYPE_FILTER_ALLOW_ALL) {
+				return true; // Can't create abstract or virtual class.
+			}
 		}
 
 		if (!ClassDB::is_parent_class(p_type, base_type)) {
@@ -250,7 +263,7 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		// Abstract scripts cannot be instantiated.
 		String path = ScriptServer::get_global_class_path(p_type);
 		Ref<Script> scr = ResourceLoader::load(path, "Script");
-		return scr.is_null() || (!allow_abstract_scripts && scr->is_abstract());
+		return scr.is_null() || (type_filter == TYPE_FILTER_ALLOW_CONCRETE && scr->is_abstract());
 	}
 
 	return false;
@@ -391,7 +404,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		type_name = p_type;
 		text = p_type;
 
-		if (!allow_abstract_scripts) {
+		if (type_filter == TYPE_FILTER_ALLOW_CONCRETE) {
 			is_abstract = ScriptServer::is_global_class_abstract(p_type);
 		}
 
@@ -424,8 +437,8 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	r_item->set_metadata(0, meta);
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
-			(p_type_category == TypeCategory::OTHER_TYPE && !(!allow_abstract_scripts && is_abstract));
-	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
+			(p_type_category == TypeCategory::OTHER_TYPE && !(type_filter == TYPE_FILTER_ALLOW_CONCRETE && is_abstract));
+	bool instantiable = type_filter == TYPE_FILTER_ALLOW_ALL || (can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type)));
 
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
 
