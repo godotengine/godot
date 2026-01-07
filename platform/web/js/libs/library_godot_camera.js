@@ -43,6 +43,12 @@
  *   animationFrameId: number|null
  *   permissionListener: Function|null
  *   permissionStatus: PermissionStatus|null
+ *   trackProcessor: MediaStreamTrackProcessor|null
+ *   frameReader: ReadableStreamDefaultReader|null
+ *   worker: Worker|null
+ *   useWebCodecsWorker: boolean
+ *   useWebCodecs: boolean
+ *   useWorker: boolean
  * }} CameraResource
  */
 
@@ -55,6 +61,19 @@ const GodotCamera = {
 		 * @type {Map<string, CameraResource>}
 		 */
 		cameras: new Map(),
+
+		/**
+		 * Cached result of Web Worker support check.
+		 * @type {boolean|null}
+		 */
+		workerSupported: null,
+
+		/**
+		 * Blob URL for the camera worker script.
+		 * @type {string|null}
+		 */
+		workerBlobUrl: null,
+
 		defaultMinimumCapabilities: {
 			'width': {
 				'min': 1,
@@ -106,6 +125,217 @@ const GodotCamera = {
 		},
 
 		/**
+		 * Checks if WebCodecs API is supported for camera capture.
+		 * @returns {boolean} True if MediaStreamTrackProcessor and VideoFrame are available
+		 */
+		isWebCodecsSupported: function () {
+			return 'MediaStreamTrackProcessor' in window && 'VideoFrame' in window;
+		},
+
+		/**
+		 * Checks if Web Worker for camera frame processing is supported.
+		 * Requires Worker, OffscreenCanvas, and createImageBitmap support.
+		 * @returns {boolean} True if worker-based capture is supported
+		 */
+		isWorkerSupported: function () {
+			if (this.workerSupported !== null) {
+				return this.workerSupported;
+			}
+
+			try {
+				// Check for Worker support
+				if (typeof Worker === 'undefined') {
+					this.workerSupported = false;
+					return false;
+				}
+
+				// Check for OffscreenCanvas support (required in worker)
+				if (typeof OffscreenCanvas === 'undefined') {
+					this.workerSupported = false;
+					return false;
+				}
+
+				// Check for createImageBitmap support (required for transferring frames)
+				if (typeof createImageBitmap === 'undefined') {
+					this.workerSupported = false;
+					return false;
+				}
+
+				this.workerSupported = true;
+				GodotRuntime.print('Web Worker for camera capture is supported');
+			} catch (e) {
+				GodotRuntime.print('Web Worker support check failed:', e.message);
+				this.workerSupported = false;
+			}
+
+			return this.workerSupported;
+		},
+
+		/**
+		 * Creates or returns the Blob URL for the camera worker script.
+		 * The worker is embedded as inline code to avoid external file dependencies.
+		 * @returns {string|null} Blob URL for the worker, or null if creation fails
+		 */
+		getWorkerBlobUrl: function () {
+			if (this.workerBlobUrl) {
+				return this.workerBlobUrl;
+			}
+
+			// Worker code embedded as a string.
+			// Supports both VideoFrame (WebCodecs) and ImageBitmap (Canvas 2D) processing.
+			const workerCode = `
+// Worker state
+let canvas = null;
+let canvasContext = null;
+let width = 0;
+let height = 0;
+let isCapturing = false;
+
+// Process ImageBitmap using Canvas 2D (fallback method)
+function processImageBitmap(imageBitmap) {
+	const frameWidth = imageBitmap.width;
+	const frameHeight = imageBitmap.height;
+
+	if (canvas.width !== frameWidth || canvas.height !== frameHeight) {
+		canvas.width = frameWidth;
+		canvas.height = frameHeight;
+		width = frameWidth;
+		height = frameHeight;
+		canvasContext = canvas.getContext('2d', { willReadFrequently: true });
+	}
+
+	canvasContext.drawImage(imageBitmap, 0, 0, width, height);
+	const imageData = canvasContext.getImageData(0, 0, width, height);
+	imageBitmap.close();
+
+	return {
+		pixelData: imageData.data,
+		width: width,
+		height: height,
+	};
+}
+
+// Process VideoFrame using WebCodecs copyTo (most efficient)
+async function processVideoFrame(videoFrame) {
+	const frameWidth = videoFrame.displayWidth;
+	const frameHeight = videoFrame.displayHeight;
+	const bufferSize = frameWidth * frameHeight * 4;
+	const pixelBuffer = new Uint8Array(bufferSize);
+
+	try {
+		await videoFrame.copyTo(pixelBuffer, {
+			rect: { x: 0, y: 0, width: frameWidth, height: frameHeight },
+			layout: [{ offset: 0, stride: frameWidth * 4 }],
+			format: 'RGBA',
+		});
+
+		return {
+			pixelData: pixelBuffer,
+			width: frameWidth,
+			height: frameHeight,
+		};
+	} finally {
+		videoFrame.close();
+	}
+}
+
+self.onmessage = async function(event) {
+	const { type, data } = event.data;
+
+	switch (type) {
+	case 'init':
+		canvas = new OffscreenCanvas(data.width || 640, data.height || 480);
+		width = data.width || 640;
+		height = data.height || 480;
+		canvasContext = canvas.getContext('2d', { willReadFrequently: true });
+		isCapturing = true;
+		self.postMessage({ type: 'initialized' });
+		break;
+
+	case 'videoFrame':
+		// WebCodecs VideoFrame processing
+		if (!isCapturing) {
+			if (data.videoFrame) {
+				data.videoFrame.close();
+			}
+			return;
+		}
+
+		try {
+			const result = await processVideoFrame(data.videoFrame);
+			self.postMessage(
+				{
+					type: 'frameData',
+					pixelData: result.pixelData,
+					width: result.width,
+					height: result.height,
+					orientation: data.orientation,
+					facingMode: data.facingMode,
+				},
+				[result.pixelData.buffer]
+			);
+		} catch (error) {
+			self.postMessage({
+				type: 'error',
+				message: error.message,
+			});
+		}
+		break;
+
+	case 'frame':
+		// Canvas 2D ImageBitmap processing (fallback)
+		if (!isCapturing || !canvas) {
+			if (data.imageBitmap) {
+				data.imageBitmap.close();
+			}
+			return;
+		}
+
+		try {
+			const result = processImageBitmap(data.imageBitmap);
+			self.postMessage(
+				{
+					type: 'frameData',
+					pixelData: result.pixelData,
+					width: result.width,
+					height: result.height,
+					orientation: data.orientation,
+					facingMode: data.facingMode,
+				},
+				[result.pixelData.buffer]
+			);
+		} catch (error) {
+			self.postMessage({
+				type: 'error',
+				message: error.message,
+			});
+		}
+		break;
+
+	case 'stop':
+		isCapturing = false;
+		canvas = null;
+		canvasContext = null;
+		self.postMessage({ type: 'stopped' });
+		break;
+
+	default:
+		console.warn('Unknown message type:', type);
+	}
+};
+`;
+
+			try {
+				const blob = new Blob([workerCode], { type: 'application/javascript' });
+				this.workerBlobUrl = URL.createObjectURL(blob);
+				return this.workerBlobUrl;
+			} catch (e) {
+				GodotRuntime.print('Failed to create worker blob URL:', e.message);
+				return null;
+			}
+		},
+
+		/**
 		 * Ensures cameras Map is properly initialized.
 		 * @returns {Map<string, CameraResource>}
 		 */
@@ -122,6 +352,12 @@ const GodotCamera = {
 		 */
 		cleanup: function () {
 			this.api.stop();
+
+			// Revoke worker blob URL to free memory.
+			if (this.workerBlobUrl) {
+				URL.revokeObjectURL(this.workerBlobUrl);
+				this.workerBlobUrl = null;
+			}
 		},
 
 		/**
@@ -185,11 +421,538 @@ const GodotCamera = {
 		},
 
 		/**
+		 * Sets up WebCodecs-based frame capture using MediaStreamTrackProcessor.
+		 * @param {CameraResource} camera Camera resource
+		 * @param {string} cameraId Camera identifier
+		 * @param {Function} callback Callback function for frame data
+		 * @param {number} context Context value to pass to callback
+		 * @param {Function} deniedCallback Callback for permission denied
+		 * @returns {void}
+		 */
+		setupWebCodecsCapture: function (camera, cameraId, callback, context, deniedCallback) {
+			const [videoTrack] = camera.stream.getVideoTracks();
+
+			camera.trackProcessor = new MediaStreamTrackProcessor({ track: videoTrack });
+			camera.frameReader = camera.trackProcessor.readable.getReader();
+
+			const processFrames = async () => {
+				const cameras = GodotCamera.ensureCamerasMap();
+				try {
+					while (true) {
+						const currentCamera = cameras.get(cameraId);
+						if (!currentCamera || !currentCamera.useWebCodecs) {
+							break;
+						}
+
+						// eslint-disable-next-line no-await-in-loop
+						const { done, value: videoFrame } = await currentCamera.frameReader.read();
+						if (done) {
+							break;
+						}
+
+						try {
+							const width = videoFrame.displayWidth;
+							const height = videoFrame.displayHeight;
+							const bufferSize = width * height * 4;
+							const pixelBuffer = new Uint8Array(bufferSize);
+
+							// eslint-disable-next-line no-await-in-loop
+							await videoFrame.copyTo(pixelBuffer, {
+								rect: { x: 0, y: 0, width, height },
+								layout: [{ offset: 0, stride: width * 4 }],
+								format: 'RGBA',
+							});
+
+							const dataPtr = GodotRuntime.malloc(pixelBuffer.length);
+							GodotRuntime.heapCopy(HEAPU8, pixelBuffer, dataPtr);
+
+							const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
+							const facingMode = GodotCamera.getFacingMode(currentCamera.stream);
+
+							GodotCamera.sendGetPixelDataCallback(
+								callback,
+								context,
+								dataPtr,
+								pixelBuffer.length,
+								width,
+								height,
+								screenOrientation,
+								facingMode,
+								null
+							);
+
+							GodotRuntime.free(dataPtr);
+						} finally {
+							videoFrame.close();
+						}
+					}
+				} catch (error) {
+					GodotRuntime.print('WebCodecs error, falling back to Canvas 2D:', error.message);
+					const currentCamera = cameras.get(cameraId);
+					if (currentCamera) {
+						// Clean up WebCodecs resources before fallback.
+						if (currentCamera.frameReader) {
+							currentCamera.frameReader.cancel().catch(() => {});
+							currentCamera.frameReader = null;
+						}
+						currentCamera.trackProcessor = null;
+						currentCamera.useWebCodecs = false;
+
+						// Fall back to Worker-based Canvas 2D if supported, else main thread.
+						if (GodotCamera.isWorkerSupported()) {
+							currentCamera.useWorker = true;
+							GodotCamera.setupCanvas2DWorkerCapture(currentCamera, cameraId, callback, context, deniedCallback);
+						} else {
+							GodotCamera.setupCanvas2DCapture(currentCamera, cameraId, callback, context, deniedCallback);
+						}
+					}
+				}
+			};
+
+			processFrames();
+		},
+
+		/**
+		 * Sets up WebCodecs + Worker frame capture.
+		 * Uses MediaStreamTrackProcessor to get VideoFrame, transfers to Worker for copyTo().
+		 * This is the most efficient method as it offloads processing to a worker thread.
+		 * @param {CameraResource} camera Camera resource
+		 * @param {string} cameraId Camera identifier
+		 * @param {Function} callback Callback function for frame data
+		 * @param {number} context Context value to pass to callback
+		 * @param {Function} deniedCallback Callback for permission denied
+		 * @returns {void}
+		 */
+		setupWebCodecsWorkerCapture: function (camera, cameraId, callback, context, deniedCallback) {
+			const workerUrl = this.getWorkerBlobUrl();
+			if (!workerUrl) {
+				GodotRuntime.print('Failed to create worker, falling back to WebCodecs main thread');
+				this.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
+				return;
+			}
+
+			const [videoTrack] = camera.stream.getVideoTracks();
+			const { width: _width, height: _height } = videoTrack.getSettings();
+
+			try {
+				camera.worker = new Worker(workerUrl);
+			} catch (e) {
+				GodotRuntime.print('Failed to create worker:', e.message);
+				this.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
+				return;
+			}
+
+			// Set up MediaStreamTrackProcessor
+
+			camera.trackProcessor = new MediaStreamTrackProcessor({ track: videoTrack });
+			camera.frameReader = camera.trackProcessor.readable.getReader();
+
+			// Handle messages from worker
+			camera.worker.onmessage = (event) => {
+				const { type } = event.data;
+
+				switch (type) {
+				case 'initialized':
+					GodotRuntime.print('Camera worker initialized (WebCodecs mode)');
+					break;
+
+				case 'frameData': {
+					const { pixelData, width, height, orientation, facingMode } = event.data;
+					const dataPtr = GodotRuntime.malloc(pixelData.length);
+					GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
+
+					GodotCamera.sendGetPixelDataCallback(
+						callback,
+						context,
+						dataPtr,
+						pixelData.length,
+						width,
+						height,
+						orientation,
+						facingMode,
+						null
+					);
+
+					GodotRuntime.free(dataPtr);
+					break;
+				}
+
+				case 'error':
+					GodotRuntime.print('Worker error:', event.data.message);
+					// Fall back to Worker Canvas 2D on error
+					camera.useWebCodecsWorker = false;
+					if (camera.frameReader) {
+						camera.frameReader.cancel().catch(() => {});
+						camera.frameReader = null;
+					}
+					camera.trackProcessor = null;
+					// Keep the worker for Canvas 2D fallback
+					camera.useWorker = true;
+					GodotCamera.setupCanvas2DWorkerCapture(camera, cameraId, callback, context, deniedCallback);
+					break;
+
+				case 'stopped':
+					GodotRuntime.print('Camera worker stopped');
+					break;
+
+				default:
+					break;
+				}
+			};
+
+			camera.worker.onerror = (error) => {
+				GodotRuntime.print('Worker error event:', error.message);
+				camera.useWebCodecsWorker = false;
+				if (camera.frameReader) {
+					camera.frameReader.cancel().catch(() => {});
+					camera.frameReader = null;
+				}
+				camera.trackProcessor = null;
+				if (camera.worker) {
+					camera.worker.terminate();
+					camera.worker = null;
+				}
+				// Fall back to WebCodecs main thread
+				camera.useWebCodecs = true;
+				GodotCamera.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
+			};
+
+			// Initialize the worker
+			camera.worker.postMessage({
+				type: 'init',
+				data: { width: _width, height: _height },
+			});
+
+			// Start the frame reading loop
+			const processFrames = async () => {
+				const cameras = GodotCamera.ensureCamerasMap();
+				try {
+					while (true) {
+						const currentCamera = cameras.get(cameraId);
+						if (!currentCamera || !currentCamera.useWebCodecsWorker || !currentCamera.worker) {
+							break;
+						}
+
+						// eslint-disable-next-line no-await-in-loop
+						const { done, value: videoFrame } = await currentCamera.frameReader.read();
+						if (done) {
+							break;
+						}
+
+						const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
+						const facingMode = GodotCamera.getFacingMode(currentCamera.stream);
+
+						// Transfer VideoFrame to worker
+						currentCamera.worker.postMessage(
+							{
+								type: 'videoFrame',
+								data: {
+									videoFrame,
+									orientation: screenOrientation,
+									facingMode,
+								},
+							},
+							[videoFrame]
+						);
+					}
+				} catch (error) {
+					GodotRuntime.print('WebCodecs Worker error, falling back:', error.message);
+					const currentCamera = cameras.get(cameraId);
+					if (currentCamera && currentCamera.useWebCodecsWorker) {
+						currentCamera.useWebCodecsWorker = false;
+						if (currentCamera.frameReader) {
+							currentCamera.frameReader.cancel().catch(() => {});
+							currentCamera.frameReader = null;
+						}
+						currentCamera.trackProcessor = null;
+
+						// Fall back to Worker Canvas 2D
+						if (currentCamera.worker) {
+							currentCamera.useWorker = true;
+							GodotCamera.setupCanvas2DWorkerCapture(currentCamera, cameraId, callback, context, deniedCallback);
+						} else {
+							// Fall back to WebCodecs main thread
+							currentCamera.useWebCodecs = true;
+							GodotCamera.setupWebCodecsCapture(currentCamera, cameraId, callback, context, deniedCallback);
+						}
+					}
+				}
+			};
+
+			processFrames();
+		},
+
+		/**
+		 * Sets up Canvas 2D-based frame capture (fallback method).
+		 * @param {CameraResource} camera Camera resource
+		 * @param {string} cameraId Camera identifier
+		 * @param {Function} callback Callback function for frame data
+		 * @param {number} context Context value to pass to callback
+		 * @param {Function} deniedCallback Callback for permission denied
+		 * @returns {void}
+		 */
+		setupCanvas2DCapture: function (camera, cameraId, callback, context, deniedCallback) {
+			const [videoTrack] = camera.stream.getVideoTracks();
+			const { width: _width, height: _height } = videoTrack.getSettings();
+
+			if (!camera.canvas) {
+				if (typeof OffscreenCanvas !== 'undefined') {
+					camera.canvas = new OffscreenCanvas(_width, _height);
+				} else {
+					camera.canvas = document.createElement('canvas');
+					camera.canvas.style.display = 'none';
+					document.body.appendChild(camera.canvas);
+				}
+			}
+
+			if (camera.canvas.width !== _width || camera.canvas.height !== _height) {
+				camera.canvas.width = _width;
+				camera.canvas.height = _height;
+			}
+			camera.canvasContext = camera.canvas.getContext('2d', { willReadFrequently: true });
+
+			if (camera.animationFrameId) {
+				cancelAnimationFrame(camera.animationFrameId);
+			}
+
+			const captureFrame = () => {
+				const cameras = GodotCamera.ensureCamerasMap();
+				const currentCamera = cameras.get(cameraId);
+				if (!currentCamera) {
+					return;
+				}
+
+				const { video, canvasContext, stream } = currentCamera;
+
+				if (!stream || !stream.active) {
+					GodotRuntime.print('Stream is not active, stopping');
+					GodotCamera.api.stop(cameraId);
+					return;
+				}
+
+				if (video.readyState === video.HAVE_ENOUGH_DATA) {
+					try {
+						canvasContext.drawImage(video, 0, 0, _width, _height);
+						const imageData = canvasContext.getImageData(0, 0, _width, _height);
+						const pixelData = imageData.data;
+
+						const dataPtr = GodotRuntime.malloc(pixelData.length);
+						GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
+
+						const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
+						const facingMode = GodotCamera.getFacingMode(stream);
+
+						GodotCamera.sendGetPixelDataCallback(
+							callback,
+							context,
+							dataPtr,
+							pixelData.length,
+							_width,
+							_height,
+							screenOrientation,
+							facingMode,
+							null
+						);
+
+						GodotRuntime.free(dataPtr);
+					} catch (error) {
+						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
+
+						if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
+							GodotRuntime.print('Security error, stopping stream:', error);
+							GodotCamera.api.stop(cameraId);
+							deniedCallback(context);
+						}
+						return;
+					}
+				}
+
+				currentCamera.animationFrameId = requestAnimationFrame(captureFrame);
+			};
+
+			camera.animationFrameId = requestAnimationFrame(captureFrame);
+		},
+
+		/**
+		 * Sets up Web Worker-based Canvas 2D frame capture.
+		 * Offloads drawImage and getImageData to a worker thread.
+		 * @param {CameraResource} camera Camera resource
+		 * @param {string} cameraId Camera identifier
+		 * @param {Function} callback Callback function for frame data
+		 * @param {number} context Context value to pass to callback
+		 * @param {Function} deniedCallback Callback for permission denied
+		 * @returns {void}
+		 */
+		setupCanvas2DWorkerCapture: function (camera, cameraId, callback, context, deniedCallback) {
+			const workerUrl = this.getWorkerBlobUrl();
+			if (!workerUrl) {
+				GodotRuntime.print('Failed to create worker, falling back to main thread Canvas 2D');
+				camera.useWorker = false;
+				this.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+				return;
+			}
+
+			const [videoTrack] = camera.stream.getVideoTracks();
+			const { width: _width, height: _height } = videoTrack.getSettings();
+
+			try {
+				camera.worker = new Worker(workerUrl);
+			} catch (e) {
+				GodotRuntime.print('Failed to create worker:', e.message);
+				camera.useWorker = false;
+				this.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+				return;
+			}
+
+			// Handle messages from worker.
+			camera.worker.onmessage = (event) => {
+				const { type } = event.data;
+
+				switch (type) {
+				case 'initialized':
+					GodotRuntime.print('Camera worker initialized');
+					break;
+
+				case 'frameData': {
+					const { pixelData, width, height, orientation, facingMode } = event.data;
+					const dataPtr = GodotRuntime.malloc(pixelData.length);
+					GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
+
+					GodotCamera.sendGetPixelDataCallback(
+						callback,
+						context,
+						dataPtr,
+						pixelData.length,
+						width,
+						height,
+						orientation,
+						facingMode,
+						null
+					);
+
+					GodotRuntime.free(dataPtr);
+					break;
+				}
+
+				case 'error':
+					GodotRuntime.print('Worker error:', event.data.message);
+					// Fall back to main thread on error.
+					camera.useWorker = false;
+					if (camera.worker) {
+						camera.worker.terminate();
+						camera.worker = null;
+					}
+					GodotCamera.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+					break;
+
+				case 'stopped':
+					GodotRuntime.print('Camera worker stopped');
+					break;
+
+				default:
+					break;
+				}
+			};
+
+			camera.worker.onerror = (error) => {
+				GodotRuntime.print('Worker error event:', error.message);
+				camera.useWorker = false;
+				if (camera.worker) {
+					camera.worker.terminate();
+					camera.worker = null;
+				}
+				GodotCamera.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
+			};
+
+			// Initialize the worker.
+			camera.worker.postMessage({
+				type: 'init',
+				data: { width: _width, height: _height },
+			});
+
+			// Start the frame capture loop.
+			const captureFrame = () => {
+				const cameras = GodotCamera.ensureCamerasMap();
+				const currentCamera = cameras.get(cameraId);
+				if (!currentCamera || !currentCamera.useWorker || !currentCamera.worker) {
+					return;
+				}
+
+				const { video, stream } = currentCamera;
+
+				if (!stream || !stream.active) {
+					GodotRuntime.print('Stream is not active, stopping');
+					GodotCamera.api.stop(cameraId);
+					return;
+				}
+
+				if (video.readyState === video.HAVE_ENOUGH_DATA) {
+					try {
+						// Create ImageBitmap from video (can be transferred to worker).
+						createImageBitmap(video).then((imageBitmap) => {
+							const cam = cameras.get(cameraId);
+							if (!cam || !cam.useWorker || !cam.worker) {
+								imageBitmap.close();
+								return;
+							}
+
+							const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
+							const facingMode = GodotCamera.getFacingMode(cam.stream);
+
+							cam.worker.postMessage(
+								{
+									type: 'frame',
+									data: {
+										imageBitmap,
+										orientation: screenOrientation,
+										facingMode,
+									},
+								},
+								[imageBitmap]
+							);
+						}).catch((e) => {
+							GodotRuntime.print('createImageBitmap error:', e.message);
+						});
+					} catch (error) {
+						GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
+
+						if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
+							GodotRuntime.print('Security error, stopping stream:', error);
+							GodotCamera.api.stop(cameraId);
+							deniedCallback(context);
+						}
+						return;
+					}
+				}
+
+				currentCamera.animationFrameId = requestAnimationFrame(captureFrame);
+			};
+
+			camera.animationFrameId = requestAnimationFrame(captureFrame);
+		},
+
+		/**
 		 * Cleans up resources for a specific camera.
 		 * @param {CameraResource} camera Camera resource to cleanup
 		 * @returns {void}
 		 */
-		cleanupCamera: function (camera) {
+		cleanupCamera: function (camera, cameraId) {
+			// Clean up Web Worker resources.
+			if (camera.worker) {
+				camera.worker.postMessage({ type: 'stop' });
+				camera.worker.terminate();
+				camera.worker = null;
+			}
+
+			// Clean up WebCodecs resources.
+			if (camera.frameReader) {
+				camera.frameReader.cancel().catch(() => {});
+				camera.frameReader = null;
+			}
+			if (camera.trackProcessor) {
+				camera.trackProcessor = null;
+			}
+
 			if (camera.animationFrameId) {
 				cancelAnimationFrame(camera.animationFrameId);
 			}
@@ -218,6 +981,9 @@ const GodotCamera = {
 			camera.stream = null;
 			camera.video = null;
 			camera.canvas = null;
+			camera.useWebCodecsWorker = false;
+			camera.useWebCodecs = false;
+			camera.useWorker = false;
 		},
 
 		api: {
@@ -302,12 +1068,18 @@ const GodotCamera = {
 							animationFrameId: null,
 							permissionListener: null,
 							permissionStatus: null,
+							trackProcessor: null,
+							frameReader: null,
+							worker: null,
+							useWebCodecsWorker: false,
+							useWebCodecs: false,
+							useWorker: false,
 						};
 						camerasMap.set(cameraId, camera);
 					}
 
-					let _height, _width;
 					if (!camera.stream) {
+						// Create video element (needed for Canvas 2D fallback).
 						camera.video = document.createElement('video');
 						camera.video.style.display = 'none';
 						camera.video.autoplay = true;
@@ -325,14 +1097,6 @@ const GodotCamera = {
 						camera.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
 						const [videoTrack] = camera.stream.getVideoTracks();
-						({ width: _width, height: _height } = videoTrack.getSettings());
-						if (typeof OffscreenCanvas !== 'undefined') {
-							camera.canvas = new OffscreenCanvas(_width, _height);
-						} else {
-							camera.canvas = document.createElement('canvas');
-							camera.canvas.style.display = 'none';
-							document.body.appendChild(camera.canvas);
-						}
 						videoTrack.addEventListener('ended', () => {
 							GodotRuntime.print('Camera track ended, stopping stream');
 							GodotCamera.api.stop(cameraId);
@@ -363,79 +1127,32 @@ const GodotCamera = {
 
 						camera.video.srcObject = camera.stream;
 						await camera.video.play();
-					} else {
-						// Get actual dimensions from existing stream.
-						const [videoTrack] = camera.stream.getVideoTracks();
-						({ width: _width, height: _height } = videoTrack.getSettings());
-					}
 
-					if (camera.canvas.width !== _width || camera.canvas.height !== _height) {
-						camera.canvas.width = _width;
-						camera.canvas.height = _height;
-					}
-					camera.canvasContext = camera.canvas.getContext('2d', { willReadFrequently: true });
-
-					if (camera.animationFrameId) {
-						cancelAnimationFrame(camera.animationFrameId);
-					}
-
-					const captureFrame = () => {
-						const cameras = GodotCamera.ensureCamerasMap();
-						const currentCamera = cameras.get(cameraId);
-						if (!currentCamera) {
-							return;
+						// Choose capture method (ordered by efficiency):
+						// 1. WebCodecs + Worker: VideoFrame transferred to Worker, copyTo() in Worker
+						// 2. Worker Canvas 2D: ImageBitmap transferred to Worker, drawImage + getImageData in Worker
+						// 3. WebCodecs (main thread): copyTo() on main thread
+						// 4. Canvas 2D (main thread): drawImage + getImageData on main thread
+						if (GodotCamera.isWebCodecsSupported() && GodotCamera.isWorkerSupported()) {
+							// eslint-disable-next-line require-atomic-updates
+							camera.useWebCodecsWorker = true;
+							GodotRuntime.print('Using WebCodecs + Worker for camera capture');
+							GodotCamera.setupWebCodecsWorkerCapture(camera, cameraId, callback, context, deniedCallback);
+						} else if (GodotCamera.isWorkerSupported()) {
+							// eslint-disable-next-line require-atomic-updates
+							camera.useWorker = true;
+							GodotRuntime.print('Using Worker Canvas 2D for camera capture');
+							GodotCamera.setupCanvas2DWorkerCapture(camera, cameraId, callback, context, deniedCallback);
+						} else if (GodotCamera.isWebCodecsSupported()) {
+							// eslint-disable-next-line require-atomic-updates
+							camera.useWebCodecs = true;
+							GodotRuntime.print('Using WebCodecs (main thread) for camera capture');
+							GodotCamera.setupWebCodecsCapture(camera, cameraId, callback, context, deniedCallback);
+						} else {
+							GodotRuntime.print('Using Canvas 2D (main thread) for camera capture');
+							GodotCamera.setupCanvas2DCapture(camera, cameraId, callback, context, deniedCallback);
 						}
-
-						const { video, canvasContext, stream } = currentCamera;
-
-						if (!stream || !stream.active) {
-							GodotRuntime.print('Stream is not active, stopping');
-							GodotCamera.api.stop(cameraId);
-							return;
-						}
-
-						if (video.readyState === video.HAVE_ENOUGH_DATA) {
-							try {
-								canvasContext.drawImage(video, 0, 0, _width, _height);
-								const imageData = canvasContext.getImageData(0, 0, _width, _height);
-								const pixelData = imageData.data;
-
-								const dataPtr = GodotRuntime.malloc(pixelData.length);
-								GodotRuntime.heapCopy(HEAPU8, pixelData, dataPtr);
-
-								// Get screen orientation
-
-								const screenOrientation = screen?.orientation?.angle ?? window.orientation ?? 0;
-								const facingMode = GodotCamera.getFacingMode(stream);
-
-								GodotCamera.sendGetPixelDataCallback(
-									callback,
-									context,
-									dataPtr,
-									pixelData.length,
-									_width,
-									_height,
-									screenOrientation,
-									facingMode,
-									null);
-
-								GodotRuntime.free(dataPtr);
-							} catch (error) {
-								GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
-
-								if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
-									GodotRuntime.print('Security error, stopping stream:', error);
-									GodotCamera.api.stop(cameraId);
-									deniedCallback(context);
-								}
-								return;
-							}
-						}
-
-						currentCamera.animationFrameId = requestAnimationFrame(captureFrame);
-					};
-
-					camera.animationFrameId = requestAnimationFrame(captureFrame);
+					}
 				} catch (error) {
 					GodotCamera.sendGetPixelDataCallback(callback, context, 0, 0, 0, 0, 0, 0, error.message);
 					if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
@@ -455,13 +1172,13 @@ const GodotCamera = {
 				if (deviceId && cameras.has(deviceId)) {
 					const camera = cameras.get(deviceId);
 					if (camera) {
-						GodotCamera.cleanupCamera(camera);
+						GodotCamera.cleanupCamera(camera, deviceId);
 					}
 					cameras.delete(deviceId);
 				} else {
-					cameras.forEach((camera) => {
+					cameras.forEach((camera, id) => {
 						if (camera) {
-							GodotCamera.cleanupCamera(camera);
+							GodotCamera.cleanupCamera(camera, id);
 						}
 					});
 					cameras.clear();

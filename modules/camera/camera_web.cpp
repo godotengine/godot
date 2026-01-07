@@ -120,9 +120,12 @@ bool CameraFeedWeb::activate_feed() {
 		width = width > 0 ? width : f.width;
 		height = height > 0 ? height : f.height;
 	}
+
 	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
 	ERR_FAIL_NULL_V_MSG(driver, false, "CameraDriverWeb singleton is not initialized.");
-	driver->get_pixel_data(this, device_id, width, height, &_on_get_pixel_data, &_on_denied_callback);
+
+	driver->get_pixel_data(this, device_id, width, height,
+			&_on_get_pixel_data, &_on_denied_callback);
 	return true;
 }
 
@@ -130,6 +133,7 @@ void CameraFeedWeb::deactivate_feed() {
 	CameraDriverWeb *driver = CameraDriverWeb::get_singleton();
 	ERR_FAIL_NULL_MSG(driver, "CameraDriverWeb singleton is not initialized.");
 	driver->stop_stream(device_id);
+
 	// Release the image when deactivating the feed.
 	image.unref();
 	data.clear();
