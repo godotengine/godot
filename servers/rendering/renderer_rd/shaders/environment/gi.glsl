@@ -399,7 +399,10 @@ void sdfgi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, o
 			float softness = 0.2 + min(1.0, roughness * 5.0) * 4.0; //approximation to roughness so it does not seem like a hard fade
 			uint i = 0;
 			bool found = false;
-			while (true) {
+			uint iteration_count = 0;
+			const uint MAX_ITERATIONS = 256;
+			while (iteration_count < MAX_ITERATIONS) {
+				iteration_count++;
 				if (length(ray_pos) >= max_distance || light_accum.a > 0.99) {
 					break;
 				}

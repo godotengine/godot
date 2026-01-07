@@ -541,7 +541,9 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 		bool res = data.frustum_planes[intersections[i][0]].intersect_3(data.frustum_planes[intersections[i][1]], data.frustum_planes[intersections[i][2]], &data.frustum_points[i]);
 
 		// What happens with a zero frustum? NYI - deal with this.
-		ERR_FAIL_COND_V(!res, false);
+		if (!res) {
+			return false;
+		}
 
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 		if (is_logging()) {
