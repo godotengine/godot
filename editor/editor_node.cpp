@@ -5349,9 +5349,9 @@ void EditorNode::_project_run_started() {
 
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
-		editor_dock_manager->focus_dock(log);
+		editor_dock_manager->open_dock(log, true);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
-		editor_dock_manager->focus_dock(EditorDebuggerNode::get_singleton());
+		editor_dock_manager->open_dock(EditorDebuggerNode::get_singleton(), true);
 	}
 }
 
