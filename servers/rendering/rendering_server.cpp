@@ -2878,6 +2878,15 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
 
+	/* VIEWPORT UPSCALER */
+
+	ClassDB::bind_method(D_METHOD("viewport_upscaler_create"), &RenderingServer::viewport_upscaler_create);
+
+	ClassDB::bind_method(D_METHOD("viewport_upscaler_set_render_callback", "viewport_upscaler", "callback"), &RenderingServer::viewport_upscaler_set_render_callback);
+	ClassDB::bind_method(D_METHOD("viewport_upscaler_set_requires_motion_vectors", "viewport_upscaler", "requires_motion_vectors"), &RenderingServer::viewport_upscaler_set_requires_motion_vectors);
+	ClassDB::bind_method(D_METHOD("viewport_upscaler_set_mipmap_bias", "viewport_upscaler", "mipmap_bias"), &RenderingServer::viewport_upscaler_set_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("viewport_upscaler_set_jitter_phase_count", "viewport_upscaler", "jitter_phase_count"), &RenderingServer::viewport_upscaler_set_jitter_phase_count);
+
 	/* VIEWPORT */
 
 	ClassDB::bind_method(D_METHOD("viewport_create"), &RenderingServer::viewport_create);
@@ -2893,6 +2902,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_mode", "viewport", "scaling_3d_mode"), &RenderingServer::viewport_set_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_scale", "viewport", "scale"), &RenderingServer::viewport_set_scaling_3d_scale);
+	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_custom_upscaler", "viewport", "upscaler"), &RenderingServer::viewport_set_scaling_3d_custom_upscaler);
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_anisotropic_filtering_level", "viewport", "anisotropic_filtering_level"), &RenderingServer::viewport_set_anisotropic_filtering_level);
@@ -2951,6 +2961,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_CUSTOM);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);

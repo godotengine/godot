@@ -134,7 +134,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			const float EPSILON = 0.0001;
 			float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
-			bool upscaler_available = p_viewport->fsr_enabled;
+			bool upscaler_available = p_viewport->fsr_enabled || (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_CUSTOM && p_viewport->scaling_3d_custom_upscaler.is_valid());
 			RS::ViewportScaling3DType scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
 
 			if ((!upscaler_available || (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_SPATIAL)) && scaling_3d_scale >= (1.0 - EPSILON) && scaling_3d_scale <= (1.0 + EPSILON)) {
@@ -229,6 +229,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				case RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
 				case RS::VIEWPORT_SCALING_3D_MODE_FSR2:
+				case RS::VIEWPORT_SCALING_3D_MODE_CUSTOM:
 					target_width = p_viewport->size.width;
 					target_height = p_viewport->size.height;
 					render_width = MAX(target_width * scaling_3d_scale, 1.0); // target_width / (target_width * scaling)
@@ -253,7 +254,9 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			}
 
 			uint32_t jitter_phase_count = 0;
-			if (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
+			if (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_CUSTOM) {
+				jitter_phase_count = RSG::viewport->viewport_upscaler_get_jitter_phase_count(p_viewport->scaling_3d_custom_upscaler);
+			} else if (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL) {
 				// Implementation has been copied from ffxFsr2GetJitterPhaseCount.
 				// Also used for MetalFX Temporal scaling.
 				jitter_phase_count = uint32_t(8.0f * std::pow(float(target_width) / render_width, 2.0f));
@@ -275,6 +278,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			rb_config.set_target_size(Size2(target_width, target_height));
 			rb_config.set_view_count(p_viewport->view_count);
 			rb_config.set_scaling_3d_mode(scaling_3d_mode);
+			rb_config.set_scaling_3d_custom_upscaler(p_viewport->scaling_3d_custom_upscaler);
 			rb_config.set_msaa_3d(msaa_3d);
 			rb_config.set_screen_space_aa(p_viewport->screen_space_aa);
 			rb_config.set_fsr_sharpness(p_viewport->fsr_sharpness);
@@ -949,6 +953,70 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	}
 }
 
+RID RendererViewport::viewport_upscaler_allocate() {
+	return viewport_upscaler_owner.allocate_rid();
+}
+
+void RendererViewport::viewport_upscaler_initialize(RID p_rid) {
+	viewport_upscaler_owner.initialize_rid(p_rid, ViewportUpscaler());
+}
+
+void RendererViewport::viewport_upscaler_set_render_callback(RID p_viewport_upscaler, const Callable &p_callback) {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL(viewport_upscaler);
+
+	viewport_upscaler->render_callback = p_callback;
+}
+
+Callable RendererViewport::viewport_upscaler_get_render_callback(RID p_viewport_upscaler) const {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL_V(viewport_upscaler, Callable());
+
+	return viewport_upscaler->render_callback;
+}
+
+void RendererViewport::viewport_upscaler_set_requires_motion_vectors(RID p_viewport_upscaler, bool p_requires_motion_vectors) {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL(viewport_upscaler);
+
+	viewport_upscaler->requires_motion_vectors = p_requires_motion_vectors;
+}
+
+bool RendererViewport::viewport_upscaler_get_requires_motion_vectors(RID p_viewport_upscaler) const {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL_V(viewport_upscaler, false);
+
+	return viewport_upscaler->requires_motion_vectors;
+}
+
+void RendererViewport::viewport_upscaler_set_mipmap_bias(RID p_viewport_upscaler, float p_mipmap_bias) {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL(viewport_upscaler);
+
+	viewport_upscaler->mipmap_bias = p_mipmap_bias;
+}
+
+float RendererViewport::viewport_upscaler_get_mipmap_bias(RID p_viewport_upscaler) const {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL_V(viewport_upscaler, 0.0);
+
+	return viewport_upscaler->mipmap_bias;
+}
+
+void RendererViewport::viewport_upscaler_set_jitter_phase_count(RID p_viewport_upscaler, uint32_t p_jitter_phase_count) {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL(viewport_upscaler);
+
+	viewport_upscaler->jitter_phase_count = p_jitter_phase_count;
+}
+
+uint32_t RendererViewport::viewport_upscaler_get_jitter_phase_count(RID p_viewport_upscaler) const {
+	ViewportUpscaler *viewport_upscaler = viewport_upscaler_owner.get_or_null(p_viewport_upscaler);
+	ERR_FAIL_NULL_V(viewport_upscaler, 0);
+
+	return viewport_upscaler->jitter_phase_count;
+}
+
 RID RendererViewport::viewport_allocate() {
 	return viewport_owner.allocate_rid();
 }
@@ -1011,6 +1079,9 @@ void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::Viewport
 
 	bool motion_vectors_before = _viewport_requires_motion_vectors(viewport);
 	viewport->scaling_3d_mode = p_mode;
+	if (viewport->scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_CUSTOM) {
+		viewport->scaling_3d_custom_upscaler = RID();
+	}
 
 	bool motion_vectors_after = _viewport_requires_motion_vectors(viewport);
 	if (motion_vectors_before != motion_vectors_after) {
@@ -1059,6 +1130,22 @@ void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_sca
 	_configure_3d_render_buffers(viewport);
 }
 
+void RendererViewport::viewport_set_scaling_3d_custom_upscaler(RID p_viewport, RID p_viewport_upscaler) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+	ERR_FAIL_COND_MSG(p_viewport_upscaler.is_valid() && viewport->scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_CUSTOM, "3D Scaling mode must be set to custom before setting an upscaler.");
+
+	bool motion_vectors_before = _viewport_requires_motion_vectors(viewport);
+	viewport->scaling_3d_custom_upscaler = p_viewport_upscaler;
+
+	bool motion_vectors_after = _viewport_requires_motion_vectors(viewport);
+	if (motion_vectors_before != motion_vectors_after) {
+		num_viewports_with_motion_vectors += motion_vectors_after ? 1 : -1;
+	}
+
+	_configure_3d_render_buffers(viewport);
+}
+
 void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
 	ERR_FAIL_COND(p_width < 0 || p_height < 0);
 
@@ -1083,6 +1170,10 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 }
 
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
+	if (p_viewport->scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_CUSTOM && p_viewport->scaling_3d_custom_upscaler.is_valid()) {
+		return viewport_upscaler_get_requires_motion_vectors(p_viewport->scaling_3d_custom_upscaler);
+	}
+
 	return p_viewport->use_taa ||
 			RS::scaling_3d_mode_type(p_viewport->scaling_3d_mode) == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL ||
 			p_viewport->debug_draw == RenderingServer::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS || p_viewport->force_motion_vectors;
@@ -1627,7 +1718,11 @@ void RendererViewport::viewport_set_vrs_texture(RID p_viewport, RID p_texture) {
 }
 
 bool RendererViewport::free(RID p_rid) {
-	if (viewport_owner.owns(p_rid)) {
+	if (viewport_upscaler_owner.owns(p_rid)) {
+		viewport_upscaler_owner.free(p_rid);
+
+		return true;
+	} else if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);
 
 		RSG::texture_storage->render_target_free(viewport->render_target);

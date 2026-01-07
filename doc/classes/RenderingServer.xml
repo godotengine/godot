@@ -4195,6 +4195,14 @@
 				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the screen_texture. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
+		<method name="viewport_set_scaling_3d_custom_upscaler">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="upscaler" type="RID" />
+			<description>
+				The custom viewport upscaler to use if [method viewport_set_scaling_3d_mode] was set to [constant VIEWPORT_SCALING_3D_MODE_CUSTOM].
+			</description>
+		</method>
 		<method name="viewport_set_scaling_3d_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4351,6 +4359,44 @@
 			<description>
 				Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
 				If set to [constant RenderingServer.VIEWPORT_VRS_UPDATE_ONCE], the input texture is copied once and the mode is changed to [constant RenderingServer.VIEWPORT_VRS_UPDATE_DISABLED].
+			</description>
+		</method>
+		<method name="viewport_upscaler_create">
+			<return type="RID" />
+			<description>
+				Creates a new viewport upscaler object.
+			</description>
+		</method>
+		<method name="viewport_upscaler_set_jitter_phase_count">
+			<return type="void" />
+			<param index="0" name="viewport_upscaler" type="RID" />
+			<param index="1" name="jitter_phase_count" type="int" />
+			<description>
+				Sets the jitter phase count that will be used for a viewport using this upscaler.
+			</description>
+		</method>
+		<method name="viewport_upscaler_set_mipmap_bias">
+			<return type="void" />
+			<param index="0" name="viewport_upscaler" type="RID" />
+			<param index="1" name="mipmap_bias" type="float" />
+			<description>
+				Sets the mipmap bias that will be subtracted from the computer mipmap bias for a viewport using this upscaler.
+			</description>
+		</method>
+		<method name="viewport_upscaler_set_render_callback">
+			<return type="void" />
+			<param index="0" name="viewport_upscaler" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the callback that is called when this upscaler is used to upscale. The method called should implement the actual upscale logic.
+			</description>
+		</method>
+		<method name="viewport_upscaler_set_requires_motion_vectors">
+			<return type="void" />
+			<param index="0" name="viewport_upscaler" type="RID" />
+			<param index="1" name="requires_motion_vectors" type="bool" />
+			<description>
+				If set to [code]true[/code], this upscaler requires motion vectors to be produced.
 			</description>
 		</method>
 		<method name="visibility_notifier_create">
@@ -5121,7 +5167,10 @@
 			Use MetalFX temporal upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
 			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
 		</constant>
-		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="5" enum="ViewportScaling3DMode">
+		<constant name="VIEWPORT_SCALING_3D_MODE_CUSTOM" value="5" enum="ViewportScaling3DMode">
+			Use a custom viewport upscaler for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale].
+		</constant>
+		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="6" enum="ViewportScaling3DMode">
 			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">

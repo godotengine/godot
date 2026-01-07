@@ -51,6 +51,10 @@ void RenderSceneBuffersConfiguration::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &RenderSceneBuffersConfiguration::set_scaling_3d_mode);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow),MetalFX (Spatial),MetalFX (Temporal)"), "set_scaling_3d_mode", "get_scaling_3d_mode"); // TODO VIEWPORT_SCALING_3D_MODE_OFF is possible here too, but we can't specify an enum string for it.
 
+	ClassDB::bind_method(D_METHOD("get_scaling_3d_custom_upscaler"), &RenderSceneBuffersConfiguration::get_scaling_3d_custom_upscaler);
+	ClassDB::bind_method(D_METHOD("set_scaling_3d_custom_upscaler", "scaling_3d_custom_upscaler"), &RenderSceneBuffersConfiguration::set_scaling_3d_custom_upscaler);
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "scaling_3d_custom_upscaler"), "set_scaling_3d_custom_upscaler", "get_scaling_3d_custom_upscaler");
+
 	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersConfiguration::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("set_msaa_3d", "msaa_3d"), &RenderSceneBuffersConfiguration::set_msaa_3d);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x"), "set_msaa_3d", "get_msaa_3d");

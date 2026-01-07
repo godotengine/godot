@@ -690,6 +690,15 @@ public:
 #define ServerName RendererViewport
 #define server_name RSG::viewport
 
+	/* VIEWPORT UPSCALER API */
+
+	FUNCRIDSPLIT(viewport_upscaler)
+
+	FUNC2(viewport_upscaler_set_render_callback, RID, const Callable &)
+	FUNC2(viewport_upscaler_set_requires_motion_vectors, RID, bool)
+	FUNC2(viewport_upscaler_set_mipmap_bias, RID, float)
+	FUNC2(viewport_upscaler_set_jitter_phase_count, RID, uint32_t)
+
 	/* VIEWPORT TARGET API */
 
 	FUNCRIDSPLIT(viewport)
@@ -710,6 +719,7 @@ public:
 
 	FUNC2(viewport_set_scaling_3d_mode, RID, ViewportScaling3DMode)
 	FUNC2(viewport_set_scaling_3d_scale, RID, float)
+	FUNC2(viewport_set_scaling_3d_custom_upscaler, RID, RID)
 	FUNC2(viewport_set_fsr_sharpness, RID, float)
 	FUNC2(viewport_set_texture_mipmap_bias, RID, float)
 	FUNC2(viewport_set_anisotropic_filtering_level, RID, ViewportAnisotropicFiltering)
