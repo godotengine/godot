@@ -1345,8 +1345,6 @@ bool OpenXRAPI::create_main_swapchains(const Size2i &p_size) {
 		render_state.projection_views[i].subImage.imageRect.extent.height = render_state.main_swapchain_size.height;
 
 		if (render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty()) {
-			render_state.projection_views[i].next = &render_state.depth_views[i];
-
 			render_state.depth_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain();
 			render_state.depth_views[i].subImage.imageArrayIndex = i;
 			render_state.depth_views[i].subImage.imageRect.offset.x = 0;
@@ -2672,17 +2670,21 @@ void OpenXRAPI::end_frame() {
 	render_state.projection_layer.viewCount = (uint32_t)render_state.projection_views.size();
 	render_state.projection_layer.views = render_state.projection_views.ptr();
 
-	if (projection_views_extensions.size() > 0) {
-		for (uint32_t v = 0; v < render_state.projection_views.size(); v++) {
-			void *next_pointer = nullptr;
-			for (OpenXRExtensionWrapper *wrapper : projection_views_extensions) {
-				void *np = wrapper->set_projection_views_and_get_next_pointer(v, next_pointer);
-				if (np != nullptr) {
-					next_pointer = np;
-				}
-			}
-			render_state.projection_views[v].next = next_pointer;
+	const bool submit_depth_views = render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty();
+	for (uint32_t v = 0; v < render_state.projection_views.size(); v++) {
+		void *next_pointer = nullptr;
+		// Start next chain with depth_views if submitting the depth buffer since this is handled here as a special case currently.
+		// TODO: Depth composition logic should be moved out into OpenXRCompositionLayerDepthExtension and register as a projection views extension.
+		if (submit_depth_views) {
+			next_pointer = &render_state.depth_views[v];
 		}
+		for (OpenXRExtensionWrapper *wrapper : projection_views_extensions) {
+			void *np = wrapper->set_projection_views_and_get_next_pointer(v, next_pointer);
+			if (np != nullptr) {
+				next_pointer = np;
+			}
+		}
+		render_state.projection_views[v].next = next_pointer;
 	}
 
 	ordered_layers_list.push_back({ (const XrCompositionLayerBaseHeader *)&render_state.projection_layer, 0 });
