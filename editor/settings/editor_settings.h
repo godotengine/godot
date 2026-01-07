@@ -105,6 +105,10 @@ private:
 	HashMap<String, PackedStringArray> favorite_properties;
 	Vector<String> recent_dirs;
 
+	bool text_file_extensions_dirty = true;
+	HashSet<String> text_file_extensions;
+	HashSet<String> other_file_extensions;
+
 	bool save_changed_setting = true;
 	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 	bool initialized = false;
@@ -126,6 +130,8 @@ private:
 #ifndef DISABLE_DEPRECATED
 	void _remove_deprecated_settings();
 #endif
+
+	void _update_textfile_extensions_cache();
 
 	// Bind helpers.
 	Vector<String> _get_shortcut_list();
@@ -206,6 +212,9 @@ public:
 
 	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
 	const Array get_builtin_action_overrides(const String &p_name) const;
+
+	const HashSet<String> get_textfile_extensions();
+	const HashSet<String> get_other_file_extensions();
 
 	void notify_changes();
 

@@ -3707,16 +3707,14 @@ void EditorFileSystem::_update_extensions() {
 		valid_extensions.insert(E);
 	}
 
-	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-	for (const String &E : textfile_ext) {
+	for (const String &E : EditorSettings::get_singleton()->get_textfile_extensions()) {
 		if (valid_extensions.has(E)) {
 			continue;
 		}
 		valid_extensions.insert(E);
 		textfile_extensions.insert(E);
 	}
-	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
-	for (const String &E : other_file_ext) {
+	for (const String &E : EditorSettings::get_singleton()->get_other_file_extensions()) {
 		if (valid_extensions.has(E)) {
 			continue;
 		}

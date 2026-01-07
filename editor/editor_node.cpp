@@ -1070,21 +1070,19 @@ void EditorNode::_notification(int p_what) {
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
-				HashSet<String> updated_textfile_extensions;
-				HashSet<String> updated_other_file_extensions;
+				const HashSet<String> updated_textfile_extensions = EditorSettings::get_singleton()->get_textfile_extensions();
+				const HashSet<String> updated_other_file_extensions = EditorSettings::get_singleton()->get_other_file_extensions();
 				bool extensions_match = true;
-				const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-				for (const String &E : textfile_ext) {
-					updated_textfile_extensions.insert(E);
+				for (const String &E : updated_textfile_extensions) {
 					if (extensions_match && !textfile_extensions.has(E)) {
 						extensions_match = false;
+						break;
 					}
 				}
-				const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
-				for (const String &E : other_file_ext) {
-					updated_other_file_extensions.insert(E);
+				for (const String &E : updated_other_file_extensions) {
 					if (extensions_match && !other_file_extensions.has(E)) {
 						extensions_match = false;
+						break;
 					}
 				}
 
@@ -8379,14 +8377,8 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTRC("Pan View"), Key::SPACE);
 
-	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-	for (const String &E : textfile_ext) {
-		textfile_extensions.insert(E);
-	}
-	const Vector<String> other_file_ext = ((String)(EDITOR_GET("docks/filesystem/other_file_extensions"))).split(",", false);
-	for (const String &E : other_file_ext) {
-		other_file_extensions.insert(E);
-	}
+	textfile_extensions = EditorSettings::get_singleton()->get_textfile_extensions();
+	other_file_extensions = EditorSettings::get_singleton()->get_other_file_extensions();
 
 	force_textfile_extensions.insert("csv"); // CSV translation source, has `Translation` resource type, but not loadable as resource.
 

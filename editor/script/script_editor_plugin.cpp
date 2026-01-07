@@ -3061,11 +3061,7 @@ void ScriptEditor::_editor_settings_changed() {
 }
 
 void ScriptEditor::_apply_editor_settings() {
-	textfile_extensions.clear();
-	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
-	for (const String &E : textfile_ext) {
-		textfile_extensions.insert(E);
-	}
+	textfile_extensions = EditorSettings::get_singleton()->get_textfile_extensions();
 
 	trim_trailing_whitespace_on_save = EDITOR_GET("text_editor/behavior/files/trim_trailing_whitespace_on_save");
 	trim_final_newlines_on_save = EDITOR_GET("text_editor/behavior/files/trim_final_newlines_on_save");
