@@ -244,6 +244,14 @@ static const String ICON_XML_TEMPLATE =
 static const String ICON_XML_PATH = "res/mipmap-anydpi-v26/icon.xml";
 static const String THEMED_ICON_XML_PATH = "res/mipmap-anydpi-v26/themed_icon.xml";
 
+static const String ANDROID_SPLASH_ICON_PATH = "res/drawable/splash_icon.webp";
+static const String ANDROID_SPLASH_BRANDING_IMAGE_PATH = "res/drawable/splash_branding_image.webp";
+
+static const char *DISABLE_GODOT_SPLASH_OPTION = PNAME("splash_screen/disable_godot_boot_splash");
+static const char *ANDROID_SPLASH_ICON_OPTION = PNAME("splash_screen/icon");
+static const char *ANDROID_SPLASH_BACKGROUND_COLOR_OPTION = PNAME("splash_screen/background_color");
+static const char *ANDROID_SPLASH_BRANDING_IMAGE_OPTION = PNAME("splash_screen/branding_image");
+
 static const int ICON_DENSITIES_COUNT = 6;
 static const char *LAUNCHER_ICON_OPTION = PNAME("launcher_icons/main_192x192");
 static const char *LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION = PNAME("launcher_icons/adaptive_foreground_432x432");
@@ -1084,7 +1092,8 @@ bool EditorExportPlatformAndroid::_is_transparency_allowed(const Ref<EditorExpor
 }
 
 void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
-	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
+	String gradle_build_dir = ExportTemplateManager::get_android_build_directory(p_preset);
+	const String themes_xml_path = gradle_build_dir.path_join("res/values/themes.xml");
 
 	if (!FileAccess::exists(themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
@@ -1104,8 +1113,24 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	}
 
 	Dictionary splash_theme_attributes;
-	splash_theme_attributes["android:windowSplashScreenBackground"] = "@mipmap/icon_background";
-	splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@mipmap/icon_foreground";
+
+	Color color = p_preset->get(ANDROID_SPLASH_BACKGROUND_COLOR_OPTION);
+	if (color == Color()) {
+		splash_theme_attributes["android:windowSplashScreenBackground"] = "@mipmap/icon_background";
+	} else {
+		splash_theme_attributes["android:windowSplashScreenBackground"] = "#" + color.to_html(false);
+	}
+	splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@drawable/splash_icon";
+	String splash_icon_path = p_preset->get(ANDROID_SPLASH_ICON_OPTION);
+	if (!splash_icon_path.is_empty() && splash_icon_path.get_extension() == "xml") {
+		Vector<uint8_t> data = FileAccess::get_file_as_bytes(splash_icon_path);
+		store_file_at_path(gradle_build_dir.path_join("res/drawable/splash_icon_vector.xml"), data);
+		splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@drawable/splash_icon_vector";
+	}
+	String splash_branding_image_path = p_preset->get(ANDROID_SPLASH_BRANDING_IMAGE_OPTION);
+	if (!splash_branding_image_path.is_empty()) {
+		splash_theme_attributes["android:windowSplashScreenBrandingImage"] = "@drawable/splash_branding_image";
+	}
 	splash_theme_attributes["postSplashScreenTheme"] = "@style/GodotAppMainTheme";
 	splash_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
 
@@ -1897,7 +1922,7 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 	memcpy(p_data.ptrw(), buffer.ptr(), p_data.size());
 }
 
-void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
+void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome, Ref<Image> &splash_icon, Ref<Image> &splash_branding_image) {
 	String project_icon_path = get_project_setting(p_preset, "application/config/icon");
 
 	Error err = OK;
@@ -1941,14 +1966,55 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 		print_verbose("Loading adaptive monochrome icon from " + path);
 		monochrome = _load_icon_or_splash_image(path, &err);
 	}
+
+	// Splash icon: user selection -> adaptive foreground icon (user selection -> regular icon).
+	path = static_cast<String>(p_preset->get(ANDROID_SPLASH_ICON_OPTION)).strip_edges();
+	if (path.get_extension() != "xml") {
+		// XML file is handled in _fix_themes_xml().
+		print_verbose("Loading splash screen icon from " + path);
+		bool loaded_ok = false;
+		if (!path.is_empty()) {
+			splash_icon = _load_icon_or_splash_image(path, &err);
+			loaded_ok = (err == OK && splash_icon.is_valid() && !splash_icon->is_empty());
+		}
+		if (!loaded_ok) {
+			print_verbose("- falling back to using the adaptive foreground icon");
+			splash_icon = foreground;
+		}
+	}
+
+	// Splash branding image: user selection -> No image.
+	// - Gradle build: If the path is empty, the splash theme attribute is not added in _fix_themes_xml().
+	// - Legacy build: If the path is empty, a transparent image is used.
+	path = static_cast<String>(p_preset->get(ANDROID_SPLASH_BRANDING_IMAGE_OPTION)).strip_edges();
+	if (!path.is_empty()) {
+		print_verbose("Loading splash screen branding image from " + path);
+		splash_branding_image = _load_icon_or_splash_image(path, &err);
+	}
 }
 
 void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 		const Ref<Image> &p_main_image,
 		const Ref<Image> &p_foreground,
 		const Ref<Image> &p_background,
-		const Ref<Image> &p_monochrome) {
+		const Ref<Image> &p_monochrome,
+		const Ref<Image> &p_splash_icon,
+		const Ref<Image> &p_splash_branding_image) {
 	String gradle_build_dir = ExportTemplateManager::get_android_build_directory(p_preset);
+
+	// Copy splash screen icon to the drawable directory.
+	// This is only for png/webp/svg file; XML file is handled in _fix_themes_xml().
+	if (p_splash_icon.is_valid() && !p_splash_icon->is_empty()) {
+		print_verbose("Copying splash screen icon into " + ANDROID_SPLASH_ICON_PATH);
+		Vector<uint8_t> buffer = p_splash_icon->save_webp_to_buffer();
+		store_file_at_path(gradle_build_dir.path_join(ANDROID_SPLASH_ICON_PATH), buffer);
+	}
+
+	if (p_splash_branding_image.is_valid() && !p_splash_branding_image->is_empty()) {
+		print_verbose("Copying splash screen branding image into " + ANDROID_SPLASH_BRANDING_IMAGE_PATH);
+		Vector<uint8_t> buffer = p_splash_branding_image->save_webp_to_buffer();
+		store_file_at_path(gradle_build_dir.path_join(ANDROID_SPLASH_BRANDING_IMAGE_PATH), buffer);
+	}
 
 	String monochrome_tag = "";
 
@@ -2211,6 +2277,11 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "screen/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, DISABLE_GODOT_SPLASH_OPTION), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, ANDROID_SPLASH_ICON_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.xml"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, ANDROID_SPLASH_BRANDING_IMAGE_OPTION, PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, ANDROID_SPLASH_BACKGROUND_COLOR_OPTION, PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args", PROPERTY_HINT_NONE, "monospace"), ""));
@@ -2248,7 +2319,11 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "gesture/swipe_to_dismiss" ||
 			p_option == "apk_expansion/enable" ||
 			p_option == "apk_expansion/SALT" ||
-			p_option == "apk_expansion/public_key") {
+			p_option == "apk_expansion/public_key" ||
+			p_option == DISABLE_GODOT_SPLASH_OPTION ||
+			p_option == ANDROID_SPLASH_ICON_OPTION ||
+			p_option == ANDROID_SPLASH_BACKGROUND_COLOR_OPTION ||
+			p_option == ANDROID_SPLASH_BRANDING_IMAGE_OPTION) {
 		return advanced_options_enabled;
 	}
 	if (p_option == "gradle_build/gradle_build_directory" || p_option == "gradle_build/android_source_template") {
@@ -3244,6 +3319,11 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	command_line_strings.push_back("--background_color");
 	command_line_strings.push_back(background_color);
 
+	bool disable_godot_splash = p_preset->get(DISABLE_GODOT_SPLASH_OPTION);
+	if (disable_godot_splash) {
+		command_line_strings.push_back("--disable_godot_splash");
+	}
+
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");
 	if (debug_opengl) {
 		command_line_strings.push_back("--debug_opengl");
@@ -3692,8 +3772,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	Ref<Image> foreground;
 	Ref<Image> background;
 	Ref<Image> monochrome;
+	Ref<Image> splash_icon;
+	Ref<Image> splash_branding_image;
 
-	load_icon_refs(p_preset, main_image, foreground, background, monochrome);
+	load_icon_refs(p_preset, main_image, foreground, background, monochrome, splash_icon, splash_branding_image);
 
 	Vector<uint8_t> command_line_flags;
 	// Write command line flags into the command_line_flags variable.
@@ -3766,7 +3848,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res/*.xml files with project name."));
 		}
 		// Copies the project icon files into the appropriate Gradle project directory.
-		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome);
+		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome, splash_icon, splash_branding_image);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
 		_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 		// Modify res/values/themes.xml file.
@@ -4165,6 +4247,22 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 		if (file == "resources.arsc") {
 			_fix_resources(p_preset, data);
+		}
+
+		if (file == ANDROID_SPLASH_ICON_PATH) {
+			if (splash_icon.is_valid() && !splash_icon->is_empty()) {
+				Vector<uint8_t> buffer = splash_icon->save_webp_to_buffer();
+				data.resize(buffer.size());
+				memcpy(data.ptrw(), buffer.ptr(), data.size());
+			}
+		}
+
+		if (file == ANDROID_SPLASH_BRANDING_IMAGE_PATH) {
+			if (splash_branding_image.is_valid() && !splash_branding_image->is_empty()) {
+				Vector<uint8_t> buffer = splash_branding_image->save_webp_to_buffer();
+				data.resize(buffer.size());
+				memcpy(data.ptrw(), buffer.ptr(), data.size());
+			}
 		}
 
 		if (file == THEMED_ICON_XML_PATH) {
