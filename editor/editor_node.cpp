@@ -640,6 +640,14 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 	if (!p_skip_creation) {
 		theme = EditorThemeManager::generate_theme(theme);
 		DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), EditorStringName(Editor)));
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+		if (EditorHelpHighlighter::get_singleton()) {
+			// Update syntax colors.
+			EditorHelpHighlighter::free_singleton();
+			EditorHelpHighlighter::create_singleton();
+		}
+#endif
 	}
 
 	Vector<Ref<Theme>> editor_themes;
