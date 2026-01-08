@@ -13,34 +13,40 @@
 		<method name="get_sensitivity" qualifiers="const">
 			<return type="float" />
 			<description>
+				Returns the [member sensitivity].
 			</description>
 		</method>
 		<method name="get_x_axis" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the [member x_axis].
 			</description>
 		</method>
 		<method name="get_y_axis" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the [member y_axis].
 			</description>
 		</method>
 		<method name="set_sensitivity">
 			<return type="void" />
 			<param index="0" name="sensitivity" type="float" />
 			<description>
+				Sets the [member sensitivity].
 			</description>
 		</method>
 		<method name="set_x_axis">
 			<return type="void" />
 			<param index="0" name="axis" type="int" />
 			<description>
+				Sets the [member x_axis].
 			</description>
 		</method>
 		<method name="set_y_axis">
 			<return type="void" />
 			<param index="0" name="axis" type="int" />
 			<description>
+				Sets the [member y_axis].
 			</description>
 		</method>
 	</methods>

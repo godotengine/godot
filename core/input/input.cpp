@@ -282,10 +282,6 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input) {
-		return false;
-	}
-
 	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
 		return true;
 	}
@@ -301,10 +297,6 @@ bool Input::is_anything_pressed() const {
 
 bool Input::is_anything_pressed_except_mouse() const {
 	_THREAD_SAFE_METHOD_
-
-	if (disable_input) {
-		return false;
-	}
 
 	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
 		return true;
@@ -2047,3 +2039,5 @@ Input::Input() {
 Input::~Input() {
 	singleton = nullptr;
 }
+
+//////////////////////////////////////////////////////////
