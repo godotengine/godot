@@ -459,7 +459,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					if (line != -1) {
 						emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
 					}
-					return;
+					// Don't return here to pass event to TextEdit so it can clean up the mouse pressed state.
 				}
 			}
 		}

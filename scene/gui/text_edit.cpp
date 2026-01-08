@@ -6191,6 +6191,11 @@ void TextEdit::set_selection_origin_column(int p_column, int p_caret) {
 		deselect(p_caret);
 	}
 
+	if (get_selection_mode() == SELECTION_MODE_NONE || get_selection_mode() == SELECTION_MODE_SHIFT) {
+		carets.write[p_caret].selection.word_begin_column = p_column;
+		carets.write[p_caret].selection.word_end_column = p_column;
+	}
+
 	if (selection_moved && has_selection(p_caret)) {
 		_selection_changed(p_caret);
 	}
@@ -8521,8 +8526,6 @@ void TextEdit::_pre_shift_selection(int p_caret) {
 	set_selection_origin_line(get_caret_line(p_caret), true, -1, p_caret);
 	set_selection_origin_column(get_caret_column(p_caret), p_caret);
 	carets.write[p_caret].selection.active = true;
-	carets.write[p_caret].selection.word_begin_column = get_caret_column(p_caret);
-	carets.write[p_caret].selection.word_end_column = get_caret_column(p_caret);
 }
 
 bool TextEdit::_selection_contains(int p_caret, int p_line, int p_column, bool p_include_edges, bool p_only_selections) const {
