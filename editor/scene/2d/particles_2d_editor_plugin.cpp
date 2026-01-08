@@ -581,7 +581,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	int valid_positions_count = emission_positions.size();
 	int w = 2048;
-	int h = (valid_positions_count / 2048) + 1;
+	int h = ((valid_positions_count - 1) / 2048) + 1;
 
 	mask_texture_data.resize_initialized(w * h * 2 * sizeof(float));
 

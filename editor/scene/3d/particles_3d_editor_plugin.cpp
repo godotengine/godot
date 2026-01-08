@@ -350,7 +350,7 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	int point_count = points.size();
 
 	int w = 2048;
-	int h = (point_count / 2048) + 1;
+	int h = ((point_count - 1) / 2048) + 1;
 
 	Vector<uint8_t> point_img;
 	point_img.resize(w * h * 3 * sizeof(float));
