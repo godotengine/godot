@@ -142,6 +142,7 @@ private:
 	Transform2D inv_emission_transform;
 
 #ifdef TOOLS_ENABLED
+	RID gizmo_canvas_item;
 	bool show_gizmos = false;
 #endif
 

@@ -31,6 +31,7 @@
 #include "canvas_item.h"
 #include "canvas_item.compat.inc"
 
+#include "core/math/geometry_2d.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -827,13 +828,7 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	} else if (p_width >= rect.size.width || p_width >= rect.size.height) {
 		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect.grow(0.5f * p_width), p_color, p_antialiased);
 	} else {
-		Vector<Vector2> points;
-		points.resize(5);
-		points.write[0] = rect.position;
-		points.write[1] = rect.position + Vector2(rect.size.x, 0);
-		points.write[2] = rect.position + rect.size;
-		points.write[3] = rect.position + Vector2(0, rect.size.y);
-		points.write[4] = rect.position;
+		Vector<Vector2> points = Geometry2D::get_rect_outline(rect);
 
 		Vector<Color> colors = { p_color };
 
@@ -844,7 +839,6 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_minor, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-
 	if (p_filled) {
 		if (p_width != -1.0) {
 			WARN_PRINT("The \"width\" argument has no effect when \"filled\" is \"true\".");
@@ -854,22 +848,7 @@ void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_mino
 	} else if (p_width >= 2.0 * MAX(p_major, p_minor)) {
 		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major + 0.5 * p_width, p_minor + 0.5 * p_width, p_color, p_antialiased);
 	} else {
-		// Tessellation count is hardcoded. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
-		const int circle_segments = 64;
-
-		Vector<Vector2> points;
-		points.resize(circle_segments + 1);
-
-		Vector2 *points_ptr = points.ptrw();
-		const real_t circle_point_step = Math::TAU / circle_segments;
-
-		for (int i = 0; i < circle_segments; i++) {
-			float angle = i * circle_point_step;
-			points_ptr[i].x = Math::cos(angle) * p_major;
-			points_ptr[i].y = Math::sin(angle) * p_minor;
-			points_ptr[i] += p_pos;
-		}
-		points_ptr[circle_segments] = points_ptr[0];
+		Vector<Vector2> points = Geometry2D::get_ellipse_outline(p_pos, p_major, p_minor);
 
 		Vector<Color> colors = { p_color };
 

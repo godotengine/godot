@@ -31,6 +31,7 @@
 #include "gpu_particles_2d.h"
 #include "gpu_particles_2d.compat.inc"
 
+#include "core/math/geometry_2d.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
@@ -218,6 +219,9 @@ void GPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
 		return;
 	}
 	show_gizmos = p_show_gizmos;
+	if (!show_gizmos) {
+		RS::get_singleton()->canvas_item_clear(gizmo_canvas_item);
+	}
 	queue_redraw();
 }
 #endif
@@ -729,7 +733,9 @@ void GPUParticles2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (show_gizmos) {
-				draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
+				RS::get_singleton()->canvas_item_clear(gizmo_canvas_item);
+				Vector<Vector2> pos = Geometry2D::get_rect_outline(visibility_rect);
+				RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos, { Color(0, 0.7, 0.9, 0.4) });
 				_draw_emission_gizmo();
 			}
 #endif
@@ -813,27 +819,35 @@ void GPUParticles2D::_draw_emission_gizmo() {
 	if (pm.is_null()) {
 		return;
 	}
-	draw_set_transform(
-			Vector2(pm->get_emission_shape_offset().x, pm->get_emission_shape_offset().y),
-			0.0,
-			Vector2(pm->get_emission_shape_scale().x, pm->get_emission_shape_scale().y));
 
+	Transform2D xform(
+			0.0,
+			Vector2(pm->get_emission_shape_scale().x, pm->get_emission_shape_scale().y),
+			0.0,
+			Vector2(pm->get_emission_shape_offset().x, pm->get_emission_shape_offset().y));
+	RS::get_singleton()->canvas_item_add_set_transform(gizmo_canvas_item, xform);
+
+	Vector<Color> colors = { emission_ring_color };
 	switch (pm->get_emission_shape()) {
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_BOX: {
 			Vector2 extents2d = Vector2(pm->get_emission_box_extents().x, pm->get_emission_box_extents().y);
-			draw_rect(Rect2(-extents2d, extents2d * 2.0), emission_ring_color, false);
+			Vector<Vector2> pos = Geometry2D::get_rect_outline(Rect2(-extents2d, extents2d * 2.0));
+			RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos, colors);
 			break;
 		}
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE:
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE_SURFACE: {
-			draw_circle(Vector2(), pm->get_emission_sphere_radius(), emission_ring_color, false);
+			Vector<Vector2> pos = Geometry2D::get_ellipse_outline(Vector2(), pm->get_emission_sphere_radius(), pm->get_emission_sphere_radius());
+			RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos, colors);
 			break;
 		}
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_RING: {
 			Vector3 ring_axis = pm->get_emission_ring_axis();
 			if (ring_axis.is_equal_approx(Vector3(0.0, 0.0, 1.0)) || ring_axis.is_zero_approx()) {
-				draw_circle(Vector2(), pm->get_emission_ring_inner_radius(), emission_ring_color, false);
-				draw_circle(Vector2(), pm->get_emission_ring_radius(), emission_ring_color, false);
+				Vector<Vector2> pos_inner = Geometry2D::get_ellipse_outline(Vector2(), pm->get_emission_ring_inner_radius(), pm->get_emission_ring_inner_radius());
+				Vector<Vector2> pos_outer = Geometry2D::get_ellipse_outline(Vector2(), pm->get_emission_ring_radius(), pm->get_emission_ring_radius());
+				RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos_inner, colors);
+				RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos_outer, colors);
 			} else {
 				Vector2 a = Vector2(pm->get_emission_ring_height() / -2.0, pm->get_emission_ring_radius() / -1.0);
 				Vector2 b = Vector2(-a.x, MIN(a.y + std::tan((90.0 - pm->get_emission_ring_cone_angle()) * 0.01745329) * pm->get_emission_ring_height(), 0.0));
@@ -841,14 +855,14 @@ void GPUParticles2D::_draw_emission_gizmo() {
 				Vector2 d = Vector2(a.x, -a.y);
 				if (ring_axis.is_equal_approx(Vector3(1.0, 0.0, 0.0))) {
 					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
-					draw_multiline(pos, emission_ring_color);
+					RS::get_singleton()->canvas_item_add_multiline(gizmo_canvas_item, pos, colors);
 				} else if (ring_axis.is_equal_approx(Vector3(0.0, 1.0, 0.0))) {
 					a = Vector2(a.y, a.x);
 					b = Vector2(b.y, b.x);
 					c = Vector2(c.y, c.x);
 					d = Vector2(d.y, d.x);
 					Vector<Vector2> pos = { a, b, b, c, c, d, d, a };
-					draw_multiline(pos, emission_ring_color);
+					RS::get_singleton()->canvas_item_add_multiline(gizmo_canvas_item, pos, colors);
 				}
 			}
 			break;
@@ -990,6 +1004,12 @@ GPUParticles2D::GPUParticles2D() {
 	RS::get_singleton()->particles_set_draw_passes(particles, 1);
 	RS::get_singleton()->particles_set_draw_pass_mesh(particles, 0, mesh);
 
+#ifdef TOOLS_ENABLED
+	gizmo_canvas_item = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_z_index(gizmo_canvas_item, RS::CANVAS_ITEM_Z_MAX - 1);
+	RS::get_singleton()->canvas_item_set_parent(gizmo_canvas_item, get_canvas_item());
+#endif
+
 	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
@@ -1016,4 +1036,7 @@ GPUParticles2D::~GPUParticles2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(particles);
 	RS::get_singleton()->free_rid(mesh);
+#ifdef TOOLS_ENABLED
+	RS::get_singleton()->free_rid(gizmo_canvas_item);
+#endif
 }

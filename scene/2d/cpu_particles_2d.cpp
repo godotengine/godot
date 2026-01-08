@@ -31,6 +31,7 @@
 #include "cpu_particles_2d.h"
 #include "cpu_particles_2d.compat.inc"
 
+#include "core/math/geometry_2d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/transform_interpolator.h"
 #include "scene/2d/gpu_particles_2d.h"
@@ -602,6 +603,9 @@ void CPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
 		return;
 	}
 	show_gizmos = p_show_gizmos;
+	if (!show_gizmos) {
+		RS::get_singleton()->canvas_item_clear(gizmo_canvas_item);
+	}
 	queue_redraw();
 }
 #endif
@@ -1277,6 +1281,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 			if (show_gizmos) {
+				RS::get_singleton()->canvas_item_clear(gizmo_canvas_item);
 				_draw_emission_gizmo();
 			}
 #endif
@@ -1320,23 +1325,22 @@ void CPUParticles2D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 void CPUParticles2D::_draw_emission_gizmo() {
 	Color emission_ring_color = Color(0.8, 0.7, 0.4, 0.4);
-	Transform2D gizmo_transform;
-	if (!local_coords) {
-		gizmo_transform = get_global_transform();
-	}
-
-	draw_set_transform_matrix(gizmo_transform);
 
 	switch (emission_shape) {
-		case CPUParticles2D::EMISSION_SHAPE_RECTANGLE:
-			draw_rect(Rect2(-emission_rect_extents, emission_rect_extents * 2.0), emission_ring_color, false);
+		case CPUParticles2D::EMISSION_SHAPE_RECTANGLE: {
+			Vector<Vector2> pos = Geometry2D::get_rect_outline(Rect2(-emission_rect_extents, emission_rect_extents * 2.0));
+			RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos, { emission_ring_color });
 			break;
+		}
 		case CPUParticles2D::EMISSION_SHAPE_SPHERE:
-		case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE:
-			draw_circle(Vector2(), emission_sphere_radius, emission_ring_color, false);
+		case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE: {
+			Vector<Vector2> pos = Geometry2D::get_ellipse_outline(Vector2(), emission_sphere_radius, emission_sphere_radius);
+			RS::get_singleton()->canvas_item_add_polyline(gizmo_canvas_item, pos, { emission_ring_color });
 			break;
-		default:
+		}
+		default: {
 			break;
+		}
 	}
 }
 #endif
@@ -1671,6 +1675,12 @@ CPUParticles2D::CPUParticles2D() {
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
 
+#ifdef TOOLS_ENABLED
+	gizmo_canvas_item = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_z_index(gizmo_canvas_item, RS::CANVAS_ITEM_Z_MAX - 1);
+	RS::get_singleton()->canvas_item_set_parent(gizmo_canvas_item, get_canvas_item());
+#endif
+
 	set_emitting(true);
 	set_amount(8);
 	set_use_local_coordinates(false);
@@ -1723,4 +1733,7 @@ CPUParticles2D::~CPUParticles2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(multimesh);
 	RS::get_singleton()->free_rid(mesh);
+#ifdef TOOLS_ENABLED
+	RS::get_singleton()->free_rid(gizmo_canvas_item);
+#endif
 }
