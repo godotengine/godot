@@ -1550,11 +1550,10 @@ void ItemList::_notification(int p_what) {
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-						pos.y += theme_cache.icon_margin;
 						text_ofs.y = icon_size.height + theme_cache.icon_margin * 2;
 					} else {
 						pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
-						text_ofs.x = icon_size.width + theme_cache.icon_margin;
+						text_ofs.x = icon_size.width + theme_cache.icon_margin * 2;
 					}
 
 					Rect2 draw_rect = Rect2(pos, icon_size);
