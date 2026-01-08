@@ -2065,6 +2065,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							int subgizmo_id = seg->subgizmos_intersect_ray(camera, _edit.mouse_pos);
 							if (subgizmo_id != -1) {
 								ERR_CONTINUE(!se);
+								bool start_transform = false;
 								if (b->is_shift_pressed()) {
 									if (se->subgizmos.has(subgizmo_id)) {
 										se->subgizmos.erase(subgizmo_id);
@@ -2074,6 +2075,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								} else {
 									se->subgizmos.clear();
 									se->subgizmos.insert(subgizmo_id, seg->get_subgizmo_transform(subgizmo_id));
+									start_transform = spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT;
 								}
 
 								if (se->subgizmos.is_empty()) {
@@ -2084,6 +2086,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 								seg->redraw();
 								spatial_editor->update_transform_gizmo();
+
+								if (start_transform) {
+									begin_transform(TRANSFORM_TRANSLATE, false);
+								}
+
 								intersected_subgizmo = true;
 								break;
 							}
