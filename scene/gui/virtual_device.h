@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_DEVICE_H
-#define VIRTUAL_DEVICE_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -97,5 +96,3 @@ public:
 
 VARIANT_ENUM_CAST(VirtualDevice::VisibilityMode);
 VARIANT_ENUM_CAST(VirtualDevice::DrawMode);
-
-#endif // VIRTUAL_DEVICE_H

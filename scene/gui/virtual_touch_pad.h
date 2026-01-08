@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_TOUCH_PAD_H
-#define VIRTUAL_TOUCH_PAD_H
+#pragma once
 
 #include "scene/gui/virtual_device.h"
 
@@ -84,5 +83,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(VirtualTouchPad::TouchPadHand);
-
-#endif // VIRTUAL_TOUCH_PAD_H

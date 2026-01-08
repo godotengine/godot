@@ -30,10 +30,9 @@
 
 #include "virtual_touch_pad.h"
 
-#include "core/input/input.h"
 #include "core/config/engine.h"
+#include "core/input/input.h"
 #include "scene/theme/theme_db.h"
-
 
 void VirtualTouchPad::_notification(int p_what) {
 	VirtualDevice::_notification(p_what);

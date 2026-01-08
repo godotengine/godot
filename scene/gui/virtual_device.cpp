@@ -45,12 +45,16 @@ void VirtualDevice::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
-			if (disabled) break;
+			if (disabled) {
+				break;
+			}
 			hovering = true;
 			queue_redraw();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (disabled) break;
+			if (disabled) {
+				break;
+			}
 			hovering = false;
 			queue_redraw();
 		} break;
@@ -214,7 +218,9 @@ bool VirtualDevice::is_hovered() const {
 }
 
 void VirtualDevice::set_disabled(bool p_disabled) {
-	if (disabled == p_disabled) return;
+	if (disabled == p_disabled) {
+		return;
+	}
 	disabled = p_disabled;
 	if (disabled && pressed) {
 		pressed = false;

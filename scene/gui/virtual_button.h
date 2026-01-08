@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_BUTTON_H
-#define VIRTUAL_BUTTON_H
+#pragma once
 
 #include "scene/gui/virtual_device.h"
 
@@ -151,5 +150,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(VirtualButton::StretchMode);
-
-#endif // VIRTUAL_BUTTON_H

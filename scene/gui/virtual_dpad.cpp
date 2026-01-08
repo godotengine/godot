@@ -147,11 +147,20 @@ void VirtualDPad::_update_dpad(const Vector2 &p_pos) {
 void VirtualDPad::_press_direction(DPadDirection p_dir) {
 	int btn = -1;
 	switch (p_dir) {
-		case DIR_UP: btn = up_button_index; break;
-		case DIR_DOWN: btn = down_button_index; break;
-		case DIR_LEFT: btn = left_button_index; break;
-		case DIR_RIGHT: btn = right_button_index; break;
-		default: break;
+		case DIR_UP:
+			btn = up_button_index;
+			break;
+		case DIR_DOWN:
+			btn = down_button_index;
+			break;
+		case DIR_LEFT:
+			btn = left_button_index;
+			break;
+		case DIR_RIGHT:
+			btn = right_button_index;
+			break;
+		default:
+			break;
 	}
 
 	if (btn != -1) {
@@ -168,11 +177,20 @@ void VirtualDPad::_press_direction(DPadDirection p_dir) {
 void VirtualDPad::_release_direction(DPadDirection p_dir) {
 	int btn = -1;
 	switch (p_dir) {
-		case DIR_UP: btn = up_button_index; break;
-		case DIR_DOWN: btn = down_button_index; break;
-		case DIR_LEFT: btn = left_button_index; break;
-		case DIR_RIGHT: btn = right_button_index; break;
-		default: break;
+		case DIR_UP:
+			btn = up_button_index;
+			break;
+		case DIR_DOWN:
+			btn = down_button_index;
+			break;
+		case DIR_LEFT:
+			btn = left_button_index;
+			break;
+		case DIR_RIGHT:
+			btn = right_button_index;
+			break;
+		default:
+			break;
 	}
 
 	if (btn != -1) {
@@ -262,7 +280,6 @@ void VirtualDPad::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_left_button_index"), &VirtualDPad::get_left_button_index);
 	ClassDB::bind_method(D_METHOD("set_right_button_index", "index"), &VirtualDPad::set_right_button_index);
 	ClassDB::bind_method(D_METHOD("get_right_button_index"), &VirtualDPad::get_right_button_index);
-
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "deadzone_size"), "set_deadzone_size", "get_deadzone_size");

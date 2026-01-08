@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_DPAD_H
-#define VIRTUAL_DPAD_H
+#pragma once
 
 #include "scene/gui/virtual_device.h"
 
@@ -105,5 +104,3 @@ public:
 
 	VirtualDPad();
 };
-
-#endif // VIRTUAL_DPAD_H

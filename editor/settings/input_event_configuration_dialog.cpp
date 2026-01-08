@@ -440,7 +440,6 @@ void InputEventConfigurationDialog::_update_input_list() {
 			item->set_meta("__value", direction);
 		}
 	}
-
 }
 
 void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {

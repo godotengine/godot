@@ -2000,10 +2000,14 @@ bool InputEventVirtualButton::is_match(const Ref<InputEvent> &p_event, bool p_ex
 
 String InputEventVirtualButton::as_text() const {
 	switch (button_index) {
-		case 12: return RTR("Virtual DPad Up");
-		case 13: return RTR("Virtual DPad Down");
-		case 14: return RTR("Virtual DPad Left");
-		case 15: return RTR("Virtual DPad Right");
+		case 12:
+			return RTR("Virtual DPad Up");
+		case 13:
+			return RTR("Virtual DPad Down");
+		case 14:
+			return RTR("Virtual DPad Left");
+		case 15:
+			return RTR("Virtual DPad Right");
 	}
 	return vformat(RTR("Virtual Button %d"), button_index);
 }
@@ -2112,4 +2116,3 @@ void InputEventVirtualMotion::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
 }
-

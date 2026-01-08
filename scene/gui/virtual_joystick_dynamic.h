@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_JOYSTICK_DYNAMIC_H
-#define VIRTUAL_JOYSTICK_DYNAMIC_H
+#pragma once
 
 #include "scene/gui/virtual_joystick.h"
 
@@ -60,5 +59,3 @@ public:
 
 	VirtualJoystickDynamic();
 };
-
-#endif // VIRTUAL_JOYSTICK_DYNAMIC_H

@@ -127,11 +127,21 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 	if (vb.is_valid()) {
 		int idx = vb->get_button_index();
 		switch (idx) {
-			case 12: text = TTR("Virtual DPad Up"); break;
-			case 13: text = TTR("Virtual DPad Down"); break;
-			case 14: text = TTR("Virtual DPad Left"); break;
-			case 15: text = TTR("Virtual DPad Right"); break;
-			default: text = vformat(TTR("Virtual Button %d"), (int64_t)idx); break;
+			case 12:
+				text = TTR("Virtual DPad Up");
+				break;
+			case 13:
+				text = TTR("Virtual DPad Down");
+				break;
+			case 14:
+				text = TTR("Virtual DPad Left");
+				break;
+			case 15:
+				text = TTR("Virtual DPad Right");
+				break;
+			default:
+				text = vformat(TTR("Virtual Button %d"), (int64_t)idx);
+				break;
 		}
 	}
 

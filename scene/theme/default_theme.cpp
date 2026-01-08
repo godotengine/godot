@@ -1398,8 +1398,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("normal_color", "VirtualDPad", Color(0.8, 0.8, 0.8, 0.4));
 	theme->set_color("active_color", "VirtualDPad", Color(1, 1, 1, 0.8));
 	theme->set_color("highlight_color", "VirtualDPad", Color(0, 0.8, 1, 1)); // Cyan for pressed
-
-
 }
 
 void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel, TextServer::Hinting p_font_hinting, TextServer::FontAntialiasing p_font_antialiasing, bool p_font_msdf, bool p_font_generate_mipmaps) {

@@ -440,7 +440,6 @@ Error decode_input_event_virtual_motion(const PackedByteArray &p_data, Ref<Input
 	return OK;
 }
 
-
 bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data) {
 	switch (p_event->get_type()) {
 		case InputEventType::KEY:

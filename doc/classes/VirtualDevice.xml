@@ -25,7 +25,7 @@
 	<members>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
 		<member name="device" type="int" setter="set_device" getter="get_device" default="0">
-			The device index to be used in the generated [InputEventVirtual]. For example, if set to 0, events will appear as "Device 0".
+			The device index to be used in the generated [InputEvent]. For example, if set to 0, events will appear as "Device 0".
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" enum="VirtualDevice.VisibilityMode" default="0">
 			Controls when the virtual device is visible. Can be set to show always or only on touchscreen devices.

@@ -8,6 +8,7 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
 		<member name="default_position" type="Vector2" setter="set_default_position" getter="get_default_position" default="Vector2(0, 0)">
 			The default position where the joystick appears when [member visible_by_default] is set to [code]true[/code]. It also represents the position the joystick returns to after being released. If left at [code]Vector2(0, 0)[/code], it will automatically center itself within the control's size.
 		</member>

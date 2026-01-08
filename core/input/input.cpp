@@ -374,8 +374,12 @@ bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 
 bool Input::is_virtual_button_pressed(int p_device, int p_button) const {
 	_THREAD_SAFE_METHOD_
-	if (disable_input) return false;
-	if (!virtual_device_states.has(p_device)) return false;
+	if (disable_input) {
+		return false;
+	}
+	if (!virtual_device_states.has(p_device)) {
+		return false;
+	}
 	return virtual_device_states[p_device].buttons_pressed.has(p_button);
 }
 
@@ -588,9 +592,15 @@ float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 
 float Input::get_virtual_axis_value(int p_device, int p_axis) const {
 	_THREAD_SAFE_METHOD_
-	if (disable_input) return 0.0f;
-	if (!virtual_device_states.has(p_device)) return 0.0f;
-	if (!virtual_device_states[p_device].axes_values.has(p_axis)) return 0.0f;
+	if (disable_input) {
+		return 0.0f;
+	}
+	if (!virtual_device_states.has(p_device)) {
+		return 0.0f;
+	}
+	if (!virtual_device_states[p_device].axes_values.has(p_axis)) {
+		return 0.0f;
+	}
 	return virtual_device_states[p_device].axes_values[p_axis];
 }
 
@@ -2037,4 +2047,3 @@ Input::Input() {
 Input::~Input() {
 	singleton = nullptr;
 }
-

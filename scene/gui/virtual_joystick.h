@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIRTUAL_JOYSTICK_H
-#define VIRTUAL_JOYSTICK_H
+#pragma once
 
 #include "scene/gui/virtual_device.h"
 
@@ -130,5 +129,3 @@ public:
 
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickMode);
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickHand);
-
-#endif // VIRTUAL_JOYSTICK_H

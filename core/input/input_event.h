@@ -649,4 +649,3 @@ public:
 
 	InputEventType get_type() const final override { return InputEventType::VIRTUAL_MOTION; }
 };
-
