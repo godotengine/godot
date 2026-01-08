@@ -431,6 +431,38 @@ public:
 		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
 	}
 
+	static Vector<Point2> get_rect_outline(const Rect2 &p_rect) {
+		Vector<Vector2> points;
+		points.resize(5);
+		points.write[0] = p_rect.position;
+		points.write[1] = p_rect.position + Vector2(p_rect.size.x, 0);
+		points.write[2] = p_rect.position + p_rect.size;
+		points.write[3] = p_rect.position + Vector2(0, p_rect.size.y);
+		points.write[4] = p_rect.position;
+		return points;
+	}
+
+	static Vector<Point2> get_ellipse_outline(const Point2 &p_point, real_t p_major, real_t p_minor) {
+		// Tessellation count is hardcoded. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
+		const int circle_segments = 64;
+
+		Vector<Vector2> points;
+		points.resize(circle_segments + 1);
+
+		Vector2 *points_ptr = points.ptrw();
+		const real_t circle_point_step = Math::TAU / circle_segments;
+
+		for (int i = 0; i < circle_segments; i++) {
+			float angle = i * circle_point_step;
+			points_ptr[i].x = Math::cos(angle) * p_major;
+			points_ptr[i].y = Math::sin(angle) * p_minor;
+			points_ptr[i] += p_point;
+		}
+		points_ptr[circle_segments] = points_ptr[0];
+
+		return points;
+	}
+
 	// Returns a list of points on the convex hull in counter-clockwise order.
 	// Note: the last point in the returned list is the same as the first one.
 	static Vector<Point2> convex_hull(Vector<Point2> P) {

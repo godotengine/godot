@@ -68,6 +68,7 @@ private:
 	uint32_t seed = 0;
 	bool use_fixed_seed = false;
 #ifdef TOOLS_ENABLED
+	RID gizmo_canvas_item;
 	bool show_gizmos = false;
 #endif
 	Ref<Material> process_material;
