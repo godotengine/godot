@@ -227,6 +227,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("axis_y_color", EditorStringName(Editor), Color(0.53, 0.84, 0.01));
 		p_theme->set_color("axis_z_color", EditorStringName(Editor), Color(0.16, 0.55, 0.96));
 		p_theme->set_color("axis_w_color", EditorStringName(Editor), Color(0.55, 0.55, 0.55));
+		p_theme->set_color("axis_view_plane_color", EditorStringName(Editor), Color(0.75, 0.75, 0.75, 0.33));
 
 		p_theme->set_color("property_color_x", EditorStringName(Editor), p_config.dark_icon_and_font ? Color(0.88, 0.38, 0.47) : Color(0.40, 0.04, 0.09));
 		p_theme->set_color("property_color_y", EditorStringName(Editor), p_config.dark_icon_and_font ? Color(0.76, 0.93, 0.40) : Color(0.27, 0.37, 0.06));

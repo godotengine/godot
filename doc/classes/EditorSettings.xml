@@ -509,6 +509,9 @@
 		<member name="editors/3d/show_gizmo_during_rotation" type="int" setter="" getter="">
 			If checked, the transform gizmo remains visible during rotation in that transform mode.
 		</member>
+		<member name="editors/3d/view_plane_rotation_gizmo_scale" type="float" setter="" getter="">
+			The scale of the outer circle of the rotation gizmo as view plane rotation in the 3D editor. If set to [code]2.0[/code], the outer circle has twice the radius of the XYZ rotation gizmo sphere.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
 		</member>
