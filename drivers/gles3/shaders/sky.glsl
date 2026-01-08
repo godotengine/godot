@@ -40,7 +40,7 @@ in vec2 uv_interp;
 
 /* clang-format on */
 
-uniform samplerCube radiance; //texunit:-1
+uniform samplerCube radiance; //texunit:-2
 #ifdef USE_CUBEMAP_PASS
 uniform samplerCube half_res; //texunit:-2
 uniform samplerCube quarter_res; //texunit:-3
