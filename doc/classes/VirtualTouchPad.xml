@@ -5,9 +5,7 @@
 	</brief_description>
 	<description>
 		[VirtualTouchPad] is a specialized control for tracking relative movement (deltas). It behaves similarly to a laptop trackpad or a mouse.
-
-		**Architecture Note (Pure Motion):**
-		This node is strictly designed for **Continuous Motion** (e.g., controlling a 3D camera, aiming a weapon). It emits [InputEventVirtualMotion] based on the relative movement of the finger between frames.
+		[b]Architecture Note (Pure Motion):[/b] This node is strictly designed for [b]Continuous Motion[/b] (e.g., controlling a 3D camera, aiming a weapon). It emits [InputEventVirtualMotion] based on the relative movement of the finger between frames.
 	</description>
 	<tutorials>
 	</tutorials>

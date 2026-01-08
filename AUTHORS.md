@@ -80,7 +80,6 @@ name is available.
     Brian Semrau (briansemrau)
     BrotherShort
     Bruno Lourenço (MadEqua)
-    Bruno Soares (Machi)
     Cameron Reikes (creikey)
     Camille Mohr-Daurat (pouleyKetchoupp)
     Caner Demirer (cdemirer)

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "virtual_device.h"
+
 #include "core/input/input.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"

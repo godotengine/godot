@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "virtual_touch_pad.h"
+
 #include "core/input/input.h"
 #include "core/config/engine.h"
 #include "scene/theme/theme_db.h"

@@ -34,7 +34,6 @@
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/math/math_funcs.h"
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;

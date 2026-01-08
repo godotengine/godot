@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "virtual_joystick.h"
+
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "scene/resources/style_box.h"

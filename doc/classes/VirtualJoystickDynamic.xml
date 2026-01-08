@@ -4,7 +4,7 @@
 		An on-screen area that spawns a virtual joystick at the touch position.
 	</brief_description>
 	<description>
-		[VirtualJoystickDynamic] is a specialized [VirtualJoystick] designed to cover a large area of the screen (e.g., the entire left half). It remains invisible until touched. When touched, the joystick "embodies" at the touch position, allowing for dynamic analog control without requiring precision from the user to hit a fixed timestamp. It defaults to [constant VirtualJoystick.JOYSTICK_MODE_DYNAMIC].
+		[VirtualJoystickDynamic] is a specialized [VirtualJoystick] designed to cover a large area of the screen (e.g. the entire left half). It remains invisible until touched. When touched, the joystick "embodies" at the touch position, allowing for dynamic analog control without requiring precision from the user to hit a fixed timestamp. It defaults to [constant VirtualJoystick.JOYSTICK_MODE_DYNAMIC].
 	</description>
 	<tutorials>
 	</tutorials>

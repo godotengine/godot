@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "virtual_button.h"
+
 #include "core/input/input.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"

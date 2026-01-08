@@ -32,7 +32,8 @@
 #define VIRTUAL_BUTTON_H
 
 #include "scene/gui/virtual_device.h"
-#include "scene/resources/text_paragraph.h"
+
+class TextParagraph;
 
 class VirtualButton : public VirtualDevice {
 	GDCLASS(VirtualButton, VirtualDevice);

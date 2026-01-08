@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "virtual_dpad.h"
+
 #include "core/input/input.h"
-#include "core/math/math_funcs.h"
 #include "scene/theme/theme_db.h"
 
 void VirtualDPad::_update_theme_item_cache() {
