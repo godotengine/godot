@@ -96,7 +96,7 @@ void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorDockDragHint::set_slot(DockConstants::DockSlot p_slot) {
+void EditorDockDragHint::set_slot(EditorDock::DockSlot p_slot) {
 	occupied_slot = p_slot;
 	drop_tabbar = dock_manager->dock_slots[occupied_slot].container->get_tab_bar();
 }
@@ -128,7 +128,7 @@ void EditorDockDragHint::_notification(int p_what) {
 				return;
 			}
 
-			can_drop_dock = dragged_dock->get_available_layouts() & (EditorDock::DockLayout)EditorDockManager::get_singleton()->dock_slots[occupied_slot].layout;
+			can_drop_dock = dragged_dock->get_available_layouts() & EditorDockManager::get_singleton()->dock_slots[occupied_slot].layout;
 
 			dock_drop_highlight->set_border_color(valid_drop_color);
 			dock_drop_highlight->set_bg_color(valid_drop_color * Color(1, 1, 1, 0.1));
@@ -246,7 +246,7 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 		return dock_tab_dragged;
 	}
 
-	Dictionary dock_drop_data = dock_slots[DockConstants::DOCK_SLOT_LEFT_BL].container->get_viewport()->gui_get_drag_data();
+	Dictionary dock_drop_data = dock_slots[EditorDock::DOCK_SLOT_LEFT_BL].container->get_viewport()->gui_get_drag_data();
 
 	// Check if we are dragging a dock.
 	if (dock_drop_data.get("type", "").operator String() != "tab") {
@@ -270,7 +270,7 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 			return nullptr;
 		}
 
-		for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 			if (dock_slots[i].container->is_visible_in_tree()) {
 				dock_slots[i].drag_hint->set_rect(dock_slots[i].container->get_global_rect());
 				dock_slots[i].drag_hint->show();
@@ -376,7 +376,7 @@ void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
 	EditorDock *dock = _close_window(p_wrapper);
 	ERR_FAIL_COND(!all_docks.has(dock));
 
-	if (dock->dock_slot_index != DockConstants::DOCK_SLOT_NONE) {
+	if (dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
 		dock->is_open = false;
 		open_dock(dock);
 		focus_dock(dock);
@@ -597,7 +597,7 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 
 void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
 	// Save docks by dock slot.
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		const DockSlot &dock_slot = dock_slots[i];
 
 		PackedStringArray names;
@@ -724,7 +724,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	// Load docks by slot. Index -1 is for docks that have no slot.
-	for (int i = -1; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = -1; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		if (!p_layout->has_section_key(p_section, "dock_" + itos(i + 1))) {
 			continue;
 		}
@@ -767,12 +767,12 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	// Set the selected tabs.
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		const DockSlot &dock_slot = dock_slots[i];
 
 		int selected_tab_idx = p_layout->get_value(p_section, "dock_" + itos(i + 1) + "_selected_tab_idx", -1);
 		if (selected_tab_idx <= 0 || selected_tab_idx >= dock_slot.container->get_tab_count()) {
-			if (i == DockConstants::DOCK_SLOT_BOTTOM) {
+			if (i == EditorDock::DOCK_SLOT_BOTTOM) {
 				dock_slot.container->set_current_tab(-1);
 			}
 			continue;
@@ -859,7 +859,7 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	p_dock->is_open = true;
 
 	// Open dock to its previous location.
-	if (p_dock->dock_slot_index != DockConstants::DOCK_SLOT_NONE) {
+	if (p_dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
 		TabContainer *slot = dock_slots[p_dock->dock_slot_index].container;
 		int tab_index = p_dock->previous_tab_index;
 		if (tab_index < 0) {
@@ -964,9 +964,9 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 		return;
 	}
 	docks_visible = p_show;
-	for (int i = 0; i < DockConstants::DOCK_SLOT_BOTTOM; i++) {
+	for (int i = 0; i < EditorDock::DOCK_SLOT_BOTTOM; i++) {
 		// Show and hide in reverse order due to the SplitContainer prioritizing the last split offset.
-		TabContainer *container = dock_slots[docks_visible ? i : DockConstants::DOCK_SLOT_BOTTOM - i - 1].container;
+		TabContainer *container = dock_slots[docks_visible ? i : EditorDock::DOCK_SLOT_BOTTOM - i - 1].container;
 		container->set_visible(docks_visible && container->get_tab_count() > 0);
 	}
 	_update_layout();
@@ -983,7 +983,7 @@ void EditorDockManager::update_tab_styles() {
 }
 
 void EditorDockManager::set_tab_icon_max_width(int p_max_width) {
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		TabContainer *tab_container = dock_slots[i].container;
 		tab_container->add_theme_constant_override(SNAME("icon_max_width"), p_max_width);
 	}
@@ -999,9 +999,9 @@ void EditorDockManager::set_hsplit(DockSplitContainer *p_split) {
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
-void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, TabContainer *p_tab_container, DockConstants::DockLayout p_layout) {
+void EditorDockManager::register_dock_slot(EditorDock::DockSlot p_dock_slot, TabContainer *p_tab_container, EditorDock::DockLayout p_layout) {
 	ERR_FAIL_NULL(p_tab_container);
-	ERR_FAIL_INDEX(p_dock_slot, DockConstants::DOCK_SLOT_MAX);
+	ERR_FAIL_INDEX(p_dock_slot, EditorDock::DOCK_SLOT_MAX);
 
 	DockSlot slot;
 	slot.layout = p_layout;
@@ -1020,7 +1020,7 @@ void EditorDockManager::register_dock_slot(DockConstants::DockSlot p_dock_slot, 
 	p_tab_container->set_meta("dock_slot", p_dock_slot);
 	p_tab_container->set_meta("dock_layout", p_layout);
 
-	if (p_layout == DockConstants::DOCK_LAYOUT_VERTICAL) {
+	if (p_layout == EditorDock::DOCK_LAYOUT_VERTICAL) {
 		p_tab_container->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
 		p_tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		p_tab_container->set_use_hidden_tabs_for_min_size(true);
@@ -1121,7 +1121,7 @@ void DockContextPopup::_float_dock() {
 }
 
 bool DockContextPopup::_is_slot_available(int p_slot) const {
-	return context_dock->available_layouts & (EditorDock::DockLayout)EditorDockManager::get_singleton()->dock_slots[p_slot].layout;
+	return context_dock->available_layouts & EditorDockManager::get_singleton()->dock_slots[p_slot].layout;
 }
 
 void DockContextPopup::_dock_select_input(const Ref<InputEvent> &p_input) {
@@ -1131,7 +1131,7 @@ void DockContextPopup::_dock_select_input(const Ref<InputEvent> &p_input) {
 		Vector2 point = me->get_position();
 
 		int over_dock_slot = -1;
-		for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
+		for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 			if (dock_select_rects[i].has_point(point)) {
 				over_dock_slot = i;
 				break;
@@ -1184,25 +1184,25 @@ void DockContextPopup::_dock_select_draw() {
 	Rect2 center_panel_rect(center_panel_width, 0, center_panel_width, dock_size.y);
 
 	if (dock_select->is_layout_rtl()) {
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(0, dock_size.y), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_BL] = Rect2(dock_size, dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_BR] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_UL] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_BL] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(0, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BL] = Rect2(dock_size, dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BR] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UL] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BL] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
 	} else {
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_UL] = Rect2(Point2(), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_BL] = Rect2(Point2(0, dock_size.y), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_LEFT_BR] = Rect2(dock_size, dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_BL] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
-		dock_select_rects[DockConstants::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UL] = Rect2(Point2(), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BL] = Rect2(Point2(0, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_UR] = Rect2(Point2(dock_size.x, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_LEFT_BR] = Rect2(dock_size, dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UL] = Rect2(Point2(dock_size.x * 4, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BL] = Rect2(Point2(dock_size.x * 4, dock_size.y), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_UR] = Rect2(Point2(dock_size.x * 5, 0), dock_size);
+		dock_select_rects[EditorDock::DOCK_SLOT_RIGHT_BR] = Rect2(Point2(dock_size.x * 5, dock_size.y), dock_size);
 	}
-	dock_select_rects[DockConstants::DOCK_SLOT_BOTTOM] = Rect2(center_panel_width, dock_size.y, center_panel_width, dock_size.y);
+	dock_select_rects[EditorDock::DOCK_SLOT_BOTTOM] = Rect2(center_panel_width, dock_size.y, center_panel_width, dock_size.y);
 
 	int rtl_dir = dock_select->is_layout_rtl() ? -1 : 1;
 	real_t tab_height = 3.0 * EDSCALE;
@@ -1221,8 +1221,8 @@ void DockContextPopup::_dock_select_draw() {
 	dock_select->draw_rect(center_panel_draw_rect, unusable_dock_color);
 
 	// Draw all dock slots.
-	for (int i = 0; i < DockConstants::DOCK_SLOT_MAX; i++) {
-		int max_tabs = (i == DockConstants::DOCK_SLOT_BOTTOM) ? 6 : 3;
+	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
+		int max_tabs = (i == EditorDock::DOCK_SLOT_BOTTOM) ? 6 : 3;
 		const EditorDockManager::DockSlot &dock_slot = dock_manager->dock_slots[i];
 
 		Rect2 dock_slot_draw_rect = dock_select_rects[i].grow_individual(-dock_spacing, -dock_top_spacing, -dock_spacing, -dock_spacing);

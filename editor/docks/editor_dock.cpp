@@ -213,6 +213,10 @@ void EditorDock::set_dock_shortcut(const Ref<Shortcut> &p_shortcut) {
 	_emit_changed();
 }
 
+Ref<Shortcut> EditorDock::get_dock_shortcut() const {
+	return shortcut;
+}
+
 void EditorDock::set_default_slot(DockSlot p_slot) {
 	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	default_slot = p_slot;

@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/config_file.h"
-#include "editor/docks/dock_constants.h"
 #include "scene/gui/margin_container.h"
 
 class Shortcut;
@@ -42,24 +41,24 @@ class EditorDock : public MarginContainer {
 
 public:
 	enum DockLayout {
-		DOCK_LAYOUT_VERTICAL = DockConstants::DOCK_LAYOUT_VERTICAL,
-		DOCK_LAYOUT_HORIZONTAL = DockConstants::DOCK_LAYOUT_HORIZONTAL,
-		DOCK_LAYOUT_FLOATING = DockConstants::DOCK_LAYOUT_FLOATING,
+		DOCK_LAYOUT_VERTICAL = 1,
+		DOCK_LAYOUT_HORIZONTAL = 2,
+		DOCK_LAYOUT_FLOATING = 4,
 		DOCK_LAYOUT_ALL = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING,
 	};
 
 	enum DockSlot {
-		DOCK_SLOT_NONE = DockConstants::DOCK_SLOT_NONE,
-		DOCK_SLOT_LEFT_UL = DockConstants::DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL = DockConstants::DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR = DockConstants::DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR = DockConstants::DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL = DockConstants::DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL = DockConstants::DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR = DockConstants::DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR = DockConstants::DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_BOTTOM = DockConstants::DOCK_SLOT_BOTTOM,
-		DOCK_SLOT_MAX = DockConstants::DOCK_SLOT_MAX
+		DOCK_SLOT_NONE = -1,
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_MAX
 	};
 
 private:
@@ -86,7 +85,7 @@ private:
 	bool enabled = true;
 	int previous_tab_index = -1;
 	WindowWrapper *dock_window = nullptr;
-	int dock_slot_index = DockConstants::DOCK_SLOT_NONE;
+	int dock_slot_index = DOCK_SLOT_NONE;
 
 	void _set_default_slot_bind(DockSlot p_slot);
 	DockSlot _get_default_slot_bind() const { return default_slot; }
@@ -134,7 +133,7 @@ public:
 	Color get_title_color() const { return title_color; }
 
 	void set_dock_shortcut(const Ref<Shortcut> &p_shortcut);
-	Ref<Shortcut> get_dock_shortcut() const { return shortcut; }
+	Ref<Shortcut> get_dock_shortcut() const;
 
 	void set_default_slot(DockSlot p_slot);
 	DockSlot get_default_slot() const { return default_slot; }
