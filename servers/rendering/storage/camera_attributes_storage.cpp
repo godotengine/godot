@@ -144,8 +144,8 @@ void RendererCameraAttributes::camera_attributes_set_auto_exposure(RID p_camera_
 		cam_attributes->auto_exposure_version = ++auto_exposure_counter;
 	}
 #ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
-		WARN_PRINT_ONCE_ED("Auto-exposure is only available when using the Forward+ or Mobile renderer.");
+	if ((OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile") && p_enable) {
+		WARN_PRINT_ONCE_ED("Auto-exposure is only available when using the Forward+ renderer.");
 	}
 #endif
 	cam_attributes->use_auto_exposure = p_enable;
