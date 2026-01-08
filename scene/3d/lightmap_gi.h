@@ -206,6 +206,7 @@ private:
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
+	uint32_t cull_mask = 0xfffff;
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
@@ -342,6 +343,12 @@ public:
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
+
+	void set_cull_mask(uint32_t p_mask);
+	uint32_t get_cull_mask() const;
+
+	void set_cull_mask_value(int p_layer_number, bool p_enable);
+	bool get_cull_mask_value(int p_layer_number) const;
 
 	AABB get_aabb() const override;
 
