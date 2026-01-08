@@ -444,10 +444,10 @@ void NavMeshGenerator2D::generator_bake_from_source_geometry_data(Ref<Navigation
 	if (baking_rect.has_area() && border_size > 0.0) {
 		Vector2 baking_rect_offset = p_navigation_mesh->get_baking_rect_offset();
 
-		const int rect_begin_x = baking_rect.position[0] + baking_rect_offset.x + border_size;
-		const int rect_begin_y = baking_rect.position[1] + baking_rect_offset.y + border_size;
-		const int rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
-		const int rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
+		const double rect_begin_x = baking_rect.position[0] + baking_rect_offset.x + border_size;
+		const double rect_begin_y = baking_rect.position[1] + baking_rect_offset.y + border_size;
+		const double rect_end_x = baking_rect.position[0] + baking_rect.size[0] + baking_rect_offset.x - border_size;
+		const double rect_end_y = baking_rect.position[1] + baking_rect.size[1] + baking_rect_offset.y - border_size;
 
 		RectD clipper_rect = RectD(rect_begin_x, rect_begin_y, rect_end_x, rect_end_y);
 

@@ -6594,7 +6594,19 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_f
 		Ref<NavigationPolygon> transformed_polygon;
 		transformed_polygon.instantiate();
 
-		PackedVector2Array new_points = get_transformed_vertices(layer_tile_data.navigation_polygon->get_vertices(), p_flip_h, p_flip_v, p_transpose);
+		// Winding order:
+		// - Preserve for outlines.
+		// - If there are no polygons provided, preserve for vertices.
+		// - If there are polygons provided, preserve for polygons, don't preserve for vertices (so the vertex order is unchanged and polygons don't need reindexing).
+
+		Vector<Vector<int>> new_polygons = layer_tile_data.navigation_polygon->get_polygons();
+		if ((p_flip_h != p_flip_v) != p_transpose) {
+			for (Vector<int> &polygon : new_polygons) {
+				polygon.reverse();
+			}
+		}
+
+		PackedVector2Array new_points = get_transformed_vertices(layer_tile_data.navigation_polygon->get_vertices(), p_flip_h, p_flip_v, p_transpose, new_polygons.is_empty());
 
 		const Vector<Vector<Vector2>> outlines = layer_tile_data.navigation_polygon->get_outlines();
 		int outline_count = outlines.size();
@@ -6603,10 +6615,10 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id, bool p_f
 		new_outlines.resize(outline_count);
 
 		for (int i = 0; i < outline_count; i++) {
-			new_outlines.write[i] = get_transformed_vertices(outlines[i], p_flip_h, p_flip_v, p_transpose);
+			new_outlines.write[i] = get_transformed_vertices(outlines[i], p_flip_h, p_flip_v, p_transpose, true);
 		}
 
-		transformed_polygon->set_data(new_points, layer_tile_data.navigation_polygon->get_polygons(), new_outlines);
+		transformed_polygon->set_data(new_points, new_polygons, new_outlines);
 
 		layer_tile_data.transformed_navigation_polygon[key] = transformed_polygon;
 		return transformed_polygon;
@@ -6657,14 +6669,15 @@ Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
 	return custom_data[p_layer_id];
 }
 
-PackedVector2Array TileData::get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose) {
+PackedVector2Array TileData::get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose, bool p_preserve_winding_order) {
 	const Vector2 *r = p_vertices.ptr();
 	int size = p_vertices.size();
 
 	PackedVector2Array new_points;
-	new_points.resize(size);
+	new_points.resize_uninitialized(size);
 	Vector2 *w = new_points.ptrw();
 
+	bool reverse_vertex_order = p_preserve_winding_order && ((p_flip_h != p_flip_v) != p_transpose);
 	for (int i = 0; i < size; i++) {
 		Vector2 v;
 		if (p_transpose) {
@@ -6679,7 +6692,7 @@ PackedVector2Array TileData::get_transformed_vertices(const PackedVector2Array &
 		if (p_flip_v) {
 			v.y *= -1;
 		}
-		w[i] = v;
+		w[reverse_vertex_order ? (size - 1 - i) : i] = v;
 	}
 	return new_points;
 }

@@ -1029,7 +1029,7 @@ public:
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 
 	// Polygons.
-	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose);
+	static PackedVector2Array get_transformed_vertices(const PackedVector2Array &p_vertices, bool p_flip_h, bool p_flip_v, bool p_transpose, bool p_preserve_winding_order = false);
 };
 
 VARIANT_ENUM_CAST(TileSet::CellNeighbor);
