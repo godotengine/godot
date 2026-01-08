@@ -539,6 +539,17 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 				event_item->set_icon(0, get_editor_theme_icon(SNAME("JoyAxis")));
 			}
 
+			Ref<InputEventVirtualButton> vb = event;
+			if (vb.is_valid()) {
+				event_item->set_icon(0, get_editor_theme_icon(SNAME("VirtualButton")));
+			}
+
+			Ref<InputEventVirtualMotion> vm = event;
+			if (vm.is_valid()) {
+				event_item->set_icon(0, get_editor_theme_icon(SNAME("VirtualJoystick")));
+			}
+
+
 			// Third Column - Buttons
 			event_item->add_button(2, get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_EVENT, false, TTRC("Edit Event"), TTRC("Edit Event"));
 			event_item->add_button(2, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_EVENT, false, TTRC("Remove Event"), TTRC("Remove Event"));

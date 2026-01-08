@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualDPad" inherits="VirtualDevice" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An on-screen virtual directional pad.
+	</brief_description>
+	<description>
+		[VirtualDPad] provides a directional pad interface. It detects touches in four sectors (Up, Down, Left, Right) relative to its center and emits [InputEventVirtualButton] events corresponding to the configured button indices for each direction.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="deadzone_size" type="float" setter="set_deadzone_size" getter="get_deadzone_size" default="5.0">
+			The size (radius) of the central deadzone where no direction is triggered.
+		</member>
+		<member name="down_index" type="int" setter="set_down_button_index" getter="get_down_button_index" default="1">
+			The virtual button index triggered by the down direction.
+		</member>
+		<member name="left_index" type="int" setter="set_left_button_index" getter="get_left_button_index" default="2">
+			The virtual button index triggered by the left direction.
+		</member>
+		<member name="right_index" type="int" setter="set_right_button_index" getter="get_right_button_index" default="3">
+			The virtual button index triggered by the right direction.
+		</member>
+		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The visual texture of the D-Pad.
+		</member>
+		<member name="up_index" type="int" setter="set_up_button_index" getter="get_up_button_index" default="0">
+			The virtual button index triggered by the up direction.
+		</member>
+	</members>
+	<constants>
+		<constant name="DIR_UP" value="0" enum="DPadDirection">
+			Up direction.
+		</constant>
+		<constant name="DIR_DOWN" value="1" enum="DPadDirection">
+			Down direction.
+		</constant>
+		<constant name="DIR_LEFT" value="2" enum="DPadDirection">
+			Left direction.
+		</constant>
+		<constant name="DIR_RIGHT" value="3" enum="DPadDirection">
+			Right direction.
+		</constant>
+		<constant name="DIR_NONE" value="4" enum="DPadDirection">
+			No direction pressed.
+		</constant>
+	</constants>
+</class>

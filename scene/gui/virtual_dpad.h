@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  event_listener_line_edit.h                                            */
+/*  virtual_dpad.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,82 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef VIRTUAL_DPAD_H
+#define VIRTUAL_DPAD_H
 
-#include "scene/gui/line_edit.h"
+#include "scene/gui/virtual_device.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8,
-	INPUT_VIRTUAL_BUTTON = 16,
-	INPUT_VIRTUAL_MOTION = 32,
-};
+class VirtualDPad : public VirtualDevice {
+	GDCLASS(VirtualDPad, VirtualDevice);
 
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
+public:
+	enum DPadDirection {
+		DIR_UP,
+		DIR_DOWN,
+		DIR_LEFT,
+		DIR_RIGHT,
+		DIR_NONE
+	};
 
-	uint64_t hold_next = 0;
-	Ref<InputEvent> hold_event;
+private:
+	// Default to indices 12-15 to leave 0-11 for generic buttons
+	// Matches standard gamepad DPad layout conceptually
+	int up_button_index = 12;
+	int down_button_index = 13;
+	int left_button_index = 14;
+	int right_button_index = 15;
 
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore_next_event = true;
-	Ref<InputEvent> event;
+	DPadDirection current_direction = DIR_NONE;
 
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
+	// Settings
+	float deadzone_size = 5.0f;
 
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
+	// Visuals
+	Ref<Texture2D> texture; // Base texture (optional override)
+
+	struct ThemeCache {
+		Color normal_color;
+		Color active_color;
+		Color highlight_color;
+	} theme_cache;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _on_touch_down(int p_index, const Vector2 &p_pos) override;
+	virtual void _on_touch_up(int p_index, const Vector2 &p_pos) override;
+	virtual void _on_drag(int p_index, const Vector2 &p_pos, const Vector2 &p_relative) override;
+
+	virtual void pressed_state_changed() override;
+
+	void _update_dpad(const Vector2 &p_pos);
+	void _press_direction(DPadDirection p_dir);
+	void _release_direction(DPadDirection p_dir);
+
+	virtual Size2 get_minimum_size() const override;
+
 public:
-	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
-	static String get_device_string(int p_device);
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	Ref<InputEvent> get_event() const;
-	void clear_event();
+	void set_deadzone_size(float p_size);
+	float get_deadzone_size() const;
 
-	void set_allowed_input_types(int p_type_masks);
-	int get_allowed_input_types() const;
+	void set_up_button_index(int p_index);
+	int get_up_button_index() const;
 
-	void grab_focus();
+	void set_down_button_index(int p_index);
+	int get_down_button_index() const;
 
-public:
-	EventListenerLineEdit();
+	void set_left_button_index(int p_index);
+	int get_left_button_index() const;
+
+	void set_right_button_index(int p_index);
+	int get_right_button_index() const;
+
+	VirtualDPad();
 };
+
+#endif // VIRTUAL_DPAD_H

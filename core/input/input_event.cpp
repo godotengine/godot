@@ -34,6 +34,7 @@
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/math/math_funcs.h"
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
@@ -1938,3 +1939,178 @@ String InputEventShortcut::_to_string() {
 InputEventShortcut::InputEventShortcut() {
 	pressed = true;
 }
+
+void InputEventVirtualButton::set_button_index(int p_index) {
+	button_index = p_index;
+	emit_changed();
+}
+
+int InputEventVirtualButton::get_button_index() const {
+	return button_index;
+}
+
+void InputEventVirtualButton::set_pressure(float p_pressure) {
+	pressure = p_pressure;
+	emit_changed();
+}
+
+float InputEventVirtualButton::get_pressure() const {
+	return pressure;
+}
+
+void InputEventVirtualButton::set_pressed(bool p_pressed) {
+	pressed = p_pressed;
+	emit_changed();
+}
+
+void InputEventVirtualButton::set_canceled(bool p_canceled) {
+	canceled = p_canceled;
+	emit_changed();
+}
+
+bool InputEventVirtualButton::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
+	Ref<InputEventVirtualButton> vb = p_event;
+	if (vb.is_null()) {
+		return false;
+	}
+
+	bool match = (get_device() == vb->get_device() || get_device() == -1) && get_button_index() == vb->get_button_index();
+	if (match) {
+		bool vb_pressed = vb->is_pressed();
+		if (r_pressed != nullptr) {
+			*r_pressed = vb_pressed;
+		}
+		float strength = vb_pressed ? (vb->get_pressure() == 0 ? 1.0f : vb->get_pressure()) : 0.0f;
+		if (r_strength != nullptr) {
+			*r_strength = strength;
+		}
+		if (r_raw_strength != nullptr) {
+			*r_raw_strength = strength;
+		}
+	}
+	return match;
+}
+
+bool InputEventVirtualButton::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventVirtualButton> vb = p_event;
+	if (vb.is_null()) {
+		return false;
+	}
+	return (get_device() == vb->get_device() || get_device() == -1) && get_button_index() == vb->get_button_index();
+}
+
+String InputEventVirtualButton::as_text() const {
+	switch (button_index) {
+		case 12: return RTR("Virtual DPad Up");
+		case 13: return RTR("Virtual DPad Down");
+		case 14: return RTR("Virtual DPad Left");
+		case 15: return RTR("Virtual DPad Right");
+	}
+	return vformat(RTR("Virtual Button %d"), button_index);
+}
+
+String InputEventVirtualButton::_to_string() {
+	return vformat("InputEventVirtualButton: index=%d, pressed=%s, pressure=%.2f", button_index, is_pressed() ? "true" : "false", pressure);
+}
+
+void InputEventVirtualButton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_button_index", "index"), &InputEventVirtualButton::set_button_index);
+	ClassDB::bind_method(D_METHOD("get_button_index"), &InputEventVirtualButton::get_button_index);
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventVirtualButton::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventVirtualButton::get_pressure);
+	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventVirtualButton::set_pressed);
+	ClassDB::bind_method(D_METHOD("set_canceled", "canceled"), &InputEventVirtualButton::set_canceled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_index"), "set_button_index", "get_button_index");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
+}
+
+///////////////////////////////////
+
+void InputEventVirtualMotion::set_axis(int p_axis) {
+	axis = p_axis;
+	emit_changed();
+}
+
+int InputEventVirtualMotion::get_axis() const {
+	return axis;
+}
+
+void InputEventVirtualMotion::set_axis_value(float p_value) {
+	axis_value = p_value;
+	emit_changed();
+}
+
+float InputEventVirtualMotion::get_axis_value() const {
+	return axis_value;
+}
+
+bool InputEventVirtualMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
+	Ref<InputEventVirtualMotion> vm = p_event;
+	if (vm.is_null()) {
+		return false;
+	}
+
+	bool match = (get_device() == vm->get_device() || get_device() == -1) && get_axis() == vm->get_axis();
+	if (p_exact_match) {
+		match &= (axis_value < 0) == (vm->get_axis_value() < 0);
+	}
+
+	if (match) {
+		float vm_abs_axis_value = Math::abs(vm->get_axis_value());
+		bool same_direction = (((axis_value < 0) == (vm->get_axis_value() < 0)) || vm->get_axis_value() == 0);
+		bool pressed_state = same_direction && vm_abs_axis_value >= p_deadzone;
+
+		if (r_pressed != nullptr) {
+			*r_pressed = pressed_state;
+		}
+		if (r_strength != nullptr) {
+			if (pressed_state) {
+				if (p_deadzone == 1.0f) {
+					*r_strength = 1.0f;
+				} else {
+					*r_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, vm_abs_axis_value), 0.0f, 1.0f);
+				}
+			} else {
+				*r_strength = 0.0f;
+			}
+		}
+		if (r_raw_strength != nullptr) {
+			if (same_direction) {
+				*r_raw_strength = vm_abs_axis_value;
+			} else {
+				*r_raw_strength = 0.0f;
+			}
+		}
+	}
+	return match;
+}
+
+bool InputEventVirtualMotion::is_match(const Ref<InputEvent> &p_event, bool p_exact_match) const {
+	Ref<InputEventVirtualMotion> vm = p_event;
+	if (vm.is_null()) {
+		return false;
+	}
+	return (get_device() == vm->get_device() || get_device() == -1) && get_axis() == vm->get_axis();
+}
+
+String InputEventVirtualMotion::as_text() const {
+	return vformat(RTR("Virtual Axis %d %.2f"), axis, axis_value);
+}
+
+String InputEventVirtualMotion::_to_string() {
+	return vformat("InputEventVirtualMotion: axis=%d, value=%.2f", axis, axis_value);
+}
+
+void InputEventVirtualMotion::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventVirtualMotion::set_axis);
+	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventVirtualMotion::get_axis);
+	ClassDB::bind_method(D_METHOD("set_axis_value", "value"), &InputEventVirtualMotion::set_axis_value);
+	ClassDB::bind_method(D_METHOD("get_axis_value"), &InputEventVirtualMotion::get_axis_value);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis"), "set_axis", "get_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "axis_value"), "set_axis_value", "get_axis_value");
+}
+

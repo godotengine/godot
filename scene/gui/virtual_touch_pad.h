@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  event_listener_line_edit.h                                            */
+/*  virtual_touch_pad.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,50 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef VIRTUAL_TOUCH_PAD_H
+#define VIRTUAL_TOUCH_PAD_H
 
-#include "scene/gui/line_edit.h"
+#include "scene/gui/virtual_device.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8,
-	INPUT_VIRTUAL_BUTTON = 16,
-	INPUT_VIRTUAL_MOTION = 32,
-};
+class VirtualTouchPad : public VirtualDevice {
+	GDCLASS(VirtualTouchPad, VirtualDevice);
 
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
+public:
+	enum TouchPadHand {
+		HAND_LEFT,
+		HAND_RIGHT,
+	};
 
-	uint64_t hold_next = 0;
-	Ref<InputEvent> hold_event;
+private:
+	float sensitivity = 1.0f;
 
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore_next_event = true;
-	Ref<InputEvent> event;
+	// Axis Mapping
+	int x_axis = 0;
+	int y_axis = 1;
 
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
-
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
+	// Trail visualization
+	Vector2 last_pos;
+	Vector2 current_pos;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-public:
-	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
-	static String get_device_string(int p_device);
+	virtual void _on_touch_down(int p_index, const Vector2 &p_pos) override;
+	virtual void _on_touch_up(int p_index, const Vector2 &p_pos) override;
+	virtual void _on_drag(int p_index, const Vector2 &p_pos, const Vector2 &p_relative) override;
 
-	Ref<InputEvent> get_event() const;
-	void clear_event();
+	void _reset_touchpad();
+	virtual void pressed_state_changed() override;
+	virtual Size2 get_minimum_size() const override;
 
-	void set_allowed_input_types(int p_type_masks);
-	int get_allowed_input_types() const;
-
-	void grab_focus();
+	TouchPadHand hand = HAND_LEFT;
 
 public:
-	EventListenerLineEdit();
+	void set_sensitivity(float p_sensitivity);
+	float get_sensitivity() const;
+
+	void set_x_axis(int p_axis);
+	int get_x_axis() const;
+
+	void set_y_axis(int p_axis);
+	int get_y_axis() const;
+
+	void set_hand(TouchPadHand p_hand);
+	TouchPadHand get_hand() const { return hand; }
+
+	VirtualTouchPad();
 };
+
+VARIANT_ENUM_CAST(VirtualTouchPad::TouchPadHand);
+
+#endif // VIRTUAL_TOUCH_PAD_H

@@ -161,6 +161,29 @@
 				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
 			</description>
 		</method>
+		<method name="get_joy_vibration_strength">
+			<return type="Vector2" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the strength of the joypad vibration: x is the strength of the weak motor, and y is the strength of the strong motor.
+			</description>
+		</method>
+		<method name="get_virtual_axis_value">
+			<return type="float" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" />
+			<description>
+				Returns the value of the virtual axis with index [param axis] for the given [param device].
+			</description>
+		</method>
+		<method name="is_virtual_button_pressed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="button" type="int" />
+			<description>
+				Returns [code]true[/code] if the virtual button with index [param button] is currently pressed on the given [param device].
+			</description>
+		</method>
 		<method name="get_last_mouse_screen_velocity">
 			<return type="Vector2" />
 			<description>

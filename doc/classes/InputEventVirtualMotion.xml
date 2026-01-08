@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventVirtualMotion" inherits="InputEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a virtual axis motion.
+	</brief_description>
+	<description>
+		Input event type for virtual custom axis references. Used by the Virtual Device system to simulate analog axes (joysticks, sliders).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="axis" type="int" setter="set_axis" getter="get_axis" default="0">
+			Axis identifier.
+		</member>
+		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="0.0">
+			Current value of the axis.
+		</member>
+	</members>
+</class>

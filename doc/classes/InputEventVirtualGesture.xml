@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventVirtualGesture" inherits="InputEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a complex virtual gesture event.
+	</brief_description>
+	<description>
+		Input event type for virtual gestures. Used to transmit processed gesture data like swipes, pinches, or custom motions.
+		Subsumes functionality of simple touch drags by providing position, velocity, and acceleration data in a single event.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="acceleration" type="Vector2" setter="set_acceleration" getter="get_acceleration" default="Vector2(0, 0)">
+			The acceleration of the gesture in pixels per second squared.
+		</member>
+		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta" default="Vector2(0, 0)">
+			The change in position since the last event.
+		</member>
+		<member name="gesture_type" type="int" setter="set_gesture_type" getter="get_gesture_type" default="0">
+			Identifier for the type of gesture.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The global position of the gesture.
+		</member>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
+			The pressure applied during the gesture, if available.
+		</member>
+		<member name="start_position" type="Vector2" setter="set_start_position" getter="get_start_position" default="Vector2(0, 0)">
+			The starting global position where the gesture began.
+		</member>
+		<member name="value" type="float" setter="set_value" getter="get_value" default="0.0">
+			Generic value associated with the gesture (e.g., rotation angle, pinch scale).
+		</member>
+		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
+			The velocity of the gesture in pixels per second.
+		</member>
+	</members>
+</class>

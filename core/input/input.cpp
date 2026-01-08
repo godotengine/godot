@@ -134,6 +134,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_joy_known", "device"), &Input::is_joy_known);
 	ClassDB::bind_method(D_METHOD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
 	ClassDB::bind_method(D_METHOD("get_joy_name", "device"), &Input::get_joy_name);
+	ClassDB::bind_method(D_METHOD("get_joy_button_string", "button"), &Input::get_joy_button_string);
 	ClassDB::bind_method(D_METHOD("get_joy_guid", "device"), &Input::get_joy_guid);
 	ClassDB::bind_method(D_METHOD("get_joy_info", "device"), &Input::get_joy_info);
 	ClassDB::bind_method(D_METHOD("should_ignore_device", "vendor_id", "product_id"), &Input::should_ignore_device);
@@ -142,6 +143,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("is_virtual_button_pressed", "device", "button_index"), &Input::is_virtual_button_pressed);
+	ClassDB::bind_method(D_METHOD("get_virtual_axis_value", "device", "axis"), &Input::get_virtual_axis_value);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms", "amplitude"), &Input::vibrate_handheld, DEFVAL(500), DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
@@ -366,12 +369,14 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
-
-	if (disable_input) {
-		return false;
-	}
-
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
+}
+
+bool Input::is_virtual_button_pressed(int p_device, int p_button) const {
+	_THREAD_SAFE_METHOD_
+	if (disable_input) return false;
+	if (!virtual_device_states.has(p_device)) return false;
+	return virtual_device_states[p_device].buttons_pressed.has(p_button);
 }
 
 bool Input::is_action_pressed(const StringName &p_action, bool p_exact) const {
@@ -573,11 +578,6 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
-
-	if (disable_input) {
-		return 0;
-	}
-
 	JoyAxis c = _combine_device(p_axis, p_device);
 	if (_joy_axis.has(c)) {
 		return _joy_axis[c];
@@ -586,9 +586,24 @@ float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	}
 }
 
+float Input::get_virtual_axis_value(int p_device, int p_axis) const {
+	_THREAD_SAFE_METHOD_
+	if (disable_input) return 0.0f;
+	if (!virtual_device_states.has(p_device)) return 0.0f;
+	if (!virtual_device_states[p_device].axes_values.has(p_axis)) return 0.0f;
+	return virtual_device_states[p_device].axes_values[p_axis];
+}
+
 String Input::get_joy_name(int p_idx) {
 	_THREAD_SAFE_METHOD_
 	return joy_names[p_idx].name;
+}
+
+String Input::get_joy_button_string(JoyButton p_button) {
+	if (p_button < JoyButton::A || p_button >= JoyButton::SDL_MAX) {
+		return "";
+	}
+	return _joy_buttons[(size_t)p_button];
 }
 
 Vector2 Input::get_joy_vibration_strength(int p_device) {
@@ -772,6 +787,22 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		} else {
 			key_label_pressed.erase(k->get_key_label());
 		}
+	}
+
+	Ref<InputEventVirtualButton> vb = p_event;
+	if (vb.is_valid()) {
+		VirtualDeviceState &ds = virtual_device_states[vb->get_device()];
+		if (vb->is_pressed()) {
+			ds.buttons_pressed.insert(vb->get_button_index());
+		} else {
+			ds.buttons_pressed.erase(vb->get_button_index());
+		}
+	}
+
+	Ref<InputEventVirtualMotion> vm = p_event;
+	if (vm.is_valid()) {
+		VirtualDeviceState &ds = virtual_device_states[vm->get_device()];
+		ds.axes_values[vm->get_axis()] = vm->get_axis_value();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -2007,4 +2038,3 @@ Input::~Input() {
 	singleton = nullptr;
 }
 
-//////////////////////////////////////////////////////////

@@ -60,6 +60,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 		Ref<InputEventMouseButton> mb = p_event;
 		Ref<InputEventJoypadButton> joyb = p_event;
 		Ref<InputEventJoypadMotion> joym = p_event;
+		Ref<InputEventVirtualButton> vb = p_event;
+		Ref<InputEventVirtualMotion> vm = p_event;
 		Ref<InputEventWithModifiers> mod = p_event;
 
 		// Update option values and visibility
@@ -103,7 +105,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 				_update_input_list();
 				return;
 			}
-		} else if (joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
+		} else if (joyb.is_valid() || joym.is_valid() || mb.is_valid() || vb.is_valid() || vm.is_valid()) {
 			show_device = true;
 			_set_current_device(event->get_device());
 		}
@@ -165,14 +167,22 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, c
 					}
 
 					// If event type matches input types of this category.
-					if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
+					if ((k.is_valid() && input_type == INPUT_KEY) ||
+							(joyb.is_valid() && input_type == INPUT_JOY_BUTTON) ||
+							(joym.is_valid() && input_type == INPUT_JOY_MOTION) ||
+							(mb.is_valid() && input_type == INPUT_MOUSE_BUTTON) ||
+							(vb.is_valid() && input_type == INPUT_VIRTUAL_BUTTON) ||
+							(vm.is_valid() && input_type == INPUT_VIRTUAL_MOTION)) {
 						// Loop through all items of this category until one matches.
 						while (input_item) {
 							bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
 							bool joyb_match = joyb.is_valid() && Variant(joyb->get_button_index()) == input_item->get_meta("__index");
 							bool joym_match = joym.is_valid() && Variant(joym->get_axis()) == input_item->get_meta("__axis") && joym->get_axis_value() == (float)input_item->get_meta("__value");
 							bool mb_match = mb.is_valid() && Variant(mb->get_button_index()) == input_item->get_meta("__index");
-							if (key_match || joyb_match || joym_match || mb_match) {
+							bool vb_match = vb.is_valid() && Variant(vb->get_button_index()) == input_item->get_meta("__index");
+							bool vm_match = vm.is_valid() && Variant(vm->get_axis()) == input_item->get_meta("__axis") && vm->get_axis_value() == (float)input_item->get_meta("__value");
+
+							if (key_match || joyb_match || joym_match || mb_match || vb_match || vm_match) {
 								category->set_collapsed(false);
 								input_item->select(0);
 								input_list_tree->ensure_cursor_is_visible();
@@ -217,6 +227,8 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	Ref<InputEventJoypadButton> joyb = received_event;
 	Ref<InputEventJoypadMotion> joym = received_event;
 	Ref<InputEventMouseButton> mb = received_event;
+	Ref<InputEventVirtualButton> vb = received_event;
+	Ref<InputEventVirtualMotion> vm = received_event;
 
 	int type = 0;
 	if (k.is_valid()) {
@@ -227,6 +239,10 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 		type = INPUT_JOY_MOTION;
 	} else if (mb.is_valid()) {
 		type = INPUT_MOUSE_BUTTON;
+	} else if (vb.is_valid()) {
+		type = INPUT_VIRTUAL_BUTTON;
+	} else if (vm.is_valid()) {
+		type = INPUT_VIRTUAL_MOTION;
 	}
 
 	if (!(allowed_input_types & type)) {
@@ -235,6 +251,9 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 
 	if (joym.is_valid()) {
 		joym->set_axis_value(SIGN(joym->get_axis_value()));
+	}
+	if (vm.is_valid()) {
+		vm->set_axis_value(SIGN(vm->get_axis_value()));
 	}
 
 	if (k.is_valid()) {
@@ -370,6 +389,58 @@ void InputEventConfigurationDialog::_update_input_list() {
 			item->set_meta("__value", (i & 1) ? 1 : -1);
 		}
 	}
+
+	if (allowed_input_types & INPUT_VIRTUAL_BUTTON) {
+		TreeItem *vb_root = input_list_tree->create_item(root);
+		vb_root->set_text(0, TTR("Virtual Buttons"));
+		vb_root->set_icon(0, icon_cache.virtual_button);
+		vb_root->set_collapsed(collapse);
+		vb_root->set_meta("__type", INPUT_VIRTUAL_BUTTON);
+
+		for (int i = 0; i < 16; i++) {
+			Ref<InputEventVirtualButton> vb;
+			vb.instantiate();
+			vb->set_button_index(i);
+			String desc = EventListenerLineEdit::get_event_text(vb, false);
+
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
+				continue;
+			}
+
+			TreeItem *item = input_list_tree->create_item(vb_root);
+			item->set_text(0, desc);
+			item->set_meta("__index", i);
+		}
+	}
+
+	if (allowed_input_types & INPUT_VIRTUAL_MOTION) {
+		TreeItem *va_root = input_list_tree->create_item(root);
+		va_root->set_text(0, TTR("Virtual Axes"));
+		va_root->set_icon(0, icon_cache.virtual_axis);
+		va_root->set_collapsed(collapse);
+		va_root->set_meta("__type", INPUT_VIRTUAL_MOTION);
+
+		// Use JoyAxis::SDL_MAX to cover standard dual sticks and triggers
+		for (int i = 0; i < (int)JoyAxis::SDL_MAX * 2; i++) {
+			int axis = i / 2;
+			int direction = (i & 1) ? 1 : -1;
+			Ref<InputEventVirtualMotion> vm;
+			vm.instantiate();
+			vm->set_axis(axis);
+			vm->set_axis_value(direction);
+			String desc = EventListenerLineEdit::get_event_text(vm, false);
+
+			if (!search_term.is_empty() && !desc.containsn(search_term)) {
+				continue;
+			}
+
+			TreeItem *item = input_list_tree->create_item(va_root);
+			item->set_text(0, desc);
+			item->set_meta("__axis", axis);
+			item->set_meta("__value", direction);
+		}
+	}
+
 }
 
 void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {
@@ -547,6 +618,30 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			_set_event(jm, jm, false);
 		} break;
+		case INPUT_VIRTUAL_BUTTON: {
+			int idx = selected->get_meta("__index");
+			Ref<InputEventVirtualButton> vb;
+			vb.instantiate();
+			vb->set_button_index(idx);
+			// Maintain selected device
+			vb->set_device(_get_current_device());
+
+			_set_event(vb, vb, false);
+		} break;
+		case INPUT_VIRTUAL_MOTION: {
+			int axis = selected->get_meta("__axis");
+			int value = selected->get_meta("__value");
+
+			Ref<InputEventVirtualMotion> vm;
+			vm.instantiate();
+			vm->set_axis(axis);
+			vm->set_axis_value(value);
+
+			// Maintain selected device
+			vm->set_device(_get_current_device());
+
+			_set_event(vm, vm, false);
+		} break;
 	}
 }
 
@@ -582,6 +677,8 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.mouse = get_editor_theme_icon(SNAME("Mouse"));
 			icon_cache.joypad_button = get_editor_theme_icon(SNAME("JoyButton"));
 			icon_cache.joypad_axis = get_editor_theme_icon(SNAME("JoyAxis"));
+			icon_cache.virtual_button = get_editor_theme_icon(SNAME("VirtualButton"));
+			icon_cache.virtual_axis = get_editor_theme_icon(SNAME("VirtualJoystick"));
 
 			event_as_text->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 
@@ -641,7 +738,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
-	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
+	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION | INPUT_VIRTUAL_BUTTON | INPUT_VIRTUAL_MOTION;
 
 	set_min_size(Size2i(800, 0) * EDSCALE);
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventVirtualButton" inherits="InputEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a virtual button being pressed or released.
+	</brief_description>
+	<description>
+		Input event type for virtual custom buttons. Used by the Virtual Device system to simulate buttons.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index" default="0">
+			Button identifier.
+		</member>
+		<member name="canceled" type="bool" setter="set_canceled" getter="is_canceled" default="false">
+			If [code]true[/code], the virtual touch action has been canceled.
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
+			If [code]true[/code], the button's state is pressed. If [code]false[/code], the button's state is released.
+		</member>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
+			The pressure of the button input (0.0 to 1.0).
+		</member>
+	</members>
+</class>

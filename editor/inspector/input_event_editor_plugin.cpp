@@ -113,6 +113,14 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 		config_dialog->set_allowed_input_types(INPUT_JOY_MOTION);
 	}
 
+	Ref<InputEventVirtualButton> vb = p_event;
+	Ref<InputEventVirtualMotion> vm = p_event;
+	if (vb.is_valid()) {
+		config_dialog->set_allowed_input_types(INPUT_VIRTUAL_BUTTON);
+	} else if (vm.is_valid()) {
+		config_dialog->set_allowed_input_types(INPUT_VIRTUAL_MOTION);
+	}
+
 	input_event = p_event;
 	_event_changed();
 	input_event->connect_changed(callable_mp(this, &InputEventConfigContainer::_event_changed));
@@ -144,8 +152,10 @@ bool EditorInspectorPluginInputEvent::can_handle(Object *p_object) {
 	Ref<InputEventMouseButton> m = Ref<InputEventMouseButton>(p_object);
 	Ref<InputEventJoypadButton> jb = Ref<InputEventJoypadButton>(p_object);
 	Ref<InputEventJoypadMotion> jm = Ref<InputEventJoypadMotion>(p_object);
+	Ref<InputEventVirtualButton> vb = Ref<InputEventVirtualButton>(p_object);
+	Ref<InputEventVirtualMotion> vm = Ref<InputEventVirtualMotion>(p_object);
 
-	return k.is_valid() || m.is_valid() || jb.is_valid() || jm.is_valid();
+	return k.is_valid() || m.is_valid() || jb.is_valid() || jm.is_valid() || vb.is_valid() || vm.is_valid();
 }
 
 void EditorInspectorPluginInputEvent::parse_begin(Object *p_object) {
