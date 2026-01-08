@@ -2382,7 +2382,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	{
 		// Timeline general.
 
-		p_theme->set_constant("timeline_v_separation", "AnimationTrackEditor", 0);
+		p_theme->set_constant("timeline_v_separation", "AnimationTrackEditor", p_config.base_margin * EDSCALE);
 		p_theme->set_constant("track_v_separation", "AnimationTrackEditor", 0);
 
 		int margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
