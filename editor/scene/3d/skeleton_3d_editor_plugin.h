@@ -292,15 +292,16 @@ class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	static Ref<ArrayMesh> get_bones_mesh(Skeleton3D *p_skeleton, int p_selected, bool p_is_selected);
+	static int skeleton_intersect_ray(const Skeleton3D *p_skeleton, Camera3D *p_camera, const Vector2 &p_point);
 
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
 	int get_priority() const override;
 
-	int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
-	Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
-	void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
-	void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) override;
+	virtual int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
+	virtual Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
+	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) override;
 
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
