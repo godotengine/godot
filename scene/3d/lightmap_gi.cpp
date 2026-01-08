@@ -455,7 +455,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 
 	Light3D *light = Object::cast_to<Light3D>(p_at_node);
 
-	if (light && light->get_bake_mode() != Light3D::BAKE_DISABLED && light->get_layer_mask() & get_cull_mask()) {
+	if (light && light->get_bake_mode() != Light3D::BAKE_DISABLED && (light->get_layer_mask() & get_cull_mask())) {
 		LightsFound lf;
 		lf.xform = get_global_transform().affine_inverse() * light->get_global_transform();
 		lf.light = light;
