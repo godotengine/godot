@@ -644,6 +644,7 @@ private:
 		Color children_hl_line_color;
 		Color custom_button_font_highlight;
 		Color font_outline_color;
+		Color scroll_hint_color;
 
 		float base_scale = 1.0;
 		int font_outline_size = 0;

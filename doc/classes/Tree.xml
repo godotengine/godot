@@ -573,6 +573,9 @@
 		<theme_item name="relationship_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The default [Color] of the relationship lines.
 		</theme_item>
+		<theme_item name="scroll_hint_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			[Color] used to modulate the [theme_item scroll_hint] texture.
+		</theme_item>
 		<theme_item name="title_button_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			Default text [Color] of the title button.
 		</theme_item>

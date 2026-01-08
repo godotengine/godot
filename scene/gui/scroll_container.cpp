@@ -619,6 +619,7 @@ void ScrollContainer::_update_scroll_hints() {
 	bool rtl = is_layout_rtl();
 	if (show_vertical_hints) {
 		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_vertical);
+		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_vertical_color);
 		scroll_hint_top_left->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT) && v_scroll_value > 1);
 		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
 		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
@@ -628,6 +629,7 @@ void ScrollContainer::_update_scroll_hints() {
 		scroll_hint_bottom_right->set_flip_h(false);
 		scroll_hint_bottom_right->set_flip_v(true);
 		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_vertical);
+		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_vertical_color);
 		scroll_hint_bottom_right->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT) && v_scroll_below_max);
 		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
 		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
@@ -635,6 +637,7 @@ void ScrollContainer::_update_scroll_hints() {
 		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
 	} else {
 		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_horizontal);
+		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_horizontal_color);
 		scroll_hint_top_left->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT)) && h_scroll_value > 1);
 		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? (size.x - theme_cache.scroll_hint_horizontal->get_width()) : 0);
 		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_BEGIN, rtl ? size.x : theme_cache.scroll_hint_horizontal->get_width());
@@ -644,6 +647,7 @@ void ScrollContainer::_update_scroll_hints() {
 		scroll_hint_bottom_right->set_flip_h(true);
 		scroll_hint_bottom_right->set_flip_v(false);
 		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_horizontal);
+		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_horizontal_color);
 		scroll_hint_bottom_right->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT : scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT)) && h_scroll_below_max);
 		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, rtl ? -size.x : -theme_cache.scroll_hint_horizontal->get_width());
 		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? (-size.x + theme_cache.scroll_hint_horizontal->get_width()) : 0);
@@ -871,6 +875,9 @@ void ScrollContainer::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ScrollContainer, scroll_hint_vertical);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ScrollContainer, scroll_hint_horizontal);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_vertical_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_horizontal_color);
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 }
