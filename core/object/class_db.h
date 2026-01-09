@@ -234,6 +234,10 @@ public:
 	static Array default_array_arg;
 	static bool is_default_array_arg(const Array &p_array);
 
+	// Types added here will be automatically cleaned up on engine shutdown.
+	// Only add types that aren't cleaned up in another way.
+	static LocalVector<GDType **> gdtype_autorelease_pool;
+
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
