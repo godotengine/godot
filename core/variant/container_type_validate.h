@@ -46,7 +46,6 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 private:
-	// Coerces String and StringName into each other and int into float when needed.
 	_FORCE_INLINE_ bool _internal_validate(Variant &inout_variant, const char *p_operation, bool p_output_errors) const {
 		if (type == Variant::NIL) {
 			return true;
@@ -56,15 +55,17 @@ private:
 			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
 				return true;
 			}
-			if (type == Variant::STRING && inout_variant.get_type() == Variant::STRING_NAME) {
-				inout_variant = String(inout_variant);
-				return true;
-			} else if (type == Variant::STRING_NAME && inout_variant.get_type() == Variant::STRING) {
-				inout_variant = StringName(inout_variant);
-				return true;
-			} else if (type == Variant::FLOAT && inout_variant.get_type() == Variant::INT) {
-				inout_variant = (float)inout_variant;
-				return true;
+
+			if (Variant::can_convert_strict(inout_variant.get_type(), type)) {
+				Variant converted_to;
+				const Variant *converted_from = &inout_variant;
+				Callable::CallError call_error;
+				Variant::construct(type, converted_to, &converted_from, 1, call_error);
+
+				if (call_error.error == Callable::CallError::CALL_OK) {
+					inout_variant = converted_to;
+					return true;
+				}
 			}
 
 			if (p_output_errors) {
