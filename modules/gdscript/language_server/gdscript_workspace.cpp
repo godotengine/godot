@@ -434,7 +434,7 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path) {
 	Vector<LSP::Location> usages;
 
-	String identifier = p_symbol.name;
+	const String &identifier = p_symbol.name;
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_file_path);
 	if (parser) {
 		const PackedStringArray &content = parser->get_lines();
@@ -452,18 +452,23 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 				params.position.line = i;
 				params.position.character = character;
 
-				const LSP::DocumentSymbol *other_symbol = resolve_symbol(params);
+				LSP::Range range;
+				String identifier_under_cursor = parser->get_identifier_under_position(params.position, range);
 
-				if (other_symbol == &p_symbol) {
-					LSP::Location loc;
-					loc.uri = text_doc.uri;
-					loc.range.start = params.position;
-					loc.range.end.line = params.position.line;
-					loc.range.end.character = params.position.character + identifier.length();
-					usages.append(loc);
+				if (identifier_under_cursor == identifier) {
+					const LSP::DocumentSymbol *other_symbol = resolve_symbol(params);
+
+					if (other_symbol == &p_symbol) {
+						LSP::Location loc;
+						loc.uri = text_doc.uri;
+						loc.range.start = params.position;
+						loc.range.end.line = params.position.line;
+						loc.range.end.character = params.position.character + identifier.length();
+						usages.append(loc);
+					}
 				}
 
-				character = line.find(identifier, character + 1);
+				character = line.find(identifier, range.end.character);
 			}
 		}
 	}
