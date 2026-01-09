@@ -2367,10 +2367,20 @@
 			Section sign ([code]§[/code]) key.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
-			Key Code mask.
+			Bit mask with all bits enabled except for modifier keys. Apply it to remove modifiers.
+			[codeblock]
+			var keycode = KEY_A | KEY_MASK_SHIFT
+			keycode = keycode &amp; KEY_CODE_MASK
+			print(keycode) # KEY_A
+			[/codeblock]
 		</constant>
 		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask" is_bitfield="true">
-			Modifier key mask.
+			Bit mask with all modifier bits enabled. Apply it to isolate modifiers.
+			[codeblock]
+			var keycode = KEY_A | KEY_MASK_SHIFT
+			keycode = keycode &amp; KEY_MODIFIER_MASK
+			print(keycode) # KEY_MASK_SHIFT
+			[/codeblock]
 		</constant>
 		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">
 			Automatically remapped to [constant KEY_META] on macOS and [constant KEY_CTRL] on other platforms, this mask is never set in the actual events, and should be used for key mapping only.
