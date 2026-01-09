@@ -44,19 +44,20 @@ layout(location = 0) in vec2 uv_interp;
 #define SAMPLER_FORMAT sampler2D
 #endif
 
+// All uniforms must be on set 0 to prevent MSAA from crashing Mali GPUs. See GH-114785.
 #ifdef SUBPASS
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput input_color;
 #else
 layout(set = 0, binding = 0) uniform SAMPLER_FORMAT source_color;
 #endif
 
-layout(set = 1, binding = 0) uniform SAMPLER_FORMAT source_glow;
-layout(set = 1, binding = 1) uniform sampler2D glow_map;
+layout(set = 0, binding = 1) uniform SAMPLER_FORMAT source_glow;
+layout(set = 0, binding = 2) uniform sampler2D glow_map;
 
 #ifdef USE_1D_LUT
-layout(set = 2, binding = 0) uniform sampler2D source_color_correction;
+layout(set = 0, binding = 3) uniform sampler2D source_color_correction;
 #else
-layout(set = 2, binding = 0) uniform sampler3D source_color_correction;
+layout(set = 0, binding = 3) uniform sampler3D source_color_correction;
 #endif
 
 layout(constant_id = 0) const bool use_bcs = false;
