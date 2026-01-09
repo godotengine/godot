@@ -3893,7 +3893,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	force_process_and_drop_events();
 
 	if (rendering_driver == "dummy") {
 		RasterizerDummy::make_current();

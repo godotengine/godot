@@ -3319,6 +3319,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 #endif
 		if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
 			display_server->show_window(DisplayServer::MAIN_WINDOW_ID);
+#ifdef MACOS_ENABLED
+			display_server->force_process_and_drop_events();
+#endif
 		}
 
 		if (display_server->has_feature(DisplayServer::FEATURE_ORIENTATION)) {
