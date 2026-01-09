@@ -78,10 +78,10 @@ private:
 		~LSPeer();
 
 	private:
-		// We can't cache parsers for scripts not managed by the editor since we have
-		// no way to invalidate the cache. We still need to keep track of those parsers
-		// to clean them up properly.
-		HashMap<String, ExtendGDScriptParser *> stale_parsers;
+		void clear_stale_parsers();
+		// Paths of parsers which we can't cache longterm.
+		// Can be cleared up using `clear_stale_parsers()`.
+		HashSet<String> stale_parsers;
 	};
 
 	enum LSPErrorCode {
