@@ -113,7 +113,39 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		// TRANSLATORS: %d is the axis number, the first %s is either "-" or "+", and the second %s is the description of the axis.
 		text = vformat(TTR("Joypad Axis %d %s (%s)"), (int64_t)jp_motion->get_axis(), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
 	}
-	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
+	Ref<InputEventVirtualMotion> vm = p_event;
+	if (vm.is_valid()) {
+		String desc = TTR("Unknown Virtual Axis");
+		if (vm->get_axis() < (int)JoyAxis::MAX) {
+			desc = TTR(_joy_axis_descriptions[2 * (size_t)vm->get_axis() + (vm->get_axis_value() < 0 ? 0 : 1)]);
+		}
+
+		// TRANSLATORS: %d is the axis number, the first %s is either "-" or "+", and the second %s is the description of the axis.
+		text = vformat(TTR("Virtual Axis %d %s (%s)"), (int64_t)vm->get_axis(), vm->get_axis_value() < 0 ? "-" : "+", desc);
+	}
+	Ref<InputEventVirtualButton> vb = p_event;
+	if (vb.is_valid()) {
+		int idx = vb->get_button_index();
+		switch (idx) {
+			case 12:
+				text = TTR("Virtual DPad Up");
+				break;
+			case 13:
+				text = TTR("Virtual DPad Down");
+				break;
+			case 14:
+				text = TTR("Virtual DPad Left");
+				break;
+			case 15:
+				text = TTR("Virtual DPad Right");
+				break;
+			default:
+				text = vformat(TTR("Virtual Button %d"), (int64_t)idx);
+				break;
+		}
+	}
+
+	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid() || vb.is_valid() || vm.is_valid())) {
 		String device_string = get_device_string(p_event->get_device());
 		text += vformat(" - %s", device_string);
 	}
@@ -133,11 +165,15 @@ bool EventListenerLineEdit::_is_event_allowed(const Ref<InputEvent> &p_event) co
 	const Ref<InputEventKey> k = p_event;
 	const Ref<InputEventJoypadButton> jb = p_event;
 	const Ref<InputEventJoypadMotion> jm = p_event;
+	const Ref<InputEventVirtualButton> vb = p_event;
+	const Ref<InputEventVirtualMotion> vm = p_event;
 
 	return (mb.is_valid() && (allowed_input_types & INPUT_MOUSE_BUTTON)) ||
 			(k.is_valid() && (allowed_input_types & INPUT_KEY)) ||
 			(jb.is_valid() && (allowed_input_types & INPUT_JOY_BUTTON)) ||
-			(jm.is_valid() && (allowed_input_types & INPUT_JOY_MOTION));
+			(jm.is_valid() && (allowed_input_types & INPUT_JOY_MOTION)) ||
+			(vb.is_valid() && (allowed_input_types & INPUT_VIRTUAL_BUTTON)) ||
+			(vm.is_valid() && (allowed_input_types & INPUT_VIRTUAL_MOTION));
 }
 
 void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {

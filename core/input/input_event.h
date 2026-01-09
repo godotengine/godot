@@ -592,3 +592,60 @@ public:
 
 	InputEventShortcut();
 };
+
+class InputEventVirtualButton : public InputEventWithModifiers {
+	GDCLASS(InputEventVirtualButton, InputEventWithModifiers);
+
+	int button_index = 0;
+	float pressure = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_button_index(int p_index);
+	int get_button_index() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	void set_pressed(bool p_pressed);
+	void set_canceled(bool p_canceled);
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String _to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::VIRTUAL_BUTTON; }
+};
+
+class InputEventVirtualMotion : public InputEvent {
+	GDCLASS(InputEventVirtualMotion, InputEvent);
+
+	int axis = 0;
+	float axis_value = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_axis(int p_axis);
+	int get_axis() const;
+
+	void set_axis_value(float p_value);
+	float get_axis_value() const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
+	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
+
+	virtual bool is_action_type() const override { return true; }
+
+	virtual String as_text() const override;
+	virtual String _to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::VIRTUAL_MOTION; }
+};

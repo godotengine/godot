@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  event_listener_line_edit.h                                            */
+/*  virtual_joystick_dynamic.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,48 +30,32 @@
 
 #pragma once
 
-#include "scene/gui/line_edit.h"
+#include "scene/gui/virtual_joystick.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8,
-	INPUT_VIRTUAL_BUTTON = 16,
-	INPUT_VIRTUAL_MOTION = 32,
-};
+class VirtualJoystickDynamic : public VirtualJoystick {
+	GDCLASS(VirtualJoystickDynamic, VirtualJoystick);
 
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
-
-	uint64_t hold_next = 0;
-	Ref<InputEvent> hold_event;
-
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore_next_event = true;
-	Ref<InputEvent> event;
-
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
-
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
+	float joystick_size = 50.0f;
+	bool visible_by_default = false;
+	Vector2 default_position;
 
 protected:
 	void _notification(int p_what);
+	virtual bool _should_force_square() const override { return false; }
+	virtual void _draw_joystick() override;
 	static void _bind_methods();
 
 public:
-	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
-	static String get_device_string(int p_device);
+	void set_joystick_size(float p_size);
+	float get_joystick_size() const;
 
-	Ref<InputEvent> get_event() const;
-	void clear_event();
+	void set_visible_by_default(bool p_visible);
+	bool is_visible_by_default() const;
 
-	void set_allowed_input_types(int p_type_masks);
-	int get_allowed_input_types() const;
+	void set_default_position(const Vector2 &p_pos);
+	Vector2 get_default_position() const;
 
-	void grab_focus();
+	virtual void _on_touch_up(int p_index, const Vector2 &p_pos) override;
 
-public:
-	EventListenerLineEdit();
+	VirtualJoystickDynamic();
 };

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  event_listener_line_edit.h                                            */
+/*  virtual_device.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,48 +30,69 @@
 
 #pragma once
 
-#include "scene/gui/line_edit.h"
+#include "scene/gui/control.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8,
-	INPUT_VIRTUAL_BUTTON = 16,
-	INPUT_VIRTUAL_MOTION = 32,
-};
+class VirtualDevice : public Control {
+	GDCLASS(VirtualDevice, Control);
 
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
+public:
+	enum VisibilityMode {
+		VISIBILITY_ALWAYS,
+		VISIBILITY_TOUCHSCREEN_ONLY,
+	};
 
-	uint64_t hold_next = 0;
-	Ref<InputEvent> hold_event;
+private:
+	int device = 0;
+	VisibilityMode visibility_mode = VISIBILITY_ALWAYS;
 
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore_next_event = true;
-	Ref<InputEvent> event;
+	// Touch state
+	int current_touch_index = -1; // -1 means no touch
+	bool pressed = false;
+	bool hovering = false;
 
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
-
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
+	// Common properties matching BaseButton for familiarity
+	bool disabled = false;
+	BitField<MouseButtonMask> action_mask = MouseButtonMask::LEFT;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-public:
-	static String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device);
-	static String get_device_string(int p_device);
+	// Input handling core
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	Ref<InputEvent> get_event() const;
-	void clear_event();
+	// virtual hooks for subclasses
+	virtual void _on_touch_down(int p_index, const Vector2 &p_pos);
+	virtual void _on_touch_up(int p_index, const Vector2 &p_pos);
+	virtual void _on_drag(int p_index, const Vector2 &p_pos, const Vector2 &p_relative);
 
-	void set_allowed_input_types(int p_type_masks);
-	int get_allowed_input_types() const;
-
-	void grab_focus();
+	virtual void pressed_state_changed(); // Called when pressed changes
 
 public:
-	EventListenerLineEdit();
+	enum DrawMode {
+		DRAW_NORMAL,
+		DRAW_PRESSED,
+		DRAW_HOVER,
+		DRAW_DISABLED,
+		DRAW_HOVER_PRESSED,
+	};
+
+	DrawMode get_draw_mode() const;
+
+	void set_device(int p_device);
+	int get_device() const;
+
+	void set_visibility_mode(VisibilityMode p_mode);
+	VisibilityMode get_visibility_mode() const;
+
+	bool is_pressed() const;
+	bool is_hovered() const;
+
+	void set_disabled(bool p_disabled);
+	bool is_disabled() const;
+
+	VirtualDevice();
 };
+
+VARIANT_ENUM_CAST(VirtualDevice::VisibilityMode);
+VARIANT_ENUM_CAST(VirtualDevice::DrawMode);

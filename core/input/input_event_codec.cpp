@@ -392,6 +392,54 @@ void decode_input_event_gesture_magnify(const PackedByteArray &p_data, Ref<Input
 	DEV_ASSERT(p_data.size() >= (data - p_data.ptr()));
 }
 
+void encode_input_event_virtual_button(const Ref<InputEventVirtualButton> &p_event, PackedByteArray &r_data) {
+	r_data.resize(11);
+	uint8_t *data = r_data.ptrw();
+	*data = (uint8_t)InputEventType::VIRTUAL_BUTTON;
+	data++;
+	uint8_t bools = 0;
+	bools |= (uint8_t)p_event->is_pressed() << BoolShift::PRESSED;
+	*data = bools;
+	data++;
+	data += encode_uint64(p_event->get_device(), data);
+	*data = (uint8_t)p_event->get_button_index();
+	data++;
+}
+
+Error decode_input_event_virtual_button(const PackedByteArray &p_data, Ref<InputEventVirtualButton> &r_event) {
+	const uint8_t *data = p_data.ptr();
+	data++;
+	uint8_t bools = *data;
+	data++;
+	r_event->set_pressed(bools & (1 << BoolShift::PRESSED));
+	r_event->set_device(decode_uint64(data));
+	data += sizeof(uint64_t);
+	r_event->set_button_index(*data);
+	return OK;
+}
+
+void encode_input_event_virtual_motion(const Ref<InputEventVirtualMotion> &p_event, PackedByteArray &r_data) {
+	r_data.resize(14);
+	uint8_t *data = r_data.ptrw();
+	*data = (uint8_t)InputEventType::VIRTUAL_MOTION;
+	data++;
+	data += encode_uint64(p_event->get_device(), data);
+	*data = (uint8_t)p_event->get_axis();
+	data++;
+	data += encode_float(p_event->get_axis_value(), data);
+}
+
+Error decode_input_event_virtual_motion(const PackedByteArray &p_data, Ref<InputEventVirtualMotion> &r_event) {
+	const uint8_t *data = p_data.ptr();
+	data++;
+	r_event->set_device(decode_uint64(data));
+	data += sizeof(uint64_t);
+	r_event->set_axis(*data);
+	data++;
+	r_event->set_axis_value(decode_float(data));
+	return OK;
+}
+
 bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data) {
 	switch (p_event->get_type()) {
 		case InputEventType::KEY:
@@ -414,6 +462,12 @@ bool encode_input_event(const Ref<InputEvent> &p_event, PackedByteArray &r_data)
 			break;
 		case InputEventType::PAN_GESTURE:
 			encode_input_event_gesture_pan(p_event, r_data);
+			break;
+		case InputEventType::VIRTUAL_BUTTON:
+			encode_input_event_virtual_button(p_event, r_data);
+			break;
+		case InputEventType::VIRTUAL_MOTION:
+			encode_input_event_virtual_motion(p_event, r_data);
 			break;
 		default:
 			return false;
@@ -465,6 +519,18 @@ void decode_input_event(const PackedByteArray &p_data, Ref<InputEvent> &r_event)
 			Ref<InputEventMagnifyGesture> event;
 			event.instantiate();
 			decode_input_event_gesture_magnify(p_data, event);
+			r_event = event;
+		} break;
+		case InputEventType::VIRTUAL_BUTTON: {
+			Ref<InputEventVirtualButton> event;
+			event.instantiate();
+			decode_input_event_virtual_button(p_data, event);
+			r_event = event;
+		} break;
+		case InputEventType::VIRTUAL_MOTION: {
+			Ref<InputEventVirtualMotion> event;
+			event.instantiate();
+			decode_input_event_virtual_motion(p_data, event);
 			r_event = event;
 		} break;
 		default: {

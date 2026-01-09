@@ -1348,6 +1348,47 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	default_icon = icons["error_icon"];
 	// Same color as the error icon.
 	default_style = make_flat_stylebox(Color(1, 0.365, 0.365), 4, 4, 4, 4, 0, false, 2);
+
+	// VirtualButton
+	theme->set_stylebox(CoreStringName(normal), "VirtualButton", button_normal);
+	theme->set_stylebox(SceneStringName(hover), "VirtualButton", button_hover);
+	theme->set_stylebox(SceneStringName(pressed), "VirtualButton", button_pressed);
+	theme->set_stylebox("disabled", "VirtualButton", button_disabled);
+	theme->set_stylebox("focus", "VirtualButton", focus);
+	theme->set_font(SceneStringName(font), "VirtualButton", Ref<Font>());
+	theme->set_font_size(SceneStringName(font_size), "VirtualButton", -1);
+	theme->set_constant("outline_size", "VirtualButton", 0);
+	theme->set_color(SceneStringName(font_color), "VirtualButton", control_font_color);
+	theme->set_color("font_pressed_color", "VirtualButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "VirtualButton", control_font_hover_color);
+	theme->set_color("font_focus_color", "VirtualButton", control_font_focus_color);
+	theme->set_color("font_hover_pressed_color", "VirtualButton", control_font_pressed_color);
+	theme->set_color("font_disabled_color", "VirtualButton", control_font_disabled_color);
+	theme->set_color("font_outline_color", "VirtualButton", Color(0, 0, 0));
+	theme->set_color("icon_normal_color", "VirtualButton", Color(1, 1, 1, 1));
+	theme->set_color("icon_pressed_color", "VirtualButton", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_color", "VirtualButton", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_pressed_color", "VirtualButton", Color(1, 1, 1, 1));
+	theme->set_color("icon_focus_color", "VirtualButton", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "VirtualButton", Color(1, 1, 1, 0.4));
+	theme->set_icon("icon", "VirtualButton", icons["virtual_button"]);
+
+	// VirtualJoystick
+	Ref<StyleBoxFlat> vjoy_base_style = make_flat_stylebox(Color(0.1, 0.1, 0.1, 0.5), 0, 0, 0, 0, 1024);
+	vjoy_base_style->set_corner_detail(20);
+	Ref<StyleBoxFlat> vjoy_tip_style = make_flat_stylebox(Color(0.8, 0.8, 0.8, 0.8), 0, 0, 0, 0, 1024);
+	vjoy_tip_style->set_corner_detail(20);
+	theme->set_stylebox("base_style", "VirtualJoystick", vjoy_base_style);
+	theme->set_stylebox("tip_style", "VirtualJoystick", vjoy_tip_style);
+	theme->set_icon("base", "VirtualJoystick", icons["virtual_joystick_base"]);
+	theme->set_icon("tip", "VirtualJoystick", icons["virtual_joystick_tip"]);
+	theme->set_color("base_color", "VirtualJoystick", Color(1, 1, 1, 1));
+	theme->set_color("tip_color", "VirtualJoystick", Color(1, 1, 1, 1));
+
+	// VirtualDPad
+	theme->set_color("normal_color", "VirtualDPad", Color(0.8, 0.8, 0.8, 0.4));
+	theme->set_color("active_color", "VirtualDPad", Color(1, 1, 1, 0.8));
+	theme->set_color("highlight_color", "VirtualDPad", Color(0, 0.8, 1, 1)); // Cyan for pressed
 }
 
 void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel, TextServer::Hinting p_font_hinting, TextServer::FontAntialiasing p_font_antialiasing, bool p_font_msdf, bool p_font_generate_mipmaps) {

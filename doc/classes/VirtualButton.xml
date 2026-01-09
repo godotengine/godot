@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualButton" inherits="VirtualDevice" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An on-screen virtual button.
+	</brief_description>
+	<description>
+		[VirtualButton] behaves like a standard button but emits [InputEventVirtualButton] events associated with a specific virtual button index. It supports textures for various states (normal, pressed, hovered, disabled) and various stretch modes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
+			The virtual button index this control triggers (e.g., 0 for Button 0, 1 for Button 1).
+		</member>
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
+			The text displayed on the button.
+		</member>
+		<member name="icon" type="Texture2D" setter="set_icon" getter="get_icon">
+			An optional icon displayed on the button.
+		</member>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+			An optional font override for the button text.
+		</member>
+		<member name="font_size" type="int" setter="set_font_size" getter="get_font_size" default="0">
+			An optional font size override for the button text.
+		</member>
+		<member name="ignore_texture_size" type="bool" setter="set_ignore_texture_size" getter="get_ignore_texture_size" default="false">
+			If [code]true[/code], the node's size will not be automatically adjusted to the texture size.
+		</member>
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="VirtualButton.StretchMode" default="0">
+			Controls how the texture is stretched or placed to fit the node's bounding rect.
+		</member>
+		<member name="texture_disabled" type="Texture2D" setter="set_texture_disabled" getter="get_texture_disabled">
+			Texture displayed when the button is disabled.
+		</member>
+		<member name="texture_focused" type="Texture2D" setter="set_texture_focused" getter="get_texture_focused">
+			Texture displayed when the button has focus.
+		</member>
+		<member name="texture_hover" type="Texture2D" setter="set_texture_hover" getter="get_texture_hover">
+			Texture displayed when the mouse hovers over the button.
+		</member>
+		<member name="texture_normal" type="Texture2D" setter="set_texture_normal" getter="get_texture_normal">
+			The normal texture to display.
+		</member>
+		<member name="texture_pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
+			Texture displayed when the button is pressed.
+		</member>
+	</members>
+	<constants>
+		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
+			Scale the texture to fit the rectangle.
+		</constant>
+		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
+			Tile the texture inside the rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
+			Keep the texture's original size, centered in the rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="3" enum="StretchMode">
+			Keep the texture centered.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="4" enum="StretchMode">
+			Scale to fit while keeping aspect ratio.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5" enum="StretchMode">
+			Scale to fit keeping aspect ratio, centered.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6" enum="StretchMode">
+			Scale to cover the rectangle keeping aspect ratio.
+		</constant>
+	</constants>
+</class>

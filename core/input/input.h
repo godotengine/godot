@@ -99,6 +99,12 @@ private:
 	RBSet<Key> keys_pressed;
 	RBSet<JoyButton> joy_buttons_pressed;
 	RBMap<JoyAxis, float> _joy_axis;
+	struct VirtualDeviceState {
+		RBSet<int> buttons_pressed;
+		RBMap<int, float> axes_values;
+	};
+	HashMap<int, VirtualDeviceState> virtual_device_states;
+
 	//RBMap<StringName,int> custom_action_press;
 	bool gravity_enabled = false;
 	Vector3 gravity;
@@ -318,6 +324,8 @@ public:
 	bool is_key_label_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
+	bool is_virtual_button_pressed(int p_device_id, int p_button_index) const;
+	float get_virtual_axis_value(int p_device_id, int p_axis) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
@@ -331,6 +339,7 @@ public:
 
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
 	String get_joy_name(int p_idx);
+	String get_joy_button_string(JoyButton p_button);
 	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);

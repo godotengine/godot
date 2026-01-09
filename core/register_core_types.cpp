@@ -197,6 +197,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(InputEventMagnifyGesture);
 	GDREGISTER_CLASS(InputEventPanGesture);
 	GDREGISTER_CLASS(InputEventMIDI);
+	GDREGISTER_CLASS(InputEventVirtualButton);
+	GDREGISTER_CLASS(InputEventVirtualMotion);
 
 	// Network
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);

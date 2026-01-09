@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualJoystickDynamic" inherits="VirtualJoystick" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An on-screen area that spawns a virtual joystick at the touch position.
+	</brief_description>
+	<description>
+		[VirtualJoystickDynamic] is a specialized [VirtualJoystick] designed to cover a large area of the screen (e.g. the entire left half). It remains invisible until touched. When touched, the joystick "embodies" at the touch position, allowing for dynamic analog control without requiring precision from the user to hit a fixed timestamp. It defaults to [constant VirtualJoystick.JOYSTICK_MODE_DYNAMIC].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="default_position" type="Vector2" setter="set_default_position" getter="get_default_position" default="Vector2(0, 0)">
+			The default position where the joystick appears when [member visible_by_default] is set to [code]true[/code]. It also represents the position the joystick returns to after being released. If left at [code]Vector2(0, 0)[/code], it will automatically center itself within the control's size.
+		</member>
+		<member name="joystick_size" type="float" setter="set_joystick_size" getter="get_joystick_size" default="50.0">
+			The diameter of the digital joystick visual elements when they appear in the dynamic area.
+		</member>
+		<member name="visible_by_default" type="bool" setter="set_visible_by_default" getter="is_visible_by_default" default="false">
+			If [code]true[/code], the joystick visual elements are visible even when no touch is active, positioned at [member default_position]. If [code]false[/code], the joystick only appears during a touch event.
+		</member>
+	</members>
+</class>

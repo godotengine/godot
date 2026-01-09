@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualTouchPad" inherits="VirtualDevice" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A control for relative touch movement, ideal for camera control.
+	</brief_description>
+	<description>
+		[VirtualTouchPad] is a specialized control for tracking relative movement (deltas). It behaves similarly to a laptop trackpad or a mouse.
+		[b]Architecture Note (Pure Motion):[/b] This node is strictly designed for [b]Continuous Motion[/b] (e.g., controlling a 3D camera, aiming a weapon). It emits [InputEventVirtualMotion] based on the relative movement of the finger between frames.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_sensitivity" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the [member sensitivity].
+			</description>
+		</method>
+		<method name="get_x_axis" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [member x_axis].
+			</description>
+		</method>
+		<method name="get_y_axis" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the [member y_axis].
+			</description>
+		</method>
+		<method name="set_sensitivity">
+			<return type="void" />
+			<param index="0" name="sensitivity" type="float" />
+			<description>
+				Sets the [member sensitivity].
+			</description>
+		</method>
+		<method name="set_x_axis">
+			<return type="void" />
+			<param index="0" name="axis" type="int" />
+			<description>
+				Sets the [member x_axis].
+			</description>
+		</method>
+		<method name="set_y_axis">
+			<return type="void" />
+			<param index="0" name="axis" type="int" />
+			<description>
+				Sets the [member y_axis].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="hand" type="int" setter="set_hand" getter="get_hand" enum="VirtualTouchPad.TouchPadHand" default="0">
+			The hand this touchpad is designed for. Affects the default virtual axis indices if not overridden.
+		</member>
+		<member name="sensitivity" type="float" setter="set_sensitivity" getter="get_sensitivity" default="1.0">
+			Multiplier for the output values.
+		</member>
+		<member name="x_axis" type="int" setter="set_x_axis" getter="get_x_axis" default="0">
+			The virtual axis index to emit for horizontal movement.
+		</member>
+		<member name="y_axis" type="int" setter="set_y_axis" getter="get_y_axis" default="1">
+			The virtual axis index to emit for vertical movement.
+		</member>
+	</members>
+	<constants>
+		<constant name="HAND_LEFT" value="0" enum="TouchPadHand">
+			Left hand. Uses axes 0 and 1 by default.
+		</constant>
+		<constant name="HAND_RIGHT" value="1" enum="TouchPadHand">
+			Right hand. Uses axes 2 and 3 by default.
+		</constant>
+	</constants>
+</class>

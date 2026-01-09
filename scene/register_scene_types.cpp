@@ -94,6 +94,12 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
+#include "scene/gui/virtual_button.h"
+#include "scene/gui/virtual_device.h"
+#include "scene/gui/virtual_dpad.h"
+#include "scene/gui/virtual_joystick.h"
+#include "scene/gui/virtual_joystick_dynamic.h"
+#include "scene/gui/virtual_touch_pad.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -463,6 +469,12 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); // may take time to init
 
 	GDREGISTER_CLASS(Control);
+	GDREGISTER_ABSTRACT_CLASS(VirtualDevice);
+	GDREGISTER_CLASS(VirtualJoystick);
+	GDREGISTER_CLASS(VirtualJoystickDynamic);
+	GDREGISTER_CLASS(VirtualButton);
+	GDREGISTER_CLASS(VirtualDPad);
+	GDREGISTER_CLASS(VirtualTouchPad);
 	GDREGISTER_VIRTUAL_CLASS(BaseButton);
 	GDREGISTER_CLASS(Button);
 	GDREGISTER_CLASS(Label);

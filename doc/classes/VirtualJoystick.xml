@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VirtualJoystick" inherits="VirtualDevice" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An on-screen virtual joystick.
+	</brief_description>
+	<description>
+		[VirtualJoystick] is a GUI control that simulates an analog stick in a fixed position. For a dynamic joystick that appears at the touch position, use [VirtualJoystickDynamic]. It emits [InputEventVirtualMotion] events for axes 0 (X) and 1 (Y).
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_output" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the current normalized output vector of the joystick.
+			</description>
+		</method>
+		<method name="set_joystick_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="VirtualJoystick.JoystickMode" />
+			<description>
+				Sets the behavior mode of the joystick. Internal use mostly, as specific nodes ([VirtualJoystick], [VirtualJoystickDynamic]) set their appropriate mode.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clamp_zone_size" type="float" setter="set_clamp_zone_size" getter="get_clamp_zone_size" default="50.0">
+			The radius in pixels within which the joystick handle can move.
+		</member>
+		<member name="deadzone_size" type="float" setter="set_deadzone_size" getter="get_deadzone_size" default="10.0">
+			The radius in pixels of the center deadzone. Movement within this zone is ignored.
+		</member>
+		<member name="joystick_hand" type="int" setter="set_joystick_hand" getter="get_joystick_hand" enum="VirtualJoystick.JoystickHand" default="0">
+			The hand this joystick is designed for. Affects the virtual axis indices (0/1 for Left, 2/3 for Right).
+		</member>
+	</members>
+	<constants>
+		<constant name="JOYSTICK_MODE_FIXED" value="0" enum="JoystickMode">
+			The joystick remains in a fixed position.
+		</constant>
+		<constant name="JOYSTICK_MODE_DYNAMIC" value="1" enum="JoystickMode">
+			The joystick appears at the position where the screen is touched.
+		</constant>
+		<constant name="JOYSTICK_HAND_LEFT" value="0" enum="JoystickHand">
+			Left hand. Uses virtual axes 0 and 1.
+		</constant>
+		<constant name="JOYSTICK_HAND_RIGHT" value="1" enum="JoystickHand">
+			Right hand. Uses virtual axes 2 and 3.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="base_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Modulate color for the joystick base.
+		</theme_item>
+		<theme_item name="base_texture" data_type="icon" type="Texture2D">
+			Texture for the joystick base (background).
+		</theme_item>
+		<theme_item name="tip_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Modulate color for the joystick tip (handle).
+		</theme_item>
+		<theme_item name="tip_texture" data_type="icon" type="Texture2D">
+			Texture for the joystick tip (handle).
+		</theme_item>
+	</theme_items>
+</class>
