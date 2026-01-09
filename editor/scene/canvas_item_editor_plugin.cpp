@@ -880,6 +880,16 @@ bool CanvasItemEditor::_select_subgizmos(Point2 p_click_pos, bool p_append) {
 					return selection_changed;
 				}
 			}
+
+			// no hit, at all. if we're not appending, clear the subgizmo selection
+			if (!p_append) {
+				if (se->gizmo.is_valid()) {
+					se->subgizmos.clear();
+					se->gizmo->redraw();
+					se->gizmo = Ref<EditorCanvasItemGizmo>();
+					return true;
+				}
+			}
 		}
 	}
 	return false;
@@ -2537,11 +2547,16 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			for (CanvasItem *ci : drag_selection) {
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 				if (se->gizmo.is_valid()) {
+					// we use the delta for the snapped position, this way we get snapping for subgizmos
+					Vector2 delta = new_pos - previous_pos;
+					// delta is in canvas space, we need to convert it to local space for the gizmo
+					Transform2D parent_xform_inv = ci->get_global_transform().affine_inverse();
+					delta = parent_xform_inv.xform(delta);
+
 					// if we currently have a subgizmo selection, we only move this subgizmo selection -
 					// not the node - similar to how this is done in 3D.
 					for (KeyValue<int, Transform2D> &entry : se->subgizmos) {
-						// we use the delta for the snapped position, this way we get snapping for subgizmos
-						Transform2D new_xform = entry.value.translated(new_pos - previous_pos);
+						Transform2D new_xform = entry.value.translated(delta);
 						se->gizmo->set_subgizmo_transform(entry.key, new_xform);
 					}
 					// need a redraw here because moving subgizmos needs to re-draw the canvas item
