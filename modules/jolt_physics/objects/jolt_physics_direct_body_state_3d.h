@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class JoltBody3D;
 
@@ -115,5 +115,5 @@ public:
 
 	virtual void integrate_forces() override;
 
-	virtual PhysicsDirectSpaceState3D *get_space_state() override;
+	virtual RequiredResult<PhysicsDirectSpaceState3D> get_space_state() override;
 };

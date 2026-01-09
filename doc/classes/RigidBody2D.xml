@@ -168,11 +168,11 @@
 		<member name="freeze" type="bool" setter="set_freeze_enabled" getter="is_freeze_enabled" default="false">
 			If [code]true[/code], the body is frozen. Gravity and forces are not applied anymore.
 			See [member freeze_mode] to set the body's behavior when frozen.
-			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody2D.FreezeMode" default="0">
-			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled.
-			For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
+			The body's freeze mode. Determines the body's behavior when [member freeze] is [code]true[/code].
+			[b]Note:[/b] For a body that is always frozen, use [StaticBody2D] or [AnimatableBody2D] instead.
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the [member ProjectSettings.physics/2d/default_gravity] project setting and/or any additional gravity vector applied by [Area2D]s.

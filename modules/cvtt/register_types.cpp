@@ -30,8 +30,6 @@
 
 #include "register_types.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "image_compress_cvtt.h"
 
 void initialize_cvtt_module(ModuleInitializationLevel p_level) {
@@ -47,5 +45,3 @@ void uninitialize_cvtt_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 }
-
-#endif // TOOLS_ENABLED

@@ -36,8 +36,10 @@
 #include "wgl_detect_version.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
+#include "core/os/main_loop.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -95,8 +97,6 @@
 
 #define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
 
-int constexpr FS_TRANSP_BORDER = 2;
-
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -149,8 +149,9 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_WINDOW_DRAG:
-		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
 #ifdef ACCESSKIT_ENABLED
@@ -165,6 +166,49 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 
 String DisplayServerWindows::get_name() const {
 	return "Windows";
+}
+
+Vector2i _logical_to_physical(const Vector2i &p_point) {
+	POINT p1;
+	p1.x = p_point.x;
+	p1.y = p_point.y;
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	return Vector2i(p1.x, p1.y);
+}
+
+Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
+	Vector2i p1 = _logical_to_physical(screen_get_position(p_screen));
+	Vector2i p2 = _logical_to_physical(screen_get_position(p_screen) + screen_get_size(p_screen));
+
+	int screen_down = -1;
+	int screen_right = -1;
+	for (int i = 0; i < get_screen_count(); i++) {
+		if (i == p_screen) {
+			continue;
+		}
+		Vector2i sp1 = _logical_to_physical(screen_get_position(i));
+		Vector2i sp2 = _logical_to_physical(screen_get_position(i) + screen_get_size(i));
+		if (sp1.y >= p2.y - 5 && sp1.y <= p2.y + 5 && sp1.x <= p2.x && p1.x <= sp2.x) {
+			screen_down = i;
+		}
+		if (sp1.x >= p2.x - 5 && sp1.x <= p2.x + 5 && sp1.y <= p2.y && p1.y <= sp2.y) {
+			screen_right = i;
+		}
+	}
+
+	if (screen_down == -1) {
+		return Vector2i(0, 2);
+	} else if (screen_right == -1) {
+		return Vector2i(2, 0);
+	} else {
+		int diff_d = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_down);
+		int diff_r = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_right);
+		if (diff_d < diff_r) {
+			return Vector2i(0, 2);
+		} else {
+			return Vector2i(2, 0);
+		}
+	}
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
@@ -186,11 +230,12 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 
 		WindowData &wd = windows[window_id];
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 
 		RECT clipRect;
 		GetClientRect(wd.hWnd, &clipRect);
-		clipRect.right -= off_x;
+		clipRect.right -= off.x;
+		clipRect.bottom -= off.y;
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
@@ -298,7 +343,7 @@ TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
 	return tts->get_voices();
 }
 
-void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	if (unlikely(!tts)) {
 		initialize_tts();
 	}
@@ -552,7 +597,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			if (!exts.is_empty()) {
 				String str = String(";").join(exts);
 				filter_exts.push_back(str.utf16());
-				if (tokens.size() == 2) {
+				if (tokens.size() >= 2) {
 					filter_names.push_back(tokens[1].strip_edges().utf16());
 				} else {
 					filter_names.push_back(str.utf16());
@@ -1328,17 +1373,17 @@ Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 }
 
 typedef struct {
-	int count;
+	int current_index;
 	int screen;
 	int dpi;
 } EnumDpiData;
 
-static int QueryDpiForMonitor(HMONITOR hmon, MONITOR_DPI_TYPE dpiType = MDT_DEFAULT) {
+static int QueryDpiForMonitor(HMONITOR hmon) {
 	int dpiX = 96, dpiY = 96;
 
 	UINT x = 0, y = 0;
 	if (hmon) {
-		HRESULT hr = GetDpiForMonitor(hmon, dpiType, &x, &y);
+		HRESULT hr = GetDpiForMonitor(hmon, MDT_DEFAULT, &x, &y);
 		if (SUCCEEDED(hr) && (x > 0) && (y > 0)) {
 			dpiX = (int)x;
 			dpiY = (int)y;
@@ -1364,11 +1409,13 @@ static int QueryDpiForMonitor(HMONITOR hmon, MONITOR_DPI_TYPE dpiType = MDT_DEFA
 
 static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumDpiData *data = (EnumDpiData *)dwData;
-	if (data->count == data->screen) {
-		data->dpi = QueryDpiForMonitor(hMonitor);
-	}
 
-	data->count++;
+	data->current_index++;
+
+	if (data->current_index == data->screen) {
+		data->dpi = QueryDpiForMonitor(hMonitor);
+		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -1376,11 +1423,11 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	int screen_count = get_screen_count();
-	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
 
-	EnumDpiData data = { 0, p_screen, 72 };
+	EnumDpiData data = { -1, p_screen, 96 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
+
+	ERR_FAIL_COND_V_MSG(data.current_index < p_screen, 96, vformat("Screen index %d out of range [0, %d].", p_screen, data.current_index));
 	return data.dpi;
 }
 
@@ -1608,8 +1655,26 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL);
-	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
+	bool no_redirection_bitmap = false;
+#ifdef DCOMP_ENABLED
+	no_redirection_bitmap = OS::get_singleton()->is_layered_allowed() && rendering_driver == "d3d12";
+#endif
+
+	WindowID window_id = window_id_counter;
+	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL, no_redirection_bitmap);
+	ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Failed to create sub window.");
+	++window_id_counter;
+
+#ifdef RD_ENABLED
+	if (rendering_context != nullptr) {
+		_create_rendering_context_window(window_id, rendering_driver);
+	}
+#endif
+#ifdef GLES3_ENABLED
+	_create_gl_window(window_id);
+#endif
+
+	window_set_vsync_mode(p_vsync_mode, window_id);
 
 	WindowData &wd = windows[window_id];
 
@@ -1737,15 +1802,6 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 
 	WindowData &wd = windows[p_window];
 
-	IPropertyStore *prop_store;
-	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
-	if (hr == S_OK) {
-		PROPVARIANT val;
-		PropVariantInit(&val);
-		prop_store->SetValue(PKEY_AppUserModel_ID, val);
-		prop_store->Release();
-	}
-
 	while (wd.transient_children.size()) {
 		window_set_transient(*wd.transient_children.begin(), INVALID_WINDOW_ID);
 	}
@@ -1772,18 +1828,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
-	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
-		wintab_WTClose(wd.wtctx);
-		wd.wtctx = nullptr;
-	}
-
-	if (wd.drop_target != nullptr) {
-		RevokeDragDrop(wd.hWnd);
-		wd.drop_target->Release();
-	}
-
-	DestroyWindow(wd.hWnd);
-	windows.erase(p_window);
+	_destroy_window(p_window);
 
 	if (last_focused_window == p_window) {
 		last_focused_window = INVALID_WINDOW_ID;
@@ -1944,7 +1989,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Window
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon.is_valid()) {
+	if (icon_big) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2027,16 +2072,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 	} else if (wd.maximized) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(p_screen) : Vector2i();
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
@@ -2285,8 +2330,8 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 
 	RECT r;
 	if (GetClientRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
@@ -2297,15 +2342,20 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
 
+	// GetWindowRect() returns a zero rect for a minimized window, so we need to get the size in another way.
+	if (wd.minimized) {
+		return Size2(wd.width_with_decorations, wd.height_with_decorations);
+	}
+
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) { // Retrieves area inside of window border, including decoration.
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		return Size2(r.right - r.left - off_x, r.bottom - r.top);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		return Size2(r.right - r.left - off.x, r.bottom - r.top - off.y);
 	}
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_no_min_btn, bool p_no_max_btn, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, bool p_no_redirection_bitmap, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2382,7 +2432,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
 
-	if (OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
+	if (p_no_redirection_bitmap) {
 		r_style_ex |= WS_EX_NOREDIRECTIONBITMAP;
 	}
 }
@@ -2396,13 +2446,21 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.no_min_btn, wd.no_max_btn, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, wd.no_redirection_bitmap, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon.is_valid()) {
-		set_icon(icon);
+	if (icon_big && !icon_small) {
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+	} else {
+		if (icon_big) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
+		if (icon_small) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		}
 	}
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
@@ -2410,8 +2468,8 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off_x, rect.bottom - rect.top, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off.x, rect.bottom - rect.top - off.y, TRUE);
 	}
 }
 
@@ -2468,6 +2526,21 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		}
 	}
 
+	if ((wd.maximized || wd.was_maximized_pre_fs) && wd.borderless && p_mode != WINDOW_MODE_MINIMIZED && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		RECT rect;
+		if (wd.pre_fs_valid) {
+			rect = wd.pre_fs_rect;
+		} else {
+			rect.left = 0;
+			rect.right = wd.width;
+			rect.top = 0;
+			rect.bottom = wd.height;
+		}
+
+		ShowWindow(wd.hWnd, SW_RESTORE);
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+	}
+
 	if (p_mode == WINDOW_MODE_WINDOWED) {
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = false;
@@ -2481,6 +2554,11 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
+		if (!was_fullscreen && !(wd.maximized && wd.borderless)) {
+			// Save non-fullscreen rect before entering fullscreen.
+			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
+			wd.pre_fs_valid = true;
+		}
 		ShowWindow(wd.hWnd, SW_NORMAL);
 		wd.maximized = true;
 		wd.minimized = false;
@@ -2514,7 +2592,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		// Save previous maximized stare.
 		wd.was_maximized_pre_fs = wd.maximized;
 
-		if (!was_fullscreen) {
+		if (!was_fullscreen && !(wd.maximized && wd.borderless)) {
 			// Save non-fullscreen rect before entering fullscreen.
 			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
 			wd.pre_fs_valid = true;
@@ -2530,8 +2608,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 
 		_update_window_style(p_window, false);
 
-		int off_x = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? FS_TRANSP_BORDER : 0;
-		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(cs) : Vector2i();
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width + off.x, size.height + off.y, TRUE);
 
 		// If the user has mouse trails enabled in windows, then sometimes the cursor disappears in fullscreen mode.
 		// Save number of trails so we can restore when exiting, then turn off mouse trails
@@ -2598,6 +2676,9 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			wd.borderless = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_mouse_passthrough(p_window);
 			_update_window_style(p_window);
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
@@ -3849,6 +3930,17 @@ void DisplayServerWindows::swap_buffers() {
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file with icon '" + p_filename + "'.");
 
@@ -3906,59 +3998,60 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_big;
-	data_big.resize(bytecount_big);
+	icon_buffer_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_big.write[0], bytecount_big);
-	HICON icon_big = CreateIconFromResource((PBYTE)&data_big.write[0], bytecount_big, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_big.write[0], bytecount_big);
+	icon_big = CreateIconFromResourceEx((PBYTE)&icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	Vector<uint8_t> data_small;
-	data_small.resize(bytecount_small);
+	icon_buffer_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&data_small.write[0], bytecount_small);
-	HICON icon_small = CreateIconFromResource((PBYTE)&data_small.write[0], bytecount_small, TRUE, 0x00030000);
+	f->get_buffer((uint8_t *)&icon_buffer_small.write[0], bytecount_small);
+	icon_small = CreateIconFromResourceEx((PBYTE)&icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
-
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
-	err = GetLastError();
-	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
-
+	for (const KeyValue<WindowID, WindowData> &E : windows) {
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+		SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	}
 	memdelete(icon_dir);
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
+
 	if (p_icon.is_valid()) {
 		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
 
-		Ref<Image> img = p_icon;
-		if (img != icon) {
-			img = img->duplicate();
-			img->convert(Image::FORMAT_RGBA8);
-		}
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
 
 		int w = img->get_width();
 		int h = img->get_height();
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		icon_buffer_big.resize(icon_len);
+		BYTE *icon_bmp = icon_buffer_big.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -3985,26 +4078,23 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[3] = rpx[3];
 			}
 		}
+		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+		ERR_FAIL_NULL(icon_big);
 
-		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-		ERR_FAIL_NULL(hicon);
-
-		icon = img;
-
-		// Set the icon for the window.
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-		// Set the icon in the task manager (should we do this?).
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		}
 	} else {
-		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
+		for (const KeyValue<WindowID, WindowData> &E : windows) {
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
+			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+		}
 	}
 }
 
 DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
-	HICON hicon = nullptr;
+	IndicatorData idat;
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4018,9 +4108,8 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4048,10 +4137,9 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
-	IndicatorData idat;
 	idat.callback = p_callback;
 
 	NOTIFYICONDATAW ndat;
@@ -4061,7 +4149,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uID = indicator_id_counter;
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
@@ -4077,7 +4165,14 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND(!indicators.has(p_id));
 
-	HICON hicon = nullptr;
+	IndicatorData &idat = indicators[p_id];
+
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
+
 	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0 && p_icon->get_image().is_valid()) {
 		Ref<Image> img = p_icon->get_image();
 		img = img->duplicate();
@@ -4091,9 +4186,8 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		Vector<BYTE> v;
-		v.resize(icon_len);
-		BYTE *icon_bmp = v.ptrw();
+		idat.icon_buffer.resize(icon_len);
+		BYTE *icon_bmp = idat.icon_buffer.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4121,7 +4215,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 			}
 		}
 
-		hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		idat.icon = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
 	}
 
 	NOTIFYICONDATAW ndat;
@@ -4130,7 +4224,7 @@ void DisplayServerWindows::status_indicator_set_icon(IndicatorID p_id, const Ref
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_ICON;
-	ndat.hIcon = hicon;
+	ndat.hIcon = idat.icon;
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -4189,6 +4283,13 @@ Rect2 DisplayServerWindows::status_indicator_get_rect(IndicatorID p_id) const {
 
 void DisplayServerWindows::delete_status_indicator(IndicatorID p_id) {
 	ERR_FAIL_COND(!indicators.has(p_id));
+
+	IndicatorData &idat = indicators[p_id];
+	if (idat.icon) {
+		DestroyIcon(idat.icon);
+		idat.icon_buffer.clear();
+		idat.icon = nullptr;
+	}
 
 	NOTIFYICONDATAW ndat;
 	ZeroMemory(&ndat, sizeof(NOTIFYICONDATAW));
@@ -4742,9 +4843,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
 			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
 			// if the window is not activated first. This happens because the code in the activation process runs
-			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
+			// after the mouse click is handled. To address this, the timer is now used only during the window creation,
+			// and only as part of the activation process. We don't want 'Input::release_pressed_events()'
+			// to be called immediately in '_process_activate_event' when the window is not yet activated,
+			// as it would reset the currently pressed keys when hiding a window, which is incorrect behavior.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
-			if (windows[window_id].first_activation_done) {
+			if (windows[window_id].first_activation_done && (windows[window_id].activate_state == WA_ACTIVE || windows[window_id].activate_state == WA_CLICKACTIVE)) {
 				_process_activate_event(window_id);
 			} else {
 				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
@@ -5716,7 +5820,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_WINDOWPOSCHANGED: {
 			WindowData &window = windows[window_id];
 
-			int off_x = (window.multiwindow_fs || (!window.fullscreen && window.borderless && IsZoomed(hWnd))) ? FS_TRANSP_BORDER : 0;
+			Vector2i off = (window.multiwindow_fs || (!window.fullscreen && window.borderless && window.maximized)) ? _get_screen_expand_offset(window_get_current_screen(window_id)) : Vector2i();
 			Rect2i window_client_rect;
 			Rect2i window_rect;
 			{
@@ -5724,12 +5828,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				GetClientRect(hWnd, &rect);
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
-				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off_x, rect.bottom - rect.top);
+				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left - off.x, rect.bottom - rect.top - off.y);
 				window_client_rect.position -= _get_screens_origin();
 
 				RECT wrect;
 				GetWindowRect(hWnd, &wrect);
-				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off_x, wrect.bottom - wrect.top);
+				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left - off.x, wrect.bottom - wrect.top - off.y);
 				window_rect.position -= _get_screens_origin();
 			}
 
@@ -5777,21 +5881,23 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!window.minimized) {
 					window.width = window_client_rect.size.width;
 					window.height = window_client_rect.size.height;
+					window.width_with_decorations = window_rect.size.width;
+					window.height_with_decorations = window_rect.size.height;
 
 					rect_changed = true;
 				}
 #if defined(RD_ENABLED)
-				if (window.create_completed && rendering_context && window.context_created) {
+				if (window.create_completed && rendering_context && window.rendering_context_window_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					rendering_context->window_set_size(window_id, window.width, window.height);
+					rendering_context->window_set_size(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 #if defined(GLES3_ENABLED)
-				if (window.create_completed && gl_manager_native) {
-					gl_manager_native->window_resize(window_id, window.width, window.height);
+				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
+					gl_manager_native->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
-				if (window.create_completed && gl_manager_angle) {
-					gl_manager_angle->window_resize(window_id, window.width, window.height);
+				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
+					gl_manager_angle->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
 			}
@@ -5810,7 +5916,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 					RECT crect;
 					GetClientRect(window.hWnd, &crect);
-					crect.right -= off_x;
+					crect.right -= off.x;
+					crect.bottom -= off.y;
 					ClientToScreen(window.hWnd, (POINT *)&crect.left);
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
@@ -6291,11 +6398,11 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd) {
+Error DisplayServerWindows::_create_window(WindowID p_window_id, WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, dwStyle, dwExStyle);
+	_get_window_style(p_window_id == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_flags & WINDOW_FLAG_MINIMIZE_DISABLED_BIT, p_flags & WINDOW_FLAG_MAXIMIZE_DISABLED_BIT, p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP_BIT), p_parent_hwnd, p_no_redirection_bitmap, dwStyle, dwExStyle);
 
 	int rq_screen = get_screen_from_rect(p_rect);
 	if (rq_screen < 0) {
@@ -6307,21 +6414,21 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 	RECT WindowRect;
 
-	int off_x = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? FS_TRANSP_BORDER : 0;
+	Vector2i off = (p_mode == WINDOW_MODE_FULLSCREEN || ((p_flags & WINDOW_FLAG_BORDERLESS_BIT) && p_mode == WINDOW_MODE_MAXIMIZED)) ? _get_screen_expand_offset(rq_screen) : Vector2i();
 
 	WindowRect.left = p_rect.position.x;
-	WindowRect.right = p_rect.position.x + p_rect.size.x + off_x;
+	WindowRect.right = p_rect.position.x + p_rect.size.x + off.x;
 	WindowRect.top = p_rect.position.y;
-	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
+	WindowRect.bottom = p_rect.position.y + p_rect.size.y + off.y;
 
 	if (!p_parent_hwnd) {
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 			WindowRect.left = screen_rect.position.x;
-			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off_x;
+			WindowRect.right = screen_rect.position.x + screen_rect.size.x + off.x;
 			WindowRect.top = screen_rect.position.y;
-			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y + off.y;
 		} else {
 			Rect2i srect = screen_get_usable_rect(rq_screen);
 			Point2i wpos = p_rect.position;
@@ -6330,9 +6437,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			}
 
 			WindowRect.left = wpos.x;
-			WindowRect.right = wpos.x + p_rect.size.x + off_x;
+			WindowRect.right = wpos.x + p_rect.size.x + off.x;
 			WindowRect.top = wpos.y;
-			WindowRect.bottom = wpos.y + p_rect.size.y;
+			WindowRect.bottom = wpos.y + p_rect.size.y + off.y;
 		}
 	}
 
@@ -6345,7 +6452,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
-	WindowID id = window_id_counter;
+	WindowID id = p_window_id;
 	{
 		WindowData *wd_transient_parent = nullptr;
 		HWND owner_hwnd = nullptr;
@@ -6384,7 +6491,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		if (!wd.hWnd) {
 			MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			windows.erase(id);
-			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Windows OS window.");
+			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Failed to create Windows OS window.");
 		}
 
 		wd.parent_hwnd = p_parent_hwnd;
@@ -6436,66 +6543,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			BOOL value = is_dark_mode();
 			::DwmSetWindowAttribute(wd.hWnd, use_legacy_dark_mode_before_20H1 ? DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 : DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
-
-		RECT real_client_rect;
-		GetClientRect(wd.hWnd, &real_client_rect);
-
-#ifdef RD_ENABLED
-		if (rendering_context) {
-			union {
-#ifdef VULKAN_ENABLED
-				RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
-#endif
-#ifdef D3D12_ENABLED
-				RenderingContextDriverD3D12::WindowPlatformData d3d12;
-#endif
-			} wpd;
-#ifdef VULKAN_ENABLED
-			if (rendering_driver == "vulkan") {
-				wpd.vulkan.window = wd.hWnd;
-				wpd.vulkan.instance = hInstance;
-			}
-#endif
-#ifdef D3D12_ENABLED
-			if (rendering_driver == "d3d12") {
-				wpd.d3d12.window = wd.hWnd;
-			}
-#endif
-			if (rendering_context->window_create(id, &wpd) != OK) {
-				ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				windows.erase(id);
-				return INVALID_WINDOW_ID;
-			}
-
-			rendering_context->window_set_size(id, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top);
-			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
-			wd.context_created = true;
-		}
-#endif
-
-#ifdef GLES3_ENABLED
-		if (gl_manager_native) {
-			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
-				memdelete(gl_manager_native);
-				gl_manager_native = nullptr;
-				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
-			}
-			window_set_vsync_mode(p_vsync_mode, id);
-		}
-
-		if (gl_manager_angle) {
-			if (gl_manager_angle->window_create(id, nullptr, wd.hWnd, real_client_rect.right - real_client_rect.left - off_x, real_client_rect.bottom - real_client_rect.top) != OK) {
-				memdelete(gl_manager_angle);
-				gl_manager_angle = nullptr;
-				windows.erase(id);
-				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create an OpenGL window.");
-			}
-			window_set_vsync_mode(p_vsync_mode, id);
-		}
-#endif
 
 		RegisterTouchWindow(wd.hWnd, 0);
 		DragAcceptFiles(wd.hWnd, true);
@@ -6582,25 +6629,123 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			ClientToScreen(wd.hWnd, (POINT *)&r.left);
 			ClientToScreen(wd.hWnd, (POINT *)&r.right);
 			wd.last_pos = Point2i(r.left, r.top) - _get_screens_origin();
-			wd.width = r.right - r.left - off_x;
-			wd.height = r.bottom - r.top;
+			wd.width = r.right - r.left - off.x;
+			wd.height = r.bottom - r.top - off.y;
 		} else {
 			wd.last_pos = p_rect.position;
 			wd.width = p_rect.size.width;
 			wd.height = p_rect.size.height;
 		}
 
+		wd.no_redirection_bitmap = p_no_redirection_bitmap;
+
 		wd.create_completed = true;
 		// Set size of maximized borderless window (by default it covers the entire screen).
 		if (!p_parent_hwnd && p_mode == WINDOW_MODE_MAXIMIZED && (p_flags & WINDOW_FLAG_BORDERLESS_BIT)) {
-			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off_x, usable_rect.position.y, usable_rect.size.width + off_x, usable_rect.size.height, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(wd.hWnd, HWND_TOP, usable_rect.position.x - off.x, usable_rect.position.y - off.y, usable_rect.size.width + off.x, usable_rect.size.height + off.y, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		_update_window_mouse_passthrough(id);
-		window_id_counter++;
 	}
 
-	return id;
+	return OK;
 }
+
+void DisplayServerWindows::_destroy_window(WindowID p_window_id) {
+	WindowData &wd = windows[p_window_id];
+
+	IPropertyStore *prop_store;
+	HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
+	if (hr == S_OK) {
+		PROPVARIANT val;
+		PropVariantInit(&val);
+		prop_store->SetValue(PKEY_AppUserModel_ID, val);
+		prop_store->Release();
+	}
+
+	if ((tablet_get_current_driver() == "wintab") && wintab_available && wd.wtctx) {
+		wintab_WTClose(wd.wtctx);
+		wd.wtctx = nullptr;
+	}
+
+	if (wd.drop_target != nullptr) {
+		RevokeDragDrop(wd.hWnd);
+		wd.drop_target->Release();
+	}
+
+	DestroyWindow(wd.hWnd);
+	windows.erase(p_window_id);
+}
+
+#ifdef RD_ENABLED
+Error DisplayServerWindows::_create_rendering_context_window(WindowID p_window_id, const String &p_rendering_driver) {
+	DEV_ASSERT(rendering_context != nullptr);
+
+	WindowData &wd = windows[p_window_id];
+
+	union {
+#ifdef VULKAN_ENABLED
+		RenderingContextDriverVulkanWindows::WindowPlatformData vulkan;
+#endif
+#ifdef D3D12_ENABLED
+		RenderingContextDriverD3D12::WindowPlatformData d3d12;
+#endif
+	} wpd;
+#ifdef VULKAN_ENABLED
+	if (p_rendering_driver == "vulkan") {
+		wpd.vulkan.window = wd.hWnd;
+		wpd.vulkan.instance = hInstance;
+	}
+#endif
+#ifdef D3D12_ENABLED
+	if (p_rendering_driver == "d3d12") {
+		wpd.d3d12.window = wd.hWnd;
+	}
+#endif
+
+	Error err = rendering_context->window_create(p_window_id, &wpd);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to create %s window.", p_rendering_driver));
+
+	Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window_id)) : Vector2i();
+	rendering_context->window_set_size(p_window_id, wd.width + off.x, wd.height + off.y);
+	wd.rendering_context_window_created = true;
+
+	return OK;
+}
+
+void DisplayServerWindows::_destroy_rendering_context_window(WindowID p_window_id) {
+	DEV_ASSERT(rendering_context != nullptr);
+
+	WindowData &wd = windows[p_window_id];
+	DEV_ASSERT(wd.rendering_context_window_created);
+
+	rendering_context->window_destroy(p_window_id);
+	wd.rendering_context_window_created = false;
+}
+#endif
+
+#ifdef GLES3_ENABLED
+Error DisplayServerWindows::_create_gl_window(WindowID p_window_id) {
+	if (gl_manager_native) {
+		WindowData &wd = windows[p_window_id];
+
+		Error err = gl_manager_native->window_create(p_window_id, wd.hWnd, hInstance, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create native OpenGL window.");
+
+		wd.gl_native_window_created = true;
+	}
+
+	if (gl_manager_angle) {
+		WindowData &wd = windows[p_window_id];
+
+		Error err = gl_manager_angle->window_create(p_window_id, nullptr, wd.hWnd, wd.width, wd.height);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to create ANGLE OpenGL window.");
+
+		wd.gl_angle_window_created = true;
+	}
+
+	return OK;
+}
+#endif
 
 BitField<DisplayServerWindows::DriverID> DisplayServerWindows::tested_drivers = 0;
 
@@ -6621,7 +6766,80 @@ GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromCo
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
 GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
 
-Vector2i _get_device_ids(const String &p_device_name) {
+Vector2i _get_device_ids_reg(const String &p_device_name) {
+	Vector2i out;
+
+	String subkey = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)subkey.utf16().get_data(), 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
+		return Vector2i();
+	}
+
+	DWORD subkeys = 0;
+	result = RegQueryInfoKeyW(hkey, nullptr, nullptr, nullptr, &subkeys, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return Vector2i();
+	}
+	for (DWORD i = 0; i < subkeys; i++) {
+		WCHAR key_name[MAX_PATH] = L"";
+		DWORD key_name_size = MAX_PATH;
+		result = RegEnumKeyExW(hkey, i, key_name, &key_name_size, nullptr, nullptr, nullptr, nullptr);
+		if (result != ERROR_SUCCESS) {
+			continue;
+		}
+		String id = String::utf16((const char16_t *)key_name, key_name_size);
+		if (!id.is_empty()) {
+			HKEY sub_hkey = nullptr;
+			result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(subkey + "\\" + id).utf16().get_data(), 0, KEY_QUERY_VALUE, &sub_hkey);
+			if (result != ERROR_SUCCESS) {
+				continue;
+			}
+
+			WCHAR buffer[4096];
+			DWORD buffer_len = 4096;
+			DWORD vtype = REG_SZ;
+			if (RegQueryValueExW(sub_hkey, L"DriverDesc", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"HardwareInformation.AdapterString", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+					RegCloseKey(sub_hkey);
+					continue;
+				}
+			}
+
+			String driver_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+			if (driver_name == p_device_name) {
+				String driver_id;
+
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"MatchingDeviceId", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_id = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+
+					Vector<String> id_parts = driver_id.to_lower().split("&");
+					for (const String &id_part : id_parts) {
+						int ven_off = id_part.find("ven_");
+						if (ven_off >= 0) {
+							out.x = id_part.substr(ven_off + 4).hex_to_int();
+						}
+						int dev_off = id_part.find("dev_");
+						if (dev_off >= 0) {
+							out.y = id_part.substr(dev_off + 4).hex_to_int();
+						}
+					}
+
+					RegCloseKey(sub_hkey);
+					break;
+				}
+			}
+			RegCloseKey(sub_hkey);
+		}
+	}
+	RegCloseKey(hkey);
+	return out;
+}
+
+Vector2i _get_device_ids_wmi(const String &p_device_name) {
 	if (p_device_name.is_empty()) {
 		return Vector2i();
 	}
@@ -6681,6 +6899,14 @@ Vector2i _get_device_ids(const String &p_device_name) {
 	SAFE_RELEASE(iter)
 
 	return ids;
+}
+
+Vector2i _get_device_ids(const String &p_device_name) {
+	Vector2i out = _get_device_ids_reg(p_device_name);
+	if (out == Vector2i()) {
+		out = _get_device_ids_wmi(p_device_name);
+	}
+	return out;
 }
 
 bool DisplayServerWindows::is_dark_mode_supported() const {
@@ -6803,9 +7029,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	bool is_wine = false;
 	if (nt_lib) {
 		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)(void *)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
-		if (!wine_get_version) {
+		if (wine_get_version) {
+			is_wine = true;
+		} else {
 			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)(void *)GetProcAddress(nt_lib, "RtlGetVersion");
 			if (RtlGetVersion) {
 				RtlGetVersion(&os_ver);
@@ -6944,192 +7173,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
-	// Init context and rendering device.
-	if (rendering_driver == "dummy") {
-		RasterizerDummy::make_current();
-	}
-
-#if defined(RD_ENABLED)
-	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
-	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
-
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWindows);
-		tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-	}
-#else
-	fallback_to_d3d12 = true; // Always enable fallback if engine was built w/o other driver support.
-#endif
-#if defined(D3D12_ENABLED)
-	if (rendering_driver == "d3d12") {
-		rendering_context = memnew(RenderingContextDriverD3D12);
-		tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-	}
-#else
-	fallback_to_vulkan = true; // Always enable fallback if engine was built w/o other driver support.
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			bool failed = true;
-#if defined(VULKAN_ENABLED)
-			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverVulkanWindows);
-				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
-					rendering_driver = "vulkan";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
-#if defined(D3D12_ENABLED)
-			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverD3D12);
-				tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
-					rendering_driver = "d3d12";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-				failed = false;
-			}
-#endif
-			if (failed) {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				r_error = ERR_UNAVAILABLE;
-				return;
-			}
-		}
-	}
-#endif
-
-#if defined(GLES3_ENABLED)
-
-	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
-	bool show_warning = true;
-
-	if (rendering_driver == "opengl3") {
-		// There's no native OpenGL drivers on Windows for ARM, always enable fallback.
-#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
-		fallback = true;
-		show_warning = false;
-#else
-		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
-
-		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
-		if (IsWow64Process2) {
-			USHORT process_arch = 0;
-			USHORT machine_arch = 0;
-			if (!IsWow64Process2(GetCurrentProcess(), &process_arch, &machine_arch)) {
-				machine_arch = 0;
-			}
-			if (machine_arch == 0xAA64) {
-				fallback = true;
-				show_warning = false;
-			}
-		}
-#endif
-	}
-
-	bool gl_supported = true;
-	if (fallback && (rendering_driver == "opengl3")) {
-		Dictionary gl_info = detect_wgl();
-
-		bool force_angle = false;
-		gl_supported = gl_info["version"].operator int() >= 30003;
-
-		Vector2i device_id = _get_device_ids(gl_info["name"]);
-		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
-		for (int i = 0; i < device_list.size(); i++) {
-			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name")) {
-				const String &vendor = device["vendor"];
-				const String &name = device["name"];
-				if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
-					// Check vendor/device IDs.
-					force_angle = true;
-					break;
-				} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
-					// Check vendor/device names.
-					force_angle = true;
-					break;
-				}
-			}
-		}
-
-		if (force_angle || (gl_info["version"].operator int() < 30003)) {
-			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-			if (show_warning) {
-				if (gl_info["version"].operator int() < 30003) {
-					WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
-				} else {
-					WARN_PRINT("Your video card drivers are known to have low quality OpenGL 3.3 support, switching to ANGLE.");
-				}
-			}
-			rendering_driver = "opengl3_angle";
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-		}
-	}
-
-	if (rendering_driver == "opengl3_angle") {
-		gl_manager_angle = memnew(GLManagerANGLE_Windows);
-		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
-
-		if (gl_manager_angle->initialize() != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
-			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
-			if (fallback_to_native && gl_supported) {
-#ifdef EGL_STATIC
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
-#endif
-				rendering_driver = "opengl3";
-			} else {
-				r_error = ERR_UNAVAILABLE;
-				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
-			}
-		}
-	}
-	if (rendering_driver == "opengl3") {
-		gl_manager_native = memnew(GLManagerNative_Windows);
-		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-
-		if (gl_manager_native->initialize() != OK) {
-			memdelete(gl_manager_native);
-			gl_manager_native = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize native OpenGL.");
-		}
-	}
-
-	if (rendering_driver == "opengl3") {
-		RasterizerGLES3::make_current(true);
-	}
-	if (rendering_driver == "opengl3_angle") {
-		RasterizerGLES3::make_current(false);
-	}
-#endif
 	String appname;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
@@ -7180,17 +7223,295 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		parent_hwnd = (HWND)p_parent_window;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd);
-	if (main_window == INVALID_WINDOW_ID) {
-		r_error = ERR_UNAVAILABLE;
-		ERR_FAIL_MSG("Failed to create main window.");
+	// Init context and rendering device.
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
 	}
 
+#ifdef RD_ENABLED
+	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
+
+#ifndef VULKAN_ENABLED
+	fallback_to_d3d12 = true; // Always enable fallback if engine was built w/o other driver support.
+#endif
+#ifndef D3D12_ENABLED
+	fallback_to_vulkan = true; // Always enable fallback if engine was built w/o other driver support.
+#endif
+
+	String rendering_drivers[2];
+	uint32_t rendering_driver_count = 0;
+
+	if (rendering_driver == "d3d12") {
+		rendering_drivers[rendering_driver_count++] = rendering_driver;
+		if (fallback_to_vulkan) {
+			rendering_drivers[rendering_driver_count++] = "vulkan";
+		}
+	} else if (rendering_driver == "vulkan") {
+		rendering_drivers[rendering_driver_count++] = rendering_driver;
+		if (fallback_to_d3d12) {
+			rendering_drivers[rendering_driver_count++] = "d3d12";
+		}
+	}
+
+	bool main_window_created = false;
+	bool cur_no_redirection_bitmap_value = false;
+
+	for (uint32_t i = 0; i < rendering_driver_count; i++) {
+		const String &tested_rendering_driver = rendering_drivers[i];
+
+#ifdef VULKAN_ENABLED
+		if (tested_rendering_driver == "vulkan") {
+			rendering_context = memnew(RenderingContextDriverVulkanWindows);
+			tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
+		}
+#endif
+#ifdef D3D12_ENABLED
+		if (tested_rendering_driver == "d3d12") {
+			rendering_context = memnew(RenderingContextDriverD3D12);
+			tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
+		}
+#endif
+		if (rendering_context != nullptr) {
+			if (rendering_context->initialize() == OK) {
+				// The window needs to be recreated when this value differs, because it cannot be added or removed after creation.
+#ifdef DCOMP_ENABLED
+				bool new_no_redirection_bitmap_value = OS::get_singleton()->is_layered_allowed() && tested_rendering_driver == "d3d12";
+#else
+				bool new_no_redirection_bitmap_value = false;
+#endif
+				if (cur_no_redirection_bitmap_value != new_no_redirection_bitmap_value) {
+					if (main_window_created) {
+						_destroy_window(MAIN_WINDOW_ID);
+						main_window_created = false;
+					}
+					cur_no_redirection_bitmap_value = new_no_redirection_bitmap_value;
+				}
+
+				if (!main_window_created) {
+					if (_create_window(MAIN_WINDOW_ID, p_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd, cur_no_redirection_bitmap_value) != OK) {
+						r_error = ERR_UNAVAILABLE;
+						ERR_FAIL_MSG("Failed to create main window.");
+					}
+					main_window_created = true;
+				}
+
+				if (_create_rendering_context_window(MAIN_WINDOW_ID, tested_rendering_driver) == OK) {
+					rendering_device = memnew(RenderingDevice);
+					if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) == OK) {
+#ifdef VULKAN_ENABLED
+						if (rendering_driver == "vulkan" && tested_rendering_driver == "d3d12") {
+							WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
+						}
+#endif
+#ifdef D3D12_ENABLED
+						if (rendering_driver == "d3d12" && tested_rendering_driver == "vulkan") {
+							WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
+						}
+#endif
+						rendering_driver = tested_rendering_driver;
+						OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+
+						break;
+					}
+
+					memdelete(rendering_device);
+					rendering_device = nullptr;
+
+					_destroy_rendering_context_window(MAIN_WINDOW_ID);
+				}
+			}
+
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+	}
+
+	bool rendering_driver_failed = rendering_driver_count != 0 && rendering_context == nullptr;
+
+#ifdef GLES3_ENABLED
+	if (rendering_driver_failed) {
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (fallback_to_opengl3) {
+			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+			WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
+			rendering_driver = "opengl3";
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			rendering_driver_failed = false;
+		}
+	}
+#endif
+
+	if (rendering_driver_failed) {
+		r_error = ERR_UNAVAILABLE;
+		return;
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+
+	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
+	bool show_warning = true;
+
+	if (rendering_driver == "opengl3") {
+		// There's no native OpenGL drivers on Windows for ARM, always enable fallback.
+#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+		fallback = true;
+		show_warning = false;
+#else
+		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
+
+		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
+		if (IsWow64Process2) {
+			USHORT process_arch = 0;
+			USHORT machine_arch = 0;
+			if (!IsWow64Process2(GetCurrentProcess(), &process_arch, &machine_arch)) {
+				machine_arch = 0;
+			}
+			if (machine_arch == 0xAA64) {
+				fallback = true;
+				show_warning = false;
+			}
+		}
+#endif
+	}
+
+	bool gl_supported = true;
+	if (fallback && !is_wine && (rendering_driver == "opengl3")) {
+		Dictionary gl_info = detect_wgl();
+
+		bool force_angle = false;
+		gl_supported = gl_info["version"].operator int() >= 30003;
+
+		Vector2i device_id = Vector2i(-1, -1);
+		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
+		for (int i = 0; i < device_list.size(); i++) {
+			const Dictionary &device = device_list[i];
+			if (device.has("vendor") && device.has("name")) {
+				const String &vendor = device["vendor"];
+				const String &name = device["name"];
+				if (gl_info["vendor"].operator String().containsn(vendor) && (name == "*" || gl_info["name"].operator String().containsn(name))) {
+					// Check vendor/device names.
+					force_angle = true;
+					break;
+				} else if (vendor.begins_with("0x") && name.begins_with("0x")) {
+					if (device_id == Vector2i(-1, -1)) {
+						// Load device IDs.
+						device_id = _get_device_ids(gl_info["name"]);
+					}
+					if (device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
+						// Check vendor/device IDs.
+						force_angle = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (force_angle || (gl_info["version"].operator int() < 30003)) {
+			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+			if (show_warning) {
+				if (gl_info["version"].operator int() < 30003) {
+					WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
+				} else {
+					WARN_PRINT("Your video card drivers are known to have low quality OpenGL 3.3 support, switching to ANGLE.");
+				}
+			}
+			rendering_driver = "opengl3_angle";
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+		}
+	}
+
+	if (rendering_driver == "opengl3_angle") {
+		gl_manager_angle = memnew(GLManagerANGLE_Windows);
+		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
+
+		if (gl_manager_angle->initialize() != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
+			if (fallback_to_native && gl_supported) {
+#ifdef EGL_STATIC
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
+#else
+				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
+#endif
+				rendering_driver = "opengl3";
+			} else {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
+		}
+	}
+	if (rendering_driver == "opengl3") {
+		gl_manager_native = memnew(GLManagerNative_Windows);
+		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
+
+		if (gl_manager_native->initialize() != OK) {
+			memdelete(gl_manager_native);
+			gl_manager_native = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Could not initialize native OpenGL.");
+		}
+	}
+#endif
+
+	bool should_create_main_window = true;
+	bool no_redirection_bitmap = false;
+
+#ifdef RD_ENABLED
+#ifdef DCOMP_ENABLED
+	no_redirection_bitmap = OS::get_singleton()->is_layered_allowed() && rendering_driver == "d3d12";
+#endif
+
+	// The window may still need to be recreated when all RD backends fail and it falls back to OpenGL.
+	if (main_window_created) {
+		if (no_redirection_bitmap != cur_no_redirection_bitmap_value) {
+			DEV_ASSERT(rendering_context == nullptr);
+			_destroy_window(MAIN_WINDOW_ID);
+		} else {
+			should_create_main_window = false;
+		}
+	}
+#endif
+
+	if (should_create_main_window) {
+		if (_create_window(MAIN_WINDOW_ID, p_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd, no_redirection_bitmap) != OK) {
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Failed to create main window.");
+		}
+	}
+	++window_id_counter;
+
+#ifdef GLES3_ENABLED
+	if (rendering_driver == "opengl3") {
+		if (_create_gl_window(MAIN_WINDOW_ID) != OK) {
+			memdelete(gl_manager_native);
+			gl_manager_native = nullptr;
+			windows.erase(MAIN_WINDOW_ID);
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+		RasterizerGLES3::make_current(true);
+	}
+	if (rendering_driver == "opengl3_angle") {
+		if (_create_gl_window(MAIN_WINDOW_ID) != OK) {
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+			windows.erase(MAIN_WINDOW_ID);
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+		RasterizerGLES3::make_current(false);
+	}
+#endif
+
+	window_set_vsync_mode(p_vsync_mode, MAIN_WINDOW_ID);
+
 #ifdef SDL_ENABLED
-	joypad_sdl = memnew(JoypadSDL());
-	if (joypad_sdl->initialize() == OK) {
-		joypad_sdl->setup_sdl_helper_window(windows[MAIN_WINDOW_ID].hWnd);
-	} else {
+	joypad_sdl = memnew(JoypadSDL);
+	if (joypad_sdl->initialize() != OK) {
 		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
 		memdelete(joypad_sdl);
 		joypad_sdl = nullptr;
@@ -7199,7 +7520,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
-			window_set_flag(WindowFlags(i), true, main_window);
+			window_set_flag(WindowFlags(i), true, MAIN_WINDOW_ID);
 		}
 	}
 
@@ -7227,15 +7548,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
-		rendering_device = memnew(RenderingDevice);
-		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
-			memdelete(rendering_device);
-			rendering_device = nullptr;
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
-		}
+		DEV_ASSERT(rendering_device != nullptr);
+
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -7367,6 +7681,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 		ndat.uID = E->key;
 		ndat.uVersion = NOTIFYICON_VERSION;
 
+		if (E->value.icon) {
+			DestroyIcon(E->value.icon);
+			E->value.icon_buffer.clear();
+			E->value.icon = nullptr;
+		}
+
 		Shell_NotifyIconW(NIM_DELETE, &ndat);
 	}
 
@@ -7401,17 +7721,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 			rendering_context->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
-		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
-			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
-			windows[MAIN_WINDOW_ID].wtctx = nullptr;
-		}
-
-		if (windows[MAIN_WINDOW_ID].drop_target != nullptr) {
-			RevokeDragDrop(windows[MAIN_WINDOW_ID].hWnd);
-			windows[MAIN_WINDOW_ID].drop_target->Release();
-		}
-
-		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
+		_destroy_window(MAIN_WINDOW_ID);
 	}
 
 #ifdef RD_ENABLED
@@ -7425,6 +7735,17 @@ DisplayServerWindows::~DisplayServerWindows() {
 		rendering_context = nullptr;
 	}
 #endif
+
+	if (icon_big) {
+		DestroyIcon(icon_big);
+		icon_buffer_big.clear();
+		icon_big = nullptr;
+	}
+	if (icon_small) {
+		DestroyIcon(icon_small);
+		icon_buffer_small.clear();
+		icon_small = nullptr;
+	}
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);

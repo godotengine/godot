@@ -72,10 +72,21 @@ TEST_CASE("[JSON] Stringify arrays") {
 	CHECK(JSON::stringify(indented_array, "\t") == "[\n\t0,\n\t1,\n\t2,\n\t3,\n\t4,\n\t[\n\t\t0,\n\t\t1,\n\t\t2,\n\t\t3,\n\t\t4\n\t]\n]");
 
 	Array full_precision_array;
-	full_precision_array.push_back(0.123456789012345677);
-	CHECK(JSON::stringify(full_precision_array, "", true, true) == "[0.123456789012345677]");
+	full_precision_array.push_back(0.12345678901234568);
+	CHECK(JSON::stringify(full_precision_array, "", true, true) == "[0.12345678901234568]");
 
+	Array non_finite_array;
+	non_finite_array.push_back(Math::INF);
+	non_finite_array.push_back(-Math::INF);
+	non_finite_array.push_back(Math::NaN);
 	ERR_PRINT_OFF
+	CHECK(JSON::stringify(non_finite_array) == "[1e99999,-1e99999,null]");
+
+	Array non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_array));
+	CHECK(non_finite_round_trip[0] == Variant(Math::INF));
+	CHECK(non_finite_round_trip[1] == Variant(-Math::INF));
+	CHECK(non_finite_round_trip[2].get_type() == Variant::NIL);
+
 	Array self_array;
 	self_array.push_back(self_array);
 	CHECK(JSON::stringify(self_array) == "[\"[...]\"]");
@@ -110,10 +121,21 @@ TEST_CASE("[JSON] Stringify dictionaries") {
 	CHECK(JSON::stringify(outer) == "{\"inner\":{\"key\":\"value\"}}");
 
 	Dictionary full_precision_dictionary;
-	full_precision_dictionary["key"] = 0.123456789012345677;
-	CHECK(JSON::stringify(full_precision_dictionary, "", true, true) == "{\"key\":0.123456789012345677}");
+	full_precision_dictionary["key"] = 0.12345678901234568;
+	CHECK(JSON::stringify(full_precision_dictionary, "", true, true) == "{\"key\":0.12345678901234568}");
 
+	Dictionary non_finite_dictionary;
+	non_finite_dictionary["-inf"] = -Math::INF;
+	non_finite_dictionary["inf"] = Math::INF;
+	non_finite_dictionary["nan"] = Math::NaN;
 	ERR_PRINT_OFF
+	CHECK(JSON::stringify(non_finite_dictionary) == "{\"-inf\":-1e99999,\"inf\":1e99999,\"nan\":null}");
+
+	Dictionary non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_dictionary));
+	CHECK(non_finite_round_trip["-inf"] == Variant(-Math::INF));
+	CHECK(non_finite_round_trip["inf"] == Variant(Math::INF));
+	CHECK(non_finite_round_trip["nan"].get_type() == Variant::NIL);
+
 	Dictionary self_dictionary;
 	self_dictionary["key"] = self_dictionary;
 	CHECK(JSON::stringify(self_dictionary) == "{\"key\":\"{...}\"}");
@@ -352,16 +374,16 @@ TEST_CASE("[JSON] Serialization") {
 
 	static FpTestCase fp_tests_full_precision[] = {
 		{ 0.0, "0.0" },
-		{ 1000.1234567890123456789, "1000.12345678901238" },
-		{ -1000.1234567890123456789, "-1000.12345678901238" },
-		{ DBL_MAX, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
-		{ DBL_MAX - 1, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
-		{ std::pow(2, 53), "9007199254740992.0" },
-		{ -std::pow(2, 53), "-9007199254740992.0" },
-		{ 0.00000000000000011, "0.00000000000000011" },
-		{ -0.00000000000000011, "-0.00000000000000011" },
-		{ 1.0 / 3.0, "0.333333333333333315" },
-		{ 0.9999999999999999, "0.999999999999999889" },
+		{ 1000.1234567890123456789, "1000.1234567890124" },
+		{ -1000.1234567890123456789, "-1000.1234567890124" },
+		{ DBL_MAX, "1.7976931348623157e+308" },
+		{ DBL_MAX - 1, "1.7976931348623157e+308" },
+		{ std::pow(2, 53), "9.007199254740992e+15" },
+		{ -std::pow(2, 53), "-9.007199254740992e+15" },
+		{ 0.00000000000000011, "1.1e-16" },
+		{ -0.00000000000000011, "-1.1e-16" },
+		{ 1.0 / 3.0, "0.3333333333333333" },
+		{ 0.9999999999999999, "0.9999999999999999" },
 		{ 1.0000000000000001, "1.0" },
 	};
 

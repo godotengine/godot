@@ -32,6 +32,7 @@
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "servers/display/display_server.h"
 
 #ifndef _3D_DISABLED
 class Camera3D;
@@ -248,9 +249,6 @@ private:
 	RID current_canvas;
 	RID subwindow_canvas;
 
-	bool override_canvas_transform = false;
-
-	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
@@ -263,11 +261,8 @@ private:
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-	Rect2 last_vp_rect;
-
 	bool transparent_bg = false;
 	bool use_hdr_2d = false;
-	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
 	bool snap_2d_transforms_to_pixel = false;
@@ -330,6 +325,9 @@ private:
 
 	void _update_viewport_path();
 
+	bool _can_hide_focus_state();
+	void _on_settings_changed();
+
 	SDFOversize sdf_oversize = SDF_OVERSIZE_120_PERCENT;
 	SDFScale sdf_scale = SDF_SCALE_50_PERCENT;
 
@@ -374,8 +372,9 @@ private:
 		Control *mouse_click_grabber = nullptr;
 		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
-		Control *mouse_over = nullptr;
-		LocalVector<Control *> mouse_over_hierarchy;
+		bool hide_focus = false;
+		ObjectID mouse_over;
+		LocalVector<ObjectID> mouse_over_hierarchy;
 		bool sending_mouse_enter_exit_notifications = false;
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
@@ -402,6 +401,7 @@ private:
 		bool drag_successful = false;
 		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
+		int drag_threshold = 10;
 
 		Window *subwindow_focused = nullptr;
 		Window *currently_dragged_subwindow = nullptr;
@@ -459,8 +459,8 @@ private:
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control *p_control);
-	void _gui_control_grab_focus(Control *p_control);
+	bool _gui_control_has_focus(const Control *p_control, bool p_ignore_hidden_focus = false);
+	void _gui_control_grab_focus(Control *p_control, bool p_hide_focus = false);
 	void _gui_grab_click_focus(Control *p_control);
 	void _post_gui_grab_click_focus();
 	void _gui_accept_event();
@@ -488,7 +488,7 @@ private:
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
-	void _update_mouse_over();
+	void _update_mouse_over(const Ref<InputEventMouse> &p_mm);
 	virtual void _update_mouse_over(Vector2 p_pos);
 	virtual void _mouse_leave_viewport();
 
@@ -532,12 +532,6 @@ public:
 	void set_world_2d(const Ref<World2D> &p_world_2d);
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
-
-	void enable_canvas_transform_override(bool p_enable);
-	bool is_canvas_transform_override_enabled() const;
-
-	void set_canvas_transform_override(const Transform2D &p_transform);
-	Transform2D get_canvas_transform_override() const;
 
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;
@@ -614,10 +608,11 @@ public:
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
+	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
-	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
 	void notify_mouse_entered();
 	void notify_mouse_exited();
@@ -713,6 +708,9 @@ public:
 	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
+	void set_drag_threshold(int p_threshold);
+	int get_drag_threshold() const;
+
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window();
 
@@ -737,6 +735,23 @@ public:
 	virtual bool is_sub_viewport() const { return false; }
 
 private:
+#if DEBUG_ENABLED
+	template <class T>
+	class CameraOverride {
+	private:
+		bool enabled = false;
+		ObjectID overridden_camera_id;
+
+	public:
+		bool is_enabled() const;
+		void enable(Viewport *p_viewport, const T *p_current_camera);
+		void disable(T *p_current_camera);
+
+		void set_overridden_camera(const T *p_camera);
+		T *get_overridden_camera() const;
+	};
+#endif // DEBUG_ENABLED
+
 	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
 	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
 	AudioListener2D *audio_listener_2d = nullptr;
@@ -748,7 +763,17 @@ private:
 	friend class Camera2D; // Needs _camera_2d_set
 	Camera2D *camera_2d = nullptr;
 	void _camera_2d_set(Camera2D *p_camera_2d);
+#if DEBUG_ENABLED
+	CameraOverride<Camera2D> camera_2d_override;
 
+public:
+	void enable_camera_2d_override(bool p_enable);
+	bool is_camera_2d_override_enabled() const;
+	Camera2D *get_overridden_camera_2d() const;
+	Camera2D *get_override_camera_2d() const;
+#endif // DEBUG_ENABLED
+
+private:
 #ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
@@ -769,7 +794,9 @@ public:
 #ifndef _3D_DISABLED
 private:
 	// 3D audio, camera, physics, and world.
+#ifndef XR_DISABLED
 	bool use_xr = false;
+#endif // XR_DISABLED
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
@@ -786,26 +813,11 @@ private:
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 #endif // PHYSICS_3D_DISABLED
 
-	struct Camera3DOverrideData {
-		Transform3D transform;
-		enum Projection {
-			PROJECTION_PERSPECTIVE,
-			PROJECTION_ORTHOGONAL
-		};
-		Projection projection = Projection::PROJECTION_PERSPECTIVE;
-		real_t fov = 0.0;
-		real_t size = 0.0;
-		real_t z_near = 0.0;
-		real_t z_far = 0.0;
-		RID rid;
-
-		operator bool() const {
-			return rid != RID();
-		}
-	} camera_3d_override;
-
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
+#if DEBUG_ENABLED
+	CameraOverride<Camera3D> camera_3d_override;
+#endif // DEBUG_ENABLED
 	HashSet<Camera3D *> camera_3d_set;
 	void _camera_3d_transform_changed_notify();
 	void _camera_3d_set(Camera3D *p_camera);
@@ -825,19 +837,13 @@ public:
 	bool is_audio_listener_3d() const;
 
 	Camera3D *get_camera_3d() const;
+
+#if DEBUG_ENABLED
 	void enable_camera_3d_override(bool p_enable);
 	bool is_camera_3d_override_enabled() const;
-
-	void set_camera_3d_override_transform(const Transform3D &p_transform);
-	Transform3D get_camera_3d_override_transform() const;
-
-	void set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
-	void set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
-	HashMap<StringName, real_t> get_camera_3d_override_properties() const;
-
-	Vector3 camera_3d_override_project_ray_normal(const Point2 &p_pos) const;
-	Vector3 camera_3d_override_project_ray_origin(const Point2 &p_pos) const;
-	Vector3 camera_3d_override_project_local_ray_normal(const Point2 &p_pos) const;
+	Camera3D *get_overridden_camera_3d() const;
+	Camera3D *get_override_camera_3d() const;
+#endif // DEBUG_ENABLED
 
 	void set_disable_3d(bool p_disable);
 	bool is_3d_disabled() const;
@@ -848,8 +854,10 @@ public:
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 
+#ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 	Viewport();

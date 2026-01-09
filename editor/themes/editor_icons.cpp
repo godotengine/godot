@@ -34,13 +34,13 @@
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/svg_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 
-void editor_configure_icons(bool p_dark_theme) {
-	if (p_dark_theme) {
+void editor_configure_icons(bool p_dark_icon_and_font) {
+	if (p_dark_icon_and_font) {
 		ImageLoaderSVG::set_forced_color_map(HashMap<Color, Color>());
 	} else {
 		ImageLoaderSVG::set_forced_color_map(EditorColorMap::get_color_conversion_map());
@@ -48,8 +48,8 @@ void editor_configure_icons(bool p_dark_theme) {
 }
 
 // See also `generate_icon()` in `scene/theme/default_theme.cpp`.
-Ref<SVGTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const Dictionary &p_convert_colors = Dictionary()) {
-	return SVGTexture::create_from_string(editor_icons_sources[p_index], p_scale, p_saturation, p_convert_colors);
+Ref<DPITexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const Dictionary &p_convert_colors = Dictionary()) {
+	return DPITexture::create_from_string(editor_icons_sources[p_index], p_scale, p_saturation, p_convert_colors);
 }
 
 float get_gizmo_handle_scale(const String &p_gizmo_handle_name, float p_gizmo_handle_scale) {
@@ -104,18 +104,6 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 
 	Dictionary color_conversion_map = p_dark_theme ? color_conversion_map_dark : color_conversion_map_light;
 
-	// The names of the icons used in native menus.
-	HashSet<StringName> native_menu_icons;
-	native_menu_icons.insert("HelpSearch");
-	native_menu_icons.insert("ActionCopy");
-	native_menu_icons.insert("Heart");
-	native_menu_icons.insert("PackedScene");
-	native_menu_icons.insert("FileAccess");
-	native_menu_icons.insert("Folder");
-	native_menu_icons.insert("AnimationTrackList");
-	native_menu_icons.insert("Object");
-	native_menu_icons.insert("History");
-
 	// The names of the icons to exclude from the standard color conversion.
 	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
 
@@ -148,37 +136,23 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	{
 		for (int i = 0; i < editor_icons_count; i++) {
 			const String &editor_icon_name = editor_icons_names[i];
-			if (native_menu_icons.has(editor_icon_name)) {
+			Ref<DPITexture> icon;
+			if (accent_color_icons.has(editor_icon_name)) {
+				icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
+			} else {
 				float saturation = p_icon_saturation;
 				if (saturation_exceptions.has(editor_icon_name)) {
 					saturation = 1.0;
 				}
 
-				Ref<SVGTexture> icon_dark = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_dark);
-				Ref<SVGTexture> icon_light = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_light);
-
-				p_theme->set_icon(editor_icon_name + "Dark", EditorStringName(EditorIcons), icon_dark);
-				p_theme->set_icon(editor_icon_name + "Light", EditorStringName(EditorIcons), icon_light);
-				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), p_dark_theme ? icon_dark : icon_light);
-			} else {
-				Ref<SVGTexture> icon;
-				if (accent_color_icons.has(editor_icon_name)) {
-					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
+				if (conversion_exceptions.has(editor_icon_name)) {
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation);
 				} else {
-					float saturation = p_icon_saturation;
-					if (saturation_exceptions.has(editor_icon_name)) {
-						saturation = 1.0;
-					}
-
-					if (conversion_exceptions.has(editor_icon_name)) {
-						icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation);
-					} else {
-						icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map);
-					}
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map);
 				}
-
-				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
 			}
+
+			p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
 		}
 	}
 
@@ -188,7 +162,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			const int index = editor_bg_thumbs_indices[i];
-			Ref<SVGTexture> icon;
+			Ref<DPITexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);
@@ -211,7 +185,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			const int index = editor_md_thumbs_indices[i];
-			Ref<SVGTexture> icon;
+			Ref<DPITexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);

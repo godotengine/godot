@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader (specification)
  *
- * Copyright (C) 2004-2024 by
+ * Copyright (C) 2004-2025 by
  * David Turner, Robert Wilhelm, Werner Lemberg and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -255,6 +255,10 @@ FT_BEGIN_HEADER
    *     A two-dimensional array that holds the shared tuple coordinates
    *     in the `gvar' table.
    *
+   *   tuplescalars ::
+   *     A one-dimensional array that holds the shared tuple
+   *     scalars in the `gvar' table for current face coordinates.
+   *
    *   gv_glyphcnt ::
    *     The number of glyphs handled in the `gvar' table.
    *
@@ -293,6 +297,7 @@ FT_BEGIN_HEADER
 
     FT_UInt         tuplecount;
     FT_Fixed*       tuplecoords;      /* tuplecoords[tuplecount][num_axis] */
+    FT_Fixed*       tuplescalars;     /* tuplescalars[tuplecount]          */
 
     FT_UInt         gv_glyphcnt;
     FT_ULong*       glyphoffsets;         /* glyphoffsets[gv_glyphcnt + 1] */

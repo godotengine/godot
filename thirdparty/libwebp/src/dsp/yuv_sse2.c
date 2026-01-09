@@ -14,12 +14,16 @@
 #include "src/dsp/yuv.h"
 
 #if defined(WEBP_USE_SSE2)
-
-#include <stdlib.h>
 #include <emmintrin.h>
 
+#include <stdlib.h>
+
 #include "src/dsp/common_sse2.h"
+#include "src/dsp/cpu.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/utils.h"
+#include "src/webp/decode.h"
+#include "src/webp/types.h"
 
 //-----------------------------------------------------------------------------
 // Convert spans of 32 pixels to various RGB formats for the fancy upsampler.

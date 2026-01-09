@@ -93,7 +93,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
   shaper = hb_ot_shaper_categorize (props.script, props.direction, map.chosen_script[0]);
 
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
-  script_fallback_mark_positioning = shaper->fallback_position;
+  script_fallback_position = shaper->fallback_position;
 
 #ifndef HB_NO_AAT_SHAPE
   /* https://github.com/harfbuzz/harfbuzz/issues/1528 */
@@ -179,12 +179,12 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #endif
 #ifndef HB_NO_OT_KERN
     else if (hb_ot_layout_has_kerning (face))
-      plan.apply_kern = true;
+      plan.apply_kern = script_fallback_position; // Not all shapers apply legacy `kern`
 #endif
     else {}
   }
 
-  plan.apply_fallback_kern = !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
+  plan.apply_fallback_kern = script_fallback_position && !(plan.apply_gpos || plan.apply_kerx || plan.apply_kern);
 
   plan.zero_marks = script_zero_marks &&
 		    !plan.apply_kerx &&
@@ -204,7 +204,7 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 					      );
 
   plan.fallback_mark_positioning = plan.adjust_mark_positioning_when_zeroing &&
-				   script_fallback_mark_positioning;
+				   script_fallback_position;
 
 #ifndef HB_NO_AAT_SHAPE
   /* If we're using morx shaping, we cancel mark position adjustment because
@@ -484,6 +484,9 @@ hb_set_unicode_props (hb_buffer_t *buffer)
   {
     _hb_glyph_info_set_unicode_props (&info[i], buffer);
 
+    if (info[i].codepoint < 0x80)
+      continue;
+
     unsigned gen_cat = _hb_glyph_info_get_general_category (&info[i]);
     if (FLAG_UNSAFE (gen_cat) &
 	(FLAG (HB_UNICODE_GENERAL_CATEGORY_LOWERCASE_LETTER) |
@@ -498,7 +501,7 @@ hb_set_unicode_props (hb_buffer_t *buffer)
     if (unlikely (gen_cat == HB_UNICODE_GENERAL_CATEGORY_MODIFIER_SYMBOL &&
 		  hb_in_range<hb_codepoint_t> (info[i].codepoint, 0x1F3FBu, 0x1F3FFu)))
     {
-      _hb_glyph_info_set_continuation (&info[i]);
+      _hb_glyph_info_set_continuation (&info[i], buffer);
     }
     /* Regional_Indicators are hairy as hell...
      * https://github.com/harfbuzz/harfbuzz/issues/2265 */
@@ -506,18 +509,18 @@ hb_set_unicode_props (hb_buffer_t *buffer)
     {
       if (_hb_codepoint_is_regional_indicator (info[i - 1].codepoint) &&
 	  !_hb_glyph_info_is_continuation (&info[i - 1]))
-	_hb_glyph_info_set_continuation (&info[i]);
+	_hb_glyph_info_set_continuation (&info[i], buffer);
     }
 #ifndef HB_NO_EMOJI_SEQUENCES
     else if (unlikely (_hb_glyph_info_is_zwj (&info[i])))
     {
-      _hb_glyph_info_set_continuation (&info[i]);
+      _hb_glyph_info_set_continuation (&info[i], buffer);
       if (i + 1 < count &&
 	  _hb_unicode_is_emoji_Extended_Pictographic (info[i + 1].codepoint))
       {
 	i++;
 	_hb_glyph_info_set_unicode_props (&info[i], buffer);
-	_hb_glyph_info_set_continuation (&info[i]);
+	_hb_glyph_info_set_continuation (&info[i], buffer);
       }
     }
 #endif
@@ -536,7 +539,9 @@ hb_set_unicode_props (hb_buffer_t *buffer)
      * https://github.com/harfbuzz/harfbuzz/issues/3844
      */
     else if (unlikely (hb_in_ranges<hb_codepoint_t> (info[i].codepoint, 0xFF9Eu, 0xFF9Fu, 0xE0020u, 0xE007Fu)))
-      _hb_glyph_info_set_continuation (&info[i]);
+      _hb_glyph_info_set_continuation (&info[i], buffer);
+    else if (unlikely (info[i].codepoint == 0x2044u /* FRACTION SLASH */))
+      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_FRACTION_SLASH;
   }
 }
 
@@ -572,7 +577,7 @@ hb_insert_dotted_circle (hb_buffer_t *buffer, hb_font_t *font)
 static void
 hb_form_clusters (hb_buffer_t *buffer)
 {
-  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII))
+  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS))
     return;
 
   if (HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (buffer->cluster_level))
@@ -614,14 +619,14 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
     for (unsigned i = 0; i < count; i++)
     {
       auto gc = _hb_glyph_info_get_general_category (&info[i]);
-      if (gc == HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
-	found_number = true;
-      else if (HB_UNICODE_GENERAL_CATEGORY_IS_LETTER (gc))
+      if (HB_UNICODE_GENERAL_CATEGORY_IS_LETTER (gc))
       {
 	found_letter = true;
 	break;
       }
-      else if (_hb_codepoint_is_regional_indicator (info[i].codepoint))
+      else if (gc == HB_UNICODE_GENERAL_CATEGORY_DECIMAL_NUMBER)
+	found_number = true;
+      else if (unlikely (_hb_codepoint_is_regional_indicator (info[i].codepoint)))
 	found_ri = true;
     }
     if ((found_number || found_ri) && !found_letter)
@@ -687,7 +692,7 @@ hb_ot_shape_setup_masks_fraction (const hb_ot_shape_context_t *c)
   return;
 #endif
 
-  if (!(c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII) ||
+  if (!(c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_FRACTION_SLASH) ||
       !c->plan->has_frac)
     return;
 
@@ -788,7 +793,13 @@ hb_ot_zero_width_default_ignorables (const hb_buffer_t *buffer)
   unsigned int i = 0;
   for (i = 0; i < count; i++)
     if (unlikely (_hb_glyph_info_is_default_ignorable (&info[i])))
-      pos[i].x_advance = pos[i].y_advance = pos[i].x_offset = pos[i].y_offset = 0;
+    {
+      pos[i].x_advance = pos[i].y_advance = 0;
+      if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
+	pos[i].x_offset = 0;
+      else
+        pos[i].y_offset = 0;
+    }
 }
 
 static void
@@ -843,11 +854,11 @@ hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
 static inline void
 hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
 {
-  /* Normalization process sets up glyph_index(), we just copy it. */
+  /* Normalization process sets up normalizer_glyph_index(), we just copy it. */
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    info[i].codepoint = info[i].glyph_index();
+    info[i].codepoint = info[i].normalizer_glyph_index();
 
   buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;
 }
@@ -885,7 +896,7 @@ hb_ot_substitute_default (const hb_ot_shape_context_t *c)
 
   hb_ot_rotate_chars (c);
 
-  HB_BUFFER_ALLOCATE_VAR (buffer, glyph_index);
+  HB_BUFFER_ALLOCATE_VAR (buffer, normalizer_glyph_index);
 
   _hb_ot_shape_normalize (c->plan, buffer, c->font);
 
@@ -897,7 +908,7 @@ hb_ot_substitute_default (const hb_ot_shape_context_t *c)
 
   hb_ot_map_glyphs_fast (buffer);
 
-  HB_BUFFER_DEALLOCATE_VAR (buffer, glyph_index);
+  HB_BUFFER_DEALLOCATE_VAR (buffer, normalizer_glyph_index);
 }
 
 static inline void
@@ -912,11 +923,17 @@ hb_ot_substitute_plan (const hb_ot_shape_context_t *c)
 
 #ifndef HB_NO_AAT_SHAPE
   if (unlikely (c->plan->apply_morx))
+  {
     hb_aat_layout_substitute (c->plan, c->font, c->buffer,
 			      c->user_features, c->num_user_features);
+    c->buffer->update_digest ();
+  }
   else
 #endif
+  {
+    c->buffer->update_digest ();
     c->plan->substitute (c->font, buffer);
+  }
 }
 
 static inline void
@@ -1098,8 +1115,33 @@ hb_propagate_flags (hb_buffer_t *buffer)
   /* Propagate cluster-level glyph flags to be the same on all cluster glyphs.
    * Simplifies using them. */
 
-  if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS))
+  hb_mask_t and_mask = HB_GLYPH_FLAG_DEFINED;
+  if ((buffer->flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0)
+    and_mask &= ~HB_GLYPH_FLAG_UNSAFE_TO_CONCAT;
+
+  hb_glyph_info_t *info = buffer->info;
+
+  if ((buffer->flags & HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL) == 0)
+  {
+    foreach_cluster (buffer, start, end)
+    {
+      if (end - start == 1)
+      {
+        info[start].mask &= and_mask;
+	continue;
+      }
+
+      unsigned int mask = 0;
+      for (unsigned int i = start; i < end; i++)
+	mask |= info[i].mask;
+
+      mask &= and_mask;
+
+      for (unsigned int i = start; i < end; i++)
+	info[i].mask = mask;
+    }
     return;
+  }
 
   /* If we are producing SAFE_TO_INSERT_TATWEEL, then do two things:
    *
@@ -1107,30 +1149,20 @@ hb_propagate_flags (hb_buffer_t *buffer)
    *   are UNSAFE_TO_BREAK, then clear the SAFE_TO_INSERT_TATWEEL,
    * - Any place that is SAFE_TO_INSERT_TATWEEL, is also now UNSAFE_TO_BREAK.
    *
-   * We couldn't make this interaction earlier. It has to be done here.
+   * We couldn't make this interaction earlier. It has to be done this way.
    */
-  bool flip_tatweel = buffer->flags & HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL;
-
-  bool clear_concat = (buffer->flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) == 0;
-
-  hb_glyph_info_t *info = buffer->info;
-
   foreach_cluster (buffer, start, end)
   {
     unsigned int mask = 0;
     for (unsigned int i = start; i < end; i++)
-      mask |= info[i].mask & HB_GLYPH_FLAG_DEFINED;
+      mask |= info[i].mask;
 
-    if (flip_tatweel)
-    {
-      if (mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK)
-	mask &= ~HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL;
-      if (mask & HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL)
-	mask |= HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT;
-    }
+    if (mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK)
+      mask &= ~HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL;
+    if (mask & HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL)
+      mask |= HB_GLYPH_FLAG_UNSAFE_TO_BREAK | HB_GLYPH_FLAG_UNSAFE_TO_CONCAT;
 
-    if (clear_concat)
-	mask &= ~HB_GLYPH_FLAG_UNSAFE_TO_CONCAT;
+    mask &= and_mask;
 
     for (unsigned int i = start; i < end; i++)
       info[i].mask = mask;
@@ -1171,8 +1203,6 @@ hb_ot_shape_internal (hb_ot_shape_context_t *c)
   _hb_buffer_deallocate_unicode_vars (c->buffer);
 
   c->buffer->props.direction = c->target_direction;
-
-  c->buffer->leave ();
 }
 
 

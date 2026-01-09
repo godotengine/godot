@@ -130,16 +130,14 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows, the dictionary contains the following fields:
-				[code]xinput_index[/code]: The index of the controller in the XInput system. Undefined for DirectInput devices.
-				[code]vendor_id[/code]: The USB vendor ID of the device.
-				[code]product_id[/code]: The USB product ID of the device.
-				On Linux:
-				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the godot controller database.
+				On Windows, Linux, and macOS, the dictionary contains the following fields:
+				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
-				[b]Note:[/b] The returned dictionary is always empty on Web, iOS, Android, and macOS.
+				On Windows, the dictionary can have an additional field:
+				[code]xinput_index[/code]: The index of the controller in the XInput system. This key won't be present for devices not handled by XInput.
+				[b]Note:[/b] The returned dictionary is always empty on Android, iOS, visionOS, and Web.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -200,6 +198,14 @@
 				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
 				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
 				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
+			</description>
+		</method>
+		<method name="has_joy_light" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if the joypad has an LED light that can change colors and/or brightness. See also [method set_joy_light].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="is_action_just_pressed" qualifiers="const">
@@ -389,6 +395,16 @@
 			<description>
 				Sets the value of the rotation rate of the gyroscope sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_joy_light">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Sets the joypad's LED light, if available, to the specified color. Returns [code]true[/code] if the operation was successful. See also [method has_joy_light].
+				[b]Note:[/b] There is no way to get the color of the light from a joypad. If you need to know the assigned color, store it separately.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
 		</method>
 		<method name="set_magnetometer">

@@ -68,6 +68,16 @@ struct Manifold::Impl {
     const uint32_t numVert = meshGL.NumVert();
     const uint32_t numTri = meshGL.NumTri();
 
+    if (numVert == 0 && numTri == 0) {
+      MakeEmpty(Error::NoError);
+      return;
+    }
+
+    if (numVert < 4 || numTri < 4) {
+      MakeEmpty(Error::NotManifold);
+      return;
+    }
+
     if (meshGL.numProp < 3) {
       MakeEmpty(Error::MissingPositionProperties);
       return;

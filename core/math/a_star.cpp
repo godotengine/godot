@@ -306,11 +306,17 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path) {
+bool AStar3D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if (!p_begin_point->enabled) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
+	if (!p_end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -319,11 +325,11 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
 
-	begin_point->g_score = 0;
-	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
-	begin_point->abs_g_score = 0;
-	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
-	open_list.push_back(begin_point);
+	p_begin_point->g_score = 0;
+	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	p_begin_point->abs_g_score = 0;
+	p_begin_point->abs_f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	open_list.push_back(p_begin_point);
 
 	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
@@ -333,7 +339,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 			last_closest_point = p;
 		}
 
-		if (p == end_point) {
+		if (p == p_end_point) {
 			found_route = true;
 			break;
 		}
@@ -370,7 +376,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
-			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 			e->abs_g_score = tentative_g_score;
 			e->abs_f_score = e->f_score - e->g_score;
 
@@ -428,12 +434,6 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 	Point *b = *b_entry;
 
-	if (a == b) {
-		Vector<Vector3> ret;
-		ret.push_back(a->pos);
-		return ret;
-	}
-
 	Point *begin_point = a;
 	Point *end_point = b;
 
@@ -481,16 +481,6 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	Point **b_entry = points.getptr(p_to_id);
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 	Point *b = *b_entry;
-
-	if (a == b) {
-		Vector<int64_t> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
-	if (!a->enabled) {
-		return Vector<int64_t>();
-	}
 
 	Point *begin_point = a;
 	Point *end_point = b;
@@ -738,11 +728,6 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 	AStar3D::Point *b = *b_entry;
 
-	if (a == b) {
-		Vector<Vector2> ret = { Vector2(a->pos.x, a->pos.y) };
-		return ret;
-	}
-
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
@@ -791,16 +776,6 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	ERR_FAIL_COND_V_MSG(!to_entry, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 	AStar3D::Point *b = *to_entry;
 
-	if (a == b) {
-		Vector<int64_t> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
-	if (!a->enabled) {
-		return Vector<int64_t>();
-	}
-
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
@@ -840,11 +815,17 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
-bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path) {
+bool AStar2D::_solve(AStar3D::Point *p_begin_point, AStar3D::Point *p_end_point, bool p_allow_partial_path) {
 	astar.last_closest_point = nullptr;
 	astar.pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if (!p_begin_point->enabled) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
+	if (!p_end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -853,11 +834,11 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 	LocalVector<AStar3D::Point *> open_list;
 	SortArray<AStar3D::Point *, AStar3D::SortPoints> sorter;
 
-	begin_point->g_score = 0;
-	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
-	begin_point->abs_g_score = 0;
-	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
-	open_list.push_back(begin_point);
+	p_begin_point->g_score = 0;
+	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	p_begin_point->abs_g_score = 0;
+	p_begin_point->abs_f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	open_list.push_back(p_begin_point);
 
 	while (!open_list.is_empty()) {
 		AStar3D::Point *p = open_list[0]; // The currently processed point.
@@ -867,7 +848,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 			astar.last_closest_point = p;
 		}
 
-		if (p == end_point) {
+		if (p == p_end_point) {
 			found_route = true;
 			break;
 		}
@@ -904,7 +885,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
-			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 			e->abs_g_score = tentative_g_score;
 			e->abs_f_score = e->f_score - e->g_score;
 

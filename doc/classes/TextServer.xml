@@ -214,7 +214,7 @@
 		<method name="font_get_global_oversampling" qualifiers="const" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
 			<return type="float" />
 			<description>
-				Deprecated. This method always returns [code]1.0[/code].
+				This method does nothing and always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="font_get_glyph_advance" qualifiers="const">
@@ -583,14 +583,14 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="language" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
+				Returns [code]true[/code] if the font supports the given language (as a [url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
 		<method name="font_is_modulate_color_glyphs" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+				Returns [code]true[/code] if color modulation is applied when drawing the font's colored glyphs.
 			</description>
 		</method>
 		<method name="font_is_multichannel_signed_distance_field" qualifiers="const">
@@ -605,7 +605,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="script" type="String" />
 			<description>
-				Returns [code]true[/code], if font supports given script (ISO 15924 code).
+				Returns [code]true[/code] if the font supports the given script (as a [url=https://en.wikipedia.org/wiki/ISO_15924]ISO 15924[/url] code).
 			</description>
 		</method>
 		<method name="font_remove_glyph">
@@ -790,7 +790,7 @@
 			<return type="void" />
 			<param index="0" name="oversampling" type="float" />
 			<description>
-				Deprecated. This method does nothing.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -1075,13 +1075,13 @@
 				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
-		<method name="format_number" qualifiers="const">
+		<method name="format_number" qualifiers="const" deprecated="Use [method TranslationServer.format_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
-				If [param language] is omitted, the active locale will be used.
+				Converts a number from Western Arabic (0..9) to the numeral system used in the given [param language].
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -1160,6 +1160,13 @@
 				Returns [code]true[/code] if locale is right-to-left.
 			</description>
 		</method>
+		<method name="is_locale_using_support_data" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns [code]true[/code] if the locale requires text server support data for line/word breaking.
+			</description>
+		</method>
 		<method name="is_valid_identifier" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="string" type="String" />
@@ -1194,15 +1201,16 @@
 			<return type="int" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Converts readable feature, variation, script, or language name to OpenType tag.
+				Converts the given readable name of a feature, variation, script, or language to an OpenType tag.
 			</description>
 		</method>
-		<method name="parse_number" qualifiers="const">
+		<method name="parse_number" qualifiers="const" deprecated="Use [method TranslationServer.parse_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Converts [param number] from the numeral systems used in [param language] to Western Arabic (0..9).
+				Converts [param number] from the numeral system used in the given [param language] to Western Arabic (0..9).
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="parse_structured_text" qualifiers="const">
@@ -1214,11 +1222,12 @@
 				Default implementation of the BiDi algorithm override function.
 			</description>
 		</method>
-		<method name="percent_sign" qualifiers="const">
+		<method name="percent_sign" qualifiers="const" deprecated="Use [method TranslationServer.get_percent_sign] instead.">
 			<return type="String" />
 			<param index="0" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns percent sign used in the [param language].
+				Returns the percent sign used in the given [param language].
+				If [param language] is an empty string, the active locale will be used.
 			</description>
 		</method>
 		<method name="save_support_data" qualifiers="const">
@@ -1416,6 +1425,13 @@
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
+			</description>
+		</method>
+		<method name="shaped_text_duplicate">
+			<return type="RID" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Duplicates shaped text buffer.
 			</description>
 		</method>
 		<method name="shaped_text_fit_to_width">
@@ -1687,6 +1703,14 @@
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking.
 			</description>
 		</method>
+		<method name="shaped_text_has_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+				Returns [code]true[/code] if an object with [param key] is embedded in this shaped text buffer.
+			</description>
+		</method>
 		<method name="shaped_text_has_visible_chars" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="shaped" type="RID" />
@@ -1913,7 +1937,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to lowercase.
+				Returns the string converted to [code]lowercase[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1923,7 +1947,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to title case.
+				Returns the string converted to [code]Title Case[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1933,7 +1957,7 @@
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
-				Returns the string converted to uppercase.
+				Returns the string converted to [code]UPPERCASE[/code].
 				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
 				[b]Note:[/b] The result may be longer or shorter than the original.
 			</description>
@@ -1950,7 +1974,7 @@
 			<return type="String" />
 			<param index="0" name="tag" type="int" />
 			<description>
-				Converts OpenType tag to readable feature, variation, script, or language name.
+				Converts the given OpenType tag to the readable name of a feature, variation, script, or language.
 			</description>
 		</method>
 	</methods>
@@ -2125,6 +2149,9 @@
 		</constant>
 		<constant name="OVERRUN_JUSTIFICATION_AWARE" value="16" enum="TextOverrunFlag" is_bitfield="true">
 			Accounts for the text being justified before attempting to trim it (see [enum JustificationFlag]).
+		</constant>
+		<constant name="OVERRUN_SHORT_STRING_ELLIPSIS" value="32" enum="TextOverrunFlag" is_bitfield="true">
+			Determines whether the ellipsis should be added regardless of the string length, otherwise it is added only if the string is 6 characters or longer.
 		</constant>
 		<constant name="GRAPHEME_IS_VALID" value="1" enum="GraphemeFlag" is_bitfield="true">
 			Grapheme is supported by the font, and can be drawn.

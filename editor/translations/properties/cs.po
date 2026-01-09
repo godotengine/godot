@@ -45,13 +45,14 @@
 # Vojtech Krajnansky <vojtech.krajnansky@gmail.com>, 2025.
 # kubfaf <kubfaf@gmail.com>, 2025.
 # Jan Matějka <controlcommanddev@gmail.com>, 2025.
+# Pixeluted <pixeluted@proton.me>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-23 18:15+0000\n"
-"Last-Translator: Jan Matějka <controlcommanddev@gmail.com>\n"
+"PO-Revision-Date: 2025-09-14 16:20+0000\n"
+"Last-Translator: Pixeluted <pixeluted@proton.me>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -181,6 +182,9 @@ msgstr "Ostré rohy"
 msgid "Minimize Disabled"
 msgstr "Vypnutá minimalizace"
 
+msgid "Maximize Disabled"
+msgstr "Maximalizace Vypnuta"
+
 msgid "Window Width Override"
 msgstr "Přepsání šířky okna"
 
@@ -204,6 +208,9 @@ msgstr "Kontrola neplatných cest stop"
 
 msgid "Check Angle Interpolation Type Conflicting"
 msgstr "Kontrola protichůdných typů interpolace"
+
+msgid "Compatibility"
+msgstr "Kompatibilita"
 
 msgid "Audio"
 msgstr "Zvuk"
@@ -231,9 +238,6 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "Kategorie relací"
-
-msgid "Mix With Others"
-msgstr "Mísit s ostatními"
 
 msgid "Subwindows"
 msgstr "Podokna"
@@ -418,15 +422,6 @@ msgstr "Maximální počet deskriptorů na pool"
 msgid "D3D12"
 msgstr "D3D12"
 
-msgid "Max Resource Descriptors per Frame"
-msgstr "Maximální počet deskriptorů zdrojů na snímek"
-
-msgid "Max Sampler Descriptors per Frame"
-msgstr "Maximální počet deskriptorů vyorkovačů na snímek"
-
-msgid "Max Misc Descriptors per Frame"
-msgstr "Maximální počet různých deskriptorů na snímek"
-
 msgid "Agility SDK Version"
 msgstr "Verze Agility SDK"
 
@@ -531,9 +526,6 @@ msgstr "Emulovat myš z dotyku"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Emulovat dotyk z myši"
-
-msgid "Compatibility"
-msgstr "Kompatibilita"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Starší chování \"právě stisknuto\""
@@ -814,9 +806,6 @@ msgstr "Pseudolokalizace"
 msgid "Use Pseudolocalization"
 msgstr "Použít pseudolokalizaci"
 
-msgid "Replace With Accents"
-msgstr "Nahradit akcentovanými znaky"
-
 msgid "Double Vowels"
 msgstr "Zdvojit samohlásky"
 
@@ -891,6 +880,9 @@ msgstr "Čas na požadavek vypršel"
 
 msgid "Sync Breakpoints"
 msgstr "Synchronizovat breakpointy"
+
+msgid "Title"
+msgstr "Nadpis"
 
 msgid "Distraction Free Mode"
 msgstr "Nerozptylující režim"
@@ -1056,27 +1048,6 @@ msgstr "ETC2 ASTC"
 
 msgid "Export Path"
 msgstr "Cesta pro export"
-
-msgid "Access"
-msgstr "Přístup"
-
-msgid "Display Mode"
-msgstr "Režim zobrazení"
-
-msgid "File Mode"
-msgstr "Režim souborů"
-
-msgid "Filters"
-msgstr "Filtry"
-
-msgid "Options"
-msgstr "Možnosti"
-
-msgid "Show Hidden Files"
-msgstr "Zobrazit skryté soubory"
-
-msgid "Disable Overwrite Warning"
-msgstr "Deaktivovat varování při přepsání"
 
 msgid "Label"
 msgstr "Popisek"
@@ -1612,12 +1583,6 @@ msgstr "SVG"
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Scale With Editor Scale"
-msgstr "Škálovat měřítkem editoru"
-
-msgid "Convert Colors With Editor Theme"
-msgstr "Převést barvy s motivem editoru"
-
 msgid "Atlas File"
 msgstr "Soubor atlasu"
 
@@ -2042,6 +2007,12 @@ msgstr "Heslo"
 msgid "File Dialog"
 msgstr "Souborový dialog"
 
+msgid "Show Hidden Files"
+msgstr "Zobrazit skryté soubory"
+
+msgid "Display Mode"
+msgstr "Režim zobrazení"
+
 msgid "Thumbnail Size"
 msgstr "Velikost náhledu"
 
@@ -2339,9 +2310,6 @@ msgstr "Dokončování"
 msgid "Idle Parse Delay"
 msgstr "Zpoždění rozboru kódu při nečinnosti"
 
-msgid "Idle Parse Delay With Errors Found"
-msgstr "Zpoždění rozboru kódu při nečinnosti s nalezenými chybami"
-
 msgid "Auto Brace Complete"
 msgstr "Automatické doplňování závorek"
 
@@ -2389,9 +2357,6 @@ msgstr "Mřížková mapa"
 
 msgid "Pick Distance"
 msgstr "Výběrová vzdálenost"
-
-msgid "Palette Min Width"
-msgstr "Minimální šířka palety"
 
 msgid "Selection Box Color"
 msgstr "Barva pole výběru"
@@ -2479,9 +2444,6 @@ msgstr "Délka osy kosti"
 
 msgid "Bone Shape"
 msgstr "Tvar kosti"
-
-msgid "Path 3D Tilt Disk Size"
-msgstr "Velikost disku náklonu 3D cesty"
 
 msgid "Grid Division Level Max"
 msgstr "Maximální úroveň rozdělení mřížky"
@@ -3080,9 +3042,6 @@ msgstr "Offset nápovědy"
 msgid "Show Image"
 msgstr "Zobrazit obrázek"
 
-msgid "Fullsize"
-msgstr "Plná velikost"
-
 msgid "Use Filter"
 msgstr "Použít filtr"
 
@@ -3341,9 +3300,6 @@ msgstr "GDScript"
 msgid "Max Call Stack"
 msgstr "Maximální velikost zásobníku volání"
 
-msgid "Exclude Addons"
-msgstr "Vyloučit doplňky"
-
 msgid "Renamed in Godot 4 Hint"
 msgstr "Nápověda přejmenování v Godotu 4"
 
@@ -3502,9 +3458,6 @@ msgstr "Vytvořit animace"
 
 msgid "Animations"
 msgstr "Animace"
-
-msgid "Handle Binary Image"
-msgstr "Zpracovat binární obrázek"
 
 msgid "Buffer View"
 msgstr "Okno vyrovnávací paměti"
@@ -3863,18 +3816,6 @@ msgstr "Odstranění šumu"
 msgid "Denoiser"
 msgstr "Odstraňovač šumu"
 
-msgid "BPM"
-msgstr "Tempo (BPM)"
-
-msgid "Beat Count"
-msgstr "Počet dob"
-
-msgid "Bar Beats"
-msgstr "Doby v taktu"
-
-msgid "Loop Offset"
-msgstr "Offset smyčky"
-
 msgid "Eye Height"
 msgstr "Výška očí"
 
@@ -3904,6 +3845,18 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Minimální poloměr"
+
+msgid "BPM"
+msgstr "Tempo (BPM)"
+
+msgid "Beat Count"
+msgstr "Počet dob"
+
+msgid "Bar Beats"
+msgstr "Doby v taktu"
+
+msgid "Loop Offset"
+msgstr "Offset smyčky"
 
 msgid "Spawn Path"
 msgstr "Cesta vytvoření"
@@ -4081,6 +4034,9 @@ msgstr "Obnovovací frekvence displeje"
 
 msgid "Render Target Size Multiplier"
 msgstr "Multiplikátor velikosti cíle vykreslování"
+
+msgid "Next"
+msgstr "Další"
 
 msgid "Layer Viewport"
 msgstr "Průzor vrstev"
@@ -4925,6 +4881,12 @@ msgstr "Normály"
 msgid "Colors"
 msgstr "Barvy"
 
+msgid "Ring Inner Radius"
+msgstr "Vnitřní poloměr prstence"
+
+msgid "Ring Radius"
+msgstr "Poloměr prstence"
+
 msgid "Particle Flags"
 msgstr "Příznaky částic"
 
@@ -5159,9 +5121,6 @@ msgstr "Zjednodušit cestu"
 msgid "Simplify Epsilon"
 msgstr "Epsilon zjednodušení"
 
-msgid "Avoidance Enabled"
-msgstr "Vyhýbání povoleno"
-
 msgid "Neighbor Distance"
 msgstr "Vzdálenost sousedů"
 
@@ -5215,9 +5174,6 @@ msgstr "Cena cesty"
 
 msgid "Vertices"
 msgstr "Vrcholy"
-
-msgid "NavigationMesh"
-msgstr "Navigační síť"
 
 msgid "Affect Navigation Mesh"
 msgstr "Ovlivnit navigační síť"
@@ -5514,12 +5470,6 @@ msgstr "Osa prstence"
 msgid "Ring Height"
 msgstr "Výška prstence"
 
-msgid "Ring Radius"
-msgstr "Poloměr prstence"
-
-msgid "Ring Inner Radius"
-msgstr "Vnitřní poloměr prstence"
-
 msgid "Ring Cone Angle"
 msgstr "Úhel kuželu prstence"
 
@@ -5613,6 +5563,9 @@ msgstr "Konec rozpětí"
 
 msgid "Fade Mode"
 msgstr "Režim blednutí"
+
+msgid "Deterministic"
+msgstr "Deterministické"
 
 msgid "Pixel Size"
 msgstr "Velikost pixelu"
@@ -5917,6 +5870,9 @@ msgstr "Použít 3D vyhýbání"
 msgid "Keep Y Velocity"
 msgstr "Ponechat rychlost Y"
 
+msgid "NavigationMesh"
+msgstr "Navigační síť"
+
 msgid "Navigation Mesh"
 msgstr "Navigační síť"
 
@@ -6112,9 +6068,6 @@ msgstr "Sledovat fyzikální krok"
 msgid "Sorting"
 msgstr "Řazení"
 
-msgid "Use AABB Center"
-msgstr "Použít střed AABB"
-
 msgid "Geometry"
 msgstr "Geometrie"
 
@@ -6243,12 +6196,6 @@ msgstr "Žádost"
 
 msgid "Transition Request"
 msgstr "Požadavek přechodu"
-
-msgid "Libraries"
-msgstr "Knihovny"
-
-msgid "Deterministic"
-msgstr "Deterministické"
 
 msgid "Reset on Save"
 msgstr "Resetovat při uložení"
@@ -6430,9 +6377,6 @@ msgstr "Pravý soused"
 msgid "Neighbor Bottom"
 msgstr "Spodní soused"
 
-msgid "Next"
-msgstr "Další"
-
 msgid "Previous"
 msgstr "Předchozí"
 
@@ -6469,11 +6413,20 @@ msgstr "Automatické zalamování"
 msgid "Cancel Button Text"
 msgstr "Text tlačítka Zrušit"
 
+msgid "File Mode"
+msgstr "Režim souborů"
+
+msgid "Access"
+msgstr "Přístup"
+
+msgid "Filters"
+msgstr "Filtry"
+
 msgid "Use Native Dialog"
 msgstr "Použít nativní dialog"
 
-msgid "Title"
-msgstr "Nadpis"
+msgid "Options"
+msgstr "Možnosti"
 
 msgid "Show Grid"
 msgstr "Zobrazit mřížku"
@@ -6628,12 +6581,6 @@ msgstr "Sledovat zaměření"
 msgid "Draw Focus Border"
 msgstr "Kreslit okraj zaměření"
 
-msgid "Horizontal Custom Step"
-msgstr "Horizontální vlastní krok"
-
-msgid "Vertical Custom Step"
-msgstr "Vertikální vlastní krok"
-
 msgid "Horizontal Scroll Mode"
 msgstr "Režim horizontálního posouvání"
 
@@ -6736,9 +6683,6 @@ msgstr "Vyhlazování prostoru obrazovky"
 msgid "Use TAA"
 msgstr "Použít časové vyhlazování"
 
-msgid "Use Debanding"
-msgstr "Použít odpáskování"
-
 msgid "Use Occlusion Culling"
 msgstr "Použít vyřazování zakrytím"
 
@@ -6801,6 +6745,9 @@ msgstr "2D MSAA"
 
 msgid "MSAA 3D"
 msgstr "3D MSAA"
+
+msgid "Use Debanding"
+msgstr "Použít odpáskování"
 
 msgid "Debug Draw"
 msgstr "Kreslit ladění"
@@ -7213,18 +7160,6 @@ msgstr "Výběr obrazovky"
 msgid "Add Preset"
 msgstr "Přidat profil"
 
-msgid "Soft Clip dB"
-msgstr "dB měkkého oříznutí"
-
-msgid "Soft Clip Ratio"
-msgstr "Poměr měkkého oříznutí"
-
-msgid "Msec"
-msgstr "Msek"
-
-msgid "Surround"
-msgstr "Surround"
-
 msgid "Enable Input"
 msgstr "Povolit vstup"
 
@@ -7236,6 +7171,18 @@ msgstr "Výstupní zařízení"
 
 msgid "Input Device"
 msgstr "Vstupní zařízení"
+
+msgid "Soft Clip dB"
+msgstr "dB měkkého oříznutí"
+
+msgid "Soft Clip Ratio"
+msgstr "Poměr měkkého oříznutí"
+
+msgid "Msec"
+msgstr "Msek"
+
+msgid "Surround"
+msgstr "Surround"
 
 msgid "Is Active"
 msgstr "Je aktivní"

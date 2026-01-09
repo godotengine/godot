@@ -72,6 +72,7 @@ public:
 		MISSING_TOOL, // The base class script has the "@tool" annotation, but this script does not have it.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
+		MISSING_AWAIT, // await is not used but expression is a coroutine.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
@@ -93,13 +94,13 @@ public:
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name.
-#endif
+#endif // DISABLE_DEPRECATED
 		WARNING_MAX,
 	};
 
 #ifndef DISABLE_DEPRECATED
 	static constexpr int FIRST_DEPRECATED_WARNING = PROPERTY_USED_AS_FUNCTION;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	constexpr static WarnLevel default_warning_levels[] = {
 		WARN, // UNASSIGNED_VARIABLE
@@ -129,6 +130,7 @@ public:
 		WARN, // MISSING_TOOL
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
+		IGNORE, // MISSING_AWAIT
 		WARN, // ASSERT_ALWAYS_TRUE
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION
@@ -150,10 +152,10 @@ public:
 		WARN, // PROPERTY_USED_AS_FUNCTION
 		WARN, // CONSTANT_USED_AS_FUNCTION
 		WARN, // FUNCTION_USED_AS_PROPERTY
-#endif
+#endif // DISABLE_DEPRECATED
 	};
 
-	static_assert(std::size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
+	static_assert(std_size(default_warning_levels) == WARNING_MAX, "Amount of default levels does not match the amount of warnings.");
 
 	Code code = WARNING_MAX;
 	int start_line = -1, end_line = -1;
@@ -164,7 +166,7 @@ public:
 	static int get_default_value(Code p_code);
 	static PropertyInfo get_property_info(Code p_code);
 	static String get_name_from_code(Code p_code);
-	static String get_settings_path_from_code(Code p_code);
+	static String get_setting_path_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 };
 

@@ -30,7 +30,7 @@
 
 #include "area_2d.h"
 
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
@@ -501,8 +501,8 @@ bool Area2D::has_overlapping_areas() const {
 	return !area_map.is_empty();
 }
 
-bool Area2D::overlaps_area(Node *p_area) const {
-	ERR_FAIL_NULL_V(p_area, false);
+bool Area2D::overlaps_area(RequiredParam<Node> rp_area) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_area, rp_area, false);
 	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
 	if (!E) {
 		return false;
@@ -510,8 +510,8 @@ bool Area2D::overlaps_area(Node *p_area) const {
 	return E->value.in_tree;
 }
 
-bool Area2D::overlaps_body(Node *p_body) const {
-	ERR_FAIL_NULL_V(p_body, false);
+bool Area2D::overlaps_body(RequiredParam<Node> rp_body) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_body, rp_body, false);
 	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(p_body->get_instance_id());
 	if (!E) {
 		return false;
@@ -678,6 +678,8 @@ void Area2D::_bind_methods() {
 
 Area2D::Area2D() :
 		CollisionObject2D(PhysicsServer2D::get_singleton()->area_create(), true) {
+	_define_ancestry(AncestralClass::AREA_2D);
+
 	set_gravity(980);
 	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);

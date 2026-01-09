@@ -1,5 +1,5 @@
 /* deflate.c -- compress data using the deflation algorithm
- * Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
+ * Copyright (C) 1995-2025 Jean-loup Gailly and Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -37,7 +37,7 @@
  *  REFERENCES
  *
  *      Deutsch, L.P.,"DEFLATE Compressed Data Format Specification".
- *      Available in http://tools.ietf.org/html/rfc1951
+ *      Available at https://datatracker.ietf.org/doc/html/rfc1951
  *
  *      A description of the Rabin and Karp algorithm is given in the book
  *         "Algorithms" by R. Sedgewick, Addison-Wesley, p252.
@@ -52,7 +52,7 @@
 #include "deflate.h"
 
 const char deflate_copyright[] =
-   " deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler ";
+   " deflate 1.3.1.2 Copyright 1995-2025 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -720,6 +720,14 @@ int ZEXPORT deflatePending(z_streamp strm, unsigned *pending, int *bits) {
 }
 
 /* ========================================================================= */
+int ZEXPORT deflateUsed(z_streamp strm, int *bits) {
+    if (deflateStateCheck(strm)) return Z_STREAM_ERROR;
+    if (bits != Z_NULL)
+        *bits = strm->state->bi_used;
+    return Z_OK;
+}
+
+/* ========================================================================= */
 int ZEXPORT deflatePrime(z_streamp strm, int bits, int value) {
     deflate_state *s;
     int put;
@@ -846,13 +854,13 @@ uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
     storelen = sourceLen + (sourceLen >> 5) + (sourceLen >> 7) +
                (sourceLen >> 11) + 7;
 
-    /* if can't get parameters, return larger bound plus a zlib wrapper */
+    /* if can't get parameters, return larger bound plus a wrapper */
     if (deflateStateCheck(strm))
-        return (fixedlen > storelen ? fixedlen : storelen) + 6;
+        return (fixedlen > storelen ? fixedlen : storelen) + 18;
 
     /* compute wrapper length */
     s = strm->state;
-    switch (s->wrap) {
+    switch (s->wrap < 0 ? -s->wrap : s->wrap) {
     case 0:                                 /* raw deflate */
         wraplen = 0;
         break;
@@ -882,7 +890,7 @@ uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
         break;
 #endif
     default:                                /* for compiler happiness */
-        wraplen = 6;
+        wraplen = 18;
     }
 
     /* if not default parameters, return one of the conservative bounds */
@@ -1635,7 +1643,8 @@ local block_state deflate_stored(deflate_state *s, int flush) {
      * possible. If flushing, copy the remaining available input to next_out as
      * stored blocks, if there is enough space.
      */
-    unsigned len, left, have, last = 0;
+    int last = 0;
+    unsigned len, left, have;
     unsigned used = s->strm->avail_in;
     do {
         /* Set len to the maximum size block that we can copy directly with the
@@ -1671,10 +1680,10 @@ local block_state deflate_stored(deflate_state *s, int flush) {
         _tr_stored_block(s, (char *)0, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
-        s->pending_buf[s->pending - 4] = len;
-        s->pending_buf[s->pending - 3] = len >> 8;
-        s->pending_buf[s->pending - 2] = ~len;
-        s->pending_buf[s->pending - 1] = ~len >> 8;
+        s->pending_buf[s->pending - 4] = (Bytef)len;
+        s->pending_buf[s->pending - 3] = (Bytef)(len >> 8);
+        s->pending_buf[s->pending - 2] = (Bytef)~len;
+        s->pending_buf[s->pending - 1] = (Bytef)(~len >> 8);
 
         /* Write the stored block header bytes. */
         flush_pending(s->strm);
@@ -1745,8 +1754,10 @@ local block_state deflate_stored(deflate_state *s, int flush) {
         s->high_water = s->strstart;
 
     /* If the last block was written to next_out, then done. */
-    if (last)
+    if (last) {
+        s->bi_used = 8;
         return finish_done;
+    }
 
     /* If flushing and all input has been consumed, then done. */
     if (flush != Z_NO_FLUSH && flush != Z_FINISH &&
@@ -1798,6 +1809,8 @@ local block_state deflate_stored(deflate_state *s, int flush) {
     }
 
     /* We've done all we can with the available input and output. */
+    if (last)
+        s->bi_used = 8;
     return last ? finish_started : need_more;
 }
 

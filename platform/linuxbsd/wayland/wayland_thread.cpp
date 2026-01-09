@@ -30,6 +30,8 @@
 
 #include "wayland_thread.h"
 
+#include "core/config/engine.h"
+
 #ifdef WAYLAND_ENABLED
 
 #ifdef __FreeBSD__
@@ -101,7 +103,7 @@ Vector<uint8_t> WaylandThread::_read_fd(int fd) {
 		data.resize(bytes_read + chunk_size);
 	}
 
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 // Based on the wayland book's shared memory boilerplate (PD/CC0).
@@ -298,6 +300,73 @@ Ref<InputEventKey> WaylandThread::_seat_state_get_unstuck_key_event(SeatState *p
 	}
 
 	return event;
+}
+
+void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_t p_xkb_keycode, bool p_pressed, bool p_echo) {
+	ERR_FAIL_NULL(p_ss);
+
+	WaylandThread *wayland_thread = p_ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	Key last_key = Key::NONE;
+	xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+
+	if (p_pressed) {
+		xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
+		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+
+		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+			// We need to generate multiple key events to report the composed result, One
+			// per character.
+			char str_xkb[256] = {};
+			int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
+
+			String decoded_str = String::utf8(str_xkb, str_xkb_size);
+			for (int i = 0; i < decoded_str.length(); ++i) {
+				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
+				if (k.is_null()) {
+					continue;
+				}
+
+				k->set_unicode(decoded_str[i]);
+				k->set_echo(p_echo);
+
+				Ref<InputEventMessage> msg;
+				msg.instantiate();
+				msg->event = k;
+				wayland_thread->push_message(msg);
+
+				last_key = k->get_keycode();
+			}
+		}
+	}
+
+	if (last_key == Key::NONE && compose_status == XKB_COMPOSE_NOTHING) {
+		// If we continued with other compose status (e.g. XKB_COMPOSE_COMPOSING) we
+		// would get the composing keys _and_ the result.
+		Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
+		if (k.is_valid()) {
+			k->set_echo(p_echo);
+
+			Ref<InputEventMessage> msg;
+			msg.instantiate();
+			msg->event = k;
+			wayland_thread->push_message(msg);
+
+			last_key = k->get_keycode();
+		}
+	}
+
+	if (last_key != Key::NONE) {
+		Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(p_ss, p_xkb_keycode, p_pressed, last_key);
+		if (uk.is_valid()) {
+			Ref<InputEventMessage> u_msg;
+			u_msg.instantiate();
+			u_msg->event = uk;
+			wayland_thread->push_message(u_msg);
+		}
+	}
 }
 
 void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
@@ -574,6 +643,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, xdg_toplevel_icon_manager_v1_interface.name) == 0) {
+		registry->xdg_toplevel_icon_manager = (struct xdg_toplevel_icon_manager_v1 *)wl_registry_bind(wl_registry, name, &xdg_toplevel_icon_manager_v1_interface, 1);
+		registry->xdg_toplevel_icon_manager_name = name;
+		return;
+	}
+
 	if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
 		registry->xdg_activation = (struct xdg_activation_v1 *)wl_registry_bind(wl_registry, name, &xdg_activation_v1_interface, 1);
 		registry->xdg_activation_name = name;
@@ -653,6 +728,13 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 	if (strcmp(interface, FIFO_INTERFACE_NAME) == 0) {
 		registry->wp_fifo_manager_name = name;
+	}
+
+	if (strcmp(interface, godot_embedding_compositor_interface.name) == 0) {
+		registry->godot_embedding_compositor = (struct godot_embedding_compositor *)wl_registry_bind(wl_registry, name, &godot_embedding_compositor_interface, 1);
+		registry->godot_embedding_compositor_name = name;
+
+		godot_embedding_compositor_add_listener(registry->godot_embedding_compositor, &godot_embedding_compositor_listener, memnew(EmbeddingCompositorState));
 	}
 }
 
@@ -742,7 +824,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_viewporter_name) {
 		for (KeyValue<DisplayServer::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState ws = pair.value;
+			WindowState &ws = pair.value;
 			if (registry->wp_viewporter) {
 				wp_viewporter_destroy(registry->wp_viewporter);
 				registry->wp_viewporter = nullptr;
@@ -780,7 +862,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_fractional_scale_manager_name) {
 		for (KeyValue<DisplayServer::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState ws = pair.value;
+			WindowState &ws = pair.value;
 
 			if (registry->wp_fractional_scale_manager) {
 				wp_fractional_scale_manager_v1_destroy(registry->wp_fractional_scale_manager);
@@ -814,6 +896,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		}
 
 		registry->xdg_system_bell_name = 0;
+
+		return;
+	}
+
+	if (name == registry->xdg_toplevel_icon_manager_name) {
+		if (registry->xdg_toplevel_icon_manager) {
+			xdg_toplevel_icon_manager_v1_destroy(registry->xdg_toplevel_icon_manager);
+			registry->xdg_toplevel_icon_manager = nullptr;
+		}
+
+		if (registry->wayland_thread->xdg_icon) {
+			xdg_toplevel_icon_v1_destroy(registry->wayland_thread->xdg_icon);
+		}
+
+		if (registry->wayland_thread->icon_buffer) {
+			wl_buffer_destroy(registry->wayland_thread->icon_buffer);
+		}
+
+		registry->xdg_toplevel_icon_manager_name = 0;
 
 		return;
 	}
@@ -1064,6 +1165,25 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_fifo_manager_name) {
 		registry->wp_fifo_manager_name = 0;
+	}
+
+	if (name == registry->godot_embedding_compositor_name) {
+		registry->godot_embedding_compositor_name = 0;
+
+		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry->godot_embedding_compositor);
+		ERR_FAIL_NULL(es);
+
+		es->mapped_clients.clear();
+
+		for (struct godot_embedded_client *client : es->clients) {
+			godot_embedded_client_destroy(client);
+		}
+		es->clients.clear();
+
+		memdelete(es);
+
+		godot_embedding_compositor_destroy(registry->godot_embedding_compositor);
+		registry->godot_embedding_compositor = nullptr;
 	}
 }
 
@@ -1550,6 +1670,26 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 			ss->xkb_context = nullptr;
 		}
 
+		if (ss->xkb_compose_table) {
+			xkb_compose_table_unref(ss->xkb_compose_table);
+			ss->xkb_compose_table = nullptr;
+		}
+
+		if (ss->xkb_compose_state) {
+			xkb_compose_state_unref(ss->xkb_compose_state);
+			ss->xkb_compose_state = nullptr;
+		}
+
+		if (ss->xkb_keymap) {
+			xkb_keymap_unref(ss->xkb_keymap);
+			ss->xkb_keymap = nullptr;
+		}
+
+		if (ss->xkb_state) {
+			xkb_state_unref(ss->xkb_state);
+			ss->xkb_state = nullptr;
+		}
+
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
 			ss->wl_keyboard = nullptr;
@@ -1595,6 +1735,10 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 	seat_state_update_cursor(ss);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer entered window %d.", ws->id));
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -1618,6 +1762,10 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	pd.pressed_button_mask.clear();
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Pointer left window %d.", id));
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1630,6 +1778,10 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 	pd.position.y = wl_fixed_to_double(surface_y);
 
 	pd.motion_time = time;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
@@ -1677,6 +1829,10 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 
 	pd.button_time = time;
 	pd.button_serial = serial;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
@@ -1696,6 +1852,10 @@ void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointe
 	}
 
 	pd.button_time = time;
+
+	if (wl_pointer_get_version(wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+		_wl_pointer_on_frame(data, wl_pointer);
+	}
 }
 
 void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_pointer) {
@@ -2017,6 +2177,24 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 
 	xkb_state_unref(ss->xkb_state);
 	ss->xkb_state = xkb_state_new(ss->xkb_keymap);
+
+	xkb_compose_table_unref(ss->xkb_compose_table);
+	const char *locale = getenv("LC_ALL");
+	if (!locale || !*locale) {
+		locale = getenv("LC_CTYPE");
+	}
+	if (!locale || !*locale) {
+		locale = getenv("LANG");
+	}
+	if (!locale || !*locale) {
+		locale = "C";
+	}
+	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+
+	xkb_compose_state_unref(ss->xkb_compose_state);
+	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+
+	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
 
 void WaylandThread::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
@@ -2077,6 +2255,15 @@ void WaylandThread::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_key
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_OUT;
 	wayland_thread->push_message(msg);
 
+	ss->shift_pressed = false;
+	ss->ctrl_pressed = false;
+	ss->alt_pressed = false;
+	ss->meta_pressed = false;
+
+	if (ss->xkb_state != nullptr) {
+		xkb_state_update_mask(ss->xkb_state, 0, 0, 0, 0, 0, 0);
+	}
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Keyboard unfocused window %d.", ws->id));
 }
 
@@ -2087,9 +2274,6 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	if (ss->focused_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
-
-	WaylandThread *wayland_thread = ss->wayland_thread;
-	ERR_FAIL_NULL(wayland_thread);
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
 	xkb_keycode_t xkb_keycode = key + 8;
@@ -2107,44 +2291,35 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 		ss->repeating_keycode = XKB_KEYCODE_INVALID;
 	}
 
-	Ref<InputEventKey> k = _seat_state_get_key_event(ss, xkb_keycode, pressed);
-	if (k.is_null()) {
-		return;
-	}
-
-	Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(ss, xkb_keycode, pressed, k->get_keycode());
-	if (uk.is_valid()) {
-		Ref<InputEventMessage> u_msg;
-		u_msg.instantiate();
-		u_msg->event = uk;
-		wayland_thread->push_message(u_msg);
-	}
-
-	Ref<InputEventMessage> msg;
-	msg.instantiate();
-	msg->event = k;
-	wayland_thread->push_message(msg);
+	_seat_state_handle_xkb_keycode(ss, xkb_keycode, pressed);
 }
 
 void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, ss->current_layout_index, ss->current_layout_index, group);
-
-	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
-	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
-	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
-	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
-
+	ss->mods_depressed = mods_depressed;
+	ss->mods_latched = mods_latched;
+	ss->mods_locked = mods_locked;
 	ss->current_layout_index = group;
+
+	if (ss->xkb_state == nullptr) {
+		return;
+	}
+
+	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
+
+	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE);
+	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE);
+	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE);
+	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE);
 }
 
 void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->repeat_key_delay_msec = 1000 / rate;
+	ss->repeat_key_delay_msec = rate ? 1000 / rate : 0;
 	ss->repeat_start_delay_msec = delay;
 }
 
@@ -2989,15 +3164,82 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
+void WaylandThread::_godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid) {
+	EmbeddingCompositorState *state = (EmbeddingCompositorState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddedClientState *client_state = memnew(EmbeddedClientState);
+	client_state->embedding_compositor = godot_embedding_compositor;
+	client_state->pid = pid;
+	godot_embedded_client_add_listener(godot_embedded_client, &godot_embedded_client_listener, client_state);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("New client %d.", pid));
+	state->clients.push_back(godot_embedded_client);
+}
+
+void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->clients.erase_unordered(godot_embedded_client);
+	ecomp_state->mapped_clients.erase(state->pid);
+
+	memfree(state);
+	godot_embedded_client_destroy(godot_embedded_client);
+
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Client %d disconnected.", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_embedded(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	state->window_mapped = true;
+
+	ERR_FAIL_COND_MSG(ecomp_state->mapped_clients.has(state->pid), "More than one Wayland client per PID tried to create a window.");
+
+	ecomp_state->mapped_clients[state->pid] = godot_embedded_client;
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = state->pid;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus in", state->pid));
+}
+
+void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struct godot_embedded_client *godot_embedded_client) {
+	EmbeddedClientState *state = (EmbeddedClientState *)data;
+	ERR_FAIL_NULL(state);
+
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
+	ecomp_state->focused_pid = -1;
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Embedded client pid %d focus out", state->pid));
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
+	Thread::set_name("Wayland Events");
+
 	ThreadData *data = (ThreadData *)p_data;
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
 
-	struct pollfd poll_fd;
+	struct pollfd poll_fd = {};
 	poll_fd.fd = wl_display_get_fd(data->wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
+	poll_fd.events = POLLIN;
 
 	while (true) {
 		// Empty the event queue while it's full.
@@ -3010,6 +3252,11 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			// Note that the main thread can still call wl_display_roundtrip as that
 			// method directly handles all events, effectively bypassing this polling
 			// loop and thus the mutex locking, avoiding a deadlock.
+			//
+			// WARNING: Never call `wl_display_roundtrip` inside event handlers or while
+			// this mutex isn't held! `wl_display_roundtrip` manually handles new events
+			// and if not properly gated it _will_ cause potentially stall-inducing race
+			// conditions. Ask me how I know.
 			MutexLock mutex_lock(data->mutex);
 
 			if (wl_display_dispatch_pending(data->wl_display) == -1) {
@@ -3136,6 +3383,15 @@ WaylandThread::OfferState *WaylandThread::wp_primary_selection_offer_get_offer_s
 	return nullptr;
 }
 
+WaylandThread::EmbeddingCompositorState *WaylandThread::godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor) {
+	// NOTE: No need for tag check as it's a "fake" interface - nothing else exposes it.
+	if (p_compositor) {
+		return (EmbeddingCompositorState *)godot_embedding_compositor_get_user_data(p_compositor);
+	}
+
+	return nullptr;
+}
+
 // This is implemented as a method because this is the simplest way of
 // accounting for dynamic output scale changes.
 int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
@@ -3179,7 +3435,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 	return max_size;
 }
 
-double WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
+double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 	ERR_FAIL_NULL_V(p_ws, 1);
 
 	if (p_ws->fractional_scale > 0) {
@@ -3197,8 +3453,8 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 	bool using_fractional = p_ws->preferred_fractional_scale > 0;
 
 	// If neither is true we no-op.
-	bool scale_changed = true;
-	bool size_changed = true;
+	bool scale_changed = false;
+	bool size_changed = false;
 
 	if (p_ws->rect.size.width != p_width || p_ws->rect.size.height != p_height) {
 		p_ws->rect.size.width = p_width;
@@ -3304,15 +3560,20 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
 	if (p_ss->wl_pointer == nullptr) {
+		WARN_PRINT("Can't lock - no pointer?");
 		return;
 	}
 
 	if (registry.wp_pointer_constraints == nullptr) {
+		WARN_PRINT("Can't lock - no constraints global.");
 		return;
 	}
 
 	if (p_ss->wp_locked_pointer == nullptr) {
 		struct wl_surface *locked_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
+		if (locked_surface == nullptr) {
+			locked_surface = window_get_wl_surface(DisplayServer::MAIN_WINDOW_ID);
+		}
 		ERR_FAIL_NULL(locked_surface);
 
 		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
@@ -3447,19 +3708,7 @@ void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
 			int keys_amount = (ticks_delta / p_ss->repeat_key_delay_msec);
 
 			for (int i = 0; i < keys_amount; i++) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_ss->repeating_keycode, true);
-				if (k.is_null()) {
-					continue;
-				}
-
-				k->set_echo(true);
-
-				Ref<InputEventKey> uk = _seat_state_get_unstuck_key_event(p_ss, p_ss->repeating_keycode, true, k->get_keycode());
-				if (uk.is_valid()) {
-					Input::get_singleton()->parse_input_event(uk);
-				}
-
-				Input::get_singleton()->parse_input_event(k);
+				_seat_state_handle_xkb_keycode(p_ss, p_ss->repeating_keycode, true, true);
 			}
 
 			p_ss->last_repeat_msec += ticks_delta - (ticks_delta % p_ss->repeat_key_delay_msec);
@@ -3489,7 +3738,7 @@ Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	return Ref<Message>();
 }
 
-void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void WaylandThread::window_create(DisplayServer::WindowID p_window_id, const Size2i &p_size, DisplayServer::WindowID p_parent_id) {
 	ERR_FAIL_COND(windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
 
@@ -3498,8 +3747,7 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size.width = p_width;
-	ws.rect.size.height = p_height;
+	ws.rect.size = p_size;
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
@@ -3521,6 +3769,13 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 		ws.libdecor_frame = libdecor_decorate(libdecor_context, ws.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &ws);
 		libdecor_frame_map(ws.libdecor_frame);
 
+		if (registry.xdg_toplevel_icon_manager) {
+			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
+			if (toplevel != nullptr) {
+				xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, xdg_icon);
+			}
+		}
+
 		decorated = true;
 	}
 #endif
@@ -3541,6 +3796,17 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_wid
 
 			decorated = true;
 		}
+
+		if (registry.xdg_toplevel_icon_manager) {
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
+		}
+	}
+
+	if (p_parent_id != DisplayServer::INVALID_WINDOW_ID) {
+		// NOTE: It's important to set the parent ASAP to avoid misunderstandings with
+		// the compositor. For example, niri immediately resizes the window to full
+		// size as soon as it's configured if it's not parented to another toplevel.
+		window_set_parent(p_window_id, p_parent_id);
 	}
 
 	ws.frame_callback = wl_surface_frame(ws.wl_surface);
@@ -3694,13 +3960,19 @@ void WaylandThread::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID p_window_id) const {
-	ERR_FAIL_COND_V(!windows.has(p_window_id), nullptr);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState *ws = windows.getptr(p_window_id);
+	if (ws) {
+		return ws->wl_surface;
+	}
 
-	return ws.wl_surface;
+	return nullptr;
 }
 
 WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) {
+	return windows.getptr(p_window_id);
+}
+
+const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) const {
 	return windows.getptr(p_window_id);
 }
 
@@ -4054,7 +4326,7 @@ void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, b
 		// possible to destroy the frame more than once, by setting the visibility
 		// to false multiple times and thus crashing.
 		if (visible_current != visible_target) {
-			print_verbose(vformat("Setting libdecor frame visibility to %d", visible_target));
+			print_verbose(vformat("Setting libdecor frame visibility to %s", visible_target));
 			libdecor_frame_set_visibility(ws.libdecor_frame, visible_target);
 		}
 	}
@@ -4090,6 +4362,81 @@ void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, const
 	if (ws.xdg_toplevel) {
 		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8().get_data());
 		return;
+	}
+}
+
+void WaylandThread::set_icon(const Ref<Image> &p_icon) {
+	ERR_FAIL_COND(p_icon.is_null());
+
+	Size2i icon_size = p_icon->get_size();
+	ERR_FAIL_COND(icon_size.width != icon_size.height);
+
+	if (!registry.xdg_toplevel_icon_manager) {
+		return;
+	}
+
+	if (xdg_icon) {
+		xdg_toplevel_icon_v1_destroy(xdg_icon);
+	}
+
+	if (icon_buffer) {
+		wl_buffer_destroy(icon_buffer);
+	}
+
+	// NOTE: The stride is the width of the icon in bytes.
+	uint32_t icon_stride = icon_size.width * 4;
+	uint32_t data_size = icon_stride * icon_size.height;
+
+	// We need a shared memory object file descriptor in order to create a
+	// wl_buffer through wl_shm.
+	int fd = WaylandThread::_allocate_shm_file(data_size);
+	ERR_FAIL_COND(fd == -1);
+
+	uint32_t *buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	// Create the Wayland buffer.
+	struct wl_shm_pool *shm_pool = wl_shm_create_pool(registry.wl_shm, fd, data_size);
+	icon_buffer = wl_shm_pool_create_buffer(shm_pool, 0, icon_size.width, icon_size.height, icon_stride, WL_SHM_FORMAT_ARGB8888);
+	wl_shm_pool_destroy(shm_pool);
+
+	// Fill the cursor buffer with the image data.
+	for (uint32_t index = 0; index < (uint32_t)(icon_size.width * icon_size.height); index++) {
+		int row_index = index / icon_size.width;
+		int column_index = (index % icon_size.width);
+
+		buffer_data[index] = p_icon->get_pixel(column_index, row_index).to_argb32();
+
+		// Wayland buffers, unless specified, require associated alpha, so we'll just
+		// associate the alpha in-place.
+		uint8_t *pixel_data = (uint8_t *)&buffer_data[index];
+		pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
+		pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
+		pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
+	}
+
+	xdg_icon = xdg_toplevel_icon_manager_v1_create_icon(registry.xdg_toplevel_icon_manager);
+	xdg_toplevel_icon_v1_add_buffer(xdg_icon, icon_buffer, icon_size.width);
+
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+		// Setting a name allows the godot icon to be overridden by a system theme.
+		// We only want the project manager and editor to get themed,
+		// Games will get icons with the protocol and themed icons with .desktop entries.
+		// NOTE: should be synced with the icon name in misc/dist/linuxbsd/Godot.desktop
+		xdg_toplevel_icon_v1_set_name(xdg_icon, "godot");
+	}
+
+	for (KeyValue<DisplayServer::WindowID, WindowState> &pair : windows) {
+		WindowState &ws = pair.value;
+#ifdef LIBDECOR_ENABLED
+		if (ws.libdecor_frame) {
+			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
+			ERR_FAIL_NULL(toplevel);
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, xdg_icon);
+		}
+#endif
+		if (ws.xdg_toplevel) {
+			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
+		}
 	}
 }
 
@@ -4301,12 +4648,56 @@ Error WaylandThread::init() {
 
 	KeyMappingXKB::initialize();
 
-	wl_display = wl_display_connect(nullptr);
+	String embedder_socket_path;
+
+#ifdef TOOLS_ENABLED
+	bool embedder_enabled = true;
+
+	if (OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_EMBEDDER") == "1") {
+		print_verbose("Disabling Wayland embedder as per GODOT_WAYLAND_DISABLE_EMBEDDER.");
+		embedder_enabled = false;
+	}
+
+	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
+		print_verbose("Initializing Wayland embedder.");
+		Error embedder_status = embedder.init();
+		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
+
+		embedder_socket_path = embedder.get_socket_path();
+		ERR_FAIL_COND_V_MSG(embedder_socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
+
+		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", embedder_socket_path);
+
+		// Debug
+		if (OS::get_singleton()->get_environment("GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE") == "1") {
+			print_line("Pausing as per GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE.");
+			pause();
+		}
+	}
+#endif // TOOLS_ENABLED
+
+	if (Engine::get_singleton()->is_embedded_in_editor()) {
+		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+#if 0
+		// Debug
+		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
+		int fd = open("/tmp/gdembedded.log", O_CREAT | O_RDWR, 0666);
+		dup2(fd, 1);
+		dup2(fd, 2);
+#endif
+	}
+
+	if (embedder_socket_path.is_empty()) {
+		print_verbose("Connecting to the default Wayland display.");
+		wl_display = wl_display_connect(nullptr);
+	} else {
+		print_verbose("Connecting to the Wayland embedder display.");
+		wl_display = wl_display_connect(embedder_socket_path.utf8().get_data());
+	}
+
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
 	thread_data.wl_display = wl_display;
-
-	events_thread.start(_poll_events_thread, &thread_data);
 
 	wl_registry = wl_display_get_registry(wl_display);
 
@@ -4323,12 +4714,19 @@ Error WaylandThread::init() {
 	ERR_FAIL_NULL_V_MSG(registry.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
 	ERR_FAIL_NULL_V_MSG(registry.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
 
-	if (!registry.xdg_decoration_manager) {
+	// Embedded games can't access the decoration and icon protocol.
+	if (!Engine::get_singleton()->is_embedded_in_editor()) {
+		if (!registry.xdg_decoration_manager) {
 #ifdef LIBDECOR_ENABLED
-		WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
+			WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
 #else
-		WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
+			WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
 #endif // LIBDECOR_ENABLED
+		}
+
+		if (!registry.xdg_toplevel_icon_manager_name) {
+			WARN_PRINT("xdg-toplevel-icon protocol not found! Cannot set window icon.");
+		}
 	}
 
 	if (!registry.xdg_activation) {
@@ -4351,16 +4749,22 @@ Error WaylandThread::init() {
 #ifdef LIBDECOR_ENABLED
 	bool libdecor_found = true;
 
+	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
+
 #ifdef SOWRAP_ENABLED
-	if (initialize_libdecor(dylibloader_verbose) != 0) {
+	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
 		libdecor_found = false;
 	}
 #endif // SOWRAP_ENABLED
 
-	if (libdecor_found) {
-		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+	if (skip_libdecor) {
+		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
 	} else {
-		print_verbose("libdecor not found. Client-side decorations disabled.");
+		if (libdecor_found) {
+			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+		} else {
+			print_verbose("libdecor not found. Client-side decorations disabled.");
+		}
 	}
 #endif // LIBDECOR_ENABLED
 
@@ -4381,6 +4785,8 @@ Error WaylandThread::init() {
 
 	// Update the cursor.
 	cursor_set_shape(DisplayServer::CURSOR_ARROW);
+
+	events_thread.start(_poll_events_thread, &thread_data);
 
 	initialized = true;
 	return OK;
@@ -4548,11 +4954,35 @@ Key WaylandThread::keyboard_get_key_from_physical(Key p_key) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->xkb_state) {
-		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_key);
-		return KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode));
+		Key modifiers = p_key & KeyModifierMask::MODIFIER_MASK;
+		Key keycode_no_mod = p_key & KeyModifierMask::CODE_MASK;
+
+		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(keycode_no_mod);
+		Key key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode));
+		return (Key)(key | modifiers);
 	}
 
-	return Key::NONE;
+	return p_key;
+}
+
+Key WaylandThread::keyboard_get_label_from_physical(Key p_key) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->xkb_state) {
+		Key modifiers = p_key & KeyModifierMask::MODIFIER_MASK;
+		Key keycode_no_mod = p_key & KeyModifierMask::CODE_MASK;
+
+		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(keycode_no_mod);
+		xkb_keycode_t xkb_keysym = xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode);
+		char32_t chr = xkb_keysym_to_utf32(xkb_keysym_to_upper(xkb_keysym));
+		if (chr != 0) {
+			String keysym = String::chr(chr);
+			Key key = fix_key_label(keysym[0], KeyMappingXKB::get_keycode(xkb_keysym));
+			return (Key)(key | modifiers);
+		}
+	}
+
+	return p_key;
 }
 
 void WaylandThread::keyboard_echo_keys() {
@@ -4862,6 +5292,17 @@ bool WaylandThread::is_suspended() const {
 	return true;
 }
 
+struct godot_embedding_compositor *WaylandThread::get_embedding_compositor() {
+	return registry.godot_embedding_compositor;
+}
+
+OS::ProcessID WaylandThread::embedded_compositor_get_focused_pid() {
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
+	ERR_FAIL_NULL_V(ecomp_state, -1);
+
+	return ecomp_state->focused_pid;
+}
+
 void WaylandThread::destroy() {
 	if (!initialized) {
 		return;
@@ -4897,6 +5338,10 @@ void WaylandThread::destroy() {
 		}
 #endif // LIBDECOR_ENABLED
 
+		if (ws.xdg_toplevel_decoration) {
+			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
+		}
+
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_destroy(ws.xdg_toplevel);
 		}
@@ -4919,6 +5364,8 @@ void WaylandThread::destroy() {
 		xkb_context_unref(ss->xkb_context);
 		xkb_state_unref(ss->xkb_state);
 		xkb_keymap_unref(ss->xkb_keymap);
+		xkb_compose_table_unref(ss->xkb_compose_table);
+		xkb_compose_state_unref(ss->xkb_compose_state);
 
 		if (ss->wl_keyboard) {
 			wl_keyboard_destroy(ss->wl_keyboard);
@@ -4974,7 +5421,17 @@ void WaylandThread::destroy() {
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 
+		zwp_text_input_v3_destroy(ss->wp_text_input);
+
 		memdelete(ss);
+	}
+
+	if (registry.wp_tablet_manager) {
+		zwp_tablet_manager_v2_destroy(registry.wp_tablet_manager);
+	}
+
+	if (registry.wp_text_input_manager) {
+		zwp_text_input_manager_v3_destroy(registry.wp_text_input_manager);
 	}
 
 	for (struct wl_output *wl_output : registry.wl_outputs) {
@@ -4982,6 +5439,22 @@ void WaylandThread::destroy() {
 
 		memdelete(wl_output_get_screen_state(wl_output));
 		wl_output_destroy(wl_output);
+	}
+
+	if (registry.godot_embedding_compositor) {
+		EmbeddingCompositorState *es = godot_embedding_compositor_get_state(registry.godot_embedding_compositor);
+		ERR_FAIL_NULL(es);
+
+		es->mapped_clients.clear();
+
+		for (struct godot_embedded_client *client : es->clients) {
+			godot_embedded_client_destroy(client);
+		}
+		es->clients.clear();
+
+		memdelete(es);
+
+		godot_embedding_compositor_destroy(registry.godot_embedding_compositor);
 	}
 
 	if (wl_cursor_theme) {
@@ -5010,6 +5483,18 @@ void WaylandThread::destroy() {
 
 	if (registry.xdg_system_bell) {
 		xdg_system_bell_v1_destroy(registry.xdg_system_bell);
+	}
+
+	if (registry.xdg_toplevel_icon_manager) {
+		xdg_toplevel_icon_manager_v1_destroy(registry.xdg_toplevel_icon_manager);
+
+		if (xdg_icon) {
+			xdg_toplevel_icon_v1_destroy(xdg_icon);
+		}
+
+		if (icon_buffer) {
+			wl_buffer_destroy(icon_buffer);
+		}
 	}
 
 	if (registry.xdg_decoration_manager) {
@@ -5051,6 +5536,8 @@ void WaylandThread::destroy() {
 	if (wl_registry) {
 		wl_registry_destroy(wl_registry);
 	}
+
+	wl_display_roundtrip(wl_display);
 
 	if (wl_display) {
 		wl_display_disconnect(wl_display);

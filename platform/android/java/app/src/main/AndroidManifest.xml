@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:versionCode="1"
+    android:versionName="1.0"
+    android:installLocation="auto" >
+
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+
+    <uses-feature
+        android:glEsVersion="0x00030000"
+        android:required="true" />
+
+    <application
+        android:label="@string/godot_project_name_string"
+        android:allowBackup="false"
+        android:icon="@mipmap/icon"
+        android:appCategory="game"
+        android:isGame="true"
+        android:hasFragileUserData="false"
+        android:requestLegacyExternalStorage="false"
+        tools:ignore="GoogleAppIndexingWarning" >
+        <profileable
+            android:shell="true"
+            android:enabled="true"
+            tools:targetApi="29" />
+
+        <activity
+            android:name=".GodotApp"
+            android:theme="@style/GodotAppSplashTheme"
+            android:launchMode="singleInstancePerTask"
+            android:excludeFromRecents="false"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:resizeableActivity="false"
+            tools:ignore="UnusedAttribute" />
+        <activity-alias
+            android:name=".GodotAppLauncher"
+            android:targetActivity=".GodotApp"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+    </application>
+
+</manifest>

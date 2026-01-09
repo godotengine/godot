@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		[FileDialog] is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. [FileDialog] automatically sets its window title according to the [member file_mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
+		[b]Note:[/b] [FileDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,10 +14,12 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" />
 			<param index="1" name="description" type="String" default="&quot;&quot;" />
+			<param index="2" name="mime_type" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a comma-separated file name [param filter] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
+				Adds a comma-separated file extension [param filter] and comma-separated MIME type [param mime_type] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
 				A [param filter] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
-				For example, a [param filter] of [code]"*.png, *.jpg"[/code] and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
+				For example, a [param filter] of [code]"*.png, *.jpg"[/code], a [param mime_type] of [code]image/png, image/jpeg[/code], and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
+				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 			</description>
 		</method>
 		<method name="add_option">
@@ -47,6 +50,12 @@
 				Clear all currently selected items in the dialog.
 			</description>
 		</method>
+		<method name="get_favorite_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of favorite directories, which is shared by all [FileDialog] nodes. Useful to store the list of favorites between project sessions. This method can be called only from the main thread.
+			</description>
+		</method>
 		<method name="get_line_edit">
 			<return type="LineEdit" />
 			<description>
@@ -75,6 +84,12 @@
 				Returns an array of values of the [OptionButton] with index [param option].
 			</description>
 		</method>
+		<method name="get_recent_list" qualifiers="static">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the list of recent directories, which is shared by all [FileDialog] nodes. Useful to store the list of recents between project sessions. This method can be called only from the main thread.
+			</description>
+		</method>
 		<method name="get_selected_options" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -92,7 +107,7 @@
 		<method name="invalidate">
 			<return type="void" />
 			<description>
-				Invalidate and update the current dialog content list.
+				Invalidates and updates this dialog's content list.
 				[b]Note:[/b] This method does nothing on native file dialogs.
 			</description>
 		</method>
@@ -103,12 +118,54 @@
 				Returns [code]true[/code] if the provided [param flag] is enabled.
 			</description>
 		</method>
+		<method name="popup_file_dialog">
+			<return type="void" />
+			<description>
+				Shows the [FileDialog] using the default size and position for file dialogs, and selects the file name if there is a current file.
+			</description>
+		</method>
 		<method name="set_customization_flag_enabled">
 			<return type="void" />
 			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+				Sets the specified customization [param flag], allowing to customize the features available in this [FileDialog].
+			</description>
+		</method>
+		<method name="set_favorite_list" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="favorites" type="PackedStringArray" />
+			<description>
+				Sets the list of favorite directories, which is shared by all [FileDialog] nodes. Useful to restore the list of favorites saved with [method get_favorite_list]. This method can be called only from the main thread.
+				[b]Note:[/b] [FileDialog] will update its internal [ItemList] of favorites when its visibility changes. Be sure to call this method earlier if you want your changes to have effect.
+			</description>
+		</method>
+		<method name="set_get_icon_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_LIST] mode is used. The callback should take a single [String] argument (file path), and return a [Texture2D]. If an invalid texture is returned, the [theme_item file] icon will be used instead.
+			</description>
+		</method>
+		<method name="set_get_thumbnail_callback" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Sets the callback used by the [FileDialog] nodes to get a file icon, when [constant DISPLAY_THUMBNAILS] mode is used. The callback should take a single [String] argument (file path), and return a [Texture2D]. If an invalid texture is returned, the [theme_item file_thumbnail] icon will be used instead.
+				Thumbnails are usually more complex and may take a while to load. To avoid stalling the application, you can use [ImageTexture] to asynchronously create the thumbnail.
+				[codeblock]
+				func _ready():
+					FileDialog.set_get_thumbnail_callback(thumbnail_method)
+
+				func thumbnail_method(path):
+					var image_texture = ImageTexture.new()
+					make_thumbnail_async(path, image_texture)
+					return image_texture
+
+				func make_thumbnail_async(path, image_texture):
+					var thumbnail_texture = await generate_thumbnail(path) # Some method that generates a thumbnail.
+					image_texture.set_image(thumbnail_texture.get_image())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_option_default">
@@ -135,6 +192,14 @@
 				Sets the option values of the [OptionButton] with index [param option].
 			</description>
 		</method>
+		<method name="set_recent_list" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="recents" type="PackedStringArray" />
+			<description>
+				Sets the list of recent directories, which is shared by all [FileDialog] nodes. Useful to restore the list of recents saved with [method set_recent_list]. This method can be called only from the main thread.
+				[b]Note:[/b] [FileDialog] will update its internal [ItemList] of recent directories when its visibility changes. Be sure to call this method earlier if you want your changes to have effect.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
@@ -150,6 +215,9 @@
 		</member>
 		<member name="current_path" type="String" setter="set_current_path" getter="get_current_path">
 			The currently selected file path of the file dialog.
+		</member>
+		<member name="deleting_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], the context menu will show the "Delete" option, which allows moving files and folders to trash.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="FileDialog.DisplayMode" default="0">
@@ -173,10 +241,10 @@
 		</member>
 		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
 			The available file type filters. Each filter string in the array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. Both file extensions and MIME type should be always set.
-			[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+			[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 		</member>
 		<member name="folder_creation_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
-			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
+			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]), and the context menu will have the "New Folder..." option.
 		</member>
 		<member name="hidden_files_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the toggle hidden files button.
@@ -189,6 +257,9 @@
 		</member>
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
+		</member>
+		<member name="overwrite_warning_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], the [FileDialog] will warn the user before overwriting files in save mode.
 		</member>
 		<member name="recent_list_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
 			If [code]true[/code], shows the recent directories list on the left side of the dialog.
@@ -209,6 +280,7 @@
 			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
 			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
+			[b]Note:[/b] This property is ignored in [EditorFileDialog].
 		</member>
 	</members>
 	<signals>
@@ -295,6 +367,14 @@
 		<constant name="CUSTOMIZATION_LAYOUT" value="6" enum="Customization">
 			If enabled, shows the layout switch buttons (list/thumbnails).
 			Equivalent to [member layout_toggle_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7" enum="Customization">
+			If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
+			Equivalent to [member overwrite_warning_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_DELETE" value="8" enum="Customization">
+			If enabled, the context menu will show the "Delete" option, which allows moving files and folders to trash.
+			Equivalent to [member deleting_enabled].
 		</constant>
 	</constants>
 	<theme_items>

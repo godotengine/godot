@@ -35,9 +35,10 @@ in earlier FreeType versions.
 The gzip  module uses the  zlib license (see  `src/gzip/zlib.h`) which
 too is compatible to the above two licenses.
 
-The files `src/autofit/ft-hb.c` and `src/autofit/ft-hb.h` contain code
-taken almost  verbatim from the  HarfBuzz file `hb-ft.cc`,  which uses
-the 'Old MIT' license, compatible to the above two licenses.
+The   files   `src/autofit/ft-hb-ft.c`,   `src/autofit/ft-hb-decls.h`,
+`src/autofit/ft-hb-types.h`,     and    `src/autofit/hb-script-list.h`
+contain code taken (almost) verbatim  from the HarfBuzz library, which
+uses the 'Old MIT' license compatible to the above two licenses.
 
 The  MD5 checksum  support  (only used  for  debugging in  development
 builds) is in the public domain.

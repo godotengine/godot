@@ -48,11 +48,15 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
+
+#include "servers/camera/camera_server.h"
 
 #ifndef XR_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
@@ -120,6 +124,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	NetSocketAndroid::terminate();
 
 	cleanup_android_class_loader();
+	godot_cleanup_profiler();
 
 	if (godot_java) {
 		godot_java->on_godot_terminating(env);
@@ -143,6 +148,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+	godot_init_profiler();
+
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -255,7 +262,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jcl
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jint id, jint pos) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *env, jclass clazz, jint event, jlong id, jint pos) {
 	TTS_Android::_java_utterance_callback(event, id, pos);
 }
 
@@ -425,7 +432,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
 	if (os_android) {
 		String name = jstring_to_string(p_name, env);
-		Input::get_singleton()->joy_connection_changed(p_device, p_connected, name);
+		Input *input = Input::get_singleton();
+		if (input) {
+			input->joy_connection_changed(p_device, p_connected, name);
+		}
 	}
 }
 
@@ -514,7 +524,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIE
 }
 
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value) {
-	jvalret result;
+	jvalue result;
 
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton() != nullptr) {
@@ -522,13 +532,13 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMe
 		String key = jstring_to_string(p_key, env);
 		Variant default_value = _jobject_to_variant(env, p_default_value);
 		Variant data = EditorSettings::get_singleton()->get_project_metadata(section, key, default_value);
-		result = _variant_to_jvalue(env, data.get_type(), &data, true);
+		result.l = _variant_to_jobject(env, data.get_type(), &data);
 	}
 #else
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
 #endif
 
-	return result.obj;
+	return result.l;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_data) {
@@ -592,6 +602,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNI
 
 	// We force redraw to ensure we render at least once when resuming the app.
 	Main::force_redraw();
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_resume();
+	}
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
 	}
@@ -602,8 +616,28 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIE
 		return;
 	}
 
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_pause();
+	}
+
 	if (os_android->get_main_loop()) {
 		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
+	}
+
+	if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
+		dsa->notify_application_paused();
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onScreenRotationChange(JNIEnv *env, jclass clazz, jint p_orientation) {
+	if (step.get() <= STEP_SETUP) {
+		return;
+	}
+
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_display_rotation_change(p_orientation);
 	}
 }
 
@@ -631,6 +665,15 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isProjectManagerH
 	Engine *engine = Engine::get_singleton();
 	if (engine) {
 		return engine->is_project_manager_hint();
+	}
+	return false;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_hasFeature(JNIEnv *env, jclass clazz, jstring p_feature) {
+	OS *os = OS::get_singleton();
+	if (os) {
+		String feature = jstring_to_string(p_feature, env);
+		return os->has_feature(feature);
 	}
 	return false;
 }

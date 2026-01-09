@@ -32,6 +32,7 @@
 
 #include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
+#include "scene/resources/curve.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
 	GDCLASS(AnimationNodeStateMachineTransition, Resource);
@@ -263,7 +264,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	String base_path;
 
 	AnimationNode::NodeTimeInfo current_nti;
-	StringName current;
+	StringName current = SceneStringName(Start);
 	Ref<Curve> current_curve;
 
 	Ref<AnimationNodeStateMachineTransition> group_start_transition;
@@ -339,8 +340,8 @@ public:
 	float get_current_play_pos() const;
 	float get_current_length() const;
 
-	float get_fade_from_play_pos() const;
-	float get_fade_from_length() const;
+	float get_fading_from_play_pos() const;
+	float get_fading_from_length() const;
 
 	float get_fading_time() const;
 	float get_fading_pos() const;

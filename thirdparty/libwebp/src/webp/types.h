@@ -14,10 +14,10 @@
 #ifndef WEBP_WEBP_TYPES_H_
 #define WEBP_WEBP_TYPES_H_
 
-#include <stddef.h>  // for size_t
+#include <stddef.h>  // IWYU pragma: export for size_t
 
 #ifndef _MSC_VER
-#include <inttypes.h>
+#include <inttypes.h>  // IWYU pragma: export
 #if defined(__cplusplus) || !defined(__STRICT_ANSI__) || \
     (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
 #define WEBP_INLINE inline

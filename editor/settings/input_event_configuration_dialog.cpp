@@ -36,6 +36,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
@@ -527,10 +528,8 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		} break;
 		case INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
-			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
-
 			// Maintain selected device
-			jb->set_device(_get_current_device());
+			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx, _get_current_device());
 
 			_set_event(jb, jb, false);
 		} break;
@@ -679,12 +678,17 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	input_list_search->connect(SceneStringName(text_changed), callable_mp(this, &InputEventConfigurationDialog::_search_term_updated));
 	manual_vbox->add_child(input_list_search);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	manual_vbox->add_child(mc);
+
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	input_list_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
-	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	manual_vbox->add_child(input_list_tree);
+	mc->add_child(input_list_tree);
 
 	input_list_tree->set_hide_root(true);
 	input_list_tree->set_columns(1);

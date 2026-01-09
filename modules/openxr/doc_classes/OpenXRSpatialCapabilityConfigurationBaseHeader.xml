@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationBaseHeader" inherits="RefCounted" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Wrapper base class for OpenXR Spatial Capability Configuration headers.
+	</brief_description>
+	<description>
+		Wrapper base class for OpenXR Spatial Capability Configuration headers. This class needs to be implemented for each capability configuration structure usable within OpenXR's spatial entities system.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_configuration" qualifiers="virtual">
+			<return type="int" />
+			<description>
+				Return a pointer (encoded as an [code]int64_t[/code]) to a struct holding the spatial capability configuration data. The memory for this struct should remain accessible as long as this object remains instantiated.
+			</description>
+		</method>
+		<method name="_has_valid_configuration" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Return [code]true[/code] if this object contains a valid configuration that can be retrieved when calling [method _get_configuration].
+			</description>
+		</method>
+		<method name="has_valid_configuration" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this object contains a valid configuration that can be used when calling [method OpenXRSpatialEntityExtension.create_spatial_context].
+			</description>
+		</method>
+	</methods>
+</class>

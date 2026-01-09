@@ -275,7 +275,7 @@
 				[b]Note:[/b] Despite the naming convention, this operation is [b]not[/b] calculated in parent space for compatibility reasons. To translate in parent space, add [param offset] to the [member position] ([code]node_3d.position += offset[/code]).
 			</description>
 		</method>
-		<method name="translate_object_local">
+		<method name="translate_object_local" keywords="move_local">
 			<return type="void" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
@@ -380,6 +380,7 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_WORLD" value="42">
 			Notification received when this node is unregistered from the current [World3D] (see [method get_world_3d]).
+			This notification is sent in reversed order.
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Notification received when this node's visibility changes (see [member visible] and [method is_visible_in_tree]).

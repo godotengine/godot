@@ -31,6 +31,7 @@
 #include "property_utils.h"
 
 #include "core/config/engine.h"
+#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/packed_scene.h"
@@ -258,7 +259,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 					}
 				}
 				break;
-			} else if (!n->get_scene_file_path().is_empty()) {
+			} else if (n->is_instance()) {
 				const Ref<SceneState> &state = n->get_scene_instance_state();
 				_collect_inheritance_chain(state, n->get_path_to(p_node), states_stack);
 			}

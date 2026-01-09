@@ -33,9 +33,9 @@
 
 #include "core/io/file_access.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "servers/rendering_server.h"
 #include "texture.h"
 
 #ifdef TOOLS_ENABLED
@@ -156,8 +156,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 
 #ifdef TOOLS_ENABLED
 	DocData::ClassDoc class_doc;
-	class_doc.name = get_path();
-	class_doc.is_script_doc = true;
+	bool generate_doc = Engine::get_singleton()->is_editor_hint() && !get_path().is_empty();
+	if (generate_doc) {
+		class_doc.name = get_path().trim_prefix("res://").quote();
+		class_doc.is_script_doc = true;
+		class_doc.inherits = "Shader";
+	}
 #endif
 
 	for (PropertyInfo &pi : local) {
@@ -176,10 +180,9 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 				pi.type = Variant::OBJECT;
 			}
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
+			if (generate_doc) {
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
-#ifdef MODULE_REGEX_ENABLED
 				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
 				Ref<RegExMatch> pattern_ref = pattern.search(code);
 				if (pattern_ref.is_valid()) {
@@ -189,16 +192,17 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 					RegExMatch *match_tip = pattern_tip_ref.ptr();
 					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
 					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+
+					pi.class_name = class_doc.name;
+					class_doc.properties.push_back(prop_doc);
 				}
-#endif
-				class_doc.properties.push_back(prop_doc);
 			}
 #endif
 			p_params->push_back(pi);
 		}
 	}
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
+	if (generate_doc && class_doc.properties.size() > 0) {
 		EditorHelp::add_doc(class_doc);
 	}
 #endif
@@ -295,7 +299,7 @@ Shader::Shader() {
 Shader::~Shader() {
 	if (shader_rid.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(shader_rid);
+		RenderingServer::get_singleton()->free_rid(shader_rid);
 	}
 }
 
@@ -338,8 +342,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdshader") {
+	if (p_path.has_extension("gdshader")) {
 		return "Shader";
 	}
 	return "";

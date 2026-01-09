@@ -362,6 +362,20 @@
 				Remember that you have to manage the visibility of all your editor controls manually.
 			</description>
 		</method>
+		<method name="_run_scene" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="scene" type="String" />
+			<param index="1" name="args" type="PackedStringArray" />
+			<description>
+				This function is called when an individual scene is about to be played in the editor. [param args] is a list of command line arguments that will be passed to the new Godot instance, which will be replaced by the list returned by this function.
+				[codeblock]
+				func _run_scene(scene, args):
+					args.append("--an-extra-argument")
+					return args
+				[/codeblock]
+				[b]Note:[/b] Text that is printed in this method will not be visible in the editor's Output panel unless [member EditorSettings.run/output/always_clear_output_on_play] is [code]false[/code].
+			</description>
+		</method>
 		<method name="_save_external_data" qualifiers="virtual">
 			<return type="void" />
 			<description>
@@ -410,14 +424,15 @@
 				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
-		<method name="add_control_to_bottom_panel">
+		<method name="add_control_to_bottom_panel" deprecated="Use [method add_dock] instead, with [member EditorDock.default_slot] set to [constant DOCK_SLOT_BOTTOM].">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
 			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
-				Adds a control to the bottom panel (together with Output, Debug, Animation, etc.). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
-				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the bottom panel's visibility. See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
+				Adds a control to the bottom panel (together with Output, Debug, Animation, etc.). Returns a reference to a button that is outside the scene tree. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				[param shortcut] is a shortcut that, when activated, will toggle the bottom panel's visibility. The shortcut object is only set when this control is added to the bottom panel.
+				[b]Note[/b] See the default editor bottom panel shortcuts in the Editor Settings for inspiration. By convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -430,7 +445,7 @@
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [method Node.queue_free].
 			</description>
 		</method>
-		<method name="add_control_to_dock">
+		<method name="add_control_to_dock" deprecated="Use [method add_dock] instead.">
 			<return type="void" />
 			<param index="0" name="slot" type="int" enum="EditorPlugin.DockSlot" />
 			<param index="1" name="control" type="Control" />
@@ -462,6 +477,14 @@
 			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
+			</description>
+		</method>
+		<method name="add_dock">
+			<return type="void" />
+			<param index="0" name="dock" type="EditorDock" />
+			<description>
+				Adds a new dock.
+				When your plugin is deactivated, make sure to remove your custom dock with [method remove_dock] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_export_platform">
@@ -640,7 +663,7 @@
 				Removes the specified context menu plugin.
 			</description>
 		</method>
-		<method name="remove_control_from_bottom_panel">
+		<method name="remove_control_from_bottom_panel" deprecated="Use [method remove_dock] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<description>
@@ -655,7 +678,7 @@
 				Removes the control from the specified container. You have to manually [method Node.queue_free] the control.
 			</description>
 		</method>
-		<method name="remove_control_from_docks">
+		<method name="remove_control_from_docks" deprecated="Use [method remove_dock] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<description>
@@ -674,6 +697,13 @@
 			<param index="0" name="script" type="EditorDebuggerPlugin" />
 			<description>
 				Removes the debugger plugin with given script from the Debugger.
+			</description>
+		</method>
+		<method name="remove_dock">
+			<return type="void" />
+			<param index="0" name="dock" type="EditorDock" />
+			<description>
+				Removes [param dock] from the available docks. You should manually call [method Node.queue_free] to free it.
 			</description>
 		</method>
 		<method name="remove_export_platform">
@@ -753,7 +783,7 @@
 				Removes a callback previously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
-		<method name="set_dock_tab_icon">
+		<method name="set_dock_tab_icon" deprecated="Use [member EditorDock.dock_icon] instead.">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="icon" type="Texture2D" />
@@ -854,6 +884,9 @@
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_RIGHT" value="11" enum="CustomControlContainer">
 			Tab of Project Settings dialog, to the right of other tabs.
 		</constant>
+		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
+			The dock is closed.
+		</constant>
 		<constant name="DOCK_SLOT_LEFT_UL" value="0" enum="DockSlot">
 			Dock slot, left side, upper-left (empty in default layout).
 		</constant>
@@ -878,7 +911,10 @@
 		<constant name="DOCK_SLOT_RIGHT_BR" value="7" enum="DockSlot">
 			Dock slot, right side, bottom-right (empty in default layout).
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
+		<constant name="DOCK_SLOT_BOTTOM" value="8" enum="DockSlot">
+			Bottom panel.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="9" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">

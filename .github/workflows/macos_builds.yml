@@ -1,16 +1,18 @@
 name: 🍎 macOS Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.17.0/"
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.18.0/"
 
 jobs:
   build-macos:
+    # From https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#choosing-github-hosted-runners
     runs-on: macos-latest
     name: ${{ matrix.name }}
     timeout-minutes: 120
@@ -35,8 +37,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      # From https://github.com/actions/runner-images/blob/main/images/macos
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
@@ -51,12 +54,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.17.0
-          file: accesskit-c-0.17.0.zip
-          target: accesskit-c-0.17.0/accesskit_c.zip
+          version: tags/0.18.0
+          file: accesskit-c-0.18.0.zip
+          target: accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.17.0/accesskit_c.zip
+        run: unzip -o accesskit-c-0.18.0/accesskit_c.zip
 
       - name: Setup Vulkan SDK
         id: vulkan-sdk

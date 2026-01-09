@@ -93,7 +93,6 @@ class GDScript : public Script {
 
 	Ref<GDScriptNativeClass> native;
 	Ref<GDScript> base;
-	GDScript *_base = nullptr; //fast pointer access
 	GDScript *_owner = nullptr; //for subclasses
 
 	// Members are just indices to the instantiated script.
@@ -175,7 +174,6 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	int subclass_count = 0;
 	RBSet<Object *> instances;
 	bool destructing = false;
 	bool clearing = false;
@@ -194,7 +192,7 @@ private:
 
 	GDScriptFunction *_super_constructor(GDScript *p_script);
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
-	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Callable::CallError &r_error);
 
 	String _get_debug_path() const;
 
@@ -312,6 +310,7 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
+	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -374,7 +373,6 @@ class GDScriptInstance : public ScriptInstance {
 	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
-	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
@@ -414,7 +412,7 @@ public:
 
 	virtual const Variant get_rpc_config() const;
 
-	GDScriptInstance();
+	GDScriptInstance() {}
 	~GDScriptInstance();
 };
 
@@ -455,6 +453,8 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName &p_name, const Variant &p_value);
 	void _remove_global(const StringName &p_name);
+
+	String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const;
 
 	friend class GDScriptInstance;
 
@@ -609,9 +609,6 @@ public:
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
 	virtual Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
@@ -677,6 +674,8 @@ public:
 };
 
 class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderGDScript, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -687,6 +686,8 @@ public:
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverGDScript, ResourceFormatSaver);
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;

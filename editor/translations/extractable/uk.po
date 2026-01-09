@@ -19,9 +19,6 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
-msgid "All Recognized"
-msgstr "Усе розпізнано"
-
 msgid "Pick a color from the application window."
 msgstr "Вибрати колір з вікна програми."
 
@@ -68,6 +65,9 @@ msgstr "Вибрати цю теку"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "У вас немає дозволу на доступ до вмісту цієї папки."
+
+msgid "All Recognized"
+msgstr "Усе розпізнано"
 
 msgid "All Files"
 msgstr "Усі файли"

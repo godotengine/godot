@@ -33,7 +33,7 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/font.h"
 
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 class Label3D : public GeometryInstance3D {
 	GDCLASS(Label3D, GeometryInstance3D);
@@ -136,7 +136,6 @@ private:
 	RID text_rid;
 	Vector<RID> lines_rid;
 
-	RID base_material;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
@@ -188,7 +187,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_uppercase(bool p_uppercase);

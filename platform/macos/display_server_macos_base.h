@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #define FontVariation __FontVariation
 
@@ -51,6 +51,8 @@ class DisplayServerMacOSBase : public DisplayServer {
 	mutable Vector<LayoutInfo> kbd_layouts;
 	mutable int current_layout = 0;
 	mutable bool keyboard_layout_dirty = true;
+
+	Callable system_theme_changed;
 
 protected:
 	_THREAD_SAFE_CLASS_
@@ -76,11 +78,18 @@ public:
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 	virtual void show_emoji_and_symbol_picker() const override;
 
+	void emit_system_theme_changed();
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
+	virtual Color get_base_color() const override;
+	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;

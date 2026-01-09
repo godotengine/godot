@@ -30,6 +30,7 @@
 
 #pragma once
 
+#import "metal_device_profile.h"
 #import "sha256_digest.h"
 
 #import "servers/rendering/rendering_device_driver.h"
@@ -41,56 +42,6 @@ const uint32_t VIEW_MASK_BUFFER_INDEX = 24;
 
 class RenderingShaderContainerFormatMetal;
 
-/// @brief A minimal structure that defines a device profile for Metal.
-///
-/// This structure is used by the `RenderingShaderContainerMetal` class to
-/// determine options for compiling SPIR-V to Metal source. It currently only
-/// contains the minimum properties required to transform shaders from SPIR-V to Metal
-/// and potentially compile to a `.metallib`.
-struct MetalDeviceProfile {
-	enum class Platform : uint32_t {
-		macOS = 0,
-		iOS = 1,
-	};
-
-	/// @brief The GPU family.
-	enum class GPU : uint32_t {
-		Apple1,
-		Apple2,
-		Apple3,
-		Apple4,
-		Apple5,
-		Apple6,
-		Apple7,
-		Apple8,
-		Apple9,
-	};
-
-	enum class ArgumentBuffersTier : uint32_t {
-		Tier1 = 0,
-		Tier2 = 1,
-	};
-
-	struct Features {
-		uint32_t mslVersionMajor = 0;
-		uint32_t mslVersionMinor = 0;
-		ArgumentBuffersTier argument_buffers_tier = ArgumentBuffersTier::Tier1;
-		bool simdPermute = false;
-	};
-
-	Platform platform = Platform::macOS;
-	GPU gpu = GPU::Apple4;
-	Features features;
-
-	static const MetalDeviceProfile *get_profile(Platform p_platform, GPU p_gpu);
-
-	MetalDeviceProfile() = default;
-
-private:
-	static Mutex profiles_lock; ///< Mutex to protect access to the profiles map.
-	static HashMap<uint32_t, MetalDeviceProfile> profiles;
-};
-
 class RenderingShaderContainerMetal : public RenderingShaderContainer {
 	GDSOFTCLASS(RenderingShaderContainerMetal, RenderingShaderContainer);
 
@@ -100,6 +51,7 @@ public:
 			NONE = 0,
 			NEEDS_VIEW_MASK_BUFFER = 1 << 0,
 			USES_ARGUMENT_BUFFERS = 1 << 1,
+			NEEDS_DEBUG_LOGGING = 1 << 2,
 		};
 
 		/// The base profile that was used to generate this shader.
@@ -108,7 +60,15 @@ public:
 		/// The Metal language version specified when compiling SPIR-V to MSL.
 		/// Format is major * 10000 + minor * 100 + patch.
 		uint32_t msl_version = UINT32_MAX;
+		/*! @brief The minimum supported OS version for shaders baked to a `.metallib`.
+		 *
+		 * NOTE: This property is only valid when shaders are baked to a .metalllib
+		 *
+		 * Format is major * 10000 + minor * 100 + patch.
+		 */
+		MinOsVersion os_min_version;
 		uint32_t flags = NONE;
+		uint32_t push_constant_binding = UINT32_MAX; ///< Metal binding slot for the push constant data
 
 		/// @brief Returns `true` if the shader is compiled with multi-view support.
 		bool needs_view_mask_buffer() const {
@@ -135,6 +95,19 @@ public:
 				flags &= ~USES_ARGUMENT_BUFFERS;
 			}
 		}
+
+		/// Returns `true` if the shader was compiled with the GL_EXT_debug_printf extension enabled.
+		bool needs_debug_logging() const {
+			return flags & NEEDS_DEBUG_LOGGING;
+		}
+
+		void set_needs_debug_logging(bool p_value) {
+			if (p_value) {
+				flags |= NEEDS_DEBUG_LOGGING;
+			} else {
+				flags &= ~NEEDS_DEBUG_LOGGING;
+			}
+		}
 	};
 
 	struct StageData {
@@ -144,90 +117,74 @@ public:
 		SHA256Digest hash; ///< SHA 256 hash of the shader code
 		uint32_t source_size = 0; ///< size of the source code in the returned bytes
 		uint32_t library_size = 0; ///< size of the compiled library in the returned bytes, 0 if it is not compiled
-		uint32_t push_constant_binding = UINT32_MAX; ///< Metal binding slot for the push constant data
 	};
 
-	struct BindingInfoData {
-		uint32_t shader_stage = UINT32_MAX; ///< The shader stage this binding is used in, or UINT32_MAX if not used.
+	struct UniformData {
+		uint32_t active_stages = 0;
+		uint32_t uniform_type = 0; // UniformType
 		uint32_t data_type = 0; // MTLDataTypeNone
-		uint32_t index = 0;
 		uint32_t access = 0; // MTLBindingAccessReadOnly
 		uint32_t usage = 0; // MTLResourceUsage (none)
 		uint32_t texture_type = 2; // MTLTextureType2D
 		uint32_t image_format = 0;
 		uint32_t array_length = 0;
 		uint32_t is_multisampled = 0;
-	};
 
-	struct UniformData {
-		/// Specifies the index into the `bindings` array for the shader stage.
-		///
-		/// For example, a vertex and fragment shader use slots 0 and 1 of the bindings and bindings_secondary arrays.
-		static constexpr uint32_t STAGE_INDEX[RenderingDeviceCommons::SHADER_STAGE_MAX] = {
-			0, // SHADER_STAGE_VERTEX
-			1, // SHADER_STAGE_FRAGMENT
-			0, // SHADER_STAGE_TESSELATION_CONTROL
-			1, // SHADER_STAGE_TESSELATION_EVALUATION
-			0, // SHADER_STAGE_COMPUTE
+		struct Indexes {
+			uint32_t buffer = UINT32_MAX;
+			uint32_t texture = UINT32_MAX;
+			uint32_t sampler = UINT32_MAX;
+		};
+		Indexes slot;
+		Indexes arg_buffer;
+
+		enum class IndexType {
+			SLOT,
+			ARG,
 		};
 
-		/// Specifies the stages the uniform data is
-		/// used by the Metal shader.
-		uint32_t active_stages = 0;
-		/// The primary binding information for the uniform data.
-		///
-		/// A maximum of two stages is expected for any given pipeline, such as a vertex and fragment, so
-		/// the array size is fixed to 2.
-		BindingInfoData bindings[2];
-		/// The secondary binding information for the uniform data.
-		///
-		/// This is typically a sampler for an image-sampler uniform
-		BindingInfoData bindings_secondary[2];
-
-		_FORCE_INLINE_ constexpr uint32_t get_index_for_stage(RenderingDeviceCommons::ShaderStage p_stage) const {
-			return STAGE_INDEX[p_stage];
+		_FORCE_INLINE_ Indexes &get_indexes(IndexType p_type) {
+			switch (p_type) {
+				case IndexType::SLOT:
+					return slot;
+				case IndexType::ARG:
+					return arg_buffer;
+			}
 		}
-
-		_FORCE_INLINE_ BindingInfoData &get_binding_for_stage(RenderingDeviceCommons::ShaderStage p_stage) {
-			BindingInfoData &info = bindings[get_index_for_stage(p_stage)];
-			DEV_ASSERT(info.shader_stage == UINT32_MAX || info.shader_stage == p_stage); // make sure this uniform isn't used in the other stage
-			info.shader_stage = p_stage;
-			return info;
-		}
-
-		_FORCE_INLINE_ BindingInfoData &get_secondary_binding_for_stage(RenderingDeviceCommons::ShaderStage p_stage) {
-			BindingInfoData &info = bindings_secondary[get_index_for_stage(p_stage)];
-			DEV_ASSERT(info.shader_stage == UINT32_MAX || info.shader_stage == p_stage); // make sure this uniform isn't used in the other stage
-			info.shader_stage = p_stage;
-			return info;
-		}
-	};
-
-	struct SpecializationData {
-		uint32_t used_stages = 0;
 	};
 
 	HeaderData mtl_reflection_data; // compliment to reflection_data
 	Vector<StageData> mtl_shaders; // compliment to shaders
 
 private:
+	struct ToolchainProperties {
+		MinOsVersion os_version_min_required;
+		uint32_t metal_version = UINT32_MAX;
+
+		_FORCE_INLINE_ bool is_null() const { return os_version_min_required.is_null() || metal_version == UINT32_MAX; }
+		_FORCE_INLINE_ bool is_valid() const { return !is_null(); }
+	};
+
+	ToolchainProperties compiler_props;
+
+	void _initialize_toolchain_properties();
+
+private:
 	const MetalDeviceProfile *device_profile = nullptr;
 	bool export_mode = false;
 
 	Vector<UniformData> mtl_reflection_binding_set_uniforms_data; // compliment to reflection_binding_set_uniforms_data
-	Vector<SpecializationData> mtl_reflection_specialization_data; // compliment to reflection_specialization_data
 
 	Error compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data);
 
 public:
-	static constexpr uint32_t FORMAT_VERSION = 1;
+	static constexpr uint32_t FORMAT_VERSION = 2;
 
 	void set_export_mode(bool p_export_mode) { export_mode = p_export_mode; }
 	void set_device_profile(const MetalDeviceProfile *p_device_profile) { device_profile = p_device_profile; }
 
 	struct MetalShaderReflection {
 		Vector<Vector<UniformData>> uniform_sets;
-		Vector<SpecializationData> specialization_constants;
 	};
 
 	MetalShaderReflection get_metal_shader_reflection() const;
@@ -236,19 +193,16 @@ protected:
 	virtual uint32_t _from_bytes_reflection_extra_data(const uint8_t *p_bytes) override;
 	virtual uint32_t _from_bytes_reflection_binding_uniform_extra_data_start(const uint8_t *p_bytes) override;
 	virtual uint32_t _from_bytes_reflection_binding_uniform_extra_data(const uint8_t *p_bytes, uint32_t p_index) override;
-	virtual uint32_t _from_bytes_reflection_specialization_extra_data_start(const uint8_t *p_bytes) override;
-	virtual uint32_t _from_bytes_reflection_specialization_extra_data(const uint8_t *p_bytes, uint32_t p_index) override;
 	virtual uint32_t _from_bytes_shader_extra_data_start(const uint8_t *p_bytes) override;
 	virtual uint32_t _from_bytes_shader_extra_data(const uint8_t *p_bytes, uint32_t p_index) override;
 
 	virtual uint32_t _to_bytes_reflection_extra_data(uint8_t *p_bytes) const override;
 	virtual uint32_t _to_bytes_reflection_binding_uniform_extra_data(uint8_t *p_bytes, uint32_t p_index) const override;
-	virtual uint32_t _to_bytes_reflection_specialization_extra_data(uint8_t *p_bytes, uint32_t p_index) const override;
 	virtual uint32_t _to_bytes_shader_extra_data(uint8_t *p_bytes, uint32_t p_index) const override;
 
 	virtual uint32_t _format() const override;
 	virtual uint32_t _format_version() const override;
-	virtual bool _set_code_from_spirv(const Vector<RenderingDeviceCommons::ShaderStageSPIRVData> &p_spirv) override;
+	virtual bool _set_code_from_spirv(const ReflectShader &p_shader) override;
 };
 
 class RenderingShaderContainerFormatMetal : public RenderingShaderContainerFormat {

@@ -427,7 +427,7 @@ const hb_ot_shaper_t _hb_ot_shaper_hangul =
   HB_TAG_NONE, /* gpos_tag */
   HB_OT_SHAPE_NORMALIZATION_MODE_NONE,
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE,
-  false, /* fallback_position */
+  true, /* fallback_position */
 };
 
 

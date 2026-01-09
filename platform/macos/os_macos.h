@@ -36,7 +36,7 @@
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class JoypadSDL;
 
@@ -79,6 +79,23 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	static inline const char *headless_args[] = {
+		"--headless",
+		"-h",
+		"--help",
+		"/?",
+		"--version",
+		"--dump-gdextension-interface",
+		"--dump-extension-api",
+		"--dump-gdextension-interface-json",
+		"--dump-extension-api-with-docs",
+		"--validate-extension-api",
+		"--convert-3to4",
+		"--validate-conversion-3to4",
+		"--doctool",
+		"--test",
+	};
+
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
@@ -103,6 +120,7 @@ public:
 	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
+	virtual String get_bundle_icon_name() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
@@ -178,7 +196,7 @@ public:
 	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 class OS_MacOS_Embedded : public OS_MacOS {
 public:

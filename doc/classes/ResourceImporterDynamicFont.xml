@@ -42,7 +42,7 @@
 			The hinting mode to use. This controls how aggressively glyph edges should be snapped to pixels when rasterizing the font. Depending on personal preference, you may prefer using one hinting mode over the other. Hinting modes other than [b]None[/b] are only effective if the font contains hinting data (see [member force_autohinter]).
 			[b]None:[/b] Smoothest appearance, which can make the font look blurry at small sizes.
 			[b]Light:[/b] Sharp result by snapping glyph edges to pixels on the Y axis only.
-			[b]Full:[/b] Sharpest by snapping glyph edges to pixels on both X and Y axes.
+			[b]Normal:[/b] Sharpest by snapping glyph edges to pixels on both X and Y axes.
 		</member>
 		<member name="keep_rounding_remainders" type="bool" setter="" getter="" default="true">
 			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.

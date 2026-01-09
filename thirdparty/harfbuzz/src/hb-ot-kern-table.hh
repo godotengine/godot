@@ -90,11 +90,11 @@ struct KernSubTableFormat3
   template <typename set_t>
   void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
   {
-    set_t set;
     if (likely (glyphCount))
-      set.add_range (0, glyphCount - 1);
-    left_set.union_ (set);
-    right_set.union_ (set);
+    {
+      left_set.add_range (0, num_glyphs - 1);
+      right_set.add_range (0, num_glyphs - 1);
+    }
   }
 
   protected:

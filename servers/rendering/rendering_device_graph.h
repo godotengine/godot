@@ -92,7 +92,8 @@ public:
 			TYPE_BUFFER_UPDATE,
 			TYPE_COMPUTE_LIST,
 			TYPE_DRAW_LIST,
-			TYPE_TEXTURE_CLEAR,
+			TYPE_TEXTURE_CLEAR_COLOR,
+			TYPE_TEXTURE_CLEAR_DEPTH_STENCIL,
 			TYPE_TEXTURE_COPY,
 			TYPE_TEXTURE_GET_DATA,
 			TYPE_TEXTURE_RESOLVE,
@@ -104,7 +105,7 @@ public:
 
 		Type type = TYPE_NONE;
 		int32_t adjacent_command_list_index = -1;
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		int32_t normalization_barrier_index = -1;
 		int normalization_barrier_count = 0;
 		int32_t transition_barrier_index = -1;
@@ -150,6 +151,7 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_MAX
 	};
 
@@ -413,10 +415,17 @@ private:
 		}
 	};
 
-	struct RecordedTextureClearCommand : RecordedCommand {
+	struct RecordedTextureClearColorCommand : RecordedCommand {
 		RDD::TextureID texture;
 		RDD::TextureSubresourceRange range;
 		Color color;
+	};
+
+	struct RecordedTextureClearDepthStencilCommand : RecordedCommand {
+		RDD::TextureID texture;
+		RDD::TextureSubresourceRange range;
+		float depth;
+		uint8_t stencil;
 	};
 
 	struct RecordedTextureCopyCommand : RecordedCommand {
@@ -488,6 +497,7 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
+		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
@@ -500,6 +510,7 @@ private:
 
 	struct DrawListBindVertexBuffersInstruction : DrawListInstruction {
 		uint32_t vertex_buffers_count = 0;
+		uint64_t dynamic_offsets_mask = 0;
 
 		_FORCE_INLINE_ RDD::BufferID *vertex_buffers() {
 			return reinterpret_cast<RDD::BufferID *>(&this[1]);
@@ -619,6 +630,7 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
+		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
@@ -662,7 +674,7 @@ private:
 	struct BarrierGroup {
 		BitField<RDD::PipelineStageBits> src_stages = {};
 		BitField<RDD::PipelineStageBits> dst_stages = {};
-		RDD::MemoryBarrier memory_barrier;
+		RDD::MemoryAccessBarrier memory_barrier;
 		LocalVector<RDD::TextureBarrier> normalization_barriers;
 		LocalVector<RDD::TextureBarrier> transition_barriers;
 #if USE_BUFFER_BARRIERS
@@ -792,7 +804,7 @@ public:
 	void add_draw_list_bind_pipeline(RDD::PipelineID p_pipeline, BitField<RDD::PipelineStageBits> p_pipeline_stage_bits);
 	void add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index);
 	void add_draw_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_set, uint32_t p_first_index, uint32_t p_set_count);
-	void add_draw_list_bind_vertex_buffers(VectorView<RDD::BufferID> p_vertex_buffers, VectorView<uint64_t> p_vertex_buffer_offsets);
+	void add_draw_list_bind_vertex_buffers(Span<RDD::BufferID> p_vertex_buffers, Span<uint64_t> p_vertex_buffer_offsets);
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);
 	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count);
 	void add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index);
@@ -809,7 +821,8 @@ public:
 	void add_draw_list_usage(ResourceTracker *p_tracker, ResourceUsage p_usage);
 	void add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_draw_list_end();
-	void add_texture_clear(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
+	void add_texture_clear_color(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range);
+	void add_texture_clear_depth_stencil(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_range);
 	void add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RDD::TextureCopyRegion> p_texture_copy_regions);
 	void add_texture_get_data(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, VectorView<RDD::BufferTextureCopyRegion> p_buffer_texture_copy_regions, ResourceTracker *p_dst_tracker = nullptr);
 	void add_texture_resolve(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_src_layer, uint32_t p_src_mipmap, uint32_t p_dst_layer, uint32_t p_dst_mipmap);

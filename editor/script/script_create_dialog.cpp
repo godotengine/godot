@@ -124,7 +124,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-			is_using_templates = EDITOR_DEF("_script_setup_use_script_templates", false);
+			is_using_templates = EDITOR_GET("_script_setup_use_script_templates");
 			use_templates->set_pressed(is_using_templates);
 		} break;
 
@@ -459,7 +459,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 		file_browse->set_title(TTR("Open Script"));
 	}
 
-	file_browse->set_disable_overwrite_warning(true);
+	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
 	file_browse->clear_filters();
 	List<String> extensions;
 
@@ -492,7 +492,7 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 }
 
 void ScriptCreateDialog::_create() {
-	parent_name->set_text(select_class->get_selected_type().split(" ")[0]);
+	parent_name->set_text(select_class->get_selected_type());
 	_parent_name_changed(parent_name->get_text());
 }
 
@@ -849,6 +849,7 @@ void ScriptCreateDialog::_bind_methods() {
 ScriptCreateDialog::ScriptCreateDialog() {
 	if (EditorSettings::get_singleton()) {
 		EDITOR_DEF("_script_setup_templates_dictionary", Dictionary());
+		EDITOR_DEF("_script_setup_use_script_templates", true);
 	}
 
 	/* Main Controls */

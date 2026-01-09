@@ -66,7 +66,7 @@ void SceneCreateDialog::config(const String &p_dir) {
 	directory = p_dir;
 	root_name_edit->set_text("");
 	scene_name_edit->set_text("");
-	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
+	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred(false);
 	validation_panel->update();
 
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
@@ -90,7 +90,7 @@ void SceneCreateDialog::browse_types() {
 }
 
 void SceneCreateDialog::on_type_picked() {
-	other_type_display->set_text(select_node_dialog->get_selected_type().get_slicec(' ', 0));
+	other_type_display->set_text(select_node_dialog->get_selected_type());
 	if (node_type_other->is_pressed()) {
 		validation_panel->update();
 	} else {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CCDIK3D" inherits="IterateIK3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rotation based cyclic coordinate descent inverse kinematics solver.
+	</brief_description>
+	<description>
+		[CCDIK3D] is rotation based IK, enabling fast and effective tracking even with large joint rotations. It's especially suitable for chains with limitations, providing smoother and more stable target tracking compared to [FABRIK3D].
+		The resulting twist around the forward vector will always be kept from the previous pose.
+		[b]Note:[/b] When the target is close to the root, it can cause unnatural movement, including joint flips and oscillations.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

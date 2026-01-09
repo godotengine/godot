@@ -68,6 +68,7 @@ private:
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
+	uint32_t lightprobe_hash = 0;
 
 	struct User {
 		NodePath path;
@@ -118,11 +119,13 @@ public:
 	bool is_interior() const;
 	float get_baked_exposure() const;
 
-	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure);
+	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash);
 	PackedVector3Array get_capture_points() const;
 	PackedColorArray get_capture_sh() const;
 	PackedInt32Array get_capture_tetrahedra() const;
 	PackedInt32Array get_capture_bsp_tree() const;
+	uint32_t get_lightprobe_hash() const;
+
 	AABB get_capture_bounds() const;
 
 	void clear();
@@ -226,12 +229,6 @@ private:
 	void _assign_lightmaps();
 	void _clear_lightmaps();
 
-	struct BakeTimeData {
-		String text;
-		int pass = 0;
-		uint64_t last_step = 0;
-	};
-
 	struct BSPSimplex {
 		int vertices[4] = {};
 		int planes[4] = {};
@@ -244,8 +241,8 @@ private:
 		int32_t under = EMPTY_LEAF;
 	};
 
-	int _bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const;
-	int32_t _compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes);
+	int _bsp_get_simplex_side(const LocalVector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const;
+	int32_t _compute_bsp_tree(const LocalVector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes);
 
 	struct BakeStepUD {
 		Lightmapper::BakeStepFunc func;

@@ -410,7 +410,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 	}
 #endif
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	if (p_first) {
 		if (p_blit.dst_rect.position != Vector2() || p_blit.dst_rect.size != rt->size) {
@@ -463,7 +463,7 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 	}
 }
 
-void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -481,25 +481,7 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	RID texture = texture_storage->texture_allocate();
 	texture_storage->texture_2d_initialize(texture, p_image);
 
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		if (win_size.width > win_size.height) {
-			//scale horizontally
-			screenrect.size.y = win_size.height;
-			screenrect.size.x = imgrect.size.x * win_size.height / imgrect.size.y;
-			screenrect.position.x = (win_size.width - screenrect.size.x) / 2;
-
-		} else {
-			//scale vertically
-			screenrect.size.x = win_size.width;
-			screenrect.size.y = imgrect.size.y * win_size.width / imgrect.size.x;
-			screenrect.position.y = (win_size.height - screenrect.size.y) / 2;
-		}
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
-	}
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
 #ifdef WINDOWS_ENABLED
 	if (!screen_flipped_y)

@@ -49,9 +49,6 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNodeBlendSpace1D> blend_space;
 	bool read_only = false;
 
-	HBoxContainer *goto_parent_hb = nullptr;
-	Button *goto_parent = nullptr;
-
 	PanelContainer *panel = nullptr;
 	Button *tool_blend = nullptr;
 	Button *tool_select = nullptr;
@@ -98,6 +95,7 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	float add_point_pos = 0.0f;
 	Vector<real_t> points;
 
+	bool dragging_blend_position = false;
 	bool dragging_selected_attempt = false;
 	bool dragging_selected = false;
 	Vector2 drag_from;

@@ -33,12 +33,14 @@
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT_2D;
+
 	enum DisableMode {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_MAKE_STATIC,
@@ -110,7 +112,7 @@ protected:
 
 	virtual void _space_changed(const RID &p_new_space);
 
-	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
+	GDVIRTUAL3(_input_event, RequiredParam<Viewport>, RequiredParam<InputEvent>, int)
 	GDVIRTUAL0(_mouse_enter)
 	GDVIRTUAL0(_mouse_exit)
 	GDVIRTUAL1(_mouse_shape_enter, int)
@@ -152,7 +154,7 @@ public:
 	void shape_owner_set_one_way_collision_margin(uint32_t p_owner, real_t p_margin);
 	real_t get_shape_owner_one_way_collision_margin(uint32_t p_owner) const;
 
-	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape);
+	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> rp_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape2D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;

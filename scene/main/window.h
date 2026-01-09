@@ -32,7 +32,7 @@
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class Font;
 class Shortcut;
@@ -171,6 +171,8 @@ private:
 
 	Size2i max_size_used;
 
+	Rect2i nonclient_area;
+
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
 	void _validate_limit_size();
@@ -242,7 +244,7 @@ private:
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
+	void _window_input_text(const String &p_text, bool p_emit_signal = false);
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
@@ -254,11 +256,10 @@ private:
 
 	void _update_displayed_title();
 
-	Ref<Shortcut> debugger_stop_shortcut;
-
 	static int root_layout_direction;
 
 protected:
+	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
 	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
@@ -332,6 +333,8 @@ public:
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
+	bool is_popup() const;
+
 	bool is_maximize_allowed() const;
 
 	void request_attention();
@@ -389,6 +392,9 @@ public:
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
+	void set_nonclient_area(const Rect2i &p_rect);
+	Rect2i get_nonclient_area() const;
+
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;
 
@@ -399,9 +405,10 @@ public:
 	Window *get_exclusive_child() const { return exclusive_child; }
 	HashSet<Window *> get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
+	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
 
-	virtual void popup(const Rect2i &p_screen_rect = Rect2i());
+	void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_ratio(float p_ratio = 0.8);
@@ -488,7 +495,6 @@ public:
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 #endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;

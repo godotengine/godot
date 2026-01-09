@@ -137,7 +137,10 @@ public:
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
 	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
-	float environment_get_white(RID p_env) const;
+	float environment_get_white(RID p_env, bool p_limit_agx_white) const;
+	void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast);
+	float environment_get_tonemap_agx_contrast(RID p_env) const;
+	RendererEnvironmentStorage::TonemapParameters environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const;
 
 	// Fog
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);
@@ -202,6 +205,7 @@ public:
 	float environment_get_ssr_fade_out(RID p_env) const;
 	float environment_get_ssr_depth_tolerance(RID p_env) const;
 
+	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	// SSAO
@@ -312,7 +316,7 @@ public:
 		float taa_frame_count = 0.0f;
 
 		void set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter = Vector2(), float p_taa_frame_count = 0.0f, uint32_t p_visible_layers = 0xFFFFFFFF);
-		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect);
+		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, uint32_t p_visible_layers = 0xFFFFFFFF);
 	};
 
 	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
@@ -342,6 +346,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) = 0;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
+	virtual void material_set_use_debanding(bool p_enable) = 0;
 
 	virtual void update() = 0;
 	virtual ~RendererSceneRender() {}

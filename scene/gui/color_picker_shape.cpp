@@ -31,6 +31,119 @@
 #include "color_picker_shape.h"
 
 #include "scene/gui/margin_container.h"
+#include "scene/resources/material.h"
+#include "thirdparty/misc/ok_color_shader.h"
+
+void ColorPickerShape::init_shaders() {
+	wheel_shader.instantiate();
+	wheel_shader->set_code(R"(
+// ColorPicker wheel shader.
+
+shader_type canvas_item;
+
+uniform float wheel_radius = 0.42;
+
+void fragment() {
+	float x = UV.x - 0.5;
+	float y = UV.y - 0.5;
+	float a = atan(y, x);
+	x += 0.001;
+	y += 0.001;
+	float b = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
+	x -= 0.002;
+	float b2 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
+	y -= 0.002;
+	float b3 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
+	x += 0.002;
+	float b4 = float(sqrt(x * x + y * y) < 0.5) * float(sqrt(x * x + y * y) > wheel_radius);
+
+	COLOR = vec4(clamp((abs(fract(((a - TAU) / TAU) + vec3(3.0, 2.0, 1.0) / 3.0) * 6.0 - 3.0) - 1.0), 0.0, 1.0), (b + b2 + b3 + b4) / 4.00);
+}
+)");
+
+	circle_shader.instantiate();
+	circle_shader->set_code(R"(
+// ColorPicker circle shader.
+
+shader_type canvas_item;
+
+uniform float v = 1.0;
+
+void fragment() {
+	float x = UV.x - 0.5;
+	float y = UV.y - 0.5;
+	float a = atan(y, x);
+	x += 0.001;
+	y += 0.001;
+	float b = float(sqrt(x * x + y * y) < 0.5);
+	x -= 0.002;
+	float b2 = float(sqrt(x * x + y * y) < 0.5);
+	y -= 0.002;
+	float b3 = float(sqrt(x * x + y * y) < 0.5);
+	x += 0.002;
+	float b4 = float(sqrt(x * x + y * y) < 0.5);
+
+	COLOR = vec4(mix(vec3(1.0), clamp(abs(fract(vec3((a - TAU) / TAU) + vec3(1.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - vec3(3.0)) - vec3(1.0), 0.0, 1.0), ((float(sqrt(x * x + y * y)) * 2.0)) / 1.0) * vec3(v), (b + b2 + b3 + b4) / 4.00);
+})");
+
+	circle_ok_color_shader.instantiate();
+	circle_ok_color_shader->set_code(OK_COLOR_SHADER + R"(
+// ColorPicker ok color hsl circle shader.
+
+uniform float ok_hsl_l = 1.0;
+
+void fragment() {
+	float x = UV.x - 0.5;
+	float y = UV.y - 0.5;
+	float h = atan(y, x) / (2.0 * M_PI);
+	float s = sqrt(x * x + y * y) * 2.0;
+	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
+	x += 0.001;
+	y += 0.001;
+	float b = float(sqrt(x * x + y * y) < 0.5);
+	x -= 0.002;
+	float b2 = float(sqrt(x * x + y * y) < 0.5);
+	y -= 0.002;
+	float b3 = float(sqrt(x * x + y * y) < 0.5);
+	x += 0.002;
+	float b4 = float(sqrt(x * x + y * y) < 0.5);
+	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
+})");
+
+	rectangle_ok_color_hs_shader.instantiate();
+	rectangle_ok_color_hs_shader->set_code(OK_COLOR_SHADER + R"(
+// ColorPicker ok color hs rectangle shader.
+
+uniform float ok_hsl_l = 0.0;
+
+void fragment() {
+	float h = UV.x;
+	float s = 1.0 - UV.y;
+	vec3 col = okhsl_to_srgb(vec3(h, s, ok_hsl_l));
+	COLOR = vec4(col, 1.0);
+})");
+
+	rectangle_ok_color_hl_shader.instantiate();
+	rectangle_ok_color_hl_shader->set_code(OK_COLOR_SHADER + R"(
+// ColorPicker ok color hl rectangle shader.
+
+uniform float ok_hsl_s = 0.0;
+
+void fragment() {
+	float h = UV.x;
+	float l = 1.0 - UV.y;
+	vec3 col = okhsl_to_srgb(vec3(h, ok_hsl_s, l));
+	COLOR = vec4(col, 1.0);
+})");
+}
+
+void ColorPickerShape::finish_shaders() {
+	wheel_shader.unref();
+	circle_shader.unref();
+	circle_ok_color_shader.unref();
+	rectangle_ok_color_hs_shader.unref();
+	rectangle_ok_color_hl_shader.unref();
+}
 
 void ColorPickerShape::_emit_color_changed() {
 	color_picker->emit_signal(SNAME("color_changed"), color_picker->color);
@@ -84,7 +197,7 @@ void ColorPickerShape::cancel_event() {
 }
 
 void ColorPickerShape::draw_focus_rect(Control *p_control, const Rect2 &p_rect) {
-	if (!p_control->has_focus()) {
+	if (!p_control->has_focus(true)) {
 		return;
 	}
 
@@ -103,7 +216,7 @@ void ColorPickerShape::draw_focus_rect(Control *p_control, const Rect2 &p_rect) 
 }
 
 void ColorPickerShape::draw_focus_circle(Control *p_control) {
-	if (!p_control->has_focus()) {
+	if (!p_control->has_focus(true)) {
 		return;
 	}
 
@@ -322,6 +435,7 @@ void ColorPickerShapeRectangle::_hue_slider_draw() {
 
 void ColorPickerShapeRectangle::_initialize_controls() {
 	sv_square = memnew(Control);
+	sv_square->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	color_picker->shape_container->add_child(sv_square);
 	sv_square->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_input));
 	sv_square->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeRectangle::_sv_square_draw));
@@ -358,6 +472,7 @@ void ColorPickerShapeRectangle::grab_focus() {
 
 void ColorPickerShapeOKHSRectangle::_initialize_controls() {
 	rectangle_margin = memnew(MarginContainer);
+	rectangle_margin->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	color_picker->shape_container->add_child(rectangle_margin);
 
 	Ref<ShaderMaterial> material;
@@ -692,27 +807,24 @@ void ColorPickerShapeWheel::_wheel_uv_draw() {
 }
 
 void ColorPickerShapeWheel::_initialize_controls() {
-	wheel_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(wheel_margin);
-
 	Ref<ShaderMaterial> material;
 	material.instantiate();
-	material->set_shader(ColorPicker::wheel_shader);
+	material->set_shader(ColorPickerShape::wheel_shader);
 	material->set_shader_parameter("wheel_radius", WHEEL_RADIUS);
 
 	wheel = memnew(Control);
 	wheel->set_material(material);
-	wheel_margin->add_child(wheel);
+	color_picker->shape_container->add_child(wheel);
 	wheel->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeWheel::_wheel_draw));
 
 	wheel_uv = memnew(Control);
-	wheel_margin->add_child(wheel_uv);
+	wheel_uv->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	wheel->add_child(wheel_uv);
 	wheel_uv->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPickerShapeWheel::_reset_wheel_focus));
 	wheel_uv->connect(SceneStringName(gui_input), callable_mp(this, &ColorPickerShapeWheel::_wheel_input));
 	wheel_uv->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeWheel::_wheel_uv_draw));
 	connect_shape_focus(wheel_uv);
 
-	controls.append(wheel_margin);
 	controls.append(wheel);
 	controls.append(wheel_uv);
 }
@@ -733,8 +845,7 @@ void ColorPickerShapeWheel::_update_cursor(const Vector2 &p_color_change_vector,
 
 void ColorPickerShapeWheel::update_theme() {
 	const ColorPicker::ThemeCache &theme_cache = color_picker->theme_cache;
-	wheel_margin->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-	wheel_margin->add_theme_constant_override(SNAME("margin_bottom"), 8 * theme_cache.base_scale);
+	wheel->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
 }
 
 void ColorPickerShapeWheel::grab_focus() {
@@ -762,16 +873,13 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 }
 
 void ColorPickerShapeCircle::_initialize_controls() {
-	circle_margin = memnew(MarginContainer);
-	color_picker->shape_container->add_child(circle_margin);
-
 	Ref<ShaderMaterial> material;
 	material.instantiate();
 	material->set_shader(_get_shader());
 
 	circle = memnew(Control);
 	circle->set_material(material);
-	circle_margin->add_child(circle);
+	color_picker->shape_container->add_child(circle);
 	circle->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeCircle::_circle_draw));
 
 	circle_overlay = memnew(Control);
@@ -787,7 +895,6 @@ void ColorPickerShapeCircle::_initialize_controls() {
 	value_slider->connect(SceneStringName(draw), callable_mp(this, &ColorPickerShapeCircle::_value_slider_draw));
 	connect_shape_focus(value_slider);
 
-	controls.append(circle_margin);
 	controls.append(circle);
 	controls.append(circle_overlay);
 	controls.append(value_slider);
@@ -795,8 +902,7 @@ void ColorPickerShapeCircle::_initialize_controls() {
 
 void ColorPickerShapeCircle::update_theme() {
 	const ColorPicker::ThemeCache &theme_cache = color_picker->theme_cache;
-	circle_margin->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-	circle_margin->add_theme_constant_override(SNAME("margin_bottom"), 8 * theme_cache.base_scale);
+	circle->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
 	value_slider->set_custom_minimum_size(Size2(theme_cache.h_width, 0));
 }
 

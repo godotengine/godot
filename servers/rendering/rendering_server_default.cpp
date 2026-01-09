@@ -31,6 +31,7 @@
 #include "rendering_server_default.h"
 
 #include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -66,6 +67,7 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+	GodotProfileZoneGroupedFirst(_profile_zone, "rasterizer->begin_frame");
 	RSG::rasterizer->begin_frame(frame_step);
 
 	TIMESTAMP_BEGIN()
@@ -75,6 +77,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RENDER_TIMESTAMP("Prepare Render Frame");
 
 #ifndef XR_DISABLED
+	GodotProfileZoneGrouped(_profile_zone, "xr_server->pre_render");
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		// Let XR server know we're about to render a frame.
@@ -82,30 +85,41 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 #endif // XR_DISABLED
 
+	GodotProfileZoneGrouped(_profile_zone, "scene->update");
 	RSG::scene->update(); //update scenes stuff before updating instances
+	GodotProfileZoneGrouped(_profile_zone, "canvas->update");
 	RSG::canvas->update();
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
+	GodotProfileZoneGrouped(_profile_zone, "particles_storage->update_particles");
 	RSG::particles_storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
 
+	GodotProfileZoneGrouped(_profile_zone, "scene->render_probes");
 	RSG::scene->render_probes();
 
+	GodotProfileZoneGrouped(_profile_zone, "viewport->draw_viewports");
 	RSG::viewport->draw_viewports(p_swap_buffers);
+
+	GodotProfileZoneGrouped(_profile_zone, "canvas_render->update");
 	RSG::canvas_render->update();
 
+	GodotProfileZoneGrouped(_profile_zone, "rasterizer->end_frame");
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
 #ifndef XR_DISABLED
 	if (xr_server != nullptr) {
+		GodotProfileZone("xr_server->end_frame");
 		// let our XR server know we're done so we can get our frame timing
 		xr_server->end_frame();
 	}
 #endif // XR_DISABLED
 
+	GodotProfileZoneGrouped(_profile_zone, "update_visibility_notifiers");
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();
 
+	GodotProfileZoneGrouped(_profile_zone, "post_draw_steps");
 	if (create_thread) {
 		callable_mp(this, &RenderingServerDefault::_run_post_draw_steps).call_deferred();
 	} else {
@@ -113,6 +127,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	}
 
 	if (RSG::utilities->get_captured_timestamps_count()) {
+		GodotProfileZoneGrouped(_profile_zone, "frame_profile");
 		Vector<FrameProfileArea> new_profile;
 		if (RSG::utilities->capturing_timestamps) {
 			new_profile.resize(RSG::utilities->get_captured_timestamps_count());
@@ -143,6 +158,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	frame_profile_frame = RSG::utilities->get_captured_timestamps_frame();
 
 	if (print_gpu_profile) {
+		GodotProfileZoneGrouped(_profile_zone, "gpu_profile");
 		if (print_frame_profile_ticks_from == 0) {
 			print_frame_profile_ticks_from = OS::get_singleton()->get_ticks_usec();
 		}
@@ -185,6 +201,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 		}
 	}
 
+	GodotProfileZoneGrouped(_profile_zone, "memory_info");
 	RSG::utilities->update_memory_info();
 }
 
@@ -237,7 +254,7 @@ void RenderingServerDefault::_init() {
 
 void RenderingServerDefault::_finish() {
 	if (test_cube.is_valid()) {
-		free(test_cube);
+		free_rid(test_cube);
 	}
 
 	RSG::canvas->finalize();

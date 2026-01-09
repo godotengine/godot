@@ -157,6 +157,7 @@ module.exports = [
 				'GodotFS': true,
 				'GodotOS': true,
 				'GodotAudio': true,
+				'GodotInput': true,
 				'GodotRuntime': true,
 				'IDHandler': true,
 				'XRWebGLLayer': true,

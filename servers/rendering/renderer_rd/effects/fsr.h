@@ -33,6 +33,7 @@
 #include "spatial_upscaler.h"
 
 #include "../storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/fsr_upscale.glsl.gen.h"
 
 namespace RendererRD {
@@ -69,7 +70,7 @@ private:
 
 	FsrUpscaleShaderRD fsr_shader;
 	RID shader_version;
-	RID pipeline;
+	PipelineDeferredRD pipeline;
 };
 
 } // namespace RendererRD

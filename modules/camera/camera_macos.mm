@@ -68,26 +68,29 @@
 		input = [AVCaptureDeviceInput deviceInputWithDevice:p_device error:&error];
 		if (!input) {
 			print_line("Couldn't get input device for camera");
-		} else {
-			[self addInput:input];
+			[self commitConfiguration];
+			return nil;
 		}
+		[self addInput:input];
 
 		output = [AVCaptureVideoDataOutput new];
 		if (!output) {
 			print_line("Couldn't get output device for camera");
-		} else {
-			NSDictionary *settings = @{ (NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) };
-			output.videoSettings = settings;
-
-			// discard if the data output queue is blocked (as we process the still image)
-			[output setAlwaysDiscardsLateVideoFrames:YES];
-
-			// now set ourselves as the delegate to receive new frames.
-			[output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-
-			// this takes ownership
-			[self addOutput:output];
+			[self commitConfiguration];
+			return nil;
 		}
+
+		NSDictionary *settings = @{ (NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) };
+		output.videoSettings = settings;
+
+		// discard if the data output queue is blocked (as we process the still image)
+		[output setAlwaysDiscardsLateVideoFrames:YES];
+
+		// now set ourselves as the delegate to receive new frames.
+		[output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
+
+		// this takes ownership
+		[self addOutput:output];
 
 		[self commitConfiguration];
 
@@ -127,63 +130,80 @@
 
 	// For now, version 1, we're just doing the bare minimum to make this work...
 	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-	// int _width = CVPixelBufferGetWidth(pixelBuffer);
-	// int _height = CVPixelBufferGetHeight(pixelBuffer);
+	if (pixelBuffer == nullptr) {
+		return;
+	}
 
 	// It says that we need to lock this on the documentation pages but it's not in the samples
 	// need to lock our base address so we can access our pixel buffers, better safe then sorry?
 	CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
+	// Check if we have the expected number of planes (Y and CbCr).
+	size_t planeCount = CVPixelBufferGetPlaneCount(pixelBuffer);
+	if (planeCount < 2) {
+		static bool plane_count_error_logged = false;
+		if (!plane_count_error_logged) {
+			ERR_PRINT("Unexpected plane count in pixel buffer (expected 2, got " + itos(planeCount) + ")");
+			plane_count_error_logged = true;
+		}
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+		return;
+	}
+
 	// get our buffers
 	unsigned char *dataY = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
 	unsigned char *dataCbCr = (unsigned char *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
-	if (dataY == nullptr) {
-		print_line("Couldn't access Y pixel buffer data");
-	} else if (dataCbCr == nullptr) {
-		print_line("Couldn't access CbCr pixel buffer data");
-	} else {
-		Ref<Image> img[2];
-
-		{
-			// do Y
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-
-			if ((width[0] != new_width) || (height[0] != new_height)) {
-				width[0] = new_width;
-				height[0] = new_height;
-				img_data[0].resize(new_width * new_height);
-			}
-
-			uint8_t *w = img_data[0].ptrw();
-			memcpy(w, dataY, new_width * new_height);
-
-			img[0].instantiate();
-			img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
+	if (dataY == nullptr || dataCbCr == nullptr) {
+		static bool buffer_access_error_logged = false;
+		if (!buffer_access_error_logged) {
+			ERR_PRINT("Couldn't access pixel buffer plane data");
+			buffer_access_error_logged = true;
 		}
-
-		{
-			// do CbCr
-			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-
-			if ((width[1] != new_width) || (height[1] != new_height)) {
-				width[1] = new_width;
-				height[1] = new_height;
-				img_data[1].resize(2 * new_width * new_height);
-			}
-
-			uint8_t *w = img_data[1].ptrw();
-			memcpy(w, dataCbCr, 2 * new_width * new_height);
-
-			///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
-			img[1].instantiate();
-			img[1]->set_data(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
-		}
-
-		// set our texture...
-		feed->set_ycbcr_images(img[0], img[1]);
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+		return;
 	}
+
+	Ref<Image> img[2];
+
+	{
+		// do Y
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
+
+		if ((width[0] != new_width) || (height[0] != new_height)) {
+			width[0] = new_width;
+			height[0] = new_height;
+			img_data[0].resize(new_width * new_height);
+		}
+
+		uint8_t *w = img_data[0].ptrw();
+		memcpy(w, dataY, new_width * new_height);
+
+		img[0].instantiate();
+		img[0]->set_data(new_width, new_height, 0, Image::FORMAT_R8, img_data[0]);
+	}
+
+	{
+		// do CbCr
+		size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+		size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+
+		if ((width[1] != new_width) || (height[1] != new_height)) {
+			width[1] = new_width;
+			height[1] = new_height;
+			img_data[1].resize(2 * new_width * new_height);
+		}
+
+		uint8_t *w = img_data[1].ptrw();
+		memcpy(w, dataCbCr, 2 * new_width * new_height);
+
+		///TODO OpenGL doesn't support FORMAT_RG8, need to do some form of conversion
+		img[1].instantiate();
+		img[1]->set_data(new_width, new_height, 0, Image::FORMAT_RG8, img_data[1]);
+	}
+
+	// set our texture...
+	feed->set_ycbcr_images(img[0], img[1]);
 
 	// and unlock
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
@@ -205,6 +225,7 @@ public:
 	AVCaptureDevice *get_device() const;
 
 	CameraFeedMacOS();
+	~CameraFeedMacOS();
 
 	void set_device(AVCaptureDevice *p_device);
 
@@ -219,6 +240,12 @@ AVCaptureDevice *CameraFeedMacOS::get_device() const {
 CameraFeedMacOS::CameraFeedMacOS() {
 	device = nullptr;
 	capture_session = nullptr;
+}
+
+CameraFeedMacOS::~CameraFeedMacOS() {
+	if (is_active()) {
+		deactivate_feed();
+	}
 }
 
 void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
@@ -237,28 +264,37 @@ void CameraFeedMacOS::set_device(AVCaptureDevice *p_device) {
 
 bool CameraFeedMacOS::activate_feed() {
 	if (capture_session) {
-		// Already recording!
-	} else {
-		// Start camera capture, check permission.
-		if (@available(macOS 10.14, *)) {
-			AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-			if (status == AVAuthorizationStatusAuthorized) {
-				capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
-			} else if (status == AVAuthorizationStatusNotDetermined) {
-				// Request permission.
-				[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
-										 completionHandler:^(BOOL granted) {
-											 if (granted) {
-												 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
-											 }
-										 }];
-			}
-		} else {
-			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
-		}
-	};
+		// Already recording.
+		return true;
+	}
 
-	return true;
+	// Start camera capture, check permission.
+	if (@available(macOS 10.14, *)) {
+		AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+		if (status == AVAuthorizationStatusAuthorized) {
+			capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+			return capture_session != nullptr;
+		} else if (status == AVAuthorizationStatusNotDetermined) {
+			// Request permission asynchronously.
+			[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
+									 completionHandler:^(BOOL granted) {
+										 if (granted) {
+											 capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+										 }
+									 }];
+			return false;
+		} else if (status == AVAuthorizationStatusDenied) {
+			print_line("Camera permission denied by user.");
+			return false;
+		} else if (status == AVAuthorizationStatusRestricted) {
+			print_line("Camera access restricted.");
+			return false;
+		}
+		return false;
+	} else {
+		capture_session = [[MyCaptureSession alloc] initForFeed:this andDevice:device];
+		return capture_session != nullptr;
+	}
 }
 
 void CameraFeedMacOS::deactivate_feed() {
@@ -326,7 +362,7 @@ void CameraMacOS::update_feeds() {
 	}
 #endif
 
-	// remove devices that are gone..
+	// Deactivate feeds that are gone before removing them.
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
 		if (feed.is_null()) {
@@ -334,7 +370,9 @@ void CameraMacOS::update_feeds() {
 		}
 
 		if (![devices containsObject:feed->get_device()]) {
-			// remove it from our array, this will also destroy it ;)
+			if (feed->is_active()) {
+				feed->deactivate_feed();
+			}
 			remove_feed(feed);
 		};
 	};
@@ -355,10 +393,6 @@ void CameraMacOS::update_feeds() {
 			Ref<CameraFeedMacOS> newfeed;
 			newfeed.instantiate();
 			newfeed->set_device(device);
-
-			// assume display camera so inverse
-			Transform2D transform = Transform2D(-1.0, 0.0, 0.0, -1.0, 1.0, 1.0);
-			newfeed->set_transform(transform);
 
 			add_feed(newfeed);
 		};

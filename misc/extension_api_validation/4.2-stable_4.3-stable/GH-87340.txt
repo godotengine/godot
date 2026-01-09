@@ -1,0 +1,5 @@
+GH-87340
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderingDevice/methods/screen_get_framebuffer_format': arguments
+
+screen_get_framebuffer_format can now specify the screen it should get the format from. The argument defaults to the main window to emulate the behavior of the old function.

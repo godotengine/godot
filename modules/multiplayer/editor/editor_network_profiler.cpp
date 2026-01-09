@@ -37,6 +37,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
+#include "scene/main/timer.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -45,6 +46,19 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
+			down_label->set_text(TTR("Down", "Network"));
+			// TRANSLATORS: This is the label for the network profiler's outgoing bandwidth.
+			up_label->set_text(TTR("Up", "Network"));
+
+			set_bandwidth(incoming_bandwidth, outgoing_bandwidth);
+
+			if (is_ready()) {
+				refresh_rpc_data();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			if (activate->is_pressed()) {
 				activate->set_button_icon(theme_cache.stop_icon);
@@ -187,10 +201,10 @@ void EditorNetworkProfiler::_activate_pressed() {
 void EditorNetworkProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
 		activate->set_button_icon(theme_cache.stop_icon);
-		activate->set_text(TTR("Stop"));
+		activate->set_text(TTRC("Stop"));
 	} else {
 		activate->set_button_icon(theme_cache.play_icon);
-		activate->set_text(TTR("Start"));
+		activate->set_text(TTRC("Start"));
 	}
 }
 
@@ -282,6 +296,9 @@ void EditorNetworkProfiler::add_sync_frame_data(const SyncInfo &p_frame) {
 }
 
 void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
+	incoming_bandwidth = p_incoming;
+	outgoing_bandwidth = p_outgoing;
+
 	incoming_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_incoming)));
 	outgoing_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_outgoing)));
 
@@ -306,19 +323,19 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
-	activate->set_text(TTR("Start"));
+	activate->set_text(TTRC("Start"));
 	activate->set_disabled(true);
 	activate->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_activate_pressed));
 	container->add_child(activate);
 
 	clear_button = memnew(Button);
-	clear_button->set_text(TTR("Clear"));
+	clear_button->set_text(TTRC("Clear"));
 	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
 	container->add_child(clear_button);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
-	autostart_checkbox->set_text(TTR("Autostart"));
+	autostart_checkbox->set_text(TTRC("Autostart"));
 	autostart_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_network_profiler", false));
 	autostart_checkbox->connect(SceneStringName(toggled), callable_mp(this, &EditorNetworkProfiler::_autostart_toggled));
 	container->add_child(autostart_checkbox);
@@ -331,11 +348,10 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 	container->add_child(hb);
 
-	Label *lb = memnew(Label);
-	// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
-	lb->set_focus_mode(FOCUS_ACCESSIBILITY);
-	lb->set_text(TTR("Down", "Network"));
-	hb->add_child(lb);
+	down_label = memnew(Label);
+	down_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	down_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	hb->add_child(down_label);
 
 	incoming_bandwidth_text = memnew(LineEdit);
 	incoming_bandwidth_text->set_editable(false);
@@ -348,11 +364,10 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	down_up_spacer->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 	hb->add_child(down_up_spacer);
 
-	lb = memnew(Label);
-	// TRANSLATORS: This is the label for the network profiler's outgoing bandwidth.
-	lb->set_focus_mode(FOCUS_ACCESSIBILITY);
-	lb->set_text(TTR("Up", "Network"));
-	hb->add_child(lb);
+	up_label = memnew(Label);
+	up_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	up_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	hb->add_child(up_label);
 
 	outgoing_bandwidth_text = memnew(LineEdit);
 	outgoing_bandwidth_text->set_editable(false);
@@ -360,9 +375,6 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	outgoing_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	outgoing_bandwidth_text->set_accessibility_name(TTRC("Outgoing Bandwidth"));
 	hb->add_child(outgoing_bandwidth_text);
-
-	// Set initial texts in the incoming/outgoing bandwidth labels
-	set_bandwidth(0, 0);
 
 	HSplitContainer *sc = memnew(HSplitContainer);
 	add_child(sc);
@@ -379,17 +391,18 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_hide_root(true);
 	counters_display->set_columns(3);
 	counters_display->set_column_titles_visible(true);
-	counters_display->set_column_title(0, TTR("Node"));
+	counters_display->set_column_title(0, TTRC("Node"));
 	counters_display->set_column_expand(0, true);
 	counters_display->set_column_clip_content(0, true);
 	counters_display->set_column_custom_minimum_width(0, 60 * EDSCALE);
-	counters_display->set_column_title(1, TTR("Incoming RPC"));
+	counters_display->set_column_title(1, TTRC("Incoming RPC"));
 	counters_display->set_column_expand(1, false);
 	counters_display->set_column_clip_content(1, true);
 	counters_display->set_column_custom_minimum_width(1, 120 * EDSCALE);
-	counters_display->set_column_title(2, TTR("Outgoing RPC"));
+	counters_display->set_column_title(2, TTRC("Outgoing RPC"));
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
+	counters_display->set_theme_type_variation("TreeSecondary");
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
 	sc->add_child(counters_display);
 
@@ -402,26 +415,27 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	replication_display->set_hide_root(true);
 	replication_display->set_columns(5);
 	replication_display->set_column_titles_visible(true);
-	replication_display->set_column_title(0, TTR("Root"));
+	replication_display->set_column_title(0, TTRC("Root"));
 	replication_display->set_column_expand(0, true);
 	replication_display->set_column_clip_content(0, true);
 	replication_display->set_column_custom_minimum_width(0, 80 * EDSCALE);
-	replication_display->set_column_title(1, TTR("Synchronizer"));
+	replication_display->set_column_title(1, TTRC("Synchronizer"));
 	replication_display->set_column_expand(1, true);
 	replication_display->set_column_clip_content(1, true);
 	replication_display->set_column_custom_minimum_width(1, 80 * EDSCALE);
-	replication_display->set_column_title(2, TTR("Config"));
+	replication_display->set_column_title(2, TTRC("Config"));
 	replication_display->set_column_expand(2, true);
 	replication_display->set_column_clip_content(2, true);
 	replication_display->set_column_custom_minimum_width(2, 80 * EDSCALE);
-	replication_display->set_column_title(3, TTR("Count"));
+	replication_display->set_column_title(3, TTRC("Count"));
 	replication_display->set_column_expand(3, false);
 	replication_display->set_column_clip_content(3, true);
 	replication_display->set_column_custom_minimum_width(3, 80 * EDSCALE);
-	replication_display->set_column_title(4, TTR("Size"));
+	replication_display->set_column_title(4, TTRC("Size"));
 	replication_display->set_column_expand(4, false);
 	replication_display->set_column_clip_content(4, true);
 	replication_display->set_column_custom_minimum_width(4, 80 * EDSCALE);
+	replication_display->set_theme_type_variation("TreeSecondary");
 	replication_display->connect("button_clicked", callable_mp(this, &EditorNetworkProfiler::_replication_button_clicked));
 	sc->add_child(replication_display);
 

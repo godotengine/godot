@@ -1309,7 +1309,6 @@
 		<member name="caret_type" type="int" setter="set_caret_type" getter="get_caret_type" enum="TextEdit.CaretType" default="0">
 			Set the type of caret to draw.
 		</member>
-		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="true">
 			If [code]true[/code], a right-click displays the context menu.
 		</member>
@@ -1351,7 +1350,7 @@
 			If [code]true[/code], all wrapped lines are indented to the same amount as the unwrapped line.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="middle_mouse_paste_enabled" type="bool" setter="set_middle_mouse_paste_enabled" getter="is_middle_mouse_paste_enabled" default="true">
 			If [code]false[/code], using middle mouse button to paste clipboard will be disabled.
@@ -1628,7 +1627,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)">
+		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)" deprecated="Assign a [StyleBoxFlat] to [theme_item normal] instead, and set [member StyleBoxFlat.bg_color] to the desired background color.">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>
 		<theme_item name="caret_background_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
@@ -1676,6 +1675,9 @@
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="wrap_offset" data_type="constant" type="int" default="10">
+			Sets an additional margin for line wrapping width.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			Sets the default [Font].

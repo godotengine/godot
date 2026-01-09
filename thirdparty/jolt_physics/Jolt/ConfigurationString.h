@@ -83,6 +83,9 @@ inline const char *GetConfigurationString()
 #ifdef JPH_PROFILE_ENABLED
 		"(Profile) "
 #endif
+#ifdef JPH_EXTERNAL_PROFILE
+		"(External Profile) "
+#endif
 #if defined(JPH_OBJECT_LAYER_BITS) && JPH_OBJECT_LAYER_BITS == 32
 		"(32-bit ObjectLayer) "
 #else

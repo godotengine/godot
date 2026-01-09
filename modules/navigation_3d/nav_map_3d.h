@@ -37,7 +37,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
-#include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_3d/navigation_constants_3d.h"
 
 #include <KdTree2d.h>
 #include <KdTree3d.h>
@@ -62,7 +62,7 @@ class NavMap3D : public NavRid3D {
 	Vector3 merge_rasterizer_cell_size = Vector3(cell_size, cell_height, cell_size);
 
 	// This value is used to control sensitivity of internal rasterizer.
-	float merge_rasterizer_cell_scale = 1.0;
+	float merge_rasterizer_cell_scale = 0.1;
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.

@@ -199,7 +199,7 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     dbg_target_bin_sim = lipo(bin_dir + "/" + dbg_prefix, ".simulator" + extra_suffix + ".a")
     # Assemble Xcode project bundle.
     app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
-    templ = env.Dir("#misc/dist/" + platform + "_xcode").abspath
+    templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
     if os.path.exists(app_dir):
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
@@ -226,6 +226,14 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
             app_dir + "/libgodot." + platform + ".debug.xcframework/" + framework_dir_sim + "/libgodot.a",
         )
 
+    # Remove other platform xcframeworks
+    for entry in os.listdir(app_dir):
+        if entry.startswith("libgodot.") and entry.endswith(".xcframework"):
+            parts = entry.split(".")
+            if len(parts) >= 3 and parts[1] != platform:
+                full_path = os.path.join(app_dir, entry)
+                shutil.rmtree(full_path)
+
     if use_mkv:
         mvk_path = detect_mvk(env, "ios-arm64")
         if mvk_path != "":
@@ -235,3 +243,102 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
     shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
     shutil.rmtree(app_dir)
+
+
+def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_header_filename, all_swift_files):
+    from SCons.Script import Action, Builder
+
+    if apple_platform == "macos":
+        target_suffix = "macosx10.9"
+
+    elif apple_platform == "ios":
+        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+
+    elif apple_platform == "iossimulator":
+        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+
+    elif apple_platform == "visionos":
+        target_suffix = "xros26.0"
+
+    elif apple_platform == "visionossimulator":
+        target_suffix = "xros26.0-simulator"
+
+    else:
+        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+
+    swiftc_target = env["arch"] + "-apple-" + target_suffix
+
+    env["ALL_SWIFT_FILES"] = all_swift_files
+    env["CURRENT_PATH"] = current_path
+    if "SWIFT_FRONTEND" in env and env["SWIFT_FRONTEND"] != "":
+        frontend_path = env["SWIFT_FRONTEND"]
+    elif "osxcross" not in env:
+        frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+    else:
+        frontend_path = None
+
+    if frontend_path is None:
+        raise Exception("Swift frontend path is not set. Please set SWIFT_FRONTEND.")
+
+    bridging_header_path = current_path + "/" + bridging_header_filename
+    env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
+    env["SWIFTCFLAGS"] = [
+        "-cxx-interoperability-mode=default",
+        "-emit-object",
+        "-target",
+        swiftc_target,
+        "-sdk",
+        sdk_path,
+        "-import-objc-header",
+        bridging_header_path,
+        "-swift-version",
+        "6",
+        "-parse-as-library",
+        "-module-name",
+        "godot_swift_module",
+        "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
+    ]
+
+    if "osxcross" in env:
+        env.Append(
+            SWIFTCFLAGS=[
+                "-resource-dir",
+                "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+            ]
+        )
+
+    if env["debug_symbols"]:
+        env.Append(SWIFTCFLAGS=["-g"])
+
+    if env["optimize"] in ["speed", "speed_trace"]:
+        env.Append(SWIFTCFLAGS=["-O"])
+
+    elif env["optimize"] == "size":
+        env.Append(SWIFTCFLAGS=["-Osize"])
+
+    elif env["optimize"] in ["debug", "none"]:
+        env.Append(SWIFTCFLAGS=["-Onone"])
+
+    def generate_swift_action(source, target, env, for_signature):
+        fullpath_swift_files = [env["CURRENT_PATH"] + "/" + file for file in env["ALL_SWIFT_FILES"]]
+        fullpath_swift_files.remove(source[0].abspath)
+
+        fullpath_swift_files_string = '"' + '" "'.join(fullpath_swift_files) + '"'
+        compile_command = "$SWIFTC " + fullpath_swift_files_string + " -primary-file $SOURCE -o $TARGET $SWIFTCFLAGS"
+
+        swift_comdstr = env.get("SWIFTCOMSTR")
+        if swift_comdstr is not None:
+            swift_action = Action(compile_command, cmdstr=swift_comdstr)
+        else:
+            swift_action = Action(compile_command)
+
+        return swift_action
+
+    # Define Builder for Swift files
+    swift_builder = Builder(
+        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
+    )
+
+    env.Append(BUILDERS={"Swift": swift_builder})
+    env["BUILDERS"]["Library"].add_src_builder("Swift")
+    env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))

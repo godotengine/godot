@@ -66,7 +66,7 @@ if env["module_jpg_enabled"]:
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_svg.Prepend(CPPEXTPATH=[thirdparty_dir + "inc"])
+env_svg.Prepend(CPPPATH=[thirdparty_dir + "inc"])
 
 # Enable ThorVG static object linking.
 env_svg.Append(CPPDEFINES=["TVG_STATIC"])
@@ -76,7 +76,7 @@ env_svg.Append(CPPDEFINES=["THORVG_FILE_IO_SUPPORT"])
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.Prepend(
-    CPPEXTPATH=[
+    CPPPATH=[
         thirdparty_dir + "src/common",
         thirdparty_dir + "src/loaders/svg",
         thirdparty_dir + "src/renderer",
@@ -86,15 +86,15 @@ env_thirdparty.Prepend(
     ]
 )
 if env["builtin_libpng"]:
-    env_thirdparty.Prepend(CPPEXTPATH=["#thirdparty/libpng"])
+    env_thirdparty.Prepend(CPPPATH=["#thirdparty/libpng"])
 if env["module_webp_enabled"]:
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_dir + "src/loaders/external_webp"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "src/loaders/external_webp"])
     if env["builtin_libwebp"]:
-        env_thirdparty.Prepend(CPPEXTPATH=["#thirdparty/libwebp/src"])
+        env_thirdparty.Prepend(CPPPATH=["#thirdparty/libwebp/src"])
 if env["module_jpg_enabled"]:
-    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_dir + "src/loaders/external_jpg"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "src/loaders/external_jpg"])
     if env["builtin_libjpeg_turbo"]:
-        env_thirdparty.Prepend(CPPEXTPATH=["#thirdparty/libjpeg-turbo/src"])
+        env_thirdparty.Prepend(CPPPATH=["#thirdparty/libjpeg-turbo/src"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 env.modules_sources += thirdparty_obj

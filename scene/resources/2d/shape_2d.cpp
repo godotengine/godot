@@ -31,7 +31,7 @@
 #include "shape_2d.h"
 
 #include "core/config/project_settings.h"
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 RID Shape2D::get_rid() const {
 	return shape;
@@ -46,20 +46,20 @@ real_t Shape2D::get_custom_solver_bias() const {
 	return custom_bias;
 }
 
-bool Shape2D::collide_with_motion(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
-	ERR_FAIL_COND_V(p_shape.is_null(), false);
+bool Shape2D::collide_with_motion(const Transform2D &p_local_xform, const Vector2 &p_local_motion, RequiredParam<Shape2D> rp_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape, rp_shape, false);
 	int r;
 	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, p_local_motion, p_shape->get_rid(), p_shape_xform, p_shape_motion, nullptr, 0, r);
 }
 
-bool Shape2D::collide(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform) {
-	ERR_FAIL_COND_V(p_shape.is_null(), false);
+bool Shape2D::collide(const Transform2D &p_local_xform, RequiredParam<Shape2D> rp_shape, const Transform2D &p_shape_xform) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape, rp_shape, false);
 	int r;
 	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, Vector2(), p_shape->get_rid(), p_shape_xform, Vector2(), nullptr, 0, r);
 }
 
-PackedVector2Array Shape2D::collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
-	ERR_FAIL_COND_V(p_shape.is_null(), PackedVector2Array());
+PackedVector2Array Shape2D::collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, RequiredParam<Shape2D> rp_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape, rp_shape, PackedVector2Array());
 	const int max_contacts = 16;
 	Vector2 result[max_contacts * 2];
 	int contacts = 0;
@@ -77,8 +77,8 @@ PackedVector2Array Shape2D::collide_with_motion_and_get_contacts(const Transform
 	return results;
 }
 
-PackedVector2Array Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform) {
-	ERR_FAIL_COND_V(p_shape.is_null(), PackedVector2Array());
+PackedVector2Array Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, RequiredParam<Shape2D> rp_shape, const Transform2D &p_shape_xform) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape, rp_shape, PackedVector2Array());
 	const int max_contacts = 16;
 	Vector2 result[max_contacts * 2];
 	int contacts = 0;
@@ -119,5 +119,5 @@ Shape2D::Shape2D(const RID &p_rid) {
 
 Shape2D::~Shape2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
-	PhysicsServer2D::get_singleton()->free(shape);
+	PhysicsServer2D::get_singleton()->free_rid(shape);
 }

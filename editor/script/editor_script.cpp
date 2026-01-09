@@ -37,34 +37,14 @@
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
 
+#ifndef DISABLE_DEPRECATED
 void EditorScript::add_root_node(Node *p_node) {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
-		return;
-	}
-
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("The current scene already has a root node."));
-		return;
-	}
-
-	const String &scene_path = p_node->get_scene_file_path();
-	if (!scene_path.is_empty()) {
-		Ref<PackedScene> scene = ResourceLoader::load(scene_path);
-		if (scene.is_valid()) {
-			memfree(scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE)); // Ensure node cache.
-
-			p_node->set_scene_inherited_state(scene->get_state());
-			p_node->set_scene_file_path(String());
-		}
-	}
-
-	EditorNode::get_singleton()->set_edited_scene(p_node);
-	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
-	EditorSceneTabs::get_singleton()->update_scene_tabs();
+	WARN_DEPRECATED_MSG("EditorScript::add_root_node is deprecated. Use EditorInterface::add_root_node instead.");
+	EditorInterface::get_singleton()->add_root_node(p_node);
 }
 
 Node *EditorScript::get_scene() const {
+	WARN_DEPRECATED_MSG("EditorScript::get_scene is deprecated. Use EditorInterface::get_edited_scene_root instead.");
 	if (!EditorNode::get_singleton()) {
 		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
 		return nullptr;
@@ -74,17 +54,23 @@ Node *EditorScript::get_scene() const {
 }
 
 EditorInterface *EditorScript::get_editor_interface() const {
+	WARN_DEPRECATED_MSG("EditorInterface is a global singleton and can be accessed directly by its name.");
 	return EditorInterface::get_singleton();
 }
+#endif // DISABLE_DEPRECATED
 
 void EditorScript::run() {
 	GDVIRTUAL_CALL(_run);
 }
 
 void EditorScript::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
+
 	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
+
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
+#endif // DISABLE_DEPRECATED
 
 	GDVIRTUAL_BIND(_run);
 }

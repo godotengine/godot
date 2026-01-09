@@ -89,7 +89,7 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr(), "TextFile");
+	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr());
 }
 
 Ref<Resource> TextEditor::get_edited_resource() const {
@@ -362,27 +362,27 @@ void TextEditor::_edit_option(int p_op) {
 	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			code_editor->get_text_editor()->move_lines_up();
@@ -606,7 +606,6 @@ void TextEditor::update_toggle_files_button() {
 TextEditor::TextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
-	code_editor->add_theme_constant_override("separation", 0);
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
@@ -626,6 +625,8 @@ TextEditor::TextEditor() {
 	edit_hb = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
+	edit_menu->set_flat(false);
+	edit_menu->set_theme_type_variation("FlatMenuButton");
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTRC("Edit"));
@@ -681,6 +682,8 @@ TextEditor::TextEditor() {
 	set_syntax_highlighter(plain_highlighter);
 
 	search_menu = memnew(MenuButton);
+	search_menu->set_flat(false);
+	search_menu->set_theme_type_variation("FlatMenuButton");
 	search_menu->set_shortcut_context(this);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTRC("Search"));
@@ -696,6 +699,8 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
 
 	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_flat(false);
+	goto_menu->set_theme_type_variation("FlatMenuButton");
 	goto_menu->set_shortcut_context(this);
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTRC("Go To"));

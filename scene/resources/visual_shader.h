@@ -97,13 +97,12 @@ public:
 				name(p_name), mode(p_mode), type(p_type) {}
 
 		bool from_string(const String &p_str) {
-			Vector<String> arr = p_str.split(",");
-			if (arr.size() != 2) {
+			if (p_str.get_slice_count(",") != 2) {
 				return false;
 			}
 
-			mode = (VaryingMode)arr[0].to_int();
-			type = (VaryingType)arr[1].to_int();
+			mode = (VaryingMode)p_str.get_slicec(',', 0).to_int();
+			type = (VaryingType)p_str.get_slicec(',', 1).to_int();
 
 			return true;
 		}
@@ -154,8 +153,9 @@ private:
 			uint64_t port : 32;
 		};
 		uint64_t key = 0;
-		// This is used to apply default equal and hash methods for uint64_t to ConnectionKey.
-		operator uint64_t() const { return key; }
+
+		uint32_t hash() const { return HashMapHasherDefault::hash(key); }
+		bool is_same(const ConnectionKey &p_key) const { return HashMapComparatorDefault<uint64_t>::compare(key, p_key.key); }
 	};
 
 	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const HashMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
@@ -172,6 +172,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void reset_state() override;
 
@@ -183,6 +184,7 @@ public: // internal methods
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
 	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
+	int has_node_embeds() const;
 
 	void add_varying(const String &p_name, VaryingMode p_mode, VaryingType p_type);
 	void remove_varying(const String &p_name);
@@ -595,6 +597,7 @@ public:
 		QUAL_NONE,
 		QUAL_GLOBAL,
 		QUAL_INSTANCE,
+		QUAL_INSTANCE_INDEX,
 		QUAL_MAX,
 	};
 
@@ -602,6 +605,7 @@ private:
 	String parameter_name = "";
 	Qualifier qualifier = QUAL_NONE;
 	bool global_code_generated = false;
+	int instance_index = 0;
 
 protected:
 	static void _bind_methods();
@@ -620,6 +624,9 @@ public:
 
 	void set_global_code_generated(bool p_enabled);
 	bool is_global_code_generated() const;
+
+	void set_instance_index(int p_index);
+	int get_instance_index() const;
 
 	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
 	virtual bool is_convertible_to_constant() const = 0;

@@ -30,6 +30,7 @@
 
 #include "movie_writer_mjpeg.h"
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 
 uint32_t MovieWriterMJPEG::get_audio_mix_rate() const {
 	return mix_rate;
@@ -39,7 +40,7 @@ AudioServer::SpeakerMode MovieWriterMJPEG::get_audio_speaker_mode() const {
 }
 
 bool MovieWriterMJPEG::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "avi";
+	return p_path.has_extension("avi");
 }
 
 void MovieWriterMJPEG::get_supported_extensions(List<String> *r_extensions) const {
@@ -133,7 +134,7 @@ Error MovieWriterMJPEG::write_begin(const Size2i &p_movie_size, uint32_t p_fps, 
 
 	// Audio //
 
-	const uint32_t bit_depth = 32;
+	const uint32_t bit_depth = audio_bit_depth;
 	uint32_t channels = 2;
 	switch (speaker_mode) {
 		case AudioServer::SPEAKER_MODE_STEREO:
@@ -207,7 +208,18 @@ Error MovieWriterMJPEG::write_frame(const Ref<Image> &p_image, const int32_t *p_
 
 	f->store_buffer((const uint8_t *)"01wb", 4); // Stream 1, Audio.
 	f->store_32(audio_block_size);
-	f->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	if (audio_bit_depth == 16) {
+		// Convert from 32bit to 16bit.
+		Vector<int16_t> audio_buffer_16;
+		int num_samples = audio_block_size / 2;
+		audio_buffer_16.resize(num_samples);
+		for (int i = 0; i < num_samples; ++i) {
+			audio_buffer_16.write[i] = (int16_t)(p_audio_data[i] >> 16);
+		}
+		f->store_buffer((const uint8_t *)audio_buffer_16.ptr(), audio_block_size);
+	} else {
+		f->store_buffer((const uint8_t *)p_audio_data, audio_block_size);
+	}
 
 	frame_count++;
 
@@ -260,4 +272,5 @@ MovieWriterMJPEG::MovieWriterMJPEG() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
 	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 	quality = GLOBAL_GET("editor/movie_writer/video_quality");
+	audio_bit_depth = GLOBAL_GET("editor/movie_writer/audio_bit_depth");
 }

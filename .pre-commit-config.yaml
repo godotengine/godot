@@ -6,12 +6,19 @@ exclude: |
     .*thirdparty/.*|
     .*-(dll|dylib|so)_wrap\.[ch]|
     platform/android/java/editor/src/main/java/com/android/.*|
-    platform/android/java/lib/src/com/google/.*
+    platform/android/java/lib/src/main/java/com/google/.*
   )$
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: (SConstruct|SCsub)$ # SCons files use shebangs for syntax highlighting only.
+
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.0
+    rev: v21.1.7
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
@@ -29,14 +36,14 @@ repos:
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         args: [--fix, --quiet, --use-color]
         types_or: [text]
-        additional_dependencies: [clang-tidy==20.1.0]
+        additional_dependencies: [clang-tidy==21.1.6]
         require_serial: true
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.0
+    rev: v0.14.7
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]
@@ -57,15 +64,12 @@ repos:
       - id: codespell
         additional_dependencies: [tomli]
 
-  ### Requires Docker; look into alternative implementation.
-  # - repo: https://github.com/comkieffer/pre-commit-xmllint.git
-  #   rev: 1.0.0
-  #   hooks:
-  #     - id: xmllint
-  #       language: docker
-  #       types_or: [text]
-  #       files: ^(doc/classes|.*/doc_classes)/.*\.xml$
-  #       args: [--schema, doc/class.xsd]
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.34.1
+    hooks:
+      - id: check-jsonschema
+        files: ^core/extension/gdextension_interface\.json$
+        args: ["--schemafile", "core/extension/gdextension_interface.schema.json"]
 
   - repo: local
     hooks:
@@ -91,6 +95,13 @@ repos:
         entry: python tests/python_build/validate_builders.py
         pass_filenames: false
         files: ^(gles3|glsl)_builders\.py$
+
+      - id: validate-xml
+        name: validate-xml
+        language: python
+        entry: python misc/scripts/validate_xml.py
+        files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+        additional_dependencies: [xmlschema]
 
       - id: eslint
         name: eslint
@@ -148,9 +159,9 @@ repos:
           (?x)^(
             core/math/bvh_.*\.inc|
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
-            platform/android/java/lib/src/org/godotengine/godot/gl/GLSurfaceView\.java|
-            platform/android/java/lib/src/org/godotengine/godot/gl/EGLLogWrapper\.java|
-            platform/android/java/lib/src/org/godotengine/godot/utils/ProcessPhoenix\.java
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
+            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java
           )$
 
       - id: header-guards

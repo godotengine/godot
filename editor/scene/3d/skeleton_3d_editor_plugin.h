@@ -99,6 +99,7 @@ public:
 	void set_target(const String &p_prop);
 	void set_label(const String &p_label) { label = p_label; }
 	void set_keyable(const bool p_keyable);
+	void set_skeleton(Skeleton3D *p_skeleton);
 
 	void _update_properties();
 };
@@ -147,7 +148,14 @@ class Skeleton3DEditor : public VBoxContainer {
 	Button *key_rot_button = nullptr;
 	Button *key_scale_button = nullptr;
 	Button *key_insert_button = nullptr;
-	Button *key_insert_all_button = nullptr;
+	Button *key_insert_new_button = nullptr;
+	Button *key_mod_insert_button = nullptr;
+	Button *key_mod_insert_new_button = nullptr;
+
+	// To maintain the status while running editor.
+	void _loc_toggled(bool p_toggled_on);
+	void _rot_toggled(bool p_toggled_on);
+	void _scl_toggled(bool p_toggled_on);
 
 	EditorInspectorSection *bones_section = nullptr;
 
@@ -172,7 +180,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	void reset_pose(const bool p_all_bones);
 	void pose_to_rest(const bool p_all_bones);
 
-	void insert_keys(const bool p_all_bones);
+	void _insert_keys(const bool p_all_bones);
+	void insert_keys(const bool p_all_bones, const bool p_enable_modifier);
 
 	void create_physical_skeleton();
 	PhysicalBone3D *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
@@ -210,6 +219,7 @@ class Skeleton3DEditor : public VBoxContainer {
 	void _update_properties();
 
 	void _subgizmo_selection_change();
+	void _disconnect_from_skeleton();
 
 	int selected_bone = -1;
 
@@ -247,6 +257,10 @@ class EditorInspectorPluginSkeleton : public EditorInspectorPlugin {
 	Skeleton3DEditor *skel_editor = nullptr;
 
 public:
+	bool loc_pressed = false;
+	bool rot_pressed = true;
+	bool scl_pressed = false;
+
 	virtual bool can_handle(Object *p_object) override;
 	virtual void parse_begin(Object *p_object) override;
 };

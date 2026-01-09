@@ -621,14 +621,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@export_multiline">
+		<annotation name="@export_multiline" qualifiers="vararg">
 			<return type="void" />
+			<param index="0" name="hint" type="String" default="&quot;&quot;" />
 			<description>
 				Export a [String], [Array][lb][String][rb], [PackedStringArray], [Dictionary] or [Array][lb][Dictionary][rb] property with a large [TextEdit] widget instead of a [LineEdit]. This adds support for multiline content and makes it easier to edit large amount of text stored in the property.
 				See also [constant PROPERTY_HINT_MULTILINE_TEXT].
 				[codeblock]
 				@export_multiline var character_biography
 				@export_multiline var npc_dialogs: Array[String]
+				@export_multiline("monospace", "no_wrap") var favorite_ascii_art: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -665,7 +667,7 @@
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
 				Export an [int], [float], [Array][lb][int][rb], [Array][lb][float][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], or [PackedFloat64Array] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [member EditorSettings.interface/inspector/default_float_step] setting.
-				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
+				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"prefer_slider"[/code] hint will make integer values use the slider instead of arrows for editing, while [code]"hide_control"[/code] will hide the element controlling the value of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians_as_degrees"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock (the range values are also in degrees). [code]"degrees"[/code] allows to add a degree sign as a unit suffix (the value is unchanged). Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
@@ -786,7 +788,7 @@
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
-			<param index="2" name="transfer_mode" type="String" default="&quot;unreliable&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;reliable&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
@@ -802,7 +804,7 @@
 				@rpc("any_peer", "unreliable_ordered")
 				func fn_update_pos(): pass
 
-				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				@rpc("authority", "call_remote", "reliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
 				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.

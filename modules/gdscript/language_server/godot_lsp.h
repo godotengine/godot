@@ -575,8 +575,7 @@ struct SaveOptions {
  */
 struct ColorProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -585,8 +584,7 @@ struct ColorProviderOptions {
  */
 struct FoldingRangeProviderOptions {
 	Dictionary to_json() {
-		Dictionary dict;
-		return dict;
+		return Dictionary();
 	}
 };
 
@@ -665,6 +663,11 @@ struct DocumentOnTypeFormattingOptions {
 	}
 };
 
+enum class LanguageId {
+	GDSCRIPT,
+	OTHER,
+};
+
 struct TextDocumentItem {
 	/**
 	 * The text document's URI.
@@ -674,7 +677,7 @@ struct TextDocumentItem {
 	/**
 	 * The text document's language identifier.
 	 */
-	String languageId;
+	LanguageId languageId;
 
 	/**
 	 * The version number of this document (it will increase after each
@@ -689,36 +692,24 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict["languageId"];
 		version = p_dict["version"];
 		text = p_dict["text"];
-	}
 
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["uri"] = uri;
-		dict["languageId"] = languageId;
-		dict["version"] = version;
-		dict["text"] = text;
-		return dict;
+		// Clients should use "gdscript" as language id, but we can't enforce it. The Rider integration
+		// in particular uses "gd" at the time of writing. We normalize the id to make it easier to work with.
+		String rawLanguageId = p_dict["languageId"];
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd") {
+			languageId = LanguageId::GDSCRIPT;
+		} else {
+			languageId = LanguageId::OTHER;
+		}
 	}
 };
 
 /**
- * An event describing a change to a text document. If range and rangeLength are omitted
- * the new text is considered to be the full content of the document.
+ * An event describing a change to a text document.
  */
 struct TextDocumentContentChangeEvent {
-	/**
-	 * The range of the document that changed.
-	 */
-	Range range;
-
-	/**
-	 * The length of the range that got replaced.
-	 */
-	int rangeLength = 0;
-
 	/**
 	 * The new text of the range/document.
 	 */
@@ -726,8 +717,6 @@ struct TextDocumentContentChangeEvent {
 
 	void load(const Dictionary &p_params) {
 		text = p_params["text"];
-		rangeLength = p_params["rangeLength"];
-		range.load(p_params["range"]);
 	}
 };
 
@@ -1459,7 +1448,7 @@ struct CompletionContext {
 
 	void load(const Dictionary &p_params) {
 		triggerKind = int(p_params["triggerKind"]);
-		triggerCharacter = p_params["triggerCharacter"];
+		triggerCharacter = p_params.get("triggerCharacter", "");
 	}
 };
 
@@ -1717,16 +1706,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };
@@ -1942,28 +1923,67 @@ static String marked_documentation(const String &p_bbcode) {
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
-	bool in_code_block = false;
-	int code_block_indent = -1;
+	bool in_codeblock_tag = false;
+	// This is for handling the special [codeblocks] syntax used by the built-in class reference.
+	bool in_codeblocks_tag = false;
+	bool in_codeblocks_gdscript_tag = false;
 
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
-		int block_start = line.find("[codeblock]");
+
+		// For [codeblocks] tags we locate a child [gdscript] tag and turn that
+		// into a GDScript code listing. Other languages and the surrounding tag
+		// are skipped.
+		if (line.contains("[codeblocks]")) {
+			in_codeblocks_tag = true;
+			continue;
+		}
+		if (in_codeblocks_tag && line.contains("[/codeblocks]")) {
+			in_codeblocks_tag = false;
+			continue;
+		}
+		if (in_codeblocks_tag) {
+			if (line.contains("[gdscript]")) {
+				in_codeblocks_gdscript_tag = true;
+				line = "```gdscript";
+			} else if (in_codeblocks_gdscript_tag && line.contains("[/gdscript]")) {
+				line = "```";
+				in_codeblocks_gdscript_tag = false;
+			} else if (!in_codeblocks_gdscript_tag) {
+				continue;
+			}
+		}
+
+		// We need to account for both [codeblock] and [codeblock lang=...].
+		String codeblock_lang = "gdscript";
+		int block_start = line.find("[codeblock");
 		if (block_start != -1) {
-			code_block_indent = block_start;
-			in_code_block = true;
-			line = "\n";
-		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent);
+			int bracket_pos = line.find_char(']', block_start);
+			if (bracket_pos != -1) {
+				int lang_start = line.find("lang=", block_start);
+				if (lang_start != -1 && lang_start < bracket_pos) {
+					constexpr int LANG_PARAM_LENGTH = 5; // Length of "lang=".
+					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
+					int lang_end = bracket_pos;
+					if (lang_value_start < lang_end) {
+						codeblock_lang = line.substr(lang_value_start, lang_end - lang_value_start);
+					}
+				}
+				in_codeblock_tag = true;
+				line = "```" + codeblock_lang;
+			}
 		}
 
-		if (in_code_block && line.contains("[/codeblock]")) {
-			line = "\n";
-			in_code_block = false;
+		if (in_codeblock_tag && line.contains("[/codeblock]")) {
+			line = "```";
+			in_codeblock_tag = false;
 		}
 
-		if (!in_code_block) {
+		if (!in_codeblock_tag) {
 			line = line.strip_edges();
+			line = line.replace("[br]", "\n\n");
+
 			line = line.replace("[code]", "`");
 			line = line.replace("[/code]", "`");
 			line = line.replace("[i]", "*");
@@ -1972,17 +1992,126 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[/b]", "**");
 			line = line.replace("[u]", "__");
 			line = line.replace("[/u]", "__");
-			line = line.replace("[method ", "`");
-			line = line.replace("[member ", "`");
-			line = line.replace("[signal ", "`");
-			line = line.replace("[enum ", "`");
-			line = line.replace("[constant ", "`");
-			line = line.replace_chars("[]", '`');
+			line = line.replace("[s]", "~~");
+			line = line.replace("[/s]", "~~");
+			line = line.replace("[kbd]", "`");
+			line = line.replace("[/kbd]", "`");
+			line = line.replace("[center]", "");
+			line = line.replace("[/center]", "");
+			line = line.replace("[/font]", "");
+			line = line.replace("[/color]", "");
+			line = line.replace("[/img]", "");
+
+			// Convert remaining simple bracketed class names to backticks and literal brackets.
+			// This handles cases like [Node2D], [Sprite2D], etc. and [lb] and [rb].
+			int pos = 0;
+			while ((pos = line.find_char('[', pos)) != -1) {
+				// Replace the special cases for [lb] and [rb] first and walk
+				// past them to avoid conflicts with class names.
+				const bool is_within_bounds = pos + 4 <= line.length();
+				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
+					line = line.substr(0, pos) + "\\[" + line.substr(pos + 4);
+					// We advance past the newly inserted `\\` and `[` characters (2 chars) so the
+					// next `line.find()` does not stop at the same position.
+					pos += 2;
+					continue;
+				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
+					line = line.substr(0, pos) + "\\]" + line.substr(pos + 4);
+					pos += 2;
+					continue;
+				}
+
+				// Replace class names in brackets.
+				int end_pos = line.find_char(']', pos);
+				if (end_pos == -1) {
+					break;
+				}
+
+				String content = line.substr(pos + 1, end_pos - pos - 1);
+				// We only convert if it looks like a simple class name (no spaces, no special chars).
+				// GDScript supports unicode characters as identifiers so we only exclude markers of other BBCode tags to avoid conflicts.
+				bool is_class_name = (!content.is_empty() && content != "url" && !content.contains_char(' ') && !content.contains_char('=') && !content.contains_char('/'));
+				if (is_class_name) {
+					line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
+					pos += content.length() + 2;
+				} else {
+					pos = end_pos + 1;
+				}
+			}
+
+			constexpr int URL_OPEN_TAG_LENGTH = 5; // Length of "[url=".
+			constexpr int URL_CLOSE_TAG_LENGTH = 6; // Length of "[/url]".
+
+			// This is for the case [url=$url]$text[/url].
+			pos = 0;
+			while ((pos = line.find("[url=", pos)) != -1) {
+				int url_end = line.find_char(']', pos);
+				int close_start = line.find("[/url]", url_end);
+				if (url_end == -1 || close_start == -1) {
+					break;
+				}
+
+				String url = line.substr(pos + URL_OPEN_TAG_LENGTH, url_end - pos - URL_OPEN_TAG_LENGTH);
+				String text = line.substr(url_end + 1, close_start - url_end - 1);
+				String replacement = "[" + text + "](" + url + ")";
+				line = line.substr(0, pos) + replacement + line.substr(close_start + URL_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
+			// This is for the case [url]$url[/url].
+			pos = 0;
+			while ((pos = line.find("[url]", pos)) != -1) {
+				int close_pos = line.find("[/url]", pos);
+				if (close_pos == -1) {
+					break;
+				}
+
+				String url = line.substr(pos + URL_OPEN_TAG_LENGTH, close_pos - pos - URL_OPEN_TAG_LENGTH);
+				String replacement = "[" + url + "](" + url + ")";
+				line = line.substr(0, pos) + replacement + line.substr(close_pos + URL_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
+			// Replace the various link types with inline code ([class MyNode] to `MyNode`).
+			// Uses a while loop because there can occasionally be multiple links of the same type in a single line.
+			const Vector<String> link_start_patterns = {
+				"[class ", "[method ", "[member ", "[signal ", "[enum ", "[constant ",
+				"[annotation ", "[constructor ", "[operator ", "[theme_item ", "[param "
+			};
+			for (const String &pattern : link_start_patterns) {
+				int pattern_pos = 0;
+				while ((pattern_pos = line.find(pattern, pattern_pos)) != -1) {
+					int end_pos = line.find_char(']', pattern_pos);
+					if (end_pos == -1) {
+						break;
+					}
+
+					String content = line.substr(pattern_pos + pattern.length(), end_pos - pattern_pos - pattern.length());
+					String replacement = "`" + content + "`";
+					line = line.substr(0, pattern_pos) + replacement + line.substr(end_pos + 1);
+					pattern_pos += replacement.length();
+				}
+			}
+
+			// Remove tags with attributes like [color=red], as they don't have a direct Markdown
+			// equivalent supported by external tools.
+			const String attribute_tags[] = {
+				"color", "font", "img"
+			};
+			for (const String &tag_name : attribute_tags) {
+				int tag_pos = 0;
+				while ((tag_pos = line.find("[" + tag_name + "=", tag_pos)) != -1) {
+					int end_pos = line.find_char(']', tag_pos);
+					if (end_pos == -1) {
+						break;
+					}
+
+					line = line.substr(0, tag_pos) + line.substr(end_pos + 1);
+				}
+			}
 		}
 
-		if (!in_code_block && i < lines.size() - 1) {
-			line += "\n\n";
-		} else if (i < lines.size() - 1) {
+		if (i < lines.size() - 1) {
 			line += "\n";
 		}
 		markdown += line;

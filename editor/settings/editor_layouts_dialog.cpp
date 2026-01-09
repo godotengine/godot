@@ -98,12 +98,14 @@ void EditorLayoutsDialog::_post_popup() {
 	Vector<String> layouts = config->get_sections();
 
 	for (const String &E : layouts) {
-		layout_names->add_item(E);
+		if (!E.contains_char('/')) {
+			layout_names->add_item(E);
+		}
 	}
 	if (name->is_visible()) {
 		name->grab_focus();
 	} else {
-		layout_names->grab_focus();
+		layout_names->grab_focus(true);
 	}
 }
 
@@ -113,24 +115,20 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 
 	layout_names = memnew(ItemList);
 	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	layout_names->set_auto_height(true);
-	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
-	layout_names->set_visible(true);
-	layout_names->set_offset(SIDE_TOP, 5);
-	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
+	layout_names->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(2));
-	MarginContainer *mc = makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
+
+	MarginContainer *mc = makevb->add_margin_child(TTRC("Select Existing Layout:"), layout_names);
+	mc->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);
-	name->set_placeholder(TTR("Or enter new layout name"));
+	name->set_placeholder(TTRC("Or enter new layout name."));
 	name->set_accessibility_name(TTRC("New layout name"));
-	name->set_offset(SIDE_TOP, 5);
-	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
-	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	name->connect(SceneStringName(gui_input), callable_mp(this, &EditorLayoutsDialog::_line_gui_input));
 	name->connect(SceneStringName(focus_entered), callable_mp(this, &EditorLayoutsDialog::_deselect_layout_names));
 	name->connect(SceneStringName(text_changed), callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(1));

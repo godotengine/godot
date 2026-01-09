@@ -4,7 +4,9 @@
 		Node used for displaying a [Mesh] in 2D.
 	</brief_description>
 	<description>
-		Node used for displaying a [Mesh] in 2D. A [MeshInstance2D] can be automatically created from an existing [Sprite2D] via a tool in the editor toolbar. Select the [Sprite2D] node, then choose [b]Sprite2D &gt; Convert to MeshInstance2D[/b] at the top of the 2D editor viewport.
+		Node used for displaying a [Mesh] in 2D. This can be faster to render compared to displaying a [Sprite2D] node with large transparent areas, especially if the node takes up a lot of space on screen at high viewport resolutions. This is because using a mesh designed to fit the sprite's opaque areas will reduce GPU fill rate utilization (at the cost of increased vertex processing utilization).
+		When a [Mesh] has to be instantiated more than thousands of times close to each other, consider using a [MultiMesh] in a [MultiMeshInstance2D] instead.
+		A [MeshInstance2D] can be created from an existing [Sprite2D] via a tool in the editor toolbar. Select the [Sprite2D] node, then choose [b]Sprite2D &gt; Convert to MeshInstance2D[/b] at the top of the 2D editor viewport.
 	</description>
 	<tutorials>
 		<link title="2D meshes">$DOCS_URL/tutorials/2d/2d_meshes.html</link>

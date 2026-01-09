@@ -16,6 +16,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
+#include "../oct_inc.glsl"
 
 #define M_PI 3.14159265359
 
@@ -176,6 +177,9 @@ layout(set = 0, binding = 14, std140) uniform Params {
 	uint temporal_frame;
 	float temporal_blend;
 
+	vec2 sky_border_size;
+	vec2 pad;
+
 	mat3x4 cam_rotation;
 	mat4 to_prev_view;
 
@@ -201,10 +205,10 @@ layout(r32ui, set = 0, binding = 17) uniform uimage3D light_only_map;
 layout(r32ui, set = 0, binding = 18) uniform uimage3D emissive_only_map;
 #endif
 
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-layout(set = 0, binding = 19) uniform textureCubeArray sky_texture;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+layout(set = 0, binding = 19) uniform texture2DArray sky_texture;
 #else
-layout(set = 0, binding = 19) uniform textureCube sky_texture;
+layout(set = 0, binding = 19) uniform texture2D sky_texture;
 #endif
 #endif // MODE_COPY
 
@@ -429,13 +433,13 @@ void main() {
 			if (params.sky_contribution > 0.0) {
 				float mip_bias = 2.0 + total_density * (MAX_SKY_LOD - 2.0); // Not physically based, but looks nice
 				vec3 scatter_direction = (params.radiance_inverse_xform * normalize(view_pos)) * sign(params.phase_g);
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-				isotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(0.0, 1.0, 0.0, mip_bias)).rgb;
-				anisotropic = texture(samplerCubeArray(sky_texture, linear_sampler_with_mipmaps), vec4(scatter_direction, mip_bias)).rgb;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+				isotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias)).rgb;
+				anisotropic = texture(sampler2DArray(sky_texture, linear_sampler_with_mipmaps), vec3(vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias)).rgb;
 #else
-				isotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(0.0, 1.0, 0.0), mip_bias).rgb;
-				anisotropic = textureLod(samplerCube(sky_texture, linear_sampler_with_mipmaps), vec3(scatter_direction), mip_bias).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
+				isotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(vec3(0.0, 1.0, 0.0), params.sky_border_size), mip_bias).rgb;
+				anisotropic = textureLod(sampler2D(sky_texture, linear_sampler_with_mipmaps), vec3_to_oct_with_border(scatter_direction, params.sky_border_size), mip_bias).rgb;
+#endif //USE_RADIANCE_OCTMAP_ARRAY
 			}
 
 			total_light += mix(params.ambient_color, mix(isotropic, anisotropic, abs(params.phase_g)), params.sky_contribution) * params.ambient_inject;
@@ -559,7 +563,7 @@ void main() {
 							vec4 v = vec4(view_pos, 1.0);
 
 							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
-							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane.z -= spot_lights.data[light_index].shadow_bias;
 							splane /= splane.w;
 
 							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
@@ -719,7 +723,7 @@ void main() {
 
 		prev_z = z;
 
-		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, 1.0 - fog_accum.a));
+		imageStore(fog_map, fog_pos, vec4(fog_accum.rgb, fog_accum.a));
 	}
 
 #endif

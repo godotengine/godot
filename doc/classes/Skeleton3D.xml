@@ -112,7 +112,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="key" type="StringName" />
 			<description>
-				Returns the metadata for the bone at index [param bone_idx] with [param key].
+				Returns the metadata with the given [param key] for the bone at index [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_meta_list" qualifiers="const">
@@ -199,7 +199,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="key" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the bone at index [param bone_idx] has metadata with the key [param key].
+				Returns [code]true[/code] if the bone at index [param bone_idx] has metadata with the given [param key].
 			</description>
 		</method>
 		<method name="is_bone_enabled" qualifiers="const">
@@ -300,7 +300,7 @@
 			<param index="1" name="key" type="StringName" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets the metadata for the bone at index [param bone_idx], setting the [param key] meta to [param value].
+				Sets the metadata with the given [param key] to [param value] for the bone at index [param bone_idx].
 			</description>
 		</method>
 		<method name="set_bone_name">

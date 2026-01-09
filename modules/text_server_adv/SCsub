@@ -16,7 +16,7 @@ msdfgen_enabled = "msdfgen" in env.module_list
 
 if "svg" in env.module_list:
     env_text_server_adv.Prepend(
-        CPPEXTPATH=[
+        CPPPATH=[
             "#thirdparty/thorvg/inc",
             "#thirdparty/thorvg/src/common",
             "#thirdparty/thorvg/src/renderer",
@@ -55,6 +55,7 @@ if env["builtin_harfbuzz"]:
         # "src/hb-glib.cc",
         # "src/hb-gobject-structs.cc",
         "src/hb-icu.cc",
+        # "src/hb-kbts.cc",
         "src/hb-map.cc",
         "src/hb-number.cc",
         "src/hb-ot-cff1-table.cc",
@@ -95,14 +96,19 @@ if env["builtin_harfbuzz"]:
         "src/hb-shaper.cc",
         "src/hb-static.cc",
         "src/hb-style.cc",
-        "src/hb-subset-cff-common.cc",
-        "src/hb-subset-cff1.cc",
-        "src/hb-subset-cff2.cc",
-        "src/hb-subset-input.cc",
-        "src/hb-subset-instancer-iup.cc",
-        "src/hb-subset-instancer-solver.cc",
-        "src/hb-subset-plan.cc",
-        "src/hb-subset-serialize.cc",
+        # "src/hb-subset-cff-common.cc",
+        # "src/hb-subset-cff1.cc",
+        # "src/hb-subset-cff2.cc",
+        # "src/hb-subset-input.cc",
+        # "src/hb-subset-instancer-iup.cc",
+        # "src/hb-subset-instancer-solver.cc",
+        # "src/hb-subset-plan.cc",
+        # "src/hb-subset-serialize.cc",
+        # "src/hb-subset-table-cff.cc",
+        # "src/hb-subset-table-color.cc",
+        # "src/hb-subset-table-layout.cc",
+        # "src/hb-subset-table-other.cc",
+        # "src/hb-subset-table-var.cc",
         "src/hb-subset.cc",
         "src/hb-ucd.cc",
         "src/hb-unicode.cc",
@@ -120,42 +126,33 @@ if env["builtin_harfbuzz"]:
             ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_harfbuzz.Prepend(CPPEXTPATH=["#thirdparty/harfbuzz/src"])
+    env_harfbuzz.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
-    env_harfbuzz.Append(CCFLAGS=["-DHAVE_ICU"])
+    env_harfbuzz.Append(CPPDEFINES=["HAVE_ICU"])
     if env["builtin_icu4c"]:
-        env_harfbuzz.Prepend(CPPEXTPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
+        env_harfbuzz.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
         env_harfbuzz.Append(
-            CCFLAGS=[
-                "-DU_STATIC_IMPLEMENTATION",
-                "-DU_HAVE_LIB_SUFFIX=1",
-                "-DU_LIB_SUFFIX_C_NAME=_godot",
-                "-DHAVE_ICU_BUILTIN",
+            CPPDEFINES=[
+                "U_STATIC_IMPLEMENTATION",
+                ("U_HAVE_LIB_SUFFIX", 1),
+                ("U_LIB_SUFFIX_C_NAME", "_godot"),
+                "HAVE_ICU_BUILTIN",
             ]
         )
 
     if freetype_enabled:
-        env_harfbuzz.Append(
-            CCFLAGS=[
-                "-DHAVE_FREETYPE",
-            ]
-        )
+        env_harfbuzz.Append(CPPDEFINES=["HAVE_FREETYPE"])
         if env["graphite"]:
-            env_harfbuzz.Append(
-                CCFLAGS=[
-                    "-DHAVE_GRAPHITE2",
-                ]
-            )
+            env_harfbuzz.Append(CPPDEFINES=["HAVE_GRAPHITE2"])
         if env["builtin_freetype"]:
-            env_harfbuzz.Prepend(CPPEXTPATH=["#thirdparty/freetype/include"])
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
         if env["builtin_graphite"] and env["graphite"]:
-            env_harfbuzz.Prepend(CPPEXTPATH=["#thirdparty/graphite/include"])
-            env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
-
+            env_harfbuzz.Prepend(CPPPATH=["#thirdparty/graphite/include"])
+            env_harfbuzz.Append(CPPDEFINES=["GRAPHITE2_STATIC"])
     if env["platform"] in ["android", "linuxbsd", "web"]:
-        env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
+        env_harfbuzz.Append(CPPDEFINES=["HAVE_PTHREAD"])
 
-    env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/harfbuzz/src"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
     thirdparty_obj += lib
@@ -218,12 +215,12 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_graphite.Prepend(CPPEXTPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
+    env_graphite.Prepend(CPPPATH=["#thirdparty/graphite/src", "#thirdparty/graphite/include"])
     env_graphite.Append(
-        CCFLAGS=[
-            "-DGRAPHITE2_STATIC",
-            "-DGRAPHITE2_NTRACING",
-            "-DGRAPHITE2_NFILEFACE",
+        CPPDEFINES=[
+            "GRAPHITE2_STATIC",
+            "GRAPHITE2_NTRACING",
+            "GRAPHITE2_NFILEFACE",
         ]
     )
 
@@ -275,6 +272,7 @@ if env["builtin_icu4c"]:
         "common/errorcode.cpp",
         "common/filteredbrk.cpp",
         "common/filterednormalizer2.cpp",
+        "common/fixedstring.cpp",
         "common/icudataver.cpp",
         "common/icuplug.cpp",
         "common/loadednormalizer2impl.cpp",
@@ -458,51 +456,49 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    if not env.editor_build:
-        thirdparty_sources += ["icu_data/icudata_stub.cpp"]
-
-    env_icu.Prepend(CPPEXTPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
-    env_icu.Append(
-        CXXFLAGS=[
-            "-DU_STATIC_IMPLEMENTATION",
-            "-DU_COMMON_IMPLEMENTATION",
-            "-DUCONFIG_NO_COLLATION",
-            "-DUCONFIG_NO_CONVERSION",
-            "-DUCONFIG_NO_FORMATTING",
-            "-DUCONFIG_NO_SERVICE",
-            "-DUCONFIG_NO_IDNA",
-            "-DUCONFIG_NO_FILE_IO",
-            "-DUCONFIG_NO_TRANSLITERATION",
-            "-DUCONFIG_NO_REGULAR_EXPRESSIONS",
-            "-DPKGDATA_MODE=static",
-            "-DU_ENABLE_DYLOAD=0",
-            "-DU_HAVE_LIB_SUFFIX=1",
-            "-DU_LIB_SUFFIX_C_NAME=_godot",
-        ]
-    )
-    env_text_server_adv.Append(
-        CXXFLAGS=[
-            "-DU_STATIC_IMPLEMENTATION",
-            "-DU_HAVE_LIB_SUFFIX=1",
-            "-DU_LIB_SUFFIX_C_NAME=_godot",
-        ]
-    )
-    if env.editor_build:
-        env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
-
-    env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
-
-    lib = env_icu.add_library("icu_builtin", thirdparty_sources)
-    thirdparty_obj += lib
-
     if env.editor_build:
         icudata = env_icu.CommandNoCache(
             "#thirdparty/icu4c/icudata.gen.h",
             "#thirdparty/icu4c/icudt_godot.dat",
             env.Run(text_server_adv_builders.make_icu_data),
         )
-        env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/icu4c/"])
-        env_icu.Depends(lib, icudata)
+        env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
+    else:
+        thirdparty_sources += ["icu_data/icudata_stub.cpp"]
+
+    env_icu.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
+    env_icu.Append(
+        CPPDEFINES=[
+            "U_STATIC_IMPLEMENTATION",
+            "U_COMMON_IMPLEMENTATION",
+            "UCONFIG_NO_COLLATION",
+            "UCONFIG_NO_CONVERSION",
+            "UCONFIG_NO_FORMATTING",
+            "UCONFIG_NO_SERVICE",
+            "UCONFIG_NO_IDNA",
+            "UCONFIG_NO_FILE_IO",
+            "UCONFIG_NO_TRANSLITERATION",
+            "UCONFIG_NO_REGULAR_EXPRESSIONS",
+            ("PKGDATA_MODE", "static"),
+            ("U_ENABLE_DYLOAD", 0),
+            ("U_HAVE_LIB_SUFFIX", 1),
+            ("U_LIB_SUFFIX_C_NAME", "_godot"),
+        ]
+    )
+    env_text_server_adv.Append(
+        CPPDEFINES=[
+            "U_STATIC_IMPLEMENTATION",
+            ("U_HAVE_LIB_SUFFIX", 1),
+            ("U_LIB_SUFFIX_C_NAME", "_godot"),
+        ]
+    )
+    if env.editor_build:
+        env_text_server_adv.Append(CPPDEFINES=["ICU_STATIC_DATA"])
+
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])
+
+    lib = env_icu.add_library("icu_builtin", thirdparty_sources)
+    thirdparty_obj += lib
 
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
@@ -524,14 +520,14 @@ module_obj = []
 
 if env["builtin_msdfgen"] and msdfgen_enabled:
     env_text_server_adv.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
-    env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/msdfgen"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/msdfgen"])
 
 if env["builtin_freetype"] and freetype_enabled:
     env_text_server_adv.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
-    env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/freetype/include"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/freetype/include"])
 
 if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
-    env_text_server_adv.Prepend(CPPEXTPATH=["#thirdparty/graphite/include"])
+    env_text_server_adv.Prepend(CPPPATH=["#thirdparty/graphite/include"])
 
 env_text_server_adv.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj

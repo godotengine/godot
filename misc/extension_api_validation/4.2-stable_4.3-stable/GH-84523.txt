@@ -1,0 +1,11 @@
+GH-84523
+--------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_dashed_line/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline_colors/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_rect/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_circle/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_multiline/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_rect/arguments': size changed value in new API, from 3 to 4.
+
+Optional arguments added. Compatibility methods registered.

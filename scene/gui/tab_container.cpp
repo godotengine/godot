@@ -42,6 +42,13 @@ Rect2 TabContainer::_get_tab_rect() const {
 	return rect;
 }
 
+TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
+	if (p_idx >= pending_tabs.size()) {
+		pending_tabs.resize(p_idx + 1);
+	}
+	return pending_tabs.write[p_idx];
+}
+
 int TabContainer::_get_tab_height() const {
 	int height = 0;
 	if (tabs_visible && get_tab_count() > 0) {
@@ -133,6 +140,37 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void TabContainer::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> properties;
+	property_helper.get_property_list(&properties);
+
+	for (PropertyInfo &info : properties) {
+		int index;
+		if (info.name.ends_with("title") && property_helper.is_property_valid(info.name, &index)) {
+			Control *tab_control = get_tab_control(index);
+			ERR_FAIL_NULL(tab_control);
+			if (get_tab_title(index) == tab_control->get_name()) {
+				// Don't store default title.
+				info.usage &= ~PROPERTY_USAGE_STORAGE;
+			}
+		}
+		p_list->push_back(info);
+	}
+}
+
+bool TabContainer::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	const String sname = p_name;
+
+	int index;
+	if (sname.ends_with("title") && property_helper.is_property_valid(sname, &index)) {
+		Control *tab_control = get_tab_control(index);
+		ERR_FAIL_NULL_V(tab_control, false);
+		r_property = String(tab_control->get_name());
+		return true;
+	}
+	return property_helper.property_get_revert(p_name, r_property);
+}
+
 void TabContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
@@ -186,7 +224,21 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_READY:
+		case NOTIFICATION_READY: {
+			for (int i = 0; i < pending_tabs.size(); i++) {
+				const CachedTab &tab = pending_tabs[i];
+				if (tab.has_title) {
+					set_tab_title(i, tab.title);
+				}
+				set_tab_icon(i, tab.icon);
+				set_tab_disabled(i, tab.disabled);
+				set_tab_hidden(i, tab.hidden);
+			}
+			pending_tabs.clear();
+
+			[[fallthrough]];
+		}
+
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
 		} break;
@@ -276,6 +328,11 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), theme_cache.font_unselected_color);
 	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
 	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
+
+	tab_bar->add_theme_color_override(SNAME("icon_selected_color"), theme_cache.icon_selected_color);
+	tab_bar->add_theme_color_override(SNAME("icon_hovered_color"), theme_cache.icon_hovered_color);
+	tab_bar->add_theme_color_override(SNAME("icon_unselected_color"), theme_cache.icon_unselected_color);
+	tab_bar->add_theme_color_override(SNAME("icon_disabled_color"), theme_cache.icon_disabled_color);
 
 	tab_bar->add_theme_font_override(SceneStringName(font), theme_cache.tab_font);
 	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
@@ -575,9 +632,7 @@ void TabContainer::_refresh_tab_indices() {
 void TabContainer::_refresh_tab_names() {
 	Vector<Control *> controls = _get_tab_controls();
 	for (int i = 0; i < controls.size(); i++) {
-		if (!controls[i]->has_meta("_tab_name") && String(controls[i]->get_name()) != get_tab_title(i)) {
-			tab_bar->set_tab_title(i, controls[i]->get_name());
-		}
+		tab_bar->set_tab_title(i, controls[i]->get_meta("_tab_name", controls[i]->get_name()));
 	}
 }
 
@@ -594,7 +649,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	}
 	c->hide();
 
-	tab_bar->add_tab(p_child->get_name());
+	tab_bar->add_tab(p_child->get_meta("_tab_name", p_child->get_name()));
 	c->set_meta("_tab_index", tab_bar->get_tab_count() - 1);
 
 	_update_margins();
@@ -610,6 +665,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	if (!is_inside_tree()) {
 		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
+	notify_property_list_changed();
 }
 
 void TabContainer::move_child_notify(Node *p_child) {
@@ -626,6 +682,7 @@ void TabContainer::move_child_notify(Node *p_child) {
 
 	_refresh_tab_indices();
 	queue_accessibility_update();
+	notify_property_list_changed();
 }
 
 void TabContainer::remove_child_notify(Node *p_child) {
@@ -670,6 +727,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 	if (!is_inside_tree()) {
 		callable_mp(this, &TabContainer::_repaint).call_deferred();
 	}
+	notify_property_list_changed();
 }
 
 TabBar *TabContainer::get_tab_bar() const {
@@ -823,6 +881,12 @@ bool TabContainer::is_all_tabs_in_front() const {
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
+	if (!child && !is_ready()) {
+		CachedTab &tab = get_pending_tab(p_tab);
+		tab.title = p_title;
+		tab.has_title = true;
+		return;
+	}
 	ERR_FAIL_NULL(child);
 
 	if (tab_bar->get_tab_title(p_tab) == p_title) {
@@ -854,6 +918,12 @@ String TabContainer::get_tab_tooltip(int p_tab) const {
 }
 
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
+	Control *child = get_tab_control(p_tab);
+	if (!child && !is_ready()) {
+		get_pending_tab(p_tab).icon = p_icon;
+		return;
+	}
+
 	if (tab_bar->get_tab_icon(p_tab) == p_icon) {
 		return;
 	}
@@ -886,6 +956,12 @@ int TabContainer::get_tab_icon_max_width(int p_tab) const {
 }
 
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
+	Control *child = get_tab_control(p_tab);
+	if (!child && !is_ready()) {
+		get_pending_tab(p_tab).disabled = p_disabled;
+		return;
+	}
+
 	if (tab_bar->is_tab_disabled(p_tab) == p_disabled) {
 		return;
 	}
@@ -904,6 +980,10 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
+	if (!child && !is_ready()) {
+		get_pending_tab(p_tab).hidden = p_hidden;
+		return;
+	}
 	ERR_FAIL_NULL(child);
 
 	if (tab_bar->is_tab_hidden(p_tab) == p_hidden) {
@@ -951,15 +1031,13 @@ Size2 TabContainer::get_minimum_size() const {
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
-		if (!get_clip_tabs()) {
-			if (get_popup()) {
-				ms.width += theme_cache.menu_icon->get_width();
-			}
+		if (get_popup()) {
+			ms.width += theme_cache.menu_icon->get_width();
+		}
 
-			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
-					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
-				ms.width += theme_cache.side_margin;
-			}
+		if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
+				(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
+			ms.width += theme_cache.side_margin;
 		}
 	}
 
@@ -998,9 +1076,7 @@ void TabContainer::set_popup(Node *p_popup) {
 	if (had_popup != bool(popup)) {
 		queue_redraw();
 		_update_margins();
-		if (!get_clip_tabs()) {
-			update_minimum_size();
-		}
+		update_minimum_size();
 	}
 }
 
@@ -1018,6 +1094,14 @@ Popup *TabContainer::get_popup() const {
 	}
 
 	return nullptr;
+}
+
+void TabContainer::set_switch_on_drag_hover(bool p_enabled) {
+	tab_bar->set_switch_on_drag_hover(p_enabled);
+}
+
+bool TabContainer::get_switch_on_drag_hover() const {
+	return tab_bar->get_switch_on_drag_hover();
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
@@ -1077,6 +1161,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_all_tabs_in_front", "is_front"), &TabContainer::set_all_tabs_in_front);
 	ClassDB::bind_method(D_METHOD("is_all_tabs_in_front"), &TabContainer::is_all_tabs_in_front);
+
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabContainer::set_tab_tooltip);
@@ -1093,10 +1178,13 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_metadata", "tab_idx"), &TabContainer::get_tab_metadata);
 	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &TabContainer::set_tab_button_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &TabContainer::get_tab_button_icon);
+
 	ClassDB::bind_method(D_METHOD("get_tab_idx_at_point", "point"), &TabContainer::get_tab_idx_at_point);
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("set_switch_on_drag_hover", "enabled"), &TabContainer::set_switch_on_drag_hover);
+	ClassDB::bind_method(D_METHOD("get_switch_on_drag_hover"), &TabContainer::get_switch_on_drag_hover);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabContainer::get_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
@@ -1122,6 +1210,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front"), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
@@ -1166,9 +1255,24 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, font_outline_color);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_unselected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, TabContainer, icon_disabled_color);
+
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
+
+	CachedTab defaults;
+
+	base_property_helper.set_prefix("tab_");
+	base_property_helper.set_array_length_getter(&TabContainer::get_tab_count);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.title, &TabContainer::set_tab_title, &TabContainer::get_tab_title);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), defaults.icon, &TabContainer::set_tab_icon, &TabContainer::get_tab_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabContainer::set_tab_disabled, &TabContainer::is_tab_disabled);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "hidden"), defaults.hidden, &TabContainer::set_tab_hidden, &TabContainer::is_tab_hidden);
+	PropertyListHelper::register_base_helper(&base_property_helper);
 }
 
 TabContainer::TabContainer() {
@@ -1183,6 +1287,8 @@ TabContainer::TabContainer() {
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
 	tab_bar->connect("active_tab_rearranged", callable_mp(this, &TabContainer::_on_active_tab_rearranged));
-
 	connect(SceneStringName(mouse_exited), callable_mp(this, &TabContainer::_on_mouse_exited));
+
+	property_helper.setup_for_instance(base_property_helper, this);
+	property_helper.enable_out_of_bounds_assign();
 }

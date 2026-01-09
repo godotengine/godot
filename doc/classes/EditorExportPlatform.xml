@@ -121,7 +121,7 @@
 		</method>
 		<method name="get_forced_export_files" qualifiers="static">
 			<return type="PackedStringArray" />
-			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="0" name="preset" type="EditorExportPreset" default="null" />
 			<description>
 				Returns array of core file names that always should be exported regardless of preset config.
 			</description>
@@ -138,27 +138,27 @@
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message category, for the message with [param index].
+				Returns the message category for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_message_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns number of messages in the export log.
+				Returns the number of messages in the export log.
 			</description>
 		</method>
 		<method name="get_message_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message text, for the message with [param index].
+				Returns the text for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_message_type" qualifiers="const">
 			<return type="int" enum="EditorExportPlatform.ExportMessageType" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns message type, for the message with [param index].
+				Returns the type for the message with the given [param index].
 			</description>
 		</method>
 		<method name="get_os_name" qualifiers="const">

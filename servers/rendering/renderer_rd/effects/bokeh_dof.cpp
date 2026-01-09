@@ -66,7 +66,7 @@ BokehDOF::BokehDOF(bool p_prefer_raster_effects) {
 
 		for (int i = 0; i < BOKEH_MAX; i++) {
 			if (bokeh.compute_shader.is_variant_enabled(i)) {
-				bokeh.compute_pipelines[i] = RD::get_singleton()->compute_pipeline_create(bokeh.compute_shader.version_get_shader(bokeh.shader_version, i));
+				bokeh.compute_pipelines[i].create_compute_pipeline(bokeh.compute_shader.version_get_shader(bokeh.shader_version, i));
 			}
 		}
 
@@ -77,6 +77,10 @@ BokehDOF::BokehDOF(bool p_prefer_raster_effects) {
 }
 
 BokehDOF::~BokehDOF() {
+	for (int i = 0; i < BOKEH_MAX; i++) {
+		bokeh.compute_pipelines[i].free();
+	}
+
 	if (prefer_raster_effects) {
 		bokeh.raster_shader.version_free(bokeh.shader_version);
 	} else {
@@ -154,7 +158,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 	RID shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_GEN_BLUR_SIZE);
 	ERR_FAIL_COND(shader.is_null());
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BLUR_SIZE]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BLUR_SIZE].get_rid());
 
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_depth_texture), 1);
@@ -173,7 +177,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, mode);
 		ERR_FAIL_COND(shader.is_null());
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[mode]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[mode].get_rid());
 
 		static const int quality_samples[4] = { 6, 12, 12, 24 };
 
@@ -223,7 +227,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 			shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_COMPOSITE);
 			ERR_FAIL_COND(shader.is_null());
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE].get_rid());
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_half_texture1), 1);
@@ -244,7 +248,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		ERR_FAIL_COND(shader.is_null());
 
 		//second pass
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BOKEH_CIRCULAR]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BOKEH_CIRCULAR].get_rid());
 
 		static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };
 
@@ -272,7 +276,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_COMPOSITE);
 		ERR_FAIL_COND(shader.is_null());
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE].get_rid());
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_half_texture0), 1);

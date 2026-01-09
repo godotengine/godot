@@ -11,17 +11,14 @@ files = [
     "godot_application_delegate.mm",
     "crash_handler_macos.mm",
     "display_server_macos_base.mm",
-    "display_server_embedded.mm",
     "display_server_macos.mm",
-    "embedded_debugger.mm",
-    "embedded_gl_manager.mm",
     "godot_button_view.mm",
     "godot_content_view.mm",
+    "godot_core_cursor.mm",
     "godot_status_item.mm",
     "godot_window_delegate.mm",
     "godot_window.mm",
     "key_mapping_macos.mm",
-    "godot_main_macos.mm",
     "godot_menu_delegate.mm",
     "godot_menu_item.mm",
     "godot_open_save_delegate.mm",
@@ -35,11 +32,24 @@ files = [
 
 if env.editor_build:
     files += [
+        "display_server_embedded.mm",
+        "embedded_debugger.mm",
+        "embedded_gl_manager.mm",
         "editor/embedded_game_view_plugin.mm",
         "editor/embedded_process_macos.mm",
     ]
 
-prog = env.add_program("#bin/godot", files)
+if env["library_type"] == "executable":
+    files += ["godot_main_macos.mm"]
+else:
+    files += ["libgodot_macos.mm"]
+
+if env["library_type"] == "static_library":
+    prog = env.add_library("#bin/godot", files)
+elif env["library_type"] == "shared_library":
+    prog = env.add_shared_library("#bin/godot", files)
+else:
+    prog = env.add_program("#bin/godot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))

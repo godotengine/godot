@@ -1,6 +1,7 @@
 name: 🍏 iOS Builds
 on:
   workflow_call:
+  workflow_dispatch:
 
 # Global Settings
 env:
@@ -12,6 +13,7 @@ env:
 
 jobs:
   ios-template:
+    # From https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job#choosing-github-hosted-runners
     runs-on: macos-latest
     name: Template (target=template_release)
     timeout-minutes: 60
@@ -21,6 +23,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      # From https://github.com/actions/runner-images/blob/main/images/macos
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore

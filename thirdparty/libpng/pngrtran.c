@@ -28,6 +28,12 @@
 #  endif
 #endif
 
+#ifdef PNG_RISCV_RVV_IMPLEMENTATION
+#  if PNG_RISCV_RVV_IMPLEMENTATION == 1
+#    define PNG_RISCV_RVV_INTRINSICS_AVAILABLE
+#  endif
+#endif
+
 #ifdef PNG_READ_SUPPORTED
 
 /* Set the action on getting a CRC error for an ancillary or critical chunk. */
@@ -495,9 +501,19 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
    {
       int i;
 
+      /* Initialize the array to index colors.
+       *
+       * Ensure quantize_index can fit 256 elements (PNG_MAX_PALETTE_LENGTH)
+       * rather than num_palette elements. This is to prevent buffer overflows
+       * caused by malformed PNG files with out-of-range palette indices.
+       *
+       * Be careful to avoid leaking memory. Applications are allowed to call
+       * this function more than once per png_struct.
+       */
+      png_free(png_ptr, png_ptr->quantize_index);
       png_ptr->quantize_index = (png_bytep)png_malloc(png_ptr,
-          (png_alloc_size_t)num_palette);
-      for (i = 0; i < num_palette; i++)
+          PNG_MAX_PALETTE_LENGTH);
+      for (i = 0; i < PNG_MAX_PALETTE_LENGTH; i++)
          png_ptr->quantize_index[i] = (png_byte)i;
    }
 
@@ -509,15 +525,14 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
           * Perhaps not the best solution, but good enough.
           */
 
-         int i;
+         png_bytep quantize_sort;
+         int i, j;
 
-         /* Initialize an array to sort colors */
-         png_ptr->quantize_sort = (png_bytep)png_malloc(png_ptr,
+         /* Initialize the local array to sort colors. */
+         quantize_sort = (png_bytep)png_malloc(png_ptr,
              (png_alloc_size_t)num_palette);
-
-         /* Initialize the quantize_sort array */
          for (i = 0; i < num_palette; i++)
-            png_ptr->quantize_sort[i] = (png_byte)i;
+            quantize_sort[i] = (png_byte)i;
 
          /* Find the least used palette entries by starting a
           * bubble sort, and running it until we have sorted
@@ -529,19 +544,18 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          for (i = num_palette - 1; i >= maximum_colors; i--)
          {
             int done; /* To stop early if the list is pre-sorted */
-            int j;
 
             done = 1;
             for (j = 0; j < i; j++)
             {
-               if (histogram[png_ptr->quantize_sort[j]]
-                   < histogram[png_ptr->quantize_sort[j + 1]])
+               if (histogram[quantize_sort[j]]
+                   < histogram[quantize_sort[j + 1]])
                {
                   png_byte t;
 
-                  t = png_ptr->quantize_sort[j];
-                  png_ptr->quantize_sort[j] = png_ptr->quantize_sort[j + 1];
-                  png_ptr->quantize_sort[j + 1] = t;
+                  t = quantize_sort[j];
+                  quantize_sort[j] = quantize_sort[j + 1];
+                  quantize_sort[j + 1] = t;
                   done = 0;
                }
             }
@@ -553,18 +567,18 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          /* Swap the palette around, and set up a table, if necessary */
          if (full_quantize != 0)
          {
-            int j = num_palette;
+            j = num_palette;
 
             /* Put all the useful colors within the max, but don't
              * move the others.
              */
             for (i = 0; i < maximum_colors; i++)
             {
-               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
+               if ((int)quantize_sort[i] >= maximum_colors)
                {
                   do
                      j--;
-                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
+                  while ((int)quantize_sort[j] >= maximum_colors);
 
                   palette[i] = palette[j];
                }
@@ -572,7 +586,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
          }
          else
          {
-            int j = num_palette;
+            j = num_palette;
 
             /* Move all the used colors inside the max limit, and
              * develop a translation table.
@@ -580,13 +594,13 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
             for (i = 0; i < maximum_colors; i++)
             {
                /* Only move the colors we need to */
-               if ((int)png_ptr->quantize_sort[i] >= maximum_colors)
+               if ((int)quantize_sort[i] >= maximum_colors)
                {
                   png_color tmp_color;
 
                   do
                      j--;
-                  while ((int)png_ptr->quantize_sort[j] >= maximum_colors);
+                  while ((int)quantize_sort[j] >= maximum_colors);
 
                   tmp_color = palette[j];
                   palette[j] = palette[i];
@@ -624,8 +638,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
                }
             }
          }
-         png_free(png_ptr, png_ptr->quantize_sort);
-         png_ptr->quantize_sort = NULL;
+         png_free(png_ptr, quantize_sort);
       }
       else
       {
@@ -1768,19 +1781,51 @@ png_init_read_transformations(png_structrp png_ptr)
                   }
                   else /* if (png_ptr->trans_alpha[i] != 0xff) */
                   {
-                     png_byte v, w;
+                     if ((png_ptr->flags & PNG_FLAG_OPTIMIZE_ALPHA) != 0)
+                     {
+                        /* Premultiply only:
+                         * component = round((component * alpha) / 255)
+                         */
+                        png_uint_32 component;
 
-                     v = png_ptr->gamma_to_1[palette[i].red];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.red);
-                     palette[i].red = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].red];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].red = png_ptr->gamma_from_1[component];
 
-                     v = png_ptr->gamma_to_1[palette[i].green];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.green);
-                     palette[i].green = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].green];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].green = png_ptr->gamma_from_1[component];
 
-                     v = png_ptr->gamma_to_1[palette[i].blue];
-                     png_composite(w, v, png_ptr->trans_alpha[i], back_1.blue);
-                     palette[i].blue = png_ptr->gamma_from_1[w];
+                        component = png_ptr->gamma_to_1[palette[i].blue];
+                        component =
+                            (component * png_ptr->trans_alpha[i] + 128) / 255;
+                        palette[i].blue = png_ptr->gamma_from_1[component];
+                     }
+                     else
+                     {
+                        /* Composite with background color:
+                         * component =
+                         *    alpha * component + (1 - alpha) * background
+                         */
+                        png_byte v, w;
+
+                        v = png_ptr->gamma_to_1[palette[i].red];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.red);
+                        palette[i].red = png_ptr->gamma_from_1[w];
+
+                        v = png_ptr->gamma_to_1[palette[i].green];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.green);
+                        palette[i].green = png_ptr->gamma_from_1[w];
+
+                        v = png_ptr->gamma_to_1[palette[i].blue];
+                        png_composite(w, v,
+                            png_ptr->trans_alpha[i], back_1.blue);
+                        palette[i].blue = png_ptr->gamma_from_1[w];
+                     }
                   }
                }
                else
@@ -1798,6 +1843,7 @@ png_init_read_transformations(png_structrp png_ptr)
              * transformations elsewhere.
              */
             png_ptr->transformations &= ~(PNG_COMPOSE | PNG_GAMMA);
+            png_ptr->flags &= ~PNG_FLAG_OPTIMIZE_ALPHA;
          } /* color_type == PNG_COLOR_TYPE_PALETTE */
 
          /* if (png_ptr->background_gamma_type!=PNG_BACKGROUND_GAMMA_UNKNOWN) */
@@ -5003,13 +5049,8 @@ png_do_read_transformations(png_structrp png_ptr, png_row_infop row_info)
 
 #ifdef PNG_READ_QUANTIZE_SUPPORTED
    if ((png_ptr->transformations & PNG_QUANTIZE) != 0)
-   {
       png_do_quantize(row_info, png_ptr->row_buf + 1,
           png_ptr->palette_lookup, png_ptr->quantize_index);
-
-      if (row_info->rowbytes == 0)
-         png_error(png_ptr, "png_do_quantize returned rowbytes=0");
-   }
 #endif /* READ_QUANTIZE */
 
 #ifdef PNG_READ_EXPAND_16_SUPPORTED
