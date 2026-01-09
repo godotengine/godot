@@ -6473,7 +6473,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 												ShaderNode::Uniform::Hint hint = u->hint;
 
 												if (hint == ShaderNode::Uniform::HINT_DEPTH_TEXTURE || hint == ShaderNode::Uniform::HINT_SCREEN_TEXTURE || hint == ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-													_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to custom function. Consider to sample it in the main function and then pass the vector result to it."), get_uniform_hint_name(hint)));
+													_set_error(vformat(RTR("Unable to pass a multiview texture sampler as a parameter to a custom function. Consider sampling it in the main function and then passing the vector result to the custom function."), get_uniform_hint_name(hint)));
 													return nullptr;
 												}
 											}
@@ -6483,6 +6483,11 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 												return nullptr;
 											}
 										} else if (p_function_info.built_ins.has(varname)) {
+											if (is_custom_func && varname == SNAME("RADIANCE")) {
+												_set_error(RTR("Unable to pass RADIANCE texture sampler as a parameter to a custom function. Consider sampling it in the main function and then passing the vector result to the custom function."));
+												return nullptr;
+											}
+
 											//a built-in
 											if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
 												return nullptr;
