@@ -103,8 +103,9 @@ void GraphFrame::_notification(int p_what) {
 			Ref<StyleBoxFlat> sb_panel_flat = sb_to_draw_panel;
 			Ref<StyleBoxTexture> sb_panel_texture = sb_to_draw_panel;
 
-			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
+			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_combined_minimum_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
+			titlebar_rect.size.width = body_size.width;
 			body_size.y -= titlebar_rect.size.height;
 			Rect2 body_rect(Point2(0, titlebar_rect.size.height), body_size);
 
@@ -265,7 +266,7 @@ HBoxContainer *GraphFrame::get_titlebar_hbox() {
 }
 
 Size2 GraphFrame::get_titlebar_size() const {
-	return titlebar_hbox->get_size() + theme_cache.titlebar->get_minimum_size();
+	return titlebar_hbox->get_combined_minimum_size() + theme_cache.titlebar->get_minimum_size();
 }
 
 void GraphFrame::set_drag_margin(int p_margin) {
@@ -304,7 +305,7 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	}
 
 	// For grabbing on the titlebar.
-	int titlebar_height = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height;
+	int titlebar_height = titlebar_hbox->get_combined_minimum_size().height + sb_titlebar->get_minimum_size().height;
 	if (Rect2(0, 0, get_size().width, titlebar_height).has_point(p_point)) {
 		return true;
 	}
