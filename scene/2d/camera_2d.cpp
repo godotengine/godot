@@ -196,6 +196,11 @@ Transform2D Camera2D::get_camera_transform() {
 		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
 			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
 			real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
+			// Divide by time_scale to get unscaled delta
+			real_t time_scale = Engine::get_singleton()->get_time_scale();
+			if (time_scale > 0) {
+				delta /= time_scale;
+			}
 			real_t c = position_smoothing_speed * delta;
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
@@ -213,7 +218,12 @@ Transform2D Camera2D::get_camera_transform() {
 
 	if (!ignore_rotation) {
 		if (rotation_smoothing_enabled && !is_part_of_edited_scene()) {
-			real_t step = rotation_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			real_t step_delta = (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			real_t time_scale = Engine::get_singleton()->get_time_scale();
+			if (time_scale > 0) {
+				step_delta /= time_scale;
+			}
+			real_t step = rotation_smoothing_speed * step_delta;
 			camera_angle = Math::lerp_angle(camera_angle, get_global_rotation(), step);
 		} else {
 			camera_angle = get_global_rotation();
