@@ -57,6 +57,12 @@ public:
 		SCROLL_HINT_MODE_BOTTOM,
 	};
 
+	enum WrapSelectionMode {
+		WRAP_SELECTION_NONE,
+		WRAP_SELECTION_AROUND,
+		WRAP_SELECTION_SAME_AXIS,
+	};
+
 private:
 	struct Item {
 		mutable RID accessibility_item_element;
@@ -126,6 +132,7 @@ private:
 
 	SelectMode select_mode = SELECT_SINGLE;
 	IconMode icon_mode = ICON_MODE_LEFT;
+	WrapSelectionMode wrap_selection_mode = WRAP_SELECTION_NONE;
 	VScrollBar *scroll_bar_v = nullptr;
 	HScrollBar *scroll_bar_h = nullptr;
 	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
@@ -304,6 +311,9 @@ public:
 	void set_icon_mode(IconMode p_mode);
 	IconMode get_icon_mode() const;
 
+	void set_wrap_selection_mode(WrapSelectionMode p_mode);
+	WrapSelectionMode get_wrap_selection_mode() const;
+
 	void set_fixed_icon_size(const Size2i &p_size);
 	Size2i get_fixed_icon_size() const;
 
@@ -361,3 +371,4 @@ public:
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
 VARIANT_ENUM_CAST(ItemList::ScrollHintMode);
+VARIANT_ENUM_CAST(ItemList::WrapSelectionMode);

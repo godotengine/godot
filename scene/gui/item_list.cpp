@@ -688,6 +688,19 @@ ItemList::IconMode ItemList::get_icon_mode() const {
 	return icon_mode;
 }
 
+void ItemList::set_wrap_selection_mode(WrapSelectionMode p_mode) {
+	ERR_FAIL_INDEX((int)p_mode, 3);
+	if (wrap_selection_mode == p_mode) {
+		return;
+	}
+
+	wrap_selection_mode = p_mode;
+}
+
+ItemList::WrapSelectionMode ItemList::get_wrap_selection_mode() const {
+	return wrap_selection_mode;
+}
+
 void ItemList::set_fixed_icon_size(const Size2i &p_size) {
 	if (fixed_icon_size == p_size) {
 		return;
@@ -951,22 +964,34 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (current >= current_columns) {
-				int next = current - current_columns;
-				while (next >= 0 && !CAN_SELECT(next)) {
-					next = next - current_columns;
+			int column = current % current_columns;
+			int rows = Math::ceil(items.size() / (float)current_columns);
+			int next = current - current_columns;
+
+			if (wrap_selection_mode == WRAP_SELECTION_SAME_AXIS) {
+				if (current < current_columns) {
+					next = column + (rows - 1) * current_columns;
+					if (next >= items.size()) {
+						next -= current_columns;
+					}
 				}
-				if (next < 0) {
-					accept_event();
-					return;
-				}
-				set_current(next);
-				ensure_current_is_visible();
-				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SceneStringName(item_selected), current);
-				}
-				accept_event();
 			}
+
+			while (next >= 0 && !CAN_SELECT(next)) {
+				next = next - current_columns;
+			}
+
+			if (next < 0) {
+				accept_event();
+				return;
+			}
+
+			set_current(next);
+			ensure_current_is_visible();
+			if (select_mode == SELECT_SINGLE) {
+				emit_signal(SceneStringName(item_selected), current);
+			}
+			accept_event();
 		}
 
 		// Shift Down Selection.
@@ -997,22 +1022,30 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (current < items.size() - current_columns) {
-				int next = current + current_columns;
-				while (next < items.size() && !CAN_SELECT(next)) {
-					next = next + current_columns;
+			int column = current % current_columns;
+			int next = current + current_columns;
+
+			if (wrap_selection_mode == WRAP_SELECTION_SAME_AXIS) {
+				if (current >= items.size() - current_columns) {
+					next = column;
 				}
-				if (next >= items.size()) {
-					accept_event();
-					return;
-				}
-				set_current(next);
-				ensure_current_is_visible();
-				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SceneStringName(item_selected), current);
-				}
-				accept_event();
 			}
+
+			while (next < items.size() && !CAN_SELECT(next)) {
+				next = next + current_columns;
+			}
+
+			if (next >= items.size()) {
+				accept_event();
+				return;
+			}
+
+			set_current(next);
+			ensure_current_is_visible();
+			if (select_mode == SELECT_SINGLE) {
+				emit_signal(SceneStringName(item_selected), current);
+			}
+			accept_event();
 		} else if (p_event->is_action("ui_page_up", true)) {
 			search_string = ""; //any mousepress cancels
 
@@ -1056,23 +1089,30 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		else if (p_event->is_action("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
-			if (current % current_columns != 0) {
-				int current_row = current / current_columns;
-				int next = current - 1;
-				while (next >= 0 && !CAN_SELECT(next)) {
-					next = next - 1;
+			int current_row = current / current_columns;
+			int next = current - 1;
+
+			if (wrap_selection_mode == WRAP_SELECTION_SAME_AXIS) {
+				if (current % current_columns == 0) {
+					next = MIN((current_row + 1) * current_columns - 1, items.size() - 1);
 				}
-				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
-					return;
-				}
-				set_current(next);
-				ensure_current_is_visible();
-				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SceneStringName(item_selected), current);
-				}
-				accept_event();
 			}
+
+			while (next >= 0 && !CAN_SELECT(next)) {
+				next = next - 1;
+			}
+
+			if (next < 0 || (!IS_SAME_ROW(next, current_row) && wrap_selection_mode != WRAP_SELECTION_AROUND)) {
+				accept_event();
+				return;
+			}
+
+			set_current(next);
+			ensure_current_is_visible();
+			if (select_mode == SELECT_SINGLE) {
+				emit_signal(SceneStringName(item_selected), current);
+			}
+			accept_event();
 		}
 
 		// Shift Right Selection.
@@ -1085,23 +1125,30 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		else if (p_event->is_action("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
-			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
-				int current_row = current / current_columns;
-				int next = current + 1;
-				while (next < items.size() && !CAN_SELECT(next)) {
-					next = next + 1;
+			int current_row = current / current_columns;
+			int next = current + 1;
+
+			if (wrap_selection_mode == WRAP_SELECTION_SAME_AXIS) {
+				if (current % current_columns == (current_columns - 1) || current == items.size() - 1) {
+					next = current_row * MIN(items.size(), current_columns);
 				}
-				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
-					accept_event();
-					return;
-				}
-				set_current(next);
-				ensure_current_is_visible();
-				if (select_mode == SELECT_SINGLE) {
-					emit_signal(SceneStringName(item_selected), current);
-				}
-				accept_event();
 			}
+
+			while (next < items.size() && !CAN_SELECT(next)) {
+				next = next + 1;
+			}
+
+			if (next >= items.size() || (!IS_SAME_ROW(next, current_row) && wrap_selection_mode != WRAP_SELECTION_AROUND)) {
+				accept_event();
+				return;
+			}
+
+			set_current(next);
+			ensure_current_is_visible();
+			if (select_mode == SELECT_SINGLE) {
+				emit_signal(SceneStringName(item_selected), current);
+			}
+			accept_event();
 		} else if (p_event->is_action("ui_cancel", true)) {
 			search_string = "";
 		} else if (p_event->is_action("ui_select", true) && (select_mode == SELECT_MULTI || select_mode == SELECT_TOGGLE)) {
@@ -2344,6 +2391,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_icon_mode", "mode"), &ItemList::set_icon_mode);
 	ClassDB::bind_method(D_METHOD("get_icon_mode"), &ItemList::get_icon_mode);
 
+	ClassDB::bind_method(D_METHOD("set_wrap_selection_mode", "mode"), &ItemList::set_wrap_selection_mode);
+	ClassDB::bind_method(D_METHOD("get_wrap_selection_mode"), &ItemList::get_wrap_selection_mode);
+
 	ClassDB::bind_method(D_METHOD("set_fixed_icon_size", "size"), &ItemList::set_fixed_icon_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_icon_size"), &ItemList::get_fixed_icon_size);
 
@@ -2397,6 +2447,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wraparound_items"), "set_wraparound_items", "has_wraparound_items");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_selection_mode", PROPERTY_HINT_ENUM, "None,Around,Same Axis"), "set_wrap_selection_mode", "get_wrap_selection_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,Both,Top,Bottom"), "set_scroll_hint_mode", "get_scroll_hint_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
@@ -2420,6 +2471,10 @@ void ItemList::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTH);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM);
+
+	BIND_ENUM_CONSTANT(WRAP_SELECTION_NONE);
+	BIND_ENUM_CONSTANT(WRAP_SELECTION_AROUND);
+	BIND_ENUM_CONSTANT(WRAP_SELECTION_SAME_AXIS);
 
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("empty_clicked", PropertyInfo(Variant::VECTOR2, "at_position"), PropertyInfo(Variant::INT, "mouse_button_index")));

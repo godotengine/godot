@@ -433,6 +433,11 @@
 		<member name="tile_scroll_hint" type="bool" setter="set_tile_scroll_hint" getter="is_scroll_hint_tiled" default="false">
 			If [code]true[/code], the scroll hint texture will be tiled instead of stretched. See [member scroll_hint_mode].
 		</member>
+		<member name="wrap_selection_mode" type="int" setter="set_wrap_selection_mode" getter="get_wrap_selection_mode" enum="ItemList.WrapSelectionMode" default="0">
+			Determines how the selection behaves when attempting to navigate beyond the boundaries of the list.
+			This controls whether the selection fails, wraps back to the beginning of the next row, or loops within the current row/column.
+			See the [enum WrapSelectionMode] constants.
+		</member>
 		<member name="wraparound_items" type="bool" setter="set_wraparound_items" getter="has_wraparound_items" default="true">
 			If [code]true[/code], the control will automatically move items into a new row to fit its content. See also [HFlowContainer] for this behavior.
 			If [code]false[/code], the control will add a horizontal scrollbar to make all items visible.
@@ -504,6 +509,15 @@
 		</constant>
 		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
 			Only the bottom scroll hint will be shown.
+		</constant>
+		<constant name="WRAP_SELECTION_NONE" value="0" enum="WrapSelectionMode">
+			The selection stops at the edges of the list.
+		</constant>
+		<constant name="WRAP_SELECTION_AROUND" value="1" enum="WrapSelectionMode">
+			The selection wraps around to the start of the next row.
+		</constant>
+		<constant name="WRAP_SELECTION_SAME_AXIS" value="2" enum="WrapSelectionMode">
+			The selection loops around the current axis (row/column).
 		</constant>
 	</constants>
 	<theme_items>
