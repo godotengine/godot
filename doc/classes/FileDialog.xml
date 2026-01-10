@@ -347,6 +347,9 @@
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows accessing files on the whole file system.
 		</constant>
+		<constant name="ACCESS_EDITOR_RESOURCES" value="3" enum="Access">
+			The dialog only allows accessing files under the editor [Resource] path ([code]editor://[/code]).
+		</constant>
 		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
 			The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
 		</constant>
