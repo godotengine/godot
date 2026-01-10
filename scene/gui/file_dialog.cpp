@@ -76,6 +76,10 @@ void FileDialog::_native_popup() {
 		root = ProjectSettings::get_singleton()->get_resource_path();
 	} else if (access == ACCESS_USERDATA) {
 		root = OS::get_singleton()->get_user_data_dir();
+#ifdef TOOLS_ENABLED
+	} else if (access == ACCESS_GLOBAL_RESOURCES) {
+		root = ProjectSettings::get_singleton()->get_global_resource_path();
+#endif
 	}
 
 	// Attach native file dialog to first persistent parent window.
@@ -93,7 +97,7 @@ void FileDialog::_native_popup() {
 }
 
 bool FileDialog::_can_use_native_popup() const {
-	if (access == ACCESS_RESOURCES || access == ACCESS_USERDATA || options.size() > 0) {
+	if (access == ACCESS_RESOURCES || access == ACCESS_USERDATA || access == ACCESS_GLOBAL_RESOURCES || options.size() > 0) {
 		return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
 	}
 	return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE);
@@ -1537,7 +1541,7 @@ bool FileDialog::is_customization_flag_enabled(Customization p_flag) const {
 }
 
 void FileDialog::set_access(Access p_access) {
-	ERR_FAIL_INDEX(p_access, 3);
+	ERR_FAIL_INDEX((int)p_access, 4);
 	if (access == p_access) {
 		return;
 	}
@@ -1554,6 +1558,9 @@ void FileDialog::set_access(Access p_access) {
 		} break;
 		case ACCESS_RESOURCES: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} break;
+		case ACCESS_GLOBAL_RESOURCES: {
+			dir_access = DirAccess::create(DirAccess::ACCESS_GLOBAL_RESOURCES);
 		} break;
 		case ACCESS_USERDATA: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_USERDATA);
@@ -1640,10 +1647,24 @@ void FileDialog::_select_drive(int p_idx) {
 }
 
 void FileDialog::_change_dir(const String &p_new_dir) {
-	if (access == ACCESS_RESOURCES && p_new_dir.begins_with("user://")) {
-		ERR_FAIL_MSG("Can't change to userdata folder when using ACCESS_RESOURCES.");
-	} else if (access == ACCESS_USERDATA && p_new_dir.begins_with("res://")) {
-		ERR_FAIL_MSG("Can't change to resources folder when using ACCESS_USERDATA.");
+	if (access == ACCESS_RESOURCES) {
+		if (p_new_dir.begins_with("user://")) {
+			ERR_FAIL_MSG("Can't change to userdata folder when using ACCESS_RESOURCES.");
+		} else if (p_new_dir.begins_with("global://")) {
+			ERR_FAIL_MSG("Can't change to global resources folder when using ACCESS_RESOURCES.");
+		}
+	} else if (access == ACCESS_USERDATA) {
+		if (p_new_dir.begins_with("global://")) {
+			ERR_FAIL_MSG("Can't change to global resources folder when using ACCESS_USERDATA.");
+		} else if (p_new_dir.begins_with("res://")) {
+			ERR_FAIL_MSG("Can't change to resources folder when using ACCESS_USERDATA.");
+		}
+	} else if (access == ACCESS_GLOBAL_RESOURCES) {
+		if (p_new_dir.begins_with("user://")) {
+			ERR_FAIL_MSG("Can't change to userdata folder when using ACCESS_GLOBAL_RESOURCES.");
+		} else if (p_new_dir.begins_with("res://")) {
+			ERR_FAIL_MSG("Can't change to resources folder when using ACCESS_GLOBAL_RESOURCES.");
+		}
 	}
 
 	if (root_prefix.is_empty()) {
@@ -1936,12 +1957,15 @@ void FileDialog::_update_recent_list() {
 bool FileDialog::_path_matches_access(const String &p_path) const {
 	bool is_res = p_path.begins_with("res://");
 	bool is_user = p_path.begins_with("user://");
+	bool is_global = p_path.begins_with("global://");
 	if (access == ACCESS_RESOURCES) {
 		return is_res;
 	} else if (access == ACCESS_USERDATA) {
 		return is_user;
+	} else if (access == ACCESS_GLOBAL_RESOURCES) {
+		return is_global;
 	}
-	return !is_res && !is_user;
+	return !is_res && !is_user && !is_global;
 }
 
 TypedArray<Dictionary> FileDialog::_get_options() const {
@@ -2209,6 +2233,7 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ACCESS_RESOURCES);
 	BIND_ENUM_CONSTANT(ACCESS_USERDATA);
 	BIND_ENUM_CONSTANT(ACCESS_FILESYSTEM);
+	BIND_ENUM_CONSTANT(ACCESS_GLOBAL_RESOURCES);
 
 	BIND_ENUM_CONSTANT(DISPLAY_THUMBNAILS);
 	BIND_ENUM_CONSTANT(DISPLAY_LIST);
