@@ -102,7 +102,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			Ref<Shortcut> sc;
 			sc.instantiate();
 			sc->set_events(shortcut_events);
-			_add_shortcut_default(shortcut_name, sc);
+			add_shortcut(shortcut_name, sc);
 		}
 
 		return false;
