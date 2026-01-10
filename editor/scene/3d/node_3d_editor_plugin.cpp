@@ -9610,18 +9610,29 @@ void Node3DEditor::_preview_settings_changed() {
 
 	{ //preview env
 		sky_material->set_energy_multiplier(environ_energy->get_value());
-		Color hz_color = environ_sky_color->get_pick_color().lerp(environ_ground_color->get_pick_color(), 0.5);
-		float hz_lum = hz_color.get_luminance() * 3.333;
-		hz_color = hz_color.lerp(Color(hz_lum, hz_lum, hz_lum), 0.5);
+
+		const float horizon_brightness = 1.6;
+		const float horizon_saturation = 0.65;
+		Color sky_color_linear = environ_sky_color->get_pick_color().srgb_to_linear();
+		Color ground_color_linear = environ_ground_color->get_pick_color().srgb_to_linear();
+		Color horizon_color = sky_color_linear.lerp(ground_color_linear, 0.5);
+		float sky_luminance = sky_color_linear.get_luminance();
+		float ground_luminance = ground_color_linear.get_luminance();
+		float horizon_luminance = sky_luminance > ground_luminance ? sky_luminance : ground_luminance;
+		horizon_luminance *= horizon_brightness;
+		horizon_color *= horizon_luminance / horizon_color.get_luminance();
+		horizon_color = horizon_color.lerp(Color(horizon_luminance, horizon_luminance, horizon_luminance), horizon_saturation);
+		horizon_color = horizon_color.linear_to_srgb();
+
 		sky_material->set_sky_top_color(environ_sky_color->get_pick_color());
-		sky_material->set_sky_horizon_color(hz_color);
+		sky_material->set_sky_horizon_color(horizon_color);
 		sky_material->set_ground_bottom_color(environ_ground_color->get_pick_color());
-		sky_material->set_ground_horizon_color(hz_color);
+		sky_material->set_ground_horizon_color(horizon_color);
 
 		environment->set_ssao_enabled(environ_ao_button->is_pressed());
 		environment->set_glow_enabled(environ_glow_button->is_pressed());
 		environment->set_sdfgi_enabled(environ_gi_button->is_pressed());
-		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_FILMIC : Environment::TONE_MAPPER_LINEAR);
+		environment->set_tonemapper(environ_tonemap_button->is_pressed() ? Environment::TONE_MAPPER_AGX : Environment::TONE_MAPPER_LINEAR);
 	}
 }
 
@@ -9639,13 +9650,13 @@ void Node3DEditor::_load_default_preview_settings() {
 	sun_angle_altitude->set_value_no_signal(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value_no_signal(180.0 - Math::rad_to_deg(sun_rotation.y));
 	sun_direction->queue_redraw();
-	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
-	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
+	environ_sky_color->set_pick_color(Color(0.408, 0.584, 0.796));
+	environ_ground_color->set_pick_color(Color(0.243, 0.2, 0.157));
 	environ_energy->set_value_no_signal(1.0);
 	if (OS::get_singleton()->get_current_rendering_method() != "gl_compatibility" && OS::get_singleton()->get_current_rendering_method() != "dummy") {
 		environ_glow_button->set_pressed_no_signal(true);
 	}
-	environ_tonemap_button->set_pressed_no_signal(true);
+	environ_tonemap_button->set_pressed_no_signal(false);
 	environ_ao_button->set_pressed_no_signal(false);
 	environ_gi_button->set_pressed_no_signal(false);
 	sun_shadow_max_distance->set_value_no_signal(100);
