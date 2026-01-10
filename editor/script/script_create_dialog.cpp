@@ -254,12 +254,13 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) {
+
+	if (!p.begins_with("res://") && !p.begins_with("editor://")) {
 		return TTRC("Path is not local.");
 	}
 
 	{
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create_for_path(p);
 		if (da->change_dir(p.get_base_dir()) != OK) {
 			return TTRC("Base path is invalid.");
 		}
@@ -267,7 +268,7 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 
 	{
 		// Check if file exists.
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create_for_path(p);
 		if (da->dir_exists(p)) {
 			return TTRC("A directory with the same name exists.");
 		} else if (p_file_must_exist && !da->file_exists(p)) {
@@ -460,6 +461,11 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	file_browse->clear_filters();
 	file_browse->add_filter("*." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 
+	if (file_path->get_text().begins_with("res://")) {
+		file_browse->set_access(EditorFileDialog::ACCESS_RESOURCES);
+	} else if (file_path->get_text().begins_with("editor://")) {
+		file_browse->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+	}
 	file_browse->set_current_path(file_path->get_text());
 	file_browse->popup_file_dialog();
 }
@@ -507,7 +513,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	// Check if file exists.
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_path);
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (da->file_exists(p)) {
 		is_new_script_created = false;
