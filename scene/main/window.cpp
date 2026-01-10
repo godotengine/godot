@@ -1945,7 +1945,8 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		Window *parent_window = get_parent_visible_window();
+		DisplayServer::WindowID parent_id = parent_window ? parent_window->get_window_id() : DisplayServer::MAIN_WINDOW_ID;
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
@@ -1987,7 +1988,8 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		Window *parent_window = get_parent_visible_window();
+		DisplayServer::WindowID parent_id = parent_window ? parent_window->get_window_id() : DisplayServer::MAIN_WINDOW_ID;
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
@@ -2024,7 +2026,8 @@ void Window::popup_centered_ratio(float p_ratio) {
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
-		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
+		Window *parent_window = get_parent_visible_window();
+		DisplayServer::WindowID parent_id = parent_window ? parent_window->get_window_id() : DisplayServer::MAIN_WINDOW_ID;
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
 		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
 		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);

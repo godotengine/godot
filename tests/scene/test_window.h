@@ -88,6 +88,33 @@ TEST_CASE("[SceneTree][Window]") {
 		memdelete(c);
 		memdelete(w);
 	}
+
+	SUBCASE("Child window popup should work when parent window is invisible") {
+		// GH-114812: When a parent Window is invisible and embed_subwindows is disabled,
+		// child dialogs should still be able to popup without crashing.
+		Window *parent_window = memnew(Window);
+		root->add_child(parent_window);
+		parent_window->set_visible(false); // Parent is invisible
+		parent_window->set_force_native(true); // Force non-embedded mode
+
+		Window *child_window = memnew(Window);
+		parent_window->add_child(child_window);
+
+		// These should not crash even though parent is invisible and get_parent_visible_window() returns nullptr
+		child_window->popup_centered(Size2i(200, 200));
+		CHECK(child_window->is_visible());
+
+		child_window->hide();
+		child_window->popup_centered_ratio(0.5);
+		CHECK(child_window->is_visible());
+
+		child_window->hide();
+		child_window->popup_centered_clamped(Size2i(300, 300), 0.75);
+		CHECK(child_window->is_visible());
+
+		memdelete(child_window);
+		memdelete(parent_window);
+	}
 }
 
 } // namespace TestWindow
