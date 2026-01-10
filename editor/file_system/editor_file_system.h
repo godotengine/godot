@@ -84,6 +84,7 @@ class EditorFileSystemDirectory : public Object {
 	friend class EditorFileSystem;
 
 public:
+	String get_root_path() { return root_path; }
 	String get_name();
 	String get_path() const;
 
@@ -387,6 +388,7 @@ public:
 	static EditorFileSystem *get_singleton() { return singleton; }
 
 	EditorFileSystemDirectory *get_filesystem();
+	EditorFileSystemDirectory *get_editor_filesystem();
 	bool is_scanning() const;
 	bool is_importing() const { return importing; }
 	bool doing_first_scan() const { return first_scan; }

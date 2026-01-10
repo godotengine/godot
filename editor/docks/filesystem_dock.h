@@ -164,6 +164,7 @@ private:
 	HashSet<String> favorites;
 
 	Button *button_toggle_display_mode = nullptr;
+	Button *button_toggle_show_editor_directory = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;
@@ -255,6 +256,7 @@ private:
 	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
 	TreeItem *resources_item = nullptr;
+	TreeItem *editor_resources_item = nullptr;
 	TreeItem *favorites_item = nullptr;
 	Control *had_focus = nullptr;
 
@@ -267,6 +269,8 @@ private:
 	HashSet<String> cached_valid_conversion_targets;
 
 	Vector<String> prev_selection;
+
+	bool show_editor_directory = false;
 
 	void _update_selection_changed();
 
@@ -343,6 +347,8 @@ private:
 
 	void _change_split_mode();
 	void _split_dragged(int p_offset);
+
+	void _toggle_show_editor_directory(bool toggled_on);
 
 	void _search_changed(const String &p_text, const Control *p_from);
 	bool _matches_all_search_tokens(const String &p_text);

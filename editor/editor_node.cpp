@@ -1797,6 +1797,11 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 
 	if (!p_at_path.is_empty()) {
+		if (p_at_path.begins_with("editor://")) {
+			file->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+		} else {
+			file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+		}
 		file->set_current_dir(p_at_path);
 		if (is_resource) {
 			file->set_current_file(resource_path.get_file());
@@ -4728,8 +4733,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (!lpath.begins_with("res://")) {
-		show_accept(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
+	if (!lpath.begins_with("res://") && !lpath.begins_with("editor://")) {
+		show_accept(TTR("Error loading scene, it must be inside the project path or the editor path. Use 'Import' to open the scene, then save it inside the project path."), TTR("OK"));
 		return ERR_FILE_NOT_FOUND;
 	}
 

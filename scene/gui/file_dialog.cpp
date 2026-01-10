@@ -1507,7 +1507,7 @@ bool FileDialog::is_customization_flag_enabled(Customization p_flag) const {
 }
 
 void FileDialog::set_access(Access p_access) {
-	ERR_FAIL_INDEX(p_access, 3);
+	ERR_FAIL_INDEX(p_access, 4);
 	if (access == p_access) {
 		return;
 	}
@@ -1524,6 +1524,9 @@ void FileDialog::set_access(Access p_access) {
 		} break;
 		case ACCESS_RESOURCES: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} break;
+		case ACCESS_EDITOR_RESOURCES: {
+			dir_access = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
 		} break;
 		case ACCESS_USERDATA: {
 			dir_access = DirAccess::create(DirAccess::ACCESS_USERDATA);
@@ -1878,12 +1881,15 @@ void FileDialog::_update_recent_list() {
 bool FileDialog::_path_matches_access(const String &p_path) const {
 	bool is_res = p_path.begins_with("res://");
 	bool is_user = p_path.begins_with("user://");
+	bool is_editor = p_path.begins_with("editor://");
 	if (access == ACCESS_RESOURCES) {
 		return is_res;
 	} else if (access == ACCESS_USERDATA) {
 		return is_user;
+	} else if (access == ACCESS_EDITOR_RESOURCES) {
+		return is_editor;
 	}
-	return !is_res && !is_user;
+	return !is_res && !is_user && !is_editor;
 }
 
 TypedArray<Dictionary> FileDialog::_get_options() const {
