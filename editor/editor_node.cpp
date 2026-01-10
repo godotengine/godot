@@ -1614,11 +1614,11 @@ void EditorNode::_scan_external_changes() {
 
 	// Check if any edited scene has changed.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 		const String scene_path = editor_data.get_scene_path(i);
 
-		if (scene_path == "" || !da->file_exists(scene_path)) {
+		if (scene_path == "" || !da->file_exists(ProjectSettings::get_singleton()->globalize_path(scene_path))) {
 			continue;
 		}
 
@@ -1924,6 +1924,11 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 
 	if (!p_at_path.is_empty()) {
+		if (p_at_path.begins_with("editor://")) {
+			file->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+		} else {
+			file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+		}
 		file->set_current_dir(p_at_path);
 		if (is_resource) {
 			file->set_current_file(resource_path.get_file());
@@ -2433,7 +2438,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		}
 
 		String path = res->get_path();
-		if (path.begins_with("res://")) {
+		if (path.begins_with("res://") || path.begins_with("editor://")) {
 			int subres_pos = path.find("::");
 			if (subres_pos == -1) {
 				// Actual resource.
@@ -4940,8 +4945,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (!lpath.begins_with("res://")) {
-		show_warning(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."));
+	if (!lpath.begins_with("res://") && !lpath.begins_with("editor://")) {
+		show_warning(TTR("Error loading scene, it must be inside the project or editor path. Use 'Import' to open the scene, then save it inside the project path."));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -5553,7 +5558,7 @@ void EditorNode::_update_recent_scenes() {
 		String path;
 		for (int i = 0; i < rc.size(); i++) {
 			path = rc[i];
-			recent_scenes->add_item(path.replace("res://", ""), i);
+			recent_scenes->add_item(path.replace("res://", "").replace("editor://", ""), i);
 		}
 
 		recent_scenes->add_separator();

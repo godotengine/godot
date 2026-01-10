@@ -522,6 +522,7 @@ void EditorFileSystem::_scan_filesystem() {
 	new_filesystem->root_path = "res://";
 	new_editor_filesystem = memnew(EditorFileSystemDirectory);
 	new_editor_filesystem->root_path = "editor://";
+	new_editor_filesystem->name = "editor://";
 
 	ScannedDirectory *scan_directory;
 	ScannedDirectory *editor_scan_directory;
@@ -1697,7 +1698,7 @@ int EditorFileSystem::_insert_actions_delete_files_directory(EditorFileSystemDir
 
 void EditorFileSystem::_thread_func_sources(void *_userdata) {
 	EditorFileSystem *efs = (EditorFileSystem *)_userdata;
-	if (efs->filesystem) {
+	if (efs->filesystem && efs->editor_filesystem) {
 		EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
 		ScanProgress sp;
 		sp.progress = &pr;
@@ -1897,6 +1898,10 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
 	return filesystem;
 }
 
+EditorFileSystemDirectory *EditorFileSystem::get_editor_filesystem() {
+	return editor_filesystem;
+}
+
 void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, Ref<FileAccess> p_file) {
 	if (!p_dir) {
 		return; //none
@@ -2092,9 +2097,18 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		return nullptr;
 	}
 
-	f = f.substr(6);
+	String root_path = f.begins_with("res://") ? "res://" : "editor://";
+
+	if (root_path == "editor://") {
+		f = f.substr(strlen("editor://"));
+	} else {
+		f = f.substr(strlen("res://"));
+	}
 	f = f.replace_char('\\', '/');
 	if (f.is_empty()) {
+		if (root_path == "editor://") {
+			return editor_filesystem;
+		}
 		return filesystem;
 	}
 
@@ -2109,7 +2123,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 	}
 
 	EditorFileSystemDirectory *fs;
-	if (f.begins_with("editor://")) {
+	if (root_path == "editor://") {
 		fs = editor_filesystem;
 	} else {
 		fs = filesystem;
@@ -3192,9 +3206,23 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 }
 
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da;
+
+	String from_path = p_from;
+	String to_path = p_to;
+
+	if (from_path.begins_with("res://") && to_path.begins_with("res://")) {
+		da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	} else if (from_path.begins_with("editor://") && to_path.begins_with("editor://")) {
+		da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+	} else {
+		da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		from_path = ProjectSettings::get_singleton()->globalize_path(from_path);
+		to_path = ProjectSettings::get_singleton()->globalize_path(to_path);
+	}
+
 	if (FileAccess::exists(p_from + ".import")) {
-		Error err = da->copy(p_from, p_to);
+		Error err = da->copy(from_path, to_path);
 		if (err != OK) {
 			return err;
 		}
@@ -3206,7 +3234,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		String importer_name = cfg->get_value("remap", "importer");
 
 		if (importer_name == "keep" || importer_name == "skip") {
-			err = da->copy(p_from + ".import", p_to + ".import");
+			err = da->copy(from_path + ".import", to_path + ".import");
 			return err;
 		}
 
@@ -3222,7 +3250,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
-		Error err = da->copy(p_from, p_to);
+		Error err = da->copy(from_path, to_path);
 		if (err != OK) {
 			return err;
 		}
@@ -3254,7 +3282,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 			}
 		}
 		if (err == OK && res.is_valid()) {
-			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
+			err = ResourceSaver::save(res, to_path, ResourceSaver::FLAG_COMPRESS);
 			if (err != OK) {
 				return err;
 			}
@@ -3627,7 +3655,21 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 
 Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p_base_path) {
 	Error err;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da;
+	if (p_base_path.is_empty()) {
+		if (p_path.begins_with("res://")) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} else if (p_path.begins_with("editor://")) {
+			da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+		}
+	} else {
+		if (p_base_path.begins_with("res://")) {
+			da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		} else if (p_base_path.begins_with("editor://")) {
+			da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+		}
+	}
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
 	if (!p_base_path.is_empty()) {
 		err = da->change_dir(p_base_path);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open base directory '" + p_base_path + "'.");
@@ -3658,6 +3700,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 		EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 		efd->parent = parent;
 		efd->name = folder;
+		efd->root_path = parent->root_path;
 		parent->subdirs.push_back(efd);
 		parent = efd;
 	}
