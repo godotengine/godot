@@ -2281,7 +2281,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				// Default to PowerShell as done by Windows 10 and later.
 				terminal_emulators.push_back("powershell");
 #elif defined(MACOS_ENABLED)
-				terminal_emulators.push_back("/System/Applications/Utilities/Terminal.app");
+				// NOTE: To avoid duplicating the Terminal icon on the Dock, we will use the `open` command
+				// rather than directly launching the Terminal.app bundle.
+				terminal_emulators.push_back("open");
 #elif defined(LINUXBSD_ENABLED)
 				// Try terminal emulators that ship with common Linux distributions first.
 				terminal_emulators.push_back("gnome-terminal");
@@ -2355,6 +2357,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					terminal_emulator_args.push_back("cd '{directory}' && exec $SHELL");
 					append_default_args = false;
 				}
+			}
+#endif
+
+#ifdef MACOS_ENABLED
+			if (terminal_emulator_setting.is_empty()) {
+				terminal_emulator_args.push_back("-b");
+				terminal_emulator_args.push_back("com.apple.terminal");
 			}
 #endif
 
