@@ -13,7 +13,7 @@
 			The spring joint's damping ratio. A value between [code]0[/code] and [code]1[/code]. When the two bodies move into different directions the system tries to align them to the spring axis again. A high [member damping] value forces the attached bodies to align faster.
 		</member>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="50.0">
-			The spring joint's initial length. The spring will attach to [member node_b] at the joint origin offset by this length on the spring axis. The spring may stretch beyond this length.
+			The spring joint's initial length. The spring will attach to [member Joint2D.node_b] at the joint origin offset by this length on the spring axis. The spring may stretch beyond this length.
 		</member>
 		<member name="rest_length" type="float" setter="set_rest_length" getter="get_rest_length" default="0.0">
 			When the bodies attached to the spring joint move they stretch or squash it. The joint always tries to resize towards this length.
