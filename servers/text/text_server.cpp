@@ -1751,12 +1751,21 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
+	Vector2 pos_floor = p_pos.floor();
+	Vector2 pos_frac = p_pos - pos_floor;
+
+	if (pos_frac != Vector2()) {
+		Transform2D xform;
+		xform.set_origin(pos_frac);
+		RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, xform);
+	}
+
 	Vector2 ofs;
 	// Draw RTL ellipsis string when needed.
 	if (rtl && ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + pos_floor + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1783,10 +1792,16 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 				// Clip right / bottom.
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (ofs.x + glyphs[i].advance > p_clip_r) {
+						if (pos_frac != Vector2()) {
+							RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
+						}
 						return;
 					}
 				} else {
 					if (ofs.y + glyphs[i].advance > p_clip_r) {
+						if (pos_frac != Vector2()) {
+							RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
+						}
 						return;
 					}
 				}
@@ -1807,9 +1822,9 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 			}
 
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + p_pos + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, ofs + pos_floor + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color, p_oversampling);
 			} else if (hex_codes && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & GRAPHEME_IS_EMBEDDED_OBJECT) != GRAPHEME_IS_EMBEDDED_OBJECT)) {
-				TextServer::draw_hex_code_box(p_canvas, glyphs[i].font_size, ofs + p_pos + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
+				TextServer::draw_hex_code_box(p_canvas, glyphs[i].font_size, ofs + pos_floor + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -1822,7 +1837,7 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 	if (!rtl && ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, ofs + pos_floor + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1830,6 +1845,10 @@ void TextServer::shaped_text_draw(const RID &p_shaped, const RID &p_canvas, cons
 				}
 			}
 		}
+	}
+
+	if (pos_frac != Vector2()) {
+		RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
 	}
 }
 
@@ -1847,12 +1866,21 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 	int v_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 
+	Vector2 pos_floor = p_pos.floor();
+	Vector2 pos_frac = p_pos - pos_floor;
+
+	if (pos_frac != Vector2()) {
+		Transform2D xform;
+		xform.set_origin(pos_frac);
+		RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, xform);
+	}
+
 	Vector2 ofs;
 	// Draw RTL ellipsis string when needed.
 	if (rtl && ellipsis_pos >= 0) {
 		for (int i = ellipsis_gl_size - 1; i >= 0; i--) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + pos_floor + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1879,10 +1907,16 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 				// Clip right / bottom.
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (ofs.x + glyphs[i].advance > p_clip_r) {
+						if (pos_frac != Vector2()) {
+							RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
+						}
 						return;
 					}
 				} else {
 					if (ofs.y + glyphs[i].advance > p_clip_r) {
+						if (pos_frac != Vector2()) {
+							RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
+						}
 						return;
 					}
 				}
@@ -1902,7 +1936,7 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 				}
 			}
 			if (glyphs[i].font_rid != RID()) {
-				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph_outline(glyphs[i].font_rid, p_canvas, glyphs[i].font_size, p_outline_size, ofs + pos_floor + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, p_color, p_oversampling);
 			}
 			if (orientation == ORIENTATION_HORIZONTAL) {
 				ofs.x += glyphs[i].advance;
@@ -1915,7 +1949,7 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 	if (!rtl && ellipsis_pos >= 0) {
 		for (int i = 0; i < ellipsis_gl_size; i++) {
 			for (int j = 0; j < ellipsis_glyphs[i].repeat; j++) {
-				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + p_pos + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
+				font_draw_glyph_outline(ellipsis_glyphs[i].font_rid, p_canvas, ellipsis_glyphs[i].font_size, p_outline_size, ofs + pos_floor + Vector2(ellipsis_glyphs[i].x_off, ellipsis_glyphs[i].y_off), ellipsis_glyphs[i].index, p_color, p_oversampling);
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					ofs.x += ellipsis_glyphs[i].advance;
 				} else {
@@ -1923,6 +1957,10 @@ void TextServer::shaped_text_draw_outline(const RID &p_shaped, const RID &p_canv
 				}
 			}
 		}
+	}
+
+	if (pos_frac != Vector2()) {
+		RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas, Transform2D());
 	}
 }
 

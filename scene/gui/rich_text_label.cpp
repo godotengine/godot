@@ -1435,6 +1435,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					}
 
 					Vector2 char_off = char_xform.get_origin();
+					Vector2 glyph_pos = fx_offset + char_off;
+					Vector2 glyph_pos_floor = glyph_pos.floor();
+					Vector2 glyph_pos_frac = glyph_pos - glyph_pos_floor;
+
 					Transform2D char_reverse_xform;
 					if (step == DRAW_STEP_TEXT) {
 						if (selected && use_selected_font_color) {
@@ -1443,41 +1447,42 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 						char_reverse_xform.set_origin(-char_off);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						char_final_xform.columns[2] += glyph_pos_frac;
 						draw_set_transform_matrix(char_final_xform);
 					} else if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW) {
 						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 
 						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						char_final_xform.columns[2] += p_shadow_ofs;
+						char_final_xform.columns[2] += p_shadow_ofs + glyph_pos_frac;
 						draw_set_transform_matrix(char_final_xform);
 					} else if (step == DRAW_STEP_OUTLINE) {
 						font_color = font_outline_color * Color(1, 1, 1, font_color.a);
 
 						char_reverse_xform.set_origin(-char_off);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
+						char_final_xform.columns[2] += glyph_pos_frac;
 						draw_set_transform_matrix(char_final_xform);
 					}
 
-					// Draw glyphs.
 					for (int j = 0; j < glyphs[i].repeat; j++) {
 						bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 						if (!skip) {
 							if (txt_visible) {
 								has_visible_chars = true;
-								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
+								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(glyph_pos - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
-										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, glyph_pos_floor, gl, font_color);
 									} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-										TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
+										TS->draw_hex_code_box(ci, glyphs[i].font_size, glyph_pos_floor, gl, font_color);
 									}
 								} else if (step == DRAW_STEP_SHADOW_OUTLINE && frid != RID()) {
-									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, glyph_pos_floor + p_shadow_ofs, gl, font_color);
 								} else if (step == DRAW_STEP_SHADOW && frid != RID()) {
-									TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
+									TS->font_draw_glyph(frid, ci, glyphs[i].font_size, glyph_pos_floor + p_shadow_ofs, gl, font_color);
 								} else if (step == DRAW_STEP_OUTLINE && frid != RID()) {
-									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
+									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, glyph_pos_floor, gl, font_color);
 								}
 							}
 						}
