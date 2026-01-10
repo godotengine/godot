@@ -34,17 +34,27 @@
 
 #include <cstdint>
 
-#define VIDEO_CODING_AV1_NUM_REF_FRAMES 8
 #define VIDEO_CODING_AV1_REFS_PER_FRAME 7
 #define VIDEO_CODING_AV1_TOTAL_REFS_PER_FRAME 8
-#define VIDEO_CODING_AV1_MAX_TILE_COLS 64
-#define VIDEO_CODING_AV1_MAX_TILE_ROWS 64
+
+#define VIDEO_CODING_AV1_MAX_TILE_WIDTH 4096
+#define VIDEO_CODING_AV1_MAX_TILE_AREA 4096 * 2304
+#define VIDEO_CODING_AV1_MAX_TILE_ROWS 64U
+#define VIDEO_CODING_AV1_MAX_TILE_COLS 64U
+
+#define VIDEO_CODING_AV1_NUM_REF_FRAMES 8
+
 #define VIDEO_CODING_AV1_MAX_SEGMENTS 8
+#define VIDEO_CODING_AV1_SEG_LVL_ALT_Q 0
 #define VIDEO_CODING_AV1_SEG_LVL_MAX 8
+
+#define VIDEO_CODING_AV1_SKIP_MODE_FRAMES 2
+
+#define VIDEO_CODING_AV1_WARPEDMODEL_PREC_BITS 16
+
 #define VIDEO_CODING_AV1_PRIMARY_REF_NONE 7
 #define VIDEO_CODING_AV1_SELECT_INTEGER_MV 2
 #define VIDEO_CODING_AV1_SELECT_SCREEN_CONTENT_TOOLS 2
-#define VIDEO_CODING_AV1_SKIP_MODE_FRAMES 2
 #define VIDEO_CODING_AV1_MAX_LOOP_FILTER_STRENGTHS 4
 #define VIDEO_CODING_AV1_LOOP_FILTER_ADJUSTMENTS 2
 #define VIDEO_CODING_AV1_MAX_CDEF_FILTER_STRENGTHS 8
@@ -57,6 +67,7 @@
 #define VIDEO_CODING_AV1_MAX_NUM_POS_CHROMA 25
 
 #define VIDEO_CODING_AV1_MAX_LOOP_FILTER 63
+#define VIDEO_CODING_AV1_RESTORATION_TILESIZE_MAX 256
 
 static constexpr uint8_t video_coding_av1_segmentation_bits[VIDEO_CODING_AV1_SEG_LVL_MAX] = {
 	8,
@@ -175,6 +186,13 @@ enum VideoCodingAV1FrameRestorationType {
 	VIDEO_CODING_AV1_FRAME_RESTORATION_TYPE_SWITCHABLE = 3,
 };
 
+static constexpr VideoCodingAV1FrameRestorationType video_coding_av1_remap_lr_type[4] = {
+	VIDEO_CODING_AV1_FRAME_RESTORATION_TYPE_NONE,
+	VIDEO_CODING_AV1_FRAME_RESTORATION_TYPE_SWITCHABLE,
+	VIDEO_CODING_AV1_FRAME_RESTORATION_TYPE_WIENER,
+	VIDEO_CODING_AV1_FRAME_RESTORATION_TYPE_SWITCHABLE,
+};
+
 enum VideoCodingAV1ColorPrimaries {
 	VIDEO_CODING_AV1_COLOR_PRIMARIES_BT_709 = 1,
 	VIDEO_CODING_AV1_COLOR_PRIMARIES_BT_UNSPECIFIED = 2,
@@ -237,6 +255,13 @@ enum VideoCodingAV1ChromaSamplePosition {
 	VIDEO_CODING_AV1_CHROMA_SAMPLE_POSITION_RESERVED = 3,
 };
 
+enum VideoCodingAV1WarpModel {
+	VIDEO_CODING_AV1_WARP_MODEL_IDENTITY = 0,
+	VIDEO_CODING_AV1_WARP_MODEL_TRANSLATION = 1,
+	VIDEO_CODING_AV1_WARP_MODEL_ROTZOOM = 2,
+	VIDEO_CODING_AV1_WARP_MODEL_AFFINE = 3,
+};
+
 struct VideoCodingAV1ColorConfig {
 	uint8_t bit_depth;
 
@@ -272,10 +297,11 @@ struct VideoCodingAV1DecoderModelInfo {
 
 struct VideoCodingAV1LoopFilter {
 	uint8_t loop_filter_level[VIDEO_CODING_AV1_MAX_LOOP_FILTER_STRENGTHS];
-	uint8_t loop_filter_ref_deltas[VIDEO_CODING_AV1_TOTAL_REFS_PER_FRAME];
-	uint8_t loop_filter_mode_deltas[VIDEO_CODING_AV1_LOOP_FILTER_ADJUSTMENTS];
+	int8_t loop_filter_ref_deltas[VIDEO_CODING_AV1_TOTAL_REFS_PER_FRAME];
+	int8_t loop_filter_mode_deltas[VIDEO_CODING_AV1_LOOP_FILTER_ADJUSTMENTS];
 
 	uint8_t loop_filter_sharpness;
+	uint8_t update_ref_delta;
 	bool loop_filter_delta_enabled;
 	bool loop_filter_delta_update;
 	bool update_mode_delta;
@@ -286,11 +312,11 @@ struct VideoCodingAV1Quantization {
 
 	bool diff_uv_delta;
 
-	uint8_t delta_q_y_dc;
-	uint8_t delta_q_u_dc;
-	uint8_t delta_q_u_ac;
-	uint8_t delta_q_v_dc;
-	uint8_t delta_q_v_ac;
+	int8_t delta_q_y_dc;
+	int8_t delta_q_u_dc;
+	int8_t delta_q_u_ac;
+	int8_t delta_q_v_dc;
+	int8_t delta_q_v_ac;
 
 	bool using_qmatrix;
 
@@ -300,6 +326,10 @@ struct VideoCodingAV1Quantization {
 };
 
 struct VideoCodingAV1Segmentation {
+	bool segmentation_enabled;
+	bool segmentation_update_map;
+	bool segmentation_temporal_update;
+	bool segmentation_update_data;
 	uint8_t feature_enabled[VIDEO_CODING_AV1_MAX_SEGMENTS];
 	int16_t feature_data[VIDEO_CODING_AV1_MAX_SEGMENTS][VIDEO_CODING_AV1_SEG_LVL_MAX];
 };
@@ -309,20 +339,38 @@ struct VideoCodingAV1TileInfo {
 
 	uint8_t tile_cols;
 	uint8_t tile_rows;
+	Vector<uint16_t> mi_col_starts;
+	Vector<uint16_t> mi_row_starts;
+	Vector<uint16_t> width_in_sbs_minus_1;
+	Vector<uint16_t> height_in_sbs_minus_1;
 
+	uint8_t tile_size_bytes_minus_1;
 	uint16_t context_update_tile_id;
 };
 
 struct VideoCodingAV1CDEF {
+	uint8_t cdef_damping_minus_3;
+	uint8_t cdef_bits;
+	uint8_t cdef_y_pri_strength[VIDEO_CODING_AV1_MAX_CDEF_FILTER_STRENGTHS];
+	uint8_t cdef_y_sec_strength[VIDEO_CODING_AV1_MAX_CDEF_FILTER_STRENGTHS];
+	uint8_t cdef_uv_pri_strength[VIDEO_CODING_AV1_MAX_CDEF_FILTER_STRENGTHS];
+	uint8_t cdef_uv_sec_strength[VIDEO_CODING_AV1_MAX_CDEF_FILTER_STRENGTHS];
 };
 
 struct VideoCodingAV1LoopRestoration {
+	bool uses_lr;
+	bool uses_chroma_lr;
+	VideoCodingAV1FrameRestorationType frame_restoration_type[VIDEO_CODING_AV1_MAX_NUM_PLANES];
+	uint16_t loop_restoration_size[VIDEO_CODING_AV1_MAX_NUM_PLANES];
 };
 
 struct VideoCodingAV1GlobalMotion {
+	uint8_t gm_type[VIDEO_CODING_AV1_NUM_REF_FRAMES];
+	int32_t gm_params[VIDEO_CODING_AV1_NUM_REF_FRAMES][VIDEO_CODING_AV1_GLOBAL_MOTION_PARAMS];
 };
 
 struct VideoCodingAV1FilmGrain {
+	bool apply_grain;
 };
 
 struct VideoCodingAV1SequenceHeader {

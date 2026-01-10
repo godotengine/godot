@@ -1159,6 +1159,53 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		video_capabilities.field_offset_granularity = vk_h264_capabilities.fieldOffsetGranularity;
 	}
 
+	if (enabled_device_extension_names.has(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME)) {
+		// Use a common profile to get AV1 properties.
+		// TODO: is there any value in configuring this profile?
+		VkVideoProfileInfoKHR standard_profile = {};
+		standard_profile.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
+		standard_profile.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR;
+		standard_profile.chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR;
+		standard_profile.chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+		standard_profile.lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+
+		VkVideoDecodeAV1ProfileInfoKHR av1_profile = {};
+		av1_profile.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR;
+		av1_profile.stdProfile = STD_VIDEO_AV1_PROFILE_MAIN;
+		av1_profile.filmGrainSupport = false;
+		standard_profile.pNext = &av1_profile;
+
+		VkVideoCapabilitiesKHR vk_video_capabilities = {};
+		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
+		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		vk_video_capabilities.pNext = &vk_decode_capabilities;
+
+		VkVideoDecodeAV1CapabilitiesKHR vk_av1_capabilities = {};
+		vk_av1_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR;
+		vk_decode_capabilities.pNext = &vk_av1_capabilities;
+
+		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
+
+		// Video capabilities.
+		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
+		video_capabilities.min_coded_extent = vk_video_capabilities.minCodedExtent;
+		video_capabilities.max_coded_extent = vk_video_capabilities.maxCodedExtent;
+		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+		video_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+
+		// Video Decode capabilities.
+		video_capabilities.video_decode_capability_flags = vk_decode_capabilities.flags;
+
+		// AV1 Decode capabilities.
+		// TODO
+	}
+
 	return OK;
 }
 
@@ -6588,6 +6635,202 @@ Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfil
 	return OK;
 }
 
+void RenderingDeviceDriverVulkan::_rd_to_vk_h264_params(VideoDecodeH264SliceHeader *p_slice_header, StdVideoDecodeH264PictureInfo *r_picture_info, StdVideoDecodeH264ReferenceInfo *r_reference_info) {
+	r_picture_info->flags.field_pic_flag = p_slice_header->field_pic_flag;
+	r_picture_info->flags.is_intra = p_slice_header->is_intra;
+	r_picture_info->flags.IdrPicFlag = p_slice_header->is_intra;
+	r_picture_info->flags.bottom_field_flag = p_slice_header->bottom_field_flag;
+	r_picture_info->flags.is_reference = p_slice_header->is_reference;
+	r_picture_info->flags.complementary_field_pair = p_slice_header->complementary_field_pair;
+
+	r_picture_info->seq_parameter_set_id = p_slice_header->seq_parameter_set_id;
+	r_picture_info->pic_parameter_set_id = p_slice_header->pic_parameter_set_id;
+
+	r_picture_info->frame_num = p_slice_header->frame_num;
+	r_picture_info->idr_pic_id = p_slice_header->idr_pic_id;
+
+	r_picture_info->PicOrderCnt[0] = p_slice_header->pic_order_cnt_top_field;
+	r_picture_info->PicOrderCnt[1] = p_slice_header->pic_order_cnt_bottom_field;
+
+	// TODO: support interlaced video
+	r_reference_info->flags.bottom_field_flag = 0;
+	r_reference_info->flags.top_field_flag = 0;
+	r_reference_info->flags.is_non_existing = 0;
+	r_reference_info->flags.used_for_long_term_reference = 0;
+	r_reference_info->FrameNum = p_slice_header->frame_num;
+	r_reference_info->PicOrderCnt[0] = p_slice_header->pic_order_cnt_top_field;
+	r_reference_info->PicOrderCnt[1] = p_slice_header->pic_order_cnt_bottom_field;
+}
+
+void RenderingDeviceDriverVulkan::_rd_to_vk_av1_params(VideoDecodeAV1Frame *p_frame_header, StdVideoDecodeAV1PictureInfo *r_picture_info, StdVideoDecodeAV1ReferenceInfo *r_reference_info) {
+	r_picture_info->flags.error_resilient_mode = p_frame_header->error_resilient_mode_flag;
+	r_picture_info->flags.disable_cdf_update = p_frame_header->disable_cdf_update_flag;
+	r_picture_info->flags.use_superres = p_frame_header->use_superres;
+	r_picture_info->flags.render_and_frame_size_different = p_frame_header->render_and_frame_size_different;
+	r_picture_info->flags.allow_screen_content_tools = p_frame_header->allow_screen_content_tools_flag;
+	r_picture_info->flags.is_filter_switchable = p_frame_header->is_filter_switchable;
+	r_picture_info->flags.force_integer_mv = p_frame_header->force_integer_mv_flag;
+	r_picture_info->flags.frame_size_override_flag = p_frame_header->frame_size_override_flag;
+	r_picture_info->flags.buffer_removal_time_present_flag = p_frame_header->buffer_removal_time_present_flag;
+	r_picture_info->flags.allow_intrabc = p_frame_header->allow_intrabc;
+	r_picture_info->flags.frame_refs_short_signaling = p_frame_header->frame_refs_short_signaling;
+	r_picture_info->flags.allow_high_precision_mv = p_frame_header->allow_high_precision_mv;
+	r_picture_info->flags.is_motion_mode_switchable = p_frame_header->is_motion_mode_switchable;
+	r_picture_info->flags.use_ref_frame_mvs = p_frame_header->use_ref_frame_mvs;
+	r_picture_info->flags.disable_frame_end_update_cdf = p_frame_header->disable_frame_end_update_cdf;
+	r_picture_info->flags.allow_warped_motion = p_frame_header->allow_warped_motion;
+	r_picture_info->flags.reduced_tx_set = p_frame_header->reduced_tx_set;
+	r_picture_info->flags.reference_select = p_frame_header->reference_select;
+	r_picture_info->flags.skip_mode_present = p_frame_header->skip_mode_present;
+	r_picture_info->flags.delta_q_present = p_frame_header->delta_q_present;
+	r_picture_info->flags.delta_lf_present = p_frame_header->delta_lf_present;
+	r_picture_info->flags.delta_lf_multi = p_frame_header->delta_lf_multi;
+	r_picture_info->flags.segmentation_enabled = p_frame_header->segmentation.segmentation_enabled;
+	r_picture_info->flags.segmentation_update_map = p_frame_header->segmentation.segmentation_update_map;
+	r_picture_info->flags.segmentation_update_data = p_frame_header->segmentation.segmentation_update_data;
+	r_picture_info->flags.UsesLr = p_frame_header->loop_restoration.uses_lr;
+	r_picture_info->flags.usesChromaLr = p_frame_header->loop_restoration.uses_chroma_lr;
+	r_picture_info->flags.apply_grain = p_frame_header->film_grain.apply_grain;
+
+	r_picture_info->frame_type = (StdVideoAV1FrameType)p_frame_header->frame_type;
+	r_picture_info->current_frame_id = p_frame_header->current_frame_id;
+	r_picture_info->OrderHint = p_frame_header->order_hint;
+	r_picture_info->primary_ref_frame = p_frame_header->primary_ref_frame;
+	r_picture_info->refresh_frame_flags = p_frame_header->refresh_frame_flags;
+	r_picture_info->interpolation_filter = (StdVideoAV1InterpolationFilter)p_frame_header->interpolation_filter;
+	r_picture_info->TxMode = (StdVideoAV1TxMode)p_frame_header->tx_mode;
+	r_picture_info->delta_q_res = p_frame_header->delta_q_res;
+	r_picture_info->delta_lf_res = p_frame_header->delta_lf_res;
+	r_picture_info->SkipModeFrame[0] = p_frame_header->skip_mode_frame[0];
+	r_picture_info->SkipModeFrame[1] = p_frame_header->skip_mode_frame[1];
+	r_picture_info->coded_denom = p_frame_header->coded_denom;
+
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_NUM_REF_FRAMES; i++) {
+		r_picture_info->OrderHints[i] = p_frame_header->order_hints[i];
+		r_picture_info->expectedFrameId[i] = p_frame_header->expected_frame_id[i];
+	}
+
+	StdVideoAV1TileInfo *tile_info = (StdVideoAV1TileInfo *)malloc(sizeof(StdVideoAV1TileInfo));
+	*tile_info = {};
+	tile_info->flags.uniform_tile_spacing_flag = p_frame_header->tile_info.uniform_tile_spacing_flag;
+
+	tile_info->TileCols = p_frame_header->tile_info.tile_cols;
+	tile_info->TileRows = p_frame_header->tile_info.tile_rows;
+	tile_info->context_update_tile_id = p_frame_header->tile_info.context_update_tile_id;
+	tile_info->tile_size_bytes_minus_1 = p_frame_header->tile_info.tile_size_bytes_minus_1;
+	tile_info->pMiColStarts = p_frame_header->tile_info.mi_col_starts.ptr();
+	tile_info->pMiRowStarts = p_frame_header->tile_info.mi_row_starts.ptr();
+	tile_info->pWidthInSbsMinus1 = p_frame_header->tile_info.width_in_sbs_minus_1.ptr();
+	tile_info->pHeightInSbsMinus1 = p_frame_header->tile_info.height_in_sbs_minus_1.ptr();
+
+	r_picture_info->pTileInfo = tile_info;
+
+	// Quantization.
+	StdVideoAV1Quantization *quantization = (StdVideoAV1Quantization *)malloc(sizeof(StdVideoAV1Quantization));
+	*quantization = {};
+	quantization->flags.using_qmatrix = p_frame_header->quantization.using_qmatrix;
+	quantization->flags.diff_uv_delta = p_frame_header->quantization.diff_uv_delta;
+
+	quantization->base_q_idx = p_frame_header->quantization.base_q_idx;
+	quantization->DeltaQYDc = p_frame_header->quantization.delta_q_y_dc;
+	quantization->DeltaQUDc = p_frame_header->quantization.delta_q_u_dc;
+	quantization->DeltaQUAc = p_frame_header->quantization.delta_q_u_ac;
+	quantization->DeltaQVDc = p_frame_header->quantization.delta_q_v_dc;
+	quantization->DeltaQVAc = p_frame_header->quantization.delta_q_v_ac;
+	quantization->qm_y = p_frame_header->quantization.qm_y;
+	quantization->qm_u = p_frame_header->quantization.qm_u;
+	quantization->qm_v = p_frame_header->quantization.qm_v;
+
+	r_picture_info->pQuantization = quantization;
+
+	// Segmentation.
+	StdVideoAV1Segmentation *segmentation = (StdVideoAV1Segmentation *)malloc(sizeof(StdVideoAV1Segmentation));
+	*segmentation = {};
+	for (uint32_t segment = 0; segment < STD_VIDEO_AV1_MAX_SEGMENTS; segment++) {
+		segmentation->FeatureEnabled[segment] = p_frame_header->segmentation.feature_enabled[segment];
+		for (uint32_t segment_level = 0; segment_level < STD_VIDEO_AV1_SEG_LVL_MAX; segment_level++) {
+			segmentation->FeatureData[segment][segment_level] = p_frame_header->segmentation.feature_data[segment][segment_level];
+		}
+	}
+
+	r_picture_info->pSegmentation = segmentation;
+
+	// Loop filter.
+	StdVideoAV1LoopFilter *loop_filter = (StdVideoAV1LoopFilter *)malloc(sizeof(StdVideoAV1LoopFilter));
+	*loop_filter = {};
+	loop_filter->flags.loop_filter_delta_enabled = p_frame_header->loop_filter.loop_filter_delta_enabled;
+	loop_filter->flags.loop_filter_delta_update = p_frame_header->loop_filter.loop_filter_delta_update;
+
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_MAX_LOOP_FILTER_STRENGTHS; i++) {
+		loop_filter->loop_filter_level[i] = p_frame_header->loop_filter.loop_filter_level[i];
+	}
+
+	loop_filter->loop_filter_sharpness = p_frame_header->loop_filter.loop_filter_sharpness;
+	loop_filter->update_ref_delta = p_frame_header->loop_filter.update_ref_delta;
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_TOTAL_REFS_PER_FRAME; i++) {
+		loop_filter->loop_filter_ref_deltas[i] = p_frame_header->loop_filter.loop_filter_ref_deltas[i];
+	}
+
+	loop_filter->update_mode_delta = p_frame_header->loop_filter.update_mode_delta;
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_LOOP_FILTER_ADJUSTMENTS; i++) {
+		loop_filter->loop_filter_mode_deltas[i] = p_frame_header->loop_filter.loop_filter_mode_deltas[i];
+	}
+
+	r_picture_info->pLoopFilter = loop_filter;
+
+	// CDEF.
+	StdVideoAV1CDEF *cdef = (StdVideoAV1CDEF *)malloc(sizeof(StdVideoAV1CDEF));
+	*cdef = {};
+	cdef->cdef_damping_minus_3 = p_frame_header->cdef.cdef_damping_minus_3;
+	cdef->cdef_bits = p_frame_header->cdef.cdef_bits;
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_MAX_CDEF_FILTER_STRENGTHS; i++) {
+		cdef->cdef_y_pri_strength[i] = p_frame_header->cdef.cdef_y_pri_strength[i];
+		cdef->cdef_y_sec_strength[i] = p_frame_header->cdef.cdef_y_sec_strength[i];
+		cdef->cdef_uv_pri_strength[i] = p_frame_header->cdef.cdef_uv_pri_strength[i];
+		cdef->cdef_uv_sec_strength[i] = p_frame_header->cdef.cdef_uv_sec_strength[i];
+	}
+
+	r_picture_info->pCDEF = cdef;
+
+	// Loop Restoration.
+	StdVideoAV1LoopRestoration *loop_restoration = (StdVideoAV1LoopRestoration *)malloc(sizeof(StdVideoAV1LoopRestoration));
+	*loop_restoration = {};
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_MAX_NUM_PLANES; i++) {
+		loop_restoration->FrameRestorationType[i] = (StdVideoAV1FrameRestorationType)p_frame_header->loop_restoration.frame_restoration_type[i];
+		loop_restoration->LoopRestorationSize[i] = std::log2(p_frame_header->loop_restoration.loop_restoration_size[i]) - 5;
+	}
+
+	r_picture_info->pLoopRestoration = loop_restoration;
+
+	// Global Motion.
+	StdVideoAV1GlobalMotion *global_motion = (StdVideoAV1GlobalMotion *)malloc(sizeof(StdVideoAV1GlobalMotion));
+	*global_motion = {};
+	for (uint32_t ref = STD_VIDEO_AV1_REFERENCE_NAME_LAST_FRAME; ref <= STD_VIDEO_AV1_REFERENCE_NAME_ALTREF_FRAME; ref++) {
+		global_motion->GmType[ref] = p_frame_header->global_motion.gm_type[ref];
+		for (uint8_t i = 0; i < 6; i++) {
+			global_motion->gm_params[ref][i] = p_frame_header->global_motion.gm_params[ref][i];
+		}
+	}
+
+	r_picture_info->pGlobalMotion = global_motion;
+
+	// TODO Pray these aren't actually required
+	StdVideoAV1FilmGrain *film_grain = (StdVideoAV1FilmGrain *)malloc(sizeof(StdVideoAV1FilmGrain));
+	r_picture_info->pFilmGrain = nullptr;
+
+	r_reference_info->flags.disable_frame_end_update_cdf = p_frame_header->disable_frame_end_update_cdf;
+	r_reference_info->flags.segmentation_enabled = p_frame_header->segmentation.segmentation_enabled;
+
+	r_reference_info->frame_type = p_frame_header->frame_type;
+	r_reference_info->RefFrameSignBias = p_frame_header->ref_frame_sign_bias;
+	r_reference_info->OrderHint = p_frame_header->order_hint;
+
+	for (uint32_t i = 0; i < STD_VIDEO_AV1_NUM_REF_FRAMES; i++) {
+		// TODO: what even goes here?
+		r_reference_info->SavedOrderHints[i] = 0;
+	}
+}
+
 RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
 	VkVideoProfileInfoKHR video_profile = {};
 	vk_video_profile_from_state(p_profile, &video_profile);
@@ -6611,8 +6854,8 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.maxCodedExtent.width = dpb_textures[0]->vk_create_info.extent.width;
 	session_info.maxCodedExtent.height = dpb_textures[0]->vk_create_info.extent.height;
 	session_info.referencePictureFormat = dpb_textures[0]->vk_create_info.format;
-	session_info.maxDpbSlots = dpb_textures.size();
-	session_info.maxActiveReferencePictures = dpb_textures.size() - 1;
+	session_info.maxDpbSlots = 9;
+	session_info.maxActiveReferencePictures = 7;
 	session_info.pStdHeaderVersion = &video_capabilities.std_header_version;
 
 	VkVideoSessionKHR video_session;
@@ -6687,6 +6930,10 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
 	for (size_t i = 0; i < session_info.maxDpbSlots; i++) {
 		video_session_info->std_reference_infos.push_back(nullptr);
+	}
+
+	for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
+		video_session_info->reference_name_slot_indices[i] = -1;
 	}
 
 	return RDD::VideoSessionID(video_session_info);
@@ -6984,7 +7231,7 @@ void RenderingDeviceDriverVulkan::video_session_add_av1_parameters(VideoSessionI
 	av1_sequence_header.seq_force_integer_mv = p_sequence_header.seq_force_integer_mv;
 	av1_sequence_header.seq_force_screen_content_tools = p_sequence_header.seq_force_screen_content_tools;
 
-	StdVideoAV1ColorConfig *vk_color_config = (StdVideoAV1ColorConfig *)ALLOCA(sizeof(StdVideoAV1ColorConfig));
+	StdVideoAV1ColorConfig *vk_color_config = ALLOCA_SINGLE(StdVideoAV1ColorConfig);
 	vk_color_config->flags.mono_chrome = p_sequence_header.color_config.monochrome_flag;
 	vk_color_config->flags.color_range = p_sequence_header.color_config.color_range_flag;
 	vk_color_config->flags.separate_uv_delta_q = p_sequence_header.color_config.separate_uv_delta_q;
@@ -7071,22 +7318,6 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		is_key_frame = rd_slice_header->is_intra;
 		is_reference_frame = rd_slice_header->is_reference;
 
-		h264_picture_info.flags.field_pic_flag = rd_slice_header->field_pic_flag;
-		h264_picture_info.flags.is_intra = rd_slice_header->is_intra;
-		h264_picture_info.flags.IdrPicFlag = rd_slice_header->is_intra;
-		h264_picture_info.flags.bottom_field_flag = rd_slice_header->bottom_field_flag;
-		h264_picture_info.flags.is_reference = rd_slice_header->is_reference;
-		h264_picture_info.flags.complementary_field_pair = rd_slice_header->complementary_field_pair;
-
-		h264_picture_info.seq_parameter_set_id = rd_slice_header->seq_parameter_set_id;
-		h264_picture_info.pic_parameter_set_id = rd_slice_header->pic_parameter_set_id;
-
-		h264_picture_info.frame_num = rd_slice_header->frame_num;
-		h264_picture_info.idr_pic_id = rd_slice_header->idr_pic_id;
-
-		h264_picture_info.PicOrderCnt[0] = rd_slice_header->pic_order_cnt_top_field;
-		h264_picture_info.PicOrderCnt[1] = rd_slice_header->pic_order_cnt_bottom_field;
-
 		StdVideoDecodeH264ReferenceInfo *h264_reference_info;
 		if (is_reference_frame) {
 			h264_reference_info = (StdVideoDecodeH264ReferenceInfo *)malloc(sizeof(StdVideoDecodeH264ReferenceInfo));
@@ -7094,14 +7325,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 			h264_reference_info = ALLOCA_SINGLE(StdVideoDecodeH264ReferenceInfo);
 		}
 
-		// TODO: support interlaced video
-		h264_reference_info->flags.bottom_field_flag = 0;
-		h264_reference_info->flags.top_field_flag = 0;
-		h264_reference_info->flags.is_non_existing = 0;
-		h264_reference_info->flags.used_for_long_term_reference = 0;
-		h264_reference_info->FrameNum = rd_slice_header->frame_num;
-		h264_reference_info->PicOrderCnt[0] = rd_slice_header->pic_order_cnt_top_field;
-		h264_reference_info->PicOrderCnt[1] = rd_slice_header->pic_order_cnt_bottom_field;
+		_rd_to_vk_h264_params(rd_slice_header, &h264_picture_info, h264_reference_info);
 
 		h264_video_header.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
 		h264_video_header.pNext = nullptr;
@@ -7120,18 +7344,18 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		std_reference_info = h264_reference_info;
 	}
 
+	uint8_t refresh_frame_flags = 0;
+	int32_t active_ref_frames[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
 	VkVideoDecodeAV1PictureInfoKHR av1_video_header = {};
 	VkVideoDecodeAV1DpbSlotInfoKHR av1_slot_info = {};
 	StdVideoDecodeAV1PictureInfo av1_picture_info = {};
 	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
 		VideoDecodeAV1Frame *rd_frame_header = (VideoDecodeAV1Frame *)p_video_header;
 
-		// TODO
+		// TODO: are we sure this is enough?
 		is_key_frame = rd_frame_header->frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY;
-		is_reference_frame = true;
-
-		// TODO fill in
-		av1_picture_info.delta_lf_res = 8;
+		is_reference_frame = rd_frame_header->refresh_frame_flags != 0;
+		refresh_frame_flags = rd_frame_header->refresh_frame_flags;
 
 		StdVideoDecodeAV1ReferenceInfo *av1_reference_info;
 		if (is_reference_frame) {
@@ -7140,18 +7364,26 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 			av1_reference_info = ALLOCA_SINGLE(StdVideoDecodeAV1ReferenceInfo);
 		}
 
-		// TODO fill in
-		av1_reference_info->flags.disable_frame_end_update_cdf = true;
+		_rd_to_vk_av1_params(rd_frame_header, &av1_picture_info, av1_reference_info);
 
 		av1_video_header.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR;
 		av1_video_header.pNext = nullptr;
 		av1_video_header.pStdPictureInfo = &av1_picture_info;
-		// TODO: what?
-		av1_video_header.referenceNameSlotIndices[0] = 1;
-		av1_video_header.frameHeaderOffset = offsets;
+
+		print_line("---------Decode Frame---------");
+		print_line(vformat("Reference = %s", is_reference_frame));
+		printf("referenceNameSlotIndices:");
+		for (uint32_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
+			size_t ref_frame = rd_frame_header->ref_frame_idx[i];
+			av1_video_header.referenceNameSlotIndices[i] = video_session_info->reference_name_slot_indices[ref_frame];
+			active_ref_frames[i] = video_session_info->reference_name_slot_indices[ref_frame];
+			printf(" %i", video_session_info->reference_name_slot_indices[ref_frame]);
+		}
+
+		av1_video_header.frameHeaderOffset = 0;
 		av1_video_header.tileCount = 1;
-		av1_video_header.pTileOffsets = nullptr;
-		av1_video_header.pTileSizes = nullptr;
+		av1_video_header.pTileOffsets = &rd_frame_header->tile_start;
+		av1_video_header.pTileSizes = &rd_frame_header->tile_size;
 
 		av1_slot_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR;
 		av1_slot_info.pNext = nullptr;
@@ -7195,13 +7427,38 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	Vector<VkVideoReferenceSlotInfoKHR> reference_slots;
 	reference_slots.push_back(setup_reference_slot);
 
+	bool target_is_reference;
+	printf("\nBinding DPB slot:");
 	for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
 		if (video_session_info->std_reference_infos[i] == nullptr) {
 			break;
 		}
 
+		target_is_reference = false;
+		bool reference_present = false;
+		for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
+			if (video_session_info->target_dpb_index == active_ref_frames[j]) {
+				target_is_reference = true;
+			}
+
+			if (i == active_ref_frames[j]) {
+				reference_present = true;
+			}
+		}
+
 		if (i == video_session_info->target_dpb_index) {
-			continue;
+			if (target_is_reference) {
+				printf(" %i!!!!!", i);
+			} else {
+				printf(" (%i)", i);
+				continue;
+			}
+		} else {
+			if (!reference_present) {
+				continue;
+			} else {
+				printf(" %i", i);
+			}
 		}
 
 		void *next_dpb_info = nullptr;
@@ -7240,6 +7497,13 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		reference_slot.slotIndex = i;
 		reference_slot.pPictureResource = picture_resource_info;
 		reference_slots.push_back(reference_slot);
+	}
+
+	printf("\n");
+	fflush(stdout);
+
+	if (target_is_reference) {
+		CRASH_NOW_MSG("critical strike.");
 	}
 
 	VkVideoBeginCodingInfoKHR video_begin_info = {};
@@ -7298,8 +7562,36 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 			free(video_session_info->std_reference_infos[video_session_info->target_dpb_index]);
 		}
 
+		for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
+			if ((refresh_frame_flags & 1 << i) > 0) {
+				video_session_info->reference_name_slot_indices[i] = video_session_info->target_dpb_index;
+			}
+		}
+
 		video_session_info->std_reference_infos.set(video_session_info->target_dpb_index, std_reference_info);
-		video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
+
+		uint8_t counter = 0;
+		bool valid_slot = false;
+		while (!valid_slot) {
+			video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
+
+			valid_slot = true;
+			for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
+				if (active_ref_frames[i] == -1) {
+					continue;
+				}
+
+				if (video_session_info->target_dpb_index == active_ref_frames[i]) {
+					valid_slot = false;
+					break;
+				}
+			}
+
+			counter++;
+			if (counter == video_session_info->vk_session_create_info.maxDpbSlots) {
+				CRASH_NOW_MSG("Infinite loop looking for an available DPB slot");
+			}
+		}
 	}
 
 	VkVideoEndCodingInfoKHR video_end_info = {};

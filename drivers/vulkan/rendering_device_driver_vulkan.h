@@ -738,9 +738,13 @@ public:
 		uint64_t target_dpb_index;
 		Vector<TextureInfo *> dpb_views;
 		Vector<void *> std_reference_infos;
+		// TODO: move into AV1Stream
+		int8_t reference_name_slot_indices[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
+	void _rd_to_vk_h264_params(VideoDecodeH264SliceHeader *p_slice_header, StdVideoDecodeH264PictureInfo *r_picture_info, StdVideoDecodeH264ReferenceInfo *r_reference_info);
+	void _rd_to_vk_av1_params(VideoDecodeAV1Frame *p_frame_header, StdVideoDecodeAV1PictureInfo *r_picture_info, StdVideoDecodeAV1ReferenceInfo *r_reference_info);
 
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;

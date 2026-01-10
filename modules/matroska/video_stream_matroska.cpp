@@ -636,7 +636,6 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 
 				if (inner_id == MATROSKA_ID_TRACK_CODEC_ID) {
 					track.codec_id = read_string();
-					print_line(track.codec_id);
 					if (track.codec_id == "V_MPEG4/ISO/AVC") {
 						video_stream_encoding = memnew(VideoStreamH264);
 					} else if (track.codec_id == "V_AV1") {
@@ -761,36 +760,35 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 		}
 
 		if (id == MATROSKA_ID_CLUSTER_SIMPLE_BLOCK) {
-			Cluster::Block block = {};
-
 			uint64_t block_size = read_size();
 			const uint8_t *block_start = src;
 
 			uint64_t target_track = read_size();
 
-			block.cluster_time = (src[0] << 8) | src[1];
+			// local_time = (src[0] << 8) | src[1]
 			src += 2;
 
 			uint8_t flags = src[0];
-			block.key = (flags & 0x80) > 0;
-			block.invisible = (flags & 0x08) > 0;
 			uint8_t lacing = flags & 0x06;
-			block.discardable = (flags & 0x01) > 0;
+			// ...other flags
 			src += 1;
 
 			if (lacing != 0) {
-				ERR_PRINT("UNUSABLE LACING");
+				ERR_PRINT("Cannot parse Matrsoka block with lacing");
 			}
 
 			if (target_track == 1 && video_stream_encoding.is_valid()) {
-				size_t frame_size = 0;
-				size_t frame_offset = 0;
-				video_stream_encoding->parse_container_block(src, block_size - 4, &frame_size, &frame_offset);
-				block.size = frame_size;
-				block.position = (size_t)(src - origin) + frame_offset;
+				Vector<size_t> frame_offsets;
+				Vector<size_t> frame_sizes;
+				video_stream_encoding->parse_container_block(src, block_size - 4, &frame_offsets, &frame_sizes);
+				for (uint32_t i = 0; i < frame_offsets.size(); i++) {
+					Cluster::Block block = {};
 
-				r_cluster->present_order.insert(block.cluster_time, r_cluster->blocks.size());
-				r_cluster->blocks.append(block);
+					block.position = (size_t)(src - origin) + frame_offsets[i];
+					block.size = frame_sizes[i];
+
+					r_cluster->blocks.append(block);
+				}
 			}
 
 			src = block_start + block_size;
@@ -804,12 +802,6 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 		}
 
 		_skip_id(id);
-	}
-
-	Cluster::Block *blocks = r_cluster->blocks.ptrw();
-	for (KeyValue<uint64_t, size_t> node : r_cluster->present_order) {
-		blocks->present_order = node.value;
-		blocks++;
 	}
 
 	src = cluster_start + cluster_size;
@@ -925,14 +917,13 @@ void VideoStreamPlaybackMatroska::decode_frame() {
 	src_texture.append_id(dst_yuv);
 	uniforms.push_back(src_texture);
 
-	// TODO: find a way to get reordering to work
-	size_t relative_order = block.present_order - block_index;
-	size_t target_texture = (relative_order + present_texture_index) % dst_rgba_pool.size();
+	// TODO: decode order does not equal present order
+	size_t target_texture = present_texture_index % dst_rgba_pool.size();
 	present_texture_index = (present_texture_index + 1) % dst_rgba_pool.size();
 
 	block_index += 1;
 	if (block_index == cluster.blocks.size()) {
-		print_line("CLUSTER SWITCH");
+		CRASH_NOW_MSG("Decoding second cluster");
 		block_index = 0;
 		cluster_index += 1;
 	}
@@ -1120,7 +1111,7 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	playback_position += p_delta;
+	playback_position += p_delta / 10.0;
 	if (playback_position < block_position + block_duration) {
 		return;
 	}

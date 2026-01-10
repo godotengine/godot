@@ -33,11 +33,17 @@
 #include "video_coding_av1.h"
 
 struct VideoDecodeAV1Frame {
+	uint32_t tile_start;
+	uint32_t tile_size;
+
 	VideoCodingAV1FrameType frame_type;
 
 	uint32_t current_frame_id;
 
 	bool error_resilient_mode_flag;
+
+	uint8_t order_hints[VIDEO_CODING_AV1_NUM_REF_FRAMES];
+
 	bool disable_cdf_update_flag;
 
 	bool allow_screen_content_tools_flag;
@@ -49,7 +55,7 @@ struct VideoDecodeAV1Frame {
 
 	uint8_t primary_ref_frame;
 
-	bool buffer_removal_time_flag;
+	bool buffer_removal_time_present_flag;
 
 	bool allow_high_precision_mv;
 	bool use_ref_frame_mvs;
@@ -57,14 +63,13 @@ struct VideoDecodeAV1Frame {
 
 	uint8_t refresh_frame_flags;
 
-	uint8_t ref_order_hint[VIDEO_CODING_AV1_NUM_REF_FRAMES];
-
 	bool use_superres;
 	uint8_t coded_denom;
 	bool render_and_frame_size_different;
 
 	bool frame_refs_short_signaling;
 
+	uint8_t ref_frame_idx[VIDEO_CODING_AV1_REFS_PER_FRAME];
 	uint8_t expected_frame_id[VIDEO_CODING_AV1_NUM_REF_FRAMES];
 
 	bool is_filter_switchable;
@@ -72,17 +77,12 @@ struct VideoDecodeAV1Frame {
 
 	bool is_motion_mode_switchable;
 
-	uint8_t order_hints[VIDEO_CODING_AV1_NUM_REF_FRAMES];
+	uint8_t ref_frame_sign_bias;
 
 	bool disable_frame_end_update_cdf;
 
 	VideoCodingAV1TileInfo tile_info;
 	VideoCodingAV1Quantization quantization;
-
-	bool segmentation_enabled;
-	bool segmentation_update_map;
-	bool segmentation_temporal_update;
-	bool segmentation_update_data;
 	VideoCodingAV1Segmentation segmentation;
 
 	bool delta_q_present;
@@ -98,9 +98,17 @@ struct VideoDecodeAV1Frame {
 
 	VideoCodingAV1TxMode tx_mode;
 
+	bool reference_select;
+
+	bool skip_mode_allowed;
+	bool skip_mode_present;
+	uint8_t skip_mode_frame[2];
+
 	bool allow_warped_motion;
 	bool reduced_tx_set;
 
 	VideoCodingAV1GlobalMotion global_motion;
+
+	bool apply_grain;
 	VideoCodingAV1FilmGrain film_grain;
 };

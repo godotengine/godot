@@ -39,7 +39,7 @@ class VideoStreamEncoding : public Resource {
 public:
 	// Stream Parsing.
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
-	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) = 0;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) = 0;
 
 	// Rendering Device API.
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) = 0;

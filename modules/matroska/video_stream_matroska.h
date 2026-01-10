@@ -72,9 +72,9 @@ private:
 	Vector<RID> dst_yuv_pool;
 	Vector<RID> dst_rgba_pool;
 
-	const size_t yuv_pool_size = 5;
-	const size_t rgb_pool_size = 120;
-	const size_t buffered_frames = 10;
+	const size_t yuv_pool_size = 2;
+	const size_t rgb_pool_size = 10;
+	const size_t buffered_frames = 8;
 
 	// The cluster frame in present order
 	size_t cluster_frame_index = 0;

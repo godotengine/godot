@@ -75,7 +75,7 @@ private:
 
 public:
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
-	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) final override;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) final override;
 
 	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
 	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) final override;

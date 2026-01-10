@@ -593,7 +593,7 @@ Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_
 	return OK;
 }
 
-Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_size, size_t *r_size, size_t *r_offset) {
+Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) {
 	src = p_stream;
 	shift = 0;
 
@@ -603,11 +603,10 @@ Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_s
 		const uint8_t *nal_start = src;
 		prevent_emulation = true;
 
-		//print_line(vformat("Decoding Block [%d/%d]", nal_size, p_size));
 		VideoCodingH264NalUnitType nal_unit_type = parse_nal_unit(nal_size);
 		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE || nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR) {
-			*r_size = nal_size;
-			*r_offset = nal_start - p_stream;
+			r_offsets->push_back(nal_start - p_stream);
+			r_sizes->push_back(nal_size);
 		}
 	}
 
