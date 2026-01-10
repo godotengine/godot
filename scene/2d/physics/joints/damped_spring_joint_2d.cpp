@@ -74,7 +74,7 @@ void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 	rest_length = p_rest_length;
 	queue_redraw();
 	if (is_configured()) {
-		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_rid(), PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
+		PhysicsServer2D::get_singleton()->damped_spring_joint_set_param(get_rid(), PhysicsServer2D::DAMPED_SPRING_REST_LENGTH, p_rest_length);
 	}
 }
 
