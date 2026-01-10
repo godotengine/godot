@@ -239,9 +239,18 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	// Set custom folder color (if applicable).
-	bool has_custom_color = assigned_folder_colors.has(lpath);
-	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	bool has_custom_color;
+	Color custom_color;
+	if (dname == "editor://") {
+		has_custom_color = true;
+		custom_color = folder_colors["gray"];
+		editor_resources_item = subdirectory_item;
+	} else {
+		has_custom_color = assigned_folder_colors.has(lpath);
+		custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
+	}
+	Ref<DirAccess> da = DirAccess::create_for_path(lpath);
+	ERR_FAIL_COND(da.is_null());
 
 	if (has_custom_color) {
 		subdirectory_item->set_icon_modulate(0, editor_is_dark_icon_and_font ? custom_color : custom_color * ITEM_COLOR_SCALE);
@@ -373,6 +382,28 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 				}
 			}
 		}
+		if (show_editor_directory) {
+			// BFS to find all uncollapsed paths of the editor directory.
+			TreeItem *editor_res_subtree = root->get_first_child()->get_next()->get_next();
+			if (editor_res_subtree) {
+				LocalVector<TreeItem *> queue;
+				queue.push_back(editor_res_subtree);
+
+				while (!queue.is_empty()) {
+					TreeItem *ti = queue[queue.size() - 1];
+					queue.resize(queue.size() - 1);
+					if (!ti->is_collapsed() && ti->get_child_count() > 0) {
+						Variant path = ti->get_metadata(0);
+						if (path) {
+							uncollapsed_paths.push_back(path);
+						}
+					}
+					for (int i = 0; i < ti->get_child_count(); i++) {
+						queue.push_back(ti->get_child(i));
+					}
+				}
+			}
+		}
 	}
 	return uncollapsed_paths;
 }
@@ -398,9 +429,10 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	bool fav_changed = false;
 	for (int i = favorite_paths.size() - 1; i >= 0; i--) {
+		Ref<DirAccess> da = DirAccess::create_for_path(favorite_paths[i]);
+		ERR_FAIL_COND(da.is_null());
 		if (da->dir_exists(favorite_paths[i]) || da->file_exists(favorite_paths[i])) {
 			continue;
 		}
@@ -418,7 +450,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 
 	const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 	for (const String &favorite : favorite_paths) {
-		if (!favorite.begins_with("res://")) {
+		if (!favorite.begins_with("res://") && !favorite.begins_with("editor://")) {
 			continue;
 		}
 
@@ -429,6 +461,14 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			text = "/";
 			icon = folder_icon;
 			color = default_folder_color;
+		} else if (favorite == "editor://") {
+			text = "editor://";
+			icon = folder_icon;
+			color = folder_colors["gray"];
+		} else if (favorite.begins_with("editor://")) {
+			text = favorite.substr(0, favorite.length() - 1).get_file();
+			icon = folder_icon;
+			color = folder_colors["gray"];
 		} else if (favorite.ends_with("/")) {
 			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
@@ -467,10 +507,14 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
 	if (p_uncollapse_root) {
 		uncollapsed_paths.push_back("res://");
+		uncollapsed_paths.push_back("editor://");
 	}
 
 	// Create the remaining of the tree.
 	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, previous_selection);
+	if (show_editor_directory) {
+		_create_tree(root, EditorFileSystem::get_singleton()->get_editor_filesystem(), uncollapsed_paths, previous_selection);
+	}
 	if (!searched_tokens.is_empty()) {
 		_update_filtered_items();
 	}
@@ -654,6 +698,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			file_list_search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			file_list_button_sort->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+			button_toggle_show_editor_directory->set_button_icon(get_editor_theme_icon(SNAME("ShowEditorDirectory")));
 
 			if (is_layout_rtl()) {
 				button_hist_next->set_button_icon(get_editor_theme_icon(SNAME("Back")));
@@ -779,8 +824,9 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	if (p_path.is_empty()) {
 		target_path = "res://";
 		is_directory = true;
-	} else if (p_path.begins_with("res://")) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	} else if (p_path.begins_with("res://") || p_path.begins_with("editor://")) {
+		Ref<DirAccess> da = DirAccess::create_for_path(p_path);
+		ERR_FAIL_COND(da.is_null());
 		if (da->dir_exists(p_path)) {
 			is_directory = true;
 			if (!p_path.ends_with("/")) {
@@ -796,7 +842,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_push_to_history();
 
 	String base_dir_path = target_path.get_base_dir();
-	if (base_dir_path != "res://") {
+	if (base_dir_path != "res://" && base_dir_path != "editor://") {
 		base_dir_path += "/";
 	}
 
@@ -861,7 +907,7 @@ bool FileSystemDock::_update_filtered_items(TreeItem *p_tree_item) {
 		item->set_collapsed(false);
 	} else {
 		// res:// and favorites are always visible.
-		keep_visible = item == resources_item || item == favorites_item;
+		keep_visible = item == resources_item || item == favorites_item || item == editor_resources_item;
 		keep_visible = keep_visible || _matches_all_search_tokens(item->get_text(0));
 	}
 	item->set_visible(keep_visible);
@@ -1062,13 +1108,20 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 		// Display the favorites.
 		Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 		for (const String &favorite : favorites_list) {
-			if (!favorite.begins_with("res://")) {
+			if (!favorite.begins_with("res://") && !favorite.begins_with("editor://")) {
 				continue;
 			}
 			String text;
 			Ref<Texture2D> icon;
 			if (favorite == "res://") {
 				text = "/";
+				icon = folder_icon;
+				if (searched_tokens.is_empty() || _matches_all_search_tokens(text)) {
+					files->add_item(text, icon, true);
+					files->set_item_metadata(-1, favorite);
+				}
+			} else if (favorite == "editor://") {
+				text = "editor://";
 				icon = folder_icon;
 				if (searched_tokens.is_empty() || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
@@ -1112,11 +1165,11 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 			}
 		}
 	} else {
-		if (!directory.begins_with("res://")) {
+		if (!directory.begins_with("res://") && !directory.begins_with("editor://")) {
 			directory = "res://" + directory;
 		}
 		// Get infos on the directory + file.
-		if (directory.ends_with("/") && directory != "res://") {
+		if (directory.ends_with("/") && directory != "res://" && directory != "editor://") {
 			directory = directory.substr(0, directory.length() - 1);
 		}
 		EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(directory);
@@ -1133,17 +1186,18 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 			// Display the search results.
 			// Limit the number of results displayed to avoid an infinite loop.
 			_search(EditorFileSystem::get_singleton()->get_filesystem(), &file_list, 10000);
+			_search(EditorFileSystem::get_singleton()->get_editor_filesystem(), &file_list, 10000);
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
 				// Check for a folder color to inherit (if one is assigned).
 				const Color inherited_folder_color = FileSystemDock::get_dir_icon_color(directory, default_folder_color);
 
 				// Display folders in the list.
-				if (directory != "res://") {
+				if (directory != "res://" && directory != "editor://") {
 					files->add_item("..", folder_icon, true);
 
 					String bd = directory.get_base_dir();
-					if (bd != "res://" && !bd.ends_with("/")) {
+					if (bd != "res://" && bd != "editor://" && !bd.ends_with("/")) {
 						bd += "/";
 					}
 
@@ -1166,7 +1220,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(-1, dpath);
-					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
+					Color this_folder_color = dpath.begins_with("editor://") ? folder_colors["gray"] : has_custom_color ? folder_colors[assigned_folder_colors[dpath]]
+																														: inherited_folder_color;
 					if (!editor_is_dark_icon_and_font && this_folder_color != default_folder_color) {
 						this_folder_color *= ITEM_COLOR_SCALE;
 					}
@@ -1272,7 +1327,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vector<String> &p_paths) {
 	HashSet<String> all_valid_conversion_to_targets;
 	for (const String &fpath : p_paths) {
-		if (fpath.is_empty() || fpath == "res://" || !FileAccess::exists(fpath) || FileAccess::exists(fpath + ".import")) {
+		if (fpath.is_empty() || fpath == "res://" || fpath == "editor://" || !FileAccess::exists(fpath) || FileAccess::exists(fpath + ".import")) {
 			return HashSet<String>();
 		}
 
@@ -1528,10 +1583,12 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	// Ensure folder paths end with "/".
 	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+	String old_path_for_move = old_path;
+	String new_path_for_move = new_path;
 
 	if (new_path == old_path) {
 		return;
-	} else if (old_path == "res://") {
+	} else if (old_path == "res://" || old_path == "editor://") {
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
@@ -1550,20 +1607,30 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		_get_all_items_in_dir(EditorFileSystem::get_singleton()->get_filesystem_path(old_path), file_changed_paths, folder_changed_paths);
 	}
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da;
+	if (old_path.begins_with("editor://") && new_path.begins_with("editor://")) {
+		da = DirAccess::create(DirAccess::ACCESS_EDITOR_RESOURCES);
+	} else if (old_path.begins_with("res://") && new_path.begins_with("res://")) {
+		da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	} else {
+		da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		old_path_for_move = ProjectSettings::get_singleton()->globalize_path(old_path);
+		new_path_for_move = ProjectSettings::get_singleton()->globalize_path(new_path);
+	}
+
 	print_verbose("Moving " + old_path + " -> " + new_path);
-	Error err = da->rename(old_path, new_path);
+	Error err = da->rename(old_path_for_move, new_path_for_move);
 	if (err == OK) {
 		// Move/Rename any corresponding import settings too.
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
-			err = da->rename(old_path + ".import", new_path + ".import");
+			err = da->rename(old_path_for_move + ".import", new_path_for_move + ".import");
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".import\n");
 			}
 		}
 
 		if (p_item.is_file && FileAccess::exists(old_path + ".uid")) {
-			err = da->rename(old_path + ".uid", new_path + ".uid");
+			err = da->rename(old_path_for_move + ".uid", new_path_for_move + ".uid");
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".uid\n");
 			}
@@ -1606,7 +1673,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 
 	if (new_path == old_path) {
 		return;
-	} else if (old_path == "res://") {
+	} else if (old_path == "res://" || old_path == "editor://") {
 		EditorNode::get_singleton()->add_io_error(TTR("Cannot move/rename resources root."));
 		return;
 	} else if (!p_item.is_file && new_path.begins_with(old_path)) {
@@ -1755,7 +1822,8 @@ String FileSystemDock::_get_unique_name(const FileOrFolder &p_entry, const Strin
 	}
 
 	int exist_counter = 1;
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(new_path);
+	ERR_FAIL_COND_V(da.is_null(), "");
 	while (da->file_exists(new_path) || da->dir_exists(new_path)) {
 		exist_counter++;
 		new_path = vformat(new_path_base, exist_counter);
@@ -1811,7 +1879,9 @@ void FileSystemDock::_file_removed(const String &p_file) {
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
 	current_path = p_file.get_base_dir();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_file);
+	ERR_FAIL_COND(da.is_null());
+
 	while (!da->dir_exists(current_path)) {
 		current_path = current_path.get_base_dir();
 	}
@@ -1824,7 +1894,9 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 
 	// Find the closest parent directory available, in case multiple items were deleted along the same path.
 	current_path = p_folder.get_base_dir();
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_folder);
+	ERR_FAIL_COND(da.is_null());
+
 	while (!da->dir_exists(current_path)) {
 		current_path = current_path.get_base_dir();
 	}
@@ -1898,7 +1970,8 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	// Present a more user friendly warning for name conflict.
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(new_path);
+	ERR_FAIL_COND(da.is_null());
 
 	bool new_exist = (da->file_exists(new_path) || da->dir_exists(new_path));
 	if (!da->is_case_sensitive(new_path.get_base_dir())) {
@@ -2549,12 +2622,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
 				const String &fpath = collapsed_paths[i];
-				if (fpath != "res://") {
+				if (fpath != "res://" && fpath != "editor://") {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
 			}
 			if (to_move.size() > 0) {
-				move_dialog->config(p_selected);
+				move_dialog->config(p_selected, show_editor_directory);
 				move_dialog->popup_centered(Vector2i(260 * EDSCALE, DisplayServer::get_singleton()->screen_get_size().y * 0.6));
 			}
 		} break;
@@ -2564,7 +2637,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				// Set to_rename variable for callback execution.
 				to_rename.path = p_selected[0];
 				to_rename.is_file = !to_rename.path.ends_with("/");
-				if (to_rename.path == "res://") {
+				if (to_rename.path == "res://" || to_rename.path == "editor://") {
 					break;
 				}
 
@@ -2598,7 +2671,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 			for (int i = 0; i < collapsed_paths.size(); i++) {
 				const String &fpath = collapsed_paths[i];
-				if (fpath != "res://") {
+				if (fpath != "res://" && fpath != "editor://") {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
 					} else {
@@ -2910,6 +2983,12 @@ void FileSystemDock::_split_dragged(int p_offset) {
 	} else {
 		split_box_offset_h = p_offset;
 	}
+}
+
+void FileSystemDock::_toggle_show_editor_directory(bool p_toggled_on) {
+	show_editor_directory = p_toggled_on;
+	update_all();
+	emit_signal(SNAME("show_editor_directory_changed"));
 }
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
@@ -3227,8 +3306,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		if (!to_dir.is_empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
-			String target_dir = to_dir == "res://" ? to_dir : to_dir.trim_suffix("/");
-
+			String target_dir = (to_dir == "res://" || to_dir == "editor://") ? to_dir : to_dir.trim_suffix("/");
 			for (int i = 0; i < fnames.size(); i++) {
 				if (fnames[i].trim_suffix("/").get_base_dir() != target_dir) {
 					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
@@ -3324,7 +3402,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 				} else {
 					if (ti->get_parent() != tree->get_root()->get_first_child()) {
 						// Not in the favorite section.
-						if (fpath != "res://") {
+						if (fpath != "res://" && fpath != "editor://") {
 							// We drop between two files
 							if (fpath.ends_with("/")) {
 								fpath = fpath.substr(0, fpath.length() - 1);
@@ -3371,10 +3449,12 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	for (int i = 0; i < selected.size(); i++) {
 		const String &fpath = selected[i];
 
-		if (chosen_color_name) {
-			assigned_folder_colors[fpath] = chosen_color_name;
-		} else {
-			assigned_folder_colors.erase(fpath);
+		if (fpath.begins_with("res://")) {
+			if (chosen_color_name) {
+				assigned_folder_colors[fpath] = chosen_color_name;
+			} else {
+				assigned_folder_colors.erase(fpath);
+			}
 		}
 	}
 
@@ -3486,7 +3566,15 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 	// Check if the root path is selected, we must check p_paths[1] because the first string in
 	// the list of paths obtained by _tree_get_selected(...) is not always the root path.
-	bool root_path_not_selected = p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
+	bool root_path_not_selected = p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://" || p_paths[1] != "editor://") && p_paths[0] != "editor://";
+
+	bool res_path_selected = false;
+	for (const String &path : p_paths) {
+		if (path.begins_with("res://")) {
+			res_path_selected = true;
+			break;
+		}
+	}
 
 	if (all_folders && foldernames.size() > 0) {
 		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
@@ -3499,7 +3587,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_separator();
 
 		// Only add the 'Set Folder Color...' option if the root path is not selected.
-		if (root_path_not_selected) {
+		if (root_path_not_selected && res_path_selected) {
 			PopupMenu *folder_colors_menu = memnew(PopupMenu);
 			folder_colors_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
 
@@ -3881,7 +3969,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		TreeItem *item = tree->get_item_at_position(mm->get_position());
 		if (item && holding_branch) {
 			String fpath = item->get_metadata(0);
-			while (!fpath.ends_with("/") && fpath != "res://" && item->get_parent()) { // Find the parent folder tree item.
+			while (!fpath.ends_with("/") && fpath != "res://" && fpath != "editor://" && item->get_parent()) { // Find the parent folder tree item.
 				item = item->get_parent();
 				fpath = item->get_metadata(0);
 			}
@@ -3946,7 +4034,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		String fpath;
 		if (item_idx != -1) {
 			fpath = files->get_item_metadata(item_idx);
-			if (fpath.ends_with("/") || fpath == "res://") {
+			if (fpath.ends_with("/") || fpath == "res://" || fpath == "editor://") {
 				files->select(item_idx);
 			}
 		} else {
@@ -4059,8 +4147,8 @@ void FileSystemDock::_update_import_dock() {
 		}
 	}
 
-	if (!selected.is_empty() && selected[0] == "res://") {
-		// Scanning res:// is costly and unlikely to yield any useful results.
+	if (!selected.is_empty() && (selected[0] == "res://" || selected[0] == "editor://")) {
+		// Scanning res:// or editor:// is costly and unlikely to yield any useful results.
 		return;
 	}
 
@@ -4147,7 +4235,12 @@ Color FileSystemDock::get_dir_icon_color(const String &p_dir_path, const Color &
 
 	// Check for a folder color to inherit (if one is assigned).
 	String parent_dir = ProjectSettings::get_singleton()->localize_path(p_dir_path);
-	while (!parent_dir.is_empty() && parent_dir != "res://") {
+
+	if (parent_dir.begins_with("editor://")) {
+		return singleton->folder_colors["gray"];
+	}
+
+	while (!parent_dir.is_empty() && parent_dir != "res://" && parent_dir != "editor://") {
 		if (!parent_dir.ends_with("/")) {
 			parent_dir += "/";
 		}
@@ -4326,6 +4419,10 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 			}
 		}
 	}
+
+	if (p_layout->has_section_key(p_section, "show_editor_directory")) {
+		button_toggle_show_editor_directory->set_pressed(p_layout->get_value(p_section, "show_editor_directory"));
+	}
 }
 
 void FileSystemDock::_on_open_editor_settings_file_exts() {
@@ -4357,6 +4454,8 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selection_changed"));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
+
+	ADD_SIGNAL(MethodInfo("show_editor_directory_changed"));
 }
 
 FileSystemDock::FileSystemDock() {
@@ -4442,6 +4541,15 @@ FileSystemDock::FileSystemDock() {
 	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_line_edit_text(current_path);
 	toolbar_hbc->add_child(current_path_line_edit);
+
+	button_toggle_show_editor_directory = memnew(Button);
+	button_toggle_show_editor_directory->connect(SceneStringName(toggled), callable_mp(this, &FileSystemDock::_toggle_show_editor_directory));
+	button_toggle_show_editor_directory->set_toggle_mode(true);
+	button_toggle_show_editor_directory->set_pressed(show_editor_directory);
+	button_toggle_show_editor_directory->set_focus_mode(FOCUS_ACCESSIBILITY);
+	button_toggle_show_editor_directory->set_tooltip_text(TTRC("Show editor directory"));
+	button_toggle_show_editor_directory->set_theme_type_variation("FlatMenuButton");
+	toolbar_hbc->add_child(button_toggle_show_editor_directory);
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));

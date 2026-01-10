@@ -92,5 +92,10 @@
 				Emitted when the selection changes. Use [method EditorInterface.get_selected_paths] in the connected method to get the selected paths.
 			</description>
 		</signal>
+		<signal name="show_editor_directory_changed">
+			<description>
+				Emitted when the editor directory visibility changed.
+			</description>
+		</signal>
 	</signals>
 </class>
