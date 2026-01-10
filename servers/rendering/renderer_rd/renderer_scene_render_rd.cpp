@@ -482,7 +482,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 	}
 
+	bool use_fxaa = rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA;
 	bool use_smaa = smaa && rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_SMAA;
+	// If doing bilinear or nearest scaling + FXAA / SMAA, the framebuffer must be scaled in a framebuffer copy after AA is applied.
+	bool using_scaling_pass = spatial_upscaler || ((use_fxaa || use_smaa) && (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR || scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_NEAREST));
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
@@ -717,10 +720,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
-		if (rb->get_screen_space_aa() == RSE::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
-			tonemap.use_fxaa = true;
-		}
-
+		tonemap.use_fxaa = use_fxaa;
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
 		if (p_render_data->environment.is_valid()) {
@@ -768,7 +768,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RID dest_fb;
 		RD::DataFormat dest_fb_format;
-		if (spatial_upscaler || use_smaa) {
+		if (using_scaling_pass || use_smaa) {
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			dest_fb_format = rb->get_base_data_format();
@@ -786,8 +786,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			} else {
 				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 			}
-			tonemap.dest_texture_size = texture_storage->render_target_get_size(render_target);
 
+			tonemap.dest_texture_size = texture_storage->render_target_get_size(render_target);
 			tonemap.bilinear_filtering = scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST;
 		}
 
@@ -823,7 +823,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		bool using_hdr = texture_storage->render_target_is_using_hdr(render_target);
 
 		RID dest_fb;
-		if (spatial_upscaler) {
+		if (using_scaling_pass) {
 			rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 		}
 		if (rb->get_view_count() > 1) {
@@ -831,7 +831,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
 
 				RID dest_texture;
-				if (spatial_upscaler) {
+				if (using_scaling_pass) {
 					dest_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
 				} else {
 					dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
@@ -843,7 +843,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		} else {
 			RID source_texture = rb->get_texture(SNAME("Tonemapper"), SNAME("destination"));
 
-			if (spatial_upscaler) {
+			if (using_scaling_pass) {
 				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 			} else {
@@ -861,21 +861,25 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (rb.is_valid() && spatial_upscaler) {
-		spatial_upscaler->ensure_context(rb);
+	if (rb.is_valid() && using_scaling_pass) {
+		RD::get_singleton()->draw_command_begin_label(spatial_upscaler ? spatial_upscaler->get_label() : "3D Viewport Scaling");
 
-		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
+		if (spatial_upscaler) {
+			spatial_upscaler->ensure_context(rb);
 
-		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RID source_texture;
-			if (use_smaa) {
-				source_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
-			} else {
-				source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RID source_texture = rb->get_texture_slice(use_smaa ? SNAME("SMAA") : SNAME("Tonemapper"), SNAME("destination"), v, 0);
+				RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
+
+				spatial_upscaler->process(rb, source_texture, dest_texture);
 			}
-			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
-
-			spatial_upscaler->process(rb, source_texture, dest_texture);
+		} else {
+			// If no spatial upscaler is set, we are using bilinear or nearest filtering for scaling.
+			// This is only necessary if screen-space antialiasing is active, otherwise this happens automatically during tonemapping.
+			RID source_texture = rb->get_texture(use_smaa ? SNAME("SMAA") : SNAME("Tonemapper"), SNAME("destination"));
+			RID dest_texture = texture_storage->render_target_get_rd_texture(render_target);
+			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+			copy_effects->copy_to_fb_rect(source_texture, dest_fb, Rect2i(Point2i(), rb->get_target_size()), false, false, false, false, RID(), rb->get_view_count() > 1, false, false, false, Rect2(), 1.0, scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 		}
 
 		if (dest_is_msaa_2d) {
