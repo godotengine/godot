@@ -264,6 +264,7 @@ private:
 	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
 	TreeItem *resources_item = nullptr;
+	TreeItem *editor_resources_item = nullptr;
 	TreeItem *favorites_item = nullptr;
 	Control *had_focus = nullptr;
 
@@ -276,6 +277,9 @@ private:
 	HashSet<String> cached_valid_conversion_targets;
 
 	Vector<String> prev_selection;
+
+	bool show_editor_directory = false;
+	Vector<String> hidden_uncollapsed_editor_paths;
 
 	void _update_selection_changed();
 
@@ -354,6 +358,8 @@ private:
 	void _change_split_mode();
 	void _split_dragged(int p_offset);
 
+	void _toggle_show_editor_directory(bool p_toggled_on);
+
 	void _search_changed(const String &p_text, const Control *p_from);
 	bool _matches_all_search_tokens(const String &p_text);
 
@@ -396,6 +402,7 @@ private:
 
 	void _feature_profile_changed();
 	void _project_settings_changed();
+	void _editor_settings_changed();
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 	void _on_open_editor_settings_file_exts();
@@ -428,6 +435,7 @@ public:
 
 	Vector<String> get_selected_paths() const;
 	Vector<String> get_uncollapsed_paths() const;
+	Vector<String> get_uncollapsed_editor_paths() const;
 
 	String get_current_path() const;
 	String get_current_directory() const;
