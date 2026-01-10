@@ -79,6 +79,7 @@
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
 				This method has no effect if [member position_smoothing_enabled] is [code]false[/code].
+				[b]Note:[/b] If [url=$DOCS_URL/tutorials/physics/interpolation/index.html]physics interpolation[/url] is enabled, you should call [method Node.reset_physics_interpolation] on the camera [i]before[/i] this method.
 			</description>
 		</method>
 		<method name="set_drag_margin">
