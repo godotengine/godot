@@ -798,7 +798,7 @@ void DependencyRemoveDialog::ok_pressed() {
 	}
 
 	for (const String &file : files_to_delete) {
-		const String path = OS::get_singleton()->get_resource_dir() + file.replace_first("res://", "/");
+		const String path = ProjectSettings::get_singleton()->globalize_path(file);
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
@@ -818,7 +818,7 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 	} else {
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
-			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
+			String path = ProjectSettings::get_singleton()->globalize_path(dirs_to_delete[i]);
 			print_verbose("Moving to trash: " + path);
 			Error err = OS::get_singleton()->move_to_trash(path);
 			if (err != OK) {
