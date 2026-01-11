@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneFormatImporterUFBX" inherits="EditorSceneFormatImporter" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="EditorSceneFormatImporterUFBX" inherits="EditorSceneFormatImporter" api_type="editor" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Import FBX files using the ufbx library.
 	</brief_description>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="FoldableContainer" inherits="Container" keywords="expandable, collapsible, collapse, accordion, details" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="FoldableContainer" inherits="Container" api_type="core" keywords="expandable, collapsible, collapse, accordion, details" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that can be expanded/collapsed.
 	</brief_description>
