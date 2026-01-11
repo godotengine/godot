@@ -181,7 +181,7 @@ class GameView : public VBoxContainer {
 	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *embed_options_menu = nullptr;
 	Label *game_size_label = nullptr;
-	PanelContainer *panel = nullptr;
+	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
