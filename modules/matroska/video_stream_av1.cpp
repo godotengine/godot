@@ -1411,11 +1411,7 @@ Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_si
 	return OK;
 }
 
-void VideoStreamAV1::set_rendering_device(RenderingDevice *p_local_device) {
-	local_device = p_local_device;
-}
-
-RID VideoStreamAV1::create_video_session(RD::VideoSessionInfo p_session_template) {
+RID VideoStreamAV1::_create_video_session(RD::VideoSessionInfo p_session_template) {
 	p_session_template.profile = video_profile;
 	p_session_template.width = av1_sequence_header.max_frame_width_minus_1 + 1;
 	p_session_template.height = av1_sequence_header.max_frame_height_minus_1 + 1;
@@ -1426,13 +1422,13 @@ RID VideoStreamAV1::create_video_session(RD::VideoSessionInfo p_session_template
 	return video_session;
 }
 
-RID VideoStreamAV1::create_texture_sampler(RD::SamplerState p_sampler_template) {
+RID VideoStreamAV1::_create_texture_sampler(RD::SamplerState p_sampler_template) {
 	// TODO override parameters
 	texture_sampler = local_device->sampler_create(p_sampler_template);
 	return texture_sampler;
 }
 
-RID VideoStreamAV1::create_texture(RD::TextureFormat p_texture_template) {
+RID VideoStreamAV1::_create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) {
 	// TODO override parameters
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);
@@ -1445,7 +1441,7 @@ RID VideoStreamAV1::create_texture(RD::TextureFormat p_texture_template) {
 	return local_device->texture_create(p_texture_template, texture_view);
 }
 
-void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) {
+void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
 	src = p_frame_data.begin();
 	shift = 0;
 
@@ -1473,13 +1469,17 @@ void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture)
 		VideoDecodeAV1Frame frame_header = parse_frame(p_frame_data.size());
 		frame_header.tile_start = src - p_frame_data.begin();
 		frame_header.tile_size = p_frame_data.size() - (src - p_frame_data.begin());
-		local_device->video_session_decode(video_session, p_frame_data, p_dst_texture, &frame_header);
+		local_device->video_session_decode(video_session, p_frame_data, RID(), &frame_header);
 	} else if (obu_type == VIDEO_CODING_AV1_OBU_TYPE_FRAME_HEADER) {
 		// May update __stuff__ ?
 		print_line("Parsing frame header");
 		fflush(stdout);
 		parse_frame_header();
 	}
+}
+
+Vector<uint8_t> VideoStreamAV1::present_frame() {
+	return Vector<uint8_t>();
 }
 
 VideoStreamAV1::VideoStreamAV1() {

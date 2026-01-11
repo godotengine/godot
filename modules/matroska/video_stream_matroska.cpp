@@ -42,9 +42,6 @@
 #include "scene/resources/texture.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_device_binds.h"
-#include "servers/rendering/rendering_server.h"
-#include "ycbcr_sampler.glsl.gen.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -696,6 +693,8 @@ Error VideoStreamPlaybackMatroska::parse_tracks(Vector<Track> r_tracks) {
 							height = read_uint();
 							continue;
 						}
+
+						_skip_id(video_id);
 					}
 
 					src = video_start + video_size;
@@ -904,57 +903,17 @@ void VideoStreamPlaybackMatroska::decode_frame() {
 	Vector<uint8_t> frame_data = file->get_buffer(block.size);
 
 	// 2. decode block into yuv frame
-	RID dst_yuv = dst_yuv_pool[decode_texture_index];
-	video_stream_encoding->decode_frame(frame_data, dst_yuv);
-	decode_texture_index = (decode_texture_index + 1) % dst_yuv_pool.size();
-
-	// 3. decode yuv frame into present order
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform src_texture = {};
-	src_texture.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	src_texture.binding = 0;
-	src_texture.append_id(yuv_sampler);
-	src_texture.append_id(dst_yuv);
-	uniforms.push_back(src_texture);
-
-	// TODO: decode order does not equal present order
-	size_t target_texture = present_texture_index % dst_rgba_pool.size();
-	present_texture_index = (present_texture_index + 1) % dst_rgba_pool.size();
+	video_stream_encoding->decode_frame(frame_data);
 
 	block_index += 1;
 	if (block_index == cluster.blocks.size()) {
-		CRASH_NOW_MSG("Decoding second cluster");
 		block_index = 0;
 		cluster_index += 1;
 	}
-
-	RD::Uniform dst_texture = {};
-	dst_texture.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-	dst_texture.binding = 1;
-	dst_texture.append_id(dst_rgba_pool[target_texture]);
-	uniforms.push_back(dst_texture);
-
-	RID uniform_set = local_device->uniform_set_create(uniforms, yuv_shader, 0);
-
-	// Bind things
-	// TODO: use work groups better
-	RD::ComputeListID compute_list = local_device->compute_list_begin();
-	local_device->compute_list_bind_compute_pipeline(compute_list, yuv_pipeline);
-	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-	local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
-	local_device->compute_list_end();
-
-	// Execute
-	local_device->submit();
-	local_device->sync();
-
-	local_device->free_rid(uniform_set);
 }
 
 void VideoStreamPlaybackMatroska::present_frame() {
-	RID src_rgba = dst_rgba_pool[present_frame_index];
-	Vector<uint8_t> data = local_device->texture_get_data(src_rgba, 0);
-	present_frame_index = (present_frame_index + 1) % dst_rgba_pool.size();
+	Vector<uint8_t> data = video_stream_encoding->present_frame();
 	block_position += block_duration;
 
 	Ref<Image> frame;
@@ -1006,35 +965,15 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	// All Matroska metadata is done, now create the yuv sampler, yuv image pool and dst image
 	RD::VideoSessionInfo video_session_info = {};
 	video_session_info.width = width;
 	video_session_info.height = height;
-
-	video_stream_encoding->set_rendering_device(local_device);
 
 	// Decode stage objects
 	//TODO: be more precise with ycbcr sampler
 	RD::SamplerState sampler_info;
 	sampler_info.enable_ycbcr = true;
 
-	yuv_sampler = video_stream_encoding->create_texture_sampler(sampler_info);
-
-	RD::TextureFormat dst_yuv_format;
-	dst_yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	dst_yuv_format.width = width;
-	dst_yuv_format.height = height;
-	dst_yuv_format.depth = 1;
-	dst_yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-
-	for (size_t i = 0; i < yuv_pool_size; i++) {
-		dst_yuv_pool.push_back(video_stream_encoding->create_texture(dst_yuv_format));
-	}
-
-	video_session_info.dst_yuv_textures = dst_yuv_pool;
-	video_session = video_stream_encoding->create_video_session(video_session_info);
-
-	// Compute Shader objects
 	RD::TextureFormat dst_rgba_format;
 	dst_rgba_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	dst_rgba_format.width = width;
@@ -1042,35 +981,12 @@ void VideoStreamPlaybackMatroska::play() {
 	dst_rgba_format.depth = 1;
 	dst_rgba_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
-	for (size_t i = 0; i < rgb_pool_size; i++) {
-		dst_rgba_pool.push_back(local_device->texture_create(dst_rgba_format, RD::TextureView()));
-	}
-
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform immutable_sampler;
-	immutable_sampler.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-	immutable_sampler.binding = 0;
-	immutable_sampler.immutable_sampler = true;
-	immutable_sampler.append_id(yuv_sampler);
-	immutable_sampler.append_id(dst_rgba_pool[0]);
-	uniforms.push_back(immutable_sampler);
-
-	Ref<RDShaderFile> yuv_shader_src;
-	yuv_shader_src.instantiate();
-	yuv_shader_src->parse_versions_from_text(ycbcr_sampler_shader_glsl);
-
-	Vector<RD::ShaderStageSPIRVData> yuv_spirv = yuv_shader_src->get_spirv_stages();
-	Vector<uint8_t> yuv_bytecode = local_device->shader_compile_binary_from_spirv(yuv_spirv);
-
-	yuv_shader = local_device->shader_create_placeholder();
-	yuv_shader = local_device->shader_create_from_bytecode_with_samplers(yuv_bytecode, yuv_shader, uniforms);
-	yuv_pipeline = local_device->compute_pipeline_create(yuv_shader);
+	video_stream_encoding->initialize(video_session_info, sampler_info, dst_rgba_format);
 
 	// When the video session is created it is implicitly begun
 	for (size_t i = 0; i < buffered_frames; i++) {
 		decode_frame();
 	}
-	local_device->video_session_end(video_session);
 
 	present_frame();
 }
@@ -1111,17 +1027,14 @@ Ref<Texture2D> VideoStreamPlaybackMatroska::get_texture() const {
 
 // TODO
 void VideoStreamPlaybackMatroska::update(double p_delta) {
-	playback_position += p_delta / 10.0;
+	playback_position += p_delta;
 	if (playback_position < block_position + block_duration) {
 		return;
 	}
 
 	// TODO: audio
 	present_frame();
-
-	local_device->video_session_begin(video_session);
 	decode_frame();
-	local_device->video_session_end(video_session);
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {
@@ -1139,38 +1052,6 @@ void VideoStreamPlaybackMatroska::set_audio_track(int p_idx) {
 
 VideoStreamPlaybackMatroska::VideoStreamPlaybackMatroska() {
 	image_texture.instantiate();
-
-	local_device = RenderingServer::get_singleton()->create_local_rendering_device();
-}
-
-VideoStreamPlaybackMatroska::~VideoStreamPlaybackMatroska() {
-	if (local_device) {
-		if (yuv_shader.is_valid()) {
-			local_device->free_rid(yuv_shader);
-		}
-
-		if (yuv_sampler.is_valid()) {
-			local_device->free_rid(yuv_sampler);
-		}
-
-		for (RID yuv_texture : dst_yuv_pool) {
-			if (yuv_texture.is_valid()) {
-				local_device->free_rid(yuv_texture);
-			}
-		}
-
-		for (RID rgba_texture : dst_rgba_pool) {
-			if (rgba_texture.is_valid()) {
-				local_device->free_rid(rgba_texture);
-			}
-		}
-
-		if (video_session.is_valid()) {
-			local_device->free_rid(video_session);
-		}
-
-		memdelete(local_device);
-	}
 }
 
 Ref<Resource> ResourceFormatLoaderMatroska::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {

@@ -151,7 +151,8 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
-	VideoCapabilities video_capabilities;
+	VideoCapabilities video_capabilities_h264;
+	VideoCapabilities video_capabilities_av1;
 	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
 	bool vulkan_memory_model_support = false;

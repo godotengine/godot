@@ -88,15 +88,17 @@ private:
 	void parse_global_motion(bool p_is_intra, bool p_allow_high_precision_mv, VideoCodingAV1GlobalMotion *r_global_motion);
 	void parse_film_grain(bool p_show_frame, bool p_showable_frame, VideoCodingAV1FrameType p_frame_type, VideoCodingAV1FilmGrain *r_film_grain);
 
+protected:
+	virtual RID _create_video_session(RD::VideoSessionInfo p_session_template) final override;
+	virtual RID _create_texture_sampler(RD::SamplerState p_sampler_template) final override;
+	virtual RID _create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) final override;
+
 public:
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
 	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) final override;
 
-	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
-	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) final override;
-	virtual RID create_texture_sampler(RD::SamplerState p_sampler_template) final override;
-	virtual RID create_texture(RD::TextureFormat p_texture_template) final override;
-	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) final override;
+	virtual void decode_frame(Span<uint8_t> p_frame_data) final override;
+	virtual Vector<uint8_t> present_frame() final override;
 
 	VideoStreamAV1();
 };

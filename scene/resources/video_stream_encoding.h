@@ -36,15 +36,36 @@
 class VideoStreamEncoding : public Resource {
 	GDCLASS(VideoStreamEncoding, Resource);
 
+protected:
+	RenderingDevice *local_device;
+	RID video_session;
+
+	RID yuv_sampler;
+
+	RID yuv_shader;
+	RID yuv_pipeline;
+
+	Vector<RID> yuv_pool;
+	Vector<RID> rgba_pool;
+
+	size_t decode_yuv_index = 0;
+	size_t decode_rgba_index = 0;
+
+	void _yuv_to_rgba(RID p_src_yuv, RID p_dst_rgba);
+
+	virtual RID _create_video_session(RD::VideoSessionInfo p_session_template) = 0;
+	virtual RID _create_texture_sampler(RD::SamplerState p_sampler_template) = 0;
+	virtual RID _create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) = 0;
+
 public:
-	// Stream Parsing.
+	void initialize(RD::VideoSessionInfo p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template);
+
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
 	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) = 0;
 
-	// Rendering Device API.
-	virtual void set_rendering_device(RenderingDevice *p_coding_device) = 0;
-	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) = 0;
-	virtual RID create_texture_sampler(RD::SamplerState p_sampler_template) = 0;
-	virtual RID create_texture(RD::TextureFormat p_texture_template) = 0;
-	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) = 0;
+	// TODO: allow seeking
+	virtual void decode_frame(Span<uint8_t> p_frame_data) = 0;
+	virtual Vector<uint8_t> present_frame() = 0;
+
+	~VideoStreamEncoding();
 };

@@ -39,30 +39,34 @@ class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
+	struct Frame {
+		RID texture;
+		size_t group_order_count;
+		size_t picture_order_count;
+	};
+
 	const uint8_t *src = nullptr;
 	uint8_t shift = 0;
 
-	uint8_t length_size;
+	uint8_t length_size = 4;
 	bool prevent_emulation = true;
 
 	VideoCodingH264ProfileIdc target_profile_idc = VIDEO_CODING_H264_PROFILE_IDC_HIGH;
-	VideoCodingH264ProfileIdc minimum_profile_idc;
+	VideoCodingH264ProfileIdc minimum_profile_idc = VIDEO_CODING_H264_PROFILE_IDC_BASELINE;
 
 	uint32_t target_level_idc;
 
 	Vector<VideoCodingH264SequenceParameterSet> sps_sets;
 	Vector<VideoCodingH264PictureParameterSet> pps_sets;
 
+	Vector<Frame> present_queue;
+	size_t current_group_order_count = 0;
 	uint64_t prev_pic_order_cnt_lsb;
 	uint64_t prev_pic_order_cnt_msb;
 	uint64_t prev_frame_num_offset;
 	uint64_t prev_frame_num;
 
 	VideoProfile video_profile = {};
-	RID video_session = RID();
-
-	RenderingDevice *coding_device;
-	RID texture_sampler;
 
 	uint64_t read_bits(uint8_t p_amount);
 	uint64_t read_ue();
@@ -73,15 +77,17 @@ private:
 	VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	VideoDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr);
 
+protected:
+	virtual RID _create_video_session(RD::VideoSessionInfo p_session_template) final override;
+	virtual RID _create_texture_sampler(RD::SamplerState p_sampler_template) final override;
+	virtual RID _create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) final override;
+
 public:
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
 	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) final override;
 
-	virtual void set_rendering_device(RenderingDevice *p_coding_device) final override;
-	virtual RID create_video_session(RD::VideoSessionInfo p_session_template) final override;
-	virtual RID create_texture_sampler(RD::SamplerState p_sampler_template) final override;
-	virtual RID create_texture(RD::TextureFormat p_texture_template) final override;
-	virtual void decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) final override;
+	virtual void decode_frame(Span<uint8_t> p_frame_data) final override;
+	virtual Vector<uint8_t> present_frame() final override;
 
 	VideoStreamH264();
 };

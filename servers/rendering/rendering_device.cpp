@@ -5855,7 +5855,7 @@ RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info
 	dpb_format.width = p_session_info.width;
 	dpb_format.height = p_session_info.height;
 	dpb_format.depth = 1;
-	dpb_format.array_layers = 9;
+	dpb_format.array_layers = p_session_info.max_active_reference_pictures + 1; // TODO: for AV1 this is +2
 	dpb_format.mipmaps = 1;
 	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 	dpb_format.samples = RD::TEXTURE_SAMPLES_1;
@@ -6002,9 +6002,17 @@ void RenderingDevice::video_session_decode(RID p_video_session, Span<uint8_t> p_
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
 	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
 
-	RDD::BufferID src_buffer = driver->buffer_create(p_video_data.size(), buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
+	RDD::BufferID src_buffer = driver->buffer_create(p_video_data.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	uint8_t *write_ptr = driver->buffer_map(src_buffer);
-	memcpy(write_ptr, p_video_data.begin(), p_video_data.size());
+
+	if (video_session->video_profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		uint8_t start_code[4] = { 0, 0, 0, 1 };
+		memcpy(write_ptr, start_code, sizeof(start_code));
+		memcpy(write_ptr + sizeof(start_code), p_video_data.begin(), p_video_data.size());
+	} else {
+		memcpy(write_ptr, p_video_data.begin(), p_video_data.size());
+	}
+
 	driver->buffer_unmap(src_buffer);
 
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
@@ -6066,6 +6074,9 @@ void RenderingDevice::video_session_end(RID p_video_session) {
 
 	// TODO: use query pools to measure performance
 	driver->fence_wait(video_session->final_fence);
+
+	video_session->last_cmd_buffer = 0;
+	driver->command_pool_reset(video_session->decode_pool);
 }
 
 #ifndef DISABLE_DEPRECATED

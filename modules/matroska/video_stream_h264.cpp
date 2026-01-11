@@ -51,8 +51,6 @@ uint64_t VideoStreamH264::read_bits(uint8_t p_amount) {
 				encoded = encoded >> 8;
 				src += 1;
 				i--;
-			} else {
-				//print_line("not preventing emulation");
 			}
 		}
 	}
@@ -613,28 +611,24 @@ Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_s
 	return OK;
 }
 
-void VideoStreamH264::set_rendering_device(RenderingDevice *p_local_device) {
-	coding_device = p_local_device;
-}
-
-RID VideoStreamH264::create_video_session(RD::VideoSessionInfo p_session_template) {
+RID VideoStreamH264::_create_video_session(RD::VideoSessionInfo p_session_template) {
 	p_session_template.profile = video_profile;
 	p_session_template.width += 0; // TODO: cropping
 	p_session_template.height += 0; // TODO: cropping / how do we know this?
 	p_session_template.max_active_reference_pictures = 16; // sps.max_num_ref_frames
 
-	video_session = coding_device->video_session_create(p_session_template);
-	coding_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
+	RID video_session = local_device->video_session_create(p_session_template);
+	local_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
 	return video_session;
 }
 
-RID VideoStreamH264::create_texture_sampler(RD::SamplerState p_sampler_template) {
+RID VideoStreamH264::_create_texture_sampler(RD::SamplerState p_sampler_template) {
 	// TODO override parameters
-	texture_sampler = coding_device->sampler_create(p_sampler_template);
+	RID texture_sampler = local_device->sampler_create(p_sampler_template);
 	return texture_sampler;
 }
 
-RID VideoStreamH264::create_texture(RD::TextureFormat p_texture_template) {
+RID VideoStreamH264::_create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) {
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);
 
@@ -642,15 +636,15 @@ RID VideoStreamH264::create_texture(RD::TextureFormat p_texture_template) {
 	p_texture_template.width += 0;
 	p_texture_template.height += 0; // TODO: how do we know this?
 
-	RD::TextureView texture_view;
-	texture_view.ycbcr_sampler = texture_sampler;
-
-	return coding_device->texture_create(p_texture_template, texture_view);
+	return local_device->texture_create(p_texture_template, p_view_template);
 }
 
-void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture) {
+void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 	src = p_frame_data.ptr();
 	shift = 0;
+
+	RID dst_yuv = yuv_pool[decode_yuv_index];
+	RID dst_rgba = rgba_pool[decode_rgba_index];
 
 	read_bits(1); // forbidden_zero_bit
 	uint8_t nal_ref_idc = read_bits(2);
@@ -660,9 +654,49 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data, RID p_dst_texture
 	bool is_idr = nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR;
 	VideoDecodeH264SliceHeader slice_header = parse_slice_header(p_frame_data.size(), is_reference, is_idr);
 
-	coding_device->video_session_decode(video_session, p_frame_data, p_dst_texture, &slice_header);
+	if (slice_header.pic_order_cnt_top_field == 0) {
+		current_group_order_count += 1;
+	}
+
+	local_device->video_session_decode(video_session, p_frame_data, dst_yuv, &slice_header);
+	_yuv_to_rgba(dst_yuv, dst_rgba);
+	local_device->submit();
+	local_device->sync();
+	local_device->video_session_end(video_session);
+
+	decode_yuv_index = (decode_yuv_index + 1) % yuv_pool.size();
+	decode_rgba_index = (decode_rgba_index + 1) % rgba_pool.size();
+
+	Frame current_frame;
+	current_frame.texture = dst_rgba;
+	current_frame.group_order_count = current_group_order_count;
+	current_frame.picture_order_count = slice_header.pic_order_cnt_top_field;
+
+	bool frame_set = false;
+	for (size_t i = 1; i < present_queue.size(); i++) {
+		Frame previous_frame = present_queue[i - 1];
+		Frame next_frame = present_queue[i];
+
+		if (next_frame.group_order_count < current_frame.group_order_count) {
+			continue;
+		} else if (previous_frame.picture_order_count < slice_header.pic_order_cnt_top_field && slice_header.pic_order_cnt_top_field < next_frame.picture_order_count) {
+			present_queue.insert(i, current_frame);
+			frame_set = true;
+			break;
+		}
+	}
+
+	if (!frame_set) {
+		present_queue.push_back(current_frame);
+	}
+}
+
+Vector<uint8_t> VideoStreamH264::present_frame() {
+	RID target_texture = present_queue[0].texture;
+	present_queue.remove_at(0);
+	return local_device->texture_get_data(target_texture, 0);
 }
 
 VideoStreamH264::VideoStreamH264() {
-	coding_device = RD::get_singleton();
+	local_device = RD::get_singleton();
 }

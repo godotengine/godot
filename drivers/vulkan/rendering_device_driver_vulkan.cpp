@@ -1141,22 +1141,22 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
 
 		// Video capabilities.
-		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
-		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
-		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
-		video_capabilities.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
-		video_capabilities.min_coded_extent = vk_video_capabilities.minCodedExtent;
-		video_capabilities.max_coded_extent = vk_video_capabilities.maxCodedExtent;
-		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
-		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
-		video_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+		video_capabilities_h264.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities_h264.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities_h264.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities_h264.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
+		video_capabilities_h264.min_coded_extent = vk_video_capabilities.minCodedExtent;
+		video_capabilities_h264.max_coded_extent = vk_video_capabilities.maxCodedExtent;
+		video_capabilities_h264.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities_h264.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+		video_capabilities_h264.std_header_version = vk_video_capabilities.stdHeaderVersion;
 
 		// Video Decode capabilities.
-		video_capabilities.video_decode_capability_flags = vk_decode_capabilities.flags;
+		video_capabilities_h264.video_decode_capability_flags = vk_decode_capabilities.flags;
 
 		// H.264 Decode capabilities.
-		video_capabilities.max_level_idc = vk_h264_capabilities.maxLevelIdc;
-		video_capabilities.field_offset_granularity = vk_h264_capabilities.fieldOffsetGranularity;
+		video_capabilities_h264.max_level_idc = vk_h264_capabilities.maxLevelIdc;
+		video_capabilities_h264.field_offset_granularity = vk_h264_capabilities.fieldOffsetGranularity;
 	}
 
 	if (enabled_device_extension_names.has(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME)) {
@@ -1189,18 +1189,18 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
 
 		// Video capabilities.
-		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
-		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
-		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
-		video_capabilities.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
-		video_capabilities.min_coded_extent = vk_video_capabilities.minCodedExtent;
-		video_capabilities.max_coded_extent = vk_video_capabilities.maxCodedExtent;
-		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
-		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
-		video_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+		video_capabilities_av1.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities_av1.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities_av1.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities_av1.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
+		video_capabilities_av1.min_coded_extent = vk_video_capabilities.minCodedExtent;
+		video_capabilities_av1.max_coded_extent = vk_video_capabilities.maxCodedExtent;
+		video_capabilities_av1.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities_av1.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+		video_capabilities_av1.std_header_version = vk_video_capabilities.stdHeaderVersion;
 
 		// Video Decode capabilities.
-		video_capabilities.video_decode_capability_flags = vk_decode_capabilities.flags;
+		video_capabilities_av1.video_decode_capability_flags = vk_decode_capabilities.flags;
 
 		// AV1 Decode capabilities.
 		// TODO
@@ -1873,7 +1873,7 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	}
 	if (p_usage.has_flag(BUFFER_USAGE_VIDEO_DECODE_SRC_BIT)) {
 		// Video alignments are typically quite large (128 bytes).
-		alignment = MAX(alignment, video_capabilities.min_bitstream_buffer_size_alignment);
+		alignment = MAX(alignment, video_capabilities_h264.min_bitstream_buffer_size_alignment);
 	}
 	// Align the size. This is specially important for BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT buffers.
 	// For the rest, it should work thanks to VMA taking care of the details. But still align just in case.
@@ -6638,7 +6638,7 @@ Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfil
 void RenderingDeviceDriverVulkan::_rd_to_vk_h264_params(VideoDecodeH264SliceHeader *p_slice_header, StdVideoDecodeH264PictureInfo *r_picture_info, StdVideoDecodeH264ReferenceInfo *r_reference_info) {
 	r_picture_info->flags.field_pic_flag = p_slice_header->field_pic_flag;
 	r_picture_info->flags.is_intra = p_slice_header->is_intra;
-	r_picture_info->flags.IdrPicFlag = p_slice_header->is_intra;
+	r_picture_info->flags.IdrPicFlag = false;
 	r_picture_info->flags.bottom_field_flag = p_slice_header->bottom_field_flag;
 	r_picture_info->flags.is_reference = p_slice_header->is_reference;
 	r_picture_info->flags.complementary_field_pair = p_slice_header->complementary_field_pair;
@@ -6844,6 +6844,13 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
 
+	VkExtensionProperties *std_header_version;
+	if (video_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
+		std_header_version = &video_capabilities_h264.std_header_version;
+	} else {
+		std_header_version = &video_capabilities_av1.std_header_version;
+	}
+
 	VkVideoSessionCreateInfoKHR session_info = {};
 	session_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR;
 	session_info.pNext = nullptr;
@@ -6854,9 +6861,9 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.maxCodedExtent.width = dpb_textures[0]->vk_create_info.extent.width;
 	session_info.maxCodedExtent.height = dpb_textures[0]->vk_create_info.extent.height;
 	session_info.referencePictureFormat = dpb_textures[0]->vk_create_info.format;
-	session_info.maxDpbSlots = 9;
-	session_info.maxActiveReferencePictures = 7;
-	session_info.pStdHeaderVersion = &video_capabilities.std_header_version;
+	session_info.maxDpbSlots = p_dpb_views.size();
+	session_info.maxActiveReferencePictures = p_dpb_views.size() - 1;
+	session_info.pStdHeaderVersion = std_header_version;
 
 	VkVideoSessionKHR video_session;
 	VkResult result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
@@ -7427,37 +7434,25 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	Vector<VkVideoReferenceSlotInfoKHR> reference_slots;
 	reference_slots.push_back(setup_reference_slot);
 
-	bool target_is_reference;
-	printf("\nBinding DPB slot:");
 	for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
 		if (video_session_info->std_reference_infos[i] == nullptr) {
 			break;
 		}
 
-		target_is_reference = false;
-		bool reference_present = false;
-		for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
-			if (video_session_info->target_dpb_index == active_ref_frames[j]) {
-				target_is_reference = true;
-			}
-
-			if (i == active_ref_frames[j]) {
-				reference_present = true;
-			}
+		if (i == video_session_info->target_dpb_index) {
+			continue;
 		}
 
-		if (i == video_session_info->target_dpb_index) {
-			if (target_is_reference) {
-				printf(" %i!!!!!", i);
-			} else {
-				printf(" (%i)", i);
-				continue;
+		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+			bool reference_present = false;
+			for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
+				if (i == active_ref_frames[j]) {
+					reference_present = true;
+				}
 			}
-		} else {
+
 			if (!reference_present) {
 				continue;
-			} else {
-				printf(" %i", i);
 			}
 		}
 
@@ -7497,13 +7492,6 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		reference_slot.slotIndex = i;
 		reference_slot.pPictureResource = picture_resource_info;
 		reference_slots.push_back(reference_slot);
-	}
-
-	printf("\n");
-	fflush(stdout);
-
-	if (target_is_reference) {
-		CRASH_NOW_MSG("critical strike.");
 	}
 
 	VkVideoBeginCodingInfoKHR video_begin_info = {};
@@ -7562,35 +7550,39 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 			free(video_session_info->std_reference_infos[video_session_info->target_dpb_index]);
 		}
 
-		for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-			if ((refresh_frame_flags & 1 << i) > 0) {
-				video_session_info->reference_name_slot_indices[i] = video_session_info->target_dpb_index;
-			}
-		}
-
 		video_session_info->std_reference_infos.set(video_session_info->target_dpb_index, std_reference_info);
 
-		uint8_t counter = 0;
-		bool valid_slot = false;
-		while (!valid_slot) {
-			video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
-
-			valid_slot = true;
+		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
 			for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-				if (active_ref_frames[i] == -1) {
-					continue;
-				}
-
-				if (video_session_info->target_dpb_index == active_ref_frames[i]) {
-					valid_slot = false;
-					break;
+				if ((refresh_frame_flags & 1 << i) > 0) {
+					video_session_info->reference_name_slot_indices[i] = video_session_info->target_dpb_index;
 				}
 			}
 
-			counter++;
-			if (counter == video_session_info->vk_session_create_info.maxDpbSlots) {
-				CRASH_NOW_MSG("Infinite loop looking for an available DPB slot");
+			uint8_t counter = 0;
+			bool valid_slot = false;
+			while (!valid_slot) {
+				video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
+
+				valid_slot = true;
+				for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
+					if (active_ref_frames[i] == -1) {
+						continue;
+					}
+
+					if (video_session_info->target_dpb_index == active_ref_frames[i]) {
+						valid_slot = false;
+						break;
+					}
+				}
+
+				counter++;
+				if (counter == video_session_info->vk_session_create_info.maxDpbSlots) {
+					CRASH_NOW_MSG("Infinite loop looking for an available DPB slot");
+				}
 			}
+		} else {
+			video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
 		}
 	}
 

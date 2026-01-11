@@ -31,12 +31,10 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include "core/templates/hash_map.h"
 #include "matroska.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/video_stream_encoding.h"
-#include "servers/rendering/rendering_device.h"
 
 class VideoStreamMatroska : public VideoStream {
 	GDCLASS(VideoStreamMatroska, VideoStream);
@@ -62,19 +60,9 @@ private:
 	uint32_t width = 0;
 	uint32_t height = 0;
 
-	RenderingDevice *local_device;
-
-	RID video_session;
-
-	RID yuv_sampler;
-	RID yuv_shader;
-	RID yuv_pipeline;
-	Vector<RID> dst_yuv_pool;
-	Vector<RID> dst_rgba_pool;
-
 	const size_t yuv_pool_size = 2;
 	const size_t rgb_pool_size = 10;
-	const size_t buffered_frames = 8;
+	const size_t buffered_frames = 7;
 
 	// The cluster frame in present order
 	size_t cluster_frame_index = 0;
@@ -145,7 +133,6 @@ public:
 	virtual void set_audio_track(int p_idx) override;
 
 	VideoStreamPlaybackMatroska();
-	~VideoStreamPlaybackMatroska();
 };
 
 class ResourceFormatLoaderMatroska : public ResourceFormatLoader {
