@@ -297,9 +297,8 @@ bool JoypadSDL::Joypad::has_joy_light() const {
 	return SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
 }
 
-bool JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
-	Color linear = p_color.srgb_to_linear();
-	return SDL_SetJoystickLED(get_sdl_joystick(), linear.get_r8(), linear.get_g8(), linear.get_b8());
+void JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
+	SDL_SetJoystickLED(get_sdl_joystick(), p_color.get_r8(), p_color.get_g8(), p_color.get_b8());
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {

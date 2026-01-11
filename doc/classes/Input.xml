@@ -398,11 +398,11 @@
 			</description>
 		</method>
 		<method name="set_joy_light">
-			<return type="bool" />
+			<return type="void" />
 			<param index="0" name="device" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the joypad's LED light, if available, to the specified color. Returns [code]true[/code] if the operation was successful. See also [method has_joy_light].
+				Sets the joypad's LED light, if available, to the specified color. See also [method has_joy_light].
 				[b]Note:[/b] There is no way to get the color of the light from a joypad. If you need to know the assigned color, store it separately.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS.
 			</description>
