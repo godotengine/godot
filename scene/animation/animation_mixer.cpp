@@ -1004,11 +1004,13 @@ void AnimationMixer::_process_animation(double p_delta, bool p_update_only) {
 		_blend_capture(p_delta);
 		_blend_calc_total_weight();
 		_blend_process(p_delta, p_update_only);
+		clear_animation_instances();
 		_blend_apply();
 		_blend_post_process();
 		emit_signal(SNAME("mixer_applied"));
-	};
-	clear_animation_instances();
+	} else {
+		clear_animation_instances();
+	}
 }
 
 Variant AnimationMixer::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx) {

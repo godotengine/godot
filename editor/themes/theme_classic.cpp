@@ -418,22 +418,6 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
-		// MenuButton.
-
-		p_theme->set_stylebox(CoreStringName(normal), "MenuButton", p_config.panel_container_style);
-		p_theme->set_stylebox(SceneStringName(hover), "MenuButton", p_config.button_style_hover);
-		p_theme->set_stylebox(SceneStringName(pressed), "MenuButton", p_config.panel_container_style);
-		p_theme->set_stylebox("focus", "MenuButton", p_config.panel_container_style);
-		p_theme->set_stylebox("disabled", "MenuButton", p_config.panel_container_style);
-
-		p_theme->set_color(SceneStringName(font_color), "MenuButton", p_config.font_color);
-		p_theme->set_color("font_hover_color", "MenuButton", p_config.font_hover_color);
-		p_theme->set_color("font_hover_pressed_color", "MenuButton", p_config.font_hover_pressed_color);
-		p_theme->set_color("font_focus_color", "MenuButton", p_config.font_focus_color);
-		p_theme->set_color("font_outline_color", "MenuButton", p_config.font_outline_color);
-
-		p_theme->set_constant("outline_size", "MenuButton", 0);
-
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
@@ -628,12 +612,12 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("title_button_color", "Tree", p_config.font_color);
 			p_theme->set_color("drop_position_color", "Tree", p_config.accent_color);
 
-			p_theme->set_constant("v_separation", "Tree", p_config.separation_margin);
+			p_theme->set_constant("v_separation", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("h_separation", "Tree", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant("guide_width", "Tree", p_config.border_width);
 			p_theme->set_constant("item_margin", "Tree", MAX(3 * p_config.increased_margin * EDSCALE, 12 * EDSCALE));
-			p_theme->set_constant("inner_item_margin_top", "Tree", p_config.separation_margin);
-			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.separation_margin);
+			p_theme->set_constant("inner_item_margin_top", "Tree", p_config.base_margin * 0.75 * EDSCALE);
+			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.base_margin * 0.75 * EDSCALE);
 			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.increased_margin * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
@@ -1430,6 +1414,8 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_stylebox("slot", "GraphNode", gn_slot_style);
 			p_theme->set_stylebox("slot_selected", "GraphNode", p_config.button_style_focus);
 
+			p_theme->set_stylebox("separator", "GraphNode", p_theme->get_stylebox("separator", "HSeparator"));
+
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
 			p_theme->set_constant("port_h_offset", "GraphNode", 1);
@@ -1865,8 +1851,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", style_flat_button_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", style_flat_button);
 
-			// Variation for Editor Log filter buttons.
+			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
+			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
 
+			// Variation for Editor Log filter buttons.
 			p_theme->set_type_variation("EditorLogFilterButton", "Button");
 			// When pressed, don't tint the icons with the accent color, just leave them normal.
 			p_theme->set_color("icon_pressed_color", "EditorLogFilterButton", p_config.icon_normal_color);
@@ -2009,6 +1999,13 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(panel), "TabContainerOdd", style_content_panel_odd);
 		}
 
+		// PanelContainerTabbarInner.
+		{
+			// Used by Modern theme.
+			p_theme->set_type_variation("PanelContainerTabbarInner", "PanelContainer");
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
+		}
+
 		// TreeLineEdit.
 		{
 			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
@@ -2126,6 +2123,9 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		category_bg->set_border_color(prop_category_color);
 		category_bg->set_content_margin_all(0);
 		p_theme->set_stylebox("bg", "EditorInspectorCategory", category_bg);
+
+		// EditorInspectorArray.
+		p_theme->set_color("bg", "EditorInspectorArray", p_config.dark_color_1);
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
@@ -2349,6 +2349,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitContent", style);
 	}
 
+	// EditorHelpBit tooltip type variations.
+	{
+		p_theme->set_type_variation("EditorHelpBitTooltipTitle", "EditorHelpBitTitle");
+		p_theme->set_type_variation("EditorHelpBitTooltipContent", "EditorHelpBitContent");
+	}
+
 	// Asset Library.
 	p_theme->set_stylebox("bg", "AssetLib", p_config.base_empty_style);
 	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.content_panel_style);
@@ -2360,6 +2366,18 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 	Ref<StyleBoxFlat> debugger_panel_style = p_config.content_panel_style->duplicate();
 	debugger_panel_style->set_border_width(SIDE_BOTTOM, 0);
 	p_theme->set_stylebox("DebuggerPanel", EditorStringName(EditorStyles), debugger_panel_style);
+
+	// ObjectDB.
+	{
+		Ref<StyleBoxFlat> style_content_wrapper = p_config.panel_container_style->duplicate();
+		style_content_wrapper->set_draw_center(true);
+		style_content_wrapper->set_bg_color(p_config.dark_color_2);
+		p_theme->set_stylebox("ObjectDBContentWrapper", EditorStringName(EditorStyles), style_content_wrapper);
+
+		Ref<StyleBoxFlat> style_title = style_content_wrapper->duplicate();
+		style_title->set_bg_color(p_config.dark_color_3);
+		p_theme->set_stylebox("ObjectDBTitle", EditorStringName(EditorStyles), style_title);
+	}
 
 	// Resource and node editors.
 	{

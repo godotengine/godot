@@ -166,6 +166,12 @@ AABB Decal::get_aabb() const {
 	return aabb;
 }
 
+void Decal::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sorting_offset") {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 

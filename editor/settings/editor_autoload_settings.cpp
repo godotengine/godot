@@ -393,7 +393,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		// Cache the scene reference before loading it (for cyclic references)
 		Ref<PackedScene> scn;
 		scn.instantiate();
-		scn->set_path(p_path);
+		scn->set_path(ResourceUID::ensure_path(p_path));
 		scn->reload_from_file();
 		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from UID or path: %s.", p_path));
 
@@ -945,6 +945,11 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	add_child(mc);
+
 	tree = memnew(Tree);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
@@ -976,9 +981,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_edited", callable_mp(this, &EditorAutoloadSettings::_autoload_edited));
 	tree->connect("button_clicked", callable_mp(this, &EditorAutoloadSettings::_autoload_button_pressed));
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	add_child(tree, true);
+	mc->add_child(tree, true);
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {

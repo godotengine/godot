@@ -3250,6 +3250,12 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_system_menu", "system_menu_id"), &PopupMenu::set_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu"), &PopupMenu::get_system_menu);
 
+	ClassDB::bind_method(D_METHOD("set_shrink_height", "shrink"), &PopupMenu::set_shrink_height);
+	ClassDB::bind_method(D_METHOD("get_shrink_height"), &PopupMenu::get_shrink_height);
+
+	ClassDB::bind_method(D_METHOD("set_shrink_width", "shrink"), &PopupMenu::set_shrink_width);
+	ClassDB::bind_method(D_METHOD("get_shrink_width"), &PopupMenu::get_shrink_width);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
@@ -3257,6 +3263,8 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
@@ -3376,6 +3384,21 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 		Popup::_popup_base(p_bounds);
 	}
 }
+void PopupMenu::set_shrink_height(bool p_shrink) {
+	shrink_height = p_shrink;
+}
+
+bool PopupMenu::get_shrink_height() const {
+	return shrink_height;
+}
+
+void PopupMenu::set_shrink_width(bool p_shrink) {
+	shrink_width = p_shrink;
+}
+
+bool PopupMenu::get_shrink_width() const {
+	return shrink_width;
+}
 
 void PopupMenu::_pre_popup() {
 	real_t popup_scale = 1.0;
@@ -3413,7 +3436,8 @@ void PopupMenu::_pre_popup() {
 		}
 		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
 		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		reset_size(); // Shrinkwraps to min size.
+		Size2i sz = get_size(); // Shrinkwraps to min size.
+		set_size(Vector2i(shrink_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
 	}
 }
 

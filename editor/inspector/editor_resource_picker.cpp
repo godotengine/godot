@@ -331,7 +331,7 @@ void EditorResourcePicker::_update_menu_items() {
 			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
 				modifier = "Cmd";
 			}
-			const String drag_and_drop_text = vformat(TTRC("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
+			const String drag_and_drop_text = vformat(TTR("Hold %s while drag-and-dropping from the FileSystem dock or another resource picker to automatically make a dropped resource unique."), modifier);
 
 			if (!unique_enabled) {
 				if (EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource) && EditorNode::get_singleton()->get_resource_count(edited_resource) == 1) {
@@ -1156,11 +1156,9 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	return types;
 }
 
-void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
+bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) {
 	if (p_resource.is_null()) {
-		edited_resource = Ref<Resource>();
-		_update_resource();
-		return;
+		return true;
 	}
 
 	if (!base_type.is_empty()) {
@@ -1175,9 +1173,20 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 		}
 
 		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
-			String class_str = (custom_class == StringName() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
-			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
+			return false;
 		}
+	}
+	return true;
+}
+
+void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
+	if (!is_resource_allowed(p_resource)) {
+		StringName custom_class;
+		if (p_resource->get_script()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+		}
+		const String class_str = (custom_class.is_empty() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
+		ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 	}
 	set_edited_resource_no_check(p_resource);
 }

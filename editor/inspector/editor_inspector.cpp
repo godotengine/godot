@@ -43,6 +43,7 @@
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_property_name_processor.h"
+#include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
@@ -1417,6 +1418,13 @@ void EditorProperty::menu_option(int p_option) {
 			EditorInspector::set_property_clipboard(object->get(property));
 		} break;
 		case MENU_PASTE_VALUE: {
+			EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(this);
+			if (epr) {
+				const Ref<Resource> res = InspectorDock::get_inspector_singleton()->get_property_clipboard();
+				if (res.is_valid() && !epr->get_resource_picker()->is_resource_allowed(res)) {
+					return;
+				}
+			}
 			emit_changed(property, EditorInspector::get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
@@ -2065,7 +2073,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
 					if (can_click_unfold) {
-						draw_texture(arrow, arrow_position);
+						draw_texture(arrow, arrow_position, Color(1, 1, 1, header_hover ? 1.0 : 0.85));
 					}
 					margin_start += arrow->get_width() + theme_cache.horizontal_separation;
 				}
@@ -2176,8 +2184,9 @@ void EditorInspectorSection::_notification(int p_what) {
 				if (object->has_method("_get_property_warning") && !String(object->call("_get_property_warning", related_enable_property)).is_empty()) {
 					font_color = theme_cache.warning_color;
 				}
+				const Color string_color = header_hover ? theme_cache.font_hover_mono_color : font_color;
 				HorizontalAlignment text_align = rtl ? HORIZONTAL_ALIGNMENT_RIGHT : HORIZONTAL_ALIGNMENT_LEFT;
-				draw_string(font, text_offset, label, text_align, available, font_size, theme_cache.font_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+				draw_string(font, text_offset, label, text_align, available, font_size, string_color, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 			}
 
 			// Draw section indentation.
@@ -2664,7 +2673,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 	if (style.is_null()) {
 		return;
 	}
-	if (array_elements[p_index].panel->has_focus()) {
+	if (array_elements[p_index].panel->has_focus(true)) {
 		array_elements[p_index].panel->draw_style_box(style, Rect2(Vector2(), array_elements[p_index].panel->get_size()));
 	}
 }
@@ -3280,9 +3289,9 @@ void EditorInspectorArray::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			Color color = get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor));
-			odd_style->set_bg_color(color.darkened(-0.08));
-			even_style->set_bg_color(color.darkened(0.08));
+			Color color = get_theme_color(SNAME("bg"), SNAME("EditorInspectorArray"));
+			odd_style->set_bg_color(color.darkened(-0.1));
+			even_style->set_bg_color(color.darkened(0.1));
 
 			for (ArrayElement &ae : array_elements) {
 				if (ae.move_texture_rect) {
@@ -3576,6 +3585,7 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.font_hover_color = p_control->get_theme_color(SNAME("font_hover_color"), EditorStringName(Editor));
 	p_cache.font_pressed_color = p_control->get_theme_color(SNAME("font_pressed_color"), EditorStringName(Editor));
 	p_cache.font_hover_pressed_color = p_control->get_theme_color(SNAME("font_hover_pressed_color"), EditorStringName(Editor));
+	p_cache.font_hover_mono_color = p_control->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.925);
 
 	p_cache.font = p_control->get_theme_font(SceneStringName(font), SNAME("Tree"));
 	p_cache.font_size = p_control->get_theme_font_size(SceneStringName(font_size), SNAME("Tree"));

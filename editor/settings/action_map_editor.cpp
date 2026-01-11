@@ -37,6 +37,7 @@
 #include "editor/settings/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -600,9 +601,13 @@ ActionMapEditor::ActionMapEditor() {
 
 	main_vbox->add_child(add_hbox);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	main_vbox->add_child(mc);
+
 	// Action Editor Tree
 	action_tree = memnew(Tree);
-	action_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	action_tree->set_accessibility_name(TTRC("Action Map"));
 	action_tree->set_columns(3);
 	action_tree->set_hide_root(true);
@@ -617,7 +622,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("item_edited", callable_mp(this, &ActionMapEditor::_action_edited), CONNECT_DEFERRED);
 	action_tree->connect("item_activated", callable_mp(this, &ActionMapEditor::_tree_item_activated));
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
-	main_vbox->add_child(action_tree);
+	mc->add_child(action_tree);
 
 	SET_DRAG_FORWARDING_GCD(action_tree, ActionMapEditor);
 

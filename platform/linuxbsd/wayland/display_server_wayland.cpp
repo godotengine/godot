@@ -1766,11 +1766,10 @@ void DisplayServerWayland::process_events() {
 			Ref<InputEventMouseButton> mb = inputev_msg->event;
 
 			bool handled = false;
-			if (!popup_menu_list.is_empty() && mb.is_valid()) {
-				// Popup menu handling.
-
+			if (mb.is_valid()) {
 				BitField<MouseButtonMask> mouse_mask = mb->get_button_mask();
-				if (mouse_mask != last_mouse_monitor_mask && mb->is_pressed()) {
+				if (!popup_menu_list.is_empty() && mb->is_pressed() && mouse_mask != last_mouse_monitor_mask) {
+					// Popup menu handling.
 					List<WindowID>::Element *E = popup_menu_list.back();
 					List<WindowID>::Element *C = nullptr;
 

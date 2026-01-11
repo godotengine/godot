@@ -964,7 +964,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// 3D: Manipulator
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "editors/3d/show_gizmo_during_rotation", 2, "Global,Local");
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
@@ -981,6 +982,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/use_integer_zoom_by_default", false, true);
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/zoom_speed_factor", 1.1, "1.01,2,0.01")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/ruler_width", 16.0, "12.0,30.0,1.0")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/auto_resample_delay", 0.3, "0.1,2,0.1")
 
 	// Bone mapper (BoneMapEditorPlugin)
 	_initial_set("editors/bone_mapper/handle_colors/unset", Color(0.3, 0.3, 0.3));
@@ -1928,6 +1930,8 @@ void EditorSettings::_add_shortcut_default(const String &p_path, const Ref<Short
 }
 
 void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_COND_MSG(p_shortcut.is_null(), "Cannot add a null shortcut for path: " + p_path);
+
 	Array use_events = p_shortcut->get_events();
 	if (shortcuts.has(p_path)) {
 		Ref<Shortcut> existing = shortcuts.get(p_path);

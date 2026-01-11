@@ -788,7 +788,7 @@
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
-			<param index="2" name="transfer_mode" type="String" default="&quot;unreliable&quot;" />
+			<param index="2" name="transfer_mode" type="String" default="&quot;reliable&quot;" />
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
@@ -804,7 +804,7 @@
 				@rpc("any_peer", "unreliable_ordered")
 				func fn_update_pos(): pass
 
-				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
+				@rpc("authority", "call_remote", "reliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
 				[b]Note:[/b] Methods annotated with [annotation @rpc] cannot receive objects which define required parameters in [method Object._init]. See [method Object._init] for more details.

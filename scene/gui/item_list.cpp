@@ -1550,8 +1550,7 @@ void ItemList::_notification(int p_what) {
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-						pos.y += theme_cache.icon_margin;
-						text_ofs.y = icon_size.height + theme_cache.icon_margin * 2;
+						text_ofs.y = icon_size.height + theme_cache.icon_margin;
 					} else {
 						pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
 						text_ofs.x = icon_size.width + theme_cache.icon_margin;
@@ -1712,10 +1711,10 @@ void ItemList::_notification(int p_what) {
 				if (v_scroll_value > 1 || v_scroll_below_max) {
 					int hint_height = theme_cache.scroll_hint->get_height();
 					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_TOP) && v_scroll_value > 1) {
-						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(), Size2(control_size.width, hint_height)), tile_scroll_hint);
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(), Size2(control_size.width, hint_height)), tile_scroll_hint, theme_cache.scroll_hint_color);
 					}
 					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM) && v_scroll_below_max) {
-						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(0, control_size.height - hint_height), Size2(control_size.width, -hint_height)), tile_scroll_hint);
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(0, control_size.height - hint_height), Size2(control_size.width, -hint_height)), tile_scroll_hint, theme_cache.scroll_hint_color);
 					}
 				}
 			}
@@ -2443,6 +2442,7 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ItemList, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, font_outline_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ItemList, scroll_hint);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, scroll_hint_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, line_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, icon_margin);

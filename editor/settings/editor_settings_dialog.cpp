@@ -784,7 +784,7 @@ Variant EditorSettingsDialog::get_drag_data_fw(const Point2 &p_point, Control *p
 		return Variant();
 	}
 
-	String label_text = vformat(TTRC("Event %d"), selected->get_meta("event_index"));
+	String label_text = vformat(TTR("Event %d"), selected->get_meta("event_index"));
 	Label *label = memnew(Label(label_text));
 	label->set_modulate(Color(1, 1, 1, 1.0f));
 	shortcuts->set_drag_preview(label);
@@ -1008,9 +1008,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_bar->connect(SceneStringName(value_changed), callable_mp(this, &EditorSettingsDialog::_update_shortcuts));
 	tab_shortcuts->add_child(shortcut_search_bar);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	tab_shortcuts->add_child(mc);
+
 	shortcuts = memnew(Tree);
 	shortcuts->set_accessibility_name(TTRC("Shortcuts"));
-	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	shortcuts->set_column_titles_visible(true);
@@ -1018,7 +1022,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_title(1, TTRC("Binding"));
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
-	tab_shortcuts->add_child(shortcuts);
+	mc->add_child(shortcuts);
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
 

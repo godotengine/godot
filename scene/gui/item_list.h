@@ -188,6 +188,7 @@ protected:
 		Color guide_color;
 
 		Ref<Texture2D> scroll_hint;
+		Color scroll_hint_color;
 	} theme_cache;
 
 	void _notification(int p_what);

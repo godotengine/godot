@@ -617,8 +617,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
 
-	Control *timeline_rtl_spacer = nullptr;
-	void _update_timeline_rtl_spacer();
+	MarginContainer *timeline_mc = nullptr;
+	void _update_timeline_margins();
 
 	VBoxContainer *info_message_vbox = nullptr;
 	Label *info_message = nullptr;
@@ -896,7 +896,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_filter_text_changed(const String &p_newtext);
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 
-	double snap_unit;
+	double snap_unit = 0;
 	bool fps_compatible = true;
 	int nearest_fps = 0;
 	void _update_snap_unit();

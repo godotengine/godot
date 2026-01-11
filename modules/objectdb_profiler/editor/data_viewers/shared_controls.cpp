@@ -199,11 +199,11 @@ void TreeSortAndFilterBar::_notification(int p_what) {
 TreeSortAndFilterBar::SortOptionIndexes TreeSortAndFilterBar::add_sort_option(const String &p_new_option, SortType p_sort_type, int p_sort_column, bool p_is_default) {
 	sort_button->set_visible(true);
 	bool is_first_item = sort_items.is_empty();
-	SortItem item_ascending(sort_items.size(), vformat(TTRC("Sort By %s (Ascending)"), p_new_option), p_sort_type, true, p_sort_column);
+	SortItem item_ascending(sort_items.size(), vformat(TTR("Sort By %s (Ascending)"), p_new_option), p_sort_type, true, p_sort_column);
 	sort_items[item_ascending.id] = item_ascending;
 	sort_button->get_popup()->add_radio_check_item(item_ascending.label, item_ascending.id);
 
-	SortItem item_descending(sort_items.size(), vformat(TTRC("Sort By %s (Descending)"), p_new_option), p_sort_type, false, p_sort_column);
+	SortItem item_descending(sort_items.size(), vformat(TTR("Sort By %s (Descending)"), p_new_option), p_sort_type, false, p_sort_column);
 	sort_items[item_descending.id] = item_descending;
 	sort_button->get_popup()->add_radio_check_item(item_descending.label, item_descending.id);
 

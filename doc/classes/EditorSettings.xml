@@ -317,6 +317,9 @@
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
+		<member name="editors/2d/auto_resample_delay" type="float" setter="" getter="">
+			Delay time for automatic resampling in the 2D editor (in seconds).
+		</member>
 		<member name="editors/2d/bone_color1" type="Color" setter="" getter="">
 			The "start" stop of the color gradient to use for bones in the 2D skeleton editor.
 		</member>
@@ -499,6 +502,9 @@
 		</member>
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
+		</member>
+		<member name="editors/3d/show_gizmo_during_rotation" type="int" setter="" getter="">
+			If checked, the transform gizmo remains visible during rotation in that transform mode.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].

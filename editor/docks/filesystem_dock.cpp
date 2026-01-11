@@ -77,7 +77,7 @@ Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 }
 
 Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
-	int idx = get_item_at_position(get_local_mouse_position());
+	int idx = get_item_at_position(get_local_mouse_position(), true);
 	if (idx == -1) {
 		return nullptr;
 	}
@@ -2034,6 +2034,18 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		}
 
 		if (is_moved) {
+			Vector<String> files_to_update;
+			for (KeyValue<String, String> &E : file_renames) {
+				if (!files_to_update.has(E.key)) {
+					files_to_update.push_back(E.key);
+				}
+				if (!files_to_update.has(E.value)) {
+					files_to_update.push_back(E.value);
+				}
+			}
+			print_verbose("FileSystem: updating file infos.");
+			EditorFileSystem::get_singleton()->update_files(files_to_update);
+
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
 			_update_dependencies_after_move(file_renames, file_owners);
@@ -2202,6 +2214,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Show the file/folder in the OS explorer.
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
@@ -2212,6 +2227,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_OPEN_EXTERNAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
@@ -2249,6 +2267,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
+				if (p_selected.is_empty()) {
+					return;
+				}
 				fpath = p_selected[0];
 			}
 
@@ -2517,6 +2538,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				to_move.push_back(to_rename);
 
 				if (tree->has_focus()) {
+					tree->grab_focus(!tree->has_focus(true));
 					// Edit node in Tree.
 					tree->edit_selected(true);
 
@@ -3409,7 +3431,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		new_menu->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 
 		const PackedStringArray folder_path = { p_paths[0].get_base_dir() };
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path);
+		// Options for CONTEXT_SLOT_FILESYSTEM_CREATE are added with an offset, to avoid conflicts in case plugins add options for both FileSystem slots.
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(new_menu, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, folder_path, 500);
 		p_popup->add_separator();
 	}
 
@@ -3638,7 +3661,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 
 	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(tree_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>(), 500);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
@@ -3722,7 +3745,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 
 	// To keep consistency with options added to "Create New..." menu (for plugin which has slot as CONTEXT_SLOT_FILESYSTEM_CREATE).
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>());
+	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(file_list_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, Vector<String>(), 500);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
 	file_list_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
@@ -4243,7 +4266,7 @@ FileSystemDock::FileSystemDock() {
 	set_name(TTRC("FileSystem"));
 	set_icon_name("Folder");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
-	set_default_slot(DockConstants::DOCK_SLOT_LEFT_BR);
+	set_default_slot(EditorDock::DOCK_SLOT_LEFT_BR);
 	set_available_layouts(DOCK_LAYOUT_ALL);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");

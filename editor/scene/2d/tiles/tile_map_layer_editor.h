@@ -238,7 +238,7 @@ private:
 	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 
 	///// Bottom panel patterns ////
-	VBoxContainer *patterns_bottom_panel = nullptr;
+	MarginContainer *patterns_mc = nullptr;
 	ItemList *patterns_item_list = nullptr;
 	Label *patterns_help_label = nullptr;
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
@@ -326,7 +326,7 @@ private:
 		SELECTED_TYPE_PATH,
 		SELECTED_TYPE_PATTERN,
 	};
-	SelectedType selected_type;
+	SelectedType selected_type = SELECTED_TYPE_CONNECT;
 	int selected_terrain_set = -1;
 	int selected_terrain = -1;
 	TileSet::TerrainsPattern selected_terrains_pattern;
@@ -419,6 +419,7 @@ private:
 	// Bottom panel.
 	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
+	PanelContainer *tabs_panel = nullptr;
 	LocalVector<TileMapLayerSubEditorPlugin::TabData> tabs_data;
 	LocalVector<TileMapLayerSubEditorPlugin *> tabs_plugins;
 	void _update_bottom_panel();

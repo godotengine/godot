@@ -69,7 +69,7 @@ RID RenderSceneDataRD::create_uniform_buffer() {
 	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
 }
 
-void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
+void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_pancake_shadows, const Size2i &p_screen_size, const Size2 &p_viewport_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier) {
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
@@ -127,8 +127,8 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	ubo.camera_visible_layers = camera_visible_layers;
 	ubo.pass_alpha_multiplier = p_opaque_render_buffers && p_apply_alpha_multiplier ? 0.0f : 1.0f;
 
-	ubo.viewport_size[0] = p_screen_size.x;
-	ubo.viewport_size[1] = p_screen_size.y;
+	ubo.viewport_size[0] = p_viewport_size.x;
+	ubo.viewport_size[1] = p_viewport_size.y;
 
 	Size2 screen_pixel_size = Vector2(1.0, 1.0) / Size2(p_screen_size);
 	ubo.screen_pixel_size[0] = screen_pixel_size.x;

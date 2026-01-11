@@ -550,11 +550,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->create_action(TTR("Unwrap UV2"));
 
 				ur->add_do_method(node, "set_mesh", unwrapped_mesh);
-				ur->add_do_reference(node);
-				ur->add_do_reference(array_mesh.ptr());
-
+				ur->add_do_reference(unwrapped_mesh.ptr());
 				ur->add_undo_method(node, "set_mesh", array_mesh);
-				ur->add_undo_reference(unwrapped_mesh.ptr());
 
 				ur->commit_action();
 			}

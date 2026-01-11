@@ -543,6 +543,8 @@ private:
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;
+	RID header_ci; // Separate canvas item for drawing column headers
+	RID content_ci; // Separate canvas item for drawing tree rows
 
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
@@ -644,6 +646,7 @@ private:
 		Color children_hl_line_color;
 		Color custom_button_font_highlight;
 		Color font_outline_color;
+		Color scroll_hint_color;
 
 		float base_scale = 1.0;
 		int font_outline_size = 0;
@@ -816,6 +819,8 @@ protected:
 public:
 	PackedStringArray get_accessibility_configuration_warnings() const override;
 	virtual RID get_focused_accessibility_element() const override;
+
+	virtual void set_self_modulate(const Color &p_self_modulate) override;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
