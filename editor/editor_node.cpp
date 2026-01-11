@@ -1067,7 +1067,7 @@ void EditorNode::_notification(int p_what) {
 				recent_scenes->reset_size();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/dragging_")) {
 				theme->set_constant("dragging_unfold_wait_msec", "Tree", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 				editor_dock_manager->update_tab_styles();
@@ -5349,9 +5349,9 @@ void EditorNode::_project_run_started() {
 
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
-		editor_dock_manager->focus_dock(log);
+		editor_dock_manager->open_dock(log, true);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
-		editor_dock_manager->focus_dock(EditorDebuggerNode::get_singleton());
+		editor_dock_manager->open_dock(EditorDebuggerNode::get_singleton(), true);
 	}
 }
 
