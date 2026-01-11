@@ -710,6 +710,8 @@ private:
 
 	bool _is_project_data_missing();
 
+	void _scene_tree_finalizing();
+
 	enum MenuType {
 		MENU_TYPE_NONE,
 		MENU_TYPE_GLOBAL,

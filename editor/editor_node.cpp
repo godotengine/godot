@@ -794,6 +794,37 @@ bool EditorNode::_is_project_data_missing() {
 	return false;
 }
 
+void EditorNode::_scene_tree_finalizing() {
+	singleton->active_plugins.clear();
+
+	if (progress_dialog) {
+		progress_dialog->queue_free();
+	}
+	if (load_error_dialog) {
+		load_error_dialog->queue_free();
+	}
+	if (execute_output_dialog) {
+		execute_output_dialog->queue_free();
+	}
+	if (warning) {
+		warning->queue_free();
+	}
+	if (accept) {
+		accept->queue_free();
+	}
+	if (save_accept) {
+		save_accept->queue_free();
+	}
+	EditorHelp::save_script_doc_cache();
+	editor_data.save_editor_external_data();
+	EditorSettings::get_singleton()->save_project_metadata();
+	FileAccess::set_file_close_fail_notify_callback(nullptr);
+	log->deinit(); // Do not get messages anymore.
+	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
+	editor_data.clear_edited_scenes();
+	get_viewport()->disconnect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -904,37 +935,16 @@ void EditorNode::_notification(int p_what) {
 
 			get_viewport()->connect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
 
+			get_tree()->connect("_finalizing", callable_mp(this, &EditorNode::_scene_tree_finalizing), CONNECT_ONE_SHOT);
+
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			singleton->active_plugins.clear();
-
-			if (progress_dialog) {
-				progress_dialog->queue_free();
+			if (get_tree()->is_connected("_finalizing", callable_mp(this, &EditorNode::_scene_tree_finalizing))) {
+				get_tree()->disconnect("_finalizing", callable_mp(this, &EditorNode::_scene_tree_finalizing));
+				_scene_tree_finalizing();
 			}
-			if (load_error_dialog) {
-				load_error_dialog->queue_free();
-			}
-			if (execute_output_dialog) {
-				execute_output_dialog->queue_free();
-			}
-			if (warning) {
-				warning->queue_free();
-			}
-			if (accept) {
-				accept->queue_free();
-			}
-			if (save_accept) {
-				save_accept->queue_free();
-			}
-			EditorHelp::save_script_doc_cache();
-			editor_data.save_editor_external_data();
-			EditorSettings::get_singleton()->save_project_metadata();
-			FileAccess::set_file_close_fail_notify_callback(nullptr);
-			log->deinit(); // Do not get messages anymore.
-			editor_data.clear_edited_scenes();
-			get_viewport()->disconnect("size_changed", callable_mp(this, &EditorNode::_viewport_resized));
 		} break;
 
 		case NOTIFICATION_READY: {
