@@ -562,7 +562,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	child_classes.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &name : child_classes) {
-		if (String(name).begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
+		if (ClassDB::get_api_type(name) != ClassDB::API_CORE) {
 			continue;
 		}
 		_fill_classes_from(class_item, name, p_selected);

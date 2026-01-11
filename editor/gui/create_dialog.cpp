@@ -175,8 +175,11 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		return true;
 	}
 
-	if (is_base_type_node && p_type.operator String().begins_with("Editor")) {
-		return true; // Do not show editor nodes.
+	if (is_base_type_node && ClassDB::class_exists(p_type)) {
+		const ClassDB::APIType api_type = ClassDB::get_api_type(p_type);
+		if (api_type == ClassDB::API_EDITOR || api_type == ClassDB::API_EDITOR_EXTENSION) {
+			return true; // Do not show editor-only classes.
+		}
 	}
 
 	if (ClassDB::class_exists(p_type)) {
@@ -872,8 +875,6 @@ CreateDialog::CreateDialog() {
 	base_type = "Object";
 	preferred_search_result_type = "";
 
-	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here.
-	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
 	type_blacklist.insert("MissingNode");
 	type_blacklist.insert("MissingResource");
 
