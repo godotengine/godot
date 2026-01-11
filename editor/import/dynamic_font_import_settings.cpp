@@ -1246,6 +1246,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	glyph_table = memnew(Tree);
 	glyph_table->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	glyph_table->set_custom_minimum_size(Size2((30 * 16 + 100) * EDSCALE, 0));
+	glyph_table->set_theme_type_variation("TreeTable");
 	glyph_table->set_columns(17);
 	glyph_table->set_column_expand(0, false);
 	glyph_table->set_hide_root(true);

@@ -634,6 +634,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.base_margin * 0.75 * EDSCALE);
 			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("check_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
+			p_theme->set_constant("icon_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("dragging_unfold_wait_msec", "Tree", p_config.dragging_hover_wait_msec);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
@@ -2139,6 +2141,81 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
 			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
 		}
+
+		// TreeTable.
+		{
+			p_theme->set_type_variation("TreeTable", "Tree");
+
+			p_theme->set_constant("h_separation", "TreeTable", 0);
+			p_theme->set_constant("inner_item_margin_top", "TreeTable", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("inner_item_margin_bottom", "TreeTable", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("inner_item_margin_left", "TreeTable", p_config.base_margin * 3 * EDSCALE);
+			p_theme->set_constant("inner_item_margin_right", "TreeTable", p_config.base_margin * 3 * EDSCALE);
+			p_theme->set_constant("item_margin", "TreeTable", 16 * EDSCALE);
+			p_theme->set_constant("button_margin", "TreeTable", 0);
+
+			Ref<StyleBoxEmpty> style_tree_panel = p_config.base_empty_style->duplicate();
+			style_tree_panel->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE);
+			p_theme->set_stylebox(SceneStringName(panel), "TreeTable", style_tree_panel);
+
+			const Ref<StyleBoxFlat> style_tree_title = p_theme->get_stylebox("title_button_normal", "Tree")->duplicate();
+			style_tree_title->set_content_margin_individual(p_config.base_margin * 3 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 3 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
+			p_theme->set_stylebox("title_button_normal", "TreeTable", style_tree_title);
+			p_theme->set_stylebox("title_button_hover", "TreeTable", style_tree_title);
+			p_theme->set_stylebox("title_button_pressed", "TreeTable", style_tree_title);
+
+			const Ref<StyleBoxFlat> style_tree_selected = p_theme->get_stylebox("selected", "Tree")->duplicate();
+			style_tree_selected->set_border_color(Color(style_tree_selected->get_bg_color(), 0));
+			style_tree_selected->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_selected->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("selected", "TreeTable", style_tree_selected);
+
+			const Ref<StyleBoxFlat> style_tree_hover = p_theme->get_stylebox("hovered", "Tree")->duplicate();
+			style_tree_hover->set_border_color(Color(style_tree_hover->get_bg_color(), 0));
+			style_tree_hover->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_hover->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered", "TreeTable", style_tree_hover);
+
+			const Ref<StyleBoxFlat> style_tree_hovered_selected = p_theme->get_stylebox("hovered_selected", "Tree")->duplicate();
+			style_tree_hovered_selected->set_border_color(Color(style_tree_hovered_selected->get_bg_color(), 0));
+			style_tree_hovered_selected->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_hovered_selected->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered_selected", "TreeTable", style_tree_hovered_selected);
+
+			const Ref<StyleBoxFlat> style_tree_dimmed = p_theme->get_stylebox("hovered_dimmed", "Tree")->duplicate();
+			style_tree_dimmed->set_border_color(Color(style_tree_dimmed->get_bg_color(), 0));
+			style_tree_dimmed->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_dimmed->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered_dimmed", "TreeTable", p_theme->get_stylebox("hovered_dimmed", "Tree"));
+
+			const Ref<StyleBoxFlat> style_button_pressed = p_theme->get_stylebox("button_pressed", "Tree")->duplicate();
+			style_button_pressed->set_content_margin_individual(p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE, 0);
+			style_button_pressed->set_border_color(Color(style_button_pressed->get_bg_color(), 0));
+			style_button_pressed->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_button_pressed->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("button_pressed", "TreeTable", style_button_pressed);
+			p_theme->set_stylebox("custom_button_pressed", "TreeTable", style_button_pressed);
+
+			const Ref<StyleBoxFlat> style_button_hover = p_theme->get_stylebox("button_hover", "Tree")->duplicate();
+			style_button_hover->set_content_margin_individual(p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE, 0);
+			style_button_hover->set_border_color(Color(style_button_hover->get_bg_color(), 0));
+			style_button_hover->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_button_hover->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("button_hover", "TreeTable", style_button_hover);
+			p_theme->set_stylebox("custom_button_hover", "TreeTable", style_button_hover);
+
+			const Ref<StyleBoxFlat> style_cursor = p_theme->get_stylebox("cursor", "Tree")->duplicate();
+			style_cursor->set_border_color(Color(style_cursor->get_bg_color(), 0));
+			style_cursor->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_cursor->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("cursor", "TreeTable", style_cursor);
+
+			const Ref<StyleBoxFlat> style_cursor_unfocused = p_theme->get_stylebox("cursor_unfocused", "Tree")->duplicate();
+			style_cursor_unfocused->set_border_color(Color(style_cursor_unfocused->get_bg_color(), 0));
+			style_cursor_unfocused->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_cursor_unfocused->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("cursor_unfocused", "TreeTable", style_cursor_unfocused);
+		}
 	}
 
 	// Editor inspector.
@@ -2208,17 +2285,20 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox = p_config.base_style->duplicate();
 		prop_subsection_stylebox->set_bg_color(p_theme->get_color("prop_subsection_stylebox_color", EditorStringName(Editor)));
+		prop_subsection_stylebox->set_border_color(Color(prop_subsection_stylebox_color, 0));
 		prop_subsection_stylebox->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		p_theme->set_stylebox("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox);
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox_left = prop_subsection_stylebox->duplicate();
 		prop_subsection_stylebox_left->set_corner_radius(CORNER_TOP_RIGHT, 0);
 		prop_subsection_stylebox_left->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		prop_subsection_stylebox_left->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
 		p_theme->set_stylebox("prop_subsection_stylebox_left", EditorStringName(Editor), prop_subsection_stylebox_left);
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox_right = prop_subsection_stylebox->duplicate();
 		prop_subsection_stylebox_right->set_corner_radius(CORNER_TOP_LEFT, 0);
 		prop_subsection_stylebox_right->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		prop_subsection_stylebox_right->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
 		p_theme->set_stylebox("prop_subsection_stylebox_right", EditorStringName(Editor), prop_subsection_stylebox_right);
 
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));

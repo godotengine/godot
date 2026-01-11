@@ -1054,6 +1054,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	vb->add_child(tree);
 
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tree->set_theme_type_variation("TreeTable");
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));

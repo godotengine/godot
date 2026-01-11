@@ -248,6 +248,8 @@ EditorPluginSettings::EditorPluginSettings() {
 
 	plugin_list = memnew(Tree);
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	plugin_list->set_theme_type_variation("TreeTable");
+	plugin_list->set_hide_folding(true);
 	plugin_list->set_columns(COLUMN_MAX);
 	plugin_list->set_column_titles_visible(true);
 	plugin_list->set_column_title(COLUMN_STATUS, TTRC("Enabled"));

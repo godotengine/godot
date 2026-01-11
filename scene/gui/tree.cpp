@@ -1730,7 +1730,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
-			size.width += icon_size.width + parent_tree->theme_cache.h_separation;
+			size.width += icon_size.width + parent_tree->theme_cache.icon_h_separation;
 			content_height = MAX(content_height, icon_size.height);
 		}
 
@@ -2088,7 +2088,7 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 
 	int displayed_width = 0;
 	if (p_cell.icon.is_valid()) {
-		displayed_width += icon_size.width + theme_cache.h_separation;
+		displayed_width += icon_size.width + theme_cache.icon_h_separation;
 	}
 	if (displayed_width + ts.width > rect.size.width) {
 		ts.width = rect.size.width - displayed_width;
@@ -2125,12 +2125,12 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 			}
 			p_cell.text_buf->draw(ci, draw_pos, p_color);
 		}
-		rect.position.x += ts.width + theme_cache.h_separation;
+		rect.position.x += ts.width + theme_cache.icon_h_separation;
 	}
 
 	if (p_cell.icon.is_valid()) {
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2)), icon_size, p_icon_color);
-		rect.position.x += icon_size.x + theme_cache.h_separation;
+		rect.position.x += icon_size.x + theme_cache.icon_h_separation;
 	}
 
 	if (!rtl && ts.width > 0) {
@@ -2353,7 +2353,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			int text_width = item_width - theme_cache.inner_item_margin_left - theme_cache.inner_item_margin_right;
 			if (p_item->cells[i].icon.is_valid()) {
-				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.h_separation;
+				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.icon_h_separation;
 			}
 
 			p_item->cells.write[i].text_buf->set_width(text_width);
@@ -2548,7 +2548,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						}
 					}
 
-					int check_w = theme_cache.checked->get_width() + theme_cache.h_separation;
+					int check_w = theme_cache.checked->get_width() + theme_cache.check_h_separation;
 
 					text_pos.x += check_w;
 
@@ -4448,7 +4448,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		// Account for icon.
 		real_t icon_ofs = 0;
 		if (c.icon.is_valid()) {
-			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
+			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.icon_h_separation;
 		}
 
 		popup_rect.size = rect.size + Vector2(-icon_ofs, value_editor_height);
@@ -6893,6 +6893,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_right);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_top);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, item_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, check_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, button_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_max_width);
 

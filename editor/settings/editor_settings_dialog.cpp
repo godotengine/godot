@@ -1015,6 +1015,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	shortcuts = memnew(Tree);
 	shortcuts->set_accessibility_name(TTRC("Shortcuts"));
+	shortcuts->set_theme_type_variation("TreeTable");
 	shortcuts->set_columns(2);
 	shortcuts->set_hide_root(true);
 	shortcuts->set_column_titles_visible(true);
