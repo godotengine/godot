@@ -432,6 +432,11 @@ Comment: meshoptimizer
 Copyright: 2016-2024, Arseny Kapoulkine
 License: Expat
 
+Files: thirdparty/metal-cpp/*
+Comment: metal-cpp
+Copyright: 2024, Apple Inc.
+License: Apache-2.0
+
 Files: thirdparty/mingw-std-threads/*
 Comment: mingw-std-threads
 Copyright: 2016, Mega Limited

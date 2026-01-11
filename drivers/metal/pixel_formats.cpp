@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  pixel_formats.mm                                                      */
+/*  pixel_formats.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -48,53 +48,53 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#import "pixel_formats.h"
+#include "pixel_formats.h"
 
-#import "metal_utils.h"
+#include "metal_utils.h"
 
 #if TARGET_OS_IPHONE || TARGET_OS_TV
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160400) // iOS/tvOS 16.4
-#define MTLPixelFormatBC1_RGBA MTLPixelFormatInvalid
-#define MTLPixelFormatBC1_RGBA_sRGB MTLPixelFormatInvalid
-#define MTLPixelFormatBC2_RGBA MTLPixelFormatInvalid
-#define MTLPixelFormatBC2_RGBA_sRGB MTLPixelFormatInvalid
-#define MTLPixelFormatBC3_RGBA MTLPixelFormatInvalid
-#define MTLPixelFormatBC3_RGBA_sRGB MTLPixelFormatInvalid
-#define MTLPixelFormatBC4_RUnorm MTLPixelFormatInvalid
-#define MTLPixelFormatBC4_RSnorm MTLPixelFormatInvalid
-#define MTLPixelFormatBC5_RGUnorm MTLPixelFormatInvalid
-#define MTLPixelFormatBC5_RGSnorm MTLPixelFormatInvalid
-#define MTLPixelFormatBC6H_RGBUfloat MTLPixelFormatInvalid
-#define MTLPixelFormatBC6H_RGBFloat MTLPixelFormatInvalid
-#define MTLPixelFormatBC7_RGBAUnorm MTLPixelFormatInvalid
-#define MTLPixelFormatBC7_RGBAUnorm_sRGB MTLPixelFormatInvalid
+#define PixelFormatBC1_RGBA PixelFormatInvalid
+#define PixelFormatBC1_RGBA_sRGB PixelFormatInvalid
+#define PixelFormatBC2_RGBA PixelFormatInvalid
+#define PixelFormatBC2_RGBA_sRGB PixelFormatInvalid
+#define PixelFormatBC3_RGBA PixelFormatInvalid
+#define PixelFormatBC3_RGBA_sRGB PixelFormatInvalid
+#define PixelFormatBC4_RUnorm PixelFormatInvalid
+#define PixelFormatBC4_RSnorm PixelFormatInvalid
+#define PixelFormatBC5_RGUnorm PixelFormatInvalid
+#define PixelFormatBC5_RGSnorm PixelFormatInvalid
+#define PixelFormatBC6H_RGBUfloat PixelFormatInvalid
+#define PixelFormatBC6H_RGBFloat PixelFormatInvalid
+#define PixelFormatBC7_RGBAUnorm PixelFormatInvalid
+#define PixelFormatBC7_RGBAUnorm_sRGB PixelFormatInvalid
 #endif
 
-#define MTLPixelFormatDepth16Unorm_Stencil8 MTLPixelFormatDepth32Float_Stencil8
-#define MTLPixelFormatDepth24Unorm_Stencil8 MTLPixelFormatInvalid
-#define MTLPixelFormatX24_Stencil8 MTLPixelFormatInvalid
+#define PixelFormatDepth16Unorm_Stencil8 PixelFormatDepth32Float_Stencil8
+#define PixelFormatDepth24Unorm_Stencil8 PixelFormatInvalid
+#define PixelFormatX24_Stencil8 PixelFormatInvalid
 #endif
 
 #if TARGET_OS_TV
-#define MTLPixelFormatASTC_4x4_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_5x4_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_5x5_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_6x5_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_6x6_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_8x5_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_8x6_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_8x8_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_10x5_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_10x6_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_10x8_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_10x10_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_12x10_HDR MTLPixelFormatInvalid
-#define MTLPixelFormatASTC_12x12_HDR MTLPixelFormatInvalid
+#define PixelFormatASTC_4x4_HDR PixelFormatInvalid
+#define PixelFormatASTC_5x4_HDR PixelFormatInvalid
+#define PixelFormatASTC_5x5_HDR PixelFormatInvalid
+#define PixelFormatASTC_6x5_HDR PixelFormatInvalid
+#define PixelFormatASTC_6x6_HDR PixelFormatInvalid
+#define PixelFormatASTC_8x5_HDR PixelFormatInvalid
+#define PixelFormatASTC_8x6_HDR PixelFormatInvalid
+#define PixelFormatASTC_8x8_HDR PixelFormatInvalid
+#define PixelFormatASTC_10x5_HDR PixelFormatInvalid
+#define PixelFormatASTC_10x6_HDR PixelFormatInvalid
+#define PixelFormatASTC_10x8_HDR PixelFormatInvalid
+#define PixelFormatASTC_10x10_HDR PixelFormatInvalid
+#define PixelFormatASTC_12x10_HDR PixelFormatInvalid
+#define PixelFormatASTC_12x12_HDR PixelFormatInvalid
 #endif
 
 #if !((__MAC_OS_X_VERSION_MAX_ALLOWED >= 140000) || (__IPHONE_OS_VERSION_MAX_ALLOWED >= 170000)) // Xcode 15
-#define MTLVertexFormatFloatRG11B10 MTLVertexFormatInvalid
-#define MTLVertexFormatFloatRGB9E5 MTLVertexFormatInvalid
+#define VertexFormatFloatRG11B10 VertexFormatInvalid
+#define VertexFormatFloatRGB9E5 VertexFormatInvalid
 #endif
 
 template <typename T>
@@ -113,21 +113,21 @@ bool PixelFormats::isSupportedOrSubstitutable(DataFormat p_format) {
 	return getDataFormatDesc(p_format).isSupportedOrSubstitutable();
 }
 
-bool PixelFormats::isPVRTCFormat(MTLPixelFormat p_format) {
+bool PixelFormats::isPVRTCFormat(MTL::PixelFormat p_format) {
 #if defined(VISIONOS_ENABLED)
 	return false;
 #else
 	// Deprecated in SDK 26.0
 	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 	switch (p_format) {
-		case MTLPixelFormatPVRTC_RGBA_2BPP:
-		case MTLPixelFormatPVRTC_RGBA_2BPP_sRGB:
-		case MTLPixelFormatPVRTC_RGBA_4BPP:
-		case MTLPixelFormatPVRTC_RGBA_4BPP_sRGB:
-		case MTLPixelFormatPVRTC_RGB_2BPP:
-		case MTLPixelFormatPVRTC_RGB_2BPP_sRGB:
-		case MTLPixelFormatPVRTC_RGB_4BPP:
-		case MTLPixelFormatPVRTC_RGB_4BPP_sRGB:
+		case MTL::PixelFormatPVRTC_RGBA_2BPP:
+		case MTL::PixelFormatPVRTC_RGBA_2BPP_sRGB:
+		case MTL::PixelFormatPVRTC_RGBA_4BPP:
+		case MTL::PixelFormatPVRTC_RGBA_4BPP_sRGB:
+		case MTL::PixelFormatPVRTC_RGB_2BPP:
+		case MTL::PixelFormatPVRTC_RGB_2BPP_sRGB:
+		case MTL::PixelFormatPVRTC_RGB_4BPP:
+		case MTL::PixelFormatPVRTC_RGB_4BPP_sRGB:
 			return true;
 		default:
 			return false;
@@ -140,24 +140,24 @@ MTLFormatType PixelFormats::getFormatType(DataFormat p_format) {
 	return getDataFormatDesc(p_format).formatType;
 }
 
-MTLFormatType PixelFormats::getFormatType(MTLPixelFormat p_format) {
+MTLFormatType PixelFormats::getFormatType(MTL::PixelFormat p_format) {
 	return getDataFormatDesc(p_format).formatType;
 }
 
-MTLPixelFormat PixelFormats::getMTLPixelFormat(DataFormat p_format) {
+MTL::PixelFormat PixelFormats::getMTLPixelFormat(DataFormat p_format) {
 	DataFormatDesc &dfDesc = getDataFormatDesc(p_format);
-	MTLPixelFormat mtlPixFmt = dfDesc.mtlPixelFormat;
+	MTL::PixelFormat mtlPixFmt = dfDesc.mtlPixelFormat;
 
-	// If the MTLPixelFormat is not supported but DataFormat is valid,
+	// If the MTL::PixelFormat is not supported but DataFormat is valid,
 	// attempt to substitute a different format.
-	if (mtlPixFmt == MTLPixelFormatInvalid && p_format != RD::DATA_FORMAT_MAX && dfDesc.chromaSubsamplingPlaneCount <= 1) {
+	if (mtlPixFmt == MTL::PixelFormatInvalid && p_format != RD::DATA_FORMAT_MAX && dfDesc.chromaSubsamplingPlaneCount <= 1) {
 		mtlPixFmt = dfDesc.mtlPixelFormatSubstitute;
 	}
 
 	return mtlPixFmt;
 }
 
-RD::DataFormat PixelFormats::getDataFormat(MTLPixelFormat p_format) {
+RD::DataFormat PixelFormats::getDataFormat(MTL::PixelFormat p_format) {
 	return getMTLPixelFormatDesc(p_format).dataFormat;
 }
 
@@ -165,7 +165,7 @@ uint32_t PixelFormats::getBytesPerBlock(DataFormat p_format) {
 	return getDataFormatDesc(p_format).bytesPerBlock;
 }
 
-uint32_t PixelFormats::getBytesPerBlock(MTLPixelFormat p_format) {
+uint32_t PixelFormats::getBytesPerBlock(MTL::PixelFormat p_format) {
 	return getDataFormatDesc(p_format).bytesPerBlock;
 }
 
@@ -181,7 +181,7 @@ float PixelFormats::getBytesPerTexel(DataFormat p_format) {
 	return getDataFormatDesc(p_format).bytesPerTexel();
 }
 
-float PixelFormats::getBytesPerTexel(MTLPixelFormat p_format) {
+float PixelFormats::getBytesPerTexel(MTL::PixelFormat p_format) {
 	return getDataFormatDesc(p_format).bytesPerTexel();
 }
 
@@ -190,7 +190,7 @@ size_t PixelFormats::getBytesPerRow(DataFormat p_format, uint32_t p_texels_per_r
 	return Math::division_round_up(p_texels_per_row, dfDesc.blockTexelSize.width) * dfDesc.bytesPerBlock;
 }
 
-size_t PixelFormats::getBytesPerRow(MTLPixelFormat p_format, uint32_t p_texels_per_row) {
+size_t PixelFormats::getBytesPerRow(MTL::PixelFormat p_format, uint32_t p_texels_per_row) {
 	DataFormatDesc &dfDesc = getDataFormatDesc(p_format);
 	return Math::division_round_up(p_texels_per_row, dfDesc.blockTexelSize.width) * dfDesc.bytesPerBlock;
 }
@@ -199,7 +199,7 @@ size_t PixelFormats::getBytesPerLayer(DataFormat p_format, size_t p_bytes_per_ro
 	return Math::division_round_up(p_texel_rows_per_layer, getDataFormatDesc(p_format).blockTexelSize.height) * p_bytes_per_row;
 }
 
-size_t PixelFormats::getBytesPerLayer(MTLPixelFormat p_format, size_t p_bytes_per_row, uint32_t p_texel_rows_per_layer) {
+size_t PixelFormats::getBytesPerLayer(MTL::PixelFormat p_format, size_t p_bytes_per_row, uint32_t p_texel_rows_per_layer) {
 	return Math::division_round_up(p_texel_rows_per_layer, getDataFormatDesc(p_format).blockTexelSize.height) * p_bytes_per_row;
 }
 
@@ -211,7 +211,7 @@ MTLFmtCaps PixelFormats::getCapabilities(DataFormat p_format, bool p_extended) {
 	return getCapabilities(getDataFormatDesc(p_format).mtlPixelFormat, p_extended);
 }
 
-MTLFmtCaps PixelFormats::getCapabilities(MTLPixelFormat p_format, bool p_extended) {
+MTLFmtCaps PixelFormats::getCapabilities(MTL::PixelFormat p_format, bool p_extended) {
 	MTLFormatDesc &mtlDesc = getMTLPixelFormatDesc(p_format);
 	MTLFmtCaps caps = mtlDesc.mtlFmtCaps;
 	if (!p_extended || mtlDesc.mtlViewClass == MTLViewClass::None) {
@@ -226,11 +226,11 @@ MTLFmtCaps PixelFormats::getCapabilities(MTLPixelFormat p_format, bool p_extende
 	return caps;
 }
 
-MTLVertexFormat PixelFormats::getMTLVertexFormat(DataFormat p_format) {
+MTL::VertexFormat PixelFormats::getMTLVertexFormat(DataFormat p_format) {
 	DataFormatDesc &dfDesc = getDataFormatDesc(p_format);
-	MTLVertexFormat format = dfDesc.mtlVertexFormat;
+	MTL::VertexFormat format = dfDesc.mtlVertexFormat;
 
-	if (format == MTLVertexFormatInvalid) {
+	if (format == MTL::VertexFormatInvalid) {
 		String errMsg;
 		errMsg += "DataFormat ";
 		errMsg += dfDesc.name;
@@ -254,22 +254,22 @@ DataFormatDesc &PixelFormats::getDataFormatDesc(DataFormat p_format) {
 	return _data_format_descs[p_format];
 }
 
-DataFormatDesc &PixelFormats::getDataFormatDesc(MTLPixelFormat p_format) {
+DataFormatDesc &PixelFormats::getDataFormatDesc(MTL::PixelFormat p_format) {
 	return getDataFormatDesc(getMTLPixelFormatDesc(p_format).dataFormat);
 }
 
-// Return a reference to the Metal format descriptor corresponding to the MTLPixelFormat.
-MTLFormatDesc &PixelFormats::getMTLPixelFormatDesc(MTLPixelFormat p_format) {
+// Return a reference to the Metal format descriptor corresponding to the MTL::PixelFormat.
+MTLFormatDesc &PixelFormats::getMTLPixelFormatDesc(MTL::PixelFormat p_format) {
 	return _mtl_pixel_format_descs[p_format];
 }
 
-// Return a reference to the Metal format descriptor corresponding to the MTLVertexFormat.
-MTLFormatDesc &PixelFormats::getMTLVertexFormatDesc(MTLVertexFormat p_format) {
+// Return a reference to the Metal format descriptor corresponding to the MTL::VertexFormat.
+MTLFormatDesc &PixelFormats::getMTLVertexFormatDesc(MTL::VertexFormat p_format) {
 	return _mtl_vertex_format_descs[p_format];
 }
 
-PixelFormats::PixelFormats(id<MTLDevice> p_device, const MetalFeatures &p_feat) :
-		device(p_device) {
+PixelFormats::PixelFormats(MTL::Device *p_device, const MetalFeatures &p_feat) :
+		device(p_device->retain()) {
 	initMTLPixelFormatCapabilities();
 	initMTLVertexFormatCapabilities(p_feat);
 	modifyMTLFormatCapabilities(p_feat);
@@ -278,9 +278,13 @@ PixelFormats::PixelFormats(id<MTLDevice> p_device, const MetalFeatures &p_feat) 
 	buildDFFormatMaps();
 }
 
+PixelFormats::~PixelFormats() {
+	device->release();
+}
+
 #define addDataFormatDescFull(DATA_FMT, MTL_FMT, MTL_FMT_ALT, MTL_VTX_FMT, MTL_VTX_FMT_ALT, CSPC, CSCB, BLK_W, BLK_H, BLK_BYTE_CNT, MVK_FMT_TYPE, SWIZ_R, SWIZ_G, SWIZ_B, SWIZ_A) \
 	dfFmt = RD::DATA_FORMAT_##DATA_FMT; \
-	_data_format_descs[dfFmt] = { dfFmt, MTLPixelFormat##MTL_FMT, MTLPixelFormat##MTL_FMT_ALT, MTLVertexFormat##MTL_VTX_FMT, MTLVertexFormat##MTL_VTX_FMT_ALT, \
+	_data_format_descs[dfFmt] = { dfFmt, MTL::PixelFormat##MTL_FMT, MTL::PixelFormat##MTL_FMT_ALT, MTL::VertexFormat##MTL_VTX_FMT, MTL::VertexFormat##MTL_VTX_FMT_ALT, \
 		CSPC, CSCB, { BLK_W, BLK_H }, BLK_BYTE_CNT, MTLFormatType::MVK_FMT_TYPE, \
 		{ RD::TEXTURE_SWIZZLE_##SWIZ_R, RD::TEXTURE_SWIZZLE_##SWIZ_G, RD::TEXTURE_SWIZZLE_##SWIZ_B, RD::TEXTURE_SWIZZLE_##SWIZ_A }, \
 		"DATA_FORMAT_" #DATA_FMT, false }
@@ -577,14 +581,14 @@ void PixelFormats::initDataFormatCapabilities() {
 	addDfFormatDescChromaSubsampling(G16_B16_R16_3PLANE_444_UNORM, Invalid, 3, 16, 1, 1, 6);
 }
 
-void PixelFormats::addMTLPixelFormatDescImpl(MTLPixelFormat p_pix_fmt, MTLPixelFormat p_pix_fmt_linear,
+void PixelFormats::addMTLPixelFormatDescImpl(MTL::PixelFormat p_pix_fmt, MTL::PixelFormat p_pix_fmt_linear,
 		MTLViewClass p_view_class, MTLFmtCaps p_fmt_caps, const char *p_name) {
 	_mtl_pixel_format_descs[p_pix_fmt] = { .mtlPixelFormat = p_pix_fmt, DataFormat::DATA_FORMAT_MAX, p_fmt_caps, p_view_class, p_pix_fmt_linear, p_name };
 }
 
 #define addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleGPUCaps) \
-	addMTLPixelFormatDescImpl(MTLPixelFormat##mtlFmt, MTLPixelFormat##mtlFmtLinear, MTLViewClass::viewClass, \
-			appleGPUCaps, "MTLPixelFormat" #mtlFmt)
+	addMTLPixelFormatDescImpl(MTL::PixelFormat##mtlFmt, MTL::PixelFormat##mtlFmtLinear, MTLViewClass::viewClass, \
+			appleGPUCaps, "MTL::PixelFormat" #mtlFmt)
 
 #define addMTLPixelFormatDesc(mtlFmt, viewClass, appleGPUCaps) \
 	addMTLPixelFormatDescFull(mtlFmt, mtlFmt, viewClass, kMTLFmtCaps##appleGPUCaps)
@@ -602,8 +606,8 @@ void PixelFormats::addMTLPixelFormatDescImpl(MTLPixelFormat p_pix_fmt, MTLPixelF
 void PixelFormats::initMTLPixelFormatCapabilities() {
 	_mtl_pixel_format_descs.reserve(1024);
 
-	// MTLPixelFormatInvalid must come first. Use addMTLPixelFormatDescImpl to avoid guard code.
-	addMTLPixelFormatDescImpl(MTLPixelFormatInvalid, MTLPixelFormatInvalid, MTLViewClass::None, kMTLFmtCapsNone, "MTLPixelFormatInvalid");
+	// MTL::PixelFormatInvalid must come first. Use addMTLPixelFormatDescImpl to avoid guard code.
+	addMTLPixelFormatDescImpl(MTL::PixelFormatInvalid, MTL::PixelFormatInvalid, MTLViewClass::None, kMTLFmtCapsNone, "MTL::PixelFormatInvalid");
 
 	// Ordinary 8-bit pixel formats.
 	addMTLPixelFormatDesc(A8Unorm, Color8, All);
@@ -779,23 +783,23 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 }
 
 // If necessary, resize vector with empty elements.
-void PixelFormats::addMTLVertexFormatDescImpl(MTLVertexFormat mtlVtxFmt, MTLFmtCaps vtxCap, const char *name) {
+void PixelFormats::addMTLVertexFormatDescImpl(MTL::VertexFormat mtlVtxFmt, MTLFmtCaps vtxCap, const char *name) {
 	if (mtlVtxFmt >= _mtl_vertex_format_descs.size()) {
 		_mtl_vertex_format_descs.resize(mtlVtxFmt + 1);
 	}
-	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, RD::DATA_FORMAT_MAX, vtxCap, MTLViewClass::None, MTLPixelFormatInvalid, name };
+	_mtl_vertex_format_descs[mtlVtxFmt] = { .mtlVertexFormat = mtlVtxFmt, RD::DATA_FORMAT_MAX, vtxCap, MTLViewClass::None, MTL::PixelFormatInvalid, name };
 }
 
-// Check mtlVtx exists on platform, to avoid overwriting the MTLVertexFormatInvalid entry.
+// Check mtlVtx exists on platform, to avoid overwriting the MTL::VertexFormatInvalid entry.
 #define addMTLVertexFormatDesc(mtlVtx) \
-	if (MTLVertexFormat##mtlVtx) { \
-		addMTLVertexFormatDescImpl(MTLVertexFormat##mtlVtx, kMTLFmtCapsVertex, "MTLVertexFormat" #mtlVtx); \
+	if (MTL::VertexFormat##mtlVtx) { \
+		addMTLVertexFormatDescImpl(MTL::VertexFormat##mtlVtx, kMTLFmtCapsVertex, "MTL::VertexFormat" #mtlVtx); \
 	}
 
 void PixelFormats::initMTLVertexFormatCapabilities(const MetalFeatures &p_feat) {
-	_mtl_vertex_format_descs.resize(MTLVertexFormatHalf + 3);
-	// MTLVertexFormatInvalid must come first. Use addMTLVertexFormatDescImpl to avoid guard code.
-	addMTLVertexFormatDescImpl(MTLVertexFormatInvalid, kMTLFmtCapsNone, "MTLVertexFormatInvalid");
+	_mtl_vertex_format_descs.resize(MTL::VertexFormatHalf + 3);
+	// MTL::VertexFormatInvalid must come first. Use addMTLVertexFormatDescImpl to avoid guard code.
+	addMTLVertexFormatDescImpl(MTL::VertexFormatInvalid, kMTLFmtCapsNone, "MTL::VertexFormatInvalid");
 
 	addMTLVertexFormatDesc(UChar2Normalized);
 	addMTLVertexFormatDesc(Char2Normalized);
@@ -862,8 +866,8 @@ void PixelFormats::initMTLVertexFormatCapabilities(const MetalFeatures &p_feat) 
 
 	addMTLVertexFormatDesc(UChar4Normalized_BGRA);
 
-	if (@available(macos 14.0, ios 17.0, tvos 17.0, *)) {
-		if (p_feat.highestFamily >= MTLGPUFamilyApple5) {
+	if (__builtin_available(macos 14.0, ios 17.0, tvos 17.0, *)) {
+		if (p_feat.highestFamily >= MTL::GPUFamilyApple5) {
 			addMTLVertexFormatDesc(FloatRG11B10);
 			addMTLVertexFormatDesc(FloatRGB9E5);
 		}
@@ -871,9 +875,9 @@ void PixelFormats::initMTLVertexFormatCapabilities(const MetalFeatures &p_feat) 
 }
 
 // Return a reference to the format capabilities, so the caller can manipulate them.
-// Check mtlPixFmt exists on platform, to avoid overwriting the MTLPixelFormatInvalid entry.
+// Check mtlPixFmt exists on platform, to avoid overwriting the MTL::PixelFormatInvalid entry.
 // When returning the dummy, reset it on each access because it can be written to by caller.
-MTLFmtCaps &PixelFormats::getMTLPixelFormatCapsIf(MTLPixelFormat mtlPixFmt, bool cond) {
+MTLFmtCaps &PixelFormats::getMTLPixelFormatCapsIf(MTL::PixelFormat mtlPixFmt, bool cond) {
 	static MTLFmtCaps dummyFmtCaps;
 	if (mtlPixFmt && cond) {
 		return getMTLPixelFormatDesc(mtlPixFmt).mtlFmtCaps;
@@ -883,22 +887,22 @@ MTLFmtCaps &PixelFormats::getMTLPixelFormatCapsIf(MTLPixelFormat mtlPixFmt, bool
 	}
 }
 
-#define setMTLPixFmtCapsIf(cond, mtlFmt, caps) getMTLPixelFormatCapsIf(MTLPixelFormat##mtlFmt, cond) = kMTLFmtCaps##caps;
+#define setMTLPixFmtCapsIf(cond, mtlFmt, caps) getMTLPixelFormatCapsIf(MTL::PixelFormat##mtlFmt, cond) = kMTLFmtCaps##caps;
 #define setMTLPixFmtCapsIfGPU(gpuFam, mtlFmt, caps) setMTLPixFmtCapsIf(gpuCaps.supports##gpuFam, mtlFmt, caps)
 
-#define enableMTLPixFmtCapsIf(cond, mtlFmt, caps) flags::set(getMTLPixelFormatCapsIf(MTLPixelFormat##mtlFmt, cond), kMTLFmtCaps##caps);
-#define enableMTLPixFmtCapsIfGPU(gpuFam, mtlFmt, caps) enableMTLPixFmtCapsIf(p_feat.highestFamily >= MTLGPUFamily##gpuFam, mtlFmt, caps)
+#define enableMTLPixFmtCapsIf(cond, mtlFmt, caps) flags::set(getMTLPixelFormatCapsIf(MTL::PixelFormat##mtlFmt, cond), kMTLFmtCaps##caps);
+#define enableMTLPixFmtCapsIfGPU(gpuFam, mtlFmt, caps) enableMTLPixFmtCapsIf(p_feat.highestFamily >= MTL::GPUFamily##gpuFam, mtlFmt, caps)
 
-#define disableMTLPixFmtCapsIf(cond, mtlFmt, caps) flags::clear(getMTLPixelFormatCapsIf(MTLPixelFormat##mtlFmt, cond), kMTLFmtCaps##caps);
+#define disableMTLPixFmtCapsIf(cond, mtlFmt, caps) flags::clear(getMTLPixelFormatCapsIf(MTL::PixelFormat##mtlFmt, cond), kMTLFmtCaps##caps);
 
 // Modifies the format capability tables based on the capabilities of the specific MTLDevice.
 void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 	bool noVulkanSupport = false; // Indicated supported in Metal but not Vulkan or SPIR-V.
 	bool notMac = !p_feat.supportsMac;
-	bool iosOnly1 = notMac && p_feat.highestFamily < MTLGPUFamilyApple2;
-	bool iosOnly2 = notMac && p_feat.highestFamily < MTLGPUFamilyApple3;
-	bool iosOnly6 = notMac && p_feat.highestFamily < MTLGPUFamilyApple7;
-	bool iosOnly8 = notMac && p_feat.highestFamily < MTLGPUFamilyApple9;
+	bool iosOnly1 = notMac && p_feat.highestFamily < MTL::GPUFamilyApple2;
+	bool iosOnly2 = notMac && p_feat.highestFamily < MTL::GPUFamilyApple3;
+	bool iosOnly6 = notMac && p_feat.highestFamily < MTL::GPUFamilyApple7;
+	bool iosOnly8 = notMac && p_feat.highestFamily < MTL::GPUFamilyApple9;
 
 	setMTLPixFmtCapsIf(iosOnly2, A8Unorm, RF);
 	setMTLPixFmtCapsIf(iosOnly1, R8Unorm_sRGB, RFCMRB);
@@ -934,7 +938,7 @@ void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 
 	// Metal supports reading both R&G into as one 64-bit atomic operation, but Vulkan and SPIR-V do not.
 	// Including this here so we remember to update this if support is added to Vulkan in the future.
-	bool atomic64 = noVulkanSupport && (p_feat.highestFamily >= MTLGPUFamilyApple9 || (p_feat.highestFamily >= MTLGPUFamilyApple8 && p_feat.supportsMac));
+	bool atomic64 = noVulkanSupport && (p_feat.highestFamily >= MTL::GPUFamilyApple9 || (p_feat.highestFamily >= MTL::GPUFamilyApple8 && p_feat.supportsMac));
 	enableMTLPixFmtCapsIf(atomic64, RG32Uint, Atomic);
 	enableMTLPixFmtCapsIf(atomic64, RG32Sint, Atomic);
 
@@ -961,7 +965,7 @@ void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 	enableMTLPixFmtCapsIf(floatFB, RGBA32Float, Filter);
 	enableMTLPixFmtCapsIf(floatFB, RGBA32Float, Blend); // Undocumented by confirmed through testing.
 
-	bool noHDR_ASTC = p_feat.highestFamily < MTLGPUFamilyApple6;
+	bool noHDR_ASTC = p_feat.highestFamily < MTL::GPUFamilyApple6;
 	setMTLPixFmtCapsIf(noHDR_ASTC, ASTC_4x4_HDR, None);
 	setMTLPixFmtCapsIf(noHDR_ASTC, ASTC_5x4_HDR, None);
 	setMTLPixFmtCapsIf(noHDR_ASTC, ASTC_5x5_HDR, None);
@@ -1021,13 +1025,13 @@ void PixelFormats::buildDFFormatMaps() {
 				mtlDesc.dataFormat = dfDesc.dataFormat;
 			}
 			if (!mtlDesc.isSupported()) {
-				dfDesc.mtlPixelFormat = MTLPixelFormatInvalid;
+				dfDesc.mtlPixelFormat = MTL::PixelFormatInvalid;
 			}
 		}
 		if (dfDesc.mtlPixelFormatSubstitute) {
 			MTLFormatDesc &mtlDesc = getMTLPixelFormatDesc(dfDesc.mtlPixelFormatSubstitute);
 			if (!mtlDesc.isSupported()) {
-				dfDesc.mtlPixelFormatSubstitute = MTLPixelFormatInvalid;
+				dfDesc.mtlPixelFormatSubstitute = MTL::PixelFormatInvalid;
 			}
 		}
 		if (dfDesc.mtlVertexFormat) {
@@ -1036,13 +1040,13 @@ void PixelFormats::buildDFFormatMaps() {
 				mtlDesc.dataFormat = dfDesc.dataFormat;
 			}
 			if (!mtlDesc.isSupported()) {
-				dfDesc.mtlVertexFormat = MTLVertexFormatInvalid;
+				dfDesc.mtlVertexFormat = MTL::VertexFormatInvalid;
 			}
 		}
 		if (dfDesc.mtlVertexFormatSubstitute) {
 			MTLFormatDesc &mtlDesc = getMTLVertexFormatDesc(dfDesc.mtlVertexFormatSubstitute);
 			if (!mtlDesc.isSupported()) {
-				dfDesc.mtlVertexFormatSubstitute = MTLVertexFormatInvalid;
+				dfDesc.mtlVertexFormatSubstitute = MTL::VertexFormatInvalid;
 			}
 		}
 	}

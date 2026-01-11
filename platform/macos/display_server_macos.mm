@@ -73,6 +73,7 @@
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/rendering_device.h"
 #endif
 
 #if defined(ACCESSKIT_ENABLED)
@@ -185,7 +186,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 #endif
 #ifdef METAL_ENABLED
 			if (rendering_driver == "metal") {
-				wpd.metal.layer = (CAMetalLayer *)layer;
+				wpd.metal.layer = (__bridge CA::MetalLayer *)layer;
 			}
 #endif
 			Error err = rendering_context->window_create(window_id_counter, &wpd);

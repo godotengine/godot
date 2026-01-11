@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_shader_container_metal.mm                                   */
+/*  rendering_shader_container_metal.cpp                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "rendering_shader_container_metal.h"
+#include "rendering_shader_container_metal.h"
 
-#import "metal_utils.h"
+#include "metal_utils.h"
 
-#import "core/io/file_access.h"
-#import "core/io/marshalls.h"
-#import "core/templates/fixed_vector.h"
-#import "servers/rendering/rendering_device.h"
+#include "core/io/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/templates/fixed_vector.h"
+#include "servers/rendering/rendering_device.h"
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
-#import <Metal/Metal.h>
-#import <spirv.hpp>
-#import <spirv_msl.hpp>
-#import <spirv_parser.hpp>
+#include <Metal/Metal.hpp>
+#include <spirv.hpp>
+#include <spirv_msl.hpp>
+#include <spirv_parser.hpp>
 
 void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 	if (compiler_props.is_valid()) {
@@ -236,6 +236,74 @@ spv::ExecutionModel map_stage(RDD::ShaderStage p_stage) {
 	return SHADER_STAGE_REMAP[p_stage];
 }
 
+Error RenderingShaderContainerMetal::reflect_spirv(const ReflectShader &p_shader) {
+	//	const LocalVector<ReflectShaderStage> &p_spirv = p_shader.shader_stages;
+	//
+	//	using ShaderStage = RenderingDeviceCommons::ShaderStage;
+	//
+	//	const uint32_t spirv_size = p_spirv.size();
+	//
+	//	HashSet<uint32_t> atomic_spirv_ids;
+	//	bool atomics_scanned = false;
+	//	auto scan_atomic_accesses = [&atomic_spirv_ids, &p_spirv, spirv_size, &atomics_scanned]() {
+	//		if (atomics_scanned) {
+	//			return;
+	//		}
+	//
+	//		for (uint32_t i = 0; i < spirv_size + 0; i++) {
+	//			const uint32_t STARTING_WORD_INDEX = 5;
+	//			Span<uint32_t> spirv = p_spirv[i].spirv();
+	//			const uint32_t *words = spirv.ptr() + STARTING_WORD_INDEX;
+	//			while (words < spirv.end()) {
+	//				uint32_t instruction = *words;
+	//				uint16_t word_count = instruction >> 16;
+	//				SpvOp opcode = (SpvOp)(instruction & 0xFFFF);
+	//				if (opcode == SpvOpImageTexelPointer) {
+	//					uint32_t image_var_id = words[3];
+	//					atomic_spirv_ids.insert(image_var_id);
+	//				}
+	//				words += word_count;
+	//			}
+	//		}
+	//
+	//		atomics_scanned = true;
+	//	};
+	//
+	//	for (uint32_t i = 0; i < spirv_size + 0; i++) {
+	//		ShaderStage stage = p_spirv[i].shader_stage;
+	//		ShaderStage stage_flag = (ShaderStage)(1 << p_spirv[i].shader_stage);
+	//		SpvReflectResult result;
+	//
+	//		const SpvReflectShaderModule &module = p_spirv[i].module();
+	//
+	//		uint32_t binding_count = 0;
+	//		result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
+	//		CRASH_COND(result != SPV_REFLECT_RESULT_SUCCESS);
+	//
+	//		if (binding_count > 0) {
+	//			LocalVector<SpvReflectDescriptorBinding *> bindings;
+	//			bindings.resize_uninitialized(binding_count);
+	//			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptr());
+	//
+	//			for (uint32_t j = 0; j < binding_count; j++) {
+	//				const SpvReflectDescriptorBinding &binding = *bindings[j];
+	//
+	//				switch (binding.descriptor_type) {
+	//					case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+	//					case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+	//					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+	//					case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+	//						break;
+	//					default:
+	//						break;
+	//				}
+	//			}
+	//		}
+	//	}
+	//
+	return OK;
+}
+
 bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_shader) {
 	using namespace spirv_cross;
 	using spirv_cross::CompilerMSL;
@@ -282,12 +350,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 		msl_options.ios_support_base_vertex_instance = true;
 	}
 
-	// We don't currently allow argument buffers when using dynamic buffers as
-	// the current implementation does not update the argument buffer each time
-	// the dynamic buffer changes. This is a future TODO.
-	bool argument_buffers_allowed = get_shader_reflection().has_dynamic_buffers == false;
-
-	if (device_profile->features.use_argument_buffers && argument_buffers_allowed) {
+	if (device_profile->features.use_argument_buffers) {
 		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
 		msl_options.argument_buffers = true;
 		mtl_reflection_data.set_uses_argument_buffers(true);
@@ -384,9 +447,9 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
 						if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)) {
 							if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE)) {
-								found->access = MTLBindingAccessReadWrite;
+								found->access = MTL::BindingAccessReadWrite;
 							} else {
-								found->access = MTLBindingAccessWriteOnly;
+								found->access = MTL::BindingAccessWriteOnly;
 							}
 						}
 					} break;
@@ -394,9 +457,9 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
 						if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE)) {
 							if (!(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_READABLE)) {
-								found->access = MTLBindingAccessReadWrite;
+								found->access = MTL::BindingAccessReadWrite;
 							} else {
-								found->access = MTLBindingAccessWriteOnly;
+								found->access = MTL::BindingAccessWriteOnly;
 							}
 						}
 					} break;
@@ -405,14 +468,14 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 				}
 
 				switch (found->access) {
-					case MTLBindingAccessReadOnly:
-						found->usage = MTLResourceUsageRead;
+					case MTL::BindingAccessReadOnly:
+						found->usage = MTL::ResourceUsageRead;
 						break;
-					case MTLBindingAccessWriteOnly:
-						found->usage = MTLResourceUsageWrite;
+					case MTL::BindingAccessWriteOnly:
+						found->usage = MTL::ResourceUsageWrite;
 						break;
-					case MTLBindingAccessReadWrite:
-						found->usage = MTLResourceUsageRead | MTLResourceUsageWrite;
+					case MTL::BindingAccessReadWrite:
+						found->usage = MTL::ResourceUsageRead | MTL::ResourceUsageWrite;
 						break;
 				}
 
@@ -424,7 +487,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 
 				switch (type) {
 					case RDC::UNIFORM_TYPE_SAMPLER: {
-						found->data_type = MTLDataTypeSampler;
+						found->data_type = MTL::DataTypeSampler;
 						found->get_indexes(UniformData::IndexType::SLOT).sampler = next_index(Sampler, binding_stride);
 						found->get_indexes(UniformData::IndexType::ARG).sampler = next_arg_index(binding_stride);
 
@@ -433,7 +496,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					} break;
 					case RDC::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE:
 					case RDC::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER: {
-						found->data_type = MTLDataTypeTexture;
+						found->data_type = MTL::DataTypeTexture;
 						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
 						found->get_indexes(UniformData::IndexType::SLOT).sampler = next_index(Sampler, binding_stride);
 						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
@@ -443,7 +506,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					case RDC::UNIFORM_TYPE_TEXTURE:
 					case RDC::UNIFORM_TYPE_IMAGE:
 					case RDC::UNIFORM_TYPE_TEXTURE_BUFFER: {
-						found->data_type = MTLDataTypeTexture;
+						found->data_type = MTL::DataTypeTexture;
 						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
 						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
 						rb.basetype = SPIRType::BaseType::Image;
@@ -455,13 +518,13 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					case RDC::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC:
 					case RDC::UNIFORM_TYPE_UNIFORM_BUFFER:
 					case RDC::UNIFORM_TYPE_STORAGE_BUFFER: {
-						found->data_type = MTLDataTypePointer;
+						found->data_type = MTL::DataTypePointer;
 						found->get_indexes(UniformData::IndexType::SLOT).buffer = next_index(Buffer, binding_stride);
 						found->get_indexes(UniformData::IndexType::ARG).buffer = next_arg_index(binding_stride);
 						rb.basetype = SPIRType::BaseType::Void;
 					} break;
 					case RDC::UNIFORM_TYPE_INPUT_ATTACHMENT: {
-						found->data_type = MTLDataTypeTexture;
+						found->data_type = MTL::DataTypeTexture;
 						found->get_indexes(UniformData::IndexType::SLOT).texture = next_index(Texture, binding_stride);
 						found->get_indexes(UniformData::IndexType::ARG).texture = next_arg_index(binding_stride);
 						rb.basetype = SPIRType::BaseType::Image;
@@ -476,44 +539,53 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 				rb.msl_texture = found->get_indexes(shader_index_type).texture;
 				rb.msl_sampler = found->get_indexes(shader_index_type).sampler;
 
-				if (found->data_type == MTLDataTypeTexture) {
+				if (found->data_type == MTL::DataTypeTexture) {
 					const SpvReflectImageTraits &image = uniform.get_spv_reflect().image;
 
 					switch (image.dim) {
 						case SpvDim1D: {
 							if (image.arrayed) {
-								found->texture_type = MTLTextureType1DArray;
+								found->texture_type = MTL::TextureType1DArray;
 							} else {
-								found->texture_type = MTLTextureType1D;
+								found->texture_type = MTL::TextureType1D;
 							}
 						} break;
 						case SpvDimSubpassData:
 						case SpvDim2D: {
 							if (image.arrayed && image.ms) {
-								found->texture_type = MTLTextureType2DMultisampleArray;
+								found->texture_type = MTL::TextureType2DMultisampleArray;
 							} else if (image.arrayed) {
-								found->texture_type = MTLTextureType2DArray;
+								found->texture_type = MTL::TextureType2DArray;
 							} else if (image.ms) {
-								found->texture_type = MTLTextureType2DMultisample;
+								found->texture_type = MTL::TextureType2DMultisample;
 							} else {
-								found->texture_type = MTLTextureType2D;
+								found->texture_type = MTL::TextureType2D;
 							}
 						} break;
 						case SpvDim3D: {
-							found->texture_type = MTLTextureType3D;
+							found->texture_type = MTL::TextureType3D;
 						} break;
 						case SpvDimCube: {
 							if (image.arrayed) {
-								found->texture_type = MTLTextureTypeCubeArray;
+								found->texture_type = MTL::TextureTypeCubeArray;
 							} else {
-								found->texture_type = MTLTextureTypeCube;
+								found->texture_type = MTL::TextureTypeCube;
 							}
 						} break;
 						case SpvDimRect: {
 							// Ignored.
 						} break;
 						case SpvDimBuffer: {
-							found->texture_type = MTLTextureTypeTextureBuffer;
+							found->texture_type = MTL::TextureTypeTextureBuffer;
+							// If this is used with atomics, we need to use a read-write texture.
+							// 	scan_atomic_accesses();
+							// 	if (atomic_spirv_ids.find(uniform.spirv_id) != atomic_spirv_ids.end()) {
+							// 		rb.access = MTLBindingAccessReadWrite;
+							// 		found->access = MTLBindingAccessReadWrite;
+							// 	} else {
+							// 		rb.access = MTLBindingAccessReadOnly;
+							// 		found->access = MTLBindingAccessReadOnly;
+							// 	}
 						} break;
 						case SpvDimTileImageDataEXT: {
 							// Godot does not use this extension.

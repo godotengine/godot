@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  metal_device_properties.mm                                            */
+/*  metal_device_properties.cpp                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -48,41 +48,46 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#import "metal_device_properties.h"
+#include "metal_device_properties.h"
 
-#import "metal_utils.h"
+#include "metal_utils.h"
 
-#import "servers/rendering/renderer_rd/effects/metal_fx.h"
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
 
-#import <Metal/Metal.h>
-#import <MetalFX/MetalFX.h>
-#import <spirv_cross.hpp>
-#import <spirv_msl.hpp>
+#include <MetalFX/MetalFX.hpp>
+#include <spirv_cross.hpp>
+#include <spirv_msl.hpp>
+
+#include <unistd.h>
 
 // Common scaling multipliers.
 #define KIBI (1024)
 #define MEBI (KIBI * KIBI)
 
 #if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 140000) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED < 170000)
-#define MTLGPUFamilyApple9 (MTLGPUFamily)1009
+constexpr MTL::GPUFamily GPUFamilyApple9 = static_cast<MTL::GPUFamily>(1009);
+#else
+constexpr MTL::GPUFamily GPUFamilyApple9 = MTL::GPUFamilyApple9;
 #endif
 
 API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(1.0))
-MTLGPUFamily &operator--(MTLGPUFamily &p_family) {
-	p_family = static_cast<MTLGPUFamily>(static_cast<int>(p_family) - 1);
-	if (p_family < MTLGPUFamilyApple1) {
-		p_family = MTLGPUFamilyApple9;
+MTL::GPUFamily &operator--(MTL::GPUFamily &p_family) {
+	p_family = static_cast<MTL::GPUFamily>(static_cast<int>(p_family) - 1);
+	if (p_family < MTL::GPUFamilyApple1) {
+		p_family = GPUFamilyApple9;
 	}
 
 	return p_family;
 }
 
-void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
+void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 	features = {};
 
-	MTLCompileOptions *opts = [MTLCompileOptions new];
-	features.msl_max_version = make_msl_version((opts.languageVersion >> 0x10) & 0xff, (opts.languageVersion >> 0x00) & 0xff);
+	MTL::CompileOptions *opts = MTL::CompileOptions::alloc()->init();
+	MTL::LanguageVersion lang_version = opts->languageVersion();
+	features.msl_max_version = make_msl_version((static_cast<uint32_t>(lang_version) >> 0x10) & 0xff, (static_cast<uint32_t>(lang_version) >> 0x00) & 0xff);
 	features.msl_target_version = features.msl_max_version;
+	opts->release();
 	if (String version = OS::get_singleton()->get_environment("GODOT_MTL_TARGET_VERSION"); !version.is_empty()) {
 		if (version != "max") {
 			Vector<String> parts = version.split(".", true, 2);
@@ -102,55 +107,55 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		}
 	}
 
-	features.highestFamily = MTLGPUFamilyApple1;
-	for (MTLGPUFamily family = MTLGPUFamilyApple9; family >= MTLGPUFamilyApple1; --family) {
-		if ([p_device supportsFamily:family]) {
+	features.highestFamily = MTL::GPUFamilyApple1;
+	for (MTL::GPUFamily family = GPUFamilyApple9; family >= MTL::GPUFamilyApple1; --family) {
+		if (p_device->supportsFamily(family)) {
 			features.highestFamily = family;
 			break;
 		}
 	}
 
-	if (@available(macOS 11, iOS 16.4, tvOS 16.4, *)) {
-		features.supportsBCTextureCompression = p_device.supportsBCTextureCompression;
+	if (__builtin_available(macOS 11, iOS 16.4, tvOS 16.4, *)) {
+		features.supportsBCTextureCompression = p_device->supportsBCTextureCompression();
 	} else {
 		features.supportsBCTextureCompression = false;
 	}
 
 #if TARGET_OS_OSX
-	features.supportsDepth24Stencil8 = p_device.isDepth24Stencil8PixelFormatSupported;
+	features.supportsDepth24Stencil8 = p_device->isDepth24Stencil8PixelFormatSupported();
 #endif
 
-	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
-		features.supports32BitFloatFiltering = p_device.supports32BitFloatFiltering;
-		features.supports32BitMSAA = p_device.supports32BitMSAA;
+	if (__builtin_available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+		features.supports32BitFloatFiltering = p_device->supports32BitFloatFiltering();
+		features.supports32BitMSAA = p_device->supports32BitMSAA();
 	}
 
-	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+	if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
 		features.supports_gpu_address = true;
 	}
 
 	features.hostMemoryPageSize = sysconf(_SC_PAGESIZE);
 
 	for (SampleCount sc = SampleCount1; sc <= SampleCount64; sc <<= 1) {
-		if ([p_device supportsTextureSampleCount:sc]) {
+		if (p_device->supportsTextureSampleCount(sc)) {
 			features.supportedSampleCounts |= sc;
 		}
 	}
 
-	features.layeredRendering = [p_device supportsFamily:MTLGPUFamilyApple5];
-	features.multisampleLayeredRendering = [p_device supportsFamily:MTLGPUFamilyApple7];
-	features.tessellationShader = [p_device supportsFamily:MTLGPUFamilyApple3];
-	features.imageCubeArray = [p_device supportsFamily:MTLGPUFamilyApple3];
-	features.quadPermute = [p_device supportsFamily:MTLGPUFamilyApple4];
-	features.simdPermute = [p_device supportsFamily:MTLGPUFamilyApple6];
-	features.simdReduction = [p_device supportsFamily:MTLGPUFamilyApple7];
-	features.argument_buffers_tier = p_device.argumentBuffersSupport;
-	features.supports_image_atomic_32_bit = [p_device supportsFamily:MTLGPUFamilyApple6];
-	features.supports_image_atomic_64_bit = [p_device supportsFamily:MTLGPUFamilyApple9] || ([p_device supportsFamily:MTLGPUFamilyApple8] && [p_device supportsFamily:MTLGPUFamilyMac2]);
+	features.layeredRendering = p_device->supportsFamily(MTL::GPUFamilyApple5);
+	features.multisampleLayeredRendering = p_device->supportsFamily(MTL::GPUFamilyApple7);
+	features.tessellationShader = p_device->supportsFamily(MTL::GPUFamilyApple3);
+	features.imageCubeArray = p_device->supportsFamily(MTL::GPUFamilyApple3);
+	features.quadPermute = p_device->supportsFamily(MTL::GPUFamilyApple4);
+	features.simdPermute = p_device->supportsFamily(MTL::GPUFamilyApple6);
+	features.simdReduction = p_device->supportsFamily(MTL::GPUFamilyApple7);
+	features.argument_buffers_tier = p_device->argumentBuffersSupport();
+	features.supports_image_atomic_32_bit = p_device->supportsFamily(MTL::GPUFamilyApple6);
+	features.supports_image_atomic_64_bit = p_device->supportsFamily(GPUFamilyApple9) || (p_device->supportsFamily(MTL::GPUFamilyApple8) && p_device->supportsFamily(MTL::GPUFamilyMac2));
 
 	if (features.msl_target_version >= MSL_VERSION_31) {
 		// Native atomics are only supported on 3.1 and above.
-		if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
+		if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, visionOS 1.0, *)) {
 			features.supports_native_image_atomics = true;
 		}
 	}
@@ -159,31 +164,31 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		features.supports_native_image_atomics = false;
 	}
 
-	if (@available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
+	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 2.0, *)) {
 		features.supports_residency_sets = true;
 	} else {
 		features.supports_residency_sets = false;
 	}
 
-	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-		features.needs_arg_encoders = !([p_device supportsFamily:MTLGPUFamilyMetal3] && features.argument_buffers_tier == MTLArgumentBuffersTier2);
+	if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		features.needs_arg_encoders = !(p_device->supportsFamily(MTL::GPUFamilyMetal3) && features.argument_buffers_tier == MTL::ArgumentBuffersTier2);
 	}
 
 	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
 		features.use_argument_buffers = false;
 	}
 
-	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-		features.metal_fx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:p_device];
+	if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		features.metal_fx_spatial = MTLFX::SpatialScalerDescriptor::supportsDevice(p_device);
 #ifdef METAL_MFXTEMPORAL_ENABLED
-		features.metal_fx_temporal = [MTLFXTemporalScalerDescriptor supportsDevice:p_device];
+		features.metal_fx_temporal = MTLFX::TemporalScalerDescriptor::supportsDevice(p_device);
 #else
 		features.metal_fx_temporal = false;
 #endif
 	}
 }
 
-void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
+void MetalDeviceProperties::init_limits(MTL::Device *p_device) {
 	using std::max;
 	using std::min;
 
@@ -191,7 +196,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	// FST: Maximum number of layers per 1D texture array, 2D texture array, or 3D texture.
 	limits.maxImageArrayLayers = 2048;
-	if ([p_device supportsFamily:MTLGPUFamilyApple3]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple3)) {
 		// FST: Maximum 2D texture width and height.
 		limits.maxFramebufferWidth = 16384;
 		limits.maxFramebufferHeight = 16384;
@@ -219,7 +224,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	// FST: Maximum 3D texture width, height, and depth.
 	limits.maxImageDimension3D = 2048;
 
-	limits.maxThreadsPerThreadGroup = p_device.maxThreadsPerThreadgroup;
+	limits.maxThreadsPerThreadGroup = p_device->maxThreadsPerThreadgroup();
 	// No effective limits.
 	limits.maxComputeWorkGroupCount = { std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::max() };
 	// https://github.com/KhronosGroup/MoltenVK/blob/568cc3acc0e2299931fdaecaaa1fc3ec5b4af281/MoltenVK/MoltenVK/GPUObjects/MVKDevice.h#L85
@@ -228,25 +233,25 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxColorAttachments = 8;
 
 	// Maximum number of textures the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple6)) {
 		limits.maxTexturesPerArgumentBuffer = 1'000'000;
-	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
+	} else if (p_device->supportsFamily(MTL::GPUFamilyApple4)) {
 		limits.maxTexturesPerArgumentBuffer = 96;
 	} else {
 		limits.maxTexturesPerArgumentBuffer = 31;
 	}
 
 	// Maximum number of samplers the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple6)) {
 		limits.maxSamplersPerArgumentBuffer = 1024;
 	} else {
 		limits.maxSamplersPerArgumentBuffer = 16;
 	}
 
 	// Maximum number of buffers the device can access, per stage, from an argument buffer.
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple6)) {
 		limits.maxBuffersPerArgumentBuffer = std::numeric_limits<uint64_t>::max();
-	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
+	} else if (p_device->supportsFamily(MTL::GPUFamilyApple4)) {
 		limits.maxBuffersPerArgumentBuffer = 96;
 	} else {
 		limits.maxBuffersPerArgumentBuffer = 31;
@@ -283,13 +288,13 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 		limits.subgroupSupportedOperations.set_flag(RD::SubgroupOperations::SUBGROUP_QUAD_BIT);
 	}
 
-	limits.maxBufferLength = p_device.maxBufferLength;
+	limits.maxBufferLength = p_device->maxBufferLength();
 
 	// FST: Maximum size of vertex descriptor layout stride.
 	limits.maxVertexDescriptorLayoutStride = std::numeric_limits<uint64_t>::max();
 
 	// Maximum number of viewports.
-	if ([p_device supportsFamily:MTLGPUFamilyApple5]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple5)) {
 		limits.maxViewports = 16;
 	} else {
 		limits.maxViewports = 1;
@@ -297,9 +302,9 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 
 	limits.maxPerStageBufferCount = 31;
 	limits.maxPerStageSamplerCount = 16;
-	if ([p_device supportsFamily:MTLGPUFamilyApple6]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple6)) {
 		limits.maxPerStageTextureCount = 128;
-	} else if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
+	} else if (p_device->supportsFamily(MTL::GPUFamilyApple4)) {
 		limits.maxPerStageTextureCount = 96;
 	} else {
 		limits.maxPerStageTextureCount = 31;
@@ -310,9 +315,9 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxVertexInputBindingStride = (2 * KIBI);
 	limits.maxShaderVaryings = 31; // Accurate on Apple4 and above. See: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 
-	if ([p_device supportsFamily:MTLGPUFamilyApple4]) {
+	if (p_device->supportsFamily(MTL::GPUFamilyApple4)) {
 		limits.maxThreadGroupMemoryAllocation = 32768;
-	} else if ([p_device supportsFamily:MTLGPUFamilyApple3]) {
+	} else if (p_device->supportsFamily(MTL::GPUFamilyApple3)) {
 		limits.maxThreadGroupMemoryAllocation = 16384;
 	} else {
 		limits.maxThreadGroupMemoryAllocation = 16352;
@@ -330,9 +335,9 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxDrawIndexedIndexValue = std::numeric_limits<uint32_t>::max() - 1;
 
 #ifdef METAL_MFXTEMPORAL_ENABLED
-	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
-		limits.temporalScalerInputContentMinScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMinScaleForDevice:p_device];
-		limits.temporalScalerInputContentMaxScale = (double)[MTLFXTemporalScalerDescriptor supportedInputContentMaxScaleForDevice:p_device];
+	if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+		limits.temporalScalerInputContentMinScale = MTLFX::TemporalScalerDescriptor::supportedInputContentMinScale(p_device);
+		limits.temporalScalerInputContentMaxScale = MTLFX::TemporalScalerDescriptor::supportedInputContentMaxScale(p_device);
 	} else {
 		// Defaults taken from macOS 14+
 		limits.temporalScalerInputContentMinScale = 1.0;
@@ -346,11 +351,11 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 }
 
 void MetalDeviceProperties::init_os_props() {
-	NSOperatingSystemVersion ver = NSProcessInfo.processInfo.operatingSystemVersion;
+	NS::OperatingSystemVersion ver = NS::ProcessInfo::processInfo()->operatingSystemVersion();
 	os_version = (uint32_t)ver.majorVersion * 10000 + (uint32_t)ver.minorVersion * 100 + (uint32_t)ver.patchVersion;
 }
 
-MetalDeviceProperties::MetalDeviceProperties(id<MTLDevice> p_device) {
+MetalDeviceProperties::MetalDeviceProperties(MTL::Device *p_device) {
 	init_features(p_device);
 	init_limits(p_device);
 	init_os_props();

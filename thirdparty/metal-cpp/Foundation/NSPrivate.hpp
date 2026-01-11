@@ -272,6 +272,8 @@ namespace Private
             "initWithBytes:objCType:");
         _NS_PRIVATE_DEF_SEL(initWithBytesNoCopy_length_encoding_freeWhenDone_,
             "initWithBytesNoCopy:length:encoding:freeWhenDone:");
+        _NS_PRIVATE_DEF_SEL(initWithBytes_length_encoding_,
+            "initWithBytes:length:encoding:");
         _NS_PRIVATE_DEF_SEL(initWithChar_,
             "initWithChar:");
         _NS_PRIVATE_DEF_SEL(initWithCoder_,
@@ -372,6 +374,8 @@ namespace Private
             "methodSignatureForSelector:");
         _NS_PRIVATE_DEF_SEL(mutableBytes,
             "mutableBytes");
+        _NS_PRIVATE_DEF_SEL(bytes,
+            "bytes");
         _NS_PRIVATE_DEF_SEL(name,
             "name");
         _NS_PRIVATE_DEF_SEL(nextObject,

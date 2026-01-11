@@ -87,6 +87,7 @@ public:
     String*          init();
     String*          init(const String* pString);
     String*          init(const char* pString, StringEncoding encoding);
+    String*          init(void* pBytes, UInteger len, StringEncoding encoding);
     String*          init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer);
 
     unichar          character(UInteger index) const;
@@ -166,6 +167,12 @@ _NS_INLINE NS::String* NS::String::init(const char* pString, StringEncoding enco
     return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithCString_encoding_), pString, encoding);
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding)
+{
+    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithBytes_length_encoding_), pBytes, len, encoding);
+}
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer)

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  metal_fx.mm                                                           */
+/*  metal_fx.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,20 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "metal_fx.h"
+#ifdef METAL_ENABLED
 
-#import "../storage_rd/render_scene_buffers_rd.h"
-#import "drivers/metal/pixel_formats.h"
-#import "drivers/metal/rendering_device_driver_metal.h"
+#include "metal_fx.h"
 
-#import <Metal/Metal.h>
-#import <MetalFX/MetalFX.h>
+#include "../storage_rd/render_scene_buffers_rd.h"
+#include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_device_driver_metal3.h"
+
+#include <MetalFX/MetalFX.hpp>
 
 using namespace RendererRD;
 
 #pragma mark - Spatial Scaler
 
 MFXSpatialContext::~MFXSpatialContext() {
+	if (scaler) {
+		scaler->release();
+	}
 }
 
 MFXSpatialEffect::MFXSpatialEffect() {
@@ -51,28 +55,21 @@ MFXSpatialEffect::~MFXSpatialEffect() {
 }
 
 void MFXSpatialEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+	MDCommandBufferBase *obj = (MDCommandBufferBase *)(p_command_buffer.id);
 	obj->end();
 
-	id<MTLTexture> src_texture = rid::get(p_userdata->src);
-	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
+	MTL::Texture *src_texture = reinterpret_cast<MTL::Texture *>(p_userdata->src.id);
+	MTL::Texture *dst_texture = reinterpret_cast<MTL::Texture *>(p_userdata->dst.id);
 
-	__block id<MTLFXSpatialScaler> scaler = p_userdata->ctx.scaler;
-	scaler.colorTexture = src_texture;
-	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
+	MTLFX::SpatialScalerBase *scaler = p_userdata->scaler;
+	scaler->setColorTexture(src_texture);
+	scaler->setOutputTexture(dst_texture);
+	MTLFX::SpatialScaler *s = static_cast<MTLFX::SpatialScaler *>(scaler);
+	MTL3::MDCommandBuffer *cmd = (MTL3::MDCommandBuffer *)(p_command_buffer.id);
+	s->encodeToCommandBuffer(cmd->get_command_buffer());
+	obj->retain_resource(scaler);
 
 	CallbackArgs::free(&p_userdata);
-
-	GODOT_CLANG_WARNING_POP
 }
 
 void MFXSpatialEffect::ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) {
@@ -98,27 +95,23 @@ void MFXSpatialEffect::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 MFXSpatialContext *MFXSpatialEffect::create_context(CreateParams p_params) const {
 	DEV_ASSERT(RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL));
 
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-
 	RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
 	PixelFormats &pf = rdd->get_pixel_formats();
-	id<MTLDevice> dev = rdd->get_device();
+	MTL::Device *dev = rdd->get_device();
 
-	MTLFXSpatialScalerDescriptor *desc = [MTLFXSpatialScalerDescriptor new];
-	desc.inputWidth = (NSUInteger)p_params.input_size.width;
-	desc.inputHeight = (NSUInteger)p_params.input_size.height;
+	NS::SharedPtr<MTLFX::SpatialScalerDescriptor> desc = NS::TransferPtr(MTLFX::SpatialScalerDescriptor::alloc()->init());
+	desc->setInputWidth((NS::UInteger)p_params.input_size.width);
+	desc->setInputHeight((NS::UInteger)p_params.input_size.height);
 
-	desc.outputWidth = (NSUInteger)p_params.output_size.width;
-	desc.outputHeight = (NSUInteger)p_params.output_size.height;
+	desc->setOutputWidth((NS::UInteger)p_params.output_size.width);
+	desc->setOutputHeight((NS::UInteger)p_params.output_size.height);
 
-	desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
-	desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
-	desc.colorProcessingMode = MTLFXSpatialScalerColorProcessingModeLinear;
-	id<MTLFXSpatialScaler> scaler = [desc newSpatialScalerWithDevice:dev];
+	desc->setColorTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.input_format));
+	desc->setOutputTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.output_format));
+	desc->setColorProcessingMode(MTLFX::SpatialScalerColorProcessingModeLinear);
+
 	MFXSpatialContext *context = memnew(MFXSpatialContext);
-	context->scaler = scaler;
-
-	GODOT_CLANG_WARNING_POP
+	context->scaler = desc->newSpatialScaler(dev);
 
 	return context;
 }
@@ -127,7 +120,11 @@ MFXSpatialContext *MFXSpatialEffect::create_context(CreateParams p_params) const
 
 #pragma mark - Temporal Scaler
 
-MFXTemporalContext::~MFXTemporalContext() {}
+MFXTemporalContext::~MFXTemporalContext() {
+	if (scaler) {
+		scaler->release();
+	}
+}
 
 MFXTemporalEffect::MFXTemporalEffect() {}
 MFXTemporalEffect::~MFXTemporalEffect() {}
@@ -135,35 +132,29 @@ MFXTemporalEffect::~MFXTemporalEffect() {}
 MFXTemporalContext *MFXTemporalEffect::create_context(CreateParams p_params) const {
 	DEV_ASSERT(RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL));
 
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-
 	RenderingDeviceDriverMetal *rdd = (RenderingDeviceDriverMetal *)RD::get_singleton()->get_device_driver();
 	PixelFormats &pf = rdd->get_pixel_formats();
-	id<MTLDevice> dev = rdd->get_device();
+	MTL::Device *dev = rdd->get_device();
 
-	MTLFXTemporalScalerDescriptor *desc = [MTLFXTemporalScalerDescriptor new];
-	desc.inputWidth = (NSUInteger)p_params.input_size.width;
-	desc.inputHeight = (NSUInteger)p_params.input_size.height;
+	NS::SharedPtr<MTLFX::TemporalScalerDescriptor> desc = NS::TransferPtr(MTLFX::TemporalScalerDescriptor::alloc()->init());
+	desc->setInputWidth((NS::UInteger)p_params.input_size.width);
+	desc->setInputHeight((NS::UInteger)p_params.input_size.height);
 
-	desc.outputWidth = (NSUInteger)p_params.output_size.width;
-	desc.outputHeight = (NSUInteger)p_params.output_size.height;
+	desc->setOutputWidth((NS::UInteger)p_params.output_size.width);
+	desc->setOutputHeight((NS::UInteger)p_params.output_size.height);
 
-	desc.colorTextureFormat = pf.getMTLPixelFormat(p_params.input_format);
-	desc.depthTextureFormat = pf.getMTLPixelFormat(p_params.depth_format);
-	desc.motionTextureFormat = pf.getMTLPixelFormat(p_params.motion_format);
-	desc.autoExposureEnabled = NO;
+	desc->setColorTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.input_format));
+	desc->setDepthTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.depth_format));
+	desc->setMotionTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.motion_format));
+	desc->setAutoExposureEnabled(false);
 
-	desc.outputTextureFormat = pf.getMTLPixelFormat(p_params.output_format);
+	desc->setOutputTextureFormat((MTL::PixelFormat)pf.getMTLPixelFormat(p_params.output_format));
 
-	id<MTLFXTemporalScaler> scaler = [desc newTemporalScalerWithDevice:dev];
 	MFXTemporalContext *context = memnew(MFXTemporalContext);
-	context->scaler = scaler;
-
-	scaler.motionVectorScaleX = p_params.motion_vector_scale.x;
-	scaler.motionVectorScaleY = p_params.motion_vector_scale.y;
-	scaler.depthReversed = true; // Godot uses reverse Z per https://github.com/godotengine/godot/pull/88328
-
-	GODOT_CLANG_WARNING_POP
+	context->scaler = desc->newTemporalScaler(dev);
+	context->scaler->setMotionVectorScaleX(p_params.motion_vector_scale.x);
+	context->scaler->setMotionVectorScaleY(p_params.motion_vector_scale.y);
+	context->scaler->setDepthReversed(true); // Godot uses reverse Z per https://github.com/godotengine/godot/pull/88328
 
 	return context;
 }
@@ -188,38 +179,33 @@ void MFXTemporalEffect::process(RendererRD::MFXTemporalContext *p_ctx, RendererR
 }
 
 void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_buffer, CallbackArgs *p_userdata) {
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-
-	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
+	MDCommandBufferBase *obj = (MDCommandBufferBase *)(p_command_buffer.id);
 	obj->end();
 
-	id<MTLTexture> src_texture = rid::get(p_userdata->src);
-	id<MTLTexture> depth = rid::get(p_userdata->depth);
-	id<MTLTexture> motion = rid::get(p_userdata->motion);
-	id<MTLTexture> exposure = rid::get(p_userdata->exposure);
+	MTL::Texture *src_texture = reinterpret_cast<MTL::Texture *>(p_userdata->src.id);
+	MTL::Texture *depth = reinterpret_cast<MTL::Texture *>(p_userdata->depth.id);
+	MTL::Texture *motion = reinterpret_cast<MTL::Texture *>(p_userdata->motion.id);
+	MTL::Texture *exposure = reinterpret_cast<MTL::Texture *>(p_userdata->exposure.id);
 
-	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
+	MTL::Texture *dst_texture = reinterpret_cast<MTL::Texture *>(p_userdata->dst.id);
 
-	__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
-	scaler.reset = p_userdata->reset;
-	scaler.colorTexture = src_texture;
-	scaler.depthTexture = depth;
-	scaler.motionTexture = motion;
-	scaler.exposureTexture = exposure;
-	scaler.jitterOffsetX = p_userdata->jitter_offset.x;
-	scaler.jitterOffsetY = p_userdata->jitter_offset.y;
-	scaler.outputTexture = dst_texture;
-	[scaler encodeToCommandBuffer:obj->get_command_buffer()];
-	// TODO(sgc): add API to retain objects until the command buffer completes
-	[obj->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-		// This block retains a reference to the scaler until the command buffer.
-		// completes.
-		scaler = nil;
-	}];
+	MTLFX::TemporalScalerBase *scaler = p_userdata->scaler;
+	scaler->setReset(p_userdata->reset);
+	scaler->setColorTexture(src_texture);
+	scaler->setDepthTexture(depth);
+	scaler->setMotionTexture(motion);
+	scaler->setExposureTexture(exposure);
+	scaler->setJitterOffsetX(p_userdata->jitter_offset.x);
+	scaler->setJitterOffsetY(p_userdata->jitter_offset.y);
+	scaler->setOutputTexture(dst_texture);
+	MTLFX::TemporalScaler *s = static_cast<MTLFX::TemporalScaler *>(scaler);
+	MTL3::MDCommandBuffer *cmd = (MTL3::MDCommandBuffer *)(p_command_buffer.id);
+	s->encodeToCommandBuffer(cmd->get_command_buffer());
+	obj->retain_resource(scaler);
 
 	CallbackArgs::free(&p_userdata);
-
-	GODOT_CLANG_WARNING_POP
 }
+
+#endif
 
 #endif
