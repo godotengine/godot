@@ -999,7 +999,7 @@ void EditorBuildProfileManager::_detect_from_project() {
 	ClassDB::get_class_list(all_classes);
 
 	for (const StringName &class_name : all_classes) {
-		if (String(class_name).begins_with("Editor") || ClassDB::get_api_type(class_name) != ClassDB::API_CORE || all_used_classes.has(class_name)) {
+		if (ClassDB::get_api_type(class_name) != ClassDB::API_CORE || all_used_classes.has(class_name)) {
 			// This class is valid or editor-only, do nothing.
 			continue;
 		}
@@ -1159,7 +1159,7 @@ void EditorBuildProfileManager::_fill_classes_from(TreeItem *p_parent, const Str
 	child_classes.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &name : child_classes) {
-		if (String(name).begins_with("Editor") || ClassDB::get_api_type(name) != ClassDB::API_CORE) {
+		if (ClassDB::get_api_type(name) != ClassDB::API_CORE) {
 			continue;
 		}
 		_fill_classes_from(class_item, name, p_selected);

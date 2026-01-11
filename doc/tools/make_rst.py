@@ -102,19 +102,14 @@ CLASS_GROUPS: dict[str, str] = {
     "editor": "Editor-only",
     "variant": "Variant types",
 }
+
 CLASS_GROUPS_BASE: dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
     "variant": "Variant",
 }
-# Sync with editor\register_editor_types.cpp
-EDITOR_CLASSES: list[str] = [
-    "FileSystemDock",
-    "ScriptCreateDialog",
-    "ScriptEditor",
-    "ScriptEditorBase",
-]
+
 # Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
 CLASSES_WITH_CSHARP_DIFFERENCES: list[str] = [
     "@GlobalScope",
@@ -183,6 +178,8 @@ class State:
         inherits = class_root.get("inherits")
         if inherits is not None:
             class_def.inherits = inherits
+
+        class_def.api_type = class_root.get("api_type")
 
         class_def.deprecated = class_root.get("deprecated")
         class_def.experimental = class_root.get("experimental")
@@ -595,8 +592,8 @@ class ClassDef(DefinitionBase):
     def __init__(self, name: str) -> None:
         super().__init__("class", name)
 
-        self.class_group = "variant"
-        self.editor_class = self._is_editor_class()
+        self.class_group: str = "variant"
+        self.api_type: str | None = None
 
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
@@ -615,14 +612,6 @@ class ClassDef(DefinitionBase):
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
-
-    def _is_editor_class(self) -> bool:
-        if self.name.startswith("Editor"):
-            return True
-        if self.name in EDITOR_CLASSES:
-            return True
-
-        return False
 
     def update_class_group(self, state: State) -> None:
         group_name = "variant"
@@ -799,7 +788,7 @@ def main() -> None:
             grouped_classes[class_def.class_group] = []
         grouped_classes[class_def.class_group].append(class_name)
 
-        if class_def.editor_class:
+        if class_def.api_type == "editor":
             if "editor" not in grouped_classes:
                 grouped_classes["editor"] = []
             grouped_classes["editor"].append(class_name)
