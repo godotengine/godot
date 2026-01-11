@@ -1980,6 +1980,23 @@ vec4 textureArray_bicubic(sampler2DArray tex, vec3 uv, vec2 texture_size) {
 #endif //LIGHTMAP_BICUBIC_FILTER
 #endif // RENDER_MOTION_VECTORS
 
+#ifdef ALPHA_ANTIALIASING_EDGE_USED
+
+float calc_mip_level(vec2 texture_coord) {
+	vec2 dx = dFdx(texture_coord);
+	vec2 dy = dFdy(texture_coord);
+	float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
+	return max(0.0, 0.5 * log2(delta_max_sqr));
+}
+
+float compute_alpha_antialiasing_edge(float input_alpha, vec2 texture_coord, float alpha_edge) {
+	input_alpha *= 1.0 + max(0, calc_mip_level(texture_coord)) * 0.25; // 0.25 mip scale, magic number
+	input_alpha = (input_alpha - alpha_edge) / max(fwidth(input_alpha), 0.0001) + 0.5;
+	return clamp(input_alpha, 0.0, 1.0);
+}
+
+#endif // ALPHA_ANTIALIASING_EDGE_USED
+
 void main() {
 #ifndef RENDER_MOTION_VECTORS
 	//lay out everything, whatever is unused is optimized away anyway
@@ -2130,9 +2147,22 @@ void main() {
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
-	alpha = 1.0;
 #endif // RENDER_MATERIAL
-#else
+#endif // ALPHA_SCISSOR_USED
+
+// If we are not edge antialiasing, we need to remove the output alpha channel from scissor and hash
+#if defined(ALPHA_SCISSOR_USED) && !defined(ALPHA_ANTIALIASING_EDGE_USED) && !defined(RENDER_MATERIAL)
+	alpha = 1.0;
+#endif
+
+#ifdef ALPHA_ANTIALIASING_EDGE_USED
+// If alpha scissor is used, we must further the edge threshold, otherwise we wont get any edge feather
+#ifdef ALPHA_SCISSOR_USED
+	alpha_antialiasing_edge = clamp(alpha_scissor_threshold + alpha_antialiasing_edge, 0.0, 1.0);
+#endif
+	alpha = compute_alpha_antialiasing_edge(alpha, alpha_texture_coordinate, alpha_antialiasing_edge);
+#endif // ALPHA_ANTIALIASING_EDGE_USED
+
 #ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
 
@@ -2141,7 +2171,6 @@ void main() {
 	}
 #endif // USE_OPAQUE_PREPASS
 #endif // MODE_RENDER_DEPTH
-#endif // !ALPHA_SCISSOR_USED
 
 #endif // !USE_SHADOW_TO_OPACITY
 

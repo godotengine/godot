@@ -313,6 +313,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_alpha_clip;
 	bool uses_blend_alpha;
 	bool uses_depth_prepass_alpha;
+	bool uses_alpha_to_coverage_and_one;
 	bool uses_discard;
 	bool uses_roughness;
 	bool uses_normal;

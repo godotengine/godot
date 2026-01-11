@@ -3284,7 +3284,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_ALPHA_TO_COVERAGE: {
-							// Do nothing for now.
+							scene_state.enable_gl_sample_alpha_to_coverage(true);
+							if (shader->uses_alpha_to_coverage_and_one) {
+								scene_state.enable_gl_blend(false);
+							}
+
 						} break;
 					}
 					scene_state.current_blend_mode = desired_blend_mode;

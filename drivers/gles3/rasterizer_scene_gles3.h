@@ -486,6 +486,7 @@ private:
 		bool current_depth_draw_enabled = false;
 		bool current_depth_test_enabled = false;
 		bool current_scissor_test_enabled = false;
+		bool current_sample_alpha_to_coverage_enable = false;
 
 		void reset_gl_state() {
 			glDisable(GL_BLEND);
@@ -508,6 +509,9 @@ private:
 
 			glDisable(GL_STENCIL_TEST);
 			current_stencil_test_enabled = false;
+
+			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			current_sample_alpha_to_coverage_enable = false;
 			glStencilMask(255);
 			current_stencil_write_mask = 255;
 			glStencilFunc(GL_ALWAYS, 0, 255);
@@ -586,6 +590,17 @@ private:
 					glDisable(GL_STENCIL_TEST);
 				}
 				current_stencil_test_enabled = p_enabled;
+			}
+		}
+
+		void enable_gl_sample_alpha_to_coverage(bool p_enabled) {
+			if (current_sample_alpha_to_coverage_enable != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+				} else {
+					glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+				}
+				current_sample_alpha_to_coverage_enable = p_enabled;
 			}
 		}
 

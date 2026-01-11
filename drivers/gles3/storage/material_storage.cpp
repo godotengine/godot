@@ -2928,6 +2928,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
 	uses_depth_prepass_alpha = false;
+	uses_alpha_to_coverage_and_one = false;
 	uses_discard = false;
 	uses_roughness = false;
 	uses_normal = false;
@@ -3016,6 +3017,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	// This prevents sorting issues inherent to alpha blending and allows such materials to cast shadows.
 	actions.usage_flag_pointers["ALPHA_HASH_SCALE"] = &uses_alpha_clip;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_prepass_alpha;
+	actions.render_mode_flags["alpha_to_coverage_and_one"] = &uses_alpha_to_coverage_and_one;
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
