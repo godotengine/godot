@@ -1689,7 +1689,21 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
 
-		p_theme->set_color("font_pressed_color", "MainScreenButton", p_config.mono_color_font);
+		// Main screen buttons.
+		const Color mb_font_color = p_config.font_color * Color(1, 1, 1, 0.95);
+		const Color mb_font_hover_color = p_config.font_hover_color * Color(1, 1, 1, 0.95);
+		const Color mb_font_hover_pressed_color = p_config.accent_color.lerp(p_config.mono_color, 0.2);
+
+		p_theme->set_color(SceneStringName(font_color), "MainScreenButton", mb_font_color);
+		p_theme->set_color("font_hover_color", "MainScreenButton", mb_font_hover_color);
+		p_theme->set_color("font_pressed_color", "MainScreenButton", p_config.accent_color);
+		p_theme->set_color("font_hover_pressed_color", "MainScreenButton", mb_font_hover_pressed_color);
+
+		const Color mb_icon_normal_color = p_config.icon_normal_color * Color(1, 1, 1, 0.95);
+		const Color mb_icon_hover_color = p_config.icon_hover_color * Color(1, 1, 1, 0.95);
+
+		p_theme->set_color("icon_normal_color", "MainScreenButton", mb_icon_normal_color);
+		p_theme->set_color("icon_hover_color", "MainScreenButton", mb_icon_hover_color);
 
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", p_config.flat_button);
