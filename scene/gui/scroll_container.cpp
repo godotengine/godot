@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/sticky_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -364,7 +365,7 @@ void ScrollContainer::_reposition_children() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
-		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right || c == stuck_controls_container) {
 			continue;
 		}
 
@@ -381,6 +382,85 @@ void ScrollContainer::_reposition_children() {
 		r.position += ofs;
 		r.position = r.position.floor();
 		fit_child_in_rect(c, r);
+	}
+
+	int side_ofs[4] = { 0, 0, 0, 0 };
+	for (int i = stuck_controls_container->get_child_count() - 1; i >= 0; i--) {
+		Control *c = Object::cast_to<Control>(stuck_controls_container->get_child(i));
+		if (!c || !c->is_visible()) {
+			continue;
+		}
+		if (!sticky_map.has(c->get_instance_id())) {
+			continue;
+		}
+		StickyContainer *sc = sticky_map[c->get_instance_id()];
+		if (!sc) {
+			continue;
+		}
+
+		Rect2 rect = sc->get_global_rect();
+		Rect2 old_rect = rect;
+		Rect2 scroll_rect = get_global_rect();
+		Rect2 bound_rect;
+		Point2 pos = rect.position;
+		bool stacking = sc->is_stacking();
+		bool bounding = sc->get_bounding_container();
+
+		if (bounding) {
+			bound_rect = sc->get_bounding_container()->get_global_rect();
+		}
+
+		if (sc->is_side_sticky(SIDE_LEFT)) {
+			real_t stick_pos = scroll_rect.position.x + (stacking ? side_ofs[SIDE_LEFT] : 0);
+			pos.x = MAX(rect.position.x, stick_pos);
+			if (bounding) {
+				pos.x = MIN(bound_rect.get_end().x, pos.x + rect.size.x) - rect.size.x;
+			}
+			if (stacking) {
+				side_ofs[SIDE_LEFT] += MAX(rect.size.x - Math::abs(pos.x - stick_pos), 0);
+			}
+		}
+		if (sc->is_side_sticky(SIDE_TOP)) {
+			real_t stick_pos = scroll_rect.position.y + (stacking ? side_ofs[SIDE_TOP] : 0);
+			pos.y = MAX(rect.position.y, stick_pos);
+			if (bounding) {
+				pos.y = MIN(bound_rect.get_end().y, pos.y + rect.size.y) - rect.size.y;
+			}
+			if (stacking) {
+				side_ofs[SIDE_TOP] += MAX(rect.size.y - Math::abs(pos.y - stick_pos), 0);
+			}
+		}
+		if (sc->is_side_sticky(SIDE_RIGHT)) {
+			real_t stick_pos = scroll_rect.get_end().x - rect.size.x - (stacking ? side_ofs[SIDE_RIGHT] : 0);
+			pos.x = MIN(rect.position.x, stick_pos);
+			if (bounding) {
+				pos.x = MAX(bound_rect.position.x, pos.x);
+			}
+			if (stacking) {
+				side_ofs[SIDE_RIGHT] += MAX(rect.size.x - Math::abs(pos.x - stick_pos), 0);
+			}
+		}
+		if (sc->is_side_sticky(SIDE_BOTTOM)) {
+			real_t stick_pos = scroll_rect.get_end().y - rect.size.y - (stacking ? side_ofs[SIDE_BOTTOM] : 0);
+			pos.y = MIN(rect.position.y, stick_pos);
+			if (bounding) {
+				pos.y = MAX(bound_rect.position.y, pos.y);
+			}
+			if (stacking) {
+				side_ofs[SIDE_BOTTOM] += MAX(rect.size.y - Math::abs(pos.y - stick_pos), 0);
+			}
+		}
+		rect.position = pos;
+		if (!rect.intersects(scroll_rect, true)) {
+			sc->set_sticky_status(StickyContainer::STATUS_HIDDEN);
+		} else if (!pos.is_equal_approx(old_rect.position)) {
+			sc->set_sticky_status(StickyContainer::STATUS_STICKING);
+		} else {
+			sc->set_sticky_status(StickyContainer::STATUS_NORMAL);
+		}
+
+		rect.position -= stuck_controls_container->get_global_position();
+		stuck_controls_container->fit_child_in_rect(c, rect);
 	}
 
 	if (draw_focus_border) {
@@ -787,6 +867,24 @@ void ScrollContainer::set_scroll_on_drag_hover(bool p_scroll) {
 	scroll_on_drag_hover = p_scroll;
 }
 
+void ScrollContainer::_register_sticky_control(ObjectID p_id, StickyContainer *p_sticky) {
+	Control *p_control = Object::cast_to<Control>(ObjectDB::get_instance(p_id));
+	if (!p_sticky || !p_control) {
+		return;
+	}
+	p_control->call_deferred("reparent", stuck_controls_container);
+	if (p_sticky->is_side_sticky(SIDE_LEFT) || p_sticky->is_side_sticky(SIDE_TOP)) {
+		stuck_controls_container->call_deferred("move_child", p_control, 0);
+	}
+	sticky_map[p_id] = p_sticky;
+}
+
+void ScrollContainer::_unregister_sticky_control(Control *p_control) {
+	if (p_control) {
+		sticky_map.erase(p_control->get_instance_id());
+	}
+}
+
 HScrollBar *ScrollContainer::get_h_scroll_bar() {
 	return h_scroll;
 }
@@ -895,6 +993,13 @@ bool ScrollContainer::child_has_focus() {
 }
 
 ScrollContainer::ScrollContainer() {
+	stuck_controls_container = memnew(Container);
+	stuck_controls_container->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	stuck_controls_container->set_focus_mode(FOCUS_NONE);
+	stuck_controls_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	add_child(stuck_controls_container, false, INTERNAL_MODE_BACK);
+	stuck_controls_container->connect("child_exiting_tree", callable_mp(this, &ScrollContainer::_unregister_sticky_control));
+
 	scroll_hint_top_left = memnew(TextureRect);
 	scroll_hint_top_left->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	scroll_hint_top_left->set_mouse_filter(MOUSE_FILTER_IGNORE);

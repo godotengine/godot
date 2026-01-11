@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StickyContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that clamps children to the bounds of the nearest [ScrollContainer].
+	</brief_description>
+	<description>
+		A container that clamps children to the bounds of the nearest [ScrollContainer]. Children can additionally be clamped to a parent [Control]'s bounds. If there are multiple [StickyContainer]s on the same [ScrollContainer], clamped children can optionally be stacked instead of overlapping.
+		[b]Note:[/b] Children are reparented to the related [ScrollContainer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_sticky_child">
+			<return type="Control" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns a sticky [Control] managed by this container.
+			</description>
+		</method>
+		<method name="get_sticky_child_count">
+			<return type="int" />
+			<description>
+				Returns the number of [Control]s managed by this container.
+			</description>
+		</method>
+		<method name="get_sticky_status">
+			<return type="int" enum="StickyContainer.StickyStatus" />
+			<description>
+				Returns the current sticky status depending on the scroll position of the [ScrollContainer].
+			</description>
+		</method>
+		<method name="is_side_sticky">
+			<return type="bool" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<description>
+				Returns [code]true[/code] if sticking to the given [param side] is enabled.
+			</description>
+		</method>
+		<method name="set_side_sticky">
+			<return type="void" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled], allows children to stick to the given [param side] of the closest [ScrollContainer].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounding_container" type="NodePath" setter="set_bounding_container_path" getter="get_bounding_container_path" default="NodePath(&quot;&quot;)">
+			Children will be clamped to the rect of the [Control] at this [NodePath].
+		</member>
+		<member name="stack" type="bool" setter="set_stacking" getter="is_stacking" default="false">
+			If [code]true[/code], when multiple [Control]s are sticking to the same [ScrollContainer], they will stack next to each other instead of overlapping each other.
+		</member>
+		<member name="stick_to_bottom" type="bool" setter="set_side_sticky" getter="is_side_sticky" default="false">
+			If [code]true[/code], enables sticking to the bottom side of the closest [ScrollContainer].
+		</member>
+		<member name="stick_to_left" type="bool" setter="set_side_sticky" getter="is_side_sticky" default="true">
+			If [code]true[/code], enables sticking to the left side of the closest [ScrollContainer].
+		</member>
+		<member name="stick_to_right" type="bool" setter="set_side_sticky" getter="is_side_sticky" default="false">
+			If [code]true[/code], enables sticking to the right side of the closest [ScrollContainer].
+		</member>
+		<member name="stick_to_top" type="bool" setter="set_side_sticky" getter="is_side_sticky" default="true">
+			If [code]true[/code], enables sticking to the top side of the closest [ScrollContainer].
+		</member>
+	</members>
+	<signals>
+		<signal name="sticky_status_changed">
+			<description>
+				Emitted when the [enum StickyStatus] changes.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="STATUS_NORMAL" value="0" enum="StickyStatus">
+			The [Control] is currently in view but not sticking to a [ScrollContainer].
+		</constant>
+		<constant name="STATUS_STICKING" value="1" enum="StickyStatus">
+			The [Control] is sticking to a side of the nearest [ScrollContainer].
+		</constant>
+		<constant name="STATUS_HIDDEN" value="2" enum="StickyStatus">
+			The [Control] is currently not in view within the nearest [ScrollContainer].
+		</constant>
+	</constants>
+</class>

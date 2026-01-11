@@ -36,9 +36,11 @@
 
 class PanelContainer;
 class TextureRect;
+class StickyContainer;
 
 class ScrollContainer : public Container {
 	GDCLASS(ScrollContainer, Container);
+	friend class StickyContainer;
 
 public:
 	enum ScrollMode {
@@ -60,6 +62,7 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 	PanelContainer *focus_panel = nullptr;
+	Container *stuck_controls_container = nullptr;
 
 	mutable Size2 largest_child_min_size; // The largest one among the min sizes of all available child controls.
 
@@ -90,6 +93,11 @@ private:
 
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
+
+	HashMap<ObjectID, StickyContainer *> sticky_map;
+
+	void _register_sticky_control(ObjectID p_id, StickyContainer *p_sticky);
+	void _unregister_sticky_control(Control *p_control);
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
