@@ -1701,14 +1701,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
 
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif // DEBUG_ENABLED
+	for (const MethodInfo &method : methods) {
+		ret.push_back(method.operator Dictionary());
 	}
 
 	return ret;
