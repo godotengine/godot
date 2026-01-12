@@ -2417,7 +2417,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 				texture->layers = 1;
 			}
 			texture->gl_format_cache = rt->color_format;
-			texture->gl_type_cache = !rt->hdr ? GL_UNSIGNED_BYTE : GL_FLOAT; // to set HDR format size to 8 and keep 4 for LDR format
+			texture->gl_type_cache = rt->hdr ? GL_FLOAT : GL_UNSIGNED_BYTE; // To set HDR format size to 8 and keep 4 for LDR format.
 			texture->gl_internal_format_cache = rt->color_internal_format;
 			texture->tex_id = rt->color;
 			texture->width = rt->size.x;

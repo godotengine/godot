@@ -1326,7 +1326,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							rot = post_process_key_value(a, rot_track, rot, t->object_id, t->bone_idx);
 
 							root_motion_cache.loc += rot.xform_inv(loc[1] - loc[0]) * blend;
-							prev_time = !backward ? start : end;
+							prev_time = backward ? end : start;
 						} else {
 							Vector3 loc[2];
 							if (!backward) {
@@ -1362,7 +1362,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							a->try_position_track_interpolate(i, time, &loc[1]);
 							loc[1] = post_process_key_value(a, i, loc[1], t->object_id, t->bone_idx);
 							root_motion_cache.loc += (loc[1] - loc[0]) * blend;
-							prev_time = !backward ? start : end;
+							prev_time = backward ? end : start;
 						}
 					}
 					{
@@ -1539,7 +1539,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						a->try_scale_track_interpolate(i, time, &scale[1]);
 						scale[1] = post_process_key_value(a, i, scale[1], t->object_id, t->bone_idx);
 						root_motion_cache.scale += (scale[1] - scale[0]) * blend;
-						prev_time = !backward ? start : end;
+						prev_time = backward ? end : start;
 					}
 					{
 						Vector3 scale;

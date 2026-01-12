@@ -92,7 +92,7 @@ String AnimationNodeStateMachineEditor::_get_root_playback_path(String &r_node_d
 	if (edited_path.size()) {
 		while (!is_playable_anodesm_found) {
 			base_path = String("/").join(edited_path);
-			Ref<AnimationNodeStateMachine> anodesm = !edited_path.size() ? Ref<AnimationNode>(tree->get_root_animation_node().ptr()) : tree->get_root_animation_node()->find_node_by_path(base_path);
+			Ref<AnimationNodeStateMachine> anodesm = edited_path.is_empty() ? Ref<AnimationNode>(tree->get_root_animation_node().ptr()) : tree->get_root_animation_node()->find_node_by_path(base_path);
 			if (anodesm.is_null()) {
 				break;
 			} else {
@@ -114,7 +114,7 @@ String AnimationNodeStateMachineEditor::_get_root_playback_path(String &r_node_d
 		if (node_directory_path.size()) {
 			r_node_directory += "/";
 		}
-		base_path = !edited_path.size() ? Animation::PARAMETERS_BASE_PATH + "playback" : Animation::PARAMETERS_BASE_PATH + base_path + "/playback";
+		base_path = Animation::PARAMETERS_BASE_PATH + (edited_path.is_empty() ? "" : (base_path + "/")) + "playback";
 	} else {
 		// Hmmm, we have to return Grouped state machine playback...
 		// It will give the user the error that Root/Nested state machine should be retrieved, that would be kind :-)

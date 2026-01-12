@@ -88,9 +88,9 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	const Ref<StandardMaterial3D> material =
-			get_material(!polygon->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
+			get_material(polygon->is_disabled() ? "shape_material_disabled" : "shape_material", p_gizmo);
 	const Ref<StandardMaterial3D> material_arraymesh =
-			get_material(!polygon->is_disabled() ? "shape_material_arraymesh" : "shape_material_arraymesh_disabled", p_gizmo);
+			get_material(polygon->is_disabled() ? "shape_material_arraymesh_disabled" : "shape_material_arraymesh", p_gizmo);
 
 	const Color collision_color = polygon->is_disabled() ? Color(1.0, 1.0, 1.0, 0.75) : polygon->get_debug_color();
 
