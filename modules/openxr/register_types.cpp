@@ -237,7 +237,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
-			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			if (!openxr_api->initialize(OS::get_singleton()->get_current_rendering_driver_name())) {
 				const char *init_error_message =
 						"OpenXR was requested but failed to start.\n"
 						"HMD was not detected or a required feature was not supported.\n\n"

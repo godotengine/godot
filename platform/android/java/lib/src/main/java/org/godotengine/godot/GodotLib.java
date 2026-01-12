@@ -192,11 +192,14 @@ public class GodotLib {
 	/**
 	 * Used to get info about the current rendering system.
 	 *
-	 * @return A String array with two elements:
-	 *         [0] Rendering driver name.
-	 *         [1] Rendering method.
+	 * @return A String array with three elements:
+	 *         [0] Rendering driver name chosen for rendering.
+	 *         [1] Rendering driver name chosen before any fallbacks were applied.
+	 *         [2] Rendering method.
+	 *         [3] Source where the rendering driver was chosen from.
+	 *         [4] Source where the rendering method was chosen from.
 	 */
-	public static native String[] getRendererInfo();
+	public static native String[] getRendererInfo(boolean p_vulkan_requirements_met);
 
 	/**
 	 * Used to access Godot's editor settings.

@@ -565,19 +565,14 @@ class Godot private constructor(val context: Context) {
 					!isEditorHint() &&
 					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
-			renderView = if (usesVulkan()) {
-				if (meetsVulkanRequirements(context.packageManager)) {
-					GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
-				} else if (canFallbackToOpenGL()) {
-					// Fallback to OpenGl.
-					GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
-				} else {
-					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
-				}
 
+			val nativeRenderer = getNativeRenderer();
+			if (nativeRenderer == "vulkan") {
+				renderView = GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
+			} else if (nativeRenderer == "opengl3") {
+				renderView = GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
 			} else {
-				// Fallback to OpenGl.
-				GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+				throw IllegalStateException("No native renderer is available.")
 			}
 
 			renderView?.let {
@@ -932,31 +927,25 @@ class Godot private constructor(val context: Context) {
 	 */
 	private fun isOnUiThread() = Looper.myLooper() == Looper.getMainLooper()
 
-	/**
-	 * Returns true if `Vulkan` is used for rendering.
+/**
+	 * Returns the native rendering driver.
 	 */
-	private fun usesVulkan(): Boolean {
-		val rendererInfo = GodotLib.getRendererInfo()
-		var renderingDeviceSource = "ProjectSettings"
-		var renderingDevice = rendererInfo[0]
-		var rendererSource = "ProjectSettings"
-		var renderer = rendererInfo[1]
-		val cmdline = commandLine
-		var index = cmdline.indexOf("--rendering-method")
-		if (index > -1 && cmdline.size > index + 1) {
-			rendererSource = "CommandLine"
-			renderer = cmdline.get(index + 1)
+	private fun getNativeRenderer(): String {
+		val rendererInfo = GodotLib.getRendererInfo(meetsVulkanRequirements(context.packageManager))
+		var renderingDriverChosen = rendererInfo[0]
+		var renderingDriverOriginal = rendererInfo[1]
+		var renderingMethod = rendererInfo[2]
+		var renderingDriverSource = rendererInfo[3]
+		var renderingMethodSource = rendererInfo[4]
+		Log.d(TAG, """renderingDevice: ${renderingDriverChosen} (${renderingDriverSource})
+			renderer: ${renderingMethod} (${renderingMethodSource})""")
+
+		if (renderingDriverOriginal == "vulkan" && renderingDriverChosen == "") {
+			// Throw the exception for the case where Vulkan failed to create and no fallback was available.
+			throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
 		}
-		index = cmdline.indexOf("--rendering-driver")
-		if (index > -1 && cmdline.size > index + 1) {
-			renderingDeviceSource = "CommandLine"
-			renderingDevice = cmdline.get(index + 1)
-		}
-		val result = ("forward_plus" == renderer || "mobile" == renderer) && "vulkan" == renderingDevice
-		Log.d(TAG, """usesVulkan(): ${result}
-			renderingDevice: ${renderingDevice} (${renderingDeviceSource})
-			renderer: ${renderer} (${rendererSource})""")
-		return result
+
+		return renderingDriverChosen;
 	}
 
 	/**
