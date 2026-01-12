@@ -2172,14 +2172,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/common/physics_jitter_fix", PROPERTY_HINT_RANGE, "0,2,0.001,or_greater"), 0.5));
-	
-	// Adaptive physics tick scaling: automatically increases physics tick rate when delta is too large
-	// Helps maintain physics accuracy without performance cost during slow-motion or frame drops
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::BOOL, "physics/common/enable_adaptive_physics_ticks"), false);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/adaptive_physics_ticks_min", PROPERTY_HINT_RANGE, "1,1000,1"), 60);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/adaptive_physics_ticks_max", PROPERTY_HINT_RANGE, "1,1000,1"), 240);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "physics/common/adaptive_physics_delta_threshold", PROPERTY_HINT_RANGE, "0.001,100.0,0.001"), 0.025);
-	
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 	if (max_fps >= 0) {
 		Engine::get_singleton()->set_max_fps(max_fps);
@@ -4786,47 +4778,16 @@ bool Main::iteration() {
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 
-	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
-	
-	int physics_ticks_per_second = Engine::get_singleton()->get_user_physics_ticks_per_second();
-	const int original_physics_ticks = physics_ticks_per_second;
-	
-	// Adaptive physics tick scaling: automatically increase physics tick rate when delta is too large
-	// This maintains physics accuracy without impacting CPU with manual sub-stepping
-	bool adaptive_enabled = GLOBAL_GET("physics/common/enable_adaptive_physics_ticks");
-	
-	if (adaptive_enabled) {
-		double delta_threshold = GLOBAL_GET("physics/common/adaptive_physics_delta_threshold");
-		double current_physics_step = 1.0 / physics_ticks_per_second;
-		double effective_physics_delta = current_physics_step * time_scale;
-		
-		if (effective_physics_delta > delta_threshold && delta_threshold > 0.0) {
-			int min_ticks = GLOBAL_GET("physics/common/adaptive_physics_ticks_min");
-			int max_ticks = GLOBAL_GET("physics/common/adaptive_physics_ticks_max");
-			double target_ticks = time_scale / delta_threshold;
-			int new_physics_ticks = MAX(1, (int)target_ticks);
-			new_physics_ticks = CLAMP(new_physics_ticks, min_ticks, max_ticks);
-			
-			if (new_physics_ticks != physics_ticks_per_second) {
-				physics_ticks_per_second = new_physics_ticks;
-			}
-		}
-	}
-	
+	const int physics_ticks_per_second = Engine::get_singleton()->get_user_physics_ticks_per_second();
 	const double physics_step = 1.0 / physics_ticks_per_second;
+
+	const double time_scale = Engine::get_singleton()->get_effective_time_scale();
 
 	MainFrameTime advance = main_timer_sync.advance(physics_step, physics_ticks_per_second);
 	double process_step = advance.process_step;
-	
-	// Safeguard against invalid process_step
-	if (process_step <= 0.0) {
-		process_step = 0.0001;
-	}
-	
 	double scaled_step = process_step * time_scale;
 
 	Engine::get_singleton()->_process_step = process_step;
-	Engine::get_singleton()->_physics_step = physics_step;
 	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
 
 	uint64_t physics_process_ticks = 0;
