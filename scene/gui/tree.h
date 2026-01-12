@@ -132,7 +132,7 @@ private:
 		}
 
 		Size2 get_icon_size() const;
-		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Color &p_color = Color()) const;
+		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Rect2i &p_region = Rect2i(), const Color &p_color = Color()) const;
 	};
 
 	mutable RID accessibility_row_element;
@@ -658,6 +658,8 @@ private:
 		int inner_item_margin_right = 0;
 		int inner_item_margin_top = 0;
 		int item_margin = 0;
+		int check_h_separation = 0;
+		int icon_h_separation = 0;
 		int button_margin = 0;
 		int icon_max_width = 0;
 		Point2 offset;

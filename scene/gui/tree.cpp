@@ -59,23 +59,23 @@ Size2 TreeItem::Cell::get_icon_size() const {
 	}
 }
 
-void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Color &p_color) const {
+void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size, const Rect2i &p_region, const Color &p_color) const {
 	if (icon.is_null()) {
 		return;
 	}
 
 	Size2i dsize = (p_size == Size2()) ? icon->get_size() : p_size;
 
-	if (icon_region == Rect2i()) {
+	if (p_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
 		if (icon_overlay.is_valid()) {
 			Vector2 offset = icon->get_size() - icon_overlay->get_size();
 			icon_overlay->draw_rect_region(p_where, Rect2(p_pos + offset, dsize), Rect2(Point2(), icon_overlay->get_size()), p_color);
 		}
 	} else {
-		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), p_region, p_color);
 		if (icon_overlay.is_valid()) {
-			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), p_region, p_color);
 		}
 	}
 }
@@ -1730,7 +1730,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
-			size.width += icon_size.width + parent_tree->theme_cache.h_separation;
+			size.width += icon_size.width + parent_tree->theme_cache.icon_h_separation;
 			content_height = MAX(content_height, icon_size.height);
 		}
 
@@ -2088,7 +2088,7 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 
 	int displayed_width = 0;
 	if (p_cell.icon.is_valid()) {
-		displayed_width += icon_size.width + theme_cache.h_separation;
+		displayed_width = MIN(displayed_width + icon_size.width + theme_cache.icon_h_separation, rect.size.width);
 	}
 	if (displayed_width + ts.width > rect.size.width) {
 		ts.width = rect.size.width - displayed_width;
@@ -2125,12 +2125,18 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 			}
 			p_cell.text_buf->draw(ci, draw_pos, p_color);
 		}
-		rect.position.x += ts.width + theme_cache.h_separation;
+		rect.position.x += ts.width + theme_cache.icon_h_separation;
 	}
 
 	if (p_cell.icon.is_valid()) {
-		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2)), icon_size, p_icon_color);
-		rect.position.x += icon_size.x + theme_cache.h_separation;
+		Point2 icon_pos = rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2));
+		Rect2i icon_region = (p_cell.icon_region == Rect2i()) ? Rect2i(Point2(), p_cell.icon->get_size()) : p_cell.icon_region;
+		if (icon_size.width > rect.size.width) {
+			icon_region.size.width = icon_region.size.width * rect.size.width / icon_size.width;
+			icon_size.width = rect.size.width;
+		}
+		p_cell.draw_icon(ci, icon_pos, icon_size, icon_region, p_icon_color);
+		rect.position.x += icon_size.x + theme_cache.icon_h_separation;
 	}
 
 	if (!rtl && ts.width > 0) {
@@ -2353,7 +2359,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			int text_width = item_width - theme_cache.inner_item_margin_left - theme_cache.inner_item_margin_right;
 			if (p_item->cells[i].icon.is_valid()) {
-				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.h_separation;
+				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.icon_h_separation;
 			}
 
 			p_item->cells.write[i].text_buf->set_width(text_width);
@@ -2548,7 +2554,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						}
 					}
 
-					int check_w = theme_cache.checked->get_width() + theme_cache.h_separation;
+					int check_w = theme_cache.checked->get_width() + theme_cache.check_h_separation;
 
 					text_pos.x += check_w;
 
@@ -3253,7 +3259,16 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				if (!c.text.is_empty()) {
 					_update_popup_menu(c);
 					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_position(get_screen_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - theme_cache.offset);
+
+					int pos_x = 0;
+					Point2 panel_ofs = theme_cache.panel_style->get_offset();
+					if (is_layout_rtl()) {
+						pos_x = get_size().width - col_ofs - panel_ofs.x - popup_menu->get_size().width;
+					} else {
+						pos_x = col_ofs + panel_ofs.x;
+					}
+					popup_menu->set_position(get_screen_position() + Point2i(pos_x, _get_title_button_height() + y_ofs + item_h + panel_ofs.y) - theme_cache.offset);
+
 					popup_menu->popup();
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
@@ -3503,6 +3518,7 @@ void Tree::value_editor_changed(double p_value) {
 void Tree::_update_popup_menu(const TreeItem::Cell &p_cell) {
 	if (popup_menu == nullptr) {
 		popup_menu = memnew(PopupMenu);
+		popup_menu->set_shrink_width(false);
 		popup_menu->hide();
 		add_child(popup_menu, false, INTERNAL_MODE_FRONT);
 		popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
@@ -4438,7 +4454,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		// Account for icon.
 		real_t icon_ofs = 0;
 		if (c.icon.is_valid()) {
-			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
+			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.icon_h_separation;
 		}
 
 		popup_rect.size = rect.size + Vector2(-icon_ofs, value_editor_height);
@@ -6883,6 +6899,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_right);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, inner_item_margin_top);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, item_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, check_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, button_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, icon_max_width);
 

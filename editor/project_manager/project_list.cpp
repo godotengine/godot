@@ -1208,7 +1208,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index);
+	select_project(clicked_index, true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,

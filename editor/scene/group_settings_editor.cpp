@@ -534,6 +534,8 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	tree->set_select_mode(Tree::SELECT_SINGLE);
 	tree->set_allow_reselect(true);
 
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(3);
 	tree->set_column_titles_visible(true);
 

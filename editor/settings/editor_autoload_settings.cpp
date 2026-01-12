@@ -958,6 +958,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	SET_DRAG_FORWARDING_GCD(tree, EditorAutoloadSettings);
 
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
 
