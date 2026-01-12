@@ -306,11 +306,17 @@ Vector3 AStar3D::get_closest_position_in_segment(const Vector3 &p_point) const {
 	return closest_point;
 }
 
-bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_path) {
+bool AStar3D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path) {
 	last_closest_point = nullptr;
 	pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if (!p_begin_point->enabled) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
+	if (!p_end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -319,11 +325,11 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
 
-	begin_point->g_score = 0;
-	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
-	begin_point->abs_g_score = 0;
-	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
-	open_list.push_back(begin_point);
+	p_begin_point->g_score = 0;
+	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	p_begin_point->abs_g_score = 0;
+	p_begin_point->abs_f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	open_list.push_back(p_begin_point);
 
 	while (!open_list.is_empty()) {
 		Point *p = open_list[0]; // The currently processed point.
@@ -333,7 +339,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 			last_closest_point = p;
 		}
 
-		if (p == end_point) {
+		if (p == p_end_point) {
 			found_route = true;
 			break;
 		}
@@ -347,6 +353,13 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 
 			if (!e->enabled || e->closed_pass == pass) {
 				continue;
+			}
+
+			if (neighbor_filter_enabled) {
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
 			}
 
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
@@ -363,7 +376,7 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
-			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 			e->abs_g_score = tentative_g_score;
 			e->abs_f_score = e->f_score - e->g_score;
 
@@ -421,12 +434,6 @@ Vector<Vector3> AStar3D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<Vector3>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 	Point *b = *b_entry;
 
-	if (a == b) {
-		Vector<Vector3> ret;
-		ret.push_back(a->pos);
-		return ret;
-	}
-
 	Point *begin_point = a;
 	Point *end_point = b;
 
@@ -475,12 +482,6 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 	Point *b = *b_entry;
 
-	if (a == b) {
-		Vector<int64_t> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
 	Point *begin_point = a;
 	Point *end_point = b;
 
@@ -520,6 +521,14 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
+bool AStar3D::is_neighbor_filter_enabled() const {
+	return neighbor_filter_enabled;
+}
+
+void AStar3D::set_neighbor_filter_enabled(bool p_enabled) {
+	neighbor_filter_enabled = p_enabled;
+}
+
 void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	Point **p_entry = points.getptr(p_id);
 	ERR_FAIL_COND_MSG(!p_entry, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
@@ -551,6 +560,9 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar3D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar3D::is_point_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_neighbor_filter_enabled", "enabled"), &AStar3D::set_neighbor_filter_enabled);
+	ClassDB::bind_method(D_METHOD("is_neighbor_filter_enabled"), &AStar3D::is_neighbor_filter_enabled);
+
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar3D::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar3D::disconnect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar3D::are_points_connected, DEFVAL(true));
@@ -566,8 +578,11 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }
 
 AStar3D::~AStar3D() {
@@ -615,6 +630,14 @@ Vector<int64_t> AStar2D::get_point_connections(int64_t p_id) {
 
 PackedInt64Array AStar2D::get_point_ids() {
 	return astar.get_point_ids();
+}
+
+bool AStar2D::is_neighbor_filter_enabled() const {
+	return astar.neighbor_filter_enabled;
+}
+
+void AStar2D::set_neighbor_filter_enabled(bool p_enabled) {
+	astar.neighbor_filter_enabled = p_enabled;
 }
 
 void AStar2D::set_point_disabled(int64_t p_id, bool p_disabled) {
@@ -705,11 +728,6 @@ Vector<Vector2> AStar2D::get_point_path(int64_t p_from_id, int64_t p_to_id, bool
 	ERR_FAIL_COND_V_MSG(!b_entry, Vector<Vector2>(), vformat("Can't get point path. Point with id: %d doesn't exist.", p_to_id));
 	AStar3D::Point *b = *b_entry;
 
-	if (a == b) {
-		Vector<Vector2> ret = { Vector2(a->pos.x, a->pos.y) };
-		return ret;
-	}
-
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
@@ -758,12 +776,6 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	ERR_FAIL_COND_V_MSG(!to_entry, Vector<int64_t>(), vformat("Can't get id path. Point with id: %d doesn't exist.", p_to_id));
 	AStar3D::Point *b = *to_entry;
 
-	if (a == b) {
-		Vector<int64_t> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
 	AStar3D::Point *begin_point = a;
 	AStar3D::Point *end_point = b;
 
@@ -803,11 +815,17 @@ Vector<int64_t> AStar2D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
-bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, bool p_allow_partial_path) {
+bool AStar2D::_solve(AStar3D::Point *p_begin_point, AStar3D::Point *p_end_point, bool p_allow_partial_path) {
 	astar.last_closest_point = nullptr;
 	astar.pass++;
 
-	if (!end_point->enabled && !p_allow_partial_path) {
+	if (!p_begin_point->enabled) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
+	if (!p_end_point->enabled && !p_allow_partial_path) {
 		return false;
 	}
 
@@ -816,11 +834,11 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 	LocalVector<AStar3D::Point *> open_list;
 	SortArray<AStar3D::Point *, AStar3D::SortPoints> sorter;
 
-	begin_point->g_score = 0;
-	begin_point->f_score = _estimate_cost(begin_point->id, end_point->id);
-	begin_point->abs_g_score = 0;
-	begin_point->abs_f_score = _estimate_cost(begin_point->id, end_point->id);
-	open_list.push_back(begin_point);
+	p_begin_point->g_score = 0;
+	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	p_begin_point->abs_g_score = 0;
+	p_begin_point->abs_f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
+	open_list.push_back(p_begin_point);
 
 	while (!open_list.is_empty()) {
 		AStar3D::Point *p = open_list[0]; // The currently processed point.
@@ -830,7 +848,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 			astar.last_closest_point = p;
 		}
 
-		if (p == end_point) {
+		if (p == p_end_point) {
 			found_route = true;
 			break;
 		}
@@ -844,6 +862,13 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 
 			if (!e->enabled || e->closed_pass == astar.pass) {
 				continue;
+			}
+
+			if (astar.neighbor_filter_enabled) {
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
 			}
 
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
@@ -860,7 +885,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 
 			e->prev_point = p;
 			e->g_score = tentative_g_score;
-			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
+			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 			e->abs_g_score = tentative_g_score;
 			e->abs_f_score = e->f_score - e->g_score;
 
@@ -887,6 +912,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar2D::get_point_connections);
 	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar2D::get_point_ids);
 
+	ClassDB::bind_method(D_METHOD("set_neighbor_filter_enabled", "enabled"), &AStar2D::set_neighbor_filter_enabled);
+	ClassDB::bind_method(D_METHOD("is_neighbor_filter_enabled"), &AStar2D::is_neighbor_filter_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
@@ -905,6 +933,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }

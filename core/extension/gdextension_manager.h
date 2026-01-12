@@ -31,6 +31,9 @@
 #pragma once
 
 #include "core/extension/gdextension.h"
+#include "core/variant/native_ptr.h"
+
+GDVIRTUAL_NATIVE_PTR(GDExtensionInitializationFunction)
 
 class GDExtensionManager : public Object {
 	GDCLASS(GDExtensionManager, Object);
@@ -57,6 +60,7 @@ public:
 
 private:
 	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load);
+	void _finish_load_extension(const Ref<GDExtension> &p_extension);
 	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
 
 #ifdef TOOLS_ENABLED
@@ -65,6 +69,7 @@ private:
 
 public:
 	LoadStatus load_extension(const String &p_path);
+	LoadStatus load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func);
 	LoadStatus load_extension_with_loader(const String &p_path, const Ref<GDExtensionLoader> &p_loader);
 	LoadStatus reload_extension(const String &p_path);
 	LoadStatus unload_extension(const String &p_path);

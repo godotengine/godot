@@ -360,9 +360,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < ic; j++) {
-					facesw[widx++] = vr[ir[j - 2]];
-					facesw[widx++] = vr[ir[j - 1]];
-					facesw[widx++] = vr[ir[j]];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j - 1]];
+						facesw[widx++] = vr[ir[j]];
+					} else {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j]];
+						facesw[widx++] = vr[ir[j - 1]];
+					}
 				}
 			}
 
@@ -373,9 +379,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < vc; j++) {
-					facesw[widx++] = vr[j - 2];
-					facesw[widx++] = vr[j - 1];
-					facesw[widx++] = vr[j];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j - 1];
+						facesw[widx++] = vr[j];
+					} else {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j];
+						facesw[widx++] = vr[j - 1];
+					}
 				}
 			}
 		}
@@ -552,7 +564,7 @@ Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplif
 		Geometry3D::MeshData md;
 		Error err = ConvexHullComputer::convex_hull(vertices, md);
 		if (err == OK) {
-			shape->set_points(md.vertices);
+			shape->set_points(Vector<Vector3>(md.vertices));
 			return shape;
 		} else {
 			ERR_PRINT("Convex shape cleaning failed, falling back to simpler process.");
@@ -1679,6 +1691,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 	}
 
 	surfaces.clear();
+	clear_cache();
 
 	aabb = AABB();
 	for (int i = 0; i < surface_data.size(); i++) {
@@ -2348,7 +2361,7 @@ ArrayMesh::ArrayMesh() {
 ArrayMesh::~ArrayMesh() {
 	if (mesh.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(mesh);
+		RenderingServer::get_singleton()->free_rid(mesh);
 	}
 }
 ///////////////
@@ -2364,5 +2377,5 @@ PlaceholderMesh::PlaceholderMesh() {
 
 PlaceholderMesh::~PlaceholderMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(rid);
+	RS::get_singleton()->free_rid(rid);
 }

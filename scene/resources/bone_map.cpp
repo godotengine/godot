@@ -30,6 +30,8 @@
 
 #include "bone_map.h"
 
+#include "core/config/engine.h"
+
 bool BoneMap::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 	if (path.begins_with("bone_map/")) {
@@ -171,6 +173,9 @@ void BoneMap::_bind_methods() {
 }
 
 void BoneMap::_validate_property(PropertyInfo &property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (property.name == "bonemap" || property.name == "profile") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

@@ -113,7 +113,7 @@ class VariantConstructor {
 
 	template <size_t... Is>
 	static _FORCE_INLINE_ void validated_construct_helper(T &base, const Variant **p_args, IndexSequence<Is...>) {
-		base = T((*VariantGetInternalPtr<P>::get_ptr(p_args[Is]))...);
+		base = T((VariantInternalAccessor<P>::get(p_args[Is]))...);
 	}
 
 	template <size_t... Is>
@@ -125,12 +125,12 @@ public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		r_error.error = Callable::CallError::CALL_OK;
 		VariantTypeChanger<T>::change(&r_ret);
-		construct_helper(*VariantGetInternalPtr<T>::get_ptr(&r_ret), p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+		construct_helper(VariantInternalAccessor<T>::get(&r_ret), p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<T>::change(r_ret);
-		validated_construct_helper(*VariantGetInternalPtr<T>::get_ptr(r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
+		validated_construct_helper(VariantInternalAccessor<T>::get(r_ret), p_args, BuildIndexSequence<sizeof...(P)>{});
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		ptr_construct_helper(base, p_args, BuildIndexSequence<sizeof...(P)>{});
@@ -249,7 +249,7 @@ public:
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<T>::change(r_ret);
-		const String &src_str = *VariantGetInternalPtr<String>::get_ptr(p_args[0]);
+		const String &src_str = VariantInternalAccessor<String>::get(p_args[0]);
 		T ret = Variant();
 		if (r_ret->get_type() == Variant::Type::INT) {
 			ret = src_str.to_int();
@@ -302,9 +302,9 @@ public:
 		}
 
 		if (p_args[1]->get_type() == Variant::STRING_NAME) {
-			method = *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]);
+			method = VariantInternalAccessor<StringName>::get(p_args[1]);
 		} else if (p_args[1]->get_type() == Variant::STRING) {
-			method = *VariantGetInternalPtr<String>::get_ptr(p_args[1]);
+			method = VariantInternalAccessor<String>::get(p_args[1]);
 		} else {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
@@ -313,12 +313,12 @@ public:
 		}
 
 		VariantTypeChanger<Callable>::change(&r_ret);
-		*VariantGetInternalPtr<Callable>::get_ptr(&r_ret) = Callable(object_id, method);
+		VariantInternalAccessor<Callable>::get(&r_ret) = Callable(object_id, method);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<Callable>::change(r_ret);
-		*VariantGetInternalPtr<Callable>::get_ptr(r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+		VariantInternalAccessor<Callable>::get(r_ret) = Callable(VariantInternal::get_object_id(p_args[0]), VariantInternalAccessor<StringName>::get(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Callable>::construct(Callable(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
@@ -359,9 +359,9 @@ public:
 		}
 
 		if (p_args[1]->get_type() == Variant::STRING_NAME) {
-			method = *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]);
+			method = VariantInternalAccessor<StringName>::get(p_args[1]);
 		} else if (p_args[1]->get_type() == Variant::STRING) {
-			method = *VariantGetInternalPtr<String>::get_ptr(p_args[1]);
+			method = VariantInternalAccessor<String>::get(p_args[1]);
 		} else {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
@@ -370,12 +370,12 @@ public:
 		}
 
 		VariantTypeChanger<Signal>::change(&r_ret);
-		*VariantGetInternalPtr<Signal>::get_ptr(&r_ret) = Signal(object_id, method);
+		VariantInternalAccessor<Signal>::get(&r_ret) = Signal(object_id, method);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<Signal>::change(r_ret);
-		*VariantGetInternalPtr<Signal>::get_ptr(r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), *VariantGetInternalPtr<StringName>::get_ptr(p_args[1]));
+		VariantInternalAccessor<Signal>::get(r_ret) = Signal(VariantInternal::get_object_id(p_args[0]), VariantInternalAccessor<StringName>::get(p_args[1]));
 	}
 	static void ptr_construct(void *base, const void **p_args) {
 		PtrConstruct<Signal>::construct(Signal(PtrToArg<Object *>::convert(p_args[0]), PtrToArg<StringName>::convert(p_args[1])), base);
@@ -436,20 +436,20 @@ public:
 			return;
 		}
 
-		const Dictionary &base_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		const Dictionary &base_dict = VariantInternalAccessor<Dictionary>::get(p_args[0]);
 		const uint32_t key_type = p_args[1]->operator uint32_t();
-		const StringName &key_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		const StringName &key_class_name = VariantInternalAccessor<StringName>::get(p_args[2]);
 		const uint32_t value_type = p_args[4]->operator uint32_t();
-		const StringName &value_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[5]);
+		const StringName &value_class_name = VariantInternalAccessor<StringName>::get(p_args[5]);
 		r_ret = Dictionary(base_dict, key_type, key_class_name, *p_args[3], value_type, value_class_name, *p_args[6]);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		const Dictionary &base_dict = *VariantGetInternalPtr<Dictionary>::get_ptr(p_args[0]);
+		const Dictionary &base_dict = VariantInternalAccessor<Dictionary>::get(p_args[0]);
 		const uint32_t key_type = p_args[1]->operator uint32_t();
-		const StringName &key_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		const StringName &key_class_name = VariantInternalAccessor<StringName>::get(p_args[2]);
 		const uint32_t value_type = p_args[4]->operator uint32_t();
-		const StringName &value_class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[5]);
+		const StringName &value_class_name = VariantInternalAccessor<StringName>::get(p_args[5]);
 		*r_ret = Dictionary(base_dict, key_type, key_class_name, *p_args[3], value_type, value_class_name, *p_args[6]);
 	}
 
@@ -528,15 +528,15 @@ public:
 			return;
 		}
 
-		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const Array &base_arr = VariantInternalAccessor<Array>::get(p_args[0]);
 		const uint32_t type = p_args[1]->operator uint32_t();
 		r_ret = Array(base_arr, type, *p_args[2], *p_args[3]);
 	}
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
-		const Array &base_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
+		const Array &base_arr = VariantInternalAccessor<Array>::get(p_args[0]);
 		const uint32_t type = p_args[1]->operator uint32_t();
-		const StringName &class_name = *VariantGetInternalPtr<StringName>::get_ptr(p_args[2]);
+		const StringName &class_name = VariantInternalAccessor<StringName>::get(p_args[2]);
 		*r_ret = Array(base_arr, type, class_name, *p_args[3]);
 	}
 
@@ -591,8 +591,8 @@ public:
 		}
 
 		r_ret = Array();
-		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(&r_ret);
-		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
+		Array &dst_arr = VariantInternalAccessor<Array>::get(&r_ret);
+		const T &src_arr = VariantInternalAccessor<T>::get(p_args[0]);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);
@@ -603,8 +603,8 @@ public:
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		*r_ret = Array();
-		Array &dst_arr = *VariantGetInternalPtr<Array>::get_ptr(r_ret);
-		const T &src_arr = *VariantGetInternalPtr<T>::get_ptr(p_args[0]);
+		Array &dst_arr = VariantInternalAccessor<Array>::get(r_ret);
+		const T &src_arr = VariantInternalAccessor<T>::get(p_args[0]);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);
@@ -650,8 +650,8 @@ public:
 		}
 
 		VariantTypeChanger<T>::change(&r_ret);
-		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
-		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(&r_ret);
+		const Array &src_arr = VariantInternalAccessor<Array>::get(p_args[0]);
+		T &dst_arr = VariantInternalAccessor<T>::get(&r_ret);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);
@@ -662,8 +662,8 @@ public:
 
 	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
 		VariantTypeChanger<T>::change(r_ret);
-		const Array &src_arr = *VariantGetInternalPtr<Array>::get_ptr(p_args[0]);
-		T &dst_arr = *VariantGetInternalPtr<T>::get_ptr(r_ret);
+		const Array &src_arr = VariantInternalAccessor<Array>::get(p_args[0]);
+		T &dst_arr = VariantInternalAccessor<T>::get(r_ret);
 
 		int size = src_arr.size();
 		dst_arr.resize(size);

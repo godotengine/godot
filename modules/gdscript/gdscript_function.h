@@ -48,29 +48,27 @@ public:
 	Vector<GDScriptDataType> container_element_types;
 
 	enum Kind {
-		UNINITIALIZED,
+		VARIANT, // Can be any type.
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
 	};
 
-	Kind kind = UNINITIALIZED;
+	Kind kind = VARIANT;
 
-	bool has_type = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
 
-	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) {
-			return true; // Can't type check
-		}
+	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
+	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		switch (kind) {
-			case UNINITIALIZED:
-				break;
+			case VARIANT: {
+				return true;
+			} break;
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
@@ -182,7 +180,7 @@ public:
 	}
 
 	bool can_contain_object() const {
-		if (has_type && kind == BUILTIN) {
+		if (kind == BUILTIN) {
 			switch (builtin_type) {
 				case Variant::ARRAY:
 					if (has_container_element_type(0)) {
@@ -234,9 +232,20 @@ public:
 
 	GDScriptDataType() = default;
 
+	bool operator==(const GDScriptDataType &p_other) const {
+		return kind == p_other.kind &&
+				builtin_type == p_other.builtin_type &&
+				native_type == p_other.native_type &&
+				(script_type == p_other.script_type || script_type_ref == p_other.script_type_ref) &&
+				container_element_types == p_other.container_element_types;
+	}
+
+	bool operator!=(const GDScriptDataType &p_other) const {
+		return !(*this == p_other);
+	}
+
 	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
-		has_type = p_other.has_type;
 		builtin_type = p_other.builtin_type;
 		native_type = p_other.native_type;
 		script_type = p_other.script_type;
@@ -562,6 +571,7 @@ public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
 
 	struct CallState {
+		Signal completed;
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
 #ifdef DEBUG_ENABLED

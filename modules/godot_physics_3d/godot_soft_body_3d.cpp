@@ -33,7 +33,7 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 // Based on Bullet soft body.
 
@@ -136,6 +136,10 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		return;
 	}
 
+	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+	// This method blocks on the main thread to return data, but the main thread may be
+	// blocked waiting on us in PhysicsServer3D::sync().
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 

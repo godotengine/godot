@@ -28,9 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_export.h"
+#include "editor_export_preset.h"
+#include "editor_export_preset.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
 	values[p_name] = p_value;
@@ -255,6 +259,14 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 	return files;
 }
 
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return selected_files;
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
+}
+
 Dictionary EditorExportPreset::get_customized_files() const {
 	Dictionary files;
 	for (const KeyValue<String, FileExportMode> &E : customized_files) {
@@ -316,17 +328,8 @@ bool EditorExportPreset::is_runnable() const {
 	return runnable;
 }
 
-void EditorExportPreset::set_advanced_options_enabled(bool p_enabled) {
-	if (advanced_options_enabled == p_enabled) {
-		return;
-	}
-	advanced_options_enabled = p_enabled;
-	EditorExport::singleton->save_presets();
-	notify_property_list_changed();
-}
-
 bool EditorExportPreset::are_advanced_options_enabled() const {
-	return advanced_options_enabled;
+	return EDITOR_GET("_export_preset_advanced_mode");
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -447,6 +450,51 @@ Vector<String> EditorExportPreset::get_patches() const {
 	return patches;
 }
 
+void EditorExportPreset::set_patch_delta_encoding_enabled(bool p_enable) {
+	patch_delta_encoding_enabled = p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::is_patch_delta_encoding_enabled() const {
+	return patch_delta_encoding_enabled;
+}
+
+void EditorExportPreset::set_patch_delta_zstd_level(int p_level) {
+	patch_delta_zstd_level = p_level;
+	EditorExport::singleton->save_presets();
+}
+
+int EditorExportPreset::get_patch_delta_zstd_level() const {
+	return patch_delta_zstd_level;
+}
+
+void EditorExportPreset::set_patch_delta_min_reduction(double p_ratio) {
+	patch_delta_min_reduction = p_ratio;
+	EditorExport::singleton->save_presets();
+}
+
+double EditorExportPreset::get_patch_delta_min_reduction() const {
+	return patch_delta_min_reduction;
+}
+
+void EditorExportPreset::set_patch_delta_include_filter(const String &p_filter) {
+	patch_delta_include_filter = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch_delta_include_filter() const {
+	return patch_delta_include_filter;
+}
+
+void EditorExportPreset::set_patch_delta_exclude_filter(const String &p_filter) {
+	patch_delta_exclude_filter = p_filter;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch_delta_exclude_filter() const {
+	return patch_delta_exclude_filter;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
@@ -510,12 +558,12 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
-void EditorExportPreset::set_script_export_mode(int p_mode) {
+void EditorExportPreset::set_script_export_mode(ScriptExportMode p_mode) {
 	script_mode = p_mode;
 	EditorExport::singleton->save_presets();
 }
 
-int EditorExportPreset::get_script_export_mode() const {
+EditorExportPreset::ScriptExportMode EditorExportPreset::get_script_export_mode() const {
 	return script_mode;
 }
 

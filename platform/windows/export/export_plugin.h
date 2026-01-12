@@ -32,8 +32,8 @@
 
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/settings/editor_settings.h"
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -90,12 +90,12 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual void cleanup() override;
 
-	EditorExportPlatformWindows();
+	virtual void initialize() override;
 };

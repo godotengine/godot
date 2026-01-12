@@ -1092,7 +1092,7 @@
 			<return type="void" />
 			<param index="0" name="step" type="float" />
 			<description>
-				Called every physics step to process the physics simulation. [param step] is the time elapsed since the last physics step, in seconds. It is usually the same as [method Node.get_physics_process_delta_time].
+				Called every physics step to process the physics simulation. [param step] is the time elapsed since the last physics step, in seconds. It is usually the same as the value returned by [method Node.get_physics_process_delta_time].
 				Overridable version of [PhysicsServer2D]'s internal [code skip-lint]step[/code] method.
 			</description>
 		</method>

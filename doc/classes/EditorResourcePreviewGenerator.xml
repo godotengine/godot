@@ -16,7 +16,7 @@
 				By default, it returns [code]false[/code].
 			</description>
 		</method>
-		<method name="_generate" qualifiers="virtual const">
+		<method name="_generate" qualifiers="virtual required const">
 			<return type="Texture2D" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="size" type="Vector2i" />
@@ -47,11 +47,18 @@
 				By default, it returns [code]false[/code].
 			</description>
 		</method>
-		<method name="_handles" qualifiers="virtual const">
+		<method name="_handles" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="type" type="String" />
 			<description>
 				Returns [code]true[/code] if your generator supports the resource of type [param type].
+			</description>
+		</method>
+		<method name="request_draw_and_wait" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Call from within [method _generate] to request the rendering server draw to the [param viewport].
 			</description>
 		</method>
 	</methods>

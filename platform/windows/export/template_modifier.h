@@ -65,6 +65,7 @@ class TemplateModifier {
 		static const uint16_t SIZE = 8;
 		static const uint32_t ICON = 0x03;
 		static const uint32_t GROUP_ICON = 0x0e;
+		static const uint32_t MANIFEST = 0x18;
 		static const uint32_t VERSION = 0x10;
 		static const uint32_t ENGLISH = 0x0409;
 		static const uint32_t HIGH_BIT = 0x80000000;
@@ -153,6 +154,13 @@ class TemplateModifier {
 		VersionInfo();
 	};
 
+	struct ManifestInfo : Structure {
+		String manifest;
+
+		Vector<uint8_t> save() const;
+		ManifestInfo() {}
+	};
+
 	struct IconEntry : ByteStream {
 		static const uint32_t SIZE = 16;
 
@@ -215,8 +223,9 @@ class TemplateModifier {
 	uint32_t _get_pe_header_offset(Ref<FileAccess> p_executable) const;
 	Vector<SectionEntry> _get_section_entries(Ref<FileAccess> p_executable) const;
 	GroupIcon _create_group_icon(const String &p_icon_path) const;
+	ManifestInfo _create_manifest_info() const;
 	VersionInfo _create_version_info(const HashMap<String, String> &p_strings) const;
-	Vector<uint8_t> _create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info) const;
+	Vector<uint8_t> _create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info, const ManifestInfo &p_manifest_info) const;
 	Error _truncate(const String &p_executable_path, uint32_t p_size) const;
 	HashMap<String, String> _get_strings(const Ref<EditorExportPreset> &p_preset) const;
 	Error _modify_template(const Ref<EditorExportPreset> &p_preset, const String &p_template_path, const String &p_icon_path) const;

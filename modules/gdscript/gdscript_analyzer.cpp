@@ -46,7 +46,7 @@
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
-#include "editor/renames_map_3_to_4.h"
+#include "editor/project_upgrade/renames_map_3_to_4.h"
 #endif
 
 #define UNNAMED_ENUM "<anonymous enum>"
@@ -492,7 +492,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				}
 			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
 				const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(name);
-				if (info.path.get_extension().to_lower() != GDScriptLanguage::get_singleton()->get_extension()) {
+				if (!info.path.has_extension(GDScriptLanguage::get_singleton()->get_extension())) {
 					push_error(vformat(R"(Singleton %s is not a GDScript.)", info.name), id);
 					return ERR_PARSE_ERROR;
 				}
@@ -1540,12 +1540,12 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					if (member.function->is_abstract) {
 						if (base_class == p_class) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
-							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract methods. Mark the class as abstract or remove "abstract" from all methods in this class.)*", class_name), p_class);
+							push_error(vformat(R"*(Class "%s" is not abstract but contains abstract methods. Mark the class as "@abstract" or remove "@abstract" from all methods in this class.)*", class_name), p_class);
 							break;
 						} else if (!implemented_funcs.has(member.function->identifier->name)) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
 							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
-							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as abstract.)*", class_name, base_class_name, member.function->identifier->name), p_class);
+							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as "@abstract".)*", class_name, base_class_name, member.function->identifier->name), p_class);
 							break;
 						}
 					} else {
@@ -1987,6 +1987,22 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	}
 	p_function->resolved_body = true;
 
+	if (p_function->body->statements.is_empty()) {
+		// Non-abstract functions must have a body.
+		if (p_function->source_lambda != nullptr) {
+			push_error(R"(A lambda function must have a ":" followed by a body.)", p_function);
+		} else if (!p_function->is_abstract) {
+			push_error(R"(A function must either have a ":" followed by a body, or be marked as "@abstract".)", p_function);
+		}
+		return;
+	} else {
+		// Abstract functions must not have a body.
+		if (p_function->is_abstract) {
+			push_error(R"(An abstract function cannot have a body.)", p_function->body);
+			return;
+		}
+	}
+
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 
@@ -1999,7 +2015,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		// Use the suite inferred type if return isn't explicitly set.
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
-		if (!p_function->is_abstract && !p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
+		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
 	}
@@ -3086,7 +3102,13 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 #ifdef DEBUG_ENABLED
-	if (p_binary_op->variant_op == Variant::OP_DIVIDE && left_type.builtin_type == Variant::INT && right_type.builtin_type == Variant::INT) {
+	if (p_binary_op->variant_op == Variant::OP_DIVIDE &&
+			(left_type.builtin_type == Variant::INT ||
+					left_type.builtin_type == Variant::VECTOR2I ||
+					left_type.builtin_type == Variant::VECTOR3I ||
+					left_type.builtin_type == Variant::VECTOR4I) &&
+			(right_type.builtin_type == Variant::INT ||
+					right_type.builtin_type == left_type.builtin_type)) {
 		parser->push_warning(p_binary_op, GDScriptWarning::INTEGER_DIVISION);
 	}
 #endif // DEBUG_ENABLED
@@ -3742,8 +3764,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 	}
 
-	if (call_type.is_coroutine && !p_is_await && !p_is_root) {
-		push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
+	if (call_type.is_coroutine && !p_is_await) {
+		if (p_is_root) {
+#ifdef DEBUG_ENABLED
+			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT);
+#endif // DEBUG_ENABLED
+		} else {
+			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
+		}
 	}
 
 	p_call->set_datatype(call_type);
@@ -3805,7 +3833,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 }
 
 void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
-	HashMap<Variant, GDScriptParser::ExpressionNode *, VariantHasher, StringLikeVariantComparator> elements;
+	HashMap<Variant, GDScriptParser::ExpressionNode *, HashMapHasherDefault, StringLikeVariantComparator> elements;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
@@ -4423,6 +4451,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
 		case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
 		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
+		case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 			break;
 	}
 
@@ -4493,6 +4522,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 				case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 				case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
 				case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
+				case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 					return; // No need to capture.
 			}
 
@@ -4525,6 +4555,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (class_exists(name)) {
+		p_identifier->source = GDScriptParser::IdentifierNode::NATIVE_CLASS;
 		p_identifier->set_datatype(make_native_meta_type(name));
 		return;
 	}
@@ -5976,7 +6007,7 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		if (Variant::has_utility_function(name)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 			return;
-		} else if (ClassDB::class_exists(name)) {
+		} else if (class_exists(name)) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "native class");
 			return;
 		} else if (ScriptServer::is_global_class(name)) {
@@ -6384,7 +6415,7 @@ void GDScriptAnalyzer::resolve_pending_lambda_bodies() {
 	static_context = previous_static_context;
 }
 
-bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
+bool GDScriptAnalyzer::class_exists(const StringName &p_class) {
 	return ClassDB::class_exists(p_class) && ClassDB::is_class_exposed(p_class);
 }
 

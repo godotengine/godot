@@ -163,7 +163,7 @@ thai_pua_shape (hb_codepoint_t u, thai_action_t action, hb_font_t *font)
 }
 
 
-static enum thai_above_state_t
+static const enum thai_above_state_t
 {     /* Cluster above looks like: */
   T0, /*  ⣤                      */
   T1, /*     ⣼                   */
@@ -191,7 +191,7 @@ static const struct thai_above_state_machine_edge_t {
 };
 
 
-static enum thai_below_state_t
+static const enum thai_below_state_t
 {
   B0, /* No descender */
   B1, /* Removable descender */
@@ -334,7 +334,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
 
     /* Is SARA AM. Decompose and reorder. */
     (void) buffer->output_glyph (NIKHAHIT_FROM_SARA_AM (u));
-    _hb_glyph_info_set_continuation (&buffer->prev());
+    _hb_glyph_info_set_continuation (&buffer->prev(), buffer);
     if (unlikely (!buffer->replace_glyph (SARA_AA_FROM_SARA_AM (u)))) break;
 
     /* Make Nikhahit be recognized as a ccc=0 mark when zeroing widths. */
@@ -360,7 +360,7 @@ preprocess_text_thai (const hb_ot_shape_plan_t *plan,
     {
       /* Since we decomposed, and NIKHAHIT is combining, merge clusters with the
        * previous cluster. */
-      if (start && buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+      if (start)
 	buffer->merge_out_clusters (start - 1, end);
     }
   }

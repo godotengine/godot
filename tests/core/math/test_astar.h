@@ -209,151 +209,28 @@ TEST_CASE("[AStar3D] Add/Remove") {
 			CHECK_FALSE(a.are_points_connected(0, j, true));
 		}
 	}
-	// It's been great work, cheers. \(^ ^)/
 }
 
-TEST_CASE("[Stress][AStar3D] Find paths") {
-	// Random stress tests with Floyd-Warshall.
-	constexpr int N = 30;
-	Math::seed(0);
+TEST_CASE("[AStar3D] Path from disabled point is empty") {
+	AStar3D a;
+	Vector3 p1(0, 0, 0);
+	Vector3 p2(0, 1, 0);
+	a.add_point(1, p1);
+	a.add_point(2, p2);
+	a.connect_points(1, 2);
 
-	for (int test = 0; test < 1000; test++) {
-		AStar3D a;
-		Vector3 p[N];
-		bool adj[N][N] = { { false } };
+	CHECK_EQ(a.get_id_path(1, 1), Vector<int64_t>{ 1 });
+	CHECK_EQ(a.get_id_path(1, 2), Vector<int64_t>{ 1, 2 });
 
-		// Assign initial coordinates.
-		for (int u = 0; u < N; u++) {
-			p[u].x = Math::rand() % 100;
-			p[u].y = Math::rand() % 100;
-			p[u].z = Math::rand() % 100;
-			a.add_point(u, p[u]);
-		}
-		// Generate a random sequence of operations.
-		for (int i = 0; i < 1000; i++) {
-			// Pick two different vertices.
-			int u, v;
-			u = Math::rand() % N;
-			v = Math::rand() % (N - 1);
-			if (u == v) {
-				v = N - 1;
-			}
-			// Pick a random operation.
-			int op = Math::rand();
-			switch (op % 9) {
-				case 0:
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-				case 5:
-					// Add edge (u, v); possibly bidirectional.
-					a.connect_points(u, v, op % 2);
-					adj[u][v] = true;
-					if (op % 2) {
-						adj[v][u] = true;
-					}
-					break;
-				case 6:
-				case 7:
-					// Remove edge (u, v); possibly bidirectional.
-					a.disconnect_points(u, v, op % 2);
-					adj[u][v] = false;
-					if (op % 2) {
-						adj[v][u] = false;
-					}
-					break;
-				case 8:
-					// Remove point u and add it back; clears adjacent edges and changes coordinates.
-					a.remove_point(u);
-					p[u].x = Math::rand() % 100;
-					p[u].y = Math::rand() % 100;
-					p[u].z = Math::rand() % 100;
-					a.add_point(u, p[u]);
-					for (v = 0; v < N; v++) {
-						adj[u][v] = adj[v][u] = false;
-					}
-					break;
-			}
-		}
-		// Floyd-Warshall.
-		float d[N][N];
-		for (int u = 0; u < N; u++) {
-			for (int v = 0; v < N; v++) {
-				d[u][v] = (u == v || adj[u][v]) ? p[u].distance_to(p[v]) : Math::INF;
-			}
-		}
-		for (int w = 0; w < N; w++) {
-			for (int u = 0; u < N; u++) {
-				for (int v = 0; v < N; v++) {
-					if (d[u][v] > d[u][w] + d[w][v]) {
-						d[u][v] = d[u][w] + d[w][v];
-					}
-				}
-			}
-		}
-		// Display statistics.
-		int count = 0;
-		for (int u = 0; u < N; u++) {
-			for (int v = 0; v < N; v++) {
-				if (adj[u][v]) {
-					count++;
-				}
-			}
-		}
-		print_verbose(vformat("Test #%4d: %3d edges, ", test + 1, count));
-		count = 0;
-		for (int u = 0; u < N; u++) {
-			for (int v = 0; v < N; v++) {
-				if (!Math::is_inf(d[u][v])) {
-					count++;
-				}
-			}
-		}
-		print_verbose(vformat("%3d/%d pairs of reachable points\n", count - N, N * (N - 1)));
+	CHECK_EQ(a.get_point_path(1, 1), Vector<Vector3>{ p1 });
+	CHECK_EQ(a.get_point_path(1, 2), Vector<Vector3>{ p1, p2 });
 
-		// Check A*'s output.
-		bool match = true;
-		for (int u = 0; u < N; u++) {
-			for (int v = 0; v < N; v++) {
-				if (u != v) {
-					Vector<int64_t> route = a.get_id_path(u, v);
-					if (!Math::is_inf(d[u][v])) {
-						// Reachable.
-						if (route.size() == 0) {
-							print_verbose(vformat("From %d to %d: A* did not find a path\n", u, v));
-							match = false;
-							goto exit;
-						}
-						float astar_dist = 0;
-						for (int i = 1; i < route.size(); i++) {
-							if (!adj[route[i - 1]][route[i]]) {
-								print_verbose(vformat("From %d to %d: edge (%d, %d) does not exist\n",
-										u, v, route[i - 1], route[i]));
-								match = false;
-								goto exit;
-							}
-							astar_dist += p[route[i - 1]].distance_to(p[route[i]]);
-						}
-						if (!Math::is_equal_approx(astar_dist, d[u][v])) {
-							print_verbose(vformat("From %d to %d: Floyd-Warshall gives %.6f, A* gives %.6f\n",
-									u, v, d[u][v], astar_dist));
-							match = false;
-							goto exit;
-						}
-					} else {
-						// Unreachable.
-						if (route.size() > 0) {
-							print_verbose(vformat("From %d to %d: A* somehow found a nonexistent path\n", u, v));
-							match = false;
-							goto exit;
-						}
-					}
-				}
-			}
-		}
-	exit:
-		CHECK_MESSAGE(match, "Found all paths.");
-	}
+	a.set_point_disabled(1, true);
+
+	CHECK(a.get_id_path(1, 1).is_empty());
+	CHECK(a.get_id_path(1, 2).is_empty());
+
+	CHECK(a.get_point_path(1, 1).is_empty());
+	CHECK(a.get_point_path(1, 2).is_empty());
 }
 } // namespace TestAStar

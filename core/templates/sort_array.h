@@ -168,17 +168,17 @@ public:
 	inline int64_t partitioner(int64_t p_first, int64_t p_last, int64_t p_pivot, T *p_array) const {
 		const int64_t unmodified_first = p_first;
 		const int64_t unmodified_last = p_last;
-		const T &pivot_element = p_array[p_pivot];
+		const T *pivot_element_location = &p_array[p_pivot];
 
 		while (true) {
-			while (p_first != p_pivot && compare(p_array[p_first], pivot_element)) {
+			while (p_first != p_pivot && compare(p_array[p_first], *pivot_element_location)) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_first == unmodified_last - 1);
 				}
 				p_first++;
 			}
 			p_last--;
-			while (p_last != p_pivot && compare(pivot_element, p_array[p_last])) {
+			while (p_last != p_pivot && compare(*pivot_element_location, p_array[p_last])) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_last == unmodified_first);
 				}
@@ -189,6 +189,11 @@ public:
 				return p_first;
 			}
 
+			if (pivot_element_location == &p_array[p_first]) {
+				pivot_element_location = &p_array[p_last];
+			} else if (pivot_element_location == &p_array[p_last]) {
+				pivot_element_location = &p_array[p_first];
+			}
 			SWAP(p_array[p_first], p_array[p_last]);
 			p_first++;
 		}

@@ -220,7 +220,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedInt32Array vector[] = { { 0, -1, 2008 }, {} };
 		PackedByteArray out[] = { { /* 0 */ 0x00, 0x00, 0x00, 0x00, /* -1 */ 0xFF, 0xFF, 0xFF, 0xFF, /* 2008 */ 0xD8, 0x07, 0x00, 0x00 }, {} };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -235,7 +235,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedInt64Array vector[] = { { 0, -1, 2008 }, {} };
 		PackedByteArray out[] = { { /* 0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* -1 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* 2008 */ 0xD8, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, {} };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -250,7 +250,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedFloat32Array vector[] = { { 0.0, -1.0, 200e24 }, {} };
 		PackedByteArray out[] = { { /* 0.0 */ 0x00, 0x00, 0x00, 0x00, /* -1.0 */ 0x00, 0x00, 0x80, 0xBF, /* 200e24 */ 0xA6, 0x6F, 0x25, 0x6B }, {} };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -264,7 +264,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedFloat64Array vector[] = { { 0.0, -1.0, 200e24 }, {} };
 		PackedByteArray out[] = { { /* 0.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* -1.0 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF, /* 200e24 */ 0x35, 0x03, 0x32, 0xB7, 0xF4, 0xAD, 0x64, 0x45 }, {} };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -279,7 +279,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedStringArray vector[] = { { "test", "string" }, {}, { "", "test" } };
 		PackedByteArray out[] = { { /* test */ 0x74, 0x65, 0x73, 0x74, /* null */ 0x00, /* string */ 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67, /* null */ 0x00 }, {}, { /* null */ 0x00, /* test */ 0x74, 0x65, 0x73, 0x74, /* null */ 0x00 } };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -298,7 +298,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
 #endif
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -317,7 +317,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Z=0.0 */ 0x00, 0x00, 0x00, 0x00, /* X=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Z=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
 #endif
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -332,7 +332,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedColorArray vector[] = { { Color(), Color(1, 1, 1) }, {} };
 		PackedByteArray out[] = { { /* R=0.0 */ 0x00, 0x00, 0x00, 0x00, /* G=0.0 */ 0x00, 0x00, 0x00, 0x00, /* B=0.0 */ 0x00, 0x00, 0x00, 0x00, /* A=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* R=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* G=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* B=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* A=1.0 */ 0x00, 0x00, 0x80, 0x3F }, {} };
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];
@@ -351,7 +351,7 @@ TEST_CASE("[Vector] To byte array (variant call)") {
 		PackedByteArray out[] = { { /* X=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Y=0.0 */ 0x00, 0x00, 0x00, 0x00, /* Z=0.0 */ 0x00, 0x00, 0x00, 0x00, /* W 0.0 */ 0x00, 0x00, 0x00, 0x00, /* X 1.0 */ 0x00, 0x00, 0x80, 0x3F, /* Y=-1.0 */ 0x00, 0x00, 0x80, 0xBF, /* Z=1.0 */ 0x00, 0x00, 0x80, 0x3F, /* W=-1.0 */ 0x00, 0x00, 0x80, 0xBF }, {} };
 #endif
 
-		for (size_t i = 0; i < std::size(vector); i++) {
+		for (size_t i = 0; i < std_size(vector); i++) {
 			Callable::CallError err;
 			Variant v_ret;
 			Variant v_vector = vector[i];

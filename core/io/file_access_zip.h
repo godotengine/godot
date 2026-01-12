@@ -41,13 +41,11 @@ public:
 	struct File {
 		int package = -1;
 		unz_file_pos file_pos;
-		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 

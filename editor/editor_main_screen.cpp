@@ -32,9 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
@@ -262,6 +262,11 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_theme_type_variation("MainScreenButton");
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
+
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	if (shortcut.is_valid()) {
+		tb->set_shortcut(shortcut);
+	}
 
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {

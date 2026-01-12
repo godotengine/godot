@@ -68,7 +68,7 @@ struct hb_graphite2_face_data_t
 {
   hb_face_t *face;
   gr_face   *grface;
-  hb_atomic_ptr_t<hb_graphite2_tablelist_t> tlist;
+  hb_atomic_t<hb_graphite2_tablelist_t *> tlist;
 };
 
 static const void *hb_graphite2_get_table (const void *data, unsigned int tag, size_t *len)
@@ -266,7 +266,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
-  unsigned int curradvx = 0, curradvy = 0;
+  int curradvx = 0, curradvy = 0;
 
   unsigned int scratch_size;
   hb_buffer_t::scratch_buffer_t *scratch = buffer->get_scratch_buffer (&scratch_size);

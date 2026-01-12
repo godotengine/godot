@@ -33,6 +33,7 @@
 #include "noise.h"
 
 #include "core/object/ref_counted.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/texture.h"
 
 class NoiseTexture3D : public Texture3D {

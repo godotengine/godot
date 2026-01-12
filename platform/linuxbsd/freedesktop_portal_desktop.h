@@ -34,13 +34,15 @@
 
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 struct DBusMessage;
 struct DBusConnection;
 struct DBusMessageIter;
 
 class FreeDesktopPortalDesktop : public Object {
+	GDSOFTCLASS(FreeDesktopPortalDesktop, Object);
+
 private:
 	bool unsupported = false;
 
@@ -59,8 +61,12 @@ private:
 	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts, const Vector<String> &p_filter_mimes);
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
+
 	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, const HashMap<String, String> &p_ids, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
 	static bool color_picker_parse_response(DBusMessageIter *p_iter, bool &r_cancel, Color &r_color);
+
+	static Error make_request_token(String &r_token);
+	bool send_request(DBusMessage *p_message, const String &r_token, String &r_response_path, String &r_response_filter);
 
 	struct ColorPickerData {
 		Callable callback;
@@ -107,7 +113,11 @@ private:
 	String theme_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
-	bool _is_interface_supported(const char *p_iface);
+	bool _is_interface_supported(const char *p_iface, uint32_t p_minimum_version);
+
+	Mutex inhibit_mutex;
+	String inhibit_path;
+	String inhibit_filter;
 
 	static void _thread_monitor(void *p_ud);
 
@@ -119,6 +129,7 @@ public:
 	bool is_file_chooser_supported();
 	bool is_settings_supported();
 	bool is_screenshot_supported();
+	bool is_inhibit_supported();
 
 	// org.freedesktop.portal.FileChooser methods.
 	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
@@ -144,6 +155,10 @@ public:
 
 	// org.freedesktop.portal.Screenshot methods.
 	bool color_picker(const String &p_xid, const Callable &p_callback);
+
+	// org.freedesktop.portal.Inhibit methods.
+	bool inhibit(const String &p_xid);
+	void uninhibit();
 };
 
 #endif // DBUS_ENABLED

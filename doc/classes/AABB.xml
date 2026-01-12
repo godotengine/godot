@@ -7,7 +7,7 @@
 		The [AABB] built-in [Variant] type represents an axis-aligned bounding box in a 3D space. It is defined by its [member position] and [member size], which are [Vector3]. It is frequently used for fast overlap tests (see [method intersects]). Although [AABB] itself is axis-aligned, it can be combined with [Transform3D] to represent a rotated or skewed bounding box.
 		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2]. There is no version of [AABB] that uses integer coordinates.
 		[b]Note:[/b] Negative values for [member size] are not supported. With negative size, most [AABB] methods do not work correctly. Use [method abs] to get an equivalent [AABB] with a non-negative size.
-		[b]Note:[/b] In a boolean context, a [AABB] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector3.ZERO]). Otherwise, it always evaluates to [code]true[/code].
+		[b]Note:[/b] In a boolean context, an [AABB] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector3.ZERO]). Otherwise, it always evaluates to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -127,7 +127,7 @@
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of one of the 8 vertices that compose this bounding box. With a [param idx] of [code]0[/code] this is the same as [member position], and a [param idx] of [code]7[/code] is the same as [member end].
+				Returns the position of one of the 8 vertices that compose this bounding box. With an [param idx] of [code]0[/code] this is the same as [member position], and an [param idx] of [code]7[/code] is the same as [member end].
 			</description>
 		</method>
 		<method name="get_longest_axis" qualifiers="const">

@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module (body).
  *
- * Copyright (C) 2003-2024 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,10 +19,13 @@
 #define FT_MAKE_OPTION_SINGLE_OBJECT
 
 #include "ft-hb.c"
+#include "ft-hb-ft.c"
+#include "afadjust.c"
 #include "afblue.c"
 #include "afcjk.c"
 #include "afdummy.c"
 #include "afglobal.c"
+#include "afgsub.c"
 #include "afhints.c"
 #include "afindic.c"
 #include "aflatin.c"

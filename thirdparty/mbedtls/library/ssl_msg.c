@@ -3971,6 +3971,7 @@ static int ssl_parse_record_header(mbedtls_ssl_context const *ssl,
     rec->buf_len = rec->data_offset + rec->data_len;
 
     if (rec->data_len == 0) {
+        MBEDTLS_SSL_DEBUG_MSG(1, ("rejecting empty record"));
         return MBEDTLS_ERR_SSL_INVALID_RECORD;
     }
 
@@ -4460,7 +4461,7 @@ static int ssl_load_buffered_message(mbedtls_ssl_context *ssl)
         ret = 0;
         goto exit;
     } else {
-        MBEDTLS_SSL_DEBUG_MSG(2, ("Next handshake message %u not or only partially bufffered",
+        MBEDTLS_SSL_DEBUG_MSG(2, ("Next handshake message %u not or only partially buffered",
                                   hs->in_msg_seq));
     }
 
@@ -5318,7 +5319,7 @@ int mbedtls_ssl_write_change_cipher_spec(mbedtls_ssl_context *ssl)
     ssl->out_msglen  = 1;
     ssl->out_msg[0]  = 1;
 
-    ssl->state++;
+    mbedtls_ssl_handshake_increment_state(ssl);
 
     if ((ret = mbedtls_ssl_write_handshake_msg(ssl)) != 0) {
         MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_write_handshake_msg", ret);
@@ -5380,7 +5381,7 @@ int mbedtls_ssl_parse_change_cipher_spec(mbedtls_ssl_context *ssl)
 
     mbedtls_ssl_update_in_pointers(ssl);
 
-    ssl->state++;
+    mbedtls_ssl_handshake_increment_state(ssl);
 
     MBEDTLS_SSL_DEBUG_MSG(2, ("<= parse change cipher spec"));
 
@@ -6274,7 +6275,7 @@ int mbedtls_ssl_write_early_data(mbedtls_ssl_context *ssl,
     } else {
         /*
          * If we are past the point where we can send early data or we have
-         * already reached the maximum early data size, return immediatly.
+         * already reached the maximum early data size, return immediately.
          * Otherwise, progress the handshake as much as possible to not delay
          * it too much. If we reach a point where we can still send early data,
          * then we will send some.

@@ -1,12 +1,11 @@
 /****************************************************************************
  *
- * ttgpos.c
+ * ttgpos.h
  *
- *   Load the TrueType GPOS table.  The only GPOS layout feature this
- *   currently supports is kerning, from x advances in the pair adjustment
- *   layout feature.
+ *   Routines to parse and access the 'GPOS' table for simple kerning
+ *   (specification).
  *
- * Copyright (C) 2024 by
+ * Copyright (C) 2024-2025 by
  * David Saltzman
  *
  * This file is part of the FreeType project, and may only be used,
@@ -39,8 +38,8 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( FT_Int )
   tt_face_get_gpos_kerning( TT_Face  face,
-                            FT_UInt  left_glyph,
-                            FT_UInt  right_glyph );
+                            FT_UInt  first_glyph,
+                            FT_UInt  second_glyph );
 
 #endif /* TT_CONFIG_OPTION_GPOS_KERNING */
 

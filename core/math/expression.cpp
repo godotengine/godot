@@ -823,7 +823,7 @@ Expression::ENode *Expression::_parse_expression() {
 				if (!Variant::is_utility_function_vararg(bifunc->func)) {
 					int expected_args = Variant::get_utility_function_argument_count(bifunc->func);
 					if (expected_args != bifunc->arguments.size()) {
-						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " arguments.");
+						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " argument(s).");
 					}
 				}
 

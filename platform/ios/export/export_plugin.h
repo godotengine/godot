@@ -35,9 +35,11 @@
 class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatformAppleEmbedded);
 
-	virtual String get_platform_name() const override { return "ios"; }
+	static Vector<String> device_types;
 
+	virtual String get_platform_name() const override { return "ios"; }
 	virtual String get_sdk_name() const override { return "iphoneos"; }
+	virtual const Vector<String> get_device_types() const override { return device_types; }
 
 	virtual String get_minimum_deployment_target() const override { return "14.0"; }
 
@@ -50,6 +52,8 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
 
+	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
+
 public:
 	virtual String get_name() const override { return "iOS"; }
 	virtual String get_os_name() const override { return "iOS"; }
@@ -59,6 +63,6 @@ public:
 		r_features->push_back("ios");
 	}
 
-	EditorExportPlatformIOS();
+	virtual void initialize() override;
 	~EditorExportPlatformIOS();
 };

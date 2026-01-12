@@ -99,10 +99,7 @@ void EditorObjectSelector::_show_popup() {
 	Point2 gp = get_screen_position();
 	gp.y += size.y;
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
-
-	sub_objects_menu->popup();
+	sub_objects_menu->popup(Rect2(gp, Size2(size.width, 0)));
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -211,9 +208,8 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
 	MarginContainer *main_mc = memnew(MarginContainer);
+	main_mc->set_theme_type_variation("ObjectSelectorMargin");
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);

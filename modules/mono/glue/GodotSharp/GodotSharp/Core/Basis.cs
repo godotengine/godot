@@ -652,12 +652,10 @@ namespace Godot
                 column2 = -column2;
             }
             Vector3 column0 = up.Value.Cross(column2);
-#if DEBUG
             if (column0.IsZeroApprox())
             {
-                throw new ArgumentException("The target vector and up vector can't be parallel to each other.");
+                throw new ArgumentException("Target and up vectors are colinear. This is not advised as it may cause unwanted rotation around local Z axis.");
             }
-#endif
             column0.Normalize();
             Vector3 column1 = column2.Cross(column0);
             return new Basis(column0, column1, column2);

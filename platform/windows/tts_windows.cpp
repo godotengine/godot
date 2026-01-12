@@ -186,7 +186,7 @@ Array TTS_Windows::get_voices() const {
 	return list;
 }
 
-void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Windows::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	ERR_FAIL_NULL(synth);
 	if (p_interrupt) {
 		stop();

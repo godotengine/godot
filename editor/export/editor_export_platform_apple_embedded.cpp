@@ -32,16 +32,17 @@
 
 #include "core/io/json.h"
 #include "core/io/plist.h"
-#include "core/string/translation.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "main/main.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
@@ -51,7 +52,8 @@ void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExpo
 	r_features->push_back("etc2");
 	r_features->push_back("astc");
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -130,7 +132,7 @@ static const DataCollectionInfo data_collect_type_info[] = {
 	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
 	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
 	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
-	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "search_history", "NSPrivacyCollectedDataTypeSearchHistory" },
 	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
 	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
 	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
@@ -233,6 +235,10 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 			p_option == "application/signature") {
 		return advanced_options_enabled;
 	}
+	if (p_option == "capabilities/performance_a12") {
+		String rendering_method = get_project_setting(Ref<EditorExportPreset>(p_preset), "rendering/renderer/rendering_method.mobile");
+		return !(rendering_method == "forward_plus" || rendering_method == "mobile");
+	}
 
 	return true;
 }
@@ -262,7 +268,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
@@ -301,7 +307,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/increased_memory_limit"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "entitlements/game_center"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/push_notifications", PROPERTY_HINT_ENUM, "Disabled,Production,Development"), "Disabled"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
@@ -320,7 +326,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
-	for (uint64_t i = 0; i < std::size(api_info); ++i) {
+	for (uint64_t i = 0; i < std_size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
 		String hint;
 		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
@@ -337,13 +343,13 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
+		for (uint64_t i = 0; i < std_size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -351,9 +357,9 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 		}
 	}
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_dark", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_dark", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
 
 	HashSet<String> used_names;
 
@@ -361,456 +367,371 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	for (int i = 0; i < icon_infos.size(); ++i) {
 		if (!used_names.has(icon_infos[i].preset_key)) {
 			used_names.insert(icon_infos[i].preset_key);
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_dark", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_tinted", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_dark", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_tinted", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
 		}
 	}
 }
 
-void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const AppleEmbeddedConfigData &p_config, bool p_debug) {
-	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "Apple Development" : p_preset->get("application/code_sign_identity_debug");
-	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "Apple Distribution" : p_preset->get("application/code_sign_identity_release");
-	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "Apple Development" && dbg_sign_id != "Apple Distribution");
-	bool rel_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_RELEASE).operator String().is_empty() || (rel_sign_id != "Apple Development" && rel_sign_id != "Apple Distribution");
+void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_file, const AppleEmbeddedConfigData &p_config, bool p_debug) {
+	CodeSigningDetails code_signing(p_preset);
 
-	String provisioning_profile_specifier_dbg = p_preset->get_or_env("application/provisioning_profile_specifier_debug", ENV_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG).operator String();
-	bool valid_dbg_specifier = !provisioning_profile_specifier_dbg.is_empty();
-	dbg_manual |= valid_dbg_specifier;
-
-	String provisioning_profile_specifier_rel = p_preset->get_or_env("application/provisioning_profile_specifier_release", ENV_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE).operator String();
-	bool valid_rel_specifier = !provisioning_profile_specifier_rel.is_empty();
-	rel_manual |= valid_rel_specifier;
-
-	String str = String::utf8((const char *)pfile.ptr(), pfile.size());
+	String str = String::utf8((const char *)p_file.ptr(), p_file.size());
 	String strnew;
 	Vector<String> lines = str.split("\n");
-	for (int i = 0; i < lines.size(); i++) {
-		if (lines[i].contains("$binary")) {
-			strnew += lines[i].replace("$binary", p_config.binary_name) + "\n";
-		} else if (lines[i].contains("$modules_buildfile")) {
-			strnew += lines[i].replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
-		} else if (lines[i].contains("$modules_fileref")) {
-			strnew += lines[i].replace("$modules_fileref", p_config.modules_fileref) + "\n";
-		} else if (lines[i].contains("$modules_buildphase")) {
-			strnew += lines[i].replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
-		} else if (lines[i].contains("$modules_buildgrp")) {
-			strnew += lines[i].replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
-		} else if (lines[i].contains("$name")) {
-			strnew += lines[i].replace("$name", p_config.pkg_name) + "\n";
-		} else if (lines[i].contains("$bundle_identifier")) {
-			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
-		} else if (lines[i].contains("$short_version")) {
-			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
-		} else if (lines[i].contains("$version")) {
-			strnew += lines[i].replace("$version", p_preset->get_version("application/version")) + "\n";
-		} else if (lines[i].contains("$min_version")) {
-			strnew += lines[i].replace("$min_version",
-							  p_preset->get("application/min_" + get_platform_name() + "_version")) +
-					"\n";
-		} else if (lines[i].contains("$signature")) {
-			strnew += lines[i].replace("$signature", p_preset->get("application/signature")) + "\n";
-		} else if (lines[i].contains("$team_id")) {
-			strnew += lines[i].replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
-		} else if (lines[i].contains("$default_build_config")) {
-			strnew += lines[i].replace("$default_build_config", p_debug ? "Debug" : "Release") + "\n";
-		} else if (lines[i].contains("$export_method")) {
-			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
-			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
-		} else if (lines[i].contains("$provisioning_profile_specifier_debug")) {
-			strnew += lines[i].replace("$provisioning_profile_specifier_debug", provisioning_profile_specifier_dbg) + "\n";
-		} else if (lines[i].contains("$provisioning_profile_specifier_release")) {
-			strnew += lines[i].replace("$provisioning_profile_specifier_release", provisioning_profile_specifier_rel) + "\n";
-		} else if (lines[i].contains("$provisioning_profile_specifier")) {
-			String specifier = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
-			strnew += lines[i].replace("$provisioning_profile_specifier", specifier) + "\n";
-		} else if (lines[i].contains("$provisioning_profile_uuid_release")) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_RELEASE)) + "\n";
-		} else if (lines[i].contains("$provisioning_profile_uuid_debug")) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG)) + "\n";
-		} else if (lines[i].contains("$code_sign_style_debug")) {
-			if (dbg_manual) {
-				strnew += lines[i].replace("$code_sign_style_debug", "Manual") + "\n";
-			} else {
-				strnew += lines[i].replace("$code_sign_style_debug", "Automatic") + "\n";
-			}
-		} else if (lines[i].contains("$code_sign_style_release")) {
-			if (rel_manual) {
-				strnew += lines[i].replace("$code_sign_style_release", "Manual") + "\n";
-			} else {
-				strnew += lines[i].replace("$code_sign_style_release", "Automatic") + "\n";
-			}
-		} else if (lines[i].contains("$provisioning_profile_uuid")) {
-			String uuid = p_debug ? p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG) : p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_RELEASE);
-			if (uuid.is_empty()) {
-				Variant variant = p_debug ? provisioning_profile_specifier_dbg : provisioning_profile_specifier_rel;
-				bool valid = p_debug ? valid_dbg_specifier : valid_rel_specifier;
-				uuid = valid ? variant : "";
-			}
-			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
-		} else if (lines[i].contains("$code_sign_identity_debug")) {
-			strnew += lines[i].replace("$code_sign_identity_debug", dbg_sign_id) + "\n";
-		} else if (lines[i].contains("$code_sign_identity_release")) {
-			strnew += lines[i].replace("$code_sign_identity_release", rel_sign_id) + "\n";
-		} else if (lines[i].contains("$additional_plist_content")) {
-			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
-		} else if (lines[i].contains("$godot_archs")) {
-			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
-		} else if (lines[i].contains("$linker_flags")) {
-			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
-		} else if (lines[i].contains("$targeted_device_family")) {
-			String xcode_value;
-			switch ((int)p_preset->get("application/targeted_device_family")) {
-				case 0: // iPhone
-					xcode_value = "1";
-					break;
-				case 1: // iPad
-					xcode_value = "2";
-					break;
-				case 2: // iPhone & iPad
-					xcode_value = "1,2";
-					break;
-			}
-			strnew += lines[i].replace("$targeted_device_family", xcode_value) + "\n";
-		} else if (lines[i].contains("$cpp_code")) {
-			strnew += lines[i].replace("$cpp_code", p_config.cpp_code) + "\n";
-		} else if (lines[i].contains("$docs_in_place")) {
-			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].contains("$docs_sharing")) {
-			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].contains("$entitlements_full")) {
-			String entitlements;
-			if ((String)p_preset->get("entitlements/push_notifications") != "Disabled") {
-				entitlements += "<key>aps-environment</key>\n<string>" + p_preset->get("entitlements/push_notifications").operator String().to_lower() + "</string>" + "\n";
-			}
-			if ((bool)p_preset->get("entitlements/game_center")) {
-				entitlements += "<key>com.apple.developer.game-center</key>\n<true/>\n";
-			}
-			if ((bool)p_preset->get("entitlements/increased_memory_limit")) {
-				entitlements += "<key>com.apple.developer.kernel.increased-memory-limit</key>\n<true/>\n";
-			}
-			entitlements += p_preset->get("entitlements/additional").operator String() + "\n";
+	for (const String &line : lines) {
+		strnew += _process_config_file_line(p_preset, line, p_config, p_debug, code_signing);
+	}
 
-			strnew += lines[i].replace("$entitlements_full", entitlements);
-		} else if (lines[i].contains("$required_device_capabilities")) {
-			String capabilities;
+	// Write (size - 1) to avoid outputting the null terminator.
+	CharString cs = strnew.utf8();
+	p_file.resize(cs.size() - 1);
+	uint8_t *p_file_ptrw = p_file.ptrw();
+	for (int i = 0; i < cs.size() - 1; i++) {
+		p_file_ptrw[i] = cs[i];
+	}
+}
 
-			// I've removed armv7 as we can run on 64bit only devices
-			// Note that capabilities listed here are requirements for the app to be installed.
-			// They don't enable anything.
-			Vector<String> capabilities_list = p_config.capabilities;
+String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
+	String strnew;
+	if (p_line.contains("$binary")) {
+		strnew += p_line.replace("$binary", p_config.binary_name) + "\n";
+	} else if (p_line.contains("$modules_buildfile")) {
+		strnew += p_line.replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
+	} else if (p_line.contains("$modules_fileref")) {
+		strnew += p_line.replace("$modules_fileref", p_config.modules_fileref) + "\n";
+	} else if (p_line.contains("$modules_buildphase")) {
+		strnew += p_line.replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
+	} else if (p_line.contains("$modules_buildgrp")) {
+		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
+	} else if (p_line.contains("$name")) {
+		strnew += p_line.replace("$name", p_config.pkg_name.xml_escape(true)) + "\n";
+	} else if (p_line.contains("$bundle_identifier")) {
+		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+	} else if (p_line.contains("$short_version")) {
+		strnew += p_line.replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
+	} else if (p_line.contains("$version")) {
+		strnew += p_line.replace("$version", p_preset->get_version("application/version")) + "\n";
+	} else if (p_line.contains("$signature")) {
+		strnew += p_line.replace("$signature", p_preset->get("application/signature")) + "\n";
+	} else if (p_line.contains("$team_id")) {
+		strnew += p_line.replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
+	} else if (p_line.contains("$default_build_config")) {
+		strnew += p_line.replace("$default_build_config", p_debug ? "Debug" : "Release") + "\n";
+	} else if (p_line.contains("$export_method")) {
+		int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
+		strnew += p_line.replace("$export_method", export_method_string[export_method]) + "\n";
+	} else if (p_line.contains("$provisioning_profile_specifier_debug")) {
+		strnew += p_line.replace("$provisioning_profile_specifier_debug", p_code_signing.debug_provisioning_profile_specifier) + "\n";
+	} else if (p_line.contains("$provisioning_profile_specifier_release")) {
+		strnew += p_line.replace("$provisioning_profile_specifier_release", p_code_signing.release_provisioning_profile_specifier) + "\n";
+	} else if (p_line.contains("$provisioning_profile_specifier")) {
+		String specifier = p_debug ? p_code_signing.debug_provisioning_profile_specifier : p_code_signing.release_provisioning_profile_specifier;
+		strnew += p_line.replace("$provisioning_profile_specifier", specifier) + "\n";
+	} else if (p_line.contains("$provisioning_profile_uuid_release")) {
+		strnew += p_line.replace("$provisioning_profile_uuid_release", p_code_signing.release_provisioning_profile_uuid) + "\n";
+	} else if (p_line.contains("$provisioning_profile_uuid_debug")) {
+		strnew += p_line.replace("$provisioning_profile_uuid_debug", p_code_signing.debug_provisioning_profile_uuid) + "\n";
+	} else if (p_line.contains("$code_sign_style_debug")) {
+		if (p_code_signing.debug_manual_signing) {
+			strnew += p_line.replace("$code_sign_style_debug", "Manual") + "\n";
+		} else {
+			strnew += p_line.replace("$code_sign_style_debug", "Automatic") + "\n";
+		}
+	} else if (p_line.contains("$code_sign_style_release")) {
+		if (p_code_signing.release_manual_signing) {
+			strnew += p_line.replace("$code_sign_style_release", "Manual") + "\n";
+		} else {
+			strnew += p_line.replace("$code_sign_style_release", "Automatic") + "\n";
+		}
+	} else if (p_line.contains("$provisioning_profile_uuid")) {
+		String uuid = p_debug ? p_code_signing.debug_provisioning_profile_uuid : p_code_signing.release_provisioning_profile_uuid;
+		if (uuid.is_empty()) {
+			uuid = p_debug ? p_code_signing.debug_provisioning_profile_specifier : p_code_signing.release_provisioning_profile_specifier;
+		}
+		strnew += p_line.replace("$provisioning_profile_uuid", uuid) + "\n";
+	} else if (p_line.contains("$code_sign_identity_debug")) {
+		strnew += p_line.replace("$code_sign_identity_debug", p_code_signing.debug_signing_identity) + "\n";
+	} else if (p_line.contains("$code_sign_identity_release")) {
+		strnew += p_line.replace("$code_sign_identity_release", p_code_signing.release_signing_identity) + "\n";
+	} else if (p_line.contains("$additional_plist_content")) {
+		strnew += p_line.replace("$additional_plist_content", p_config.plist_content) + "\n";
+	} else if (p_line.contains("$godot_archs")) {
+		strnew += p_line.replace("$godot_archs", p_config.architectures) + "\n";
+	} else if (p_line.contains("$linker_flags")) {
+		strnew += p_line.replace("$linker_flags", p_config.linker_flags) + "\n";
+	} else if (p_line.contains("$targeted_device_family")) {
+		String xcode_value;
+		switch ((int)p_preset->get("application/targeted_device_family")) {
+			case 0: // iPhone
+				xcode_value = "1";
+				break;
+			case 1: // iPad
+				xcode_value = "2";
+				break;
+			case 2: // iPhone & iPad
+				xcode_value = "1,2";
+				break;
+		}
+		strnew += p_line.replace("$targeted_device_family", xcode_value) + "\n";
+	} else if (p_line.contains("$cpp_code")) {
+		strnew += p_line.replace("$cpp_code", p_config.cpp_code) + "\n";
+	} else if (p_line.contains("$docs_in_place")) {
+		strnew += p_line.replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
+	} else if (p_line.contains("$docs_sharing")) {
+		strnew += p_line.replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
+	} else if (p_line.contains("$entitlements_full")) {
+		String entitlements;
+		if ((String)p_preset->get("entitlements/push_notifications") != "Disabled") {
+			entitlements += "<key>aps-environment</key>\n<string>" + p_preset->get("entitlements/push_notifications").operator String().to_lower() + "</string>" + "\n";
+		}
+		if ((bool)p_preset->get("entitlements/game_center")) {
+			entitlements += "<key>com.apple.developer.game-center</key>\n<true/>\n";
+		}
+		if ((bool)p_preset->get("entitlements/increased_memory_limit")) {
+			entitlements += "<key>com.apple.developer.kernel.increased-memory-limit</key>\n<true/>\n";
+		}
+		entitlements += p_preset->get("entitlements/additional").operator String() + "\n";
 
-			if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
-				capabilities_list.push_back("wifi");
-			}
-			if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
-				capabilities_list.push_back("iphone-performance-gaming-tier");
-			}
-			if ((bool)p_preset->get("capabilities/performance_a12") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
-				capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
-			}
-			for (int idx = 0; idx < capabilities_list.size(); idx++) {
-				capabilities += "<string>" + capabilities_list[idx] + "</string>\n";
-			}
-			for (const String &cap : p_preset->get("capabilities/additional").operator PackedStringArray()) {
-				capabilities += "<string>" + cap + "</string>\n";
-			}
+		strnew += p_line.replace("$entitlements_full", entitlements);
+	} else if (p_line.contains("$required_device_capabilities")) {
+		String capabilities;
 
-			strnew += lines[i].replace("$required_device_capabilities", capabilities);
-		} else if (lines[i].contains("$interface_orientations")) {
-			String orientations;
-			const DisplayServer::ScreenOrientation screen_orientation =
-					DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		// I've removed armv7 as we can run on 64bit only devices
+		// Note that capabilities listed here are requirements for the app to be installed.
+		// They don't enable anything.
+		Vector<String> capabilities_list = p_config.capabilities;
+		String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
 
-			switch (screen_orientation) {
-				case DisplayServer::SCREEN_LANDSCAPE:
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					break;
-				case DisplayServer::SCREEN_PORTRAIT:
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					break;
-				case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					break;
-				case DisplayServer::SCREEN_REVERSE_PORTRAIT:
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
-					// Allow both landscape orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR_PORTRAIT:
-					// Allow both portrait orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR:
-					// Allow all screen orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-			}
+		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
+			capabilities_list.push_back("wifi");
+		}
+		if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
+			capabilities_list.push_back("iphone-performance-gaming-tier");
+		}
+		if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
+			capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
+		}
+		for (const String &capability : capabilities_list) {
+			capabilities += "<string>" + capability + "</string>\n";
+		}
+		for (const String &cap : p_preset->get("capabilities/additional").operator PackedStringArray()) {
+			capabilities += "<string>" + cap + "</string>\n";
+		}
 
-			strnew += lines[i].replace("$interface_orientations", orientations);
-		} else if (lines[i].contains("$ipad_interface_orientations")) {
-			String orientations;
-			const DisplayServer::ScreenOrientation screen_orientation =
-					DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
+		strnew += p_line.replace("$required_device_capabilities", capabilities);
+	} else if (p_line.contains("$interface_orientations")) {
+		String orientations;
+		const DisplayServer::ScreenOrientation screen_orientation =
+				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
-			switch (screen_orientation) {
-				case DisplayServer::SCREEN_LANDSCAPE:
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					break;
-				case DisplayServer::SCREEN_PORTRAIT:
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					break;
-				case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					break;
-				case DisplayServer::SCREEN_REVERSE_PORTRAIT:
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
-					// Allow both landscape orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR_PORTRAIT:
-					// Allow both portrait orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-				case DisplayServer::SCREEN_SENSOR:
-					// Allow all screen orientations depending on sensor direction.
-					orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
-					orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
-					orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
-					break;
-			}
+		switch (screen_orientation) {
+			case DisplayServer::SCREEN_LANDSCAPE:
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				break;
+			case DisplayServer::SCREEN_PORTRAIT:
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				break;
+			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				break;
+			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+				// Allow both landscape orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+				// Allow both portrait orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR:
+				// Allow all screen orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+		}
 
-			strnew += lines[i].replace("$ipad_interface_orientations", orientations);
-		} else if (lines[i].contains("$camera_usage_description")) {
-			String description = p_preset->get("privacy/camera_usage_description");
-			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
-		} else if (lines[i].contains("$microphone_usage_description")) {
-			String description = p_preset->get("privacy/microphone_usage_description");
-			strnew += lines[i].replace("$microphone_usage_description", description) + "\n";
-		} else if (lines[i].contains("$photolibrary_usage_description")) {
-			String description = p_preset->get("privacy/photolibrary_usage_description");
-			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
-		} else if (lines[i].contains("$plist_launch_screen_name")) {
-			String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
-			strnew += lines[i].replace("$plist_launch_screen_name", value) + "\n";
-		} else if (lines[i].contains("$pbx_launch_screen_file_reference")) {
-			String value = "90DD2D9D24B36E8000717FE1 = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = \"Launch Screen.storyboard\"; sourceTree = \"<group>\"; };";
-			strnew += lines[i].replace("$pbx_launch_screen_file_reference", value) + "\n";
-		} else if (lines[i].contains("$pbx_launch_screen_copy_files")) {
-			String value = "90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */,";
-			strnew += lines[i].replace("$pbx_launch_screen_copy_files", value) + "\n";
-		} else if (lines[i].contains("$pbx_launch_screen_build_phase")) {
-			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */,";
-			strnew += lines[i].replace("$pbx_launch_screen_build_phase", value) + "\n";
-		} else if (lines[i].contains("$pbx_launch_screen_build_reference")) {
-			String value = "90DD2D9E24B36E8000717FE1 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 90DD2D9D24B36E8000717FE1 /* Launch Screen.storyboard */; };";
-			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
-#ifndef DISABLE_DEPRECATED
-		} else if (lines[i].contains("$pbx_launch_image_usage_setting")) {
-			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
-#endif
-		} else if (lines[i].contains("$launch_screen_image_mode")) {
-			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
-			String value;
+		strnew += p_line.replace("$interface_orientations", orientations);
+	} else if (p_line.contains("$ipad_interface_orientations")) {
+		String orientations;
+		const DisplayServer::ScreenOrientation screen_orientation =
+				DisplayServer::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation")));
 
-			switch (image_scale_mode) {
-				case 0: {
-					String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
-					bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
-					// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-					value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
-				} break;
-				default: {
-					value = storyboard_image_scale_mode[image_scale_mode - 1];
+		switch (screen_orientation) {
+			case DisplayServer::SCREEN_LANDSCAPE:
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				break;
+			case DisplayServer::SCREEN_PORTRAIT:
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				break;
+			case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				break;
+			case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+				// Allow both landscape orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+				// Allow both portrait orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+			case DisplayServer::SCREEN_SENSOR:
+				// Allow all screen orientations depending on sensor direction.
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
+				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
+				break;
+		}
+
+		strnew += p_line.replace("$ipad_interface_orientations", orientations);
+	} else if (p_line.contains("$camera_usage_description")) {
+		String description = p_preset->get("privacy/camera_usage_description");
+		strnew += p_line.replace("$camera_usage_description", description.xml_escape(true)) + "\n";
+	} else if (p_line.contains("$microphone_usage_description")) {
+		String description = p_preset->get("privacy/microphone_usage_description");
+		strnew += p_line.replace("$microphone_usage_description", description.xml_escape(true)) + "\n";
+	} else if (p_line.contains("$photolibrary_usage_description")) {
+		String description = p_preset->get("privacy/photolibrary_usage_description");
+		strnew += p_line.replace("$photolibrary_usage_description", description.xml_escape(true)) + "\n";
+	} else if (p_line.contains("$pbx_locale_file_reference")) {
+		String locale_files;
+		Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
+		if (translations.size() > 0) {
+			HashSet<String> languages;
+			for (const String &E : translations) {
+				Ref<Translation> tr = ResourceLoader::load(E);
+				if (tr.is_valid() && tr->get_locale() != "en") {
+					languages.insert(tr->get_locale());
 				}
 			}
 
-			strnew += lines[i].replace("$launch_screen_image_mode", value) + "\n";
-		} else if (lines[i].contains("$launch_screen_background_color")) {
-			bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
-			Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
-			const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
-
-			Dictionary value_dictionary;
-			value_dictionary["red"] = color.r;
-			value_dictionary["green"] = color.g;
-			value_dictionary["blue"] = color.b;
-			value_dictionary["alpha"] = color.a;
-			String value = value_format.format(value_dictionary, "$_");
-
-			strnew += lines[i].replace("$launch_screen_background_color", value) + "\n";
-		} else if (lines[i].contains("$pbx_locale_file_reference")) {
-			String locale_files;
-			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-			if (translations.size() > 0) {
-				HashSet<String> languages;
-				for (const String &E : translations) {
-					Ref<Translation> tr = ResourceLoader::load(E);
-					if (tr.is_valid() && tr->get_locale() != "en") {
-						languages.insert(tr->get_locale());
-					}
-				}
-
-				int index = 0;
-				for (const String &lang : languages) {
-					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };\n";
-					index++;
+			int index = 0;
+			for (const String &lang : languages) {
+				locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };\n";
+				index++;
+			}
+		}
+		strnew += p_line.replace("$pbx_locale_file_reference", locale_files);
+	} else if (p_line.contains("$pbx_locale_build_reference")) {
+		String locale_files;
+		Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
+		if (translations.size() > 0) {
+			HashSet<String> languages;
+			for (const String &E : translations) {
+				Ref<Translation> tr = ResourceLoader::load(E);
+				if (tr.is_valid() && tr->get_locale() != "en") {
+					languages.insert(tr->get_locale());
 				}
 			}
-			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
-		} else if (lines[i].contains("$pbx_locale_build_reference")) {
-			String locale_files;
-			Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-			if (translations.size() > 0) {
-				HashSet<String> languages;
-				for (const String &E : translations) {
-					Ref<Translation> tr = ResourceLoader::load(E);
-					if (tr.is_valid() && tr->get_locale() != "en") {
-						languages.insert(tr->get_locale());
-					}
-				}
 
-				int index = 0;
-				for (const String &lang : languages) {
-					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */,\n";
-					index++;
-				}
+			int index = 0;
+			for (const String &lang : languages) {
+				locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */,\n";
+				index++;
 			}
-			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
-		} else if (lines[i].contains("$swift_runtime_migration")) {
-			String value = !p_config.use_swift_runtime ? "" : "LastSwiftMigration = 1250;";
-			strnew += lines[i].replace("$swift_runtime_migration", value) + "\n";
-		} else if (lines[i].contains("$swift_runtime_build_settings")) {
-			String value = !p_config.use_swift_runtime ? "" : R"(
-                     CLANG_ENABLE_MODULES = YES;
-                     SWIFT_OBJC_BRIDGING_HEADER = "$binary/dummy.h";
-                     SWIFT_VERSION = 5.0;
-                     )";
-			value = value.replace("$binary", p_config.binary_name);
-			strnew += lines[i].replace("$swift_runtime_build_settings", value) + "\n";
-		} else if (lines[i].contains("$swift_runtime_fileref")) {
-			String value = !p_config.use_swift_runtime ? "" : R"(
-                     90B4C2AA2680BC560039117A /* dummy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dummy.h"; sourceTree = "<group>"; };
-                     90B4C2B52680C7E90039117A /* dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "dummy.swift"; sourceTree = "<group>"; };
-                     )";
-			strnew += lines[i].replace("$swift_runtime_fileref", value) + "\n";
-		} else if (lines[i].contains("$swift_runtime_binary_files")) {
-			String value = !p_config.use_swift_runtime ? "" : R"(
-                     90B4C2AA2680BC560039117A /* dummy.h */,
-                     90B4C2B52680C7E90039117A /* dummy.swift */,
-                     )";
-			strnew += lines[i].replace("$swift_runtime_binary_files", value) + "\n";
-		} else if (lines[i].contains("$swift_runtime_buildfile")) {
-			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B4C2B52680C7E90039117A /* dummy.swift */; };";
-			strnew += lines[i].replace("$swift_runtime_buildfile", value) + "\n";
-		} else if (lines[i].contains("$swift_runtime_build_phase")) {
-			String value = !p_config.use_swift_runtime ? "" : "90B4C2B62680C7E90039117A /* dummy.swift */,";
-			strnew += lines[i].replace("$swift_runtime_build_phase", value) + "\n";
-		} else if (lines[i].contains("$priv_collection")) {
-			bool section_opened = false;
-			for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
-				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
-				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
-				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
-				int purposes = p_preset->get(vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[j].prop_name));
-				if (data_collected) {
-					if (!section_opened) {
-						section_opened = true;
-						strnew += "\t<key>NSPrivacyCollectedDataTypes</key>\n";
-						strnew += "\t<array>\n";
-					}
-					strnew += "\t\t<dict>\n";
-					strnew += "\t\t\t<key>NSPrivacyCollectedDataType</key>\n";
-					strnew += vformat("\t\t\t<string>%s</string>\n", data_collect_type_info[j].type_name);
-					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n";
-					if (linked) {
-						strnew += "\t\t\t\t<true/>\n";
-					} else {
-						strnew += "\t\t\t\t<false/>\n";
-					}
-					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n";
-					if (tracking) {
-						strnew += "\t\t\t\t<true/>\n";
-					} else {
-						strnew += "\t\t\t\t<false/>\n";
-					}
-					if (purposes != 0) {
-						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
-						strnew += "\t\t\t\t<array>\n";
-						for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
-							if (purposes & (1 << k)) {
-								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
-							}
+		}
+		strnew += p_line.replace("$pbx_locale_build_reference", locale_files);
+	} else if (p_line.contains("$priv_collection")) {
+		bool section_opened = false;
+		for (uint64_t j = 0; j < std_size(data_collect_type_info); ++j) {
+			bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
+			bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
+			bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
+			int purposes = p_preset->get(vformat("privacy/collected_data/%s/collection_purposes", data_collect_type_info[j].prop_name));
+			if (data_collected) {
+				if (!section_opened) {
+					section_opened = true;
+					strnew += "\t<key>NSPrivacyCollectedDataTypes</key>\n";
+					strnew += "\t<array>\n";
+				}
+				strnew += "\t\t<dict>\n";
+				strnew += "\t\t\t<key>NSPrivacyCollectedDataType</key>\n";
+				strnew += vformat("\t\t\t<string>%s</string>\n", data_collect_type_info[j].type_name);
+				strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeLinked</key>\n";
+				if (linked) {
+					strnew += "\t\t\t\t<true/>\n";
+				} else {
+					strnew += "\t\t\t\t<false/>\n";
+				}
+				strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypeTracking</key>\n";
+				if (tracking) {
+					strnew += "\t\t\t\t<true/>\n";
+				} else {
+					strnew += "\t\t\t\t<false/>\n";
+				}
+				if (purposes != 0) {
+					strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
+					strnew += "\t\t\t\t<array>\n";
+					for (uint64_t k = 0; k < std_size(data_collect_purpose_info); ++k) {
+						if (purposes & (1 << k)) {
+							strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 						}
-						strnew += "\t\t\t\t</array>\n";
 					}
-					strnew += "\t\t\t</dict>\n";
+					strnew += "\t\t\t\t</array>\n";
 				}
+				strnew += "\t\t\t</dict>\n";
 			}
-			if (section_opened) {
-				strnew += "\t</array>\n";
-			}
-		} else if (lines[i].contains("$priv_tracking")) {
-			bool tracking = p_preset->get("privacy/tracking_enabled");
-			strnew += "\t<key>NSPrivacyTracking</key>\n";
-			if (tracking) {
-				strnew += "\t<true/>\n";
-			} else {
-				strnew += "\t<false/>\n";
-			}
-			Vector<String> tracking_domains = p_preset->get("privacy/tracking_domains");
-			if (!tracking_domains.is_empty()) {
-				strnew += "\t<key>NSPrivacyTrackingDomains</key>\n";
-				strnew += "\t<array>\n";
-				for (const String &E : tracking_domains) {
-					strnew += "\t\t<string>" + E + "</string>\n";
-				}
-				strnew += "\t</array>\n";
-			}
-		} else if (lines[i].contains("$priv_api_types")) {
+		}
+		if (section_opened) {
+			strnew += "\t</array>\n";
+		}
+	} else if (p_line.contains("$priv_tracking")) {
+		bool tracking = p_preset->get("privacy/tracking_enabled");
+		strnew += "\t<key>NSPrivacyTracking</key>\n";
+		if (tracking) {
+			strnew += "\t<true/>\n";
+		} else {
+			strnew += "\t<false/>\n";
+		}
+		Vector<String> tracking_domains = p_preset->get("privacy/tracking_domains");
+		if (!tracking_domains.is_empty()) {
+			strnew += "\t<key>NSPrivacyTrackingDomains</key>\n";
 			strnew += "\t<array>\n";
-			for (uint64_t j = 0; j < std::size(api_info); ++j) {
-				int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
-				if (api_access != 0) {
-					strnew += "\t\t<dict>\n";
-					strnew += "\t\t\t<key>NSPrivacyAccessedAPITypeReasons</key>\n";
-					strnew += "\t\t\t<array>\n";
-					for (int k = 0; k < api_info[j].prop_flag_value.size(); k++) {
-						if (api_access & (1 << k)) {
-							strnew += vformat("\t\t\t\t<string>%s</string>\n", api_info[j].prop_flag_value[k]);
-						}
-					}
-					strnew += "\t\t\t</array>\n";
-					strnew += "\t\t\t<key>NSPrivacyAccessedAPIType</key>\n";
-					strnew += vformat("\t\t\t<string>%s</string>\n", api_info[j].type_name);
-					strnew += "\t\t</dict>\n";
-				}
+			for (const String &E : tracking_domains) {
+				strnew += "\t\t<string>" + E + "</string>\n";
 			}
 			strnew += "\t</array>\n";
-		} else {
-			strnew += lines[i] + "\n";
 		}
-	}
+	} else if (p_line.contains("$priv_api_types")) {
+		strnew += "\t<array>\n";
+		for (uint64_t j = 0; j < std_size(api_info); ++j) {
+			int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
+			if (api_access != 0) {
+				strnew += "\t\t<dict>\n";
+				strnew += "\t\t\t<key>NSPrivacyAccessedAPITypeReasons</key>\n";
+				strnew += "\t\t\t<array>\n";
+				for (int k = 0; k < api_info[j].prop_flag_value.size(); k++) {
+					if (api_access & (1 << k)) {
+						strnew += vformat("\t\t\t\t<string>%s</string>\n", api_info[j].prop_flag_value[k]);
+					}
+				}
+				strnew += "\t\t\t</array>\n";
+				strnew += "\t\t\t<key>NSPrivacyAccessedAPIType</key>\n";
+				strnew += vformat("\t\t\t<string>%s</string>\n", api_info[j].type_name);
+				strnew += "\t\t</dict>\n";
+			}
+		}
+		strnew += "\t</array>\n";
+	} else if (p_line.contains("$sdkroot")) {
+		strnew += p_line.replace("$sdkroot", get_sdk_name()) + "\n";
 
-	// !BAS! I'm assuming the 9 in the original code was a typo. I've added -1 or else it seems to also be adding our terminating zero...
-	// should apply the same fix in our macOS export.
-	CharString cs = strnew.utf8();
-	pfile.resize(cs.size() - 1);
-	for (int i = 0; i < cs.size() - 1; i++) {
-		pfile.write[i] = cs[i];
+	} else {
+		strnew += p_line + "\n";
 	}
+	return strnew;
 }
 
 String EditorExportPlatformAppleEmbedded::_get_additional_plist_content() {
@@ -1622,10 +1543,6 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 
 		plugin_initialization_cpp_code += "\t" + initialization_method;
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
-
-		if (plugin.use_swift_runtime) {
-			p_config_data.use_swift_runtime = true;
-		}
 	}
 
 	// Updating `Info.plist`
@@ -1851,17 +1768,16 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	bool found_library = false;
 
-	const String godot_platform = "godot_" + get_platform_name();
-	const String project_file = godot_platform + ".xcodeproj/project.pbxproj";
 	HashSet<String> files_to_parse;
-	files_to_parse.insert(godot_platform + "/godot_" + get_platform_name() + "-Info.plist");
+	const String project_file = "godot_apple_embedded.xcodeproj/project.pbxproj";
 	files_to_parse.insert(project_file);
-	files_to_parse.insert(godot_platform + "/export_options.plist");
-	files_to_parse.insert(godot_platform + "/dummy.cpp");
-	files_to_parse.insert(godot_platform + ".xcodeproj/project.xcworkspace/contents.xcworkspacedata");
-	files_to_parse.insert(godot_platform + ".xcodeproj/xcshareddata/xcschemes/godot_" + get_platform_name() + ".xcscheme");
-	files_to_parse.insert(godot_platform + "/godot_" + get_platform_name() + ".entitlements");
-	files_to_parse.insert(godot_platform + "/Launch Screen.storyboard");
+	files_to_parse.insert("godot_apple_embedded.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
+	files_to_parse.insert("godot_apple_embedded.xcodeproj/xcshareddata/xcschemes/godot_apple_embedded.xcscheme");
+	files_to_parse.insert("godot_apple_embedded/godot_apple_embedded-Info.plist");
+	files_to_parse.insert("godot_apple_embedded/godot_apple_embedded.entitlements");
+	files_to_parse.insert("godot_apple_embedded/export_options.plist");
+	files_to_parse.insert("godot_apple_embedded/dummy.cpp");
+	files_to_parse.insert("godot_apple_embedded/Launch Screen.storyboard");
 	files_to_parse.insert("PrivacyInfo.xcprivacy");
 
 	AppleEmbeddedConfigData config_data = {
@@ -1876,7 +1792,6 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		"",
 		"",
 		Vector<String>(),
-		false
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
@@ -1957,7 +1872,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		///@TODO need to parse logo files
 
 		if (data.size() > 0) {
-			file = file.replace("godot_" + get_platform_name(), binary_name);
+			file = file.replace("godot_apple_embedded", binary_name);
 
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 
@@ -2006,50 +1921,59 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
 
-	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-	if (translations.size() > 0) {
+	const String project_name = get_project_setting(p_preset, "application/config/name");
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+	const Vector<String> locales = domain->get_loaded_locales();
+
+	if (!locales.is_empty()) {
 		{
 			String fname = binary_dir + "/en.lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
-			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
-			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
-			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
+			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
+			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String().xml_escape(true) + "\";");
 		}
 
-		HashSet<String> languages;
-		for (const String &E : translations) {
-			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid() && tr->get_locale() != "en") {
-				languages.insert(tr->get_locale());
+		for (const String &lang : locales) {
+			if (lang == "en") {
+				continue;
 			}
-		}
 
-		for (const String &lang : languages) {
 			String fname = binary_dir + "/" + lang + ".lproj";
 			tmp_app_path->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				const String &name = domain->translate(project_name, String());
+				if (name != project_name) {
+					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
+				}
+			} else if (appnames.has(lang)) {
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
+
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (photolibrary_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 		}
 	}
@@ -2161,15 +2085,21 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
 
-	String archive_str;
-	err = OS::get_singleton()->execute("xcodebuild", archive_args, &archive_str, nullptr, true);
-	if (err != OK) {
+	bool archive_succeeded = false;
+	int result = _execute("xcodebuild", archive_args, [&archive_succeeded](const String &p_data) {
+		print_line(p_data);
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+		if (!archive_succeeded && p_data.contains("** ARCHIVE SUCCEEDED **")) {
+			archive_succeeded = true;
+		}
+	});
+	if (result != 0) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), vformat(TTR("Failed to run xcodebuild with code %d"), err));
-		return err;
+		return ERR_CANT_CREATE;
 	}
 
-	print_line("xcodebuild (.xcarchive):\n" + archive_str);
-	if (!archive_str.contains("** ARCHIVE SUCCEEDED **")) {
+	if (!archive_succeeded) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
 		return FAILED;
 	}
@@ -2189,15 +2119,21 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		export_args.push_back("-exportPath");
 		export_args.push_back(dest_dir);
 
-		String export_str;
-		err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
-		if (err != OK) {
+		bool export_succeeded = false;
+		result = _execute("xcodebuild", export_args, [&export_succeeded](const String &p_data) {
+			print_line(p_data);
+			DisplayServer::get_singleton()->process_events();
+			Main::iteration();
+			if (!export_succeeded && p_data.contains("** EXPORT SUCCEEDED **")) {
+				export_succeeded = true;
+			}
+		});
+		if (result != 0) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), vformat(TTR("Failed to run xcodebuild with code %d"), err));
 			return err;
 		}
 
-		print_line("xcodebuild (.ipa):\n" + export_str);
-		if (!export_str.contains("** EXPORT SUCCEEDED **")) {
+		if (!export_succeeded) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
 			return FAILED;
 		}
@@ -2312,10 +2248,10 @@ String EditorExportPlatformAppleEmbedded::get_options_tooltip() const {
 	return TTR("Select device from the list");
 }
 
-Ref<ImageTexture> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
 	MutexLock lock(device_lock);
 
-	Ref<ImageTexture> icon;
+	Ref<Texture2D> icon;
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
@@ -2390,6 +2326,17 @@ bool EditorExportPlatformAppleEmbedded::_check_xcode_install() {
 void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAppleEmbedded *ea = static_cast<EditorExportPlatformAppleEmbedded *>(ud);
 
+	String device_types;
+	bool first = true;
+	for (const String &d : ea->get_device_types()) {
+		if (first) {
+			first = false;
+		} else {
+			device_types += "|";
+		}
+		device_types += d;
+	}
+
 	while (!ea->quit_request.is_set()) {
 		// Nothing to do if we already know the plugins have changed.
 		if (!ea->plugins_changed.is_set()) {
@@ -2414,10 +2361,10 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String ios_deploy_setting = "export/" + ea->get_platform_name() + "/ios_deploy";
-		if (EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
+		if (EditorSettings::get_singleton() && EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
 			String idepl = EDITOR_GET(ios_deploy_setting);
 			if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
-				String devices;
+				String devices_json;
 				List<String> args;
 				args.push_back("-c");
 				args.push_back("-timeout");
@@ -2427,12 +2374,12 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 				args.push_back("-I");
 
 				int ec = 0;
-				Error err = OS::get_singleton()->execute(idepl, args, &devices, &ec, true);
+				Error err = OS::get_singleton()->execute(idepl, args, &devices_json, &ec, true);
 				if (err == OK && ec == 0) {
 					Ref<JSON> json;
 					json.instantiate();
-					devices = "{ \"devices\":[" + devices.replace("}{", "},{") + "]}";
-					err = json->parse(devices);
+					devices_json = "{ \"devices\":[" + devices_json.replace("}{", "},{") + "]}";
+					err = json->parse(devices_json);
 					if (err == OK) {
 						Dictionary data = json->get_data();
 						Array devices = data["devices"];
@@ -2454,7 +2401,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 		}
 		// Enum devices (via Xcode).
 		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			String devices;
+			String devices_json;
 			List<String> args;
 			args.push_back("devicectl");
 			args.push_back("list");
@@ -2462,12 +2409,18 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back("-j");
 			args.push_back("-");
 			args.push_back("-q");
+			// Add a timeout, so the process doesn't hang indefinitely, which can prevent Godot shutting down.
+			args.push_back("--timeout");
+			args.push_back("5");
+			args.push_back("--filter");
+			args.push_back(vformat("hardwareProperties.deviceType MATCHES '%s'", device_types));
+
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
-				err = json->parse(devices);
+				err = json->parse(devices_json);
 				if (err == OK) {
 					const Dictionary &data = json->get_data();
 					const Dictionary &result = data["result"];
@@ -2476,7 +2429,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						const Dictionary &device_info = devices[i];
 						const Dictionary &conn_props = device_info["connectionProperties"];
 						const Dictionary &dev_props = device_info["deviceProperties"];
-						if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
 							Device nd;
 							nd.id = device_info["identifier"];
 							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
@@ -2542,6 +2495,115 @@ void EditorExportPlatformAppleEmbedded::_update_preset_status() {
 	}
 	devices_changed.set();
 }
+
+class FileReader {
+	Ref<FileAccess> f;
+	LocalVector<char> buf;
+
+	void append_span(Span<char> p_span, String &p_data) {
+		uint32_t old_size = p_data.size();
+		if (p_data.append_utf8(p_span) != OK) {
+			p_data.resize_uninitialized(old_size); // Back up to original size.
+			if (old_size > 0) {
+				p_data[old_size - 1] = '\0';
+			}
+			p_data.append_latin1(p_span);
+		}
+	}
+
+public:
+	uint32_t get_lines(String &p_data) {
+		uint64_t available = f->get_length() - f->get_position();
+		if (available == 0) {
+			return 0;
+		}
+
+		uint32_t start = buf.size();
+		buf.resize_uninitialized(buf.size() + available);
+		f->get_buffer((uint8_t *)buf.ptr() + start, available);
+		const char *end = &buf[buf.size() - 1];
+		const char *p = end;
+		uint32_t n = available;
+		bool found = false;
+		// Scan for a newline starting from the end of the appended bytes.
+		while (n--) {
+			if (*p == '\n') {
+				found = true;
+				break;
+			}
+			p--;
+		}
+		if (found) {
+			size_t len = static_cast<size_t>(p - buf.ptr()) + 1;
+			Span<char> new_data(buf.ptr(), len);
+			append_span(new_data, p_data);
+			size_t remain = static_cast<size_t>(end - p);
+			// If there is unprocessed data in the buffer, move it to the front.
+			if (remain > 0) {
+				// Move to next char after '\n'.
+				p++;
+				memmove(buf.ptr(), p, remain);
+			}
+			buf.resize_uninitialized(remain);
+		}
+		return available;
+	}
+
+	// Flush any remaining data.
+	uint32_t flush(String &p_data) {
+		Span<char> new_data = buf.span();
+		if (new_data.size() > 0) {
+			append_span(new_data, p_data);
+		}
+		return new_data.size();
+	}
+
+	FileReader(Ref<FileAccess> p_f) :
+			f(p_f) {
+	}
+};
+
+int EditorExportPlatformAppleEmbedded::_execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data) {
+	Dictionary pipe_info = OS::get_singleton()->execute_with_pipe(p_path, p_arguments, false);
+	ERR_FAIL_COND_V_MSG(pipe_info.is_empty(), 1, "execute_with_pipe failed");
+
+	Ref<FileAccess> fa_stdout = pipe_info["stdio"];
+	Ref<FileAccess> fa_stderr = pipe_info["stderr"];
+	OS::ProcessID pid = pipe_info["pid"];
+
+	FileReader stdout_r(fa_stdout);
+	FileReader stderr_r(fa_stderr);
+
+	while (true) {
+		String output;
+		stdout_r.get_lines(output);
+		stderr_r.get_lines(output);
+		if (!output.is_empty()) {
+			p_on_data(output);
+		}
+
+		// If the process is no longer running and no new data arrived, we're done.
+		if (output.is_empty() && !OS::get_singleton()->is_process_running(pid)) {
+			break;
+		}
+
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	// Flush any remaining content
+	String output;
+	stdout_r.flush(output);
+	stderr_r.flush(output);
+	if (!output.is_empty()) {
+		p_on_data(output);
+	}
+
+	fa_stdout->close();
+	fa_stderr->close();
+
+	return OS::get_singleton()->get_process_exit_code(pid);
+}
+
 #endif
 
 Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
@@ -2689,12 +2751,9 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
 
 			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start device executable."));
-				CLEANUP_AND_RETURN(err);
-			}
+			int ec = _execute("xcrun", args, [&log](const String &p_data) {
+				log.append_utf32(p_data.span());
+			});
 			if (ec != 0) {
 				print_line("device install:\n" + log);
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
@@ -2719,12 +2778,9 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			}
 
 			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start devicectl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
+			int ec = _execute("xcrun", args, [&log](const String &p_data) {
+				log.append_utf32(p_data.span());
+			});
 			if (ec != 0) {
 				print_line("devicectl launch:\n" + log);
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
@@ -2740,31 +2796,22 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 #endif
 }
 
-EditorExportPlatformAppleEmbedded::EditorExportPlatformAppleEmbedded(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
-	if (EditorNode::get_singleton()) {
-		Ref<Image> img = memnew(Image);
-		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg) {
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
-		logo = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
-		run_icon = ImageTexture::create_from_image(img);
+	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
 
-		plugins_changed.set();
-		devices_changed.set();
+	plugins_changed.set();
+	devices_changed.set();
 #ifdef MACOS_ENABLED
-		_update_preset_status();
-		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+	_update_preset_status();
 #endif
-	}
 }
 
 EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() {
-#ifdef MACOS_ENABLED
-	quit_request.set();
-	if (check_for_changes_thread.is_started()) {
-		check_for_changes_thread.wait_to_finish();
-	}
-#endif
 }

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/gradient.h"
 
 class RandomNumberGenerator;
 
@@ -177,7 +178,6 @@ private:
 	Vector<Vector3> emission_points;
 	Vector<Vector3> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
 	Vector3 emission_ring_axis;
 	real_t emission_ring_height = 0.0;
 	real_t emission_ring_radius = 0.0;

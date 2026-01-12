@@ -21,7 +21,7 @@
 			<return type="RID" />
 			<param index="0" name="from" type="RID" />
 			<description>
-				Constructs a [RID] as a copy of the given [RID].
+				Constructs an [RID] as a copy of the given [RID].
 			</description>
 		</constructor>
 	</constructors>

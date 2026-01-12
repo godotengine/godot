@@ -58,6 +58,17 @@ void MissingNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+#ifdef DEBUG_ENABLED
+Error MissingNode::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+	if (is_recording_signals()) {
+		if (!has_signal(p_signal)) {
+			add_user_signal(MethodInfo(p_signal));
+		}
+	}
+	return Object::connect(p_signal, p_callable, p_flags);
+}
+#endif
+
 void MissingNode::set_original_class(const String &p_class) {
 	original_class = p_class;
 }
@@ -82,6 +93,14 @@ bool MissingNode::is_recording_properties() const {
 	return recording_properties;
 }
 
+void MissingNode::set_recording_signals(bool p_enable) {
+	recording_signals = p_enable;
+}
+
+bool MissingNode::is_recording_signals() const {
+	return recording_signals;
+}
+
 PackedStringArray MissingNode::get_configuration_warnings() const {
 	// The mere existence of this node is warning.
 	PackedStringArray warnings = Node::get_configuration_warnings();
@@ -101,16 +120,20 @@ void MissingNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_class", "name"), &MissingNode::set_original_class);
 	ClassDB::bind_method(D_METHOD("get_original_class"), &MissingNode::get_original_class);
 
-	ClassDB::bind_method(D_METHOD("set_original_scene", "name"), &MissingNode::set_original_class);
-	ClassDB::bind_method(D_METHOD("get_original_scene"), &MissingNode::get_original_class);
+	ClassDB::bind_method(D_METHOD("set_original_scene", "name"), &MissingNode::set_original_scene);
+	ClassDB::bind_method(D_METHOD("get_original_scene"), &MissingNode::get_original_scene);
 
 	ClassDB::bind_method(D_METHOD("set_recording_properties", "enable"), &MissingNode::set_recording_properties);
 	ClassDB::bind_method(D_METHOD("is_recording_properties"), &MissingNode::is_recording_properties);
+
+	ClassDB::bind_method(D_METHOD("set_recording_signals", "enable"), &MissingNode::set_recording_signals);
+	ClassDB::bind_method(D_METHOD("is_recording_signals"), &MissingNode::is_recording_signals);
 
 	// Expose, but not save.
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_class", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_class", "get_original_class");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_scene", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_scene", "get_original_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_properties", "is_recording_properties");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_signals", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_signals", "is_recording_signals");
 }
 
 MissingNode::MissingNode() {

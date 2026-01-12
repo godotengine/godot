@@ -1,5 +1,5 @@
 diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
-index 4d885cba16..6c2cf0260e 100644
+index cee9c77ca0..e9c8a01388 100644
 --- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
 +++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
 @@ -39,9 +39,6 @@
@@ -31,7 +31,7 @@ index 4d885cba16..6c2cf0260e 100644
  
  	bool load_png(const uint8_t *pBuf, size_t buf_size, image &img, const char *pFilename)
 diff --git a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
-index 339218fcf2..028ac3f314 100644
+index 3fa65b43c6..028ac3f314 100644
 --- a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
 +++ b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
 @@ -19,9 +19,6 @@
@@ -398,7 +398,7 @@ index 339218fcf2..028ac3f314 100644
 -					goto failure;
 -				}
 -
--				memcpy(hdr_mips[level].get_ptr(), pImage, image_size);
+-				memcpy((void *)hdr_mips[level].get_ptr(), pImage, image_size);
 -			}
 -			else if (fmt == cRGBA_HALF)
 -			{

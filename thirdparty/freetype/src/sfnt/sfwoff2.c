@@ -4,7 +4,7 @@
  *
  *   WOFF2 format management (base).
  *
- * Copyright (C) 2019-2024 by
+ * Copyright (C) 2019-2025 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -902,7 +902,7 @@
       substreams[i].offset = pos + offset;
       substreams[i].size   = substream_size;
 
-      FT_TRACE5(( "  Substream %d: offset = %lu; size = %lu;\n",
+      FT_TRACE5(( "  Substream %u: offset = %lu; size = %lu;\n",
                   i, substreams[i].offset, substreams[i].size ));
       offset += substream_size;
     }
@@ -1592,7 +1592,7 @@
       WOFF2_TableRec  table = *( indices[nn] );
 
 
-      FT_TRACE3(( "Seeking to %ld with table size %ld.\n",
+      FT_TRACE3(( "Seeking to %lu with table size %lu.\n",
                   table.src_offset, table.src_length ));
       FT_TRACE3(( "Table tag: %c%c%c%c.\n",
                   (FT_Char)( table.Tag >> 24 ),
@@ -1943,7 +1943,7 @@
       src_offset       += table->TransformLength;
       table->dst_offset = 0;
 
-      FT_TRACE2(( "  %c%c%c%c  %08d  %08d   %08ld    %08ld    %08ld\n",
+      FT_TRACE2(( "  %c%c%c%c  %08d  %08d   %08lu    %08lu    %08lu\n",
                   (FT_Char)( table->Tag >> 24 ),
                   (FT_Char)( table->Tag >> 16 ),
                   (FT_Char)( table->Tag >> 8  ),

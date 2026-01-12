@@ -29,6 +29,8 @@
 
 #include "hb-aat-layout.hh"
 #include "hb-aat-map.hh"
+#include "hb-ot-layout-common.hh"
+#include "hb-ot-layout-gdef-table.hh"
 #include "hb-open-type.hh"
 #include "hb-cache.hh"
 #include "hb-bit-set.hh"
@@ -45,8 +47,65 @@ using namespace OT;
 
 struct ankr;
 
-using hb_aat_class_cache_t = hb_cache_t<15, 8, 7>;
-static_assert (sizeof (hb_aat_class_cache_t) == 256, "");
+using hb_aat_class_cache_t = hb_ot_layout_mapping_cache_t;
+
+struct hb_aat_scratch_t
+{
+  hb_aat_scratch_t () = default;
+  hb_aat_scratch_t (const hb_aat_scratch_t &) = delete;
+
+  hb_aat_scratch_t (hb_aat_scratch_t &&o)
+  {
+    buffer_glyph_set.set_relaxed (o.buffer_glyph_set.get_relaxed ());
+    o.buffer_glyph_set.set_relaxed (nullptr);
+  }
+  hb_aat_scratch_t & operator = (hb_aat_scratch_t &&o)
+  {
+    buffer_glyph_set.set_relaxed (o.buffer_glyph_set.get_relaxed ());
+    o.buffer_glyph_set.set_relaxed (nullptr);
+    return *this;
+  }
+  ~hb_aat_scratch_t ()
+  {
+    auto *s = buffer_glyph_set.get_relaxed ();
+    if (unlikely (!s))
+      return;
+    s->fini ();
+    hb_free (s);
+  }
+
+  hb_bit_set_t *create_buffer_glyph_set () const
+  {
+    hb_bit_set_t *s = buffer_glyph_set.get_acquire ();
+    if (s && buffer_glyph_set.cmpexch (s, nullptr))
+    {
+      s->clear ();
+      return s;
+    }
+
+    s = (hb_bit_set_t *) hb_calloc (1, sizeof (hb_bit_set_t));
+    if (unlikely (!s))
+      return nullptr;
+    s->init ();
+
+    return s;
+  }
+  void destroy_buffer_glyph_set (hb_bit_set_t *s) const
+  {
+    if (unlikely (!s))
+      return;
+    if (buffer_glyph_set.cmpexch (nullptr, s))
+      return;
+    s->fini ();
+    hb_free (s);
+  }
+
+  mutable hb_atomic_t<hb_bit_set_t *> buffer_glyph_set;
+};
+
+enum { DELETED_GLYPH = 0xFFFF };
+
+#define HB_BUFFER_SCRATCH_FLAG_AAT_HAS_DELETED HB_BUFFER_SCRATCH_FLAG_SHAPER0
 
 struct hb_aat_apply_context_t :
        hb_dispatch_context_t<hb_aat_apply_context_t, bool, HB_DEBUG_APPLY>
@@ -64,15 +123,17 @@ struct hb_aat_apply_context_t :
   hb_buffer_t *buffer;
   hb_sanitize_context_t sanitizer;
   const ankr *ankr_table;
-  const OT::GDEF *gdef_table;
+  const OT::GDEF &gdef;
+  bool has_glyph_classes;
   const hb_sorted_vector_t<hb_aat_map_t::range_flags_t> *range_flags = nullptr;
-  bool using_buffer_glyph_set = false;
-  hb_bit_set_t buffer_glyph_set;
-  const hb_bit_set_t *left_set = nullptr;
-  const hb_bit_set_t *right_set = nullptr;
-  const hb_bit_set_t *machine_glyph_set = nullptr;
-  hb_aat_class_cache_t *machine_class_cache = nullptr;
   hb_mask_t subtable_flags = 0;
+  bool buffer_is_reversed = false;
+  // Caches
+  bool using_buffer_glyph_set = false;
+  hb_bit_set_t *buffer_glyph_set = nullptr;
+  const hb_bit_set_t *first_set = nullptr;
+  const hb_bit_set_t *second_set = nullptr;
+  hb_aat_class_cache_t *machine_class_cache = nullptr;
 
   /* Unused. For debug tracing only. */
   unsigned int lookup_index;
@@ -88,23 +149,92 @@ struct hb_aat_apply_context_t :
 
   void set_lookup_index (unsigned int i) { lookup_index = i; }
 
+  void reverse_buffer ()
+  {
+    buffer->reverse ();
+    buffer_is_reversed = !buffer_is_reversed;
+  }
+
   void setup_buffer_glyph_set ()
   {
-    using_buffer_glyph_set = buffer->len >= 4;
+    using_buffer_glyph_set = buffer->len >= 4 && buffer_glyph_set;
 
-    if (using_buffer_glyph_set)
-      buffer->collect_codepoints (buffer_glyph_set);
+    if (likely (using_buffer_glyph_set))
+      buffer->collect_codepoints (*buffer_glyph_set);
   }
   bool buffer_intersects_machine () const
   {
-    if (using_buffer_glyph_set)
-      return buffer_glyph_set.intersects (*machine_glyph_set);
+    if (likely (using_buffer_glyph_set))
+      return buffer_glyph_set->intersects (*first_set);
 
     // Faster for shorter buffers.
     for (unsigned i = 0; i < buffer->len; i++)
-      if (machine_glyph_set->has (buffer->info[i].codepoint))
+      if (first_set->has (buffer->info[i].codepoint))
 	return true;
     return false;
+  }
+
+  template <typename T>
+  HB_NODISCARD bool output_glyphs (unsigned int count,
+				   const T *glyphs)
+  {
+    if (likely (using_buffer_glyph_set))
+      buffer_glyph_set->add_array (glyphs, count);
+    for (unsigned int i = 0; i < count; i++)
+    {
+      if (glyphs[i] == DELETED_GLYPH)
+      {
+        buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_AAT_HAS_DELETED;
+	_hb_glyph_info_set_aat_deleted (&buffer->cur());
+      }
+      else
+      {
+#ifndef HB_NO_OT_LAYOUT
+	if (has_glyph_classes)
+	  _hb_glyph_info_set_glyph_props (&buffer->cur(),
+					  gdef.get_glyph_props (glyphs[i]));
+#endif
+      }
+      if (unlikely (!buffer->output_glyph (glyphs[i]))) return false;
+    }
+    return true;
+  }
+
+  HB_NODISCARD bool replace_glyph (hb_codepoint_t glyph)
+  {
+    if (glyph == DELETED_GLYPH)
+    {
+      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_AAT_HAS_DELETED;
+      _hb_glyph_info_set_aat_deleted (&buffer->cur());
+    }
+
+    if (likely (using_buffer_glyph_set))
+      buffer_glyph_set->add (glyph);
+#ifndef HB_NO_OT_LAYOUT
+    if (has_glyph_classes)
+      _hb_glyph_info_set_glyph_props (&buffer->cur(),
+				      gdef.get_glyph_props (glyph));
+#endif
+    return buffer->replace_glyph (glyph);
+  }
+
+  HB_NODISCARD bool delete_glyph ()
+  {
+    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_AAT_HAS_DELETED;
+    _hb_glyph_info_set_aat_deleted (&buffer->cur());
+    return buffer->replace_glyph (DELETED_GLYPH);
+  }
+
+  void replace_glyph_inplace (unsigned i, hb_codepoint_t glyph)
+  {
+    buffer->info[i].codepoint = glyph;
+    if (likely (using_buffer_glyph_set))
+      buffer_glyph_set->add (glyph);
+#ifndef HB_NO_OT_LAYOUT
+    if (has_glyph_classes)
+      _hb_glyph_info_set_glyph_props (&buffer->info[i],
+				      gdef.get_glyph_props (glyph));
+#endif
   }
 };
 
@@ -112,8 +242,6 @@ struct hb_aat_apply_context_t :
 /*
  * Lookup Table
  */
-
-enum { DELETED_GLYPH = 0xFFFF };
 
 template <typename T> struct Lookup;
 
@@ -179,6 +307,7 @@ struct LookupSegmentSingle
   template <typename set_t, typename filter_t>
   void collect_glyphs_filtered (set_t &glyphs, const filter_t &filter) const
   {
+    if (first == DELETED_GLYPH) return;
     if (!filter (value)) return;
     glyphs.add_range (first, last);
   }
@@ -268,6 +397,7 @@ struct LookupSegmentArray
   template <typename set_t, typename filter_t>
   void collect_glyphs_filtered (set_t &glyphs, const void *base, const filter_t &filter) const
   {
+    if (first == DELETED_GLYPH) return;
     const auto &values = base+valuesZ;
     for (hb_codepoint_t i = first; i <= last; i++)
       if (filter (values[i - first]))
@@ -368,6 +498,7 @@ struct LookupSingle
   template <typename set_t, typename filter_t>
   void collect_glyphs_filtered (set_t &glyphs, const filter_t &filter) const
   {
+    if (glyph == DELETED_GLYPH) return;
     if (!filter (value)) return;
     glyphs.add (glyph);
   }
@@ -517,6 +648,23 @@ struct LookupFormat10
     glyphs.add_range (firstGlyph, firstGlyph + glyphCount - 1);
   }
 
+  template <typename set_t, typename filter_t>
+  void collect_glyphs_filtered (set_t &glyphs, const filter_t &filter) const
+  {
+    if (unlikely (!glyphCount)) return;
+    if (firstGlyph == DELETED_GLYPH) return;
+    const HBUINT8 *p = valueArrayZ.arrayZ;
+    for (unsigned i = 0; i < glyphCount; i++)
+    {
+      unsigned int v = 0;
+      unsigned int count = valueSize;
+      for (unsigned int j = 0; j < count; j++)
+	v = (v << 8) | *p++;
+      if (filter (v))
+	glyphs.add (firstGlyph + i);
+    }
+  }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -587,6 +735,7 @@ struct Lookup
     case 4: hb_barrier (); u.format4.collect_glyphs_filtered (glyphs, filter); return;
     case 6: hb_barrier (); u.format6.collect_glyphs_filtered (glyphs, filter); return;
     case 8: hb_barrier (); u.format8.collect_glyphs_filtered (glyphs, filter); return;
+    case 10: hb_barrier (); u.format10.collect_glyphs_filtered (glyphs, filter); return;
     default:return;
     }
   }
@@ -716,11 +865,6 @@ struct StateTable
     STATE_START_OF_LINE = 1,
   };
 
-  template <typename set_t>
-  void collect_glyphs (set_t &glyphs, unsigned num_glyphs) const
-  {
-    (this+classTable).collect_glyphs (glyphs, num_glyphs);
-  }
   template <typename set_t, typename table_t>
   void collect_initial_glyphs (set_t &glyphs, unsigned num_glyphs, const table_t &table) const
   {
@@ -746,6 +890,10 @@ struct StateTable
     }
 
     // And glyphs in those classes.
+
+    if (filter (CLASS_DELETED_GLYPH))
+      glyphs.add (DELETED_GLYPH);
+
     (this+classTable).collect_glyphs_filtered (glyphs, num_glyphs, filter);
   }
 
@@ -956,6 +1104,8 @@ struct SubtableGlyphCoverage
     for (unsigned i = 0; i < subtable_count; i++)
     {
       uint32_t offset = (uint32_t) subtableOffsets[i];
+      // A font file called SFNSDisplay.ttf has value 0xFFFFFFFF in the offsets.
+      // Just ignore it.
       if (offset == 0 || offset == 0xFFFFFFFF)
         continue;
       if (unlikely (!subtableOffsets[i].sanitize (c, this, bytes)))

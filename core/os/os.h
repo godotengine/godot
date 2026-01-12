@@ -40,6 +40,8 @@
 
 #include <cstdlib>
 
+class MainLoop;
+
 class OS {
 	static OS *singleton;
 	static uint64_t target_ticks;
@@ -130,6 +132,8 @@ public:
 
 	static OS *get_singleton();
 
+	static bool prefer_meta_over_ctrl();
+
 	void set_current_rendering_driver_name(const String &p_driver_name) { _current_rendering_driver_name = p_driver_name; }
 	void set_current_rendering_method(const String &p_name) { _current_rendering_method = p_name; }
 	void set_gles_over_gl(bool p_enabled) { _is_gles_over_gl = p_enabled; }
@@ -201,6 +205,7 @@ public:
 	virtual Error shell_open(const String &p_uri);
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 	virtual Error set_cwd(const String &p_cwd);
+	virtual String get_cwd() const;
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
@@ -223,6 +228,7 @@ public:
 
 	void ensure_user_data_dir();
 
+	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
 	virtual MainLoop *get_main_loop() const = 0;
 
 	virtual void yield();
@@ -294,6 +300,7 @@ public:
 	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
+	virtual String get_bundle_icon_name() const;
 
 	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;

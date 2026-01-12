@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SplineIK3D" inherits="ChainIK3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [SkeletonModifier3D] for aligning bones along a [Path3D].
+	</brief_description>
+	<description>
+		A [SkeletonModifier3D] for aligning bones along a [Path3D]. The smoothness of the fitting depends on the [member Curve3D.bake_interval].
+		If you want the [Path3D] to attach to a specific bone, it is recommended to place a [ModifierBoneTarget3D] before the [SplineIK3D] in the [SkeletonModifier3D] list (children of the [Skeleton3D]), and then place a [Path3D] as the [ModifierBoneTarget3D]'s child.
+		Bone twist is determined based on the [method Curve3D.get_point_tilt].
+		If the root bone joint and the start point of the [Curve3D] are separated, it assumes that there is a linear line segment between them. This means that the vector pointing toward the start point of the [Curve3D] takes precedence over the shortest intersection point along the [Curve3D].
+		If the end bone joint exceeds the path length, it is bent as close as possible to the end point of the [Curve3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_path_3d" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the node path of the [Path3D] which is describing the path.
+			</description>
+		</method>
+		<method name="get_tilt_fade_in" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tilt interpolation method used between the root bone and the start point of the [Curve3D] when they are apart. See also [method set_tilt_fade_in].
+			</description>
+		</method>
+		<method name="get_tilt_fade_out" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tilt interpolation method used between the end bone and the end point of the [Curve3D] when they are apart. See also [method set_tilt_fade_out].
+			</description>
+		</method>
+		<method name="is_tilt_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns if the tilt property of the [Curve3D] affects the bone twist.
+			</description>
+		</method>
+		<method name="set_path_3d">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="path_3d" type="NodePath" />
+			<description>
+				Sets the node path of the [Path3D] which is describing the path.
+			</description>
+		</method>
+		<method name="set_tilt_enabled">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets if the tilt property of the [Curve3D] should affect the bone twist.
+			</description>
+		</method>
+		<method name="set_tilt_fade_in">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				If [param size] is greater than [code]0[/code], the tilt is interpolated between [param size] start bones from the start point of the [Curve3D] when they are apart.
+				If [param size] is equal [code]0[/code], the tilts between the root bone head and the start point of the [Curve3D] are unified with a tilt of the start point of the [Curve3D].
+				If [param size] is less than [code]0[/code], the tilts between the root bone and the start point of the [Curve3D] are [code]0.0[/code].
+			</description>
+		</method>
+		<method name="set_tilt_fade_out">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="size" type="int" />
+			<description>
+				If [param size] is greater than [code]0[/code], the tilt is interpolated between [param size] end bones from the end point of the [Curve3D] when they are apart.
+				If [param size] is equal [code]0[/code], the tilts between the end bone tail and the end point of the [Curve3D] are unified with a tilt of the end point of the [Curve3D].
+				If [param size] is less than [code]0[/code], the tilts between the end bone and the end point of the [Curve3D] are [code]0.0[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
+			The number of settings.
+		</member>
+	</members>
+</class>

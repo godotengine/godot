@@ -37,7 +37,7 @@
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(RD_ENABLED)
@@ -83,6 +83,8 @@ private:
 
 	void deinitialize_modules();
 
+	mutable String remote_fs_dir;
+
 public:
 	static OS_AppleEmbedded *get_singleton();
 
@@ -115,6 +117,8 @@ public:
 
 	virtual String get_cache_path() const override;
 	virtual String get_temp_path() const override;
+	virtual String get_resource_dir() const override;
+	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
 
@@ -125,6 +129,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
+
 	void on_focus_out();
 	void on_focus_in();
 
@@ -132,6 +138,9 @@ public:
 	void on_exit_background();
 
 	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
+
+	virtual bool request_permission(const String &p_name) override;
+	virtual Vector<String> get_granted_permissions() const override;
 };
 
 #endif // APPLE_EMBEDDED_ENABLED

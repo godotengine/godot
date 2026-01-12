@@ -4,7 +4,7 @@
  *
  *   The FreeType services for metrics variations (specification).
  *
- * Copyright (C) 2016-2024 by
+ * Copyright (C) 2016-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -77,7 +77,7 @@ FT_BEGIN_HEADER
   typedef void
   (*FT_Metrics_Adjust_Func)( FT_Face  face );
 
-  typedef FT_Error
+  typedef void
   (*FT_Size_Reset_Func)( FT_Size  size );
 
 

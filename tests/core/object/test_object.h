@@ -215,12 +215,12 @@ TEST_CASE("[Object] Construction") {
 }
 
 TEST_CASE("[Object] Script instance property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	object.set("some_name", 100, &valid);
+	object->set("some_name", 100, &valid);
 	CHECK(valid);
 	Variant actual_value;
 	CHECK_MESSAGE(
@@ -229,20 +229,22 @@ TEST_CASE("[Object] Script instance property setter") {
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the object.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	const Variant &actual_value = object.get("some_name", &valid);
+	const Variant &actual_value = object->get("some_name", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the script instance.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Built-in property setter") {
@@ -592,6 +594,44 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 	CHECK_MESSAGE(
 			ObjectDB::get_instance(obj_id) == nullptr,
 			"Object was tail-deleted without crashes.");
+}
+
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
+	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
+	return p_ref->get_reference_count();
+}
+
+TEST_CASE("[Object] RequiredParam Ref<T>") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+	const Ref<RefCounted> &ref_ref = ref;
+
+	RequiredParam<RefCounted> required = ref;
+	EXTRACT_PARAM_OR_FAIL(extract, required);
+
+	static_assert(std::is_same_v<decltype(ref_ref), decltype(extract)>);
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+
+	const int count = required_param_compare(ref, ref);
+	CHECK_NE(count, -1);
+	CHECK_EQ(count, ref->get_reference_count());
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+}
+
+TEST_CASE("[Object] RequiredResult") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredResult<RefCounted> required = ref;
+
+	Ref<RefCounted> unpacked = required;
+	Variant var = Ref<RefCounted>(required);
+
+	CHECK_EQ(ref, unpacked);
+	CHECK_EQ(ref, var);
 }
 
 } // namespace TestObject

@@ -124,8 +124,6 @@ private:
 	int total_metrics = 0;
 	int last_metric = -1;
 
-	int max_functions = 0;
-
 	bool updating_frame = false;
 
 	int hover_metric = -1;

@@ -27,8 +27,6 @@ web_files = [
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
     "web_main.cpp",
-    "ip_web.cpp",
-    "net_socket_web.cpp",
     "os_web.cpp",
 ]
 
@@ -40,6 +38,7 @@ sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
         "js/libs/library_godot_display.js",
+        "js/libs/library_godot_emscripten.js",
         "js/libs/library_godot_fetch.js",
         "js/libs/library_godot_webmidi.js",
         "js/libs/library_godot_os.js",

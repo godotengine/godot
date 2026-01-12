@@ -15,6 +15,7 @@
 #include <atomic>
 #include <set>
 
+#include "disjoint_sets.h"
 #include "impl.h"
 #include "parallel.h"
 #include "shared.h"
@@ -152,17 +153,17 @@ bool MergeMeshGLP(MeshGLP<Precision, I>& mesh) {
   Permute(openVerts, vertNew2Old);
 
   Collider collider(vertBox, vertMorton);
-  UnionFind<> uf(numVert);
+  DisjointSets uf(numVert);
 
   auto f = [&uf, &openVerts](int a, int b) {
-    return uf.unionXY(openVerts[a], openVerts[b]);
+    return uf.unite(openVerts[a], openVerts[b]);
   };
   auto recorder = MakeSimpleRecorder(f);
   collider.Collisions<true>(vertBox.cview(), recorder, false);
 
   for (size_t i = 0; i < mesh.mergeFromVert.size(); ++i) {
-    uf.unionXY(static_cast<int>(mesh.mergeFromVert[i]),
-               static_cast<int>(mesh.mergeToVert[i]));
+    uf.unite(static_cast<int>(mesh.mergeFromVert[i]),
+             static_cast<int>(mesh.mergeToVert[i]));
   }
 
   mesh.mergeToVert.clear();

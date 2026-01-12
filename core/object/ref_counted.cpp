@@ -95,6 +95,7 @@ bool RefCounted::unreference() {
 
 RefCounted::RefCounted() :
 		Object(true) {
+	_define_ancestry(AncestralClass::REF_COUNTED);
 	refcount.init();
 	refcount_init.init();
 }

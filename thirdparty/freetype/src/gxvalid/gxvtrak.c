@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT trak table validation (body).
  *
- * Copyright (C) 2004-2024 by
+ * Copyright (C) 2004-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -231,7 +231,7 @@
     gxvalid->table_data = trak;
     gxvalid->face       = face;
 
-    limit      = gxvalid->root->limit;
+    limit = gxvalid->root->limit;
 
     FT_TRACE3(( "validating `trak' table\n" ));
     GXV_INIT;

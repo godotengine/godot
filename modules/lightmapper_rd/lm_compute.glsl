@@ -46,7 +46,7 @@ layout(set = 1, binding = 2) uniform texture2D environment;
 #ifdef MODE_UNOCCLUDE
 
 layout(rgba32f, set = 1, binding = 0) uniform restrict image2DArray position;
-layout(rgba32f, set = 1, binding = 1) uniform restrict readonly image2DArray unocclude;
+layout(rgba32f, set = 1, binding = 1) uniform restrict image2DArray unocclude;
 
 #endif
 
@@ -73,7 +73,8 @@ layout(set = 1, binding = 1) uniform texture2DArray source_light;
 
 #ifdef MODE_DENOISE
 layout(set = 1, binding = 2) uniform texture2DArray source_normal;
-layout(set = 1, binding = 3) uniform DenoiseParams {
+layout(set = 1, binding = 3) uniform texture2DArray unocclude_mask;
+layout(set = 1, binding = 4) uniform DenoiseParams {
 	float spatial_bandwidth;
 	float light_bandwidth;
 	float albedo_bandwidth;
@@ -81,6 +82,7 @@ layout(set = 1, binding = 3) uniform DenoiseParams {
 
 	int half_search_window;
 	float filter_strength;
+	uint slice_count;
 }
 denoise_params;
 #endif
@@ -93,6 +95,7 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 region_ofs;
 	uint probe_count;
+	uint denoiser_range;
 }
 params;
 
@@ -1011,13 +1014,16 @@ void main() {
 
 	vec3 rays[4] = vec3[](tangent, bitangent, -tangent, -bitangent);
 	float min_d = 1e20;
+	float unocclude_mask = 0.0;
+
 	for (int i = 0; i < 4; i++) {
-		vec3 ray_to = base_pos + rays[i] * texel_size;
+		vec3 ray_to = base_pos + rays[i] * texel_size * params.denoiser_range;
 		float d;
 		vec3 norm;
 
 		if (trace_ray_closest_hit_distance(base_pos, ray_to, d, norm) == RAY_BACK) {
-			if (d < min_d) {
+			unocclude_mask = 1.0;
+			if (d <= texel_size && d < min_d) {
 				// This bias needs to be greater than the regular bias, because otherwise later, rays will go the other side when pointing back.
 				vertex_pos = base_pos + rays[i] * d + norm * bake_params.bias * 10.0;
 				min_d = d;
@@ -1028,6 +1034,7 @@ void main() {
 	position_alpha.xyz = vertex_pos;
 
 	imageStore(position, ivec3(atlas_pos, params.atlas_slice), position_alpha);
+	imageStore(unocclude, ivec3(atlas_pos, params.atlas_slice), vec4(unocclude_mask, 0, 0, 0));
 
 #endif
 
@@ -1187,13 +1194,9 @@ void main() {
 	const float FILTER_SQUARE_TWO_SIGMA_LIGHT_SQUARE = FILTER_VALUE * FILTER_VALUE * TWO_SIGMA_LIGHT_SQUARE;
 	const float EPSILON = 1e-6f;
 
-#ifdef USE_SH_LIGHTMAPS
-	const uint slice_count = 4;
+	const uint slice_count = denoise_params.slice_count;
 	const uint slice_base = params.atlas_slice * slice_count;
-#else
-	const uint slice_count = 1;
-	const uint slice_base = params.atlas_slice;
-#endif
+	const bool is_directional = (slice_count == 4);
 
 	for (uint i = 0; i < slice_count; i++) {
 		uint lightmap_slice = slice_base + i;
@@ -1211,14 +1214,22 @@ void main() {
 					vec3 search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(search_pos, lightmap_slice), 0).rgb;
 					vec3 search_albedo = texelFetch(sampler2DArray(albedo_tex, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).rgb;
 					vec3 search_normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).xyz;
+					float search_occlusion = texelFetch(sampler2DArray(unocclude_mask, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).r;
 					float patch_square_dist = 0.0f;
 					for (int offset_y = -HALF_PATCH_WINDOW; offset_y <= HALF_PATCH_WINDOW; offset_y++) {
 						for (int offset_x = -HALF_PATCH_WINDOW; offset_x <= HALF_PATCH_WINDOW; offset_x++) {
 							ivec2 offset_input_pos = atlas_pos + ivec2(offset_x, offset_y);
 							ivec2 offset_search_pos = search_pos + ivec2(offset_x, offset_y);
-							vec3 offset_input_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_input_pos, lightmap_slice), 0).rgb;
-							vec3 offset_search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_search_pos, lightmap_slice), 0).rgb;
+							vec3 offset_input_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_input_pos, slice_base), 0).rgb;
+							vec3 offset_search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(offset_search_pos, slice_base), 0).rgb;
 							vec3 offset_delta_rgb = offset_input_rgb - offset_search_rgb;
+
+							if (is_directional) {
+								// Since L0 data is 1/4 the value of a regular lightmap,
+								// we have to multiply it by 4.
+								offset_delta_rgb *= 4.0;
+							}
+
 							patch_square_dist += dot(offset_delta_rgb, offset_delta_rgb) - TWO_SIGMA_LIGHT_SQUARE;
 						}
 					}
@@ -1252,12 +1263,16 @@ void main() {
 					float normal_square_dist = dot(normal_delta, normal_delta);
 					weight *= exp(-normal_square_dist / TWO_SIGMA_NORMAL_SQUARE);
 
+					// Weight with occlusion.
+					weight *= 1.0 - search_occlusion;
+
 					denoised_rgb += weight * search_rgb;
 					sum_weights += weight;
 				}
 			}
 
-			denoised_rgb /= sum_weights;
+			// Avoid division by zero if no weights were accumulated.
+			denoised_rgb = sum_weights > EPSILON ? denoised_rgb / sum_weights : input_rgb;
 		} else {
 			// Ignore pixels where the normal is empty, just copy the light color.
 			denoised_rgb = input_light.rgb;
@@ -1269,24 +1284,13 @@ void main() {
 
 #ifdef MODE_PACK_L1_COEFFS
 	vec4 base_coeff = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4), 0);
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4), base_coeff);
 
 	for (int i = 1; i < 4; i++) {
 		vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + i), 0);
+		c.rgb /= (base_coeff.rgb * 8.0 + vec3(1e-6f));
+		c.rgb = clamp(c.rgb + vec3(0.5), vec3(0.0), vec3(1.0));
 
-		if (abs(base_coeff.r) > 0.0) {
-			c.r /= (base_coeff.r * 8);
-		}
-
-		if (abs(base_coeff.g) > 0.0) {
-			c.g /= (base_coeff.g * 8);
-		}
-
-		if (abs(base_coeff.b) > 0.0) {
-			c.b /= (base_coeff.b * 8);
-		}
-
-		c.rgb += vec3(0.5);
-		c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
 		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), c);
 	}
 #endif

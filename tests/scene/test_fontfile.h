@@ -101,13 +101,13 @@ TEST_CASE("[FontFile] Create font file and check data") {
 	ERR_PRINT_ON
 
 	// Load a valid file.
-	CHECK(font_file->load_dynamic_font("thirdparty/fonts/NotoSans_Regular.woff2") == OK);
+	CHECK(font_file->load_dynamic_font("thirdparty/fonts/Inter_Regular.woff2") == OK);
 
 	// Check fontfile data.
 	CHECK_MESSAGE(font_file->get_data().is_empty() == false, "Fontfile should have been loaded.");
-	CHECK_MESSAGE(font_file->get_font_name() == "Noto Sans", "Loaded correct font name.");
+	CHECK_MESSAGE(font_file->get_font_name() == "Inter", "Loaded correct font name.");
 	CHECK_MESSAGE(font_file->get_font_style_name() == "Regular", "Loaded correct font style.");
-	CHECK_MESSAGE(font_file->get_data().size() == 148480llu, "Whole fontfile was loaded.");
+	CHECK_MESSAGE(font_file->get_data().size() == 111268llu, "Whole fontfile was loaded.");
 
 	// Valid glyphs.
 	CHECK_MESSAGE(font_file->get_glyph_index(2, 'a', 0) != 0, "Glyph index for 'a' is valid.");

@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/templates/rb_map.h"
 
 template <typename T>
 class TypedArray;
@@ -46,10 +47,14 @@ class ProjectSettings : public Object {
 	// and will always detect the initial project settings as a "change".
 	uint32_t _version = 1;
 
+	// Track changed settings for get_changed_settings functionality
+	HashSet<StringName> changed_settings;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
+	// This constant is used to make the ".godot" folder and paths like "res://.godot/editor".
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
-	static inline const String EDITOR_SETTING_OVERRIDE_PREFIX = "editor_overrides/";
+	static inline const String EDITOR_SETTING_OVERRIDE_PREFIX = PNAME("editor_overrides") + String("/");
 
 	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
@@ -118,7 +123,7 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _queue_changed();
+	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
 
 	static inline ProjectSettings *singleton = nullptr;
@@ -209,11 +214,16 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
+	// Change tracking methods
+	PackedStringArray get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+	void fix_autoload_paths();
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);

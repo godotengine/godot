@@ -37,6 +37,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
@@ -57,11 +58,11 @@
 #endif // _3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 void SceneTreeTimer::_bind_methods() {
@@ -136,6 +137,9 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 	}
 }
 #endif // _3D_DISABLED
+
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -243,10 +247,10 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 	Vector<ObjectID> processed;
 	for (const ObjectID &id : accessibility_change_queue) {
 		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-		if (!node || !node->get_window()) {
+		if (!node || !node->get_non_popup_window() || !node->get_window()->is_visible()) {
 			processed.push_back(id);
 			continue; // Invalid node, remove from list and skip.
-		} else if (node->get_window()->get_window_id() != p_window_id) {
+		} else if (node->get_non_popup_window()->get_window_id() != p_window_id) {
 			continue; // Another window, skip.
 		}
 		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
@@ -262,6 +266,15 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 		Window *w_focus = w_this->get_focused_subwindow();
 		if (w_focus && !w_focus->is_part_of_edited_scene()) {
 			w_this = w_focus;
+		}
+
+		// Popups have no native window focus, but have focused element.
+		DisplayServer::WindowID popup_id = DisplayServer::get_singleton()->window_get_active_popup();
+		if (popup_id != DisplayServer::INVALID_WINDOW_ID) {
+			Window *popup_w = Window::get_from_id(popup_id);
+			if (popup_w && w_this->is_ancestor_of(popup_w)) {
+				w_this = popup_w;
+			}
 		}
 
 		RID new_focus_element;
@@ -560,12 +573,16 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 }
 
 void SceneTree::initialize() {
+	GodotProfileZone("SceneTree::initialize");
 	ERR_FAIL_NULL(root);
 	MainLoop::initialize();
 	root->_set_tree(this);
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
 	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
@@ -584,10 +601,6 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 #ifndef _3D_DISABLED
@@ -886,6 +899,10 @@ void SceneTree::_main_window_focus_in() {
 }
 
 void SceneTree::_notification(int p_notification) {
+	if (!get_root()) {
+		return;
+	}
+
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			get_root()->propagate_notification(p_notification);
@@ -1006,15 +1023,16 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 		return collision_material;
 	}
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	line_material->set_albedo(get_debug_collisions_color());
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
+	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
-	collision_material = line_material;
+	collision_material = material;
 
 	return collision_material;
 }
@@ -1563,22 +1581,20 @@ Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	return E->value.nodes[0];
 }
 
-void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
+Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
-		return;
+		return {};
 	}
 
 	_update_group_order(E->value); //update order just in case
 	int nc = E->value.nodes.size();
 	if (nc == 0) {
-		return;
+		return {};
 	}
-	Node **ptr = E->value.nodes.ptrw();
-	for (int i = 0; i < nc; i++) {
-		p_list->push_back(ptr[i]);
-	}
+
+	return E->value.nodes;
 }
 
 void SceneTree::_flush_delete_queue() {
@@ -1593,9 +1609,9 @@ void SceneTree::_flush_delete_queue() {
 	}
 }
 
-void SceneTree::queue_delete(Object *p_object) {
+void SceneTree::queue_delete(RequiredParam<Object> rp_object) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_NULL(p_object);
+	EXTRACT_PARAM_OR_FAIL(p_object, rp_object);
 	p_object->_is_queued_for_deletion = true;
 	delete_queue.push_back(p_object->get_instance_id());
 }
@@ -1668,11 +1684,18 @@ Error SceneTree::change_scene_to_file(const String &p_path) {
 	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
-	ERR_FAIL_COND_V_MSG(p_scene.is_null(), ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
+Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(p_scene, rp_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
+
+	return change_scene_to_node(new_scene);
+}
+
+Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(p_node, rp_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
 
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
@@ -1691,7 +1714,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene_id = new_scene->get_instance_id();
+	pending_new_scene_id = p_node->get_instance_id();
 	return OK;
 }
 
@@ -1716,7 +1739,7 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 
-Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
+RequiredResult<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_always, bool p_process_in_physics, bool p_ignore_time_scale) {
 	_THREAD_SAFE_METHOD_
 	Ref<SceneTreeTimer> stt;
 	stt.instantiate();
@@ -1728,7 +1751,7 @@ Ref<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool p_process_a
 	return stt;
 }
 
-Ref<Tween> SceneTree::create_tween() {
+RequiredResult<Tween> SceneTree::create_tween() {
 	_THREAD_SAFE_METHOD_
 	Ref<Tween> tween;
 	tween.instantiate(this);
@@ -1817,7 +1840,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 						break;
 					}
 				}
-				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + String(p_root_path) + "' in '" + String(E.key) + "'.");
 			}
 		}
 		if (p_multiplayer.is_valid()) {
@@ -1906,6 +1929,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
 	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
+	ClassDB::bind_method(D_METHOD("change_scene_to_node", "node"), &SceneTree::change_scene_to_node);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 	ClassDB::bind_method(D_METHOD("unload_current_scene"), &SceneTree::unload_current_scene);
@@ -2018,13 +2042,17 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
-	root->set_title(GLOBAL_GET("application/config/name"));
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		root->set_wrap_controls(true);
+		root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	} else {
+		root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	}
+
+	// Set after auto translate mode to avoid changing the displayed title back and forth.
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (root->get_world_3d().is_null()) {
@@ -2066,7 +2094,7 @@ SceneTree::SceneTree() {
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
 	root->set_use_taa(use_taa);
 
-	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	root->set_use_debanding(use_debanding);
 
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);

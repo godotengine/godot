@@ -223,6 +223,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
 			completed = false;
+			// Keep the first state alive via reference.
 			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
 		}
 	}
@@ -231,14 +232,6 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	state.result = Variant();
 
 	if (completed) {
-		if (first_state.is_valid()) {
-			first_state->emit_signal(SNAME("completed"), ret);
-		} else {
-			emit_signal(SNAME("completed"), ret);
-		}
-
-		GDScriptLanguage::get_singleton()->exit_function();
-
 		_clear_stack();
 	}
 

@@ -32,7 +32,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);
@@ -41,7 +41,6 @@ class NavigationPolygon : public Resource {
 	Vector<Vector2> vertices;
 	Vector<Vector<int>> polygons;
 	Vector<Vector<Vector2>> outlines;
-	Vector<Vector<Vector2>> baked_outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;

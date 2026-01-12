@@ -40,7 +40,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 #include <Obstacle2d.h>
 
@@ -97,7 +97,7 @@ void NavMap3D::set_merge_rasterizer_cell_scale(float p_value) {
 	if (merge_rasterizer_cell_scale == p_value) {
 		return;
 	}
-	merge_rasterizer_cell_scale = MAX(p_value, NavigationDefaults3D::NAV_MESH_CELL_SIZE_MIN);
+	merge_rasterizer_cell_scale = MAX(MIN(p_value, 0.1), NavigationDefaults3D::NAV_MESH_CELL_SIZE_MIN);
 	_update_merge_rasterizer_cell_dimensions();
 	map_settings_dirty = true;
 }
@@ -500,6 +500,9 @@ void NavMap3D::_update_rvo_obstacles_tree_2d() {
 	// The following block is modified copy from RVO2D::AddObstacle()
 	// Obstacles are linked and depend on all other obstacles.
 	for (NavObstacle3D *obstacle : obstacles) {
+		if (!obstacle->is_avoidance_enabled()) {
+			continue;
+		}
 		const Vector3 &_obstacle_position = obstacle->get_position();
 		const Vector<Vector3> &_obstacle_vertices = obstacle->get_vertices();
 

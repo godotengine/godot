@@ -13,29 +13,31 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Patrons
 
     Khronos® Group <https://www.khronos.org/>
-    OSS Capital <https://oss.capital/>
+    Scorewarrior <https://scwr.gg/godot>
 
 ## Platinum sponsors
 
-    Scorewarrior <https://scwr.gg/godot>
+    JetBrains <https://www.jetbrains.com/lp/rider-godot/>
     V-Sekai <https://github.com/V-Sekai>
     W4 Games <https://w4games.com/>
 
 ## Gold sponsors
 
     Mega Crit <https://www.megacrit.com/>
+    Player2 <https://player2.game/>
     Prehensile Tales <https://prehensile-tales.com>
     Robot Gentleman <http://robotgentleman.com/>
 
 ## Silver sponsors
 
     Bippinbits <https://bippinbits.com/>
+    Blobfish Games <https://www.blobfishgames.com/>
     Broken Rules <https://brokenrul.es>
     Chasing Carrots <https://www.chasing-carrots.com>
     Copia Wealth Studios <https://copiawealthstudios.com/>
+    Games by Malcs <https://gamesbymalcs.com/>
     LoadComplete <https://loadcomplete.com/>
     Null <https://null.com/>
-    Orbital Knight <https://www.orbitalknight.com/>
     Playful Studios <https://playfulstudios.com/>
     Re-Logic <https://re-logic.com/>
 
@@ -43,46 +45,51 @@ generous deed immortalized in the next stable release of Godot Engine.
 
     ASIFA-Hollywood <https://www.asifa-hollywood.org/>
     Christina Coffin <https://bsky.app/profile/christinacoffin.bsky.social>
-    Dominic Harris <https://wayfarer-games.com/>
-    Kiri "ExpiredPopsicle" Artemis <https://expiredpopsicle.com/>
+    Kanda <https://www.kanda.dk>
     Petr Kharitonov <https://petrkharitonov.com/>
-    Seats.aero <https://seats.aero/>
     Sylv <https://rankith.itch.io/unnamed-space-idle-prototype>
-    And 5 anonymous donors
+    And 2 anonymous donors
 
 ## Titanium members
 
     Adriaan de Jongh <https://adriaan.games>
     Basically Games
+    Deloryan <https://www.deloryan.com/>
     Draknek & Friends <https://www.draknek.org/>
     Garry Newman
-    Gigabrain AI Reddit Search Engine <https://thegigabrain.com/?utm_source=godot>
-    Jettelly <https://jettelly.com/>
+    Gigabrain AI Reddit Search Engine <https://thegigabrain.com?utm_source=godot>
     Justo Delgado Baudí <https://portfolio.mrcdk.com/>
     Kenney <https://kenney.nl/>
     Lucid Silence Games
-    Matthew Hall <https://crossyroad.com/>
+    Matthew Hall <https://crossyroad.com>
+    Megafauna Games <https://www.megafauna.games/>
+    Midjiwan AB <https://www.midjiwan.com>
+    Patrick Curry <https://patrickcurry.com/>
     PolyMars <https://polymars.dev/>
-    Purple Moss Collectors <https://purplemosscollectors.com/>
+    Purple Moss Collectors <https://purplemosscollectors.com>
     RPG in a Box <https://www.rpginabox.com>
     Starkandco <https://github.com/Starkandco>
-    Studio Sunshower <https://www.studiosunshower.com/>
+    Tiago Magalhães <https://azerkail.github.io/>
     TrampolineTales <https://TrampolineTales.com/>
-    粟二华 (Su Erhua)
-    And 4 anonymous donors
+    And 3 anonymous donors
 
 ## Platinum members
 
+    @reilaos
     Andy Touch
+    Austin Hackett
     BlockImperiumGames (BIG)
     Bytten Studio
     Christopher Shifflett
     Cody Bentley
     Darrin Massena
+    Emergo Entertainment
     Fabio Alessandrelli
+    GrammAcc
     HP van Braam
     iCommitGames
     Jason Hamilton
+    Jeremy Blouir
     Jonah Stich
     Josh Anthony
     Ludvig Temperli Risan
@@ -95,108 +102,122 @@ generous deed immortalized in the next stable release of Godot Engine.
     Nikita Blizniuk
     Raptor85
     Rémi Verschelde
-    Ronnie Cheng
     Ryan Heath
+    Sacha & Solène Waked
     ShikadiGum
     Silver Creek Entertainment
     Stephan Kessler
     Stephen Rice
-    And 14 anonymous donors
+    Walaber Entertainment
+    Wu Atnium
+    And 8 anonymous donors
 
 ## Gold members
 
     2 Nerdy Nerds
     73unny
     80px
+    A. Friedman
     Abigail F.
     Admiral Potato
-    afreytes
-    AinaVT
     Ajat BlackSun
     Alex177Alex
     alMoo Games
+    Alnis Smidchens
     Alva Majo
+    Ammerfest
+    Amritpal Gill
+    Andrea Monzini
     Andrew Eiche
-    Antti Vesanen
-    Arediss
+    Ariya Studio
     Asher Glick
     Axthelm
+    Bäckdahl
     BangTheWall
+    Bart Mistrot
+    beebanoo
+    Ben Rog-Wilhelm
+    Ben Sarsgard [Final Screw]
     Benito
     Benjamin Bridges
-    Ben Rog-Wilhelm
-    BetaTester704
     Brut
     Bryce Dixon
+    c64cosmin
+    Carl van der Geest
     Carlo Cabanilla
     Carlo del Mundo
-    Carl van der Geest
+    Chamber of Light, Flower and Essence Incorporated*
     Chocolate Software
     Chris Backas
-    Chris Lambson
     Christine Elisabeth Koppel
     Cindy Trieu
     ClarkThyLord
     Codex404
+    Conquintor
     cora
+    Corey Robinson
     Daniel Eichler
     Daniel Krafft
-    Datzju
-    David Chen Zhen
     David Coles
-    David Hubber
+    David Gehrig
     David Snopek
     Deakcor
+    Dejan Pejcic
     Delton Ding
-    dgehrig
+    DIGITAL ILIAD
     Disco Cat
     Distorted Realities
     DitherDream
+    Dominic Harris
     Dominik Frizel
     Don't You Know Who I Am? Inc.
+    Drew Gilbert
+    DRK PHNX
     Dustuu
     Dylan Dromard
+    Ed Morley
     Edelweiss
     eelSkillz
-    Emily Flion
     Ends
     Eren Ogrul
     Eric Brand
     Eric Phy
     Faisal Al-Kubaisi (QatariGameDev)
-    Fanny Pack Studios
     Felix Adam
     FeralBytes
-    Francisco Aliaga
     Francis Jasmin
     Frozen Fractal
+    Gael Roussel
     Gaudipern
-    GetIntoGameDev
     GlassBrick
     Grau
     Grzegorz Wereszko
     Guangzhou Lingchan
-    Guilherme Cattani
-    Hayden Oliver
     hiulit
-    https://domi.zip
+    Holly Stubbs
     Huedeane
-    Ikuti
-    Illyan
     I.M.I.Self
+    Illyan
     Immaculate Lift Studio
+    insomniacKoala
     Intrepid Marmot LLC
+    Isaac Clerencia
     Isaac Marovitz
+    Isaac W
     Ivan Tabashki
     jakemiki
     Jam
     Jason Cawood
+    jeff compas
     Jeff Hungerford
     Jesús Chicharro
     Johannes Wuensch
+    John Anders Stav
     John Gabriel
     Jonas Yamazaki
     Jonathan
+    Jonathan Bass
+    Jordan Chap
     José Canepa
     Julian Todd
     Justin Laster
@@ -204,25 +225,31 @@ generous deed immortalized in the next stable release of Godot Engine.
     Kalydi Balázs
     KAR Games
     Kiryonn
-    kodebold
     KOGA Mitsuhiro (@shiena)
     korinVR
     Kristian Kriehl
     KyletheDab
     Lars Thießen
+    Lee Ingram
     Lisandro Lorea (Red Mage Games)
     Logan Apple
+    Los Lecheros Maincreros
     Luca Junge
+    Luke_Username
     LyaaaaaGames
     m1n1ster
     Madison Nicole Videogames
     Mara Huldra
     Marek Belski
     Martin Šenkeřík
+    Maskerade Games
     Matthias B.
+    MCCCC
     Michael Alexsander
     Michael Gooch
     Michael Harrington
+    Mike Matthews
+    Milton Monroe
     Modus Ponens
     Moshe Harris
     Moth Soup
@@ -231,34 +258,40 @@ generous deed immortalized in the next stable release of Godot Engine.
     Nassor Paulino da Silva
     Neuroticfly Games
     nezticle
-    nikkehtine
     Niklas Wahrman
     Nitzan Bueno
     NotNet
-    Oathbringer
     Officine Pixel
     ohanaya3
     Okatima AB
+    ole-luk-oje
+    Oliver Oszko
     Oscar Robin
     ovym
+    Parade of Rain
+    Patrick Forringer
     Patrick Traynor
+    Paul Bettner
     Péter Horváth-Lázár
+    Peter Langmayr
     Petr Maláč
+    Phobos001
     pirey
-    protogames
     Rafa Laguna
-    Reid Hannaford
-    @reilaos
-    Request
     re:thinc
+    Reid Hannaford
+    Request
     Richard Ivánek
+    rmfandyplayz
+    Robin Six
     Robin Ward
+    Rodz Labs
     Ronny Mühle
     Rubén Rüger
     Samuel Judd
     Santi_FC
-    Seref Karahan
     shazzner
+    Shifty The Dev
     Shiny Shinken
     Silverclad Studios
     Skie Radscale
@@ -266,26 +299,27 @@ generous deed immortalized in the next stable release of Godot Engine.
     Sofox
     Space Kraken Studios
     Spoony Panda
+    Stormbrew
+    telling howitis
     tenuki
+    Terry Cavanagh
     ThatGamer
     Thomas Lobig
+    Timur Turatbekov
     Tobias Bocanegra
     Tom Langwaldt
     Trevor Slocum
     tukon
-    twitch.tv/RobitussinMD
-    Tyler C
     Urban Protagonist
     Vincent Foulon
     Vojtech Lacina
     Voxel Floof
     Watchinofoye
-    Yannick
+    yopox
     zikes
     Zoey Smith
     嗯大爷
-
-    And 143 anonymous donors
+    And 118 anonymous donors
 
 ## Silver and bronze donors
 

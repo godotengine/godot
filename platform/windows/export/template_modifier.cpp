@@ -31,6 +31,8 @@
 #include "template_modifier.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/image.h"
 
 void TemplateModifier::ByteStream::save(uint8_t p_value, Vector<uint8_t> &r_bytes) const {
 	save(p_value, r_bytes, 1);
@@ -217,6 +219,11 @@ TemplateModifier::VersionInfo::VersionInfo() {
 	value_length = 52;
 }
 
+Vector<uint8_t> TemplateModifier::ManifestInfo::save() const {
+	Vector<uint8_t> bytes = manifest.to_utf8_buffer();
+	return bytes;
+}
+
 Vector<uint8_t> TemplateModifier::IconEntry::save() const {
 	Vector<uint8_t> bytes;
 	ByteStream::save(width, bytes);
@@ -347,10 +354,10 @@ uint32_t TemplateModifier::_snap(uint32_t p_value, uint32_t p_size) const {
 	return p_value + (p_value % p_size ? p_size - (p_value % p_size) : 0);
 }
 
-Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info) const {
+Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, const GroupIcon &p_group_icon, const VersionInfo &p_version_info, const ManifestInfo &p_manifest_info) const {
 	// 0x04, 0x00 as string length ICON in UTF16 and padding to 32 bits
 	const uint8_t ICON_DIRECTORY_STRING[] = { 0x04, 0x00, 0x49, 0x00, 0x43, 0x00, 0x4f, 0x00, 0x4e, 0x00, 0x00, 0x00 };
-	const uint16_t RT_ENTRY_COUNT = 3;
+	const uint16_t RT_ENTRY_COUNT = 4;
 	const uint32_t icon_count = p_group_icon.images.size();
 
 	ResourceDirectoryTable root_directory_table;
@@ -376,6 +383,12 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 	rt_version_entry.subdirectory = true;
 	resources.append_array(rt_version_entry.save());
 
+	ResourceDirectoryEntry rt_manifest_entry;
+	rt_manifest_entry.id = ResourceDirectoryEntry::MANIFEST;
+	rt_manifest_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE;
+	rt_manifest_entry.subdirectory = true;
+	resources.append_array(rt_manifest_entry.save());
+
 	ResourceDirectoryTable icon_table;
 	icon_table.id_entry_count = icon_count;
 	resources.append_array(icon_table.save());
@@ -395,7 +408,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 		ResourceDirectoryEntry language_icon_entry;
 		language_icon_entry.id = ResourceDirectoryEntry::ENGLISH;
-		language_icon_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + icon_count * 2 + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + i * ResourceDataEntry::SIZE;
+		language_icon_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + icon_count * 2 + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + i * ResourceDataEntry::SIZE;
 		resources.append_array(language_icon_entry.save());
 	}
 
@@ -416,7 +429,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 	ResourceDirectoryEntry group_icon_language_entry;
 	group_icon_language_entry.id = ResourceDirectoryEntry::ENGLISH;
-	group_icon_language_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + icon_count * ResourceDataEntry::SIZE;
+	group_icon_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + icon_count * ResourceDataEntry::SIZE;
 	resources.append_array(group_icon_language_entry.save());
 
 	ResourceDirectoryTable version_table;
@@ -435,8 +448,27 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 
 	ResourceDirectoryEntry version_language_entry;
 	version_language_entry.id = ResourceDirectoryEntry::ENGLISH;
-	version_language_entry.data_offset = (6 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 4) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 1) * ResourceDataEntry::SIZE;
+	version_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 1) * ResourceDataEntry::SIZE;
 	resources.append_array(version_language_entry.save());
+
+	ResourceDirectoryTable manifest_table;
+	manifest_table.id_entry_count = 1;
+	resources.append_array(manifest_table.save());
+
+	ResourceDirectoryEntry manifest_entry;
+	manifest_entry.id = 1;
+	manifest_entry.data_offset = (7 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 5) * ResourceDirectoryEntry::SIZE;
+	manifest_entry.subdirectory = true;
+	resources.append_array(manifest_entry.save());
+
+	ResourceDirectoryTable manifest_language_table;
+	manifest_language_table.id_entry_count = 1;
+	resources.append_array(manifest_language_table.save());
+
+	ResourceDirectoryEntry manifest_language_entry;
+	manifest_language_entry.id = ResourceDirectoryEntry::ENGLISH;
+	manifest_language_entry.data_offset = (8 + icon_count) * ResourceDirectoryTable::SIZE + (RT_ENTRY_COUNT + 2 * icon_count + 6) * ResourceDirectoryEntry::SIZE + sizeof(ICON_DIRECTORY_STRING) + (icon_count + 2) * ResourceDataEntry::SIZE;
+	resources.append_array(manifest_language_entry.save());
 
 	Vector<uint8_t> icon_directory_string;
 	icon_directory_string.resize(sizeof(ICON_DIRECTORY_STRING));
@@ -449,6 +481,7 @@ Vector<uint8_t> TemplateModifier::_create_resources(uint32_t p_virtual_address, 
 	}
 	data_entries.append(p_group_icon.save());
 	data_entries.append(p_version_info.save());
+	data_entries.append(p_manifest_info.save());
 
 	uint32_t offset = resources.size() + data_entries.size() * ResourceDataEntry::SIZE;
 
@@ -497,6 +530,24 @@ TemplateModifier::VersionInfo TemplateModifier::_create_version_info(const HashM
 	return version_info;
 }
 
+TemplateModifier::ManifestInfo TemplateModifier::_create_manifest_info() const {
+	ManifestInfo manifest_info;
+	manifest_info.manifest = R"MANIFEST(<?xml version="1.0" encoding="utf-8"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+	<application xmlns="urn:schemas-microsoft-com:asm.v3">
+		<windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
+			<ws2:longPathAware>true</ws2:longPathAware>
+		</windowsSettings>
+	</application>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'/>
+		</dependentAssembly>
+	</dependency>
+</assembly>)MANIFEST";
+	return manifest_info;
+}
+
 TemplateModifier::GroupIcon TemplateModifier::_create_group_icon(const String &p_icon_path) const {
 	GroupIcon group_icon;
 
@@ -533,8 +584,8 @@ Error TemplateModifier::_truncate(const String &p_path, uint32_t p_size) const {
 }
 
 HashMap<String, String> TemplateModifier::_get_strings(const Ref<EditorExportPreset> &p_preset) const {
-	String file_version = p_preset->get("application/file_version");
-	String product_version = p_preset->get("application/product_version");
+	String file_version = p_preset->get_version("application/file_version", true);
+	String product_version = p_preset->get_version("application/product_version", true);
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
 	String file_description = p_preset->get("application/file_description");
@@ -574,37 +625,80 @@ Error TemplateModifier::_modify_template(const Ref<EditorExportPreset> &p_preset
 
 	Vector<SectionEntry> section_entries = _get_section_entries(template_file);
 	ERR_FAIL_COND_V(section_entries.size() < 2, ERR_CANT_OPEN);
-	ERR_FAIL_COND_V(section_entries[section_entries.size() - 2].name != String(".rsrc"), ERR_CANT_OPEN);
-	ERR_FAIL_COND_V(section_entries[section_entries.size() - 1].name != String(".reloc"), ERR_CANT_OPEN);
-	// TODO fail on not sorted by physical address?
+
+	// Find resource (".rsrc") and relocation (".reloc") sections, usually last two, but ".debug_*" sections (referenced as "/[n]"), symbol table, and string table can follow.
+	int resource_index = section_entries.size() - 2;
+	int relocations_index = section_entries.size() - 1;
+	for (int i = 0; i < section_entries.size(); i++) {
+		if (section_entries[i].name == ".rsrc") {
+			resource_index = i;
+		} else if (section_entries[i].name == ".reloc") {
+			relocations_index = i;
+		}
+	}
+
+	ERR_FAIL_COND_V(section_entries[resource_index].name != ".rsrc", ERR_CANT_OPEN);
+	ERR_FAIL_COND_V(section_entries[relocations_index].name != ".reloc", ERR_CANT_OPEN);
 
 	uint64_t original_template_size = template_file->get_length();
 
 	GroupIcon group_icon = _create_group_icon(p_icon_path);
 
 	VersionInfo version_info = _create_version_info(_get_strings(p_preset));
+	ManifestInfo manifest_info = _create_manifest_info();
 
-	SectionEntry resources_section_entry = section_entries.get(section_entries.size() - 2);
+	SectionEntry &resources_section_entry = section_entries.write[resource_index];
 	uint32_t old_resources_size_of_raw_data = resources_section_entry.size_of_raw_data;
-	Vector<uint8_t> resources = _create_resources(resources_section_entry.virtual_address, group_icon, version_info);
+	Vector<uint8_t> resources = _create_resources(resources_section_entry.virtual_address, group_icon, version_info, manifest_info);
 	resources_section_entry.virtual_size = resources.size();
 	resources.resize_initialized(_snap(resources.size(), BLOCK_SIZE));
 	resources_section_entry.size_of_raw_data = resources.size();
 
-	SectionEntry relocations_section_entry = section_entries.get(section_entries.size() - 1);
-	uint32_t old_relocations_virtual_address = relocations_section_entry.virtual_address;
-	template_file->seek(relocations_section_entry.pointer_to_raw_data);
-	Vector<uint8_t> relocations = template_file->get_buffer(relocations_section_entry.size_of_raw_data);
-	relocations_section_entry.pointer_to_raw_data = resources_section_entry.pointer_to_raw_data + resources_section_entry.size_of_raw_data;
-	relocations_section_entry.virtual_address = resources_section_entry.virtual_address + _snap(resources_section_entry.virtual_size, PE_PAGE_SIZE);
+	int32_t raw_size_delta = resources_section_entry.size_of_raw_data - old_resources_size_of_raw_data;
+	uint32_t old_last_section_virtual_address = section_entries.get(section_entries.size() - 1).virtual_address;
+
+	// Some data (e.g. DWARF debug symbols) can be placed after the last section.
+	uint32_t old_footer_offset = section_entries.get(section_entries.size() - 1).pointer_to_raw_data + section_entries.get(section_entries.size() - 1).size_of_raw_data;
+
+	// Copy and update sections after ".rsrc".
+	Vector<Vector<uint8_t>> moved_section_data;
+	uint32_t prev_virtual_address = resources_section_entry.virtual_address;
+	uint32_t prev_virtual_size = resources_section_entry.virtual_size;
+	for (int i = resource_index + 1; i < section_entries.size(); i++) {
+		SectionEntry &section_entry = section_entries.write[i];
+		template_file->seek(section_entry.pointer_to_raw_data);
+		Vector<uint8_t> data = template_file->get_buffer(section_entry.size_of_raw_data);
+		moved_section_data.push_back(data);
+		section_entry.pointer_to_raw_data += raw_size_delta;
+		section_entry.virtual_address = prev_virtual_address + _snap(prev_virtual_size, PE_PAGE_SIZE);
+		prev_virtual_address = section_entry.virtual_address;
+		prev_virtual_size = section_entry.virtual_size;
+	}
+
+	// Copy COFF symbol table and string table after the last section.
+	uint32_t footer_size = template_file->get_length() - old_footer_offset;
+	template_file->seek(old_footer_offset);
+	Vector<uint8_t> footer;
+	if (footer_size > 0) {
+		footer = template_file->get_buffer(footer_size);
+	}
 
 	uint32_t pe_header_offset = _get_pe_header_offset(template_file);
+
+	// Update symbol table pointer.
+	template_file->seek(pe_header_offset + 12);
+	uint32_t symbols_offset = template_file->get_32();
+	if (symbols_offset > resources_section_entry.pointer_to_raw_data) {
+		template_file->seek(pe_header_offset + 12);
+		template_file->store_32(symbols_offset + raw_size_delta);
+	}
 
 	template_file->seek(pe_header_offset + MAGIC_NUMBER_OFFSET);
 	uint16_t magic_number = template_file->get_16();
 	ERR_FAIL_COND_V_MSG(magic_number != 0x10b && magic_number != 0x20b, ERR_CANT_OPEN, vformat("Magic number has wrong value: %04x", magic_number));
 	bool pe32plus = magic_number == 0x20b;
 
+	// Update image size.
 	template_file->seek(pe_header_offset + SIZE_OF_INITIALIZED_DATA_OFFSET);
 	uint32_t size_of_initialized_data = template_file->get_32();
 	size_of_initialized_data += resources_section_entry.size_of_raw_data - old_resources_size_of_raw_data;
@@ -613,30 +707,43 @@ Error TemplateModifier::_modify_template(const Ref<EditorExportPreset> &p_preset
 
 	template_file->seek(pe_header_offset + SIZE_OF_IMAGE_OFFSET);
 	uint32_t size_of_image = template_file->get_32();
-	size_of_image += relocations_section_entry.virtual_address - old_relocations_virtual_address;
+	size_of_image += section_entries.get(section_entries.size() - 1).virtual_address - old_last_section_virtual_address;
 	template_file->seek(pe_header_offset + SIZE_OF_IMAGE_OFFSET);
 	template_file->store_32(size_of_image);
 
 	uint32_t optional_header_offset = pe_header_offset + COFF_HEADER_SIZE;
 
+	// Update resource section size.
 	template_file->seek(optional_header_offset + (pe32plus ? 132 : 116));
 	template_file->store_32(resources_section_entry.virtual_size);
 
+	// Update relocation section size and pointer.
 	template_file->seek(optional_header_offset + (pe32plus ? 152 : 136));
-	template_file->store_32(relocations_section_entry.virtual_address);
-	template_file->store_32(relocations_section_entry.virtual_size);
+	template_file->store_32(section_entries[relocations_index].virtual_address);
+	template_file->store_32(section_entries[relocations_index].virtual_size);
 
-	template_file->seek(optional_header_offset + (pe32plus ? 240 : 224) + SectionEntry::SIZE * (section_entries.size() - 2));
+	template_file->seek(optional_header_offset + (pe32plus ? 240 : 224) + SectionEntry::SIZE * resource_index);
 	template_file->store_buffer(resources_section_entry.save());
-	template_file->store_buffer(relocations_section_entry.save());
+	for (int i = resource_index + 1; i < section_entries.size(); i++) {
+		template_file->seek(optional_header_offset + (pe32plus ? 240 : 224) + SectionEntry::SIZE * i);
+		template_file->store_buffer(section_entries[i].save());
+	}
 
+	// Write new resource section.
 	template_file->seek(resources_section_entry.pointer_to_raw_data);
 	template_file->store_buffer(resources);
-	template_file->store_buffer(relocations);
+	// Write the rest of sections.
+	for (const Vector<uint8_t> &data : moved_section_data) {
+		template_file->store_buffer(data);
+	}
+	// Write footer data.
+	if (footer_size > 0) {
+		template_file->store_buffer(footer);
+	}
 
 	if (template_file->get_position() < original_template_size) {
 		template_file->close();
-		_truncate(p_template_path, relocations_section_entry.pointer_to_raw_data + relocations_section_entry.size_of_raw_data);
+		_truncate(p_template_path, section_entries.get(section_entries.size() - 1).pointer_to_raw_data + section_entries.get(section_entries.size() - 1).size_of_raw_data + footer_size);
 	}
 
 	return OK;

@@ -40,20 +40,20 @@
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is disabled.
+				Returns [code]true[/code] if the menu item is disabled.
 			</description>
 		</method>
 		<method name="is_menu_hidden" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is hidden.
+				Returns [code]true[/code] if the menu item is hidden.
 			</description>
 		</method>
 		<method name="is_native_menu" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if system global menu is supported and used by this [MenuBar].
+				Returns [code]true[/code] if the current system's global menu is supported and used by this [MenuBar].
 			</description>
 		</method>
 		<method name="set_disable_shortcuts">
@@ -102,7 +102,7 @@
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
-			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			Language code used for line-breaking and text shaping algorithms. If left empty, the current locale is used instead.
 		</member>
 		<member name="prefer_global_menu" type="bool" setter="set_prefer_global_menu" getter="is_prefer_global_menu" default="true">
 			If [code]true[/code], [MenuBar] will use system global menu when supported.

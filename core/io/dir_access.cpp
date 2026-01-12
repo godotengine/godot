@@ -326,7 +326,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 
 	if (!p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
 
 	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_temp_path());
@@ -351,7 +351,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 	Error err = dir_access->make_dir(path);
 	if (err != OK) {
 		*r_error = err;
-		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
 	}
 	err = dir_access->change_dir(path);
 	if (err != OK) {
@@ -490,19 +490,22 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
-				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				Error err = p_target_da->create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				if (err) {
+					ERR_PRINT(vformat("Failed to copy symlink \"%s\".", n));
+				}
 			} else if (current_is_dir()) {
 				dirs.push_back(n);
 			} else {
 				const String &rel_path = n;
 				if (!n.is_relative_path()) {
 					list_dir_end();
-					return ERR_BUG;
+					ERR_FAIL_V_MSG(ERR_BUG, vformat("BUG: \"%s\" is not a relative path.", n));
 				}
 				Error err = copy(get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
-					return err;
+					ERR_FAIL_V_MSG(err, vformat("Failed to copy file \"%s\".", n));
 				}
 			}
 		}

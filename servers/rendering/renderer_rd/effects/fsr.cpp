@@ -48,10 +48,11 @@ FSR::FSR() {
 	}
 
 	shader_version = fsr_shader.version_create();
-	pipeline = RD::get_singleton()->compute_pipeline_create(fsr_shader.version_get_shader(shader_version, variant));
+	pipeline.create_compute_pipeline(fsr_shader.version_get_shader(shader_version, variant));
 }
 
 FSR::~FSR() {
+	pipeline.free();
 	fsr_shader.version_free(shader_version);
 }
 
@@ -82,7 +83,7 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	int dispatch_y = (target_size.y + 15) / 16;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline.get_rid());
 
 	push_constant.resolution_width = internal_size.width;
 	push_constant.resolution_height = internal_size.height;

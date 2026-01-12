@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2024 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -811,7 +811,7 @@ FT_BEGIN_HEADER
    *   FT_ENCODING_MS_SYMBOL ::
    *     Microsoft Symbol encoding, used to encode mathematical symbols and
    *     wingdings.  For more information, see
-   *     'https://www.microsoft.com/typography/otspec/recom.htm#non-standard-symbol-fonts',
+   *     'https://learn.microsoft.com/typography/opentype/spec/recom#non-standard-symbol-fonts',
    *     'http://www.kostis.net/charsets/symbol.htm', and
    *     'http://www.kostis.net/charsets/wingding.htm'.
    *
@@ -1068,12 +1068,12 @@ FT_BEGIN_HEADER
    *     the face in the font file (starting with value~0).  They are set
    *     to~0 if there is only one face in the font file.
    *
-   *     [Since 2.6.1] Bits 16-30 are relevant to GX and OpenType variation
-   *     fonts only, holding the named instance index for the current face
-   *     index (starting with value~1; value~0 indicates font access without
-   *     a named instance).  For non-variation fonts, bits 16-30 are ignored.
-   *     If we have the third named instance of face~4, say, `face_index` is
-   *     set to 0x00030004.
+   *     [Since 2.6.1] Bits 16-30 are relevant to TrueType GX and OpenType
+   *     Font Variations only, holding the named instance index for the
+   *     current face index (starting with value~1; value~0 indicates font
+   *     access without a named instance).  For non-variation fonts, bits
+   *     16-30 are ignored.  If we have the third named instance of face~4,
+   *     say, `face_index` is set to 0x00030004.
    *
    *     Bit 31 is always zero (that is, `face_index` is always a positive
    *     value).
@@ -1092,10 +1092,10 @@ FT_BEGIN_HEADER
    *     the face; see @FT_STYLE_FLAG_XXX for the details.
    *
    *     [Since 2.6.1] Bits 16-30 hold the number of named instances
-   *     available for the current face if we have a GX or OpenType variation
-   *     (sub)font.  Bit 31 is always zero (that is, `style_flags` is always
-   *     a positive value).  Note that a variation font has always at least
-   *     one named instance, namely the default instance.
+   *     available for the current face if we have a TrueType GX or OpenType
+   *     Font Variation.  Bit 31 is always zero (that is, `style_flags` is
+   *     always a positive value).  Note that a variation font has always at
+   *     least one named instance, namely the default instance.
    *
    *   num_glyphs ::
    *     The number of glyphs in the face.  If the face is scalable and has
@@ -1159,7 +1159,7 @@ FT_BEGIN_HEADER
    *     Note that the bounding box might be off by (at least) one pixel for
    *     hinted fonts.  See @FT_Size_Metrics for further discussion.
    *
-   *     Note that the bounding box does not vary in OpenType variation fonts
+   *     Note that the bounding box does not vary in OpenType Font Variations
    *     and should only be used in relation to the default instance.
    *
    *   units_per_EM ::
@@ -1218,7 +1218,7 @@ FT_BEGIN_HEADER
    *   Fields may be changed after a call to @FT_Attach_File or
    *   @FT_Attach_Stream.
    *
-   *   For an OpenType variation font, the values of the following fields can
+   *   For OpenType Font Variations, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
    *   the font contains an 'MVAR' table: `ascender`, `descender`, `height`,
    *   `underline_position`, and `underline_thickness`.
@@ -1336,7 +1336,7 @@ FT_BEGIN_HEADER
    *   FT_FACE_FLAG_MULTIPLE_MASTERS ::
    *     The face contains multiple masters and is capable of interpolating
    *     between them.  Supported formats are Adobe MM, TrueType GX, and
-   *     OpenType variation fonts.
+   *     OpenType Font Variations.
    *
    *     See section @multiple_masters for API details.
    *
@@ -1609,7 +1609,7 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   A macro that returns true whenever a face object is a named instance
-   *   of a GX or OpenType variation font.
+   *   of a TrueType GX or OpenType Font Variations.
    *
    *   [Since 2.9] Changing the design coordinates with
    *   @FT_Set_Var_Design_Coordinates or @FT_Set_Var_Blend_Coordinates does
@@ -2147,7 +2147,7 @@ FT_BEGIN_HEADER
    *     freed.
    *
    *     [Since 2.10.1] If @FT_LOAD_NO_SCALE is set, outline coordinates of
-   *     OpenType variation fonts for a selected instance are internally
+   *     OpenType Font Variations for a selected instance are internally
    *     handled as 26.6 fractional font units but returned as (rounded)
    *     integers, as expected.  To get unrounded font units, don't use
    *     @FT_LOAD_NO_SCALE but load the glyph with @FT_LOAD_NO_HINTING and
@@ -2640,14 +2640,14 @@ FT_BEGIN_HEADER
    *     the face in the font file (starting with value~0).  Set it to~0 if
    *     there is only one face in the font file.
    *
-   *     [Since 2.6.1] Bits 16-30 are relevant to GX and OpenType variation
-   *     fonts only, specifying the named instance index for the current face
-   *     index (starting with value~1; value~0 makes FreeType ignore named
-   *     instances).  For non-variation fonts, bits 16-30 are ignored.
-   *     Assuming that you want to access the third named instance in face~4,
-   *     `face_index` should be set to 0x00030004.  If you want to access
-   *     face~4 without variation handling, simply set `face_index` to
-   *     value~4.
+   *     [Since 2.6.1] Bits 16-30 are relevant to TrueType GX and OpenType
+   *     Font Variations only, specifying the named instance index for the
+   *     current face index (starting with value~1; value~0 makes FreeType
+   *     ignore named instances).  For non-variation fonts, bits 16-30 are
+   *     ignored.  Assuming that you want to access the third named instance
+   *     in face~4, `face_index` should be set to 0x00030004.  If you want
+   *     to access face~4 without variation handling, simply set
+   *     `face_index` to value~4.
    *
    *     `FT_Open_Face` and its siblings can be used to quickly check whether
    *     the font format of a given font resource is supported by FreeType.
@@ -2914,11 +2914,11 @@ FT_BEGIN_HEADER
    *   of the available glyphs at a given ppem value is available.  FreeType
    *   silently uses outlines if there is no bitmap for a given glyph index.
    *
-   *   For GX and OpenType variation fonts, a bitmap strike makes sense only
-   *   if the default instance is active (that is, no glyph variation takes
-   *   place); otherwise, FreeType simply ignores bitmap strikes.  The same
-   *   is true for all named instances that are different from the default
-   *   instance.
+   *   For TrueType GX and OpenType Font Variations, a bitmap strike makes
+   *   sense only if the default instance is active (that is, no glyph
+   *   variation takes place); otherwise, FreeType simply ignores bitmap
+   *   strikes.  The same is true for all named instances that are different
+   *   from the default instance.
    *
    *   Don't use this function if you are using the FreeType cache API.
    */
@@ -3078,7 +3078,7 @@ FT_BEGIN_HEADER
    *   is dependent entirely on how the size is defined in the source face.
    *   The font designer chooses the final size of each glyph relative to
    *   this size.  For more information refer to
-   *   'https://www.freetype.org/freetype2/docs/glyphs/glyphs-2.html'.
+   *   'https://freetype.org/freetype2/docs/glyphs/glyphs-2.html'.
    *
    *   Contrary to @FT_Set_Char_Size, this function doesn't have special code
    *   to normalize zero-valued widths, heights, or resolutions, which are
@@ -3441,8 +3441,10 @@ FT_BEGIN_HEADER
    *     blending of the color glyph layers associated with the glyph index,
    *     using the same bitmap format as embedded color bitmap images.  This
    *     is mainly for convenience and works only for glyphs in 'COLR' v0
-   *     tables (or glyphs in 'COLR' v1 tables that exclusively use v0
-   *     features).  For full control of color layers use
+   *     tables.  **There is no rendering support for 'COLR' v1** (with the
+   *     exception of v1 tables that exclusively use v0 features)!  You need
+   *     a graphics library like Skia or Cairo to interpret the graphics
+   *     commands stored in v1 tables.  For full control of color layers use
    *     @FT_Get_Color_Glyph_Layer and FreeType's color functions like
    *     @FT_Palette_Select instead of setting @FT_LOAD_COLOR for rendering
    *     so that the client application can handle blending by itself.
@@ -3895,8 +3897,10 @@ FT_BEGIN_HEADER
    *
    *   This process can cost performance.  There is an approximation that
    *   does not need to know about the background color; see
-   *   https://bel.fi/alankila/lcd/ and
-   *   https://bel.fi/alankila/lcd/alpcor.html for details.
+   *   https://web.archive.org/web/20211019204945/https://bel.fi/alankila/lcd/
+   *   and
+   *   https://web.archive.org/web/20210211002939/https://bel.fi/alankila/lcd/alpcor.html
+   *   for details.
    *
    *   **ATTENTION**: Linear blending is even more important when dealing
    *   with subpixel-rendered glyphs to prevent color-fringing!  A
@@ -3993,13 +3997,13 @@ FT_BEGIN_HEADER
    *   out of the scope of this API function -- they can be implemented
    *   through format-specific interfaces.
    *
-   *   Note that, for TrueType fonts only, this can extract data from both
-   *   the 'kern' table and the basic, pair-wise kerning feature from the
-   *   GPOS table (with `TT_CONFIG_OPTION_GPOS_KERNING` enabled), though
-   *   FreeType does not support the more advanced GPOS layout features; use
-   *   a library like HarfBuzz for those instead.  If a font has both a
-   *   'kern' table and kern features of a GPOS table, the 'kern' table will
-   *   be used.
+   *   Note that, for TrueType and OpenType fonts only, this can extract data
+   *   from both the 'kern' table and the basic, pair-wise kerning feature
+   *   from the GPOS table (with `TT_CONFIG_OPTION_GPOS_KERNING` enabled),
+   *   though FreeType does not support the more advanced GPOS layout
+   *   features; use a library like HarfBuzz for those instead.  If a font
+   *   has both a 'kern' table and kern features of a GPOS table, the 'kern'
+   *   table will be used.
    *
    *   Also note for right-to-left scripts, the functionality may differ for
    *   fonts with GPOS tables vs. 'kern' tables.  For GPOS, right-to-left
@@ -4530,7 +4534,7 @@ FT_BEGIN_HEADER
    *   table description in the OpenType specification for the meaning of the
    *   various flags (which get synthesized for non-OpenType subglyphs).
    *
-   *     https://docs.microsoft.com/en-us/typography/opentype/spec/glyf#composite-glyph-description
+   *     https://learn.microsoft.com/typography/opentype/spec/glyf#composite-glyph-description
    *
    * @values:
    *   FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS ::
@@ -4593,7 +4597,7 @@ FT_BEGIN_HEADER
    *   interpreted depending on the flags returned in `*p_flags`.  See the
    *   OpenType specification for details.
    *
-   *     https://docs.microsoft.com/en-us/typography/opentype/spec/glyf#composite-glyph-description
+   *     https://learn.microsoft.com/typography/opentype/spec/glyf#composite-glyph-description
    *
    */
   FT_EXPORT( FT_Error )
@@ -4619,7 +4623,7 @@ FT_BEGIN_HEADER
    *   associated with a font.
    *
    *   See
-   *   https://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/FontPolicies.pdf
+   *   https://adobe-type-tools.github.io/font-tech-notes/pdfs/AcrobatDC_FontPolicies.pdf
    *   for more details.
    *
    * @values:
@@ -5173,8 +5177,8 @@ FT_BEGIN_HEADER
    *
    */
 #define FREETYPE_MAJOR  2
-#define FREETYPE_MINOR  13
-#define FREETYPE_PATCH  3
+#define FREETYPE_MINOR  14
+#define FREETYPE_PATCH  1
 
 
   /**************************************************************************

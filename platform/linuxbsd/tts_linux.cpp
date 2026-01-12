@@ -31,7 +31,7 @@
 #include "tts_linux.h"
 
 #include "core/config/project_settings.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 TTS_Linux *TTS_Linux::singleton = nullptr;
 
@@ -207,7 +207,7 @@ Array TTS_Linux::get_voices() const {
 	return list;
 }
 
-void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL(synth);

@@ -20,8 +20,13 @@ target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
-	"I", # isort
+	"I",     # isort
+	"UP006", # Use {to} instead of {from} for type annotation
+	"UP007", # Use `X | Y` for type annotations
+	"UP037", # Remove quotes from type annotation
+	"FA",    # Future annotations
 ]
+extend-safe-fixes = ["UP006", "UP007", "FA"]
 
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
@@ -60,7 +65,7 @@ skip = [
 	"core/string/locales.h",
 	"DONORS.md",
 	"editor/project_converter_3_to_4.cpp",
-	"platform/android/java/lib/src/com/*",
+	"platform/android/java/lib/src/main/java/com/*",
 	"platform/web/package-lock.json",
 ]
 ignore-words-list = [
@@ -84,6 +89,7 @@ ignore-words-list = [
 	"ot",
 	"outin",
 	"parm",
+	"pEvent",
 	"requestor",
 	"streamin",
 	"te",

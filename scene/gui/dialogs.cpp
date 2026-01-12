@@ -37,7 +37,7 @@
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
-	if (close_on_escape && p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+	if (close_on_escape && p_event->is_action_pressed(SNAME("ui_close_dialog"), false, true)) {
 		_cancel_pressed();
 	}
 	Window::_input_from_window(p_event);
@@ -448,6 +448,9 @@ void AcceptDialog::_bind_methods() {
 }
 
 void AcceptDialog::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ok_button_text") {
 		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
 		p_property.hint_string = default_ok_text;

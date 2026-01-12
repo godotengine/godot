@@ -22,6 +22,7 @@
 #include <functional>
 #include <thread>
 #include <unordered_map>
+#include <map>
 #include <ostream>
 
 #if !defined(_WIN32) || defined(__MINGW32__)
@@ -2163,17 +2164,24 @@ namespace basisu
 		uint32_t max_threads, job_pool *pJob_pool,
 		bool even_odd_input_pairs_equal)
 	{
+		// rg 6/24/2025 - Cross platform determinism
+#if 0
 		typedef bit_hasher<typename Quantizer::training_vec_type> training_vec_bit_hasher;
-		
 		typedef std::unordered_map < typename Quantizer::training_vec_type, weighted_block_group, 
 			training_vec_bit_hasher> group_hash;
+#else
+		typedef std::map< typename Quantizer::training_vec_type, weighted_block_group > group_hash;
+#endif
 		
 		//interval_timer tm;
 		//tm.start();
 
 		group_hash unique_vecs;
 
+		// rg 6/24/2025 - Cross platform determinism
+#if 0
 		unique_vecs.reserve(20000);
+#endif
 
 		weighted_block_group g;
 		

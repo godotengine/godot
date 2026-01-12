@@ -34,7 +34,7 @@
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);
@@ -64,7 +64,6 @@ protected:
 
 	void _mark_ready();
 	void _mark_initialized(const Callable &p_add_to_dirty_list, const Callable &p_update_shader);
-	bool _is_initialized() { return init_state == INIT_STATE_READY; }
 
 	GDVIRTUAL0RC_REQUIRED(RID, _get_shader_rid)
 	GDVIRTUAL0RC_REQUIRED(Shader::Mode, _get_shader_mode)
@@ -75,6 +74,9 @@ public:
 		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
 		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
 	};
+
+	bool _is_initialized() { return init_state == INIT_STATE_READY; }
+
 	void set_next_pass(const Ref<Material> &p_pass);
 	Ref<Material> get_next_pass() const;
 
@@ -238,6 +240,12 @@ public:
 		DEPTH_DRAW_MAX
 	};
 
+	enum DepthTest {
+		DEPTH_TEST_DEFAULT,
+		DEPTH_TEST_INVERTED,
+		DEPTH_TEST_MAX
+	};
+
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
@@ -320,6 +328,33 @@ public:
 		DISTANCE_FADE_MAX
 	};
 
+	enum StencilMode {
+		STENCIL_MODE_DISABLED,
+		STENCIL_MODE_OUTLINE,
+		STENCIL_MODE_XRAY,
+		STENCIL_MODE_CUSTOM,
+		STENCIL_MODE_MAX // Not an actual mode, just the amount of modes.
+	};
+
+	enum StencilFlags {
+		STENCIL_FLAG_READ = 1,
+		STENCIL_FLAG_WRITE = 2,
+		STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
+
+		STENCIL_FLAG_NUM_BITS = 3 // Not an actual mode, just the amount of bits.
+	};
+
+	enum StencilCompare {
+		STENCIL_COMPARE_ALWAYS,
+		STENCIL_COMPARE_LESS,
+		STENCIL_COMPARE_EQUAL,
+		STENCIL_COMPARE_LESS_OR_EQUAL,
+		STENCIL_COMPARE_GREATER,
+		STENCIL_COMPARE_NOT_EQUAL,
+		STENCIL_COMPARE_GREATER_OR_EQUAL,
+		STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
+	};
+
 private:
 	struct MaterialKey {
 		// enum values
@@ -330,6 +365,7 @@ private:
 		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
 		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
 		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_test : get_num_bits(DEPTH_TEST_MAX - 1);
 		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
 		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
 		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
@@ -338,6 +374,13 @@ private:
 		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
 		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
+
+		// stencil
+		uint64_t stencil_mode : get_num_bits(STENCIL_MODE_MAX - 1);
+		uint64_t stencil_flags : STENCIL_FLAG_NUM_BITS;
+		uint64_t stencil_compare : get_num_bits(STENCIL_COMPARE_MAX - 1);
+		uint64_t stencil_reference : 8;
+
 		// booleans
 		uint64_t invalid_key : 1;
 		uint64_t deep_parallax : 1;
@@ -381,6 +424,7 @@ private:
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
+		mk.depth_test = depth_test;
 		mk.cull_mode = cull_mode;
 		mk.texture_filter = texture_filter;
 		mk.transparency = transparency;
@@ -397,6 +441,11 @@ private:
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
 		mk.orm = orm;
+
+		mk.stencil_mode = stencil_mode;
+		mk.stencil_flags = stencil_flags;
+		mk.stencil_compare = stencil_compare;
+		mk.stencil_reference = stencil_reference;
 
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
@@ -502,7 +551,6 @@ private:
 	float anisotropy = 0.0f;
 	float heightmap_scale = 0.0f;
 	float subsurface_scattering_strength = 0.0f;
-	float transmittance_amount = 0.0f;
 	Color transmittance_color;
 	float transmittance_depth = 0.0f;
 	float transmittance_boost = 0.0f;
@@ -553,6 +601,7 @@ private:
 	BlendMode blend_mode = BLEND_MODE_MIX;
 	BlendMode detail_blend_mode = BLEND_MODE_MIX;
 	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	DepthTest depth_test = DEPTH_TEST_DEFAULT;
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
@@ -570,9 +619,20 @@ private:
 	float z_clip_scale = 1.0;
 	float fov_override = 75.0;
 
+	StencilMode stencil_mode = STENCIL_MODE_DISABLED;
+	int stencil_flags = 0;
+	StencilCompare stencil_compare = STENCIL_COMPARE_ALWAYS;
+	int stencil_reference = 1;
+
+	Color stencil_effect_color;
+	float stencil_effect_outline_thickness = 0.01f;
+
 	bool features[FEATURE_MAX] = {};
 
 	Ref<Texture2D> textures[TEXTURE_MAX];
+
+	void _prepare_stencil_effect();
+	Ref<BaseMaterial3D> _get_stencil_next_pass() const;
 
 	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
@@ -688,6 +748,9 @@ public:
 	void set_depth_draw_mode(DepthDrawMode p_mode);
 	DepthDrawMode get_depth_draw_mode() const;
 
+	void set_depth_test(DepthTest p_func);
+	DepthTest get_depth_test() const;
+
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
@@ -778,6 +841,24 @@ public:
 	void set_emission_operator(EmissionOperator p_op);
 	EmissionOperator get_emission_operator() const;
 
+	void set_stencil_mode(StencilMode p_stencil_mode);
+	StencilMode get_stencil_mode() const;
+
+	void set_stencil_flags(int p_stencil_flags);
+	int get_stencil_flags() const;
+
+	void set_stencil_compare(StencilCompare p_op);
+	StencilCompare get_stencil_compare() const;
+
+	void set_stencil_reference(int p_reference);
+	int get_stencil_reference() const;
+
+	void set_stencil_effect_color(const Color &p_color);
+	Color get_stencil_effect_color() const;
+
+	void set_stencil_effect_outline_thickness(float p_outline_thickness);
+	float get_stencil_effect_outline_thickness() const;
+
 	void set_metallic_texture_channel(TextureChannel p_channel);
 	TextureChannel get_metallic_texture_channel() const;
 	void set_roughness_texture_channel(TextureChannel p_channel);
@@ -796,7 +877,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
@@ -816,6 +897,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::DepthTest)
 VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
 VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)
@@ -824,6 +906,9 @@ VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel)
 VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator)
 VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::StencilMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::StencilFlags)
+VARIANT_ENUM_CAST(BaseMaterial3D::StencilCompare)
 
 class StandardMaterial3D : public BaseMaterial3D {
 	GDCLASS(StandardMaterial3D, BaseMaterial3D)

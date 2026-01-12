@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/templates/pair.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
-#include "servers/rendering_server.h"
 
 class ShaderCompiler {
 public:
@@ -50,6 +50,8 @@ public:
 		HashMap<StringName, bool *> render_mode_flags;
 		HashMap<StringName, bool *> usage_flag_pointers;
 		HashMap<StringName, bool *> write_flag_pointers;
+		HashMap<StringName, Pair<int *, int>> stencil_mode_values;
+		int *stencil_reference = nullptr;
 
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms = nullptr;
 	};

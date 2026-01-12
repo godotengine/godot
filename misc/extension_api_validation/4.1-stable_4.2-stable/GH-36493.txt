@@ -1,0 +1,6 @@
+GH-36493
+--------
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_icon_shortcut/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/PopupMenu/methods/add_shortcut/arguments': size changed value in new API, from 3 to 4.
+
+Added optional argument. Compatibility methods registered.

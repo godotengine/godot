@@ -119,7 +119,7 @@ void _append_hex(float p_val, char32_t *string) {
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt.resize(p_alpha ? 9 : 7);
+	txt.resize_uninitialized(p_alpha ? 9 : 7);
 	char32_t *ptr = txt.ptrw();
 
 	_append_hex(r, ptr + 0);
@@ -432,7 +432,7 @@ int Color::find_named_color(const String &p_name) {
 }
 
 int Color::get_named_color_count() {
-	return std::size(named_colors);
+	return std_size(named_colors);
 }
 
 String Color::get_named_color_name(int p_idx) {

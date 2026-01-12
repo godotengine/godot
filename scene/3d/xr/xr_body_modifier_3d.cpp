@@ -31,7 +31,7 @@
 #include "xr_body_modifier_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void XRBodyModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_body_tracker", "tracker_name"), &XRBodyModifier3D::set_body_tracker);
@@ -66,6 +66,10 @@ StringName XRBodyModifier3D::get_body_tracker() const {
 
 void XRBodyModifier3D::set_body_update(BitField<BodyUpdate> p_body_update) {
 	body_update = p_body_update;
+
+	if (is_inside_tree()) {
+		_get_joint_data();
+	}
 }
 
 BitField<XRBodyModifier3D::BodyUpdate> XRBodyModifier3D::get_body_update() const {
@@ -175,11 +179,11 @@ void XRBodyModifier3D::_get_joint_data() {
 		"LeftWristTwist", // XRBodyTracker::JOINT_LEFT_WRIST_TWIST
 		"RightScapula", // XRBodyTracker::JOINT_RIGHT_SCAPULA
 		"RightWristTwist", // XRBodyTracker::JOINT_RIGHT_WRIST_TWIST
-		"LeftAnkleTwist", // XRBodyTracker::JOINT_LEFT_ANKLE_TWIST
-		"LeftAnkle", // XRBodyTracker::JOINT_LEFT_ANKLE
+		"LeftFootTwist", // XRBodyTracker::JOINT_LEFT_FOOT_TWIST
+		"LeftHeel", // XRBodyTracker::JOINT_LEFT_HEEL
 		"LeftMiddleFoot", // XRBodyTracker::JOINT_LEFT_MIDDLE_FOOT
-		"RightAnkleTwist", // XRBodyTracker::JOINT_RIGHT_ANKLE_TWIST
-		"RightAnkle", // XRBodyTracker::JOINT_RIGHT_ANKLE
+		"RightFootTwist", // XRBodyTracker::JOINT_RIGHT_FOOT_TWIST
+		"RightHeel", // XRBodyTracker::JOINT_RIGHT_HEEL
 		"RightMiddleFoot", // XRBodyTracker::JOINT_RIGHT_MIDDLE_FOOT
 	};
 

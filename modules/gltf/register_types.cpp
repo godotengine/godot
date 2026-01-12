@@ -50,7 +50,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;

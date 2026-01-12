@@ -31,14 +31,13 @@
 #include "polygon_2d.h"
 
 #include "core/math/geometry_2d.h"
-#ifndef NAVIGATION_2D_DISABLED
-#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_server_2d.h"
-#endif // NAVIGATION_2D_DISABLED
 #include "skeleton_2d.h"
 
 #ifndef NAVIGATION_2D_DISABLED
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
+#include "servers/navigation_2d/navigation_server_2d.h"
+
 Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_2D_DISABLED
@@ -96,7 +95,7 @@ bool Polygon2D::_edit_use_rect() const {
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
-		polygon2d.resize(polygon2d.size() - internal_vertices);
+		polygon2d.resize(MAX(polygon2d.size() - internal_vertices, 0));
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
@@ -399,7 +398,7 @@ void Polygon2D::_notification(int p_what) {
 				}
 
 				RS::get_singleton()->mesh_add_surface(mesh, sd);
-				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_rid() : RID());
+				RS::get_singleton()->canvas_item_add_mesh(get_canvas_item(), mesh, Transform2D(), Color(1, 1, 1), texture.is_valid() ? texture->get_scaled_rid() : RID());
 			}
 
 		} break;
@@ -711,7 +710,7 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_invert_enabled", "get_invert_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_invert_enabled", "get_invert_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1,suffix:px"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");
@@ -731,5 +730,5 @@ Polygon2D::~Polygon2D() {
 	// This will free the internally-allocated mesh instance, if allocated.
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(mesh);
 }

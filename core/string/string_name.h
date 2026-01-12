@@ -51,7 +51,6 @@ class [[nodiscard]] StringName {
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
 		_Data *next = nullptr;
-		_Data() {}
 	};
 
 	_Data *_data = nullptr;
@@ -133,10 +132,6 @@ public:
 
 		return String();
 	}
-
-	static StringName search(const char *p_name);
-	static StringName search(const char32_t *p_name);
-	static StringName search(const String &p_name);
 
 	struct AlphCompare {
 		template <typename LT, typename RT>

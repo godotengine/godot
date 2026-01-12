@@ -54,18 +54,29 @@ public:
 		BitField<TransformFlag> copy_flags = TRANSFORM_FLAG_ALL;
 		BitField<AxisFlag> axis_flags = AXIS_FLAG_ALL;
 		BitField<AxisFlag> invert_flags = 0;
+
 		bool relative = true;
 		bool additive = false;
+
+		bool is_relative() {
+			if (reference_type == REFERENCE_TYPE_NODE) {
+				return false;
+			}
+			return relative;
+		}
 	};
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_dynamic_prop(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
-	virtual void _process_constraint(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) override;
+	virtual void _process_constraint_by_bone(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) override;
+	virtual void _process_constraint_by_node(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const NodePath &p_reference_node, float p_amount) override;
+	virtual void _process_copy(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const Transform3D &p_destination, float p_amount);
 	virtual void _validate_setting(int p_index) override;
 
 public:

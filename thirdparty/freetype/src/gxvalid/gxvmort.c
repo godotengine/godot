@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT mort table validation (body).
  *
- * Copyright (C) 2005-2024 by
+ * Copyright (C) 2005-2025 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -207,7 +207,7 @@
 
       func = fmt_funcs_table[type];
       if ( !func )
-        GXV_TRACE(( "morx type %d is reserved\n", type ));
+        GXV_TRACE(( "morx type %u is reserved\n", type ));
 
       func( p, p + rest, gxvalid );
 

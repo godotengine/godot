@@ -574,7 +574,7 @@ int NativeMenuWindows::find_item_index_with_text(const RID &p_rid, const String 
 		if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 			item.cch++;
 			Char16String str;
-			str.resize(item.cch);
+			str.resize_uninitialized(item.cch);
 			item.dwTypeData = (LPWSTR)str.ptrw();
 			if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 				if (String::utf16((const char16_t *)str.get_data()) == p_text) {
@@ -728,7 +728,7 @@ String NativeMenuWindows::get_item_text(const RID &p_rid, int p_idx) const {
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		item.cch++;
 		Char16String str;
-		str.resize(item.cch);
+		str.resize_uninitialized(item.cch);
 		item.dwTypeData = (LPWSTR)str.ptrw();
 		if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 			return String::utf16((const char16_t *)str.get_data());

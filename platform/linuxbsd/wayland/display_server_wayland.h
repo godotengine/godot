@@ -59,7 +59,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include <climits>
 #include <cstdio>
@@ -197,7 +197,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -290,6 +290,8 @@ public:
 	virtual Size2i window_get_size(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 	virtual Size2i window_get_size_with_decorations(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
+	virtual float window_get_scale(WindowID p_window_id = MAIN_WINDOW_ID) const override;
+
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window_id = MAIN_WINDOW_ID) const override;
 
@@ -328,12 +330,18 @@ public:
 
 	virtual bool get_swap_cancel_ok() override;
 
+	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
+	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
+	virtual OS::ProcessID get_focused_process_id() override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual bool color_picker(const Callable &p_callback) override;
 
@@ -341,6 +349,8 @@ public:
 
 	virtual void release_rendering_thread() override;
 	virtual void swap_buffers() override;
+
+	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	virtual void set_context(Context p_context) override;
 

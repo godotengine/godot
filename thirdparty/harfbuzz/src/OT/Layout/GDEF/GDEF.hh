@@ -205,19 +205,18 @@ struct CaretValueFormat3
 
     unsigned varidx = (this+deviceTable).get_variation_index ();
     hb_pair_t<unsigned, int> *new_varidx_delta;
-    if (!c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta))
-      return_trace (false);
+    if (c->plan->layout_variation_idx_delta_map.has (varidx, &new_varidx_delta)) {
+      uint32_t new_varidx = hb_first (*new_varidx_delta);
+      int delta = hb_second (*new_varidx_delta);
+      if (delta != 0)
+      {
+        if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+          return_trace (false);
+      }
 
-    uint32_t new_varidx = hb_first (*new_varidx_delta);
-    int delta = hb_second (*new_varidx_delta);
-    if (delta != 0)
-    {
-      if (!c->serializer->check_assign (out->coordinate, coordinate + delta, HB_SERIALIZE_ERROR_INT_OVERFLOW))
-        return_trace (false);
+      if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+        return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
     }
-
-    if (new_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
-      return_trace (c->serializer->check_assign (out->caretValueFormat, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
 
     if (!c->serializer->embed (deviceTable))
       return_trace (false);
@@ -978,7 +977,7 @@ struct GDEF
       }
 
 #ifndef HB_NO_GDEF_CACHE
-      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_set_digests);
+      table->get_mark_glyph_sets ().collect_coverage (mark_glyph_sets);
 #endif
     }
     ~accelerator_t () { table.destroy (); }
@@ -1007,15 +1006,18 @@ struct GDEF
     {
       return
 #ifndef HB_NO_GDEF_CACHE
-	     mark_glyph_set_digests[set_index].may_have (glyph_id) &&
+	     mark_glyph_sets[set_index].may_have (glyph_id)
+#else
+	     table->mark_set_covers (set_index, glyph_id)
 #endif
-	     table->mark_set_covers (set_index, glyph_id);
+      ;
     }
 
     hb_blob_ptr_t<GDEF> table;
 #ifndef HB_NO_GDEF_CACHE
-    hb_vector_t<hb_set_digest_t> mark_glyph_set_digests;
-    mutable hb_cache_t<21, 3, 8> glyph_props_cache;
+    hb_vector_t<hb_bit_set_t> mark_glyph_sets;
+    mutable hb_cache_t<21, 3> glyph_props_cache;
+    static_assert (sizeof (glyph_props_cache) == 512, "");
 #endif
   };
 

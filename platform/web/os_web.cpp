@@ -38,6 +38,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
@@ -77,6 +80,8 @@ void OS_Web::fs_sync_callback() {
 }
 
 bool OS_Web::main_loop_iterate() {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Web::main_loop_iterate");
 	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
 		idb_is_syncing = true;
 		idb_needs_sync = false;
@@ -160,6 +165,22 @@ bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
 	}
+
+	if (p_feature == "web_extensions") {
+#ifdef WEB_DLINK_ENABLED
+		return true;
+#else
+		return false;
+#endif
+	}
+	if (p_feature == "web_noextensions") {
+#ifdef WEB_DLINK_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
+
 	if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
 		return true;
 	}

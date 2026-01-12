@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_list.h"
@@ -70,15 +71,16 @@ public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
 	static constexpr float MAX_OCCUPANCY = 0.75;
 	static constexpr uint32_t EMPTY_HASH = 0;
+	using KV = KeyValue<TKey, TValue>; // Type alias for easier access to KeyValue.
 
 private:
-	HashMapElement<TKey, TValue> **elements = nullptr;
-	uint32_t *hashes = nullptr;
-	HashMapElement<TKey, TValue> *head_element = nullptr;
-	HashMapElement<TKey, TValue> *tail_element = nullptr;
+	HashMapElement<TKey, TValue> **_elements = nullptr;
+	uint32_t *_hashes = nullptr;
+	HashMapElement<TKey, TValue> *_head_element = nullptr;
+	HashMapElement<TKey, TValue> *_tail_element = nullptr;
 
-	uint32_t capacity_index = 0;
-	uint32_t num_elements = 0;
+	uint32_t _capacity_idx = 0;
+	uint32_t _size = 0;
 
 	_FORCE_INLINE_ static uint32_t _hash(const TKey &p_key) {
 		uint32_t hash = Hasher::hash(p_key);
@@ -90,97 +92,98 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_pos, const uint32_t p_capacity) {
-		r_pos++;
+	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_idx, const uint32_t p_capacity) {
+		r_idx++;
 		// `if` is faster than both fastmod and mod.
-		if (unlikely(r_pos == p_capacity)) {
-			r_pos = 0;
+		if (unlikely(r_idx == p_capacity)) {
+			r_idx = 0;
 		}
 	}
 
-	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
-		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
-		const uint32_t distance_pos = p_pos - original_pos + p_capacity;
+	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_idx, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
+		const uint32_t original_idx = fastmod(p_hash, p_capacity_inv, p_capacity);
+		const uint32_t distance_idx = p_idx - original_idx + p_capacity;
 		// At most p_capacity over 0, so we can use an if (faster than fastmod).
-		return distance_pos >= p_capacity ? distance_pos - p_capacity : distance_pos;
+		return distance_idx >= p_capacity ? distance_idx - p_capacity : distance_idx;
 	}
 
-	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
-		return elements != nullptr && num_elements > 0 && _lookup_pos_unchecked(p_key, _hash(p_key), r_pos);
+	bool _lookup_idx(const TKey &p_key, uint32_t &r_idx) const {
+		return _elements != nullptr && _size > 0 && _lookup_idx_unchecked(p_key, _hash(p_key), r_idx);
 	}
 
-	/// Note: Assumes that elements != nullptr
-	bool _lookup_pos_unchecked(const TKey &p_key, uint32_t p_hash, uint32_t &r_pos) const {
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
-		uint32_t pos = fastmod(p_hash, capacity_inv, capacity);
+	/// Note: Assumes that _elements != nullptr
+	bool _lookup_idx_unchecked(const TKey &p_key, uint32_t p_hash, uint32_t &r_idx) const {
+		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
+		uint32_t idx = fastmod(p_hash, capacity_inv, capacity);
 		uint32_t distance = 0;
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
+			if (_hashes[idx] == EMPTY_HASH) {
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
+			if (distance > _get_probe_length(idx, _hashes[idx], capacity, capacity_inv)) {
 				return false;
 			}
 
-			if (hashes[pos] == p_hash && Comparator::compare(elements[pos]->data.key, p_key)) {
-				r_pos = pos;
+			if (_hashes[idx] == p_hash && Comparator::compare(_elements[idx]->data.key, p_key)) {
+				r_idx = idx;
 				return true;
 			}
 
-			_increment_mod(pos, capacity);
+			_increment_mod(idx, capacity);
 			distance++;
 		}
 	}
 
 	void _insert_element(uint32_t p_hash, HashMapElement<TKey, TValue> *p_value) {
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
+		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
 		uint32_t hash = p_hash;
 		HashMapElement<TKey, TValue> *value = p_value;
 		uint32_t distance = 0;
-		uint32_t pos = fastmod(hash, capacity_inv, capacity);
+		uint32_t idx = fastmod(hash, capacity_inv, capacity);
 
 		while (true) {
-			if (hashes[pos] == EMPTY_HASH) {
-				elements[pos] = value;
-				hashes[pos] = hash;
+			if (_hashes[idx] == EMPTY_HASH) {
+				_elements[idx] = value;
+				_hashes[idx] = hash;
 
-				num_elements++;
+				_size++;
 
 				return;
 			}
 
 			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos], capacity, capacity_inv);
+			uint32_t existing_probe_len = _get_probe_length(idx, _hashes[idx], capacity, capacity_inv);
 			if (existing_probe_len < distance) {
-				SWAP(hash, hashes[pos]);
-				SWAP(value, elements[pos]);
+				SWAP(hash, _hashes[idx]);
+				SWAP(value, _elements[idx]);
 				distance = existing_probe_len;
 			}
 
-			_increment_mod(pos, capacity);
+			_increment_mod(idx, capacity);
 			distance++;
 		}
 	}
 
-	void _resize_and_rehash(uint32_t p_new_capacity_index) {
-		uint32_t old_capacity = hash_table_size_primes[capacity_index];
+	void _resize_and_rehash(uint32_t p_new_capacity_idx) {
+		uint32_t old_capacity = hash_table_size_primes[_capacity_idx];
 
 		// Capacity can't be 0.
-		capacity_index = MAX((uint32_t)MIN_CAPACITY_INDEX, p_new_capacity_index);
+		_capacity_idx = MAX((uint32_t)MIN_CAPACITY_INDEX, p_new_capacity_idx);
 
-		uint32_t capacity = hash_table_size_primes[capacity_index];
+		uint32_t capacity = hash_table_size_primes[_capacity_idx];
 
-		HashMapElement<TKey, TValue> **old_elements = elements;
-		uint32_t *old_hashes = hashes;
+		HashMapElement<TKey, TValue> **old_elements = _elements;
+		uint32_t *old_hashes = _hashes;
 
-		num_elements = 0;
+		_size = 0;
 		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
-		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
-		elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
+
+		_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
+		_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 
 		if (old_capacity == 0) {
 			// Nothing to do.
@@ -200,67 +203,69 @@ private:
 	}
 
 	_FORCE_INLINE_ HashMapElement<TKey, TValue> *_insert(const TKey &p_key, const TValue &p_value, uint32_t p_hash, bool p_front_insert = false) {
-		uint32_t capacity = hash_table_size_primes[capacity_index];
-		if (unlikely(elements == nullptr)) {
+		uint32_t capacity = hash_table_size_primes[_capacity_idx];
+		if (unlikely(_elements == nullptr)) {
 			// Allocate on demand to save memory.
 
 			static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
-			hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
-			elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
+			_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
+			_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 		}
 
-		if (num_elements + 1 > MAX_OCCUPANCY * capacity) {
-			ERR_FAIL_COND_V_MSG(capacity_index + 1 == HASH_TABLE_SIZE_MAX, nullptr, "Hash table maximum capacity reached, aborting insertion.");
-			_resize_and_rehash(capacity_index + 1);
+		if (_size + 1 > MAX_OCCUPANCY * capacity) {
+			ERR_FAIL_COND_V_MSG(_capacity_idx + 1 == HASH_TABLE_SIZE_MAX, nullptr, "Hash table maximum capacity reached, aborting insertion.");
+			_resize_and_rehash(_capacity_idx + 1);
 		}
 
 		HashMapElement<TKey, TValue> *elem = Allocator::new_allocation(HashMapElement<TKey, TValue>(p_key, p_value));
 
-		if (tail_element == nullptr) {
-			head_element = elem;
-			tail_element = elem;
+		if (_tail_element == nullptr) {
+			_head_element = elem;
+			_tail_element = elem;
 		} else if (p_front_insert) {
-			head_element->prev = elem;
-			elem->next = head_element;
-			head_element = elem;
+			_head_element->prev = elem;
+			elem->next = _head_element;
+			_head_element = elem;
 		} else {
-			tail_element->next = elem;
-			elem->prev = tail_element;
-			tail_element = elem;
+			_tail_element->next = elem;
+			elem->prev = _tail_element;
+			_tail_element = elem;
 		}
 
 		_insert_element(p_hash, elem);
 		return elem;
 	}
 
+	void _clear_data() {
+		HashMapElement<TKey, TValue> *current = _tail_element;
+		while (current != nullptr) {
+			HashMapElement<TKey, TValue> *prev = current->prev;
+			Allocator::delete_allocation(current);
+			current = prev;
+		}
+	}
+
 public:
-	_FORCE_INLINE_ uint32_t get_capacity() const { return hash_table_size_primes[capacity_index]; }
-	_FORCE_INLINE_ uint32_t size() const { return num_elements; }
+	_FORCE_INLINE_ uint32_t get_capacity() const { return hash_table_size_primes[_capacity_idx]; }
+	_FORCE_INLINE_ uint32_t size() const { return _size; }
 
 	/* Standard Godot Container API */
 
 	bool is_empty() const {
-		return num_elements == 0;
+		return _size == 0;
 	}
 
 	void clear() {
-		if (elements == nullptr || num_elements == 0) {
+		if (_elements == nullptr || _size == 0) {
 			return;
 		}
-		uint32_t capacity = hash_table_size_primes[capacity_index];
-		for (uint32_t i = 0; i < capacity; i++) {
-			if (hashes[i] == EMPTY_HASH) {
-				continue;
-			}
 
-			hashes[i] = EMPTY_HASH;
-			Allocator::delete_allocation(elements[i]);
-			elements[i] = nullptr;
-		}
+		_clear_data();
+		memset(_hashes, EMPTY_HASH, get_capacity() * sizeof(uint32_t));
 
-		tail_element = nullptr;
-		head_element = nullptr;
-		num_elements = 0;
+		_tail_element = nullptr;
+		_head_element = nullptr;
+		_size = 0;
 	}
 
 	void sort() {
@@ -275,118 +280,118 @@ public:
 
 		using E = HashMapElement<TKey, TValue>;
 		SortList<E, KeyValue<TKey, TValue>, &E::data, &E::prev, &E::next, C> sorter;
-		sorter.sort(head_element, tail_element);
+		sorter.sort(_head_element, _tail_element);
 	}
 
 	TValue &get(const TKey &p_key) {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
-		return elements[pos]->data.value;
+		return _elements[idx]->data.value;
 	}
 
 	const TValue &get(const TKey &p_key) const {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 		CRASH_COND_MSG(!exists, "HashMap key not found.");
-		return elements[pos]->data.value;
+		return _elements[idx]->data.value;
 	}
 
 	const TValue *getptr(const TKey &p_key) const {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 
 		if (exists) {
-			return &elements[pos]->data.value;
+			return &_elements[idx]->data.value;
 		}
 		return nullptr;
 	}
 
 	TValue *getptr(const TKey &p_key) {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 
 		if (exists) {
-			return &elements[pos]->data.value;
+			return &_elements[idx]->data.value;
 		}
 		return nullptr;
 	}
 
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
-		uint32_t _pos = 0;
-		return _lookup_pos(p_key, _pos);
+		uint32_t _idx = 0;
+		return _lookup_idx(p_key, _idx);
 	}
 
 	bool erase(const TKey &p_key) {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 
 		if (!exists) {
 			return false;
 		}
 
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
-		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
-		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
-			SWAP(hashes[next_pos], hashes[pos]);
-			SWAP(elements[next_pos], elements[pos]);
-			pos = next_pos;
-			_increment_mod(next_pos, capacity);
+		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
+		uint32_t next_idx = fastmod((idx + 1), capacity_inv, capacity);
+		while (_hashes[next_idx] != EMPTY_HASH && _get_probe_length(next_idx, _hashes[next_idx], capacity, capacity_inv) != 0) {
+			SWAP(_hashes[next_idx], _hashes[idx]);
+			SWAP(_elements[next_idx], _elements[idx]);
+			idx = next_idx;
+			_increment_mod(next_idx, capacity);
 		}
 
-		hashes[pos] = EMPTY_HASH;
+		_hashes[idx] = EMPTY_HASH;
 
-		if (head_element == elements[pos]) {
-			head_element = elements[pos]->next;
+		if (_head_element == _elements[idx]) {
+			_head_element = _elements[idx]->next;
 		}
 
-		if (tail_element == elements[pos]) {
-			tail_element = elements[pos]->prev;
+		if (_tail_element == _elements[idx]) {
+			_tail_element = _elements[idx]->prev;
 		}
 
-		if (elements[pos]->prev) {
-			elements[pos]->prev->next = elements[pos]->next;
+		if (_elements[idx]->prev) {
+			_elements[idx]->prev->next = _elements[idx]->next;
 		}
 
-		if (elements[pos]->next) {
-			elements[pos]->next->prev = elements[pos]->prev;
+		if (_elements[idx]->next) {
+			_elements[idx]->next->prev = _elements[idx]->prev;
 		}
 
-		Allocator::delete_allocation(elements[pos]);
-		elements[pos] = nullptr;
+		Allocator::delete_allocation(_elements[idx]);
 
-		num_elements--;
+		_size--;
 		return true;
 	}
 
 	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
-		ERR_FAIL_COND_V(elements == nullptr || num_elements == 0, false);
+		ERR_FAIL_COND_V(_elements == nullptr || _size == 0, false);
 		if (p_old_key == p_new_key) {
 			return true;
 		}
 		const uint32_t new_hash = _hash(p_new_key);
-		uint32_t pos = 0;
-		ERR_FAIL_COND_V(_lookup_pos_unchecked(p_new_key, new_hash, pos), false);
-		ERR_FAIL_COND_V(!_lookup_pos(p_old_key, pos), false);
-		HashMapElement<TKey, TValue> *element = elements[pos];
+		uint32_t idx = 0;
+		ERR_FAIL_COND_V(_lookup_idx_unchecked(p_new_key, new_hash, idx), false);
+		ERR_FAIL_COND_V(!_lookup_idx(p_old_key, idx), false);
+		HashMapElement<TKey, TValue> *element = _elements[idx];
 
-		// Delete the old entries in hashes and elements.
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
-		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
-		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
-			SWAP(hashes[next_pos], hashes[pos]);
-			SWAP(elements[next_pos], elements[pos]);
-			pos = next_pos;
-			_increment_mod(next_pos, capacity);
+		// Delete the old entries in _hashes and _elements.
+		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
+		uint32_t next_idx = fastmod((idx + 1), capacity_inv, capacity);
+		while (_hashes[next_idx] != EMPTY_HASH && _get_probe_length(next_idx, _hashes[next_idx], capacity, capacity_inv) != 0) {
+			SWAP(_hashes[next_idx], _hashes[idx]);
+			SWAP(_elements[next_idx], _elements[idx]);
+			idx = next_idx;
+			_increment_mod(next_idx, capacity);
 		}
-		hashes[pos] = EMPTY_HASH;
-		elements[pos] = nullptr;
+
+		_hashes[idx] = EMPTY_HASH;
+
 		// _insert_element will increment this again.
-		num_elements--;
+		_size--;
 
 		// Update the HashMapElement with the new key and reinsert it.
 		const_cast<TKey &>(element->data.key) = p_new_key;
@@ -398,23 +403,25 @@ public:
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
-		ERR_FAIL_COND_MSG(p_new_capacity < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
-		uint32_t new_index = capacity_index;
+		uint32_t new_idx = _capacity_idx;
 
-		while (hash_table_size_primes[new_index] < p_new_capacity) {
-			ERR_FAIL_COND_MSG(new_index + 1 == (uint32_t)HASH_TABLE_SIZE_MAX, nullptr);
-			new_index++;
+		while (hash_table_size_primes[new_idx] < p_new_capacity) {
+			ERR_FAIL_COND_MSG(new_idx + 1 == (uint32_t)HASH_TABLE_SIZE_MAX, nullptr);
+			new_idx++;
 		}
 
-		if (new_index == capacity_index) {
+		if (new_idx == _capacity_idx) {
+			if (p_new_capacity < _size) {
+				WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+			}
 			return;
 		}
 
-		if (elements == nullptr) {
-			capacity_index = new_index;
+		if (_elements == nullptr) {
+			_capacity_idx = new_idx;
 			return; // Unallocated yet.
 		}
-		_resize_and_rehash(new_index);
+		_resize_and_rehash(new_idx);
 	}
 
 	/** Iterator API **/
@@ -496,22 +503,22 @@ public:
 	};
 
 	_FORCE_INLINE_ Iterator begin() {
-		return Iterator(head_element);
+		return Iterator(_head_element);
 	}
 	_FORCE_INLINE_ Iterator end() {
 		return Iterator(nullptr);
 	}
 	_FORCE_INLINE_ Iterator last() {
-		return Iterator(tail_element);
+		return Iterator(_tail_element);
 	}
 
 	_FORCE_INLINE_ Iterator find(const TKey &p_key) {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 		if (!exists) {
 			return end();
 		}
-		return Iterator(elements[pos]);
+		return Iterator(_elements[idx]);
 	}
 
 	_FORCE_INLINE_ void remove(const Iterator &p_iter) {
@@ -521,41 +528,41 @@ public:
 	}
 
 	_FORCE_INLINE_ ConstIterator begin() const {
-		return ConstIterator(head_element);
+		return ConstIterator(_head_element);
 	}
 	_FORCE_INLINE_ ConstIterator end() const {
 		return ConstIterator(nullptr);
 	}
 	_FORCE_INLINE_ ConstIterator last() const {
-		return ConstIterator(tail_element);
+		return ConstIterator(_tail_element);
 	}
 
 	_FORCE_INLINE_ ConstIterator find(const TKey &p_key) const {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 		if (!exists) {
 			return end();
 		}
-		return ConstIterator(elements[pos]);
+		return ConstIterator(_elements[idx]);
 	}
 
 	/* Indexing */
 
 	const TValue &operator[](const TKey &p_key) const {
-		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
+		uint32_t idx = 0;
+		bool exists = _lookup_idx(p_key, idx);
 		CRASH_COND(!exists);
-		return elements[pos]->data.value;
+		return _elements[idx]->data.value;
 	}
 
 	TValue &operator[](const TKey &p_key) {
 		const uint32_t hash = _hash(p_key);
-		uint32_t pos = 0;
-		bool exists = elements && num_elements > 0 && _lookup_pos_unchecked(p_key, hash, pos);
+		uint32_t idx = 0;
+		bool exists = _elements && _size > 0 && _lookup_idx_unchecked(p_key, hash, idx);
 		if (!exists) {
 			return _insert(p_key, TValue(), hash)->data.value;
 		} else {
-			return elements[pos]->data.value;
+			return _elements[idx]->data.value;
 		}
 	}
 
@@ -563,22 +570,22 @@ public:
 
 	Iterator insert(const TKey &p_key, const TValue &p_value, bool p_front_insert = false) {
 		const uint32_t hash = _hash(p_key);
-		uint32_t pos = 0;
-		bool exists = elements && num_elements > 0 && _lookup_pos_unchecked(p_key, hash, pos);
+		uint32_t idx = 0;
+		bool exists = _elements && _size > 0 && _lookup_idx_unchecked(p_key, hash, idx);
 		if (!exists) {
 			return Iterator(_insert(p_key, p_value, hash, p_front_insert));
 		} else {
-			elements[pos]->data.value = p_value;
-			return Iterator(elements[pos]);
+			_elements[idx]->data.value = p_value;
+			return Iterator(_elements[idx]);
 		}
 	}
 
 	/* Constructors */
 
 	HashMap(const HashMap &p_other) {
-		reserve(hash_table_size_primes[p_other.capacity_index]);
+		reserve(hash_table_size_primes[p_other._capacity_idx]);
 
-		if (p_other.num_elements == 0) {
+		if (p_other._size == 0) {
 			return;
 		}
 
@@ -587,17 +594,33 @@ public:
 		}
 	}
 
+	HashMap(HashMap &&p_other) {
+		_elements = p_other._elements;
+		_hashes = p_other._hashes;
+		_head_element = p_other._head_element;
+		_tail_element = p_other._tail_element;
+		_capacity_idx = p_other._capacity_idx;
+		_size = p_other._size;
+
+		p_other._elements = nullptr;
+		p_other._hashes = nullptr;
+		p_other._head_element = nullptr;
+		p_other._tail_element = nullptr;
+		p_other._capacity_idx = MIN_CAPACITY_INDEX;
+		p_other._size = 0;
+	}
+
 	void operator=(const HashMap &p_other) {
 		if (this == &p_other) {
 			return; // Ignore self assignment.
 		}
-		if (num_elements != 0) {
+		if (_size != 0) {
 			clear();
 		}
 
-		reserve(hash_table_size_primes[p_other.capacity_index]);
+		reserve(hash_table_size_primes[p_other._capacity_idx]);
 
-		if (p_other.elements == nullptr) {
+		if (p_other._elements == nullptr) {
 			return; // Nothing to copy.
 		}
 
@@ -606,13 +629,43 @@ public:
 		}
 	}
 
+	HashMap &operator=(HashMap &&p_other) {
+		if (this == &p_other) {
+			return *this;
+		}
+
+		if (_size != 0) {
+			clear();
+		}
+		if (_elements != nullptr) {
+			Memory::free_static(_elements);
+			Memory::free_static(_hashes);
+		}
+
+		_elements = p_other._elements;
+		_hashes = p_other._hashes;
+		_head_element = p_other._head_element;
+		_tail_element = p_other._tail_element;
+		_capacity_idx = p_other._capacity_idx;
+		_size = p_other._size;
+
+		p_other._elements = nullptr;
+		p_other._hashes = nullptr;
+		p_other._head_element = nullptr;
+		p_other._tail_element = nullptr;
+		p_other._capacity_idx = MIN_CAPACITY_INDEX;
+		p_other._size = 0;
+
+		return *this;
+	}
+
 	HashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
-		capacity_index = 0;
+		_capacity_idx = 0;
 		reserve(p_initial_capacity);
 	}
 	HashMap() {
-		capacity_index = MIN_CAPACITY_INDEX;
+		_capacity_idx = MIN_CAPACITY_INDEX;
 	}
 
 	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
@@ -622,27 +675,27 @@ public:
 		}
 	}
 
-	uint32_t debug_get_hash(uint32_t p_index) {
-		if (num_elements == 0) {
+	uint32_t debug_get_hash(uint32_t p_idx) {
+		if (_size == 0) {
 			return 0;
 		}
-		ERR_FAIL_INDEX_V(p_index, get_capacity(), 0);
-		return hashes[p_index];
+		ERR_FAIL_INDEX_V(p_idx, get_capacity(), 0);
+		return _hashes[p_idx];
 	}
-	Iterator debug_get_element(uint32_t p_index) {
-		if (num_elements == 0) {
+	Iterator debug_get_element(uint32_t p_idx) {
+		if (_size == 0) {
 			return Iterator();
 		}
-		ERR_FAIL_INDEX_V(p_index, get_capacity(), Iterator());
-		return Iterator(elements[p_index]);
+		ERR_FAIL_INDEX_V(p_idx, get_capacity(), Iterator());
+		return Iterator(_elements[p_idx]);
 	}
 
 	~HashMap() {
-		clear();
+		_clear_data();
 
-		if (elements != nullptr) {
-			Memory::free_static(elements);
-			Memory::free_static(hashes);
+		if (_elements != nullptr) {
+			Memory::free_static(_elements);
+			Memory::free_static(_hashes);
 		}
 	}
 };
