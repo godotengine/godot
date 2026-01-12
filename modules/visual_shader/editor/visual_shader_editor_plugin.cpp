@@ -8368,6 +8368,7 @@ EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyVisualShaderMode::_option_selected));

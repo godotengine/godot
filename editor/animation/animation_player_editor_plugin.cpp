@@ -2159,6 +2159,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTRC("Display list of animations in player."));
 	animation->set_clip_text(true);
+	animation->set_fit_to_longest_item(false);
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);

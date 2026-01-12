@@ -1404,6 +1404,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->set_clip_text(true);
+	branch_select->set_fit_to_longest_item(false);
 	branch_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
 	branch_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
 	menu_bar->add_child(branch_select);
@@ -1452,6 +1453,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_select->set_clip_text(true);
+	remote_select->set_fit_to_longest_item(false);
 	remote_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
 	remote_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	menu_bar->add_child(remote_select);

@@ -244,6 +244,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
@@ -427,6 +428,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
+	flag_presets->set_fit_to_longest_item(false);
 	flag_presets->set_flat(true);
 	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);

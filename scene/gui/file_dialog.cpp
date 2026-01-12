@@ -2628,6 +2628,7 @@ FileDialog::FileDialog() {
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflows it.
+	filter->set_fit_to_longest_item(false);
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
