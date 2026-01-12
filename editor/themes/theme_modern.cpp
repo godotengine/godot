@@ -1917,6 +1917,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
 			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
 
+			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
+			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+
 			// Variation for Editor Log filter buttons.
 
 			p_theme->set_type_variation("EditorLogFilterButton", "Button");

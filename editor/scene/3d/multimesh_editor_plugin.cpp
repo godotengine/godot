@@ -274,7 +274,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_text("MultiMesh");
 	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButton");
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MultiMeshEditor::_menu_option));
