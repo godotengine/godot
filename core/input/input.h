@@ -79,6 +79,13 @@ public:
 		CURSOR_MAX
 	};
 
+	enum LastInputType {
+		LAST_INPUT_KEYBOARD_MOUSE,
+		LAST_INPUT_JOYPAD,
+		LAST_INPUT_TOUCH,
+		LAST_INPUT_UNKNOWN,
+	};
+
 	class JoypadFeatures {
 	public:
 		virtual ~JoypadFeatures() {}
@@ -112,6 +119,8 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+
+	LastInputType last_input_type = LAST_INPUT_UNKNOWN;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -367,6 +376,8 @@ public:
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
 
+	LastInputType get_last_input_type() const;
+
 	void set_mouse_position(const Point2 &p_posf);
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
@@ -422,3 +433,4 @@ public:
 
 VARIANT_ENUM_CAST(Input::MouseMode);
 VARIANT_ENUM_CAST(Input::CursorShape);
+VARIANT_ENUM_CAST(Input::LastInputType);

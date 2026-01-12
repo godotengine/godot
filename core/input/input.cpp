@@ -173,10 +173,14 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emulate_touch_from_mouse", "enable"), &Input::set_emulate_touch_from_mouse);
 	ClassDB::bind_method(D_METHOD("is_emulating_touch_from_mouse"), &Input::is_emulating_touch_from_mouse);
 
+	ClassDB::bind_method(D_METHOD("get_last_input_type"), &Input::get_last_input_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
+
+	ADD_SIGNAL(MethodInfo("last_input_device_changed", PropertyInfo(Variant::INT, "type")));
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
@@ -202,6 +206,12 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_VSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
+	BIND_ENUM_CONSTANT(CURSOR_MAX);
+
+	BIND_ENUM_CONSTANT(LAST_INPUT_KEYBOARD_MOUSE);
+	BIND_ENUM_CONSTANT(LAST_INPUT_JOYPAD);
+	BIND_ENUM_CONSTANT(LAST_INPUT_TOUCH);
+	BIND_ENUM_CONSTANT(LAST_INPUT_UNKNOWN);
 
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
@@ -751,6 +761,30 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
 
+	// Track last input device type
+	LastInputType new_input_type = last_input_type;
+
+	if (Object::cast_to<InputEventKey>(p_event.ptr())) {
+		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
+	} else if (Object::cast_to<InputEventMouseButton>(p_event.ptr()) && !p_is_emulated) {
+		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
+	} else if (Object::cast_to<InputEventMouseMotion>(p_event.ptr()) && !p_is_emulated) {
+		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
+	} else if (Object::cast_to<InputEventJoypadButton>(p_event.ptr())) {
+		new_input_type = LAST_INPUT_JOYPAD;
+	} else if (Object::cast_to<InputEventJoypadMotion>(p_event.ptr())) {
+		new_input_type = LAST_INPUT_JOYPAD;
+	} else if (Object::cast_to<InputEventScreenTouch>(p_event.ptr())) {
+		new_input_type = LAST_INPUT_TOUCH;
+	} else if (Object::cast_to<InputEventScreenDrag>(p_event.ptr())) {
+		new_input_type = LAST_INPUT_TOUCH;
+	}
+
+	if (new_input_type != last_input_type) {
+		last_input_type = new_input_type;
+		emit_signal(SNAME("last_input_device_changed"), (int)last_input_type);
+	}
+
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {
 		if (k->is_pressed()) {
@@ -1084,6 +1118,10 @@ Point2 Input::get_last_mouse_velocity() {
 Point2 Input::get_last_mouse_screen_velocity() {
 	mouse_velocity_track.update(Vector2(), Vector2());
 	return mouse_velocity_track.screen_velocity;
+}
+
+Input::LastInputType Input::get_last_input_type() const {
+	return last_input_type;
 }
 
 BitField<MouseButtonMask> Input::get_mouse_button_mask() const {

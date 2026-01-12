@@ -173,6 +173,13 @@
 				Returns the last mouse velocity. To provide a precise and jitter-free velocity, mouse velocity is only calculated every 0.1s. Therefore, mouse velocity will lag mouse movements.
 			</description>
 		</method>
+		<method name="get_last_input_type" qualifiers="const">
+			<return type="int" enum="Input.LastInputType" />
+			<description>
+				Returns the type of the last input device used. This can be used to dynamically adapt the UI (e.g., showing keyboard prompts vs. gamepad button icons) or to automatically show/hide virtual controls on touch devices.
+				The return value is one of the [enum LastInputType] constants.
+			</description>
+		</method>
 		<method name="get_magnetometer" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -491,6 +498,13 @@
 				Emitted when a joypad device has been connected or disconnected.
 			</description>
 		</signal>
+		<signal name="last_input_device_changed">
+			<param index="0" name="type" type="int" />
+			<description>
+				Emitted when the user switches between input device categories (keyboard/mouse, gamepad, or touch). The [param type] parameter is one of the [enum LastInputType] constants.
+				This signal is useful for dynamically updating UI elements, such as showing keyboard prompts when the user switches from a gamepad to keyboard, or automatically showing virtual controls when touch input is detected.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
@@ -563,6 +577,18 @@
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Help cursor. Usually a question mark.
+		</constant>
+		<constant name="LAST_INPUT_KEYBOARD_MOUSE" value="0" enum="LastInputType">
+			Last input was from keyboard or mouse (non-emulated).
+		</constant>
+		<constant name="LAST_INPUT_JOYPAD" value="1" enum="LastInputType">
+			Last input was from a gamepad/joypad.
+		</constant>
+		<constant name="LAST_INPUT_TOUCH" value="2" enum="LastInputType">
+			Last input was from a touch screen.
+		</constant>
+		<constant name="LAST_INPUT_UNKNOWN" value="3" enum="LastInputType">
+			Last input type is unknown or not yet determined.
 		</constant>
 	</constants>
 </class>
