@@ -1879,7 +1879,7 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 	p_variant.get_property_list(&pinfo);
 
 	for (const PropertyInfo &E : pinfo) {
-		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
 		}
 
