@@ -2127,6 +2127,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
+	sort->set_fit_to_longest_item(false);
 	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Category:"))));
@@ -2138,6 +2139,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	}
 	categories->set_disabled(true);
 	categories->set_clip_text(true);
+	categories->set_fit_to_longest_item(false);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
@@ -2146,6 +2148,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository = memnew(OptionButton);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	repository->set_clip_text(true);
+	repository->set_fit_to_longest_item(false);
 	search_hb2->add_child(repository);
 	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 	_update_repository_options();
