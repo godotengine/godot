@@ -1237,7 +1237,12 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			case ENVIRONMENT_MODE_SCENE: {
 				Ref<World3D> world = get_world_3d();
 				if (world.is_valid()) {
-					Ref<Environment> env = world->get_environment();
+					Ref<Environment> env;
+					if (get_tree()->get_node_count_in_group("_editor_preview_environment_") > 0) {
+						// Preview environment is enabled, ignore it
+					} else {
+						env = world->get_environment();
+					}
 					if (env.is_null()) {
 						env = world->get_fallback_environment();
 					}

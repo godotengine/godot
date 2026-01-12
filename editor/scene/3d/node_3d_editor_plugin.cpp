@@ -9550,6 +9550,7 @@ void Node3DEditor::_update_preview_environment() {
 	if (disable_env) {
 		if (preview_environment->get_parent()) {
 			preview_environment->get_parent()->remove_child(preview_environment);
+			preview_environment->remove_from_group("_editor_preview_environment_");
 			environ_state->show();
 			environ_vb->hide();
 			preview_env_dangling = true;
@@ -9563,6 +9564,7 @@ void Node3DEditor::_update_preview_environment() {
 	} else {
 		if (!preview_environment->get_parent()) {
 			add_child(preview_environment);
+			preview_environment->add_to_group("_editor_preview_environment_");
 			environ_state->hide();
 			environ_vb->show();
 			preview_env_dangling = false;
