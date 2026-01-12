@@ -1355,7 +1355,7 @@ void CopyEffects::octmap_roughness(RID p_source_rd_texture, RID p_dest_texture, 
 
 	// Remap to perceptual-roughness^2 to create more detail in lower mips and match the mapping of octmap_filter.
 	roughness.push_constant.roughness = p_roughness * p_roughness;
-	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.sample_count = MIN(p_sample_count, 64u);
 	roughness.push_constant.source_size = p_source_size;
 	roughness.push_constant.dest_size = p_dest_size;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
@@ -1412,7 +1412,7 @@ void CopyEffects::octmap_roughness_raster(RID p_source_rd_texture, RID p_dest_fr
 	memset(&roughness.push_constant, 0, sizeof(OctmapRoughnessPushConstant));
 
 	roughness.push_constant.roughness = p_roughness * p_roughness; // Shader expects roughness, not perceptual roughness, so multiply before passing in.
-	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.sample_count = MAX(uint32_t(float(p_sample_count * 4u) * roughness.push_constant.roughness), 4u);
 	roughness.push_constant.source_size = p_source_size;
 	roughness.push_constant.dest_size = p_dest_size;
 	roughness.push_constant.use_direct_write = p_roughness == 0.0;
