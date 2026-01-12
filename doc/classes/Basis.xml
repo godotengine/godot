@@ -15,6 +15,7 @@
 		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/model_export_considerations.html#d-asset-direction-conventions]3D asset direction conventions[/url] tutorial.
 		[b]Note:[/b] The basis matrices are exposed as [url=https://www.mindcontrol.org/~hplus/graphics/matrix-layout.html]column-major[/url] order, which is the same as OpenGL. However, they are stored internally in row-major order, which is the same as DirectX.
+		[b]Note:[/b] In a boolean context, a basis will evaluate to [code]false[/code] if it's equal to [constant IDENTITY]. Otherwise, a basis will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
