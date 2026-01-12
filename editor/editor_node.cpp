@@ -5392,6 +5392,73 @@ void EditorNode::add_io_warning(const String &p_warning) {
 	}
 }
 
+bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found) {
+	switch (p_variant.get_type()) {
+		case Variant::ARRAY: {
+			Array a = p_variant;
+			for (int i = 0; i < a.size(); i++) {
+				Variant v2 = a[i];
+				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
+					continue;
+				}
+				if (find_recursive_resources(v2, r_resources_found)) {
+					return true;
+				}
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				const Variant &k = kv.key;
+				const Variant &v2 = kv.value;
+				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
+					if (find_recursive_resources(k, r_resources_found)) {
+						return true;
+					}
+				}
+				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
+					if (find_recursive_resources(v2, r_resources_found)) {
+						return true;
+					}
+				}
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> r = p_variant;
+
+			if (r.is_null()) {
+				return false;
+			}
+
+			if (r_resources_found.has(r.ptr())) {
+				return true;
+			}
+
+			r_resources_found.insert(r.ptr());
+
+			List<PropertyInfo> plist;
+			r->get_property_list(&plist);
+			for (const PropertyInfo &pinfo : plist) {
+				if (!(pinfo.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
+					continue;
+				}
+				if (find_recursive_resources(r->get(pinfo.name), r_resources_found)) {
+					return true;
+				}
+			}
+
+			r_resources_found.erase(r.ptr());
+		} break;
+		default: {
+		}
+	}
+	return false;
+}
+
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	if (p_node->get_scene_file_path() == p_path) {
 		return true;
