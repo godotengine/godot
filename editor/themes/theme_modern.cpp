@@ -467,6 +467,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("focus", "Button", p_config.focus_style);
 		p_theme->set_stylebox("disabled", "Button", p_config.button_style_disabled);
 
+		p_theme->set_stylebox("normal_mirrored", "Button", p_config.button_style);
+		p_theme->set_stylebox("hover_mirrored", "Button", p_config.button_style_hover);
+		p_theme->set_stylebox("pressed_mirrored", "Button", p_config.button_style_pressed);
+		p_theme->set_stylebox("hover_pressed_mirrored", "Button", p_config.button_style_pressed);
+		p_theme->set_stylebox("disabled_mirrored", "Button", p_config.button_style_disabled);
+
 		p_theme->set_color(SceneStringName(font_color), "Button", p_config.font_color);
 		p_theme->set_color("font_hover_color", "Button", p_config.font_hover_color);
 		p_theme->set_color("font_hover_pressed_color", "Button", p_config.font_hover_pressed_color);
@@ -508,17 +514,10 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// OptionButton.
 
-		p_theme->set_stylebox("focus", "OptionButton", p_config.focus_style);
-		p_theme->set_stylebox(CoreStringName(normal), "OptionButton", p_config.button_style);
-		p_theme->set_stylebox(SceneStringName(hover), "OptionButton", p_config.button_style_hover);
-		p_theme->set_stylebox(SceneStringName(pressed), "OptionButton", p_config.button_style_pressed);
-		p_theme->set_stylebox("disabled", "OptionButton", p_config.button_style_disabled);
-
 		p_theme->set_icon("arrow", "OptionButton", p_theme->get_icon(SNAME("GuiOptionArrow"), EditorStringName(EditorIcons)));
 		p_theme->set_constant("arrow_margin", "OptionButton", p_config.base_margin * 2 * EDSCALE);
 		p_theme->set_constant("modulate_arrow", "OptionButton", true);
 		p_theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "OptionButton", 0);
 
 		// CheckButton.
 
@@ -527,6 +526,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("disabled", "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox(SceneStringName(hover), "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox("hover_pressed", "CheckButton", p_config.panel_container_style);
+
+		p_theme->set_stylebox("normal_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("pressed_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("disabled_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("hover_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("hover_pressed_mirrored", "CheckButton", p_config.panel_container_style);
 
 		p_theme->set_icon("checked", "CheckButton", p_theme->get_icon(SNAME("GuiToggleOn"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("checked_disabled", "CheckButton", p_theme->get_icon(SNAME("GuiToggleOnDisabled"), EditorStringName(EditorIcons)));
@@ -554,6 +559,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("disabled", "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(hover), "CheckBox", checkbox_style);
 			p_theme->set_stylebox("hover_pressed", "CheckBox", checkbox_style);
+
+			p_theme->set_stylebox("normal_mirrored", "CheckBox", checkbox_style_normal);
+			p_theme->set_stylebox("pressed_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("disabled_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("hover_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("hover_pressed_mirrored", "CheckBox", checkbox_style);
 
 			p_theme->set_icon("checked", "CheckBox", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
 
@@ -1883,11 +1894,23 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox("hover_pressed", SceneStringName(FlatButton), p_config.flat_button_hover_pressed);
 			p_theme->set_stylebox("disabled", SceneStringName(FlatButton), p_config.base_empty_wide_style);
 
+			p_theme->set_stylebox("normal_mirrored", SceneStringName(FlatButton), p_config.base_empty_wide_style);
+			p_theme->set_stylebox("hover_mirrored", SceneStringName(FlatButton), p_config.flat_button_hover);
+			p_theme->set_stylebox("pressed_mirrored", SceneStringName(FlatButton), p_config.flat_button_pressed);
+			p_theme->set_stylebox("hover_pressed_mirrored", SceneStringName(FlatButton), p_config.flat_button_hover_pressed);
+			p_theme->set_stylebox("disabled_mirrored", SceneStringName(FlatButton), p_config.base_empty_wide_style);
+
 			p_theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", p_config.base_empty_wide_style);
 			p_theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "FlatMenuButton", p_config.flat_button_hover_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", p_config.base_empty_wide_style);
+
+			p_theme->set_stylebox("normal_mirrored", "FlatMenuButton", p_config.base_empty_wide_style);
+			p_theme->set_stylebox("hover_mirrored", "FlatMenuButton", p_config.flat_button_hover);
+			p_theme->set_stylebox("pressed_mirrored", "FlatMenuButton", p_config.flat_button_pressed);
+			p_theme->set_stylebox("hover_pressed_mirrored", "FlatMenuButton", p_config.flat_button_hover_pressed);
+			p_theme->set_stylebox("disabled_mirrored", "FlatMenuButton", p_config.base_empty_wide_style);
 
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
@@ -2439,6 +2462,12 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(pressed), "EditorInspectorButton", style_inspector_button_pressed);
 		p_theme->set_stylebox("hover_pressed", "EditorInspectorButton", style_inspector_button_pressed);
 		p_theme->set_stylebox("disabled", "EditorInspectorButton", style_inspector_button_disabled);
+
+		p_theme->set_stylebox("normal_mirrored", "EditorInspectorButton", style_inspector_button);
+		p_theme->set_stylebox("hover_mirrored", "EditorInspectorButton", style_inspector_button_hover);
+		p_theme->set_stylebox("pressed_mirrored", "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("hover_pressed_mirrored", "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("disabled_mirrored", "EditorInspectorButton", style_inspector_button_disabled);
 
 		// Make the height for properties uniform.
 		Ref<StyleBoxFlat> inspector_button_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("EditorInspectorButton"));
