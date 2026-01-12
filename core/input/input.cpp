@@ -206,7 +206,6 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_VSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
-	BIND_ENUM_CONSTANT(CURSOR_MAX);
 
 	BIND_ENUM_CONSTANT(LAST_INPUT_KEYBOARD_MOUSE);
 	BIND_ENUM_CONSTANT(LAST_INPUT_JOYPAD);
@@ -737,6 +736,14 @@ Vector3 Input::get_magnetometer() const {
 	return magnetometer;
 }
 
+void Input::_set_last_input_type(LastInputType p_type) {
+	if (last_input_type == p_type) {
+		return;
+	}
+	last_input_type = p_type;
+	emit_signal(SNAME("last_input_device_changed"), (int)last_input_type);
+}
+
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 
@@ -761,32 +768,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
 	//   require additional handling by this class.
 
-	// Track last input device type
-	LastInputType new_input_type = last_input_type;
-
-	if (Object::cast_to<InputEventKey>(p_event.ptr())) {
-		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
-	} else if (Object::cast_to<InputEventMouseButton>(p_event.ptr()) && !p_is_emulated) {
-		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
-	} else if (Object::cast_to<InputEventMouseMotion>(p_event.ptr()) && !p_is_emulated) {
-		new_input_type = LAST_INPUT_KEYBOARD_MOUSE;
-	} else if (Object::cast_to<InputEventJoypadButton>(p_event.ptr())) {
-		new_input_type = LAST_INPUT_JOYPAD;
-	} else if (Object::cast_to<InputEventJoypadMotion>(p_event.ptr())) {
-		new_input_type = LAST_INPUT_JOYPAD;
-	} else if (Object::cast_to<InputEventScreenTouch>(p_event.ptr())) {
-		new_input_type = LAST_INPUT_TOUCH;
-	} else if (Object::cast_to<InputEventScreenDrag>(p_event.ptr())) {
-		new_input_type = LAST_INPUT_TOUCH;
-	}
-
-	if (new_input_type != last_input_type) {
-		last_input_type = new_input_type;
-		emit_signal(SNAME("last_input_device_changed"), (int)last_input_type);
-	}
-
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_keycode() != Key::NONE) {
+		_set_last_input_type(LAST_INPUT_KEYBOARD_MOUSE);
 		if (k->is_pressed()) {
 			keys_pressed.insert(k->get_keycode());
 		} else {
@@ -811,6 +795,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
+		if (!p_is_emulated) {
+			_set_last_input_type(LAST_INPUT_KEYBOARD_MOUSE);
+		}
 		if (mb->is_pressed()) {
 			mouse_button_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 		} else {
@@ -840,6 +827,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
+		if (!p_is_emulated) {
+			_set_last_input_type(LAST_INPUT_KEYBOARD_MOUSE);
+		}
 		Point2 position = mm->get_global_position();
 		if (mouse_pos != position) {
 			set_mouse_position(position);
@@ -871,6 +861,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventScreenTouch> st = p_event;
 
 	if (st.is_valid()) {
+		_set_last_input_type(LAST_INPUT_TOUCH);
 		if (st->is_pressed()) {
 			VelocityTrack &track = touch_velocity_track[st->get_index()];
 			track.reset();
@@ -923,6 +914,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventScreenDrag> sd = p_event;
 
 	if (sd.is_valid()) {
+		_set_last_input_type(LAST_INPUT_TOUCH);
 		VelocityTrack &track = touch_velocity_track[sd->get_index()];
 		track.update(sd->get_relative(), sd->get_relative_screen_position());
 		sd->set_velocity(track.velocity);
@@ -952,6 +944,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventJoypadButton> jb = p_event;
 
 	if (jb.is_valid()) {
+		_set_last_input_type(LAST_INPUT_JOYPAD);
 		JoyButton c = _combine_device(jb->get_button_index(), jb->get_device());
 
 		if (jb->is_pressed()) {
@@ -964,6 +957,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 	Ref<InputEventJoypadMotion> jm = p_event;
 
 	if (jm.is_valid()) {
+		_set_last_input_type(LAST_INPUT_JOYPAD);
 		set_joy_axis(jm->get_device(), jm->get_axis(), jm->get_axis_value());
 	}
 

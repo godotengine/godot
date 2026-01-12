@@ -121,6 +121,7 @@ private:
 	bool disable_input = false;
 
 	LastInputType last_input_type = LAST_INPUT_UNKNOWN;
+	void _set_last_input_type(LastInputType p_type);
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
