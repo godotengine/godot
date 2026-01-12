@@ -591,6 +591,8 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 		if (p_make_linked_from >= 0 && p_make_linked_from != p_cache_index && p_make_linked_from < cache.size()) {
 			cache.write[p_cache_index] = TS->create_font_linked_variation(cache[p_make_linked_from]);
 		} else {
+			MutexLock lock(data_mutex);
+
 			cache.write[p_cache_index] = TS->create_font();
 			TS->font_set_data_ptr(cache[p_cache_index], data_ptr, data_size);
 			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
@@ -1408,9 +1410,13 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void FontFile::reset_state() {
 	_clear_cache();
-	data.clear();
-	data_ptr = nullptr;
-	data_size = 0;
+	{
+		MutexLock lock(data_mutex);
+		data = PackedByteArray();
+		data_ptr = nullptr;
+		data_size = 0;
+		data_external = false;
+	}
 	cache.clear();
 
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
@@ -2070,9 +2076,12 @@ Error FontFile::load_dynamic_font(const String &p_path) {
 }
 
 void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
-	data.clear();
+	MutexLock lock(data_mutex);
+
+	data = PackedByteArray();
 	data_ptr = p_data;
 	data_size = p_size;
+	data_external = true;
 
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
@@ -2082,9 +2091,12 @@ void FontFile::set_data_ptr(const uint8_t *p_data, size_t p_size) {
 }
 
 void FontFile::set_data(const PackedByteArray &p_data) {
+	MutexLock lock(data_mutex);
+
 	data = p_data;
 	data_ptr = data.ptr();
 	data_size = data.size();
+	data_external = false;
 
 	for (int i = 0; i < cache.size(); i++) {
 		if (cache[i].is_valid()) {
@@ -2094,7 +2106,9 @@ void FontFile::set_data(const PackedByteArray &p_data) {
 }
 
 PackedByteArray FontFile::get_data() const {
-	if (unlikely((size_t)data.size() != data_size)) {
+	MutexLock lock(data_mutex);
+
+	if (unlikely(data_external && data.is_empty() && data_ptr && data_size > 0)) {
 		data.resize(data_size);
 		memcpy(data.ptrw(), data_ptr, data_size);
 	}

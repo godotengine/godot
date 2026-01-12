@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/os/mutex.h"
 #include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
@@ -185,8 +186,10 @@ class FontFile : public Font {
 	RES_BASE_EXTENSION("fontdata");
 
 	// Font source data.
+	mutable Mutex data_mutex;
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
+	bool data_external = false;
 	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
