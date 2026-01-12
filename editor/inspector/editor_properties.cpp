@@ -445,7 +445,7 @@ void EditorPropertyTextEnum::_option_selected(int p_which) {
 void EditorPropertyTextEnum::_edit_custom_value() {
 	default_layout->hide();
 	edit_custom_layout->show();
-	custom_value_edit->grab_focus();
+	custom_value_edit->grab_focus(true);
 }
 
 void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
