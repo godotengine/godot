@@ -2637,6 +2637,23 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_script_dialog->popup_centered();
 		} break;
 
+		case FILE_MENU_NEW_INHERITED_SCRIPT: {
+			String fpath = current_path;
+			if (!fpath.ends_with("/")) {
+				fpath = fpath.get_base_dir();
+			}
+
+			Ref<Script> script = ResourceLoader::load(p_selected[0]);
+
+			if (script.is_valid() && !script->get_global_name().is_empty()) {
+				make_script_dialog->config(script->get_global_name(), fpath.path_join("new_script.gd"), false, false);
+			} else {
+				make_script_dialog->config(vformat("\"%s\"", p_selected[0]), fpath.path_join("new_script.gd"), false, false);
+			}
+
+			make_script_dialog->popup_centered();
+		} break;
+
 		case FILE_MENU_COPY_PATH: {
 			if (!p_selected.is_empty()) {
 				const String &fpath = p_selected[0];
@@ -3409,6 +3426,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 					if (ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
 						p_popup->add_icon_item(get_editor_theme_icon(SNAME("MainPlay")), TTRC("Run"), FILE_MENU_RUN_SCRIPT);
 					}
+					p_popup->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTRC("New Inherited Script"), FILE_MENU_NEW_INHERITED_SCRIPT);
 				}
 			}
 			p_popup->add_separator();
