@@ -62,7 +62,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	bool touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
-	if (!Engine::get_singleton()->is_editor_hint() && touchscreen_only && !touchscreen_available) {
+	if (!Engine::get_singleton()->is_editor_hint() && !touchscreen_available) {
 		return;
 	}
 
@@ -564,13 +564,16 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
-void BaseButton::set_touchscreen_only(bool p_enable) {
-	touchscreen_only = p_enable;
+void BaseButton::set_visibility_mode(VisibilityMode p_mode) {
+	if (p_mode == visibility_mode) {
+		return;
+	}
+	visibility_mode = p_mode;
 	queue_redraw();
 }
 
-bool BaseButton::is_touchscreen_only() const {
-	return touchscreen_only;
+BaseButton::VisibilityMode BaseButton::get_visibility_mode() const {
+	return visibility_mode;
 }
 
 bool BaseButton::_was_pressed_by_mouse() const {
@@ -614,8 +617,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
-	ClassDB::bind_method(D_METHOD("set_touchscreen_only", "enabled"), &BaseButton::set_touchscreen_only);
-	ClassDB::bind_method(D_METHOD("is_touchscreen_only"), &BaseButton::is_touchscreen_only);
+	ClassDB::bind_method(D_METHOD("set_visibility_mode", "mode"), &BaseButton::set_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &BaseButton::get_visibility_mode);
 
 	GDVIRTUAL_BIND(_pressed);
 	GDVIRTUAL_BIND(_toggled, "toggled_on");
@@ -647,6 +650,8 @@ void BaseButton::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
+	BIND_ENUM_CONSTANT(VISIBILITY_ALWAYS);
+	BIND_ENUM_CONSTANT(VISIBILITY_TOUCHSCREEN_ONLY);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
 }

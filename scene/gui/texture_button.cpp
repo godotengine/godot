@@ -119,7 +119,7 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 void TextureButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!Engine::get_singleton()->is_editor_hint() && is_touchscreen_only() && !DisplayServer::get_singleton()->is_touchscreen_available()) {
+			if (!Engine::get_singleton()->is_editor_hint() && get_visibility_mode() == BaseButton::VISIBILITY_TOUCHSCREEN_ONLY && !DisplayServer::get_singleton()->is_touchscreen_available()) {
 				return;
 			}
 
