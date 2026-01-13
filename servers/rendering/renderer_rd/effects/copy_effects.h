@@ -256,11 +256,10 @@ private:
 	};
 
 	enum OctmapDownsamplerMode {
-		DOWNSAMPLER_MODE_FLAG_HIGH_QUALITY = (1 << 0),
-		DOWNSAMPLER_MODE_FLAG_RGB10_A2 = (1 << 1),
+		DOWNSAMPLER_MODE_FLAG_RGB10_A2 = (1 << 0),
 
-		DOWNSAMPLER_MODE_COMPUTE_MAX = ((DOWNSAMPLER_MODE_FLAG_HIGH_QUALITY | DOWNSAMPLER_MODE_FLAG_RGB10_A2) + 1),
-		DOWNSAMPLER_MODE_RASTER_MAX = (DOWNSAMPLER_MODE_FLAG_HIGH_QUALITY + 1),
+		DOWNSAMPLER_MODE_COMPUTE_MAX = (DOWNSAMPLER_MODE_FLAG_RGB10_A2 + 1),
+		DOWNSAMPLER_MODE_RASTER_MAX = 1,
 	};
 
 	struct OctmapDownsampler {
@@ -269,7 +268,7 @@ private:
 		OctmapDownsamplerRasterShaderRD raster_shader;
 		RID shader_version;
 		PipelineDeferredRD compute_pipelines[DOWNSAMPLER_MODE_COMPUTE_MAX];
-		PipelineCacheRD raster_pipelines[DOWNSAMPLER_MODE_RASTER_MAX];
+		PipelineCacheRD raster_pipeline;
 	} octmap_downsampler;
 
 	enum OctmapFilterMode {
@@ -393,8 +392,8 @@ public:
 
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip);
 	void copy_cubemap_to_octmap(RID p_source_rd_texture, RID p_dst_framebuffer, float p_border_size);
-	void octmap_downsample(RID p_source_octmap, RID p_dest_octmap, const Size2i &p_size, bool p_use_filter_quality, float p_border_size);
-	void octmap_downsample_raster(RID p_source_octmap, RID p_dest_framebuffer, const Size2i &p_size, bool p_use_filter_quality, float p_border_size);
+	void octmap_downsample(RID p_source_octmap, RID p_dest_octmap, const Size2i &p_size, float p_border_size);
+	void octmap_downsample_raster(RID p_source_octmap, RID p_dest_framebuffer, const Size2i &p_size, float p_border_size);
 	void octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_octmap, bool p_use_array, float p_border_size);
 	void octmap_filter_raster(RID p_source_octmap, RID p_dest_framebuffer, uint32_t p_mip_level, float p_border_size);
 	void octmap_roughness(RID p_source_rd_texture, RID p_dest_texture, uint32_t p_sample_count, float p_roughness, uint32_t p_source_size, uint32_t p_dest_size, float p_border_size);
