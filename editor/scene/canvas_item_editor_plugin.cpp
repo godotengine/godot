@@ -273,6 +273,44 @@ public:
 	}
 };
 
+Ref<EditorCanvasItemGizmo> _get_bounding_rect_gizmo(const CanvasItem *ci) {
+	ERR_FAIL_NULL_V(ci, Ref<EditorCanvasItemGizmo>());
+	for (Ref<EditorCanvasItemGizmo> gizmo : ci->get_gizmos()) {
+		if (gizmo.is_null()) {
+			continue;
+		}
+		// highest priority gizmo wins
+		if (gizmo->has_boundary()) {
+			return gizmo;
+		}
+	}
+
+	return Ref<EditorCanvasItemGizmo>();
+}
+
+bool _get_pivot(const CanvasItem *ci, Vector2 &r_pivot) {
+	// Return the pivot of the canvas item, if any gizmo defines it. If no gizmo defines it,
+	// fall back to the legacy system (_edit_use_pivot/_edit_get_pivot).
+	ERR_FAIL_NULL_V(ci, false);
+
+	Vector<Ref<CanvasItemGizmo>> gizmos = ci->get_gizmos();
+	for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+		if (gizmo.is_null()) {
+			continue;
+		}
+		// highest priority gizmo wins
+		if (gizmo->has_pivot()) {
+			r_pivot = gizmo->get_pivot();
+			return true;
+		}
+		// TODO: GIZMOS: should we print a warning if multiple gizmos say they have pivots?
+	}
+
+	// if no gizmo took it, fall back to the legacy system.
+	r_pivot = ci->_edit_get_pivot();
+	return ci->_edit_use_pivot();
+}
+
 bool CanvasItemEditor::_is_node_locked(const Node *p_node) const {
 	return p_node->get_meta("_edit_lock_", false);
 }
@@ -353,9 +391,12 @@ void CanvasItemEditor::_snap_other_nodes(
 	if (ci && !exception) {
 		Transform2D ci_transform = ci->get_screen_transform();
 		if (std::fmod(ci_transform.get_rotation() - p_transform_to_snap.get_rotation(), (real_t)360.0) == 0.0) {
-			if (ci->_edit_use_rect()) {
-				Point2 begin = ci_transform.xform(ci->_edit_get_rect().get_position());
-				Point2 end = ci_transform.xform(ci->_edit_get_rect().get_position() + ci->_edit_get_rect().get_size());
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+			bool use_rect = bounding_rect_gizmo.is_valid() || ci->_edit_use_rect();
+			if (use_rect) {
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+				Point2 begin = ci_transform.xform(rect.get_position());
+				Point2 end = ci_transform.xform(rect.get_position() + rect.get_size());
 
 				_snap_if_closer_point(p_value, r_current_snap, r_current_snap_target, begin, p_snap_target, ci_transform.get_rotation());
 				_snap_if_closer_point(p_value, r_current_snap, r_current_snap_target, end, p_snap_target, ci_transform.get_rotation());
@@ -392,9 +433,12 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 				_snap_if_closer_point(p_target, output, snap_target, (begin + end) / 2.0, SNAP_TARGET_PARENT, rotation);
 				_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_PARENT, rotation);
 			} else if (const CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_self_canvas_item->get_parent())) {
-				if (parent_ci->_edit_use_rect()) {
-					Point2 begin = p_self_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position());
-					Point2 end = p_self_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position() + parent_ci->_edit_get_rect().get_size());
+				Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(parent_ci);
+				bool use_rect = bounding_rect_gizmo.is_valid() || parent_ci->_edit_use_rect();
+				if (use_rect) {
+					Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : parent_ci->_edit_get_rect();
+					Point2 begin = p_self_canvas_item->get_transform().affine_inverse().xform(rect.get_position());
+					Point2 end = p_self_canvas_item->get_transform().affine_inverse().xform(rect.get_position() + rect.get_size());
 					_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_PARENT, rotation);
 					_snap_if_closer_point(p_target, output, snap_target, (begin + end) / 2.0, SNAP_TARGET_PARENT, rotation);
 					_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_PARENT, rotation);
@@ -417,9 +461,12 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 		// Self sides
 		if ((is_snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
-			if (p_self_canvas_item->_edit_use_rect()) {
-				Point2 begin = p_self_canvas_item->get_screen_transform().xform(p_self_canvas_item->_edit_get_rect().get_position());
-				Point2 end = p_self_canvas_item->get_screen_transform().xform(p_self_canvas_item->_edit_get_rect().get_position() + p_self_canvas_item->_edit_get_rect().get_size());
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(p_self_canvas_item);
+			bool use_rect = bounding_rect_gizmo.is_valid() || p_self_canvas_item->_edit_use_rect();
+			if (use_rect) {
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : p_self_canvas_item->_edit_get_rect();
+				Point2 begin = p_self_canvas_item->get_screen_transform().xform(rect.get_position());
+				Point2 end = p_self_canvas_item->get_screen_transform().xform(rect.get_position() + rect.get_size());
 				_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_SELF, rotation);
 				_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_SELF, rotation);
 			}
@@ -427,8 +474,11 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 
 		// Self center
 		if ((is_snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
-			if (p_self_canvas_item->_edit_use_rect()) {
-				Point2 center = p_self_canvas_item->get_screen_transform().xform(p_self_canvas_item->_edit_get_rect().get_center());
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(p_self_canvas_item);
+			bool use_rect = bounding_rect_gizmo.is_valid() || p_self_canvas_item->_edit_use_rect();
+			if (use_rect) {
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : p_self_canvas_item->_edit_get_rect();
+				Point2 center = p_self_canvas_item->get_screen_transform().xform(rect.get_center());
 				_snap_if_closer_point(p_target, output, snap_target, center, SNAP_TARGET_SELF, rotation);
 			} else {
 				Point2 position = p_self_canvas_item->get_screen_transform().xform(Point2());
@@ -577,13 +627,15 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *
 
 	// Handles the first element
 	CanvasItem *ci = p_list.front()->get();
-	Rect2 rect = Rect2(ci->get_global_transform_with_canvas().xform(ci->_edit_get_rect().get_center()), Size2());
+	Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+	Rect2 first_rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+	Rect2 rect = Rect2(ci->get_global_transform_with_canvas().xform(first_rect.get_center()), Size2());
 
 	// Expand with the other ones
 	for (CanvasItem *ci2 : p_list) {
 		Transform2D xform = ci2->get_global_transform_with_canvas();
-
-		Rect2 current_rect = ci2->_edit_get_rect();
+		Ref<EditorCanvasItemGizmo> bounding_rect_gizmo2 = _get_bounding_rect_gizmo(ci2);
+		Rect2 current_rect = bounding_rect_gizmo2.is_valid() ? bounding_rect_gizmo2->get_boundary() : ci2->_edit_get_rect();
 		rect.expand_to(xform.xform(current_rect.position));
 		rect.expand_to(xform.xform(current_rect.position + Vector2(current_rect.size.x, 0)));
 		rect.expand_to(xform.xform(current_rect.position + current_rect.size));
@@ -618,7 +670,8 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 			xform *= p_parent_xform;
 		}
 		xform *= ci->get_transform();
-		Rect2 rect = ci->_edit_get_rect();
+		Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+		Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
 		if (r_first) {
 			r_rect = Rect2(xform.xform(rect.get_center()), Size2());
 			r_first = false;
@@ -804,7 +857,8 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 		}
 		xform *= ci->get_transform();
 
-		// legacy way
+		// legacy way - this deliberately does not use the _get_bounding_rect function, as with gizmos we use
+		// gizmo collision shapes rather than bounding boxes for hit detection
 		if (ci->_edit_use_rect()) {
 			Rect2 rect = ci->_edit_get_rect();
 			if (p_rect.has_point(xform.xform(rect.position)) &&
@@ -1047,8 +1101,10 @@ void CanvasItemEditor::_save_drag_selection_state() {
 
 			se->undo_state = ci->_edit_get_state();
 			se->pre_drag_xform = ci->get_screen_transform();
-			if (ci->_edit_use_rect()) {
-				se->pre_drag_rect = ci->_edit_get_rect();
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+			Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+			if (rect != Rect2()) {
+				se->pre_drag_rect = rect;
 			} else {
 				se->pre_drag_rect = Rect2();
 			}
@@ -1780,10 +1836,15 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 					CanvasItem *ci = drag_selection.front()->get();
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
-					} else if (ci->_edit_use_pivot()) {
-						drag_rotation_center = ci->get_screen_transform().xform(ci->_edit_get_pivot());
 					} else {
-						drag_rotation_center = ci->get_screen_transform().get_origin();
+						Vector2 pivot;
+						bool use_pivot = _get_pivot(ci, pivot);
+
+						if (use_pivot) {
+							drag_rotation_center = ci->get_screen_transform().xform(pivot);
+						} else {
+							drag_rotation_center = ci->get_screen_transform().get_origin();
+						}
 					}
 					_save_drag_selection_state();
 					return true;
@@ -2082,8 +2143,9 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 			if (selection.size() == 1) {
 				CanvasItem *ci = selection.front()->get();
-				if (ci->_edit_use_rect() && _is_node_movable(ci)) {
-					Rect2 rect = ci->_edit_get_rect();
+				Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+				if (rect != Rect2() && _is_node_movable(ci)) {
 					Transform2D xform = transform * ci->get_screen_transform();
 
 					const Vector2 endpoints[4] = {
@@ -2150,7 +2212,8 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			bool uniform = m->is_shift_pressed();
 			bool symmetric = m->is_alt_pressed();
 
-			Rect2 local_rect = ci->_edit_get_rect();
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+			Rect2 local_rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
 			real_t aspect = local_rect.has_area() ? (local_rect.get_size().y / local_rect.get_size().x) : (local_rect.get_size().y + 1.0) / (local_rect.get_size().x + 1.0);
 			Point2 current_begin = local_rect.get_position();
 			Point2 current_end = local_rect.get_position() + local_rect.get_size();
@@ -3055,7 +3118,8 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 		for (int i = 0; i < hovering_results_items.size(); i++) {
 			CanvasItem *ci = hovering_results_items[i].item;
 
-			if (ci->_edit_use_rect()) {
+			Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+			if (bounding_rect_gizmo.is_valid() || ci->_edit_use_rect()) {
 				continue;
 			}
 
@@ -3156,12 +3220,14 @@ void CanvasItemEditor::_commit_drag() {
 		switch (drag_type) {
 			// Confirm the pivot move.
 			case DRAG_PIVOT: {
+				Vector2 pivot;
+				_get_pivot(drag_selection.front()->get(), pivot);
 				_commit_drag_selection_state(
 						vformat(
 								TTR("Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"),
 								drag_selection.front()->get()->get_name(),
-								drag_selection.front()->get()->_edit_get_pivot().x,
-								drag_selection.front()->get()->_edit_get_pivot().y));
+								pivot.x,
+								pivot.y));
 			} break;
 
 			// Confirm the node rotation.
@@ -3214,12 +3280,14 @@ void CanvasItemEditor::_commit_drag() {
 									Math::snapped(drag_selection.front()->get()->_edit_get_scale().y, 0.01)));
 				} else {
 					// Extends from Control.
+					Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(drag_selection.front()->get());
+					Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : drag_selection.front()->get()->_edit_get_rect();
 					_commit_drag_selection_state(
 							vformat(
 									TTR("Resize Control \"%s\" to (%d, %d)"),
 									drag_selection.front()->get()->get_name(),
-									drag_selection.front()->get()->_edit_get_rect().size.x,
-									drag_selection.front()->get()->_edit_get_rect().size.y));
+									rect.size.x,
+									rect.size.y));
 				}
 
 				if (key_auto_insert_button->is_pressed()) {
@@ -4105,6 +4173,9 @@ void CanvasItemEditor::_draw_selection() {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 
+		Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+		bool use_bounding_rect = bounding_rect_gizmo.is_valid() || ci->_edit_use_rect();
+
 		// Draw the previous position if we are dragging the node
 		if (show_helpers &&
 				(drag_type == DRAG_MOVE || drag_type == DRAG_ROTATE ||
@@ -4113,7 +4184,7 @@ void CanvasItemEditor::_draw_selection() {
 			const Transform2D pre_drag_xform = transform * se->pre_drag_xform;
 			const Color pre_drag_color = Color(0.4, 0.6, 1, 0.7);
 
-			if (ci->_edit_use_rect()) {
+			if (use_bounding_rect) {
 				Vector2 pre_drag_endpoints[4] = {
 					pre_drag_xform.xform(se->pre_drag_rect.position),
 					pre_drag_xform.xform(se->pre_drag_rect.position + Vector2(se->pre_drag_rect.size.x, 0)),
@@ -4133,8 +4204,9 @@ void CanvasItemEditor::_draw_selection() {
 		Transform2D xform = transform * ci->get_screen_transform();
 
 		// Draw the selected items position / surrounding boxes
-		if (ci->_edit_use_rect()) {
-			Rect2 rect = ci->_edit_get_rect();
+		if (use_bounding_rect) {
+			Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+
 			const Vector2 endpoints[4] = {
 				xform.xform(rect.position),
 				xform.xform(rect.position + Vector2(rect.size.x, 0)),
@@ -4186,8 +4258,9 @@ void CanvasItemEditor::_draw_selection() {
 			}
 
 			// Draw the resize handles
-			if (tool == TOOL_SELECT && ci->_edit_use_rect() && _is_node_movable(ci)) {
-				Rect2 rect = ci->_edit_get_rect();
+			if (tool == TOOL_SELECT && use_bounding_rect && _is_node_movable(ci)) {
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+
 				const Vector2 endpoints[4] = {
 					xform.xform(rect.position),
 					xform.xform(rect.position + Vector2(rect.size.x, 0)),
@@ -4437,7 +4510,9 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (show_position_gizmos && ci && !ci->_edit_use_rect() && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
+	Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+	bool use_bounding_rect = bounding_rect_gizmo.is_valid() || ci->_edit_use_rect();
+	if (show_position_gizmos && ci && !use_bounding_rect && (!editor_selection->is_selected(ci) || _is_node_locked(ci))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
@@ -4737,12 +4812,9 @@ void CanvasItemEditor::_notification(int p_what) {
 			for (CanvasItem *ci : selection) {
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
 
-				Rect2 rect;
-				if (ci->_edit_use_rect()) {
-					rect = ci->_edit_get_rect();
-				} else {
-					rect = Rect2();
-				}
+				Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+				Rect2 rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
+
 				Transform2D xform = ci->get_global_transform();
 
 				if (rect != se->prev_rect || xform != se->prev_xform) {
@@ -5656,12 +5728,9 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		if (!canvas_item_transform.is_finite()) {
 			continue;
 		}
-		Rect2 item_rect;
-		if (ci->_edit_use_rect()) {
-			item_rect = ci->_edit_get_rect();
-		} else {
-			item_rect = Rect2();
-		}
+
+		Ref<EditorCanvasItemGizmo> bounding_rect_gizmo = _get_bounding_rect_gizmo(ci);
+		Rect2 item_rect = bounding_rect_gizmo.is_valid() ? bounding_rect_gizmo->get_boundary() : ci->_edit_get_rect();
 		Vector2 pos = canvas_item_transform.get_origin();
 		const Vector2 scale = canvas_item_transform.get_scale();
 		const real_t angle = canvas_item_transform.get_rotation();
