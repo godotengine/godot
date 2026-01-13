@@ -2108,7 +2108,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			Ref<StyleBoxFlat> style_tabbar_background_inner = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
 			style_tabbar_background_inner->set_content_margin_all(p_config.base_margin * EDSCALE);
-			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE + p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius > 0 ? (p_config.corner_radius + p_config.base_margin) * EDSCALE : 0);
 			style_tabbar_background_inner->set_bg_color(background_color);
 
 			p_theme->set_stylebox("tabbar_background", "TabContainerInner", style_tabbar_background_inner);
