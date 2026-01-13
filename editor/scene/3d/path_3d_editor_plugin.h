@@ -169,6 +169,8 @@ protected:
 public:
 	Path3D *get_edited_path() { return path; }
 
+	void update_handles();
+
 	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
