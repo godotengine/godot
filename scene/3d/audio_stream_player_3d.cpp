@@ -354,13 +354,13 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 	return internal->bus;
 }
 
-static void apply_max_volume_from_vector(Vector<AudioFrame> &tgt_volume_vector, const Vector<AudioFrame> &src_volume_vector) {
-	for (int64_t i = 0; i < tgt_volume_vector.size(); i++) {
-		const auto frame = AudioFrame(
-				MAX(tgt_volume_vector[i].left, src_volume_vector[i].left),
-				MAX(tgt_volume_vector[i].right, src_volume_vector[i].right));
+static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vector, const Vector<AudioFrame> &p_src_volume_vector) {
+	for (int64_t i = 0; i < r_tgt_volume_vector.size(); i++) {
+		const AudioFrame frame = AudioFrame(
+				MAX(r_tgt_volume_vector[i].left, p_src_volume_vector[i].left),
+				MAX(r_tgt_volume_vector[i].right, p_src_volume_vector[i].right));
 
-		tgt_volume_vector.write[i] = frame;
+		r_tgt_volume_vector.write[i] = frame;
 	}
 }
 
@@ -497,12 +497,12 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			tmp_volume_vector.write[k] = multiplier * tmp_volume_vector[k];
 		}
 
-		apply_max_volume_from_vector(output_volume_vector, tmp_volume_vector);
+		_apply_max_volume_from_vector(output_volume_vector, tmp_volume_vector);
 
 #ifndef PHYSICS_3D_DISABLED
 		if (area && area->is_using_reverb_bus()) {
 			_calc_reverb_vol(area, listener_area_pos, tmp_volume_vector, tmp_reverb_vector);
-			apply_max_volume_from_vector(output_reverb_vector, tmp_reverb_vector);
+			_apply_max_volume_from_vector(output_reverb_vector, tmp_reverb_vector);
 		}
 #endif
 
