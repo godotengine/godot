@@ -45,6 +45,9 @@ public:
 private:
 	HashMap<DisplayServerEnums::WindowID, SurfaceID> window_surface_map;
 
+protected:
+	Error _check_excluded_devices();
+
 public:
 	SurfaceID surface_get_from_window(DisplayServerEnums::WindowID p_window) const;
 	Error window_create(DisplayServerEnums::WindowID p_window, const void *p_platform_data);
@@ -126,6 +129,7 @@ public:
 	virtual void surface_destroy(SurfaceID p_surface) = 0;
 	virtual bool is_debug_utils_enabled() const = 0;
 
+	int32_t pick_device(SurfaceID p_surface, bool p_print_verbose);
 	String get_driver_and_device_memory_report() const;
 
 	virtual const char *get_tracked_object_name(uint32_t p_type_index) const;
@@ -140,4 +144,8 @@ public:
 	virtual uint64_t get_device_allocation_count() const;
 	virtual uint64_t get_device_memory_by_object_type(uint32_t p_type) const;
 	virtual uint64_t get_device_allocs_by_object_type(uint32_t p_type) const;
+
+	static String get_device_vendor_name(const Device &p_device);
+	static String get_device_type_name(const Device &p_device);
+	static uint32_t get_device_type_score(const Device &p_device);
 };
