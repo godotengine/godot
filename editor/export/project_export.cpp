@@ -151,16 +151,12 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = EditorExport::get_singleton()->get_export_platform(p_platform)->get_name();
-	bool make_runnable = true;
 	int attempt = 1;
 	while (true) {
 		bool valid = true;
 
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
-				make_runnable = false;
-			}
 			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
@@ -176,8 +172,8 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	}
 
 	preset->set_name(preset_name);
-	if (make_runnable) {
-		preset->set_runnable(make_runnable);
+	if (EditorExport::get_singleton()->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
+		EditorExport::get_singleton()->set_runnable_preset(preset);
 	}
 	EditorExport::get_singleton()->add_export_preset(preset);
 	_update_presets();
@@ -525,14 +521,9 @@ void ProjectExportDialog::_runnable_pressed() {
 	ERR_FAIL_COND(current.is_null());
 
 	if (runnable->is_pressed()) {
-		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == current->get_platform()) {
-				p->set_runnable(current == p);
-			}
-		}
+		EditorExport::get_singleton()->set_runnable_preset(current);
 	} else {
-		current->set_runnable(false);
+		EditorExport::get_singleton()->unset_runnable_preset(current);
 	}
 
 	_update_presets();
@@ -726,15 +717,11 @@ void ProjectExportDialog::_duplicate_preset() {
 	ERR_FAIL_COND(preset.is_null());
 
 	String preset_name = current->get_name() + " (copy)";
-	bool make_runnable = true;
 	while (true) {
 		bool valid = true;
 
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
-			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
-				make_runnable = false;
-			}
 			if (p->get_name() == preset_name) {
 				valid = false;
 				break;
@@ -749,8 +736,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	}
 
 	preset->set_name(preset_name);
-	if (make_runnable) {
-		preset->set_runnable(make_runnable);
+	if (EditorExport::get_singleton()->get_runnable_preset_for_platform(preset->get_platform()).is_null()) {
+		EditorExport::get_singleton()->set_runnable_preset(preset);
 	}
 	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());

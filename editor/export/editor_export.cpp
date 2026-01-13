@@ -42,13 +42,17 @@ void EditorExport::_save() {
 	Ref<ConfigFile> credentials;
 	config.instantiate();
 	credentials.instantiate();
+
+	for (const KeyValue<Ref<EditorExportPlatform>, Ref<EditorExportPreset>> &E : runnable_presets) {
+		config->set_value(RUNNABLE_SECTION_NAME, E.key->get_name(), E.value->get_name());
+	}
+
 	for (int i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
 
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
-		config->set_value(section, "runnable", preset->is_runnable());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -221,6 +225,26 @@ Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
 	return export_plugins;
 }
 
+void EditorExport::set_runnable_preset(const Ref<EditorExportPreset> &p_preset) {
+	runnable_presets[p_preset->get_platform()] = p_preset;
+	emit_presets_runnable_changed();
+	save_presets();
+}
+
+void EditorExport::unset_runnable_preset(const Ref<EditorExportPreset> &p_preset) {
+	const Ref<EditorExportPreset> *current = runnable_presets.getptr(p_preset->get_platform());
+	if (current && *current == p_preset) {
+		runnable_presets.erase(p_preset->get_platform());
+		emit_presets_runnable_changed();
+		save_presets();
+	}
+}
+
+Ref<EditorExportPreset> EditorExport::get_runnable_preset_for_platform(const Ref<EditorExportPlatform> &p_for_platform) const {
+	const Ref<EditorExportPreset> *preset = runnable_presets.getptr(p_for_platform);
+	return preset ? *preset : Ref<EditorExportPreset>();
+}
+
 void EditorExport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -260,6 +284,13 @@ void EditorExport::load_config() {
 		return;
 	}
 
+	HashMap<String, String> runnable_loading;
+	if (config->has_section(RUNNABLE_SECTION_NAME)) {
+		for (const String &platform_name : config->get_section_keys(RUNNABLE_SECTION_NAME)) {
+			runnable_loading[platform_name] = config->get_value(RUNNABLE_SECTION_NAME, platform_name);
+		}
+	}
+
 	block_save = true;
 
 	int index = 0;
@@ -279,9 +310,17 @@ void EditorExport::load_config() {
 
 		Ref<EditorExportPreset> preset;
 
-		for (int i = 0; i < export_platforms.size(); i++) {
-			if (export_platforms[i]->get_name() == platform) {
-				preset = export_platforms.write[i]->create_preset();
+		for (Ref<EditorExportPlatform> &export_platform : export_platforms) {
+			if (export_platform->get_name() == platform) {
+				preset = export_platform->create_preset();
+
+				const String preset_name = config->get_value(section, "name");
+				preset->set_name(preset_name);
+
+				const String *runnable_preset = runnable_loading.getptr(export_platform->get_name());
+				if (runnable_preset && *runnable_preset == preset_name) {
+					runnable_presets[export_platform] = preset;
+				}
 				break;
 			}
 		}
@@ -291,8 +330,12 @@ void EditorExport::load_config() {
 			continue; // Unknown platform, skip without error (platform might be loaded later).
 		}
 
-		preset->set_name(config->get_value(section, "name"));
-		preset->set_runnable(config->get_value(section, "runnable"));
+#ifndef DISABLE_DEPRECATED
+		bool legacy_runnable = config->get_value(section, "runnable", false);
+		if (legacy_runnable) {
+			preset->set_runnable(true);
+		}
+#endif
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 
 		if (config->has_section_key(section, "custom_features")) {
