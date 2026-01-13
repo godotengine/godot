@@ -695,7 +695,7 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
 		}
 
-		if (get_scale().is_equal_approx(Vector3(1, 1, 1))) {
+		if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
 			warnings.push_back(RTR("Changing the scale on the XROrigin3D node is not supported. Change the World Scale instead."));
 		}
 	}
