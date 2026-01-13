@@ -574,10 +574,10 @@ void GameView::_update_debugger_buttons() {
 	if (empty) {
 		suspend_button->set_pressed(false);
 		camera_override_button->set_pressed(false);
+		_reset_time_scales();
 	}
-	next_frame_button->set_disabled(!suspend_button->is_pressed());
 
-	_reset_time_scales();
+	next_frame_button->set_disabled(!suspend_button->is_pressed());
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
