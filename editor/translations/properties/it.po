@@ -96,13 +96,14 @@
 # Alessio <alexio-dev@proton.me>, 2025.
 # Adriano Inghingolo <adriano.inghi@gmail.com>, 2025.
 # Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
+# shifenis <dedi.ceka99@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-10 16:36+0000\n"
-"Last-Translator: Pietro Marini <pietromarinivr2006@gmail.com>\n"
+"PO-Revision-Date: 2026-01-05 13:02+0000\n"
+"Last-Translator: shifenis <dedi.ceka99@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -110,7 +111,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -159,6 +160,9 @@ msgstr "Nome della cartella utente personalizzata"
 
 msgid "Project Settings Override"
 msgstr "Sovrascrittura Impostazioni del Progetto"
+
+msgid "Disable Project Settings Override"
+msgstr "Disattiva sovrascrittura impostazioni di progetto"
 
 msgid "Main Loop Type"
 msgstr "Tipo di ciclo principale"
@@ -261,6 +265,9 @@ msgstr "Verifica il tipo di interpolazione angolare in conflitto"
 
 msgid "Compatibility"
 msgstr "Compatibilità"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Padre di default Skeleton in Instanza Mesh 3D"
 
 msgid "Audio"
 msgstr "Audio"
@@ -850,6 +857,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Scadenza di tentativi di connessione (sec)"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Flusso di pacchetti tra peer"
 
@@ -963,6 +973,9 @@ msgstr "Sincronizza punti di interruzione"
 
 msgid "Title"
 msgstr "Titolo"
+
+msgid "Global"
+msgstr "Globale"
 
 msgid "Transient"
 msgstr "Transitorio"

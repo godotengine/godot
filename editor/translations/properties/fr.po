@@ -138,7 +138,7 @@
 # aioshiro <aioshiro57@gmail.com>, 2024.
 # alpikespot <hasibe1973nurullah@gmail.com>, 2024.
 # Patrice Ferlet <metal3d@gmail.com>, 2025.
-# trobador <gbrosset@proton.me>, 2025.
+# trobador <gbrosset@proton.me>, 2025, 2026.
 # Marc-Daniel DALEBA <marcodxv10@gmail.com>, 2025.
 # aioshiro <aioshiro57@proton.me>, 2025.
 # fleprohon <felix.leprohon@gmail.com>, 2025.
@@ -153,13 +153,19 @@
 # vitawrap <thevitawrap@gmail.com>, 2025.
 # Mvsqu3 <paulkevinb.22@gmail.com>, 2025.
 # FelixBlanchard <thekingofcarcosa@protonmail.com>, 2025.
+# bsil78 <benoit.silliard@gmail.com>, 2025.
+# Hedi Jouida <saida.mkadem42@gmail.com>, 2025.
+# Begula Moai <alexismod78520@gmail.com>, 2025.
+# Bamowen <bamowen@users.noreply.hosted.weblate.org>, 2025.
+# MERCRED <augustinseroul@gmail.com>, 2026.
+# Posemartonis <weblate.drainage895@passmail.net>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-03 14:00+0000\n"
-"Last-Translator: FelixBlanchard <thekingofcarcosa@protonmail.com>\n"
+"PO-Revision-Date: 2026-01-08 18:02+0000\n"
+"Last-Translator: trobador <gbrosset@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -167,7 +173,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Application"
@@ -216,6 +222,9 @@ msgstr "Nom du répertoire utilisateur personnalisé"
 
 msgid "Project Settings Override"
 msgstr "Redéfinition des paramètres du projet"
+
+msgid "Disable Project Settings Override"
+msgstr "Désactiver le forçage des Paramètres du Projet"
 
 msgid "Main Loop Type"
 msgstr "Type de la boucle principale"
@@ -319,6 +328,9 @@ msgstr "Vérifier conflit de type d'interpolation d'angle"
 msgid "Compatibility"
 msgstr "Compatibilité"
 
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "squelette parent par défaut d'une instance de modèle 3D"
+
 msgid "Audio"
 msgstr "Audio"
 
@@ -345,6 +357,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "Catégorie de la session"
+
+msgid "Mix with Others"
+msgstr "Mixer avec les autres"
 
 msgid "Subwindows"
 msgstr "Sous-fenêtres"
@@ -472,8 +487,14 @@ msgstr "Délai d'Info-bulle (sec)"
 msgid "Common"
 msgstr "Commun"
 
+msgid "Drag Threshold"
+msgstr "Seuil de Trainée"
+
 msgid "Snap Controls to Pixels"
 msgstr "Aimanter les contrôles aux pixels"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "indique l'état du focus lors d'un événement du pointeur"
 
 msgid "Fonts"
 msgstr "Polices"
@@ -528,6 +549,12 @@ msgstr "Descripteurs maximums par Pool"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "Nombre maximum de ressources par images"
+
+msgid "Max Sampler Descriptors"
+msgstr "Descripteurs d’échantillonneur maximums"
 
 msgid "Agility SDK Version"
 msgstr "Version Agility SDK"
@@ -618,6 +645,9 @@ msgstr "Erreur de fusion d'arête NavMesh"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "Inadéquation de la taille de la cellule NavMesh"
+
+msgid "Editor Overrides"
+msgstr "Redéfinitions de l'éditeur"
 
 msgid "Low Processor Usage Mode"
 msgstr "Mode de faible utilisation du processeur"
@@ -907,6 +937,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Expiration de tentative de connexion (sec)"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Flux par paquet"
 
@@ -942,6 +975,9 @@ msgstr "Pseudo-localisation"
 
 msgid "Use Pseudolocalization"
 msgstr "Utiliser la pseudo-localisation"
+
+msgid "Replace with Accents"
+msgstr "Remplacer avec accents"
 
 msgid "Double Vowels"
 msgstr "Double voyelles"
@@ -1021,11 +1057,38 @@ msgstr "Synchroniser les point d'arrêts"
 msgid "Title"
 msgstr "Titre"
 
+msgid "Layout Key"
+msgstr "Touche de disposition"
+
+msgid "Global"
+msgstr "global"
+
 msgid "Transient"
 msgstr "Transitoire"
 
+msgid "Closable"
+msgstr "Fermable"
+
+msgid "Icon Name"
+msgstr "Nom de l'icon"
+
+msgid "Dock Icon"
+msgstr "Icône de la barre d'outils"
+
+msgid "Force Show Icon"
+msgstr "Forcer l'affichage de l'icône"
+
 msgid "Title Color"
 msgstr "Couleur du titre"
+
+msgid "Dock Shortcut"
+msgstr "Raccourci vers le dock"
+
+msgid "Default Slot"
+msgstr "Emplacement par défaut"
+
+msgid "Available Layouts"
+msgstr "Mises en page disponibles"
 
 msgid "Distraction Free Mode"
 msgstr "Mode sans distraction"
@@ -1203,6 +1266,9 @@ msgstr "Lecture Seule"
 
 msgid "Flat"
 msgstr "Plat"
+
+msgid "Control State"
+msgstr "États de contrôle"
 
 msgid "Hide Slider"
 msgstr "Cacher la barre de défilement"
@@ -1976,6 +2042,9 @@ msgstr "Traduire les paramètres"
 msgid "Dock Tab Style"
 msgstr "Style des onglets de dock"
 
+msgid "Bottom Dock Tab Style"
+msgstr "Style d’onglet du dock inférieur"
+
 msgid "UI Layout Direction"
 msgstr "Direction de disposition d'interface utilisateur"
 
@@ -2014,6 +2083,9 @@ msgstr "Taille de police principale"
 
 msgid "Code Font Size"
 msgstr "Taille de police du code"
+
+msgid "Main Font Custom OpenType Features"
+msgstr "Caractéristiques OpenType personnalisées de la police principale"
 
 msgid "Code Font Contextual Ligatures"
 msgstr "Code de ligatures contextuelles de police"
@@ -2121,6 +2193,9 @@ msgstr "Afficher les fonctionnalités bas-niveau pour OpenType"
 msgid "Float Drag Speed"
 msgstr "Vitesse de glissement pour les valeurs flottantes"
 
+msgid "Integer Drag Speed"
+msgstr "Vitesse de glissement pour des valeurs entières"
+
 msgid "Nested Color Mode"
 msgstr "Mode de couleur d'imbriqué"
 
@@ -2165,6 +2240,12 @@ msgstr "Thème"
 
 msgid "Follow System Theme"
 msgstr "Suivre le thème du système"
+
+msgid "Style"
+msgstr "Style"
+
+msgid "Color Preset"
+msgstr "Préréglage de couleur"
 
 msgid "Spacing Preset"
 msgstr "Préréglage d'espacement"
@@ -2241,6 +2322,9 @@ msgstr "Afficher le bouton script"
 msgid "Restore Scenes on Load"
 msgstr "Rouvrir les scènes au chargement"
 
+msgid "Auto Select Current Scene File"
+msgstr "Sélection automatique du fichier de scène actuel"
+
 msgid "Multi Window"
 msgstr "Multi fenêtre"
 
@@ -2292,6 +2376,9 @@ msgstr "Compresser les ressources binaires"
 msgid "Safe Save on Backup then Rename"
 msgstr "Faire une sauvegarde sécurisée lors de l'archivage puis renommer"
 
+msgid "Warn on Saving Large Text Resources"
+msgstr "Avertir lors de la Sauvegarde de Ressources Textuelles Volumineuses"
+
 msgid "File Server"
 msgstr "Serveur de fichiers"
 
@@ -2318,6 +2405,9 @@ msgstr "Fenêtre d'ouverture rapide"
 
 msgid "Max Results"
 msgstr "Résultats maximum"
+
+msgid "Instant Preview"
+msgstr "Aperçu instantané"
 
 msgid "Show Search Highlight"
 msgstr "Afficher recherche en surligné"
@@ -2622,6 +2712,9 @@ msgstr "Complétion"
 msgid "Idle Parse Delay"
 msgstr "Délai du traitement passif"
 
+msgid "Idle Parse Delay with Errors Found"
+msgstr "Délai d'analyse inactif avec erreurs détectées"
+
 msgid "Auto Brace Complete"
 msgstr "Complétion automatique des accolades"
 
@@ -2772,6 +2865,9 @@ msgstr "Collision d'os à ressort"
 msgid "Spring Bone Inside Collision"
 msgstr "Os à ressort dans une collision"
 
+msgid "IK Chain"
+msgstr "Chaîne IK"
+
 msgid "Gizmo Settings"
 msgstr "Paramètres du manipulateur"
 
@@ -2780,6 +2876,9 @@ msgstr "Longueur des axes d'os"
 
 msgid "Bone Shape"
 msgstr "Forme des os"
+
+msgid "Path3D Tilt Disk Size"
+msgstr "Taille de l'inclinaison du disque du chemin 3D"
 
 msgid "Lightmap GI Probe Size"
 msgstr "Taille des Texels dans la carte de lumières"
@@ -2864,6 +2963,9 @@ msgstr "Inertie de la translation"
 
 msgid "Zoom Inertia"
 msgstr "Inertie du zoom"
+
+msgid "Angle Snap Threshold"
+msgstr "Seuil d'angle instantané"
 
 msgid "Show Viewport Rotation Gizmo"
 msgstr "Afficher le manipulateur de rotation dans le viewport"
@@ -3017,6 +3119,9 @@ msgstr "Créer pistes de Bézier par défaut"
 
 msgid "Default Create Reset Tracks"
 msgstr "Créer pistes de réinitialisation par défaut"
+
+msgid "Insert at Current Time"
+msgstr "Insérer à l'heure actuelle"
 
 msgid "Onion Layers Past Color"
 msgstr "Couleur des couches d'oignon précedentes"
@@ -3422,6 +3527,33 @@ msgstr "Source de données du suivi des mains par contrôleur"
 
 msgid "Hand Interaction Profile"
 msgstr "Profil d'interaction de main"
+
+msgid "Spatial Entity"
+msgstr "Entité spatiale"
+
+msgid "Enable Spatial Anchors"
+msgstr "Activer les ancrages dans l'espace"
+
+msgid "Enable Persistent Anchors"
+msgstr "Activer les ancres persistantes"
+
+msgid "Enable Builtin Anchor Detection"
+msgstr "Activer la détection d'ancrage intégrée"
+
+msgid "Enable Builtin Plane Detection"
+msgstr "Activer la détection intégrée des plane"
+
+msgid "Enable Marker Tracking"
+msgstr "Activer le suivi des marqueurs"
+
+msgid "Enable Builtin Marker Tracking"
+msgstr "Activer le suivi intégré des marqueurs"
+
+msgid "Aruco Dict"
+msgstr "Aruco Dict"
+
+msgid "April Tag Dict"
+msgstr "Avril Tag Dict"
 
 msgid "Eye Gaze Interaction"
 msgstr "Interaction du regard de l'oeil"
@@ -4224,6 +4356,12 @@ msgstr "Filtre d'agrandissement"
 msgid "Min Filter"
 msgstr "Filtre de minification"
 
+msgid "Wrap S"
+msgstr "Wrap S"
+
+msgid "Wrap T"
+msgstr "Wrap T"
+
 msgid "Mesh Library"
 msgstr "Bibliothèque de modèles 3D"
 
@@ -4582,7 +4720,7 @@ msgid "As Normal Map"
 msgstr "En tant que carte de normales"
 
 msgid "Seamless Blend Skirt"
-msgstr "Distance de mélange du sans bord"
+msgstr "Jupe de mélange transparent"
 
 msgid "Bump Strength"
 msgstr "Force du bossage"
@@ -4634,6 +4772,9 @@ msgstr "Seuil d'activation"
 
 msgid "Off Threshold"
 msgstr "Seuil de désactivation"
+
+msgid "Marker ID"
+msgstr "Marker ID"
 
 msgid "Display Refresh Rate"
 msgstr "Afficher le taux de rafraichissement"
@@ -4835,6 +4976,9 @@ msgstr "Chemin du SDK Java"
 
 msgid "Android SDK Path"
 msgstr "Chemin du SDK Android"
+
+msgid "scrcpy"
+msgstr "scrcpy"
 
 msgid "Force System User"
 msgstr "Forcer l'utilisateur système"
@@ -5105,6 +5249,9 @@ msgstr "rcodesign"
 
 msgid "Distribution Type"
 msgstr "Type de distribution"
+
+msgid "Liquid Glass Icon"
+msgstr "Icône Liquid glass"
 
 msgid "Copyright Localized"
 msgstr "Copyright localisé"
@@ -6841,6 +6988,9 @@ msgstr "Données de lumière"
 
 msgid "Exclude"
 msgstr "Exclure"
+
+msgid "Chains"
+msgstr "Chaînes"
 
 msgid "Target Node"
 msgstr "Nœud cible"

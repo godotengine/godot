@@ -49,13 +49,14 @@
 # Parham Nasehi <www.ganiscotg.com@gmail.com>, 2025.
 # Mahan Khalili <mkh-user@users.noreply.hosted.weblate.org>, 2025.
 # ali zia <sampadpars@gmail.com>, 2025.
+# نام <z.xp.xp.900@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-03 07:02+0000\n"
-"Last-Translator: ali zia <sampadpars@gmail.com>\n"
+"PO-Revision-Date: 2025-12-23 01:01+0000\n"
+"Last-Translator: نام <z.xp.xp.900@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
 "Language: fa\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "برنامه"

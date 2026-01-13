@@ -102,13 +102,14 @@
 # Metin Hakan Yılmaz <metinhakan04@hotmail.com>, 2025.
 # Murat Ugur <muratyer1005@gmail.com>, 2025.
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
+# Fatih Serbest <fatihxserbest@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-27 12:11+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2026-01-10 10:02+0000\n"
+"Last-Translator: Fatih Serbest <fatihxserbest@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -116,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -165,6 +166,9 @@ msgstr "Özel Kullanıcı Klasörü İsmi"
 
 msgid "Project Settings Override"
 msgstr "Proje Ayarlarının Üzerine Yazma"
+
+msgid "Disable Project Settings Override"
+msgstr "Proje Ayarları Üzerine Yazmayı Devre Dışı Bırak"
 
 msgid "Main Loop Type"
 msgstr "Ana Döngü Türü"
@@ -267,6 +271,9 @@ msgstr "Açı Ara Değerlemesi Tip Çakışmasını Denetle"
 
 msgid "Compatibility"
 msgstr "Uyumluluk"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Varsayılan Üst İskelet (Mesh Instance 3D)"
 
 msgid "Audio"
 msgstr "Ses"
@@ -423,6 +430,9 @@ msgstr "Ortak"
 
 msgid "Snap Controls to Pixels"
 msgstr "Kontrolleri Piksellere Tuttur"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "İşaretçi Olayında Odak Durumunu Göster"
 
 msgid "Fonts"
 msgstr "Yazı Tipleri"

@@ -49,6 +49,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "OK"
+msgstr "Εντάξει"
+
+msgid "Help"
+msgstr "Βοήθεια"
+
 msgid "Physical"
 msgstr "Φυσικό"
 
@@ -2735,9 +2741,6 @@ msgstr "Περιστρέφεται όταν το παράθυρο του επε�
 msgid "Imported resources can't be saved."
 msgstr "Δεν μπορούν να αποθηκευτούν οι εισακτέοι πόροι."
 
-msgid "OK"
-msgstr "Εντάξει"
-
 msgid "Error saving resource!"
 msgstr "Σφάλμα κατά την αποθήκευση του πόρου!"
 
@@ -3118,9 +3121,6 @@ msgstr "Άνοιγμα του προηγούμενου επεξεργαστή"
 
 msgid "Project"
 msgstr "Έργο"
-
-msgid "Help"
-msgstr "Βοήθεια"
 
 msgid "Update Continuously"
 msgstr "Συνεχόμενη Ανανέωση"
@@ -4111,6 +4111,9 @@ msgstr "Επανεκκίνηση τώρα"
 msgid "Language"
 msgstr "Γλώσσα"
 
+msgid "Style"
+msgstr "Στυλ"
+
 msgid "Play a custom scene."
 msgstr "Αναπαραγωγή προσαρμοσμένης σκηνής."
 
@@ -4672,9 +4675,6 @@ msgstr ""
 
 msgid "Animation Key Inserted."
 msgstr "Το κλειδί κίνησης έχει εισαχθεί."
-
-msgid "Objects: %d\n"
-msgstr "Αντικείμενα:%d\n"
 
 msgid "FPS: %d"
 msgstr "FPS: %d"
@@ -5815,9 +5815,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Μετεπεξεργασία"
-
-msgid "Style"
-msgstr "Στυλ"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase σε snake_case"

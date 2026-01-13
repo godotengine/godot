@@ -84,6 +84,15 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
+msgid "OK"
+msgstr "好"
+
+msgid "Locked"
+msgstr "已鎖定"
+
+msgid "Help"
+msgstr "說明"
+
 msgid "Physical"
 msgstr "實體"
 
@@ -4468,9 +4477,6 @@ msgstr "編輯器視窗重新繪製時旋轉。"
 msgid "Imported resources can't be saved."
 msgstr "導入的資源無法保存。"
 
-msgid "OK"
-msgstr "好"
-
 msgid "Error saving resource!"
 msgstr "保存資料發生錯誤！"
 
@@ -5169,9 +5175,6 @@ msgstr "開啟上一個編輯器"
 
 msgid "Project"
 msgstr "專案"
-
-msgid "Help"
-msgstr "說明"
 
 msgid "Update Mode"
 msgstr "更新模式"
@@ -8133,6 +8136,9 @@ msgstr "快速設定"
 msgid "Language"
 msgstr "語言"
 
+msgid "Style"
+msgstr "樣式"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "自訂預設可於編輯器中進一步設定。"
 
@@ -10310,9 +10316,6 @@ msgstr "透視後視圖"
 msgid "[auto]"
 msgstr "[auto]"
 
-msgid "Locked"
-msgstr "已鎖定"
-
 msgid "Grouped"
 msgstr "已分組"
 
@@ -10340,24 +10343,6 @@ msgid ""
 msgstr ""
 "拖放以覆蓋任何幾何節點的材質。\n"
 "放下時按住 %s 可僅覆蓋特定表面。"
-
-msgid "X: %s\n"
-msgstr "X：%s\n"
-
-msgid "Y: %s\n"
-msgstr "Y：%s\n"
-
-msgid "Z: %s\n"
-msgstr "Z：%s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "大小：%s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "物件：%d\n"
-
-msgid "Primitives: %d\n"
-msgstr "圖元：%d\n"
 
 msgid "Draw Calls: %d"
 msgstr "繪製呼叫：%d"
@@ -12861,9 +12846,6 @@ msgstr "計數器的最少位數。"
 
 msgid "Post-Process"
 msgstr "後處理"
-
-msgid "Style"
-msgstr "樣式"
 
 msgid "PascalCase to snake_case"
 msgstr "將 PascalCase 轉為 snake_case"
@@ -19247,14 +19229,6 @@ msgstr "找不到符合的函式：「%s」。"
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "在此上下文中，varying 變數「%s」不可作為參數「%s」傳遞。"
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"無法將多視圖紋理取樣器作為參數傳給自訂函式。請改在 main 函式中取樣，再傳遞向量"
-"結果。"
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "運算式中有未知識別字：「%s」。"

@@ -89,13 +89,14 @@
 # Sven Slootweg <admin@cryto.net>, 2025.
 # Max de Kroon <dekroon.mja@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# penggrin12 <miner.sidor@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-22 09:42+0000\n"
+"Last-Translator: penggrin12 <miner.sidor@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -103,7 +104,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "Oké"
+
+msgid "Locked"
+msgstr "Vergrendeld"
+
+msgid "Help"
+msgstr "Hulp"
 
 msgid "Physical"
 msgstr "Fysiek"
@@ -704,6 +714,9 @@ msgstr "Punten en driehoeken wissen."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genereer geblende driehoeken automatisch (in plaats van handmatig)"
 
+msgid "Parameter Changed: %s"
+msgstr "Parameter veranderd: %s"
+
 msgid "Edit Filters"
 msgstr "Filters berwerken"
 
@@ -775,6 +788,12 @@ msgstr "Omkeren"
 
 msgid "Clear"
 msgstr "Wissen"
+
+msgid "Animation with the same name already exists."
+msgstr "Er bestaat al een animatie met dezelfde naam."
+
+msgid "Add Animation to Library: %s"
+msgstr "Animatie toevoegen aan bibliotheek: %s"
 
 msgid "Load Animation"
 msgstr "Animatie laden"
@@ -3658,9 +3677,6 @@ msgstr "Draait wanneer het editor venster wordt hertekend."
 msgid "Imported resources can't be saved."
 msgstr "Geïmporteerde bronnen kunnen niet worden opgeslagen."
 
-msgid "OK"
-msgstr "Oké"
-
 msgid "Error saving resource!"
 msgstr "Fout bij het opslaan van de hulpbron."
 
@@ -4251,9 +4267,6 @@ msgstr "Vorige bewerker openen"
 
 msgid "Project"
 msgstr "Project"
-
-msgid "Help"
-msgstr "Hulp"
 
 msgid "Update Continuously"
 msgstr "Continu bijwerken"
@@ -5493,7 +5506,7 @@ msgid "Configure"
 msgstr "Configureren"
 
 msgid "Set %s on %d nodes"
-msgstr "Verwijder %d knopen"
+msgstr "Stel %s in op %d knopen"
 
 msgid "Select Property"
 msgstr "Selecteer Eigenschap"
@@ -5693,6 +5706,9 @@ msgstr "Nu herstarten"
 
 msgid "Language"
 msgstr "Taal"
+
+msgid "Style"
+msgstr "Stijl"
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -6352,9 +6368,6 @@ msgstr "Orthogonaal"
 msgid "Perspective"
 msgstr "Perspectief"
 
-msgid "Locked"
-msgstr "Vergrendeld"
-
 msgid "Grouped"
 msgstr "Gegroepeerd"
 
@@ -6375,9 +6388,6 @@ msgstr "Sleutelinvoer is uitgeschakeld (geen sleutel ingevoegd)."
 
 msgid "Animation Key Inserted."
 msgstr "Animatiesleutel Ingevoegd."
-
-msgid "Objects: %d\n"
-msgstr "Objecten: %d\n"
 
 msgid "Translating:"
 msgstr "Translatie:"
@@ -7459,9 +7469,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Post-Process"
-
-msgid "Style"
-msgstr "Stijl"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase naar onder_streep"

@@ -25,13 +25,14 @@
 # Tan <nazapizzaemail.com@gmail.com>, 2025.
 # Hidden Kendo <anawyn.bun@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# RESONA <championkungpvp@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:08+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-23 01:00+0000\n"
+"Last-Translator: RESONA <championkungpvp@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -39,7 +40,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "ตกลง"
+
+msgid "Help"
+msgstr "ช่วยเหลือ"
 
 msgid "Physical"
 msgstr "ทางกายภาพ"
@@ -863,6 +870,18 @@ msgstr "แก้ไขความยาวของ Animation"
 msgid "Change Animation Loop"
 msgstr "เปลี่ยนรูปแบบโหมดวนซ้ำ (Loop) ของ Animation"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"ไม่สามารถเปลี่ยนโหมดการวนซ้ำ (Loop mode) ของแอนิเมชันที่ถูกอินสแตนซ์มาจากฉากที่นำเข้าได้ "
+"หากต้องการเปลี่ยนโหมดการวนซ้ำของแอนิเมชันนี้ ให้ไปที่การตั้งค่าการนำเข้าขั้นสูง (Advanced "
+"Import Settings) ของฉาก แล้วเลือกแอนิเมชันที่ต้องการ "
+"จากนั้นคุณจะสามารถเปลี่ยนโหมดการวนซ้ำได้จากเมนู Inspector"
+
 msgid "Animation length (frames)"
 msgstr "ความยาว Animation (เฟรม)"
 
@@ -1007,6 +1026,9 @@ msgstr "AnimationPlayer ไม่สามารถเล่นอนิเม�
 msgid "property '%s'"
 msgstr "บนคุณสมบัติ '%s'"
 
+msgid "Set the default handle mode of new bezier keys."
+msgstr "กำหนดโหมด Handle เริ่มต้นของคีย์ Bezier ใหม่"
+
 msgid "Change Animation Step"
 msgstr "แก้ไขช่วงของแอนิเมชัน"
 
@@ -1056,6 +1078,9 @@ msgstr "ช่วงองศา"
 
 msgid "Scale"
 msgstr "ขนาด"
+
+msgid "BlendShape"
+msgstr "เบลนด์เชป"
 
 msgid "Methods"
 msgstr "วิธีการ"
@@ -1616,6 +1641,9 @@ msgid ""
 msgstr ""
 "เมื่อเปิดใช้งานตัวเลือกนี้ สคริปต์ที่บันทึกจะถูกโหลดในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
 "เมื่อใช้รีโมตกับอุปกรณ์ จะมีประสิทธิภาพมากขึ้นเมื่อเปิดใช้งานตัวเลือกระบบไฟล์เครือข่าย"
+
+msgid "Customize Run Instances..."
+msgstr "ปรับแต่งการรันอินสแตนซ์..."
 
 msgid "Set %s"
 msgstr "ตั้ง %s"
@@ -2342,9 +2370,6 @@ msgstr "โปรเจกต์ไม่มีชื่อ"
 msgid "Spins when the editor window redraws."
 msgstr "หมุนเมื่อมีการวาดหน้าต่างโปรแกรมใหม"
 
-msgid "OK"
-msgstr "ตกลง"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -2603,9 +2628,6 @@ msgstr "เปิดตัวแก้ไขก่อนหน้า"
 
 msgid "Project"
 msgstr "โปรเจกต์"
-
-msgid "Help"
-msgstr "ช่วยเหลือ"
 
 msgid "Update Continuously"
 msgstr "อัพเดทอย่างต่อเนื่อง"
@@ -3322,6 +3344,9 @@ msgstr "จัดการแท็กโปรเจกต์"
 msgid "Restart Now"
 msgstr "เริ่มใหม่ทันที"
 
+msgid "Style"
+msgstr "รูปแบบ"
+
 msgid "Network Profiler"
 msgstr "โปรไฟล์เน็ตเวิร์ก"
 
@@ -3872,9 +3897,6 @@ msgstr "ยกเลิกการสร้างคีย์ (ไม่ได�
 
 msgid "Animation Key Inserted."
 msgstr "แทรกคีย์แอนิเมชัน"
-
-msgid "Objects: %d\n"
-msgstr "วัตถุ: %d\n"
 
 msgid "Translating:"
 msgstr "การเลื่อนตำแหน่ง:"
@@ -4740,9 +4762,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "หลังประมวลผล"
-
-msgid "Style"
-msgstr "รูปแบบ"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase ไป snake_case"
@@ -6498,15 +6517,6 @@ msgstr "ไม่พบ Function สำหรับ: '%s'"
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "การ Varying '%s' ไม่สามารถ Pass สำหรับ Parameter '%s' ใน Context ดังกล่าวได้"
 
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"ไม่สามารถ Pass ข้อมูล Multiview Texture Sampler ในรูปแบบ Parameter ไปยัง Function "
-"แบบกำหนดเองได้ โปรด Sample ข้อมูลดังกล่าวใน Function หลักและจากนั้นให้ส่งผ่านผลลัพธ์ข้อมูล "
-"Vector ออกมาแทน"
-
 msgid "Unknown identifier in expression: '%s'."
 msgstr "ไม่รู้จัก Identifier ใน Expression: '%s'"
 
@@ -6714,3 +6724,16 @@ msgstr "อาร์กูเมนท์มาโครไม่ถูกต้
 
 msgid "Invalid macro argument count."
 msgstr "จำนวนอาร์กูเมนท์มาโครไม่ถูกต้อง"
+
+msgid ""
+"You are attempting to assign the VERTEX position in model space to the vertex "
+"POSITION in clip space. The definition of clip space changed in version 4.3, "
+"so if this code was written prior to 4.3, it will not continue to work. "
+"Consider specifying the clip space z-component directly i.e. use "
+"`vec4(VERTEX.xy, 1.0, 1.0)`."
+msgstr ""
+"คุณกำลังพยายามกำหนดค่าตำแหน่ง VERTEX ใน Model Space ให้กับ POSITION ของจุดยอดใน Clip "
+"Space นิยามของ Clip Space ได้เปลี่ยนไปในเวอร์ชัน 4.3 "
+"ดังนั้นหากโค้ดนี้ถูกเขียนขึ้นก่อนหน้าเวอร์ชัน 4.3 มันจะไม่สามารถทำงานต่อได้ "
+"ขอแนะนำให้ระบุองค์ประกอบ Z (z-component) ของ Clip Space โดยตรง เช่น ใช้ "
+"vec4(VERTEX.xy, 1.0, 1.0"

@@ -178,7 +178,7 @@
 # Olesya_Gerasimenko <gammaray@basealt.ru>, 2024.
 # Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
 # Igor Shapilov <shatiger@yandex.ru>, 2025.
-# Aleksandr <sasha7onoff@gmail.com>, 2025.
+# Aleksandr <sasha7onoff@gmail.com>, 2025, 2026.
 # Deniil <danpko@ya.ru>, 2025.
 # Ma Ver <naksmmaks3@gmail.com>, 2025.
 # Нурлан <pro100ychelovechek335@gmail.com>, 2025.
@@ -204,13 +204,15 @@
 # DrSa1fer <thekucherenko@gmail.com>, 2025.
 # Ivan <ctapiuxleb3@gmail.com>, 2025.
 # penggrin12 <miner.sidor@gmail.com>, 2025.
+# cofeek-codes <11kormyshev11@gmail.com>, 2025.
+# daodan <karovich16@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-14 16:34+0000\n"
-"Last-Translator: penggrin12 <miner.sidor@gmail.com>\n"
+"PO-Revision-Date: 2026-01-08 18:01+0000\n"
+"Last-Translator: Aleksandr <sasha7onoff@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -219,7 +221,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -268,6 +270,9 @@ msgstr "Имя собственного каталога данных польз
 
 msgid "Project Settings Override"
 msgstr "Переопределение настроек проекта"
+
+msgid "Disable Project Settings Override"
+msgstr "Отключить переопределение настроек проекта"
 
 msgid "Main Loop Type"
 msgstr "Тип основного цикла"
@@ -959,6 +964,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Время ожидания соединения в секундах"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Пакетный одноранговый поток"
 
@@ -1073,11 +1081,17 @@ msgstr "Синхронизация точек останова"
 msgid "Title"
 msgstr "Заголовок"
 
+msgid "Global"
+msgstr "Глобальный"
+
 msgid "Transient"
 msgstr "Переходность"
 
 msgid "Title Color"
 msgstr "Цвет заголовка"
+
+msgid "Available Layouts"
+msgstr "Доступные макеты"
 
 msgid "Distraction Free Mode"
 msgstr "Режим без отвлечения"
@@ -1605,7 +1619,7 @@ msgid "Import Rest as Reset"
 msgstr "Добавить ресурс с именем RESET, содержащий преобразование покоя"
 
 msgid "Import Script"
-msgstr "Импортировать скрипт"
+msgstr "Cкрипт импорта"
 
 msgid "Materials"
 msgstr "Материалы"
@@ -2348,6 +2362,9 @@ msgid "Safe Save on Backup then Rename"
 msgstr ""
 "Безопасное сохранение при резервном копировании с последующим переименованием"
 
+msgid "Warn on Saving Large Text Resources"
+msgstr "Предупреждение о сохранении больших текстовых ресурсов"
+
 msgid "File Server"
 msgstr "Файловый сервер"
 
@@ -2828,6 +2845,9 @@ msgstr "Коллизия пружинной кости"
 msgid "Spring Bone Inside Collision"
 msgstr "Пружинная кость внутри коллизии"
 
+msgid "IK Chain"
+msgstr "ИК Цепь"
+
 msgid "Gizmo Settings"
 msgstr "Параметры гизмо"
 
@@ -3073,6 +3093,9 @@ msgstr "По умолчанию создавать дорожки Безье"
 
 msgid "Default Create Reset Tracks"
 msgstr "По умолчанию создавать дорожки сброса"
+
+msgid "Insert at Current Time"
+msgstr "Вставить на текущем времени"
 
 msgid "Onion Layers Past Color"
 msgstr "Цвет для «прошлых» слоёв в режиме кальки"
@@ -3466,6 +3489,9 @@ msgstr "Отладочные утилиты"
 
 msgid "Debug Message Types"
 msgstr "Типы отладочных сообщений"
+
+msgid "Frame Synthesis"
+msgstr "Синтез Кадров"
 
 msgid "Hand Tracking"
 msgstr "Отслеживание положения и ориентации рук"
@@ -4901,6 +4927,9 @@ msgstr "Путь к Java SDK"
 
 msgid "Android SDK Path"
 msgstr "Путь к Android SDK"
+
+msgid "scrcpy"
+msgstr "scrcpy"
 
 msgid "Force System User"
 msgstr "Принудительное использование пользователя системы"
@@ -12171,7 +12200,7 @@ msgid "Texel Size"
 msgstr "Размер текселя"
 
 msgid "Lightmap GI"
-msgstr "Глобальное освещение в текстурах карты освещения"
+msgstr "Карта глобального освещения"
 
 msgid "Use Bicubic Filter"
 msgstr "Использовать бикубический фильтр"

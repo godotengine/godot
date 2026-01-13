@@ -43,7 +43,7 @@
 # Lucas Souza <lucasteisouza@gmail.com>, 2023.
 # André Luiz Santana Siqueira <hivosoft@outlook.com>, 2023.
 # gomakappa <gomaproi@outlook.com>, 2023.
-# 100Nome <100nome.portugal@gmail.com>, 2023, 2024, 2025.
+# 100Nome <100nome.portugal@gmail.com>, 2023, 2024, 2025, 2026.
 # João Victor Alonso de Paula Sperandio <joaovictorapsperandio@gmail.com>, 2024.
 # AegisTTN <tc.dev04@gmail.com>, 2024, 2025.
 # NamelessGO <66227691+NameLessGO@users.noreply.github.com>, 2024.
@@ -84,8 +84,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:09+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2026-01-11 23:26+0000\n"
+"Last-Translator: 100Nome <100nome.portugal@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -93,7 +93,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Bloqueado"
+
+msgid "Help"
+msgstr "Ajuda"
 
 msgid "Physical"
 msgstr "Físico"
@@ -4599,9 +4608,6 @@ msgstr "Roda quando a janela do editor atualiza."
 msgid "Imported resources can't be saved."
 msgstr "Recursos importados não podem ser guardados."
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Error saving resource!"
 msgstr "Erro ao salvar recurso!"
 
@@ -5350,9 +5356,6 @@ msgstr "Abrir o Editor anterior"
 
 msgid "Project"
 msgstr "Projeto"
-
-msgid "Help"
-msgstr "Ajuda"
 
 msgid "Update Mode"
 msgstr "Modo de Atualização"
@@ -7846,7 +7849,7 @@ msgstr ""
 "O caminho selecionado não está vazio. É recomendado escolher uma pasta vazia."
 
 msgid "New Game Project"
-msgstr "Novo Projeto de jogo"
+msgstr "Novo projeto de jogo"
 
 msgid "Supports desktop platforms only."
 msgstr "Suporta apenas plataformas de desktop."
@@ -7932,19 +7935,19 @@ msgid "Rename Project"
 msgstr "Renomear Projeto"
 
 msgid "Import Existing Project"
-msgstr "Importar Projeto existente"
+msgstr "Importar projeto existente"
 
 msgid "Create New Project"
-msgstr "Criar novo Projeto"
+msgstr "Criar novo projeto"
 
 msgid "Install Project:"
 msgstr "Instalar Projeto:"
 
 msgid "Project Name:"
-msgstr "Nome do Projeto:"
+msgstr "Nome do projeto:"
 
 msgid "Project Path:"
-msgstr "Caminho do Projeto:"
+msgstr "Caminho do projeto:"
 
 msgid "Project Installation Path:"
 msgstr "Caminho de Instalação do Projeto:"
@@ -7967,7 +7970,7 @@ msgstr ""
 "de ajustes."
 
 msgid "Version Control Metadata:"
-msgstr "Controlo de Versão:"
+msgstr "Controlo de versão:"
 
 msgid "Git"
 msgstr "Git"
@@ -8024,12 +8027,12 @@ msgid ""
 "importing one that exists, or by downloading a project template from the "
 "Asset Library!"
 msgstr ""
-"Começa por criar um novo projeto,\n"
-"importando um projeto existente, ou transferindo um modelo de projeto da "
-"Biblioteca de Assets!"
+"Comece criando um novo,\n"
+"importando um existente, ou descarregando um modelo de projeto da Biblioteca "
+"de Recursos!"
 
 msgid "Go Online and Open Asset Library"
-msgstr "Acesse a Internet e Abra a Biblioteca de Ativos"
+msgstr "Ativar o acesso online e abrir a Biblioteca de Recursos"
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "Está seguro que quer executar %d projetos em simultâneo?"
@@ -8317,8 +8320,8 @@ msgid ""
 "Note: The Asset Library requires an online connection and involves sending "
 "data over the internet."
 msgstr ""
-"Nota: A Biblioteca de Assets requer uma conexão online e envolve a "
-"transferência de dados através da internet."
+"Nota: A Biblioteca de Recursos requer uma ligação online e envolve envio de "
+"dados pela Internet."
 
 msgid "Edit Project"
 msgstr "Editar Projeto"
@@ -8339,8 +8342,8 @@ msgid ""
 "Asset Library not available (due to using Web editor, or because SSL support "
 "disabled)."
 msgstr ""
-"A Biblioteca de Assets não está disponível (por estar a usar o editor Web por "
-"porque o suporte SSL está desligado)."
+"Biblioteca de Recursos indisponível (ou porque está a usar o editor Web ou o "
+"suporte SSL está desativado)."
 
 msgid "Select a Folder to Scan"
 msgstr "Selecione uma Pasta para Pesquisar"
@@ -8411,6 +8414,9 @@ msgstr "Configurações Rápidas"
 
 msgid "Language"
 msgstr "Idioma/Dialeto"
+
+msgid "Style"
+msgstr "Estilo"
 
 msgid "Custom preset can be further configured in the editor."
 msgstr "Preset personalizado pode ser configurado no editor."
@@ -10624,9 +10630,6 @@ msgstr "Perspetiva Traseira"
 msgid "[auto]"
 msgstr "[auto]"
 
-msgid "Locked"
-msgstr "Bloqueado"
-
 msgid "Grouped"
 msgstr "Agrupado"
 
@@ -10654,24 +10657,6 @@ msgid ""
 msgstr ""
 "Arraste e solte para sobrescrever o material de qualquer nó de geometria.\n"
 "Segure %s enquanto solta para sobrescrever uma superfície específica."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Tamanho: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objetos: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Índices Primitivos: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Chamadas de Desenho: %d"
@@ -13221,9 +13206,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Pós-processamento"
-
-msgid "Style"
-msgstr "Estilo"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase para snake_case"
@@ -19808,15 +19790,6 @@ msgstr "Nenhuma função correspondente encontrada para: '%s'."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s' não pode ser passada para o parâmetro '%s' nesse contexto."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"Não é possível passar um amostrador de textura multiview como um parâmetro "
-"para a função personalizada. Considere fazer uma amostra na função principal "
-"e depois passar o resultado do vetor a ela."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Identificador desconhecido na expressão: '%s'."

@@ -42,13 +42,14 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Rosas Francisco <rosasfran.97@gmail.com>, 2025.
 # agus <panmmnda@gmail.com>, 2025.
+# Nacho Roby <juanignacioroby@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-11-29 09:20+0000\n"
-"Last-Translator: agus <panmmnda@gmail.com>\n"
+"PO-Revision-Date: 2026-01-07 17:02+0000\n"
+"Last-Translator: Nacho Roby <juanignacioroby@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -56,7 +57,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Bloqueado"
+
+msgid "Help"
+msgstr "Ayuda"
 
 msgid "Physical"
 msgstr "Físico"
@@ -427,6 +437,9 @@ msgstr "Intercambiar Dirección de Entrada"
 msgid "Start Unicode Character Input"
 msgstr "Iniciar Entrada de Carácter Unicode"
 
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Accesibilidad: Teclado Arrastrar y Soltar"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrada inválida %d (no se transmitió) en la expresión"
 
@@ -587,6 +600,15 @@ msgstr "Discreto"
 msgid "Capture"
 msgstr "Captura"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Seleccionar y mover puntos.\n"
+"BDM: Crear un punto en la posición clickeada.\n"
+"Shift+BIM+Arrastrar: Establecer la posición combinada dentro del espacio."
+
 msgid "Create points."
 msgstr "Crear puntos."
 
@@ -604,6 +626,9 @@ msgstr "Punto"
 
 msgid "Open Editor"
 msgstr "Abrir Editor"
+
+msgid "Max"
+msgstr "Máximo"
 
 msgid "Value"
 msgstr "Valor"
@@ -640,6 +665,18 @@ msgstr "Borrar puntos y triángulos."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Generar triángulos de blending automáticamente (en vez de manualmente)"
+
+msgid "Max Y"
+msgstr "Máximo Y"
+
+msgid "Min Y"
+msgstr "Mínimo Y"
+
+msgid "Min X"
+msgstr "Mínimo X"
+
+msgid "Max X"
+msgstr "Máximo X"
 
 msgid "Edit Filters"
 msgstr "Editar Filtros"
@@ -3086,9 +3123,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Gira cuando la ventana del editor se redibuja."
 
-msgid "OK"
-msgstr "OK"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -3612,9 +3646,6 @@ msgstr "Abrir el Editor anterior"
 
 msgid "Project"
 msgstr "Proyecto"
-
-msgid "Help"
-msgstr "Ayuda"
 
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
@@ -5066,6 +5097,9 @@ msgstr "Error"
 msgid "Restart Now"
 msgstr "Reiniciar Ahora"
 
+msgid "Style"
+msgstr "Estilo"
+
 msgid "Re-saving scene:"
 msgstr "Volver a guardar la Escena"
 
@@ -5678,9 +5712,6 @@ msgstr "Perspectiva Trasera"
 
 msgid "[auto]"
 msgstr "[auto]"
-
-msgid "Locked"
-msgstr "Bloqueado"
 
 msgid "Grouped"
 msgstr "Agrupado"
@@ -6978,9 +7009,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Post-Procesado"
-
-msgid "Style"
-msgstr "Estilo"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase a snake_case"

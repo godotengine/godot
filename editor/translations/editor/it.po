@@ -122,13 +122,14 @@
 # Denyer Pimentel <dj18pim@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Pietro Marini <pietromarinivr2006@gmail.com>, 2025.
+# shifenis <dedi.ceka99@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-10 16:36+0000\n"
-"Last-Translator: Pietro Marini <pietromarinivr2006@gmail.com>\n"
+"PO-Revision-Date: 2026-01-05 13:02+0000\n"
+"Last-Translator: shifenis <dedi.ceka99@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -136,7 +137,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Bloccato"
+
+msgid "Help"
+msgstr "Aiuto"
 
 msgid "Physical"
 msgstr "Fisico"
@@ -325,6 +335,9 @@ msgstr "Seleziona"
 
 msgid "Cancel"
 msgstr "Annulla"
+
+msgid "Close Dialog"
+msgstr "Chiudi Modale"
 
 msgid "Focus Next"
 msgstr "Seleziona successivo"
@@ -1914,6 +1927,9 @@ msgstr "Vai al fotogramma chiave successivo"
 
 msgid "Go to Previous Keyframe"
 msgstr "Vai al fotogramma chiave precedente"
+
+msgid "Add tracks to RESET"
+msgstr "Aggiungi tracce a RESET"
 
 msgid "Bake Animation..."
 msgstr "Precalcola animazione..."
@@ -4685,9 +4701,6 @@ msgstr "Gira quando la finestra dell'editor viene ridisegnata."
 msgid "Imported resources can't be saved."
 msgstr "Impossibile salvare le risorse importate."
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Error saving resource!"
 msgstr "Errore durante il salvataggio della risorsa!"
 
@@ -5453,9 +5466,6 @@ msgstr "Apri l'editor precedente"
 
 msgid "Project"
 msgstr "Progetto"
-
-msgid "Help"
-msgstr "Aiuto"
 
 msgid "Update Mode"
 msgstr "Modalità di aggiornamento"
@@ -8636,6 +8646,9 @@ msgstr "Impostazioni rapide"
 msgid "Language"
 msgstr "Lingua"
 
+msgid "Style"
+msgstr "Stile"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr ""
 "La preimpostazione personalizzata può essere ulteriormente configurata "
@@ -10982,9 +10995,6 @@ msgstr "Prospettica da dietro"
 msgid "[auto]"
 msgstr "[auto]"
 
-msgid "Locked"
-msgstr "Bloccato"
-
 msgid "Grouped"
 msgstr "Raggruppato"
 
@@ -11014,24 +11024,6 @@ msgstr ""
 "geometrico.\n"
 "Tenere premuto %s durante il rilascio per sovrascrivere una superficie "
 "specifica."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Dimensioni: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Oggetti: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Primitivi: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Chiamate di disegno: %d"
@@ -13650,9 +13642,6 @@ msgstr "Numero minimo di cifre per il contatore."
 
 msgid "Post-Process"
 msgstr "Post-elaborazione"
-
-msgid "Style"
-msgstr "Stile"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase a snake_case"
@@ -20679,15 +20668,6 @@ msgstr "Nessuna funzione corrispondente trovata per: \"%s\"."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Il varying '%s' non può essere passato per il parametro '%s' in quel contesto."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"Impossibile passare un campionatore di texture multiview come parametro alla "
-"funzione personalizzata. Considera di campionarla nella funzione principale e "
-"poi passargli il vettore risultate."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Identificatore sconosciuto nell'espressione \"%s\"."
