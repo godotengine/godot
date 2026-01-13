@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "scene/resources/mesh.h"
 
@@ -52,6 +53,12 @@ bool EditorCanvasItemGizmo::is_editable() const {
 	return false;
 }
 
+bool EditorCanvasItemGizmo::has_boundary() const {
+	ERR_FAIL_NULL_V(canvas_item, false);
+	ERR_FAIL_NULL_V(gizmo_plugin, false);
+	return GDVIRTUAL_IS_OVERRIDDEN(_get_boundary) || gizmo_plugin->has_boundary(this);
+}
+
 void EditorCanvasItemGizmo::clear() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
@@ -70,6 +77,8 @@ void EditorCanvasItemGizmo::clear() {
 	handle_ids.clear();
 	secondary_handles.clear();
 	secondary_handle_ids.clear();
+	use_boundary_handle = false;
+	use_pivot_handle = false;
 }
 
 void EditorCanvasItemGizmo::redraw() {
@@ -83,6 +92,86 @@ void EditorCanvasItemGizmo::redraw() {
 	if (CanvasItemEditor::get_singleton()->is_current_selected_gizmo(this)) {
 		CanvasItemEditor::get_singleton()->update_transform_gizmo();
 	}
+}
+
+void EditorCanvasItemGizmo::begin_boundary_action() {
+	if (GDVIRTUAL_CALL(_begin_boundary_action)) {
+		return;
+	}
+
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->begin_boundary_action(this);
+}
+
+Rect2 EditorCanvasItemGizmo::get_boundary() const {
+	Rect2 ret;
+	if (GDVIRTUAL_CALL(_get_boundary, ret)) {
+		return ret;
+	}
+
+	ERR_FAIL_NULL_V(gizmo_plugin, Rect2());
+	return gizmo_plugin->get_boundary(this);
+}
+
+void EditorCanvasItemGizmo::set_boundary(const Rect2 &p_rect) {
+	if (GDVIRTUAL_CALL(_set_boundary, p_rect)) {
+		return;
+	}
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->set_boundary(this, p_rect);
+}
+
+void EditorCanvasItemGizmo::commit_boundary(const Rect2 &p_restore, bool p_cancel) {
+	if (GDVIRTUAL_CALL(_commit_boundary, p_restore, p_cancel)) {
+		return;
+	}
+
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->commit_boundary(this, p_restore, p_cancel);
+}
+
+bool EditorCanvasItemGizmo::has_pivot() const {
+	ERR_FAIL_NULL_V(canvas_item, false);
+	ERR_FAIL_NULL_V(gizmo_plugin, false);
+
+	return GDVIRTUAL_IS_OVERRIDDEN(_get_pivot) || gizmo_plugin->has_pivot(this);
+}
+
+void EditorCanvasItemGizmo::begin_pivot_action() {
+	if (GDVIRTUAL_CALL(_begin_pivot_action)) {
+		return;
+	}
+
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->begin_pivot_action(this);
+}
+
+Vector2 EditorCanvasItemGizmo::get_pivot() const {
+	Vector2 ret;
+	if (GDVIRTUAL_CALL(_get_pivot, ret)) {
+		return ret;
+	}
+
+	ERR_FAIL_NULL_V(gizmo_plugin, Vector2());
+	return gizmo_plugin->get_pivot(this);
+}
+
+void EditorCanvasItemGizmo::set_pivot(const Vector2 &p_point) {
+	if (GDVIRTUAL_CALL(_set_pivot, p_point)) {
+		return;
+	}
+
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->set_pivot(this, p_point);
+}
+
+void EditorCanvasItemGizmo::commit_pivot(const Vector2 &p_restore, bool p_cancel) {
+	if (GDVIRTUAL_CALL(_commit_pivot, p_restore, p_cancel)) {
+		return;
+	}
+
+	ERR_FAIL_NULL(gizmo_plugin);
+	gizmo_plugin->commit_pivot(this, p_restore, p_cancel);
 }
 
 String EditorCanvasItemGizmo::get_handle_name(int p_id, bool p_secondary) const {
@@ -542,6 +631,16 @@ void EditorCanvasItemGizmo::_bind_methods() {
 	GDVIRTUAL_BIND(_get_handle_name, "id", "secondary");
 	GDVIRTUAL_BIND(_is_handle_highlighted, "id", "secondary");
 
+	GDVIRTUAL_BIND(_get_boundary);
+	GDVIRTUAL_BIND(_begin_boundary_action);
+	GDVIRTUAL_BIND(_set_boundary, "boundary");
+	GDVIRTUAL_BIND(_commit_boundary, "restore", "cancel");
+
+	GDVIRTUAL_BIND(_get_pivot);
+	GDVIRTUAL_BIND(_begin_pivot_action);
+	GDVIRTUAL_BIND(_set_pivot, "pivot");
+	GDVIRTUAL_BIND(_commit_pivot, "restore", "cancel");
+
 	GDVIRTUAL_BIND(_get_handle_value, "id", "secondary");
 	GDVIRTUAL_BIND(_begin_handle_action, "id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "id", "secondary", "point");
@@ -560,6 +659,8 @@ EditorCanvasItemGizmo::EditorCanvasItemGizmo() {
 	selected = false;
 	canvas_item = nullptr;
 	gizmo_plugin = nullptr;
+	use_boundary_handle = false;
+	use_pivot_handle = false;
 }
 
 EditorCanvasItemGizmo::~EditorCanvasItemGizmo() {
@@ -588,6 +689,32 @@ int EditorCanvasItemGizmoPlugin::get_priority() const {
 	return 0;
 }
 
+Transform2D EditorCanvasItemGizmoPlugin::calculate_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after) {
+	ERR_FAIL_NULL_V(p_canvas_item, Transform2D());
+
+	Vector2 zero_offset;
+	Size2 new_scale(1, 1);
+
+	if (p_before.size.x != 0) {
+		zero_offset.x = -p_before.position.x / p_before.size.x;
+		new_scale.x = p_after.size.x / p_before.size.x;
+	}
+
+	if (p_before.size.y != 0) {
+		zero_offset.y = -p_before.position.y / p_before.size.y;
+		new_scale.y = p_after.size.y / p_before.size.y;
+	}
+
+	Point2 new_pos = p_after.position + p_after.size * zero_offset;
+
+	Transform2D local_xf = p_canvas_item->get_transform();
+	Transform2D postxf;
+	postxf.set_rotation_scale_and_skew(local_xf.get_rotation(), local_xf.get_scale(), local_xf.get_skew());
+	new_pos = postxf.xform(new_pos);
+
+	return Transform2D().translated(new_pos).scaled(new_scale);
+}
+
 Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_canvas_item) {
 	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo")) {
 		return get_script_instance()->call("_get_gizmo", p_canvas_item);
@@ -607,6 +734,8 @@ Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_
 }
 
 void EditorCanvasItemGizmoPlugin::_bind_methods() {
+	ClassDB::bind_static_method("EditorCanvasItemGizmoPlugin", D_METHOD("calculate_transform", "canvas_item", "before", "after"), &EditorCanvasItemGizmoPlugin::calculate_transform);
+
 	GDVIRTUAL_BIND(_has_gizmo, "for_canvas_item");
 	GDVIRTUAL_BIND(_create_gizmo, "for_canvas_item");
 
@@ -616,10 +745,20 @@ void EditorCanvasItemGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_is_selectable_when_hidden);
 
 	GDVIRTUAL_BIND(_redraw, "gizmo");
+
+	GDVIRTUAL_BIND(_begin_boundary_action, "gizmo");
+	GDVIRTUAL_BIND(_set_boundary, "gizmo", "boundary");
+	GDVIRTUAL_BIND(_get_boundary, "gizmo");
+	GDVIRTUAL_BIND(_commit_boundary, "gizmo", "restore", "cancel");
+
+	GDVIRTUAL_BIND(_begin_pivot_action, "gizmo");
+	GDVIRTUAL_BIND(_set_pivot, "gizmo", "pivot");
+	GDVIRTUAL_BIND(_get_pivot, "gizmo");
+	GDVIRTUAL_BIND(_commit_pivot, "gizmo", "restore", "cancel");
+
 	GDVIRTUAL_BIND(_get_handle_name, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_is_handle_highlighted, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_get_handle_value, "gizmo", "handle_id", "secondary");
-
 	GDVIRTUAL_BIND(_begin_handle_action, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "position");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
@@ -669,6 +808,153 @@ bool EditorCanvasItemGizmoPlugin::can_commit_handle_on_click() const {
 
 void EditorCanvasItemGizmoPlugin::redraw(EditorCanvasItemGizmo *p_gizmo) {
 	GDVIRTUAL_CALL(_redraw, p_gizmo);
+}
+
+bool EditorCanvasItemGizmoPlugin::has_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
+	ERR_FAIL_NULL_V(p_gizmo, false);
+	// we have a boundary if the user overrides _get_boundary, _set_boundary and _commit_boundary
+	bool get_boundary_overridden = GDVIRTUAL_IS_OVERRIDDEN(_get_boundary);
+	bool set_boundary_overridden = GDVIRTUAL_IS_OVERRIDDEN(_set_boundary);
+	bool commit_boundary_overridden = GDVIRTUAL_IS_OVERRIDDEN(_commit_boundary);
+
+	if (get_boundary_overridden && set_boundary_overridden && commit_boundary_overridden) {
+		return true;
+	}
+
+	// if any one is overridden we have some invalid state that we should warn the user about (it's either all or none)
+	if (get_boundary_overridden || set_boundary_overridden || commit_boundary_overridden) {
+		WARN_PRINT_ONCE("The gizmo plugin " + get_name() + " has overridden _get_boundary, _set_boundary or _commit_boundary, but not all of them. This is not allowed. Please override _get_boundary, _set_boundary and _commit_boundary to enable the boundary handles.");
+		return false;
+	}
+
+	// fall back to _edit_use_rect, in case we apply gizmos to built-in nodes.
+	CanvasItem *canvas_item = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL_V(canvas_item, false);
+	return canvas_item->_edit_use_rect();
+}
+
+void EditorCanvasItemGizmoPlugin::begin_boundary_action(const EditorCanvasItemGizmo *p_gizmo) {
+	ERR_FAIL_NULL(p_gizmo);
+	GDVIRTUAL_CALL(_begin_boundary_action, Ref<EditorCanvasItemGizmo>(p_gizmo));
+}
+
+void EditorCanvasItemGizmoPlugin::set_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_boundary) {
+	ERR_FAIL_NULL(p_gizmo);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_set_boundary)) {
+		GDVIRTUAL_CALL(_set_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), p_boundary);
+		return;
+	}
+
+	// fall back to _edit_set_rect, in case we apply gizmos to built-in nodes.
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	ci->_edit_set_rect(p_boundary);
+}
+
+Rect2 EditorCanvasItemGizmoPlugin::get_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
+	ERR_FAIL_NULL_V(p_gizmo, Rect2());
+	if (GDVIRTUAL_IS_OVERRIDDEN(_get_boundary)) {
+		Rect2 ret;
+		GDVIRTUAL_CALL(_get_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
+		return ret;
+	}
+
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL_V(ci, Rect2());
+	return ci->_edit_get_rect();
+}
+
+void EditorCanvasItemGizmoPlugin::commit_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_restore, bool p_cancel) {
+	ERR_FAIL_NULL(p_gizmo);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_commit_boundary)) {
+		GDVIRTUAL_CALL(_commit_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), p_restore, p_cancel);
+	}
+
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	if (p_cancel) {
+		ci->_edit_set_rect(p_restore);
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action("Change size");
+		undo_redo->add_do_method(ci, "_edit_set_rect", ci->_edit_get_rect());
+		undo_redo->add_undo_method(ci, "_edit_set_rect", p_restore);
+		undo_redo->commit_action();
+	}
+}
+
+bool EditorCanvasItemGizmoPlugin::has_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
+	ERR_FAIL_NULL_V(p_gizmo, false);
+	// we have a pivot if the user overrides _get_pivot, _set_pivot and _commit_pivot
+	bool get_pivot_overridden = GDVIRTUAL_IS_OVERRIDDEN(_get_pivot);
+	bool set_pivot_overridden = GDVIRTUAL_IS_OVERRIDDEN(_set_pivot);
+	bool commit_pivot_overridden = GDVIRTUAL_IS_OVERRIDDEN(_commit_pivot);
+
+	if (get_pivot_overridden && set_pivot_overridden && commit_pivot_overridden) {
+		return true;
+	}
+
+	// if any one is overridden we have some invalid state that we should warn the user about (it's either all or none)
+	if (get_pivot_overridden || set_pivot_overridden || commit_pivot_overridden) {
+		WARN_PRINT_ONCE("The gizmo plugin " + get_name() + " has overridden _get_pivot, _set_pivot or _commit_pivot, but not all of them. This is not allowed. Please override _get_pivot, _set_pivot and _commit_pivot to enable the pivot handles.");
+		return false;
+	}
+
+	// fall back to _edit_use_pivot, in case we apply gizmos to built-in nodes.
+	CanvasItem *canvas_item = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL_V(canvas_item, false);
+	return canvas_item->_edit_use_pivot();
+}
+
+void EditorCanvasItemGizmoPlugin::begin_pivot_action(const EditorCanvasItemGizmo *p_gizmo) {
+	ERR_FAIL_NULL(p_gizmo);
+	GDVIRTUAL_CALL(_begin_pivot_action, Ref<EditorCanvasItemGizmo>(p_gizmo));
+}
+
+void EditorCanvasItemGizmoPlugin::set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Point2 &p_pivot) {
+	ERR_FAIL_NULL(p_gizmo);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_set_pivot)) {
+		GDVIRTUAL_CALL(_set_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), p_pivot);
+		return;
+	}
+
+	// fall back to _edit_set_pivot, in case we apply gizmos to built-in nodes.
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	ci->_edit_set_pivot(p_pivot);
+}
+
+Point2 EditorCanvasItemGizmoPlugin::get_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
+	ERR_FAIL_NULL_V(p_gizmo, Point2());
+	if (GDVIRTUAL_IS_OVERRIDDEN(_get_pivot)) {
+		Point2 ret;
+		GDVIRTUAL_CALL(_get_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
+		return ret;
+	}
+
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL_V(ci, Point2());
+	return ci->_edit_get_pivot();
+}
+
+void EditorCanvasItemGizmoPlugin::commit_pivot(const EditorCanvasItemGizmo *p_gizmo, const Point2 &p_restore, bool p_cancel) {
+	ERR_FAIL_NULL(p_gizmo);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_commit_pivot)) {
+		GDVIRTUAL_CALL(_commit_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), p_restore, p_cancel);
+		return;
+	}
+
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	if (p_cancel) {
+		ci->_edit_set_pivot(p_restore);
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action("Change pivot");
+		undo_redo->add_do_method(ci, "_edit_set_pivot", ci->_edit_get_pivot());
+		undo_redo->add_undo_method(ci, "_edit_set_pivot", p_restore);
+		undo_redo->commit_action();
+	}
 }
 
 bool EditorCanvasItemGizmoPlugin::is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {

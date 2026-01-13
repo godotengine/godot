@@ -57,6 +57,9 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 	Vector<Vector2> secondary_handles;
 	Vector<int> secondary_handle_ids;
 
+	bool use_boundary_handle;
+	bool use_pivot_handle;
+
 	bool valid;
 	bool hidden;
 	Vector<Instance> instances;
@@ -70,6 +73,17 @@ protected:
 	EditorCanvasItemGizmoPlugin *gizmo_plugin = nullptr;
 
 	GDVIRTUAL0(_redraw)
+
+	GDVIRTUAL0RC(Rect2, _get_boundary)
+	GDVIRTUAL0(_begin_boundary_action)
+	GDVIRTUAL1(_set_boundary, Rect2)
+	GDVIRTUAL2(_commit_boundary, Rect2, bool)
+
+	GDVIRTUAL0RC(Vector2, _get_pivot)
+	GDVIRTUAL0(_begin_pivot_action)
+	GDVIRTUAL1(_set_pivot, Vector2)
+	GDVIRTUAL2(_commit_pivot, Vector2, bool)
+
 	GDVIRTUAL2RC(String, _get_handle_name, int, bool)
 	GDVIRTUAL2RC(bool, _is_handle_highlighted, int, bool)
 	GDVIRTUAL2RC(Variant, _get_handle_value, int, bool)
@@ -94,6 +108,18 @@ public:
 	void add_collision_polygon(const Vector<Vector2> &p_polygon);
 
 	void add_handles(const Vector<Vector2> &p_handles, Ref<Texture2D> p_texture, const Vector<int> &p_ids = Vector<int>(), bool p_secondary = false);
+
+	virtual bool has_boundary() const;
+	virtual Rect2 get_boundary() const;
+	virtual void begin_boundary_action();
+	virtual void set_boundary(const Rect2 &p_rect);
+	virtual void commit_boundary(const Rect2 &p_restore, bool p_cancel = false);
+
+	virtual bool has_pivot() const;
+	virtual Vector2 get_pivot() const;
+	virtual void begin_pivot_action();
+	virtual void set_pivot(const Vector2 &p_pivot);
+	virtual void commit_pivot(const Vector2 &p_restore, bool p_cancel = false);
 
 	virtual bool is_handle_highlighted(int p_id, bool p_secondary) const;
 	virtual String get_handle_name(int p_id, bool p_secondary) const;
@@ -161,10 +187,20 @@ protected:
 	GDVIRTUAL0RC(bool, _is_selectable_when_hidden)
 
 	GDVIRTUAL1(_redraw, Ref<EditorCanvasItemGizmo>)
+
+	GDVIRTUAL1(_begin_boundary_action, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL2(_set_boundary, Ref<EditorCanvasItemGizmo>, Rect2)
+	GDVIRTUAL1RC(Rect2, _get_boundary, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL3(_commit_boundary, Ref<EditorCanvasItemGizmo>, Rect2, bool)
+
+	GDVIRTUAL1(_begin_pivot_action, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL2(_set_pivot, Ref<EditorCanvasItemGizmo>, Vector2)
+	GDVIRTUAL1RC(Vector2, _get_pivot, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL3(_commit_pivot, Ref<EditorCanvasItemGizmo>, Vector2, bool)
+
 	GDVIRTUAL3RC(String, _get_handle_name, Ref<EditorCanvasItemGizmo>, int, bool)
 	GDVIRTUAL3RC(bool, _is_handle_highlighted, Ref<EditorCanvasItemGizmo>, int, bool)
 	GDVIRTUAL3RC(Variant, _get_handle_value, Ref<EditorCanvasItemGizmo>, int, bool)
-
 	GDVIRTUAL3(_begin_handle_action, Ref<EditorCanvasItemGizmo>, int, bool)
 	GDVIRTUAL4(_set_handle, Ref<EditorCanvasItemGizmo>, int, bool, Vector2)
 	GDVIRTUAL5(_commit_handle, Ref<EditorCanvasItemGizmo>, int, bool, Variant, bool)
@@ -176,6 +212,8 @@ protected:
 	GDVIRTUAL4(_commit_subgizmos, Ref<EditorCanvasItemGizmo>, Vector<int>, TypedArray<Transform2D>, bool)
 
 public:
+	static Transform2D calculate_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after);
+
 	virtual String get_gizmo_name() const;
 	virtual int get_priority() const;
 	virtual bool can_be_hidden() const;
@@ -183,6 +221,21 @@ public:
 	virtual bool can_commit_handle_on_click() const;
 
 	virtual void redraw(EditorCanvasItemGizmo *p_gizmo);
+	// boundary handle
+	virtual bool has_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void begin_boundary_action(const EditorCanvasItemGizmo *p_gizmo);
+	virtual void set_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect);
+	virtual Rect2 get_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void commit_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_restore, bool p_cancel = false);
+
+	// pivot handle
+	virtual bool has_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void begin_pivot_action(const EditorCanvasItemGizmo *p_gizmo);
+	virtual void set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
+	virtual Vector2 get_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void commit_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_restore, bool p_cancel = false);
+
+	// extra handles
 	virtual bool is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
 	virtual String get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
 	virtual Variant get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
@@ -190,6 +243,7 @@ public:
 	virtual void set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point);
 	virtual void commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
 
+	// subgizmos
 	virtual int subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const;
 	virtual Vector<int> subgizmos_intersect_rect(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect) const;
 	virtual Transform2D get_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id) const;

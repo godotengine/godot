@@ -66,6 +66,7 @@ public:
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
 
+	// the gizmo that is currently supplying subgizmos
 	Ref<EditorCanvasItemGizmo> gizmo;
 	HashMap<int, Transform2D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
 
