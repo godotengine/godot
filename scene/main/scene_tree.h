@@ -213,6 +213,7 @@ private:
 	Ref<Material> debug_paths_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
+	Node *mouse_over = nullptr;
 
 	void _flush_scene_change();
 
@@ -287,6 +288,7 @@ private:
 protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
+	void _change_mouse_over_node(CanvasItem *p_node);
 
 public:
 	enum {

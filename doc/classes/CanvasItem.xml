@@ -653,8 +653,33 @@
 				[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 			</description>
 		</method>
+		<method name="has_point">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the given [param point] (in local coordinates) is inside the visible area of this [CanvasItem]. The visible area is only calculated in [Sprite2D] and [Polygon2D].
+				This method is used internally for mouse picking when [member mouse_picking] is enabled.
+			</description>
+		</method>
+		<method name="is_mouse_picking_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if mouse picking is enabled for this [CanvasItem].
+			</description>
+		</method>
+		<method name="set_mouse_picking_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables mouse picking for this [CanvasItem].
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="mouse_picking" type="bool" setter="set_mouse_picking_enabled" getter="is_mouse_picking_enabled" default="false">
+			If [code]true[/code], this [CanvasItem] can receive mouse input events and emit mouse signals.
+			[b]Note:[/b] Input processing should be enabled for this to work by calling set_process_input(true).
+		</member>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
 			The mode in which this node clips its children, acting as a mask.
 			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
@@ -731,6 +756,22 @@
 			<description>
 				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
 				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_VISIBILITY_CHANGED] notification.
+			</description>
+		</signal>
+		<signal name="mouse_entered_node">
+			<description>
+				Emitted when the mouse cursor enters the CanvasItem boundaries. Requires input processing enabled to be emitted.
+			</description>
+		</signal>
+		<signal name="mouse_exited_node">
+			<description>
+				Emitted when the mouse cursor exits the CanvasItem boundaries. Requires input processing enabled to be emitted.
+			</description>
+		</signal>
+		<signal name="mouse_pressed_node">
+			<param index="0" name="button_index" type="int" />
+			<description>
+				Emitted when a mouse button is pressed while the cursor is over the CanvasItem boundaries. The [param button_index] indicates which button was pressed. Requires input processing enabled to be emitted.
 			</description>
 		</signal>
 	</signals>

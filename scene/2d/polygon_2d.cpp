@@ -104,10 +104,12 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
 }
-bool Polygon2D::_mouse_hit_test(const Vector2 &p_point) {
+
+bool Polygon2D::has_point(const Vector2 &p_point) {
 	Vector2 local = to_local(p_point);
 	return Geometry2D::is_point_in_polygon(local, polygon);
 }
+
 void Polygon2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED && !Engine::get_singleton()->is_editor_hint()) {
 		return; // Mesh recreation for NOTIFICATION_TRANSFORM_CHANGED is only needed in editor.
@@ -723,9 +725,6 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_TYPE_STRING, "PackedInt32Array"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");
-	ADD_SIGNAL(MethodInfo("mouse_entered"));
-	ADD_SIGNAL(MethodInfo("mouse_exited"));
-	ADD_SIGNAL(MethodInfo("mouse_pressed", PropertyInfo(Variant::INT, "button_index")));
 }
 
 Polygon2D::Polygon2D() {

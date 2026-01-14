@@ -474,7 +474,8 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
-bool Sprite2D::_mouse_hit_test(const Vector2 &p_point) {
+
+bool Sprite2D::has_point(const Vector2 &p_point) {
 	if (!texture.is_valid()) {
 		return false;
 	}
@@ -488,6 +489,7 @@ bool Sprite2D::_mouse_hit_test(const Vector2 &p_point) {
 	Color c = texture->get_image()->get_pixelv(uv);
 	return c.a > 0.01;
 }
+
 void Sprite2D::_texture_changed() {
 	// Changes to the texture need to trigger an update to make
 	// the editor redraw the sprite with the updated texture.
@@ -545,9 +547,6 @@ void Sprite2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
-	ADD_SIGNAL(MethodInfo("mouse_entered"));
-	ADD_SIGNAL(MethodInfo("mouse_exited"));
-	ADD_SIGNAL(MethodInfo("mouse_pressed", PropertyInfo(Variant::INT, "button_index")));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");

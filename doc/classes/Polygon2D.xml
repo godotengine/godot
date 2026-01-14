@@ -114,22 +114,4 @@
 			Color for each vertex. Colors are interpolated between vertices, resulting in smooth gradients. There should be one per polygon vertex. If there are fewer, undefined vertices will use [member color].
 		</member>
 	</members>
-	<signals>
-		<signal name="mouse_entered">
-			<description>
-				Emitted when the mouse cursor enters the polygon area. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
-		<signal name="mouse_exited">
-			<description>
-				Emitted when the mouse cursor exits the polygon area. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
-		<signal name="mouse_pressed">
-			<param index="0" name="button_index" type="int" />
-			<description>
-				Emitted when a mouse button is pressed while the cursor is over the polygon area. The [param button_index] indicates which button was pressed. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
-	</signals>
 </class>

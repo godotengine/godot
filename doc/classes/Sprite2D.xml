@@ -95,22 +95,6 @@
 				Emitted when the [member frame] changes.
 			</description>
 		</signal>
-		<signal name="mouse_entered">
-			<description>
-				Emitted when the mouse cursor enters the Sprite2D's area. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
-		<signal name="mouse_exited">
-			<description>
-				Emitted when the mouse cursor exits the Sprite2D's area. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
-		<signal name="mouse_pressed">
-			<param index="0" name="button_index" type="int" />
-			<description>
-				Emitted when a mouse button is pressed while the cursor is over the Sprite2D's area. The [param button_index] indicates which button was pressed. Requires input processing enabled to be emitted.
-			</description>
-		</signal>
 		<signal name="texture_changed">
 			<description>
 				Emitted when the [member texture] changes.

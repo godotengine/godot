@@ -68,7 +68,6 @@ protected:
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &p_property) const;
-	bool _mouse_hit_test(const Vector2 &p_point) override;
 
 public:
 #ifdef TOOLS_ENABLED
@@ -135,6 +134,8 @@ public:
 
 	Rect2 get_rect() const;
 	virtual Rect2 get_anchorable_rect() const override;
+
+	bool has_point(const Vector2 &p_point) override;
 
 	Sprite2D();
 };
