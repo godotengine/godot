@@ -26,7 +26,7 @@ jobs:
 
       # From https://github.com/actions/runner-images/blob/main/images/macos
       - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.0.1.app
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app
 
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
