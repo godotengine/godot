@@ -1884,7 +1884,7 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
-void SceneTree::_change_mouse_over_node(CanvasItem *p_node) {
+void SceneTree::_change_mouse_over_node(Node *p_node) {
 	if (mouse_over == p_node) { // No change
 		return;
 	}

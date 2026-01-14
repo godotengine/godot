@@ -288,7 +288,7 @@ private:
 protected:
 	void _notification(int p_notification);
 	static void _bind_methods();
-	void _change_mouse_over_node(CanvasItem *p_node);
+	void _change_mouse_over_node(Node *p_node);
 
 public:
 	enum {
