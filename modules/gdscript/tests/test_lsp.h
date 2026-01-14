@@ -414,7 +414,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		memdelete(efs);
 		finish_language();
 	}
-	TEST_CASE("[Editor][workspace][document_symbol]") {
+	TEST_CASE("[workspace][document_symbol]") {
 		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
