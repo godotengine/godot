@@ -7968,27 +7968,14 @@ void fragment() {
 		Vector3 ivec2 = Vector3(-1, 0, 0);
 		Vector3 ivec3 = Vector3(0, -1, 0);
 
-		for (int i = 0; i < 4; i++) {
-			Color col;
-			switch (i) {
-				case 0:
-					col = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
-					break;
-				case 1:
-					col = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
-					break;
-				case 2:
-					col = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
-					break;
-				case 3:
-					col = get_theme_color(SNAME("axis_view_plane_color"), EditorStringName(Editor));
-					break;
-				default:
-					col = Color();
-					break;
-			}
+		rotate_gizmo_color_base[0] = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
+		rotate_gizmo_color_base[1] = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
+		rotate_gizmo_color_base[2] = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
+		rotate_gizmo_color_base[3] = get_theme_color(SNAME("axis_view_plane_color"), EditorStringName(Editor));
 
-			col.a = col.a * (float)EDITOR_GET("editors/3d/manipulator_gizmo_opacity");
+		for (int i = 0; i < 4; i++) {
+			Color col = rotate_gizmo_color_base[i];
+			col.a = EDITOR_GET("editors/3d/manipulator_gizmo_opacity");
 
 			if (i < 3) {
 				move_gizmo[i].instantiate();
@@ -8691,6 +8678,12 @@ void Node3DEditor::update_gizmo_opacity() {
 		col = plane_gizmo_color_hl[i]->get_albedo();
 		col.a = 1.0;
 		plane_gizmo_color_hl[i]->set_albedo(col);
+	}
+
+	for (int i = 0; i < 4; i++) {
+		Color col = rotate_gizmo_color_base[i];
+		col.a = opacity;
+		rotate_gizmo_color[i]->set_shader_parameter("albedo", col);
 	}
 }
 
