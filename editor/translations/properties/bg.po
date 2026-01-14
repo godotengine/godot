@@ -1,0 +1,6385 @@
+# Bulgarian translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Bojidar Marinov <bojidar.marinov.bg@gmail.com>, 2016.
+# Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>, 2016-2017.
+# Любомир Василев <lyubomirv@abv.bg>, 2018, 2020.
+# MaresPW <marespw206@gmail.com>, 2018.
+# PakoSt <kokotekilata@gmail.com>, 2018, 2020.
+# Damyan Dichev <mwshock2@gmail.com>, 2019.
+# Whod <whodizhod@gmail.com>, 2020.
+# Stoyan <stoyan.stoyanov99@protonmail.com>, 2020.
+# zooid <the.zooid@gmail.com>, 2020, 2022.
+# Любомир Василев <lyubomirv@gmx.com>, 2020, 2021, 2022.
+# Ziv D <wizdavid@gmail.com>, 2020.
+# Violin Iliev <violin.developer@gmail.com>, 2021.
+# Ivan Gechev <ivan_banov@abv.bg>, 2022.
+# BigHomieDripDrop <bartu.bali@gmail.com>, 2022.
+# xaio <xaio666@gmail.com>, 2022.
+# Vosh <vosh4k@gmail.com>, 2022.
+# 100daysummer <bobbydochev@gmail.com>, 2023.
+# Sas <sasvelchev@gmail.com>, 2024.
+# Ivan Dortulov <ivandortulov@yahoo.com>, 2025.
+# tomsterBG <tomi4443321@gmail.com>, 2025.
+# Jivko Chterev <Jivko91@gmail.com>, 2025.
+# Кристиан Николов <kris.nikolov07@gmail.com>, 2025, 2026.
+# Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-01-10 10:02+0000\n"
+"Last-Translator: Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
+"godot-properties/bg/>\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "Application"
+msgstr "Апликация"
+
+msgid "Config"
+msgstr "Конфигурация"
+
+msgid "Name"
+msgstr "Име"
+
+msgid "Name Localized"
+msgstr "Локализирано Име"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Version"
+msgstr "Версия"
+
+msgid "Run"
+msgstr "Пусни"
+
+msgid "Main Scene"
+msgstr "Главна Сцена"
+
+msgid "Disable stdout"
+msgstr "Изключи stdout"
+
+msgid "Disable stderr"
+msgstr "Изключи stderr"
+
+msgid "Print Header"
+msgstr "Отпечатай Заглавие"
+
+msgid "Enable Alt Space Menu"
+msgstr "Включи Alt Space Менюто"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "Ползвай Скрита Директория с Данни на Проекта"
+
+msgid "Use Custom User Dir"
+msgstr "Ползвай Персонализирана Потребителска Директория"
+
+msgid "Custom User Dir Name"
+msgstr "Име на Персонализирана Потребителска Директория"
+
+msgid "Project Settings Override"
+msgstr "Замяна на Настройките на Проекта"
+
+msgid "Disable Project Settings Override"
+msgstr "Изключи Замяна на Настройките на Проекта"
+
+msgid "Main Loop Type"
+msgstr "Тип на Главния Цикъл"
+
+msgid "Auto Accept Quit"
+msgstr "Автоматичен Изход без Потвърждение"
+
+msgid "Quit on Go Back"
+msgstr "Напусни при Връщане Назад"
+
+msgid "Accessibility"
+msgstr "Достъпност"
+
+msgid "General"
+msgstr "Общ"
+
+msgid "Accessibility Support"
+msgstr "Поддръжка за Достъпност"
+
+msgid "Updates per Second"
+msgstr "Актуализации в Секунда"
+
+msgid "Display"
+msgstr "Покажи"
+
+msgid "Window"
+msgstr "Прозорец"
+
+msgid "Size"
+msgstr "Размер"
+
+msgid "Viewport Width"
+msgstr "Ширина на Изгледа"
+
+msgid "Viewport Height"
+msgstr "Височина на Изгледа"
+
+msgid "Mode"
+msgstr "Режим"
+
+msgid "Initial Position Type"
+msgstr "Тип Начална Позиция"
+
+msgid "Initial Position"
+msgstr "Начална Позиция"
+
+msgid "Initial Screen"
+msgstr "Начален Екран"
+
+msgid "Resizable"
+msgstr "Изменяем Размер"
+
+msgid "Borderless"
+msgstr "Без Граници"
+
+msgid "Always on Top"
+msgstr "Винаги Отгоре"
+
+msgid "Transparent"
+msgstr "Прозрачен"
+
+msgid "Extend to Title"
+msgstr "Разшири до Заглавието"
+
+msgid "No Focus"
+msgstr "Без Фокус"
+
+msgid "Sharp Corners"
+msgstr "Остри Ъгли"
+
+msgid "Minimize Disabled"
+msgstr "Минимизиране Изключено"
+
+msgid "Maximize Disabled"
+msgstr "Максимизиране Изключено"
+
+msgid "Window Width Override"
+msgstr "Презапис на Ширина на Прозорец"
+
+msgid "Window Height Override"
+msgstr "Презаписване на Височината на Прозореца"
+
+msgid "Energy Saving"
+msgstr "Пестене на Енергия"
+
+msgid "Keep Screen On"
+msgstr "Дръж Екрана Включен"
+
+msgid "Animation"
+msgstr "Анимация"
+
+msgid "Warnings"
+msgstr "Предупреждения"
+
+msgid "Check Invalid Track Paths"
+msgstr "Провери Невалидни Пътища на Пътеки"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Провери за Конфликт при Типа на Ъглова Интерполация"
+
+msgid "Compatibility"
+msgstr "Съвместимост"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Стандартен Родителски Скелет в Mesh Instance 3D"
+
+msgid "Audio"
+msgstr "Аудио"
+
+msgid "Buses"
+msgstr "Шини"
+
+msgid "Default Bus Layout"
+msgstr "Стандартно Разположение на Шина"
+
+msgid "Default Playback Type"
+msgstr "Стандартен Тип на Възпроизвеждане"
+
+msgid "Text to Speech"
+msgstr "Текст към Говор"
+
+msgid "2D Panning Strength"
+msgstr "2D Сила на Панорамиране"
+
+msgid "3D Panning Strength"
+msgstr "3D Сила на Панорамиране"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Сесийна Категория"
+
+msgid "Mix with Others"
+msgstr "Смеси с Други"
+
+msgid "Subwindows"
+msgstr "Подпрозорци"
+
+msgid "Embed Subwindows"
+msgstr "Вмъкни Подпрозорци"
+
+msgid "Frame Pacing"
+msgstr "Темпо на Кадрите"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Позволи Темпо на Кадрите"
+
+msgid "Swappy Mode"
+msgstr "Режим Swappy"
+
+msgid "Physics"
+msgstr "Физики"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Изпълни на Отделна Нишка"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Stretch"
+msgstr "Разтегни"
+
+msgid "Aspect"
+msgstr "Аспект"
+
+msgid "Scale"
+msgstr "Мащабирай"
+
+msgid "Scale Mode"
+msgstr "Режим на Мащабиране"
+
+msgid "Debug"
+msgstr "Дебъгвай"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Profiler"
+msgstr "Профайлър"
+
+msgid "Max Functions"
+msgstr "Макс. Функции"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Макс. Брой Елементи за Заявка на Времеви Отпечатък"
+
+msgid "Compression"
+msgstr "Компресиране"
+
+msgid "Formats"
+msgstr "Формати"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Съвпадение на Дълги Разстояния"
+
+msgid "Compression Level"
+msgstr "Ниво на Компресия"
+
+msgid "Window Log Size"
+msgstr "Размер на Журналът на Прозорци"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "Обработчик на Сривове"
+
+msgid "Message"
+msgstr "Съобщение"
+
+msgid "Rendering"
+msgstr "Рендериране"
+
+msgid "Occlusion Culling"
+msgstr "Определяне на Скрити Повърхности"
+
+msgid "BVH Build Quality"
+msgstr "Качество на BVH Конструкцията"
+
+msgid "Jitter Projection"
+msgstr "Проекция на Колебания"
+
+msgid "Internationalization"
+msgstr "Интернационализация"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Форсирай Посока за Оформление Дясно към Ляво"
+
+msgid "Root Node Layout Direction"
+msgstr "Посока на Оформление на Root Възел"
+
+msgid "Root Node Auto Translate"
+msgstr "Автоматично Превеждане на Root Възела"
+
+msgid "GUI"
+msgstr "Графичен Потребителски Интерфейс"
+
+msgid "Timers"
+msgstr "Таймери"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Инкрементално Търсене Макс. Интервал в ms"
+
+msgid "Tooltip Delay (sec)"
+msgstr "Забавяне на Подсказката (сек.)"
+
+msgid "Common"
+msgstr "Общ"
+
+msgid "Drag Threshold"
+msgstr "Праг на Съпротивление"
+
+msgid "Snap Controls to Pixels"
+msgstr "Прилепи Контроли към Пиксели"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Покажи Статуса на Фокус при Събитие с Показалеца"
+
+msgid "Fonts"
+msgstr "Шрифтове"
+
+msgid "Dynamic Fonts"
+msgstr "Динамични Шрифтове"
+
+msgid "Use Oversampling"
+msgstr "Използвай Свръхсемплиране"
+
+msgid "Rendering Device"
+msgstr "Устройство за Рендеринг"
+
+msgid "V-Sync"
+msgstr "Вертикално Синхронизиране"
+
+msgid "Frame Queue Size"
+msgstr "Размер на Опашката с Кадри"
+
+msgid "Swapchain Image Count"
+msgstr "Брой Изображения в Swapchain-а"
+
+msgid "Staging Buffer"
+msgstr "Буфер за Подготовка"
+
+msgid "Block Size (KB)"
+msgstr "Размер на Блока (KB)"
+
+msgid "Max Size (MB)"
+msgstr "Макс. Размер (MB)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Размер на Региона на Текстурата за Качване в Пиксели"
+
+msgid "Texture Download Region Size Px"
+msgstr "Размер на Региона на Текстурата за Сваляне в Пиксели"
+
+msgid "Pipeline Cache"
+msgstr "Кеш в Pipeline-а"
+
+msgid "Enable"
+msgstr "Включи"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Размер на Части за Запазване (MB)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Макс. Брой Дескриптори в Пула"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "Макс. Брой Ресурсни Дескриптори"
+
+msgid "Max Sampler Descriptors"
+msgstr "Макс. Брой Самплирани Дескриптори"
+
+msgid "Agility SDK Version"
+msgstr "Agility SDK Версия"
+
+msgid "Textures"
+msgstr "Текстури"
+
+msgid "Canvas Textures"
+msgstr "Текстури на Платното"
+
+msgid "Default Texture Filter"
+msgstr "Стандартен Текстурен Филтър"
+
+msgid "Default Texture Repeat"
+msgstr "Стандартно Текстурно Повторение"
+
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Използвай Околни"
+
+msgid "Input Devices"
+msgstr "Входни Устройства"
+
+msgid "Pointing"
+msgstr "Посочване"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Включи Десен Клик чрез Дълго Задържане"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Включи Панорамни и Мащабни Жестове"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "Ос на Въртежното Входно Превъртане"
+
+msgid "Override Volume Buttons"
+msgstr "Преопредели Бутоните за Звук"
+
+msgid "Disable Scroll Deadzone"
+msgstr "Изключи Мъртва Зона на Превъртане"
+
+msgid "Navigation"
+msgstr "Навигация"
+
+msgid "World"
+msgstr "Свят"
+
+msgid "Map Use Async Iterations"
+msgstr "Използвай Асинхронни Итерации в Картата"
+
+msgid "Region Use Async Iterations"
+msgstr "Използвай Асинхронни Итерации в Региона"
+
+msgid "Avoidance"
+msgstr "Избягване"
+
+msgid "Thread Model"
+msgstr "Нишков Модел"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Използвай Множество Нишки при Избягване"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Използвай Нишки с Висок Приоритет при Избягване"
+
+msgid "Pathfinding"
+msgstr "Намиране на Път"
+
+msgid "Max Threads"
+msgstr "Макс. Нишки"
+
+msgid "Baking"
+msgstr "Запичане"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Използвай Проверки за Предотвратяване на Сривове"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Използвай Множество Нишки при Запичане"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Използвай Нишки с Висок Приоритет при Запичане"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMesh Грешки при Сливане на Ръбове"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh Размер на Несъвпадащите Клетки"
+
+msgid "Editor Overrides"
+msgstr "Преупределения на Редактора"
+
+msgid "Low Processor Usage Mode"
+msgstr "Режим на Ниско Натоварване на Процесора"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Заспиване в Режим на Ниско Натоварване на Процесора (µsec)"
+
+msgid "Delta Smoothing"
+msgstr "Делта Изглаждане"
+
+msgid "Print Error Messages"
+msgstr "Принтирай Съобщения за Грешки"
+
+msgid "Print to stdout"
+msgstr "Принтирай в stdout"
+
+msgid "Physics Ticks per Second"
+msgstr "Физичен Кадър за Секунда"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Макс. Физични стъпки за Кадър"
+
+msgid "Max FPS"
+msgstr "Макс. FPS"
+
+msgid "Time Scale"
+msgstr "Времева Скала"
+
+msgid "Physics Jitter Fix"
+msgstr "Корекция на Физично Трептене"
+
+msgid "Mouse Mode"
+msgstr "Режим на Мишка"
+
+msgid "Use Accumulated Input"
+msgstr "Ползвай Акумулиран Вход"
+
+msgid "Emulate Mouse From Touch"
+msgstr "Емулация на Мишка от Допир"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Емулация на Допир от Мишка"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Наследствено Поведение \"Туко-що Докоснат\""
+
+msgid "Sensors"
+msgstr "Сензори"
+
+msgid "Enable Accelerometer"
+msgstr "Включи Акселерометър"
+
+msgid "Enable Gravity"
+msgstr "Включи Гравитация"
+
+msgid "Enable Gyroscope"
+msgstr "Включи Жироскоп"
+
+msgid "Enable Magnetometer"
+msgstr "Включи Магнитометъра"
+
+msgid "Device"
+msgstr "Устройство"
+
+msgid "Window ID"
+msgstr "ID на Прозорец"
+
+msgid "Command or Control Autoremap"
+msgstr "Пренареждане на Команди или Контрол"
+
+msgid "Alt Pressed"
+msgstr "Alt Натиснат"
+
+msgid "Shift Pressed"
+msgstr "Shift Натиснат"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl Натиснат"
+
+msgid "Meta Pressed"
+msgstr "Meta Натиснат"
+
+msgid "Pressed"
+msgstr "Натиснат"
+
+msgid "Keycode"
+msgstr "Ключов Код"
+
+msgid "Physical Keycode"
+msgstr "Физически Ключов Код"
+
+msgid "Key Label"
+msgstr "Ключов Етикет"
+
+msgid "Unicode"
+msgstr "Уникод"
+
+msgid "Location"
+msgstr "Местоположение"
+
+msgid "Echo"
+msgstr "Ехо"
+
+msgid "Button Mask"
+msgstr "Бутон Маска"
+
+msgid "Position"
+msgstr "Позиция"
+
+msgid "Global Position"
+msgstr "Глобална Позиция"
+
+msgid "Factor"
+msgstr "Фактор"
+
+msgid "Button Index"
+msgstr "Индекс на Бутона"
+
+msgid "Canceled"
+msgstr "Прекратен"
+
+msgid "Double Click"
+msgstr "Двойно Щракване"
+
+msgid "Tilt"
+msgstr "Наклон"
+
+msgid "Pressure"
+msgstr "Натиск"
+
+msgid "Pen Inverted"
+msgstr "Писалка Обърната"
+
+msgid "Relative"
+msgstr "Относително"
+
+msgid "Screen Relative"
+msgstr "Относително към Екрана"
+
+msgid "Velocity"
+msgstr "Скорост"
+
+msgid "Screen Velocity"
+msgstr "Скорост на Екрана"
+
+msgid "Axis"
+msgstr "Ос"
+
+msgid "Axis Value"
+msgstr "Стойност на Ос"
+
+msgid "Index"
+msgstr "Индекс"
+
+msgid "Double Tap"
+msgstr "Двоен Допир"
+
+msgid "Action"
+msgstr "Действие"
+
+msgid "Strength"
+msgstr "Сила"
+
+msgid "Event Index"
+msgstr "Индекс на Събитие"
+
+msgid "Delta"
+msgstr "Делта"
+
+msgid "Channel"
+msgstr "Канал"
+
+msgid "Pitch"
+msgstr "Тоналност"
+
+msgid "Instrument"
+msgstr "Инструмент"
+
+msgid "Controller Number"
+msgstr "Номер на Контролера"
+
+msgid "Controller Value"
+msgstr "Стойност на Контролер"
+
+msgid "Shortcut"
+msgstr "Пряк Път"
+
+msgid "Events"
+msgstr "Събития"
+
+msgid "Include Navigational"
+msgstr "Включи Навигация"
+
+msgid "Include Hidden"
+msgstr "Включи Скрити"
+
+msgid "Big Endian"
+msgstr "Голям Ендиан"
+
+msgid "Blocking Mode Enabled"
+msgstr "Блокиращ Режим Включен"
+
+msgid "Read Chunk Size"
+msgstr "Размер на Прочетеното Парче"
+
+msgid "Data"
+msgstr "Данни"
+
+msgid "Object ID"
+msgstr "ID на Обект"
+
+msgid "Encode Buffer Max Size"
+msgstr "Макс. Размер на Буфера за Кодиране"
+
+msgid "Input Buffer Max Size"
+msgstr "Макс. Размер на Входния Буфер"
+
+msgid "Output Buffer Max Size"
+msgstr "Макс. Размер на Изходния Буфер"
+
+msgid "Resource"
+msgstr "Ресурс"
+
+msgid "Local to Scene"
+msgstr "Местен за Сцената"
+
+msgid "Path"
+msgstr "Път"
+
+msgid "Data Array"
+msgstr "Масив от Данни"
+
+msgid "Max Pending Connections"
+msgstr "Макс. Брой Чакащи Връзки"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Включен Филтър за Съседи"
+
+msgid "Region"
+msgstr "Регион"
+
+msgid "Offset"
+msgstr "Отместване"
+
+msgid "Cell Size"
+msgstr "Големина на Клетка"
+
+msgid "Cell Shape"
+msgstr "Форма на Клетка"
+
+msgid "Jumping Enabled"
+msgstr "Включено Скачане"
+
+msgid "Default Compute Heuristic"
+msgstr "Стандартна Евристика за Изчисление"
+
+msgid "Default Estimate Heuristic"
+msgstr "Стандартна Евристика за Преценка"
+
+msgid "Diagonal Mode"
+msgstr "Диагонален Режим"
+
+msgid "Seed"
+msgstr "Семе"
+
+msgid "State"
+msgstr "Състояние"
+
+msgid "Memory"
+msgstr "Памет"
+
+msgid "Limits"
+msgstr "Ограничения"
+
+msgid "Message Queue"
+msgstr "Опашка за Съобщения"
+
+msgid "Max Steps"
+msgstr "Макс. Стъпки"
+
+msgid "Network"
+msgstr "Мрежа"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "Таймаут при Свързване (секунди)"
+
+msgid "Unix"
+msgstr "Unix"
+
+msgid "Packet Peer Stream"
+msgstr "Пакетен Пиър Поток"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Макс. Буфер (На 2-ра степен)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Certificate Bundle Override"
+msgstr "Презаписване на Пакет Сертификати"
+
+msgid "Threading"
+msgstr "Нишкопрокарване"
+
+msgid "Worker Pool"
+msgstr "Пуул с Работници"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Съотношение за Нишките с Нисък Приоритет"
+
+msgid "Locale"
+msgstr "Локал"
+
+msgid "Plural Rules Override"
+msgstr "Замяна на Множествените Правила"
+
+msgid "Test"
+msgstr "Тест"
+
+msgid "Fallback"
+msgstr "Резерва"
+
+msgid "Pseudolocalization"
+msgstr "Псевдолокализация"
+
+msgid "Use Pseudolocalization"
+msgstr "Използвай Псевдолокализация"
+
+msgid "Replace with Accents"
+msgstr "Замени с Акценти"
+
+msgid "Double Vowels"
+msgstr "Двойни Гласни"
+
+msgid "Fake BiDi"
+msgstr "Фалшив BiDi"
+
+msgid "Override"
+msgstr "Преопредели"
+
+msgid "Expansion Ratio"
+msgstr "Коефициент на Разширение"
+
+msgid "Prefix"
+msgstr "Представка"
+
+msgid "Suffix"
+msgstr "Наставка"
+
+msgid "Skip Placeholders"
+msgstr "Пропусни Заместващи Елементи"
+
+msgid "Rotation"
+msgstr "Ротация"
+
+msgid "Value"
+msgstr "Стойност"
+
+msgid "Arg Count"
+msgstr "Брой Аргументи"
+
+msgid "Args"
+msgstr "Аргументи"
+
+msgid "Type"
+msgstr "Тип"
+
+msgid "In Handle"
+msgstr "Входна Дръжка"
+
+msgid "Out Handle"
+msgstr "Изходна Дръжка"
+
+msgid "Handle Mode"
+msgstr "Режим на Дръжката"
+
+msgid "Stream"
+msgstr "Поток"
+
+msgid "Start Offset"
+msgstr "Начално Отместване"
+
+msgid "End Offset"
+msgstr "Крайно Отместване"
+
+msgid "Easing"
+msgstr "Облекчаване"
+
+msgid "Asset Library"
+msgstr "Библиотека с Активи"
+
+msgid "Available URLs"
+msgstr "Налични URL Адреси"
+
+msgid "Debug Adapter"
+msgstr "Адаптер за Дебъгване"
+
+msgid "Remote Port"
+msgstr "Дистанционен Порт"
+
+msgid "Request Timeout"
+msgstr "Таймаут на Заявка"
+
+msgid "Sync Breakpoints"
+msgstr "Синхронизирай Точките на Прекъсване"
+
+msgid "Title"
+msgstr "Заглавие"
+
+msgid "Layout Key"
+msgstr "Ключ на Разположение"
+
+msgid "Global"
+msgstr "Глобален"
+
+msgid "Transient"
+msgstr "Преходен"
+
+msgid "Closable"
+msgstr "Затварящ се"
+
+msgid "Icon Name"
+msgstr "Име на Икона"
+
+msgid "Dock Icon"
+msgstr "Док Икона"
+
+msgid "Force Show Icon"
+msgstr "Принуди Показване на Икона"
+
+msgid "Title Color"
+msgstr "Цвят на Заглавие"
+
+msgid "Dock Shortcut"
+msgstr "Пряк Път към Док"
+
+msgid "Default Slot"
+msgstr "Стандартен Слот"
+
+msgid "Available Layouts"
+msgstr "Налични Разположения"
+
+msgid "Distraction Free Mode"
+msgstr "Режим без Разсейване"
+
+msgid "Movie Maker Enabled"
+msgstr "Включен Movie Maker"
+
+msgid "Custom Template"
+msgstr "Персонализиран Шаблон"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Architectures"
+msgstr "Архитектури"
+
+msgid "App Store Team ID"
+msgstr "ID на App Store Екипа"
+
+msgid "Export Method Debug"
+msgstr "Дебъг Версия на Експортен Метод"
+
+msgid "Code Sign Identity Debug"
+msgstr "Дебъг Версия на Идентичност на Подпис на Код"
+
+msgid "Code Sign Identity Release"
+msgstr "Release Идентичност на Подпис на Код"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Дебъг Версия на UUID на Профил за Предоставяне"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Release UUID на Профил за Предоставяне"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Дебъг Версия на UUID на Профил за Предоставяне"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "Release UUID на Профил за Предоставяне"
+
+msgid "Export Method Release"
+msgstr "Release Експортен Метод"
+
+msgid "Bundle Identifier"
+msgstr "Идентификатор на Пакет"
+
+msgid "Signature"
+msgstr "Подпис"
+
+msgid "Short Version"
+msgstr "Кратка Версия"
+
+msgid "Additional Plist Content"
+msgstr "Допълнително Plist Съдържание"
+
+msgid "Icon Interpolation"
+msgstr "Интерполация на Икона"
+
+msgid "Export Project Only"
+msgstr "Експортирай Само Проекта"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Изтрий Стари Файлове за Експорт Безусловно"
+
+msgid "Plugins"
+msgstr "Приставки"
+
+msgid "Entitlements"
+msgstr "Права"
+
+msgid "Increased Memory Limit"
+msgstr "Завишен Лимит на Паметта"
+
+msgid "Game Center"
+msgstr "Game Center"
+
+msgid "Push Notifications"
+msgstr "Push Нотификации"
+
+msgid "Additional"
+msgstr "Допълнително"
+
+msgid "Capabilities"
+msgstr "Възможности"
+
+msgid "Access Wi-Fi"
+msgstr "Достъпи Безжичната Мрежа"
+
+msgid "Performance Gaming Tier"
+msgstr "Ниво на Производителност в Игри"
+
+msgid "Performance A 12"
+msgstr "Производство на А 12"
+
+msgid "Shader Baker"
+msgstr "Запичане на Шейдъри"
+
+msgid "Enabled"
+msgstr "Включен"
+
+msgid "User Data"
+msgstr "Потребителски Данни"
+
+msgid "Accessible From Files App"
+msgstr "Достъпен от Файловия Мениджър"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Достъпен от iTunes Споделяне"
+
+msgid "Privacy"
+msgstr "Поверителност"
+
+msgid "Camera Usage Description"
+msgstr "Потребителско Описание на Камерата"
+
+msgid "Camera Usage Description Localized"
+msgstr "Локализирано Потребителско Описание на Камерата"
+
+msgid "Microphone Usage Description"
+msgstr "Потребителско Описание на Микрофона"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Локализирано Потребителско Описание на Микрофона"
+
+msgid "Photolibrary Usage Description"
+msgstr "Потребителско Описание на Галерията"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "Локализирано Потребителско Описание на Галерията"
+
+msgid "Tracking Enabled"
+msgstr "Включено Проследяване"
+
+msgid "Tracking Domains"
+msgstr "Домейни за Проследяване"
+
+msgid "Icons"
+msgstr "Икони"
+
+msgid "Icon 1024 X 1024"
+msgstr "Икона 1024 X 1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Икона 1024 X 1024 Тъмна"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Икона 1024 X 1024 Оцветена"
+
+msgid "Export Console Wrapper"
+msgstr "Експорт на Конзолна Обвивка"
+
+msgid "Binary Format"
+msgstr "Бинарен Формат"
+
+msgid "Embed PCK"
+msgstr "Вграждане на PCK"
+
+msgid "Texture Format"
+msgstr "Текстурен Формат"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
+msgid "Export Path"
+msgstr "Експортен Път"
+
+msgid "Label"
+msgstr "Етикет"
+
+msgid "Read Only"
+msgstr "Само за Четене"
+
+msgid "Flat"
+msgstr "Равен"
+
+msgid "Control State"
+msgstr "Контролно Състояние"
+
+msgid "Hide Slider"
+msgstr "Скрий Плъзгача"
+
+msgid "Editing Integer"
+msgstr "Редактиране на Цяло Число"
+
+msgid "Zoom"
+msgstr "Приближи"
+
+msgid "Retarget"
+msgstr "Пренасочви"
+
+msgid "Bone Renamer"
+msgstr "Преименувач на Кост"
+
+msgid "Rename Bones"
+msgstr "Преименувай Кости"
+
+msgid "Unique Node"
+msgstr "Уникален Възел"
+
+msgid "Make Unique"
+msgstr "Направи Уникален"
+
+msgid "Skeleton Name"
+msgstr "Име на Скелетон"
+
+msgid "Rest Fixer"
+msgstr "Поправка на Състояние в Покой"
+
+msgid "Apply Node Transforms"
+msgstr "Прилагане на Трансформации върху Възели"
+
+msgid "Normalize Position Tracks"
+msgstr "Нормализирай Позиционните Пътечки"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "Нулирай всички Пози на Костите след Импортиране"
+
+msgid "Retarget Method"
+msgstr "Метод на Пренасочване"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Запази Глобалния Покой Върху Остатъците"
+
+msgid "Use Global Pose"
+msgstr "Използвай Глобалната Поза"
+
+msgid "Original Skeleton Name"
+msgstr "Използвай Оригиналното Име на Скелета"
+
+msgid "Fix Silhouette"
+msgstr "Поправи Силуета"
+
+msgid "Filter"
+msgstr "Филтър"
+
+msgid "Threshold"
+msgstr "Праг"
+
+msgid "Base Height Adjustment"
+msgstr "Регулиране на Основната Височина"
+
+msgid "Remove Tracks"
+msgstr "Премахни Пътечки"
+
+msgid "Except Bone Transform"
+msgstr "Освен Трансформация на Костите"
+
+msgid "Unimportant Positions"
+msgstr "Неважни Позиции"
+
+msgid "Unmapped Bones"
+msgstr "Неотбелязани Кости"
+
+msgid "Generate Tangents"
+msgstr "Генерирай Тангенти"
+
+msgid "Generate LODs"
+msgstr "Генерирай LOD-та"
+
+msgid "Generate Shadow Mesh"
+msgstr "Генерирай Mesh Сянка"
+
+msgid "Generate Lightmap UV2"
+msgstr "Генерирай Светлинна Карта UV2"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "Генерирай Размер на Тексел на Светлинна Карта UV2"
+
+msgid "Scale Mesh"
+msgstr "Мащабирай Mesh"
+
+msgid "Offset Mesh"
+msgstr "Отмести Mesh"
+
+msgid "Force Disable Mesh Compression"
+msgstr "Принуди Изключване на Mesh Компресия"
+
+msgid "Node"
+msgstr "Възел"
+
+msgid "Node Type"
+msgstr "Тип Възел"
+
+msgid "Script"
+msgstr "Скрипт"
+
+msgid "Import"
+msgstr "Импортирай"
+
+msgid "Skip Import"
+msgstr "Пронусни Импортиране"
+
+msgid "Generate"
+msgstr "Генерирай"
+
+msgid "NavMesh"
+msgstr "NavMesh"
+
+msgid "Body Type"
+msgstr "Тип Тяло"
+
+msgid "Shape Type"
+msgstr "Тип Форма"
+
+msgid "Physics Material Override"
+msgstr "Презаписване на Физичен Материал"
+
+msgid "Layer"
+msgstr "Слоеве"
+
+msgid "Mask"
+msgstr "Маска"
+
+msgid "Mesh Instance"
+msgstr "Mesh Инстанция"
+
+msgid "Layers"
+msgstr "Слоеве"
+
+msgid "Visibility Range Begin"
+msgstr "Старт на Обхвата на Видимост"
+
+msgid "Visibility Range Begin Margin"
+msgstr "Старт на Маржа на Обхвата на Видимост"
+
+msgid "Visibility Range End"
+msgstr "Край на Обхвата на Видимост"
+
+msgid "Visibility Range End Margin"
+msgstr "Край на Маржа Обхвата на Видимост"
+
+msgid "Visibility Range Fade Mode"
+msgstr "Режим на Избледняване на Обхвата на Видимост"
+
+msgid "Cast Shadow"
+msgstr "Хвърли Сянка"
+
+msgid "Decomposition"
+msgstr "Декомпозиция"
+
+msgid "Advanced"
+msgstr "Разширени"
+
+msgid "Precision"
+msgstr "Точност"
+
+msgid "Max Concavity"
+msgstr "Макс. Вдлъбнатина"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Пристрастие при Изваждане на Симетрични Равнини"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Пристрастие при Изваждане на Революционните Осове"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Мин. Обем на Изпъкнал Корпус"
+
+msgid "Resolution"
+msgstr "Резолюция"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Макс. Брой Върхове на Изпъкнала Обвивка"
+
+msgid "Plane Downsampling"
+msgstr "Downsampling на Равнина"
+
+msgid "Convexhull Downsampling"
+msgstr "Downsampling на Изпъкнал Корпус"
+
+msgid "Normalize Mesh"
+msgstr "Нормализирай Mesh"
+
+msgid "Convexhull Approximation"
+msgstr "Приближение на Изпъкнал Корпус"
+
+msgid "Max Convex Hulls"
+msgstr "Макс. Изпъкнали Корпуси"
+
+msgid "Project Hull Vertices"
+msgstr "Проектирай Върховете на Корпуса"
+
+msgid "Primitive"
+msgstr "Примитив"
+
+msgid "Height"
+msgstr "Височина"
+
+msgid "Radius"
+msgstr "Радиус"
+
+msgid "Occluder"
+msgstr "Прикривател"
+
+msgid "Simplification Distance"
+msgstr "Разстояние на Опростяване"
+
+msgid "Save to File"
+msgstr "Запази във Файл"
+
+msgid "Shadow Meshes"
+msgstr "Mesh Сенки"
+
+msgid "Lightmap UV"
+msgstr "UV на Светлинна Карта"
+
+msgid "LODs"
+msgstr "Нива на Детайл"
+
+msgid "Normal Merge Angle"
+msgstr "Нормален Ъгъл на Сливане"
+
+msgid "Use External"
+msgstr "Използвай Външен"
+
+msgid "Loop Mode"
+msgstr "Режим на Цикъл"
+
+msgid "Keep Custom Tracks"
+msgstr "Остави Персонализираните Пътечки"
+
+msgid "Slices"
+msgstr "Резени"
+
+msgid "Amount"
+msgstr "Бройка"
+
+msgid "Optimizer"
+msgstr "Оптимизатор"
+
+msgid "Max Velocity Error"
+msgstr "Макс. Грешка при Скорост"
+
+msgid "Max Angular Error"
+msgstr "Макс. Грешка при Ъгъл"
+
+msgid "Max Precision Error"
+msgstr "Макс. Грешка при Презицност"
+
+msgid "Page Size"
+msgstr "Размер на Страница"
+
+msgid "Import Tracks"
+msgstr "Импортирай Пътечки"
+
+msgid "Rest Pose"
+msgstr "Поза в Покой"
+
+msgid "Load Pose"
+msgstr "Зареди Поза"
+
+msgid "External Animation Library"
+msgstr "Външна Анимационна Библиотека"
+
+msgid "Selected Animation"
+msgstr "Избрана Анимация"
+
+msgid "Selected Timestamp"
+msgstr "Избрана Времева Марка"
+
+msgid "Bone Map"
+msgstr "Карта на Костите"
+
+msgid "Nodes"
+msgstr "Възели"
+
+msgid "Root Type"
+msgstr "Root Тип"
+
+msgid "Root Name"
+msgstr "Root Име"
+
+msgid "Root Script"
+msgstr "Root Скрипт"
+
+msgid "Apply Root Scale"
+msgstr "Приложи Root Мащаб"
+
+msgid "Root Scale"
+msgstr "Root Мащаб"
+
+msgid "Import as Skeleton Bones"
+msgstr "Импортирай като Кости на Скелет"
+
+msgid "Use Name Suffixes"
+msgstr "Използвай Имена на Наставки"
+
+msgid "Use Node Type Suffixes"
+msgstr "Използвай Наставки за Тип Възел"
+
+msgid "Meshes"
+msgstr "Mesh-ове"
+
+msgid "Ensure Tangents"
+msgstr "Осигури Тангенти"
+
+msgid "Create Shadow Meshes"
+msgstr "Създай Mesh Сенки"
+
+msgid "Light Baking"
+msgstr "Запичане на Светлина"
+
+msgid "Lightmap Texel Size"
+msgstr "Тексел Размер на Светлинна Карта"
+
+msgid "Force Disable Compression"
+msgstr "Принуди Изключена Компресия"
+
+msgid "Skins"
+msgstr "Кожи"
+
+msgid "Use Named Skins"
+msgstr "Използвай Именувани Кожи"
+
+msgid "FPS"
+msgstr "Кадри/сек"
+
+msgid "Trimming"
+msgstr "Подрязване"
+
+msgid "Remove Immutable Tracks"
+msgstr "Премахни Непроменливите Пътечки"
+
+msgid "Import Rest as Reset"
+msgstr "Импортиране на Останалото като Нулирано"
+
+msgid "Import Script"
+msgstr "Импортирай Скрипт"
+
+msgid "Materials"
+msgstr "Материали"
+
+msgid "Extract"
+msgstr "Извлечи"
+
+msgid "Extract Format"
+msgstr "Формат на Извличане"
+
+msgid "Extract Path"
+msgstr "Път на Извличане"
+
+msgid "Antialiasing"
+msgstr "Антиалиасинг"
+
+msgid "Generate Mipmaps"
+msgstr "Генерирай Mipmap-ове"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "Изключи Вградени Bitmap-ове"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Мултиканален Signed Distance Field"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF Диапазон на Пикселите"
+
+msgid "MSDF Size"
+msgstr "MSDF Размер"
+
+msgid "Allow System Fallback"
+msgstr "Разреши Системно Преминаване към Резерва"
+
+msgid "Force Autohinter"
+msgstr "Принуди Автоматично Намекване"
+
+msgid "Modulate Color Glyphs"
+msgstr "Модулирай Цветните Глифове"
+
+msgid "Hinting"
+msgstr "Намекване"
+
+msgid "Subpixel Positioning"
+msgstr "Подпикселово Позициониране"
+
+msgid "Keep Rounding Remainders"
+msgstr "Задръж Остатъци при Закръгляне"
+
+msgid "Oversampling"
+msgstr "Свръхсемплиране"
+
+msgid "Metadata Overrides"
+msgstr "Презаписи на Метаданни"
+
+msgid "Language Support"
+msgstr "Поддръжка на Език"
+
+msgid "Script Support"
+msgstr "Поддръжка на Скрипт"
+
+msgid "OpenType Features"
+msgstr "OpenType Функции"
+
+msgid "Fallbacks"
+msgstr "Резерви"
+
+msgid "Compress"
+msgstr "Компресирай"
+
+msgid "Language"
+msgstr "Език"
+
+msgid "Outline Size"
+msgstr "Размер на Контура"
+
+msgid "Variation"
+msgstr "Вариация"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Embolden"
+msgstr "Окуражи"
+
+msgid "Face Index"
+msgstr "Индекс на Лицето"
+
+msgid "Transform"
+msgstr "Трансформирай"
+
+msgid "Create From"
+msgstr "Създай Форма"
+
+msgid "Scaling Mode"
+msgstr "Режим на Мащабиране"
+
+msgid "Delimiter"
+msgstr "Разделител"
+
+msgid "Unescape Keys"
+msgstr "Ключове за Разкодиране"
+
+msgid "Unescape Translations"
+msgstr "Преводи за Разкодиране"
+
+msgid "Character Ranges"
+msgstr "Диапазон на Символите"
+
+msgid "Kerning Pairs"
+msgstr "Кернинг Двойки"
+
+msgid "Columns"
+msgstr "Колони"
+
+msgid "Rows"
+msgstr "Редове"
+
+msgid "Image Margin"
+msgstr "Марж на Изображението"
+
+msgid "Character Margin"
+msgstr "Марж на Символа"
+
+msgid "Ascent"
+msgstr "Изкачване"
+
+msgid "Descent"
+msgstr "Спускане"
+
+msgid "High Quality"
+msgstr "Високо Качество"
+
+msgid "Lossy Quality"
+msgstr "Качество със Загуба"
+
+msgid "UASTC Level"
+msgstr "Ниво на UASTC"
+
+msgid "RDO Quality Loss"
+msgstr "RDO Загуба на Качество"
+
+msgid "HDR Compression"
+msgstr "HDR Компресия"
+
+msgid "Channel Pack"
+msgstr "Пакет Канали"
+
+msgid "Mipmaps"
+msgstr "Mipmap-ове"
+
+msgid "Limit"
+msgstr "Лимит"
+
+msgid "Horizontal"
+msgstr "Хоризонтала"
+
+msgid "Vertical"
+msgstr "Вертикала"
+
+msgid "Arrangement"
+msgstr "Подредба"
+
+msgid "Layout"
+msgstr "Разположение"
+
+msgid "Base Scale"
+msgstr "Основен Мащаб"
+
+msgid "Saturation"
+msgstr "Насищане"
+
+msgid "Color Map"
+msgstr "Цветова Карта"
+
+msgid "Normal Map"
+msgstr "Карта на Нормалите"
+
+msgid "Roughness"
+msgstr "Грубост"
+
+msgid "Src Normal"
+msgstr "Src Нормал"
+
+msgid "Process"
+msgstr "Процес"
+
+msgid "Channel Remap"
+msgstr "Пренареждане на Каналите"
+
+msgid "Red"
+msgstr "Червено"
+
+msgid "Green"
+msgstr "Зелено"
+
+msgid "Blue"
+msgstr "Синьо"
+
+msgid "Alpha"
+msgstr "Алфа"
+
+msgid "Fix Alpha Border"
+msgstr "Поправи Алфа Границата"
+
+msgid "Premult Alpha"
+msgstr "Premult Алфа"
+
+msgid "Normal Map Invert Y"
+msgstr "Инвертирай Y на Нормалната Карта"
+
+msgid "HDR as sRGB"
+msgstr "HDR като sRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "Фиксирай HDR Експозицията"
+
+msgid "Size Limit"
+msgstr "Лимит на Размера"
+
+msgid "Detect 3D"
+msgstr "Октрий 3D"
+
+msgid "Compress To"
+msgstr "Компресирай Към"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "Редактор"
+
+msgid "Scale with Editor Scale"
+msgstr "Скалирай с Мащаба на Редактора"
+
+msgid "Convert Colors with Editor Theme"
+msgstr "Конвертирай Цветове с Темата на Редактора"
+
+msgid "Atlas File"
+msgstr "Атлас Файл"
+
+msgid "Import Mode"
+msgstr "Режим на Импортиране"
+
+msgid "Crop to Region"
+msgstr "Изрежи до Регион"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Отрежи Алфа Границата от Региона"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "Наложи"
+
+msgid "8 Bit"
+msgstr "8 Битов"
+
+msgid "Mono"
+msgstr "Mono"
+
+msgid "Max Rate"
+msgstr "Макс. Честота"
+
+msgid "Max Rate Hz"
+msgstr "Макс. Честота Hz"
+
+msgid "Edit"
+msgstr "Редактирай"
+
+msgid "Trim"
+msgstr "Подрежи"
+
+msgid "Normalize"
+msgstr "Нормализирай"
+
+msgid "Loop Begin"
+msgstr "Начало на Цикъл"
+
+msgid "Loop End"
+msgstr "Край на Цикъл"
+
+msgid "Draw Label"
+msgstr "Етикет за Рисуване"
+
+msgid "Draw Background"
+msgstr "Рисуване на Задния Фон"
+
+msgid "Checkable"
+msgstr "Проверяем"
+
+msgid "Checked"
+msgstr "Проверен"
+
+msgid "Draw Warning"
+msgstr "Предупреждение за Рисуване"
+
+msgid "Keying"
+msgstr "Ключиране"
+
+msgid "Deletable"
+msgstr "Изтриваемо"
+
+msgid "Selectable"
+msgstr "Избираем"
+
+msgid "Use Folding"
+msgstr "Използвай Сгъване"
+
+msgid "Name Split Ratio"
+msgstr "Съотношение на Разделяне на Името"
+
+msgid "Base Type"
+msgstr "Основен Тип"
+
+msgid "Editable"
+msgstr "Редактируем"
+
+msgid "Toggle Mode"
+msgstr "Превключи Режим"
+
+msgid "Main Run Args"
+msgstr "Основни Аргументи за Изпълнение"
+
+msgid "Templates Search Path"
+msgstr "Път за Търсене на Шаблони"
+
+msgid "Naming"
+msgstr "Наименуване"
+
+msgid "Default Signal Callback Name"
+msgstr "Стандартен Сигнал за Обратно Извикване към Име"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Стандартен Сигнал за Обратно Извикване към Собственото Име"
+
+msgid "Scene Name Casing"
+msgstr "Конвенция за Главни и Малки Букви при Именуване на Сцени"
+
+msgid "Script Name Casing"
+msgstr "Конвенция за Главни и Малки Букви при Именуване на Скриптове"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Реимпортиране на Липсващи Импортирани Файлове"
+
+msgid "Use Multiple Threads"
+msgstr "Използва Множество Нишки"
+
+msgid "Atlas Max Width"
+msgstr "Атлас Макс. Ширина"
+
+msgid "Export"
+msgstr "Експортирай"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Конвертирай Текст Ресурс в Бинарен Формат"
+
+msgid "Version Control"
+msgstr "Контрол на Версиите"
+
+msgid "Plugin Name"
+msgstr "Име на Приставката"
+
+msgid "Autoload on Startup"
+msgstr "Автоматично Зареждане при Стартиране"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "Текстура"
+
+msgid "Margins"
+msgstr "Маржове"
+
+msgid "Separation"
+msgstr "Разделение"
+
+msgid "Texture Region Size"
+msgstr "Размер на Регион на Текстура"
+
+msgid "Use Texture Padding"
+msgstr "Използвай Текстурно Подплатяване"
+
+msgid "Atlas Coords"
+msgstr "Атлас Координати"
+
+msgid "Size in Atlas"
+msgstr "Размер в Атлас"
+
+msgid "Alternative ID"
+msgstr "Алтернативно ID"
+
+msgid "Speed"
+msgstr "Скорост"
+
+msgid "Frames Count"
+msgstr "Брой Кадри"
+
+msgid "Duration"
+msgstr "Продължителност"
+
+msgid "Current Group Idx"
+msgstr "Idx на Текущата Група"
+
+msgid "Current Bone Idx"
+msgstr "Idx на Текущата Кост"
+
+msgid "Editors"
+msgstr "Редактори"
+
+msgid "3D Gizmos"
+msgstr "3D Gizmos"
+
+msgid "Gizmo Colors"
+msgstr "Gizmo Цветове"
+
+msgid "Particles Emission Shape"
+msgstr "Форма на Емисиите на Частици"
+
+msgid "Interface"
+msgstr "Интерфейс"
+
+msgid "Editor Language"
+msgstr "Език на Редактора"
+
+msgid "Use Threads"
+msgstr "Използвай Нишки"
+
+msgid "Localize Settings"
+msgstr "Локализирай Настройките"
+
+msgid "Dock Tab Style"
+msgstr "Стил на Док Раздела"
+
+msgid "Bottom Dock Tab Style"
+msgstr "Стил на Долния Док Раздел"
+
+msgid "UI Layout Direction"
+msgstr "UI Посока на Оформление"
+
+msgid "Display Scale"
+msgstr "Мащаб на Дисплейа"
+
+msgid "Custom Display Scale"
+msgstr "Персонализиран Мащаб на Дисплейа"
+
+msgid "Editor Screen"
+msgstr "Екран на Редактора"
+
+msgid "Tablet Driver"
+msgstr "Драйвер за Таблета"
+
+msgid "Project Manager Screen"
+msgstr "Екран на Проектния Мениджър"
+
+msgid "Connection"
+msgstr "Връзка"
+
+msgid "Check for Updates"
+msgstr "Провери за Обновления"
+
+msgid "Use Embedded Menu"
+msgstr "Използвай Вградено Меню"
+
+msgid "Use Native File Dialogs"
+msgstr "Използвай Родни Диалогови Прозорци за Файлове"
+
+msgid "Expand to Title"
+msgstr "Разшири до Заглавие"
+
+msgid "Main Font Size"
+msgstr "Основен Размер на Шрифта"
+
+msgid "Code Font Size"
+msgstr "Размер на Шрифта на Кода"
+
+msgid "Main Font Custom OpenType Features"
+msgstr "Основни Функции за Персонализиране на Шрифта OpenType"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Контекстуални Лигатури на Шрифта за Код"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Персонализирани OpenType Функции за Шрифта за Код"
+
+msgid "Code Font Custom Variations"
+msgstr "Персонализирани Вариации за Шрифта за Код"
+
+msgid "Font Antialiasing"
+msgstr "Antialiasing на Шрифта"
+
+msgid "Font Hinting"
+msgstr "Намекване за Шрифтове"
+
+msgid "Font Subpixel Positioning"
+msgstr "Шрифт Подпикселово Позициониране"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "Изключи Вмъкнати Bitmap-ове за Шрифтове"
+
+msgid "Font Allow MSDF"
+msgstr "Позволи MSDF за Шрифтове"
+
+msgid "Main Font"
+msgstr "Главен Шрифт"
+
+msgid "Main Font Bold"
+msgstr "Главен Шрифт Удебелен"
+
+msgid "Code Font"
+msgstr "Кодов Шрифт"
+
+msgid "Dragging Hover Wait Seconds"
+msgstr "Изчакване в Секунди за Плъзгане на Курсора"
+
+msgid "Separate Distraction Mode"
+msgstr "Режим Премахни Разсейване"
+
+msgid "Automatically Open Screenshots"
+msgstr "Автоматично Отвори Екранни Снимки"
+
+msgid "Single Window Mode"
+msgstr "Режим Единичен Екран"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Навигационна История на Допълнителните Бутони за Мишката"
+
+msgid "Save Each Scene on Quit"
+msgstr "Запазване на Всяка Сцена при Затваряне"
+
+msgid "Save on Focus Loss"
+msgstr "Запази при Загуба на Фокус"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Приеми Бутоните Cancel и OK в Диалогови Прозорци"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Показване на Вътрешни Грешки в Toast Нотификациите"
+
+msgid "Show Update Spinner"
+msgstr "Покажи Въртящ се Индикатор при Актуализация"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Режим на Ниско Натоварване на Процесора (µsec)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Режим на Ниско Натоварване на Процесора Нефокусиран (µsec)"
+
+msgid "Import Resources When Unfocused"
+msgstr "Импортирай Ресурси Когато не е Фокусиран"
+
+msgid "V-Sync Mode"
+msgstr "V-Sync Режим"
+
+msgid "Update Continuously"
+msgstr "Продължително Обновяване"
+
+msgid "Collapse Main Menu"
+msgstr "Сгъване на Главното Меню"
+
+msgid "Show Scene Tree Root Selection"
+msgstr "Покажи Селекцията на Root Дървото за Сцени"
+
+msgid "Derive Script Globals by Name"
+msgstr "Извличане на Глобални Променливи от Скрипт по Име"
+
+msgid "Docks"
+msgstr "Докове"
+
+msgid "Scene Tree"
+msgstr "Дърво на Сцената"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Попитай Преди да Отмениш Уникалното Име"
+
+msgid "Inspector"
+msgstr "Инспектор"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Макс. Брой Елементи на Страница от Масив Речник"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Покажи OpenType Функции от Ниско Ниво"
+
+msgid "Float Drag Speed"
+msgstr "Скорост на Съпротивление при Плуване"
+
+msgid "Integer Drag Speed"
+msgstr "Целочислена Скорост на Плъзгане"
+
+msgid "Nested Color Mode"
+msgstr "Вложен Цветови Режим"
+
+msgid "Delimitate All Container and Resources"
+msgstr "Ограничави Всички Контейнери и Ресурси"
+
+msgid "Default Property Name Style"
+msgstr "Стандартен Стил на Име на Променлива"
+
+msgid "Default Float Step"
+msgstr "Стандартна Стъпка на Плаващо Число"
+
+msgid "Disable Folding"
+msgstr "Изключи Сгъване"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "Автоматично Разгъвай Чужди Сцени"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "Промяна на Хоризонтален Вектор2"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "Редактиране на Хоризонтални Векторни Типове"
+
+msgid "Open Resources in Current Inspector"
+msgstr "Отвори Ресурси в Текущия Инспектор"
+
+msgid "Resources to Open in New Inspector"
+msgstr "Ресурси за Отваряне в Нов Инспектор"
+
+msgid "Default Color Picker Mode"
+msgstr "Стандартен Режим на Пипетка"
+
+msgid "Default Color Picker Shape"
+msgstr "Стандартна Форма на Пипетка"
+
+msgid "Color Picker Show Intensity"
+msgstr "Покажи Интензивност на Пипетката"
+
+msgid "Theme"
+msgstr "Тема"
+
+msgid "Follow System Theme"
+msgstr "Следвай Системната Тема"
+
+msgid "Style"
+msgstr "Стил"
+
+msgid "Color Preset"
+msgstr "Предварително Зададени Цветове"
+
+msgid "Spacing Preset"
+msgstr "Предварително Зададено Разстояние"
+
+msgid "Icon and Font Color"
+msgstr "Цвят на Икона и Шрифт"
+
+msgid "Base Color"
+msgstr "Основен Цвят"
+
+msgid "Accent Color"
+msgstr "Акцентен Цвят"
+
+msgid "Use System Accent Color"
+msgstr "Използвай Системен Акцентен Цвят"
+
+msgid "Contrast"
+msgstr "Контраст"
+
+msgid "Draw Extra Borders"
+msgstr "Рисуване на Допълнителни Рамки"
+
+msgid "Icon Saturation"
+msgstr "Насищане на Икона"
+
+msgid "Draw Relationship Lines"
+msgstr "Начертай Линии на Взаимоотношенията"
+
+msgid "Relationship Line Opacity"
+msgstr "Непрозрачност на Линията на Взаимоотношенията"
+
+msgid "Border Size"
+msgstr "Размер на Границата"
+
+msgid "Corner Radius"
+msgstr "Радиус на Ъгъла"
+
+msgid "Base Spacing"
+msgstr "Основно Разстояние"
+
+msgid "Additional Spacing"
+msgstr "Допълнително Разстояние"
+
+msgid "Custom Theme"
+msgstr "Персонализирана Тема"
+
+msgid "Touchscreen"
+msgstr "Сензорен Екран"
+
+msgid "Enable Touch Optimizations"
+msgstr "Активирай Оптимизации за Докосване"
+
+msgid "Scale Gizmo Handles"
+msgstr "Мащабирай Gizmo Дръжките"
+
+msgid "Touch Actions Panel"
+msgstr "Панел за Действия на Докосване"
+
+msgid "Scene Tabs"
+msgstr "Раздели на Сцени"
+
+msgid "Display Close Button"
+msgstr "Покажи Бутона за Затваряне"
+
+msgid "Show Thumbnail on Hover"
+msgstr "Покажи Миниатюра при Навеждане"
+
+msgid "Maximum Width"
+msgstr "Макс. Ширина"
+
+msgid "Show Script Button"
+msgstr "Покажи Скрипт Бутона"
+
+msgid "Restore Scenes on Load"
+msgstr "Възстанови Сцени при Зареждане"
+
+msgid "Auto Select Current Scene File"
+msgstr "Автоматично Избиране на Текущен Сценови Файл"
+
+msgid "Multi Window"
+msgstr "Мулти Прозорец"
+
+msgid "Restore Windows on Load"
+msgstr "Възстанови Прозорци при Зареждане"
+
+msgid "Maximize Window"
+msgstr "Максимизирай Прозорец"
+
+msgid "FileSystem"
+msgstr "FileSystem"
+
+msgid "External Programs"
+msgstr "Външни Програми"
+
+msgid "Raster Image Editor"
+msgstr "Редактор на Растерни Изображения"
+
+msgid "Vector Image Editor"
+msgstr "Редактор на Векторни Изображения"
+
+msgid "Audio Editor"
+msgstr "Редактор на Аудио"
+
+msgid "3D Model Editor"
+msgstr "Редактор на 3D Модели"
+
+msgid "Terminal Emulator"
+msgstr "Емулатор на Терминал"
+
+msgid "Terminal Emulator Flags"
+msgstr "Флагове за Емулатор на Терминал"
+
+msgid "Directories"
+msgstr "Директории"
+
+msgid "Autoscan Project Path"
+msgstr "Автоматично Сканиране на Пътя до Проекта"
+
+msgid "Default Project Path"
+msgstr "Стандартен Път До Проекта"
+
+msgid "On Save"
+msgstr "При Запазване"
+
+msgid "Compress Binary Resources"
+msgstr "Компресирай Бинарни Ресурси"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Запази Безопасно в Архива, След Което Преименувай"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "Предупреди при Запазване на Големи Текстови Ресурси"
+
+msgid "File Server"
+msgstr "Файлов Сървър"
+
+msgid "Port"
+msgstr "Порт"
+
+msgid "Password"
+msgstr "Парола"
+
+msgid "File Dialog"
+msgstr "Диалогов Прозорец за Файлове"
+
+msgid "Show Hidden Files"
+msgstr "Покажи Скрити Файлове"
+
+msgid "Display Mode"
+msgstr "Режим на Дисплея"
+
+msgid "Thumbnail Size"
+msgstr "Размер на Миниатюрата"
+
+msgid "Quick Open Dialog"
+msgstr "Диалогов Прозорец „Бързо Отваряне“"
+
+msgid "Max Results"
+msgstr "Макс. Резултати"
+
+msgid "Instant Preview"
+msgstr "Незабавен Преглед"
+
+msgid "Show Search Highlight"
+msgstr "Покажи Подчертаване при Търсене"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Включи Fuzzy Съвпадение"
+
+msgid "Max Fuzzy Misses"
+msgstr "Макс. Fuzzy Пропускания"
+
+msgid "Include Addons"
+msgstr "Включи Добавки"
+
+msgid "Default Display Mode"
+msgstr "Стандартен Режим на Дисплей"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "Blender Path"
+msgstr "Път към Blender"
+
+msgid "RPC Port"
+msgstr "RPC Порт"
+
+msgid "RPC Server Uptime"
+msgstr "Време на Работа на RPC Сървъра"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "Път към FBX2glTF"
+
+msgid "Tools"
+msgstr "Инструменти"
+
+msgid "OIDN"
+msgstr "OIDN"
+
+msgid "OIDN Denoise Path"
+msgstr "OIDN Път за Отстраняване на Шум"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "Попитай Преди Изтриване на Свързани Анимационни Пътечки"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "Стартиране на Диалоговия Прозорец „Създаване“ в Разгънат Вид"
+
+msgid "Auto Expand to Selected"
+msgstr "Автоматично Разширяване до Избраното"
+
+msgid "Center Node on Reparent"
+msgstr "Центрирай Възел при Промяна на Родител"
+
+msgid "Hide Filtered Out Parents"
+msgstr "Скрий Филтрираните Родители"
+
+msgid "Accessibility Warnings"
+msgstr "Предупреждения за Достъпност"
+
+msgid "Always Show Folders"
+msgstr "Винаги Показвай Папки"
+
+msgid "TextFile Extensions"
+msgstr "TextFile Разширения"
+
+msgid "Other File Extensions"
+msgstr "Други Файлови Разширения"
+
+msgid "Property Editor"
+msgstr "Редактор на Свойства"
+
+msgid "Auto Refresh Interval"
+msgstr "Интервал на Автоматично Обновяване"
+
+msgid "Subresource Hue Tint"
+msgstr "Нюанс на Цветовия Тон на Субресурс"
+
+msgid "Text Editor"
+msgstr "Редактор на Текст"
+
+msgid "Color Theme"
+msgstr "Цветова Тема"
+
+msgid "Highlighting"
+msgstr "Подчертаване"
+
+msgid "Comment Markers"
+msgstr "Маркери за Коментари"
+
+msgid "Critical List"
+msgstr "Лист на Критически Събития"
+
+msgid "Warning List"
+msgstr "Лист на Предупредителни Събития"
+
+msgid "Notice List"
+msgstr "Лист на Уведомления"
+
+msgid "Appearance"
+msgstr "Изглед"
+
+msgid "Enable Inline Color Picker"
+msgstr "Включи Вграден Избор на Цвят"
+
+msgid "Caret"
+msgstr "Карет"
+
+msgid "Caret Blink"
+msgstr "Премигване на Карет"
+
+msgid "Caret Blink Interval"
+msgstr "Интервал за Премигване на Карет"
+
+msgid "Highlight Current Line"
+msgstr "Подчертай Сегашната Линия"
+
+msgid "Highlight All Occurrences"
+msgstr "Подчертай Всички Съвпадения"
+
+msgid "Guidelines"
+msgstr "Указания"
+
+msgid "Show Line Length Guidelines"
+msgstr "Покажи Указания за Дължината на Линията"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "Насоки за Дължината на Реда на Мека Колона"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "Насоки за Дължината на Реда на Твърда Колона"
+
+msgid "Gutters"
+msgstr "Улуци"
+
+msgid "Show Line Numbers"
+msgstr "Покажи Номера на Редовете"
+
+msgid "Line Numbers Zero Padded"
+msgstr "Номера на Редове с Добавени Нули"
+
+msgid "Highlight Type Safe Lines"
+msgstr "Подчертай Типово Безопасни Линии"
+
+msgid "Show Info Gutter"
+msgstr "Покажи Информация за Улея"
+
+msgid "Minimap"
+msgstr "Minimap"
+
+msgid "Show Minimap"
+msgstr "Покажи Minimap"
+
+msgid "Minimap Width"
+msgstr "Ширина на Minimap-а"
+
+msgid "Lines"
+msgstr "Редове"
+
+msgid "Code Folding"
+msgstr "Сгъване на Код"
+
+msgid "Word Wrap"
+msgstr "Преноси Думи на Нов Ред"
+
+msgid "Autowrap Mode"
+msgstr "Режим на Автоматично Пренасяне"
+
+msgid "Whitespace"
+msgstr "Празно Място"
+
+msgid "Draw Tabs"
+msgstr "Раздел на Рисуване"
+
+msgid "Draw Spaces"
+msgstr "Пространство на Рисуване"
+
+msgid "Line Spacing"
+msgstr "Разстояние Между Редовете"
+
+msgid "Behavior"
+msgstr "Държание"
+
+msgid "Empty Selection Clipboard"
+msgstr "Изчисти Избраното от Клипборда"
+
+msgid "Move Caret on Right Click"
+msgstr "Помести Карет при Дясно Щракване"
+
+msgid "Scroll Past End of File"
+msgstr "Превърти до Края на Файла"
+
+msgid "Smooth Scrolling"
+msgstr "Плавно Превъртане"
+
+msgid "V Scroll Speed"
+msgstr "Вертикална Скорост на Превъртане"
+
+msgid "Drag and Drop Selection"
+msgstr "Избор чрез Плъзгане и Пускане"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "Остани в Редактор на Скрипт при Избор на Възел"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "Отвори Скрипт при Свързване на Сигнал към Съществуващ Метод"
+
+msgid "Use Default Word Separators"
+msgstr "Използвай Стандарни Разделители на Думи"
+
+msgid "Use Custom Word Separators"
+msgstr "Ползвай Персонализиран Разделител на Думи"
+
+msgid "Custom Word Separators"
+msgstr "Персонализиран Разделител на Думи"
+
+msgid "Indent"
+msgstr "Отстъп"
+
+msgid "Auto Indent"
+msgstr "Автоматично Отстъпване"
+
+msgid "Indent Wrapped Lines"
+msgstr "Отстъпване на Обхванати Редове"
+
+msgid "Files"
+msgstr "Файлове"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "Изрежи Празните Места при Запазване"
+
+msgid "Trim Final Newlines on Save"
+msgstr "Изрежи Посления Нов Ред при Запазване"
+
+msgid "Autosave Interval Secs"
+msgstr "Интервал на Автоматично Запазване в Секунди"
+
+msgid "Restore Scripts on Load"
+msgstr "Възстанови Скрипт при Зареждане"
+
+msgid "Convert Indent on Save"
+msgstr "Конвертирай Отстъпване при Запазване"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "Автоматично Презареди Скриптове при Външна Промяна"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "Автоматично Презареди и Анализирай Скриптове при Външна Промяна"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "Отвори Доминиращ Скрипт при Промяна на Сцената"
+
+msgid "Drop Preload Resources as UID"
+msgstr "Изтрий Предварително Заредени Ресурси Като UID"
+
+msgid "Documentation"
+msgstr "Документация"
+
+msgid "Enable Tooltips"
+msgstr "Включи Подсказки"
+
+msgid "Script List"
+msgstr "Лист от Скриптове"
+
+msgid "Show Members Overview"
+msgstr "Покажи Общ Преглед на Членовете"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "Сортирай Членовете по Азбучен Ред"
+
+msgid "Script Temperature Enabled"
+msgstr "Включена Температура на Скриптове"
+
+msgid "Script Temperature History Size"
+msgstr "Размер на Историята на Температурата на Скриптове"
+
+msgid "Highlight Scene Scripts"
+msgstr "Подчертай Сценови Скриптове"
+
+msgid "Group Help Pages"
+msgstr "Групирай Страниците за Помощ"
+
+msgid "Sort Scripts By"
+msgstr "Сортирай Скриптове По"
+
+msgid "List Script Names As"
+msgstr "Подреди Имена на Скриптове Като"
+
+msgid "External"
+msgstr "Външен"
+
+msgid "Exec Path"
+msgstr "Път на Изпълнение"
+
+msgid "Exec Flags"
+msgstr "Флагове за Изпълнение"
+
+msgid "Completion"
+msgstr "Завършване"
+
+msgid "Idle Parse Delay"
+msgstr "Забавяне при Неактивно Разчитане"
+
+msgid "Idle Parse Delay with Errors Found"
+msgstr "Забавяне при Неактивно Разчитане с Намерени Грешки"
+
+msgid "Auto Brace Complete"
+msgstr "Автоматичното Сковане е Завършено"
+
+msgid "Code Complete Enabled"
+msgstr "Включено Довършване на Код"
+
+msgid "Code Complete Delay"
+msgstr "Забяване при Довършване на Код"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "Поставете Намек за Callhint под Текущия Ред"
+
+msgid "Complete File Paths"
+msgstr "Довърши Файловите Пътища"
+
+msgid "Add Type Hints"
+msgstr "Добави Намеци за Типове"
+
+msgid "Add String Name Literals"
+msgstr "Добави Литерали на Имена на Низове"
+
+msgid "Add Node Path Literals"
+msgstr "Добави Литерали на Пътища на Възели"
+
+msgid "Use Single Quotes"
+msgstr "Използвай Единични Кавички"
+
+msgid "Colorize Suggestions"
+msgstr "Предложения за Оцветяване"
+
+msgid "Use External Editor"
+msgstr "Ползвай Външен Редактор"
+
+msgid "Help"
+msgstr "Помощ"
+
+msgid "Show Help Index"
+msgstr "Покажи Помощния Индекс"
+
+msgid "Help Font Size"
+msgstr "Размер на Шрифта на Помощта"
+
+msgid "Help Source Font Size"
+msgstr "Размер на Шрифта на Източника на Помощта"
+
+msgid "Help Title Font Size"
+msgstr "Размер на Шрифта на Заглавие на Помощта"
+
+msgid "Class Reference Examples"
+msgstr "Примери за Референции на Класове"
+
+msgid "Sort Functions Alphabetically"
+msgstr "Сортирай Функции Алфабетично"
+
+msgid "Grid Map"
+msgstr "Мрежова Карта"
+
+msgid "Pick Distance"
+msgstr "Избери Разстояние"
+
+msgid "Preview Size"
+msgstr "Размер на Предварителния Преглед"
+
+msgid "Primary Grid Color"
+msgstr "Основен Мрежов Цвят"
+
+msgid "Secondary Grid Color"
+msgstr "Вторичен Мрежов Цвят"
+
+msgid "Selection Box Color"
+msgstr "Цвят на Маркиращата Кутия"
+
+msgid "Active Selection Box Color"
+msgstr "Активен Цвят на Маркиращата Кутия"
+
+msgid "Instantiated"
+msgstr "Инстанцииран"
+
+msgid "Joint"
+msgstr "Става"
+
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Stream Player 3D"
+msgstr "Стриймвай Player 3D"
+
+msgid "Camera"
+msgstr "Kamera"
+
+msgid "Decal"
+msgstr "Декоративна Проекция"
+
+msgid "Fog Volume"
+msgstr "Обем на Мъглата"
+
+msgid "Particles"
+msgstr "Частици"
+
+msgid "Particle Attractor"
+msgstr "Атрактор на Частици"
+
+msgid "Particle Collision"
+msgstr "Сблъсък на Частици"
+
+msgid "Joint Body A"
+msgstr "Става на Тяло A"
+
+msgid "Joint Body B"
+msgstr "Става на Тяло B"
+
+msgid "Lightmap Lines"
+msgstr "Линии на Светлинната Карта"
+
+msgid "Lightprobe Lines"
+msgstr "Линии на Светлинни Сонди"
+
+msgid "Reflection Probe"
+msgstr "Отразяваща Сонда"
+
+msgid "Visibility Notifier"
+msgstr "Уведомител за Видимост"
+
+msgid "Voxel GI"
+msgstr "Глобално Осветяване на Воксели"
+
+msgid "Path Tilt"
+msgstr "Наклон на Пътя"
+
+msgid "Skeleton"
+msgstr "Скелет"
+
+msgid "Selected Bone"
+msgstr "Избрана Кост"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "GridMap Grid"
+msgstr "GridMap Мрежа"
+
+msgid "Spring Bone Joint"
+msgstr "Пружинена Костна Става"
+
+msgid "Spring Bone Collision"
+msgstr "Сблъсък на Пружинена Кост"
+
+msgid "Spring Bone Inside Collision"
+msgstr "Вътрешен Сблъсък на Пружинена Кост"
+
+msgid "IK Chain"
+msgstr "IK Верига"
+
+msgid "Gizmo Settings"
+msgstr "Gizmo Настройки"
+
+msgid "Bone Axis Length"
+msgstr "Дължина на Ос на Кост"
+
+msgid "Bone Shape"
+msgstr "Форма на Кост"
+
+msgid "Path3D Tilt Disk Size"
+msgstr "Path3D Размер на Диска на Наклон"
+
+msgid "Lightmap GI Probe Size"
+msgstr "Размер на Сондата на Глобално Осветена Светлинна Карта"
+
+msgid "Primary Grid Steps"
+msgstr "Освновни Стъпки на Мрежата"
+
+msgid "Grid Size"
+msgstr "Размер на Мрежата"
+
+msgid "Grid Division Level Max"
+msgstr "Макс. Ниво на Разделяне на Мрежата"
+
+msgid "Grid Division Level Min"
+msgstr "Мин. Ниво на Разделяне на Мрежата"
+
+msgid "Grid Division Level Bias"
+msgstr "Пристрастение на Разделяне на Мрежата"
+
+msgid "Grid XZ Plane"
+msgstr "Мрежа XZ Равнина"
+
+msgid "Grid XY Plane"
+msgstr "Мрежа XY Равнина"
+
+msgid "Grid YZ Plane"
+msgstr "Мрежа YZ Равнина"
+
+msgid "Default FOV"
+msgstr "Стандартно FOV"
+
+msgid "Default Z Near"
+msgstr "Стандартен Близък Z"
+
+msgid "Default Z Far"
+msgstr "Стандарен Далечен Z"
+
+msgid "Invert X Axis"
+msgstr "Инвертирай X Оста"
+
+msgid "Invert Y Axis"
+msgstr "Инвертирай Y Оста"
+
+msgid "Navigation Scheme"
+msgstr "Навигационна Схема"
+
+msgid "Orbit Mouse Button"
+msgstr "Бутон на Мишката Orbit"
+
+msgid "Pan Mouse Button"
+msgstr "Бутон на Панелната Мишка"
+
+msgid "Zoom Mouse Button"
+msgstr "Бутон на Мишката за Мащабиране"
+
+msgid "Zoom Style"
+msgstr "Стил на Мащабиране"
+
+msgid "Emulate Numpad"
+msgstr "Емулирай Цифровия Блок"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "Емулирай 3-Бутонна Мишка"
+
+msgid "Warped Mouse Panning"
+msgstr "Панорамиране на Изкривена Мишка"
+
+msgid "Navigation Feel"
+msgstr "Усещане за Навигация"
+
+msgid "Orbit Sensitivity"
+msgstr "Чувствителност на Orbit Мишката"
+
+msgid "Translation Sensitivity"
+msgstr "Чувствителност на Превода"
+
+msgid "Orbit Inertia"
+msgstr "Инерция на Orbit Мишката"
+
+msgid "Translation Inertia"
+msgstr "Инерция на Превеждането"
+
+msgid "Zoom Inertia"
+msgstr "Инерция на Мащабирането"
+
+msgid "Angle Snap Threshold"
+msgstr "Праг на Ъглова Фиксация"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "Показване на Инструмент за Ротация на Прозореца"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "Показване на Инструмент за Навигация на Прозореца"
+
+msgid "Freelook"
+msgstr "Свободен Поглед"
+
+msgid "Freelook Navigation Scheme"
+msgstr "Свободен Поглед Навигационна Схема"
+
+msgid "Freelook Sensitivity"
+msgstr "Свободен Поглед Чувствителност"
+
+msgid "Freelook Inertia"
+msgstr "Свободен Поглед Инерция"
+
+msgid "Freelook Base Speed"
+msgstr "Свободен Поглед Базова Скорост"
+
+msgid "Freelook Activation Modifier"
+msgstr "Свободен Поглед Модификатор за активиране"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "Свободен Поглед Връзка за Бързо Мащабиране"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Размер на Манипулиращ Инструмент"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Непрозрачност на Манипулиращ Инструмент"
+
+msgid "Grid Color"
+msgstr "Цвят на Мрежа"
+
+msgid "Guides Color"
+msgstr "Цвят на Указания"
+
+msgid "Smart Snapping Line Color"
+msgstr "Цвят за Линията за Умно Закрепване"
+
+msgid "Bone Width"
+msgstr "Ширина на Кост"
+
+msgid "Bone Color 1"
+msgstr "Цвят на Кост 1"
+
+msgid "Bone Color 2"
+msgstr "Цвят на Кост 2"
+
+msgid "Bone Selected Color"
+msgstr "Избран Цвят на Кост"
+
+msgid "Bone IK Color"
+msgstr "IK Цвят на Кост"
+
+msgid "Bone Outline Color"
+msgstr "Цвят на Контурите на Кост"
+
+msgid "Bone Outline Size"
+msgstr "Размер на Контурите на Кост"
+
+msgid "Viewport Border Color"
+msgstr "Цвят на Рамката на Прозорец"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Използвай Цели Числа за Мащабиране по Подразбиране"
+
+msgid "Zoom Speed Factor"
+msgstr "Фактор на Бързо Мащабиране"
+
+msgid "Ruler Width"
+msgstr "Ширина на Линийка"
+
+msgid "Bone Mapper"
+msgstr "Картограф на Кости"
+
+msgid "Handle Colors"
+msgstr "Цветове на Дръжките"
+
+msgid "Unset"
+msgstr "Незададен"
+
+msgid "Set"
+msgstr "Зададен"
+
+msgid "Missing"
+msgstr "Липсващ"
+
+msgid "Error"
+msgstr "Грешка"
+
+msgid "Panning"
+msgstr "Панорамиране"
+
+msgid "2D Editor Panning Scheme"
+msgstr "Панорамна Схема на 2D Редактора"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Панорамна Схема на Подредакторите"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Панорамна Схема на Анимационните Редактори"
+
+msgid "Simple Panning"
+msgstr "Елементарно Панорамиране"
+
+msgid "2D Editor Pan Speed"
+msgstr "Скорост на Панорама в 2D Редактора"
+
+msgid "Tiles Editor"
+msgstr "Редактор на Плочки"
+
+msgid "Display Grid"
+msgstr "Мрежда на Дисплея"
+
+msgid "Highlight Selected Layer"
+msgstr "Подчертай Избрания Слой"
+
+msgid "Polygon Editor"
+msgstr "Редактор на Полигони"
+
+msgid "Point Grab Radius"
+msgstr "Радиус на Грабване на Точки"
+
+msgid "Show Previous Outline"
+msgstr "Покажи Предишния Контур"
+
+msgid "Auto Bake Delay"
+msgstr "Забавяне на Автоматично Запичане"
+
+msgid "Default Animation Step"
+msgstr "Стандартна Анимационна Стъпка"
+
+msgid "Default FPS Mode"
+msgstr "Стандартен Режим на FPS"
+
+msgid "Default FPS Compatibility"
+msgstr "Стандартна Съвместимост на FPS"
+
+msgid "Autorename Animation Tracks"
+msgstr "Авто-преименуване на Анимационни Пътечки"
+
+msgid "Confirm Insert Track"
+msgstr "Потвърди Вмъкване на Пътечка"
+
+msgid "Default Create Bezier Tracks"
+msgstr "Стандартно Създаване на Безие Пътечки"
+
+msgid "Default Create Reset Tracks"
+msgstr "Стандартно Създаване на Нулирани Пътечки"
+
+msgid "Insert at Current Time"
+msgstr "Вмъкни в Текущото Време"
+
+msgid "Onion Layers Past Color"
+msgstr "Минал Цвят на Слоеве Лук"
+
+msgid "Onion Layers Future Color"
+msgstr "Бъдещ Цвят на Слоеве Лук"
+
+msgid "Shader Editor"
+msgstr "Редактор на Шейдъри"
+
+msgid "Restore Shaders on Load"
+msgstr "Възстанови Шейдъри при Зареждане"
+
+msgid "Visual Editors"
+msgstr "Визуални Редактори"
+
+msgid "Minimap Opacity"
+msgstr "Непрозрачност на Minimap-a"
+
+msgid "Lines Curvature"
+msgstr "Кривина на Линиите"
+
+msgid "Grid Pattern"
+msgstr "Мрежови Шаблон"
+
+msgid "Visual Shader"
+msgstr "Визуален Шейдър"
+
+msgid "Port Preview Size"
+msgstr "Размер на Предварителния Преглед на Порт"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
+msgid "Window Placement"
+msgstr "Разположение на Прозорец"
+
+msgid "Rect"
+msgstr "Rect"
+
+msgid "Rect Custom Position"
+msgstr "Rect Персонализирана Позиция"
+
+msgid "Screen"
+msgstr "Екран"
+
+msgid "Android Window"
+msgstr "Android Прозорец"
+
+msgid "Game Embed Mode"
+msgstr "Режим на Вградена Игра"
+
+msgid "Auto Save"
+msgstr "Автоматично Запазване"
+
+msgid "Save Before Running"
+msgstr "Запази Преди Изпълнение"
+
+msgid "Bottom Panel"
+msgstr "Долен Панел"
+
+msgid "Action on Play"
+msgstr "Действие при Възпроизвеждане"
+
+msgid "Action on Stop"
+msgstr "Действие при Спиране"
+
+msgid "Output"
+msgstr "Изход"
+
+msgid "Font Size"
+msgstr "Размер на Шрифта"
+
+msgid "Always Clear Output on Play"
+msgstr "Винаги Изчиствай Изход при Въпроизвеждане"
+
+msgid "Max Lines"
+msgstr "Макс. Редове"
+
+msgid "Platforms"
+msgstr "Платформи"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
+msgid "Prefer Wayland"
+msgstr "Предпочитай Wayland"
+
+msgid "Network Mode"
+msgstr "Режим на Мрежа"
+
+msgid "HTTP Proxy"
+msgstr "HTTP Прокси"
+
+msgid "Host"
+msgstr "Хост"
+
+msgid "Editor TLS Certificates"
+msgstr "TLS Сертификати на Редактора"
+
+msgid "Enable TLS V 1"
+msgstr "Включи TLS Версия 1"
+
+msgid "Remote Host"
+msgstr "Отдалечен Хост"
+
+msgid "Debugger"
+msgstr "Дебъгер"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматично Превключи към Отдалечено Дърво на Сцена"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Автоматично Превключи към Stack Trace"
+
+msgid "Max Node Selection"
+msgstr "Макс. Избор на Възели"
+
+msgid "Profiler Frame History Size"
+msgstr "Профайлър Размер на Историята на Кадрита"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Профайлър Макс. Функции на Кадрите"
+
+msgid "Profiler Target FPS"
+msgstr "Профайлър Целеви FPS"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Интервал на Обновление на Отдалечено Дърво на Сцена"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Интервал на Обновяване на Отдалечена Проверка"
+
+msgid "Profile Native Calls"
+msgstr "Профилиране на Извиквания към Родния Код"
+
+msgid "Username"
+msgstr "Потребителско Име"
+
+msgid "SSH Public Key Path"
+msgstr "Път до Публичния SSH Ключ"
+
+msgid "SSH Private Key Path"
+msgstr "Път до Частния SSH Ключ"
+
+msgid "Input"
+msgstr "Вход"
+
+msgid "Buffering"
+msgstr "Буфериране"
+
+msgid "Agile Event Flushing"
+msgstr "Гъвкаво Изчистване на Събития"
+
+msgid "Project Manager"
+msgstr "Управление на Проектите"
+
+msgid "Sorting Order"
+msgstr "Ред на Сортиране"
+
+msgid "Directory Naming Convention"
+msgstr "Конвенция за Именуване на Директории"
+
+msgid "Default Renderer"
+msgstr "Стандартен Рендерър"
+
+msgid "Connection Colors"
+msgstr "Цветове на Връзки"
+
+msgid "Scalar Color"
+msgstr "Цвят на Скалар"
+
+msgid "Vector2 Color"
+msgstr "Цвят на Вектор2"
+
+msgid "Vector 3 Color"
+msgstr "Цвят на Вектор 3"
+
+msgid "Vector 4 Color"
+msgstr "Цвят на Вектор 4"
+
+msgid "Boolean Color"
+msgstr "Цвят на Булева"
+
+msgid "Transform Color"
+msgstr "Цвят на Трансформ"
+
+msgid "Sampler Color"
+msgstr "Цвят на Самплер"
+
+msgid "Category Colors"
+msgstr "Цветове на Категории"
+
+msgid "Output Color"
+msgstr "Цвят на Изход"
+
+msgid "Color Color"
+msgstr "Цвят на Цвят"
+
+msgid "Conditional Color"
+msgstr "Условен Цвят"
+
+msgid "Input Color"
+msgstr "Цвят на Вход"
+
+msgid "Textures Color"
+msgstr "Цвят на Текстури"
+
+msgid "Utility Color"
+msgstr "Цвят на Инструменти"
+
+msgid "Vector Color"
+msgstr "Цвят на Вектор"
+
+msgid "Special Color"
+msgstr "Специален Цвят"
+
+msgid "Particle Color"
+msgstr "Цвят на Частица"
+
+msgid "Flush stdout on Print"
+msgstr "Изчистване на stdout при Печатане"
+
+msgid "Low Processor Mode"
+msgstr "Режим на Ниска Производителност на Процесора"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "Отпечатай FPS"
+
+msgid "Print GPU Profile"
+msgstr "Отпечатай GPU Профил"
+
+msgid "Verbose stdout"
+msgstr "Подробен stdout"
+
+msgid "Physics Interpolation"
+msgstr "Интерполация на Физика"
+
+msgid "Enable Warnings"
+msgstr "Включи Предупреждения"
+
+msgid "Max Chars per Second"
+msgstr "Макс. Символа на Секунда"
+
+msgid "Max Queued Messages"
+msgstr "Макс. Съобщения в Опашката"
+
+msgid "Max Errors per Second"
+msgstr "Макс. Грешки на Секунда"
+
+msgid "Max Warnings per Second"
+msgstr "Макс. Предупреждения на Секунда"
+
+msgid "File Logging"
+msgstr "Логване на Файлове"
+
+msgid "Enable File Logging"
+msgstr "Включи Логване на Файлове"
+
+msgid "Log Path"
+msgstr "Път на Лог"
+
+msgid "Max Log Files"
+msgstr "Макс. Лог Файлове"
+
+msgid "Driver"
+msgstr "Драйвър"
+
+msgid "Fallback to Vulkan"
+msgstr "Използвай Vulkan като Резерва"
+
+msgid "Fallback to D3D12"
+msgstr "Използвай D3D12 като Резерва"
+
+msgid "Fallback to OpenGL 3"
+msgstr "Използвай OpenGL 3 като Резерва"
+
+msgid "GL Compatibility"
+msgstr "Съвместимост с GL"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Изключи Нишкова Оптимизация"
+
+msgid "Fallback to Angle"
+msgstr "Използвай Angle като Резерва"
+
+msgid "Fallback to Native"
+msgstr "Използвай Роден като Резерва"
+
+msgid "Fallback to GLES"
+msgstr "Използвай GLES като Резерва"
+
+msgid "Force Angle on Devices"
+msgstr "Принуди Angle на Устройства"
+
+msgid "Renderer"
+msgstr "Рендерер"
+
+msgid "Rendering Method"
+msgstr "Режим на Рендериране"
+
+msgid "DPI"
+msgstr "DPI"
+
+msgid "Allow hiDPI"
+msgstr "Позволи hiDPI"
+
+msgid "Per Pixel Transparency"
+msgstr "Прозрачност на Пиксел"
+
+msgid "Allowed"
+msgstr "Позволен"
+
+msgid "Load Shell Environment"
+msgstr "Зареждане на Shell Среда"
+
+msgid "Threads"
+msgstr "Нишки"
+
+msgid "Display Server"
+msgstr "Сървър на Дисплея"
+
+msgid "Handheld"
+msgstr "Преносим"
+
+msgid "Orientation"
+msgstr "Ориентация"
+
+msgid "Output Latency"
+msgstr "Латентност на Изхода"
+
+msgid "Frame Delay Msec"
+msgstr "Забавяне на Кадър в ms"
+
+msgid "Allow High Refresh Rate"
+msgstr "Позволи Висока Честота на Опресняване"
+
+msgid "Hide Home Indicator"
+msgstr "Скриване на Индикатора за Начало"
+
+msgid "Hide Status Bar"
+msgstr "Скриване на Лентата за Състояние"
+
+msgid "Suppress UI Gesture"
+msgstr "Потискане на Жестове на Потребителския Интерфейс"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "Default Action Map"
+msgstr "Стандартна Карта за Действия"
+
+msgid "Form Factor"
+msgstr "Форм Фактор"
+
+msgid "View Configuration"
+msgstr "Виж Конфигурация"
+
+msgid "Reference Space"
+msgstr "Референтно Пространство"
+
+msgid "Environment Blend Mode"
+msgstr "Режим на Смесване на Околната Среда"
+
+msgid "Foveation Level"
+msgstr "Ниво на Фокусиране"
+
+msgid "Foveation Dynamic"
+msgstr "Изпрати Буфер за Дълбочина"
+
+msgid "Submit Depth Buffer"
+msgstr "Изпрати Буфер за Дълбочина"
+
+msgid "Startup Alert"
+msgstr "Сигнал при Стартиране"
+
+msgid "Extensions"
+msgstr "Добавки"
+
+msgid "Debug Utils"
+msgstr "Инструменти за Дебъгване"
+
+msgid "Debug Message Types"
+msgstr "Типове Съобщения за Дебъгване"
+
+msgid "Frame Synthesis"
+msgstr "Синтез на Кадър"
+
+msgid "Hand Tracking"
+msgstr "Проследяване на Ръцете"
+
+msgid "Hand Tracking Unobstructed Data Source"
+msgstr "Проследяване на Ръцете: Безпрепятствен Източник на Данни"
+
+msgid "Hand Tracking Controller Data Source"
+msgstr "Проследяване на Ръцете: Източник на Данни за Контролер"
+
+msgid "Hand Interaction Profile"
+msgstr "Профил на Взаимодействието с Ръцете"
+
+msgid "Spatial Entity"
+msgstr "Пространствена Единица"
+
+msgid "Enable Spatial Anchors"
+msgstr "Включи Пространствени Котви"
+
+msgid "Enable Persistent Anchors"
+msgstr "Включи Постоянни Котви"
+
+msgid "Enable Builtin Anchor Detection"
+msgstr "Включи Вградено Откриване на Котва"
+
+msgid "Enable Plane Tracking"
+msgstr "Включи Проследяване на Равнина"
+
+msgid "Enable Builtin Plane Detection"
+msgstr "Включи Вградено Проследяване на Равнина"
+
+msgid "Enable Marker Tracking"
+msgstr "Включи Проследяване на Маркери"
+
+msgid "Enable Builtin Marker Tracking"
+msgstr "Включи Вградено Проследяване на Маркери"
+
+msgid "Aruco Dict"
+msgstr "Aruco Речник"
+
+msgid "April Tag Dict"
+msgstr "April Речник на Етикети"
+
+msgid "Eye Gaze Interaction"
+msgstr "Взаимодействие чрез Поглед"
+
+msgid "Render Model"
+msgstr "Режим на Рендър"
+
+msgid "Binding Modifiers"
+msgstr "Свързващи Модификатори"
+
+msgid "Analog Threshold"
+msgstr "Аналогов Праг"
+
+msgid "Dpad Binding"
+msgstr "Свързване на Dpad"
+
+msgid "Boot Splash"
+msgstr "Графично Изобразяване при Стартиране"
+
+msgid "BG Color"
+msgstr "Цвят на Фон"
+
+msgid "Pen Tablet"
+msgstr "Графичен Таблет"
+
+msgid "Environment"
+msgstr "Околна Среда"
+
+msgid "Defaults"
+msgstr "Стандартни"
+
+msgid "Default Clear Color"
+msgstr "Стандартен Чист Цвят"
+
+msgid "Icon"
+msgstr "Иконка"
+
+msgid "macOS Native Icon"
+msgstr "Икона на macOS"
+
+msgid "Windows Native Icon"
+msgstr "Икона на Windows"
+
+msgid "Text Driver"
+msgstr "Текстов Драйвер"
+
+msgid "Search in File Extensions"
+msgstr "Търси във Файловите Добавки"
+
+msgid "Mouse Cursor"
+msgstr "Курсор на Мишката"
+
+msgid "Custom Image"
+msgstr "Персонализирано Изображение"
+
+msgid "Custom Image Hotspot"
+msgstr "Персонализирана Гореща Точка на Изображението"
+
+msgid "Tooltip Position Offset"
+msgstr "Отместване на Позицията на Подсказката"
+
+msgid "Show Image"
+msgstr "Покажи Изображение"
+
+msgid "Stretch Mode"
+msgstr "Режим на Разтягане"
+
+msgid "Use Filter"
+msgstr "Използвай Филтър"
+
+msgid "Image"
+msgstr "Изображение"
+
+msgid "Minimum Display Time"
+msgstr "Минимум Време на Показване"
+
+msgid "Dotnet"
+msgstr "Dotnet"
+
+msgid "Project"
+msgstr "Проект"
+
+msgid "Assembly Name"
+msgstr "Име на Assembly"
+
+msgid "Solution Directory"
+msgstr "Главна Директория"
+
+msgid "Assembly Reload Attempts"
+msgstr "Опити за Презареждане на Assembly"
+
+msgid "Time"
+msgstr "Време"
+
+msgid "Physics Process"
+msgstr "Физичен Процес"
+
+msgid "Navigation Process"
+msgstr "Процес на Навигация"
+
+msgid "Static"
+msgstr "Статичен"
+
+msgid "Static Max"
+msgstr "Макс. Статичен"
+
+msgid "Msg Buf Max"
+msgstr "Макс. Буфер на Съобщенията"
+
+msgid "Object"
+msgstr "Обект"
+
+msgid "Objects"
+msgstr "Обекти"
+
+msgid "Resources"
+msgstr "Ресурси"
+
+msgid "Orphan Nodes"
+msgstr "Сираци Възли"
+
+msgid "Raster"
+msgstr "Растер"
+
+msgid "Total Objects Drawn"
+msgstr "Общо Нарисувани Обекти"
+
+msgid "Total Primitives Drawn"
+msgstr "Общо Нарисувани Примитиви"
+
+msgid "Total Draw Calls"
+msgstr "Общо Повиквания за Рисуване"
+
+msgid "Video"
+msgstr "Видео"
+
+msgid "Video Mem"
+msgstr "Видео Памет"
+
+msgid "Texture Mem"
+msgstr "Текстура Памет"
+
+msgid "Buffer Mem"
+msgstr "Буферна Памет"
+
+msgid "Physics 2D"
+msgstr "Physics 2D"
+
+msgid "Active Objects"
+msgstr "Активни Обекти"
+
+msgid "Collision Pairs"
+msgstr "Двойки Сблъсъци"
+
+msgid "Islands"
+msgstr "Острови"
+
+msgid "Physics 3D"
+msgstr "Physics 3D"
+
+msgid "Active Maps"
+msgstr "Активни Карти"
+
+msgid "Regions"
+msgstr "Региони"
+
+msgid "Agents"
+msgstr "Агенти"
+
+msgid "Links"
+msgstr "Връзки"
+
+msgid "Polygons"
+msgstr "Полигони"
+
+msgid "Edges"
+msgstr "Ръбове"
+
+msgid "Edges Merged"
+msgstr "Ръбове Сляти"
+
+msgid "Edges Connected"
+msgstr "Ръбове Свързани"
+
+msgid "Edges Free"
+msgstr "Ръбове Свободни"
+
+msgid "Obstacles"
+msgstr "Препятствия"
+
+msgid "Pipeline"
+msgstr "Pipeline"
+
+msgid "Compilations Canvas"
+msgstr "Canvas Компилации"
+
+msgid "Compilations Mesh"
+msgstr "Mesh Компилации"
+
+msgid "Compilations Surface"
+msgstr "Surface Компилации"
+
+msgid "Compilations Draw"
+msgstr "Draw Компилации"
+
+msgid "Compilations Specialization"
+msgstr "Specialization Компилации"
+
+msgid "Navigation 2D"
+msgstr "Navigation 2D"
+
+msgid "Navigation 3D"
+msgstr "Navigation 3D"
+
+msgid "Basis Universal"
+msgstr "Универсална Основа"
+
+msgid "RDO Dict Size"
+msgstr "RDO Размер на Речника"
+
+msgid "Zstd Supercompression"
+msgstr "Zstd Суперкомпресия"
+
+msgid "Zstd Supercompression Level"
+msgstr "Zstd Ниво на Суперкомпресия"
+
+msgid "Operation"
+msgstr "Операция"
+
+msgid "Calculate Tangents"
+msgstr "Пресметни Тангентите"
+
+msgid "Collision"
+msgstr "Сблъсък"
+
+msgid "Use Collision"
+msgstr "Използвай Сблъсъци"
+
+msgid "Collision Layer"
+msgstr "Слой на Слъбък"
+
+msgid "Collision Mask"
+msgstr "Маска на Сблъсък"
+
+msgid "Collision Priority"
+msgstr "Приориет на Сблъсък"
+
+msgid "Flip Faces"
+msgstr "Обърни Лица"
+
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Material"
+msgstr "Материал"
+
+msgid "Radial Segments"
+msgstr "Радиални Сегменти"
+
+msgid "Rings"
+msgstr "Пръстени"
+
+msgid "Smooth Faces"
+msgstr "Гладки Лица"
+
+msgid "Sides"
+msgstr "Страни"
+
+msgid "Cone"
+msgstr "Конус"
+
+msgid "Inner Radius"
+msgstr "Вътрешен Радиус"
+
+msgid "Outer Radius"
+msgstr "Външен Радиус"
+
+msgid "Ring Sides"
+msgstr "Страни на Пръстен"
+
+msgid "Polygon"
+msgstr "Полигон"
+
+msgid "Depth"
+msgstr "Дълбочина"
+
+msgid "Spin Degrees"
+msgstr "Въртене Степени"
+
+msgid "Spin Sides"
+msgstr "Въртене Страни"
+
+msgid "Path Node"
+msgstr "Path Възел"
+
+msgid "Path Interval Type"
+msgstr "Path Тип на Интервал"
+
+msgid "Path Interval"
+msgstr "Path Интервал"
+
+msgid "Path Simplify Angle"
+msgstr "Path Опрости Ъгъл"
+
+msgid "Path Rotation"
+msgstr "Path Ротация"
+
+msgid "Path Rotation Accurate"
+msgstr "Path Точна Ротация"
+
+msgid "Path Local"
+msgstr "Path Локален"
+
+msgid "Path Continuous U"
+msgstr "Path Продължително U"
+
+msgid "Path U Distance"
+msgstr "Path U Дистанция"
+
+msgid "Path Joined"
+msgstr "Path Свързан"
+
+msgid "Importer"
+msgstr "Импортьор"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "Позволи Възели за Подпомагане на Геометрията"
+
+msgid "Embedded Image Handling"
+msgstr "Работа с Вградени Изображения"
+
+msgid "Naming Version"
+msgstr "Именуване на Версия"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
+
+msgid "GDScript"
+msgstr "GDScript"
+
+msgid "Max Call Stack"
+msgstr "Макс. Брой Извиквания"
+
+msgid "Always Track Call Stacks"
+msgstr "Винаги Проследявай Стека на Повикванията"
+
+msgid "Always Track Local Variables"
+msgstr "Винаги Проследявай Локалните Променливи"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "\"Преименуван в Godot 4\" Намек"
+
+msgid "Unassigned Variable"
+msgstr "Незададена Променлива"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Незададена Променлива: Op Assign"
+
+msgid "Unused Variable"
+msgstr "Неизползвана Променлива"
+
+msgid "Unused Local Constant"
+msgstr "Неизползвана Локална Константа"
+
+msgid "Unused Private Class Variable"
+msgstr "Неизползвана Променлива на Private Клас"
+
+msgid "Unused Parameter"
+msgstr "Неизползван Параметър"
+
+msgid "Unused Signal"
+msgstr "Неизползван Сигнал"
+
+msgid "Shadowed Variable"
+msgstr "Засенчена Променлива"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Засенчена Променлива Основен Клас"
+
+msgid "Shadowed Global Identifier"
+msgstr "Засенчен Глобален Идентификатор"
+
+msgid "Unreachable Code"
+msgstr "Недостъпен Код"
+
+msgid "Unreachable Pattern"
+msgstr "Недостъпен Шаблон"
+
+msgid "Standalone Expression"
+msgstr "Самостоятелна Експресия"
+
+msgid "Standalone Ternary"
+msgstr "Самостоятелна Тринарна"
+
+msgid "Incompatible Ternary"
+msgstr "Несъвместима Тринарна"
+
+msgid "Untyped Declaration"
+msgstr "Декларация без Тип"
+
+msgid "Inferred Declaration"
+msgstr "Предполагаема Декларация"
+
+msgid "Unsafe Property Access"
+msgstr "Небезопасен Достъп до Свойство"
+
+msgid "Unsafe Method Access"
+msgstr "Небезопасен Достъп до Метод"
+
+msgid "Unsafe Cast"
+msgstr "Небезопасен Каст"
+
+msgid "Unsafe Call Argument"
+msgstr "Небезопасен Аргумент за Обаждане"
+
+msgid "Unsafe Void Return"
+msgstr "Небезопазно Връщане от Void Функция"
+
+msgid "Return Value Discarded"
+msgstr "Върната Стойност Изхвърлена"
+
+msgid "Static Called On Instance"
+msgstr "Static Извикван на Инстанция"
+
+msgid "Missing Tool"
+msgstr "Липсващ Инструмент"
+
+msgid "Redundant Static Unload"
+msgstr "Излизшен Static Unload"
+
+msgid "Redundant Await"
+msgstr "Излишен Await"
+
+msgid "Missing Await"
+msgstr "Липсващ Await"
+
+msgid "Assert Always True"
+msgstr "Утвърди Винаги True"
+
+msgid "Assert Always False"
+msgstr "Утвърди Винаги False"
+
+msgid "Integer Division"
+msgstr "Целочислено Деление"
+
+msgid "Narrowing Conversion"
+msgstr "Свиване на Конверсията"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int като Enum Без Преобразуване"
+
+msgid "Int As Enum Without Match"
+msgstr "Int Като Enum Без Съвпадение"
+
+msgid "Enum Variable Without Default"
+msgstr "Enum Променлива Без Стандартна Стойност"
+
+msgid "Empty File"
+msgstr "Празен Файл"
+
+msgid "Deprecated Keyword"
+msgstr "Остаряла Ключова Дума"
+
+msgid "Confusable Identifier"
+msgstr "Объркващ Идентификатор"
+
+msgid "Confusable Local Declaration"
+msgstr "Объркваща Локална Декларация"
+
+msgid "Confusable Local Usage"
+msgstr "Объркваща Локална Употреба"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Объркващо Пренасочване на Заснемане"
+
+msgid "Inference On Variant"
+msgstr "Извод на Тип за Variant"
+
+msgid "Native Method Override"
+msgstr "Преопредели Роден Метод"
+
+msgid "Get Node Default Without Onready"
+msgstr "Вземи Стандартния Възел Без Onready"
+
+msgid "Onready With Export"
+msgstr "Onready с Експорт"
+
+msgid "Language Server"
+msgstr "Езиков Сървър"
+
+msgid "Enable Smart Resolve"
+msgstr "Включи Smart Resolve"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Покажи Родни Символи в Редактора"
+
+msgid "Use Thread"
+msgstr "Използвай Нишка"
+
+msgid "Poll Limit (µsec)"
+msgstr "Ограничение на Заявки (µsec)"
+
+msgid "Copyright"
+msgstr "Авторски Права"
+
+msgid "Bake FPS"
+msgstr "FPS на Запичане"
+
+msgid "glTF"
+msgstr "glTF"
+
+msgid "Color"
+msgstr "Цвят"
+
+msgid "Intensity"
+msgstr "Интензивност"
+
+msgid "Light Type"
+msgstr "Тип Светлина"
+
+msgid "Range"
+msgstr "Обхват"
+
+msgid "Inner Cone Angle"
+msgstr "Ъгъл на Вътрешния Конус"
+
+msgid "Outer Cone Angle"
+msgstr "Ъгъл на Външния Конус"
+
+msgid "Diffuse Img"
+msgstr "Разпръсни Изображение"
+
+msgid "Diffuse Factor"
+msgstr "Разпръскващ Фактор"
+
+msgid "Gloss Factor"
+msgstr "Фактор на Блясък"
+
+msgid "Specular Factor"
+msgstr "Отразителен Фактор"
+
+msgid "Spec Gloss Img"
+msgstr "Спецификация Гланц Изображение"
+
+msgid "Mass"
+msgstr "Маса"
+
+msgid "Linear Velocity"
+msgstr "Линейна Скорост"
+
+msgid "Angular Velocity"
+msgstr "Ъглова Скорост"
+
+msgid "Center of Mass"
+msgstr "Център на Масата"
+
+msgid "Inertia Diagonal"
+msgstr "Диагонал на Инерцията"
+
+msgid "Inertia Orientation"
+msgstr "Ориентация на Инерцията"
+
+msgid "Inertia Tensor"
+msgstr "Тензор на Инерцията"
+
+msgid "Is Trigger"
+msgstr "Е ли Trigger"
+
+msgid "Mesh Index"
+msgstr "Mesh Индекс"
+
+msgid "Importer Mesh"
+msgstr "Mesh Импортьор"
+
+msgid "Image Format"
+msgstr "Формат на Изображението"
+
+msgid "Fallback Image Format"
+msgstr "Резерва на Изображението"
+
+msgid "Fallback Image Quality"
+msgstr "Резервно Ниво на Качество на Изображението"
+
+msgid "Root Node Mode"
+msgstr "Root Възел Режим"
+
+msgid "Visibility Mode"
+msgstr "Режим на Видимост"
+
+msgid "Json"
+msgstr "Json"
+
+msgid "Major Version"
+msgstr "Основна Версия"
+
+msgid "Minor Version"
+msgstr "Второстепенна Версия"
+
+msgid "GLB Data"
+msgstr "GLB Данни"
+
+msgid "Use Named Skin Binds"
+msgstr "Използвай Именовани Кожни Връзки"
+
+msgid "Buffers"
+msgstr "Буфери"
+
+msgid "Buffer Views"
+msgstr "Буферни Изгледи"
+
+msgid "Accessors"
+msgstr "Аксесори"
+
+msgid "Scene Name"
+msgstr "Име на Сцена"
+
+msgid "Base Path"
+msgstr "Основен Път"
+
+msgid "Filename"
+msgstr "Име на Файл"
+
+msgid "Root Nodes"
+msgstr "Root Възели"
+
+msgid "Texture Samplers"
+msgstr "Текстурни Самплери"
+
+msgid "Images"
+msgstr "Изображения"
+
+msgid "Cameras"
+msgstr "Камери"
+
+msgid "Lights"
+msgstr "Светлини"
+
+msgid "Unique Names"
+msgstr "Уникални Имена"
+
+msgid "Unique Animation Names"
+msgstr "Уникални Имена на Анимации"
+
+msgid "Skeletons"
+msgstr "Скелети"
+
+msgid "Create Animations"
+msgstr "Създай Анимации"
+
+msgid "Animations"
+msgstr "Анимации"
+
+msgid "Handle Binary Image Mode"
+msgstr "Режим за Бинарна Обработка на Изображението"
+
+msgid "Buffer View"
+msgstr "Буферен Изглед"
+
+msgid "Byte Offset"
+msgstr "Байтово Отместване"
+
+msgid "Component Type"
+msgstr "Тип Компонент"
+
+msgid "Normalized"
+msgstr "Нормализиран"
+
+msgid "Count"
+msgstr "Брой"
+
+msgid "Accessor Type"
+msgstr "Тип Аксесори"
+
+msgid "Min"
+msgstr "Мин."
+
+msgid "Max"
+msgstr "Макс."
+
+msgid "Sparse Count"
+msgstr "Редък Брой"
+
+msgid "Sparse Indices Buffer View"
+msgstr "Изглед на Буфера за Редки Индекси"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "Байтово Отместване на Редките Индекси"
+
+msgid "Sparse Indices Component Type"
+msgstr "Тип Компонент на Редките Индекси"
+
+msgid "Sparse Values Buffer View"
+msgstr "Изглед на Буфер за Редките Стойности"
+
+msgid "Sparse Values Byte Offset"
+msgstr "Байтово Отместване на Редките Стойности"
+
+msgid "Original Name"
+msgstr "Оригинално Име"
+
+msgid "Loop"
+msgstr "Цикъл"
+
+msgid "Buffer"
+msgstr "Буфер"
+
+msgid "Byte Length"
+msgstr "Дължина на Байт"
+
+msgid "Byte Stride"
+msgstr "Байт Stride"
+
+msgid "Indices"
+msgstr "Индекси"
+
+msgid "Vertex Attributes"
+msgstr "Атрибути на Връх"
+
+msgid "Perspective"
+msgstr "Перспектижа"
+
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Size Mag"
+msgstr "Обща Големина"
+
+msgid "Depth Far"
+msgstr "Дълбочина Далеч"
+
+msgid "Depth Near"
+msgstr "Дълбочина Близко"
+
+msgid "Blend Weights"
+msgstr "Смеси Тежести"
+
+msgid "Instance Materials"
+msgstr "Материали за Инстанции"
+
+msgid "Parent"
+msgstr "Родител"
+
+msgid "Xform"
+msgstr "Xform"
+
+msgid "Skin"
+msgstr "Кожа"
+
+msgid "Children"
+msgstr "Деца"
+
+msgid "Light"
+msgstr "Светъл"
+
+msgid "Visible"
+msgstr "Видим"
+
+msgid "glTF to Godot Expression"
+msgstr "glTF към Godot Израз"
+
+msgid "Godot to glTF Expression"
+msgstr "Godot към glTF Израз"
+
+msgid "Node Paths"
+msgstr "Пътища на Възели"
+
+msgid "Object Model Type"
+msgstr "Тип на Обектов Модел"
+
+msgid "Json Pointers"
+msgstr "Json Указатели"
+
+msgid "Variant Type"
+msgstr "Variant Тип"
+
+msgid "Joints"
+msgstr "Стави"
+
+msgid "Roots"
+msgstr "Корени"
+
+msgid "Godot Bone Node"
+msgstr "Godot Кост Възел"
+
+msgid "Skin Root"
+msgstr "Root Кожа"
+
+msgid "Joints Original"
+msgstr "Оригинални Стави"
+
+msgid "Non Joints"
+msgstr "Не-Стави"
+
+msgid "Godot Skin"
+msgstr "Godot Кожа"
+
+msgid "Src Image"
+msgstr "Източник на Изображение"
+
+msgid "Sampler"
+msgstr "Самплер"
+
+msgid "Mag Filter"
+msgstr "Филтър за Увеличение"
+
+msgid "Min Filter"
+msgstr "Филтер за Намаляне"
+
+msgid "Wrap S"
+msgstr "Опаковай по S"
+
+msgid "Wrap T"
+msgstr "Опаковай по T"
+
+msgid "Mesh Library"
+msgstr "Mesh Библиотека"
+
+msgid "Physics Material"
+msgstr "Физичен Материал"
+
+msgid "Cell"
+msgstr "Клетка"
+
+msgid "Octant Size"
+msgstr "Размер на Октант"
+
+msgid "Center X"
+msgstr "Център X"
+
+msgid "Center Y"
+msgstr "Център Y"
+
+msgid "Center Z"
+msgstr "Център Z"
+
+msgid "Priority"
+msgstr "Приоритет"
+
+msgid "Bake Navigation"
+msgstr "Навигация на Запичане"
+
+msgid "Clip Count"
+msgstr "Брой Клипове"
+
+msgid "Initial Clip"
+msgstr "Начален Клип"
+
+msgid "Shuffle"
+msgstr "Разбъркай"
+
+msgid "Fade Time"
+msgstr "Верме на Избледняване"
+
+msgid "Stream Count"
+msgstr "Брой Потоци"
+
+msgid "Jolt Physics 3D"
+msgstr "Jolt Physics 3D"
+
+msgid "Simulation"
+msgstr "Симулация"
+
+msgid "Velocity Steps"
+msgstr "Стъпки на Скоростта"
+
+msgid "Position Steps"
+msgstr "Стъпки на Позицията"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Ползвай Подобрено Вътрешно Премахване на Ръбове"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Генерирай Всички Кинематични Контакти"
+
+msgid "Penetration Slop"
+msgstr "Толеранс за Проникване"
+
+msgid "Speculative Contact Distance"
+msgstr "Спекулативно Разстояние за Контакт"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Baumgarte Фактор на Стабилизация"
+
+msgid "Soft Body Point Radius"
+msgstr "Радиус на Меката Точка на Тялото"
+
+msgid "Bounce Velocity Threshold"
+msgstr "Праг на Скорост на Отскачане"
+
+msgid "Allow Sleep"
+msgstr "Позволи Сън"
+
+msgid "Sleep Velocity Threshold"
+msgstr "Праг на Спяща Скорост"
+
+msgid "Sleep Time Threshold"
+msgstr "Праг на Време за Сън"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "Праг на Продължително CD Движение"
+
+msgid "Continuous CD Max Penetration"
+msgstr "Продължително CD Макс. Проникване"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "Включен Кещ на Контакт между Двойка Тела"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "Праг на Кеш Разстоянието на Контакт между Двойка Тела"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "Праг на Кеш Ъгъла на Контакт между Двойка Тела"
+
+msgid "Queries"
+msgstr "Запитвания"
+
+msgid "Enable Ray Cast Face Index"
+msgstr "Включи Индекс на Лице на Лъча"
+
+msgid "Motion Queries"
+msgstr "Запитвания за Движение"
+
+msgid "Recovery Iterations"
+msgstr "Итерации на Възстановяване"
+
+msgid "Recovery Amount"
+msgstr "Размер на Възстановяването"
+
+msgid "Collisions"
+msgstr "Сблъсъци"
+
+msgid "Collision Margin Fraction"
+msgstr "Фракция на Границата на Сблъсък"
+
+msgid "Active Edge Threshold"
+msgstr "Праг на Активния Ръб"
+
+msgid "World Node"
+msgstr "Свят Възел"
+
+msgid "Temporary Memory Buffer Size"
+msgstr "Размер на Паметта на Временния Буфер"
+
+msgid "World Boundary Shape Size"
+msgstr "Размер на Формата на Границата на Света"
+
+msgid "Max Linear Velocity"
+msgstr "Макс. Линейна Скорост"
+
+msgid "Max Angular Velocity"
+msgstr "Макс. Ъглова Скорост"
+
+msgid "Max Bodies"
+msgstr "Макс. Тела"
+
+msgid "Max Body Pairs"
+msgstr "Макс. Двойки Тела"
+
+msgid "Max Contact Constraints"
+msgstr "Макс. Ограничения на Контакти"
+
+msgid "Lightmapping"
+msgstr "Създаване на Светлинна Карта"
+
+msgid "Bake Quality"
+msgstr "Качество на Запичане"
+
+msgid "Low Quality Ray Count"
+msgstr "Брой Лъчи при Ниско Качество"
+
+msgid "Medium Quality Ray Count"
+msgstr "Брой Лъчи при Средно Качество"
+
+msgid "High Quality Ray Count"
+msgstr "Брой Лъчи при Високо Качество"
+
+msgid "Ultra Quality Ray Count"
+msgstr "Брой Лъчи при Ултра Качество"
+
+msgid "Bake Performance"
+msgstr "Производителност на Запичане"
+
+msgid "Max Rays per Pass"
+msgstr "Макс. Лъчи на Преминаване"
+
+msgid "Region Size"
+msgstr "Размер на Региона"
+
+msgid "Max Transparency Rays"
+msgstr "Макс. Прозрачни Лъчи"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "Брой Сонди Лъчи при Ниско Качество"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "Брой Сонди Лъчи при Средно Качество"
+
+msgid "High Quality Probe Ray Count"
+msgstr "Брой Сонди Лъчи при Високо Качество"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "Брой Сонди Лъчи при Ултра Качество"
+
+msgid "Max Rays per Probe Pass"
+msgstr "Макс. Лъчи на Сонда на Преминаване"
+
+msgid "Denoising"
+msgstr "Поттискане на Шума"
+
+msgid "Denoiser"
+msgstr "Шумопотискач"
+
+msgid "Eye Height"
+msgstr "Височина на Очите"
+
+msgid "IOD"
+msgstr "Разстояние Между Очите"
+
+msgid "Display Width"
+msgstr "Ширина на Дисплея"
+
+msgid "Display to Lens"
+msgstr "Дисплей към Обектив"
+
+msgid "Offset Rect"
+msgstr "Отместване на Rect"
+
+msgid "Oversample"
+msgstr "Свръхсемплирай"
+
+msgid "K1"
+msgstr "K1"
+
+msgid "K2"
+msgstr "K2"
+
+msgid "Vulkan VRS"
+msgstr "Vulkan VRS"
+
+msgid "Min Radius"
+msgstr "Мин. Радиус"
+
+msgid "BPM"
+msgstr "Удари/мин."
+
+msgid "Beat Count"
+msgstr "Брой Удари"
+
+msgid "Bar Beats"
+msgstr "Тактове и Удари"
+
+msgid "Loop Offset"
+msgstr "Отместване на Цикъл"
+
+msgid "Spawn Path"
+msgstr "Път на Създател"
+
+msgid "Spawn Limit"
+msgstr "Лимит на Създаване"
+
+msgid "Root Path"
+msgstr "Root Път"
+
+msgid "Replication Interval"
+msgstr "Интервал на Репликация"
+
+msgid "Delta Interval"
+msgstr "Делта Интервал"
+
+msgid "Visibility Update Mode"
+msgstr "Режим на Обновяване на Видимост"
+
+msgid "Public Visibility"
+msgstr "Публична Видимост"
+
+msgid "Auth Callback"
+msgstr "Auth Обратна Връзка"
+
+msgid "Auth Timeout"
+msgstr "Auth Таймаут"
+
+msgid "Allow Object Decoding"
+msgstr "Разреши Декодирането на Обекта"
+
+msgid "Refuse New Connections"
+msgstr "Откажи Нови Връзки"
+
+msgid "Server Relay"
+msgstr "Сървърне Реле"
+
+msgid "Max Sync Packet Size"
+msgstr "Макс. Размер Синхронизационни Пакети"
+
+msgid "Max Delta Packet Size"
+msgstr "Макс. Размер Делта Пакети"
+
+msgid "Noise Type"
+msgstr "Тип Шум"
+
+msgid "Frequency"
+msgstr "Честота"
+
+msgid "Fractal"
+msgstr "Фрактал"
+
+msgid "Octaves"
+msgstr "Октави"
+
+msgid "Lacunarity"
+msgstr "Лакунарност"
+
+msgid "Gain"
+msgstr "Усилване"
+
+msgid "Weighted Strength"
+msgstr "Претеглена Сила"
+
+msgid "Ping Pong Strength"
+msgstr "Пинг-Понг Сила"
+
+msgid "Cellular"
+msgstr "Клетъчен"
+
+msgid "Distance Function"
+msgstr "Функция на Дистанцията"
+
+msgid "Jitter"
+msgstr "Трептене"
+
+msgid "Return Type"
+msgstr "Тип на Върнат Резултат"
+
+msgid "Domain Warp"
+msgstr "Domain Изквивяване"
+
+msgid "Amplitude"
+msgstr "Амплитуда"
+
+msgid "Fractal Type"
+msgstr "Фрактален Тип"
+
+msgid "Fractal Octaves"
+msgstr "Фрактални Октави"
+
+msgid "Fractal Lacunarity"
+msgstr "Фрактална Лакунарност"
+
+msgid "Fractal Gain"
+msgstr "Фрактално Усилване"
+
+msgid "Width"
+msgstr "Ширина"
+
+msgid "Noise"
+msgstr "Шум"
+
+msgid "Color Ramp"
+msgstr "Цветова Рампа"
+
+msgid "Seamless"
+msgstr "Плавен"
+
+msgid "Invert"
+msgstr "Обърни"
+
+msgid "In 3D Space"
+msgstr "В 3D Пространство"
+
+msgid "As Normal Map"
+msgstr "Като Нормална Карта"
+
+msgid "Seamless Blend Skirt"
+msgstr "Преходна Зона за Плавно Смесване"
+
+msgid "Bump Strength"
+msgstr "Сила на Удара"
+
+msgid "Localized Name"
+msgstr "Локализирано Име"
+
+msgid "Action Type"
+msgstr "Тип Действие"
+
+msgid "Toplevel Paths"
+msgstr "Най-високо Ниво Пътища"
+
+msgid "Binding Path"
+msgstr "Свързващ Път"
+
+msgid "Interaction Profile Path"
+msgstr "Път на Профил за Взаимодействие"
+
+msgid "Runtime Paths"
+msgstr "Пътища на Изпълнение"
+
+msgid "Action Set"
+msgstr "Набор Действия"
+
+msgid "Input Path"
+msgstr "Входен Път"
+
+msgid "Threshold Released"
+msgstr "Праг Отменен"
+
+msgid "Center Region"
+msgstr "Централен Регион"
+
+msgid "Wedge Angle"
+msgstr "Ъгъл на Клин"
+
+msgid "Is Sticky"
+msgstr "Е Лепкав"
+
+msgid "On Haptic"
+msgstr "Haptic Включен"
+
+msgid "Off Haptic"
+msgstr "Haptic Изключен"
+
+msgid "Relax Frame Interval"
+msgstr "Интервал на Релаксиран Кадър"
+
+msgid "On Threshold"
+msgstr "Включен Праг"
+
+msgid "Off Threshold"
+msgstr "Изключен Праг"
+
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Entity"
+msgstr "Субект"
+
+msgid "Spatial Tracking State"
+msgstr "Състояние на Пространствено Проследяване"
+
+msgid "April Dict"
+msgstr "April Dict"
+
+msgid "Bounds Size"
+msgstr "Размер на Граници"
+
+msgid "Marker Type"
+msgstr "Тип Маркер"
+
+msgid "Marker ID"
+msgstr "ID на Маркер"
+
+msgid "Plane Alignment"
+msgstr "Изравняване на Равнина"
+
+msgid "Plane Label"
+msgstr "Етикет на Равнина"
+
+msgid "Display Refresh Rate"
+msgstr "Покажи Честота на Опресняване"
+
+msgid "Render Target Size Multiplier"
+msgstr "Мултипликатор на Размера на Целевия Рендер"
+
+msgid "Next"
+msgstr "Следващ"
+
+msgid "Layer Viewport"
+msgstr "Виз. Прозорец на Слоя"
+
+msgid "Use Android Surface"
+msgstr "Ползвай Android Surface"
+
+msgid "Protected Content"
+msgstr "Защитено Съдържание"
+
+msgid "Android Surface Size"
+msgstr "Размер на Android Surface"
+
+msgid "Sort Order"
+msgstr "Ред на Сортиране"
+
+msgid "Alpha Blend"
+msgstr "Алфа Смесване"
+
+msgid "Enable Hole Punch"
+msgstr "Включи Hole Punch"
+
+msgid "Swapchain State"
+msgstr "Swapchain Статус"
+
+msgid "Mipmap Mode"
+msgstr "Режим на Mipmap"
+
+msgid "Horizontal Wrap"
+msgstr "Хоризонтално Опаковане"
+
+msgid "Vertical Wrap"
+msgstr "Вертикално Опаковане"
+
+msgid "Red Swizzle"
+msgstr "Червен Swizzle"
+
+msgid "Green Swizzle"
+msgstr "Зелен Swizzle"
+
+msgid "Blue Swizzle"
+msgstr "Син Swizzle"
+
+msgid "Alpha Swizzle"
+msgstr "Алфа Червен Swizzle"
+
+msgid "Max Anisotropy"
+msgstr "Макс. Анизотропия"
+
+msgid "Border Color"
+msgstr "Цвят на Граница"
+
+msgid "Aspect Ratio"
+msgstr "Съотношение на Страните"
+
+msgid "Central Angle"
+msgstr "Централен Ъгъл"
+
+msgid "Fallback Segments"
+msgstr "Резервни Сегменти"
+
+msgid "Central Horizontal Angle"
+msgstr "Централен Хоризонтален Ъгъл"
+
+msgid "Upper Vertical Angle"
+msgstr "Горен Вертикален Ъгъл"
+
+msgid "Lower Vertical Angle"
+msgstr "Долен Вертикален Ъгъл"
+
+msgid "Quad Size"
+msgstr "Размер на Квадроцикъл"
+
+msgid "Hand"
+msgstr "Ръка"
+
+msgid "Motion Range"
+msgstr "Диапазон на Движение"
+
+msgid "Hand Skeleton"
+msgstr "Скелет на Ръка"
+
+msgid "Skeleton Rig"
+msgstr "Скелетна Конструкция"
+
+msgid "Bone Update"
+msgstr "Обновяване на Кост"
+
+msgid "Tracker"
+msgstr "Тракер"
+
+msgid "Make Local to Pose"
+msgstr "Направи Локален за Позата"
+
+msgid "Subject"
+msgstr "Тема"
+
+msgid "Names"
+msgstr "Имена"
+
+msgid "Strings"
+msgstr "Текстови Низове"
+
+msgid "Discover Multicast If"
+msgstr "Открий Multicast If"
+
+msgid "Discover Local Port"
+msgstr "Октрий Локален Порт"
+
+msgid "Discover IPv6"
+msgstr "Октрий IPv6"
+
+msgid "Description URL"
+msgstr "URL Адрес на Описанието"
+
+msgid "Service Type"
+msgstr "Тип Услуга"
+
+msgid "IGD Control URL"
+msgstr "URL Адрес на Управлението на IGD"
+
+msgid "IGD Service Type"
+msgstr "IGD Тип Сервиз"
+
+msgid "IGD Our Addr"
+msgstr "IGD Our Адрес"
+
+msgid "IGD Status"
+msgstr "IGD Статус"
+
+msgid "WebRTC"
+msgstr "WebRTC"
+
+msgid "Max Channel in Buffer (KB)"
+msgstr "Макс. Канал в Буфера (KB)"
+
+msgid "Write Mode"
+msgstr "Режим на Писане"
+
+msgid "Supported Protocols"
+msgstr "Поддържани Протоколи"
+
+msgid "Handshake Headers"
+msgstr "Заглавията на Ръкостисканията"
+
+msgid "Inbound Buffer Size"
+msgstr "Размер на Входния Буфер"
+
+msgid "Outbound Buffer Size"
+msgstr "Размер на Изходния Буфер"
+
+msgid "Handshake Timeout"
+msgstr "Таймаут на Ръкостискане"
+
+msgid "Max Queued Packets"
+msgstr "Макс. Пакети в Опашката"
+
+msgid "Heartbeat Interval"
+msgstr "Пулс Интервал"
+
+msgid "Session Mode"
+msgstr "Режим на Сесия"
+
+msgid "Required Features"
+msgstr "Необходими Функции"
+
+msgid "Optional Features"
+msgstr "Опционални Функции"
+
+msgid "Requested Reference Space Types"
+msgstr "Необходими Типове Референтно Пространство"
+
+msgid "Reference Space Type"
+msgstr "Тип Референтно Пространство"
+
+msgid "Enabled Features"
+msgstr "Включени Функции"
+
+msgid "Visibility State"
+msgstr "Статус на Видимост"
+
+msgid "Debug Keystore"
+msgstr "Дебъг Хранилище за Ключове"
+
+msgid "Debug Keystore User"
+msgstr "Дебъг Потребител на Хранилище за Ключове"
+
+msgid "Debug Keystore Pass"
+msgstr "Дебъг Парола за Хранилище на Ключове"
+
+msgid "Install Exported APK"
+msgstr "Инсталирай Експортирана Мобилна Апликация"
+
+msgid "Java SDK Path"
+msgstr "Java SDK Път"
+
+msgid "Android SDK Path"
+msgstr "Android SDK Път"
+
+msgid "scrcpy"
+msgstr "scrcpy"
+
+msgid "Virtual Display"
+msgstr "Виртуален Дисплей"
+
+msgid "No Decorations"
+msgstr "Без Декорации"
+
+msgid "Local IME"
+msgstr "Локален IME"
+
+msgid "Screen Size"
+msgstr "Размер на Екрана"
+
+msgid "Force System User"
+msgstr "Принуди Системен Потребител"
+
+msgid "Shutdown ADB on Exit"
+msgstr "Изключи ADB при Изход"
+
+msgid "One Click Deploy Clear Previous Install"
+msgstr "Едно Щракване Разгърни и Изчисти Предишна Инсталация"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Използвай Wi-Fi за Отдалечено Дебъгване"
+
+msgid "Wi-Fi Remote Debug Host"
+msgstr "Wi-Fi Отдалечен Дебъг Хост"
+
+msgid "Launcher Icons"
+msgstr "Икона на Стартиращата Програма"
+
+msgid "Main 192 X 192"
+msgstr "Главен 192 X 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "Адаптивен Преден План 432 X 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "Адаптивен Заден План 432 X 432"
+
+msgid "Adaptive Monochrome 432 X 432"
+msgstr "Адаптивен Монохром 432 X 432"
+
+msgid "Gradle Build"
+msgstr "Gradle Компилация"
+
+msgid "Use Gradle Build"
+msgstr "Използвай Gradle Компилация"
+
+msgid "Gradle Build Directory"
+msgstr "Директория на Gradle Компилация"
+
+msgid "Android Source Template"
+msgstr "Android Източник Шаблон"
+
+msgid "Compress Native Libraries"
+msgstr "Компресирай Родни Библиотеки"
+
+msgid "Export Format"
+msgstr "Формат на Експорт"
+
+msgid "Min SDK"
+msgstr "Мин. SDK"
+
+msgid "Target SDK"
+msgstr "Целеви SDK"
+
+msgid "Custom Theme Attributes"
+msgstr "Персонализираи Атрибути на Тема"
+
+msgid "Keystore"
+msgstr "Хранилище за Ключове"
+
+msgid "Debug User"
+msgstr "Дебъг Потребител"
+
+msgid "Debug Password"
+msgstr "Дебъг Парола"
+
+msgid "Release User"
+msgstr "Release Потребител"
+
+msgid "Release Password"
+msgstr "Release Парола"
+
+msgid "Code"
+msgstr "Код"
+
+msgid "Package"
+msgstr "Пакет"
+
+msgid "Unique Name"
+msgstr "Уникално Име"
+
+msgid "Signed"
+msgstr "Подписан"
+
+msgid "App Category"
+msgstr "Категория на Приложението"
+
+msgid "Retain Data on Uninstall"
+msgstr "Запазване на Данни при Деинсталиране"
+
+msgid "Exclude From Recents"
+msgstr "Изключване от Последните"
+
+msgid "Show in Android TV"
+msgstr "Покажи в Android TV"
+
+msgid "Show in App Library"
+msgstr "Покажи в"
+
+msgid "Show as Launcher App"
+msgstr "Покажи като Стартиращо Приложение"
+
+msgid "Graphics"
+msgstr "Графики"
+
+msgid "OpenGL Debug"
+msgstr "OpenGL Дебъг"
+
+msgid "XR Features"
+msgstr "XR Функции"
+
+msgid "XR Mode"
+msgstr "XR Режим"
+
+msgid "Gesture"
+msgstr "Жест"
+
+msgid "Swipe to Dismiss"
+msgstr "Плъзни, за да Отхвърлиш"
+
+msgid "Immersive Mode"
+msgstr "Immersive Режим"
+
+msgid "Edge to Edge"
+msgstr "Ръб към Ръб"
+
+msgid "Support Small"
+msgstr "Поддръжка Small"
+
+msgid "Support Normal"
+msgstr "Поддръжка Small"
+
+msgid "Support Large"
+msgstr "Поддръжка Large"
+
+msgid "Support Xlarge"
+msgstr "Поддръжка Xlarge"
+
+msgid "Background Color"
+msgstr "Цвят на Фона"
+
+msgid "User Data Backup"
+msgstr "Резервни Потребителски Данни"
+
+msgid "Allow"
+msgstr "Позволи"
+
+msgid "Command Line"
+msgstr "Командна Линия"
+
+msgid "Extra Args"
+msgstr "Допълнителни Аргименти"
+
+msgid "APK Expansion"
+msgstr "APK Expansion Файл"
+
+msgid "Salt"
+msgstr "Сол"
+
+msgid "Public Key"
+msgstr "Публичен Ключ"
+
+msgid "Permissions"
+msgstr "Достъп"
+
+msgid "Custom Permissions"
+msgstr "Персонализирани Разрешения"
+
+msgid "iOS Deploy"
+msgstr "iOS Инсталирай"
+
+msgid "Targeted Device Family"
+msgstr "Целева Фамилия Устройства"
+
+msgid "Min iOS Version"
+msgstr "Мин. iOS Версия"
+
+msgid "Storyboard"
+msgstr "iOS Storyboard"
+
+msgid "Image Scale Mode"
+msgstr "Режим на Мащабиране на Изображение"
+
+msgid "Custom Image @2x"
+msgstr "Персонализирано Изображение @2x"
+
+msgid "Custom Image @3x"
+msgstr "Персонализирано Изображение @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Използвай Персонализиран Цвят за Задния Фон"
+
+msgid "Custom BG Color"
+msgstr "Персонализиран Цвят за Задния Фон"
+
+msgid "Settings 58 X 58"
+msgstr "Настройки 58 X 58"
+
+msgid "Settings 87 X 87"
+msgstr "Настройки 87 X 87"
+
+msgid "Notification 40 X 40"
+msgstr "Известиe 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "Известиe 60 X 60"
+
+msgid "Notification 76 X 76"
+msgstr "Известиe 76 X 76"
+
+msgid "Notification 114 X 114"
+msgstr "Известиe 114 X 114"
+
+msgid "Spotlight 80 X 80"
+msgstr "iOS Spotlight 80 X 80"
+
+msgid "Spotlight 120 X 120"
+msgstr "iOS Spotlight 120 X 120"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iOS 128 X 128"
+msgstr "iOS 128 X 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 X 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 X 136"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "Architecture"
+msgstr "Архитектура"
+
+msgid "SSH Remote Deploy"
+msgstr "SSH Отдалечена Инсталация"
+
+msgid "Extra Args SSH"
+msgstr "SSH Допълнителни Аргументи"
+
+msgid "Extra Args SCP"
+msgstr "SCP Допълнителни Аргументи"
+
+msgid "Run Script"
+msgstr "Изпълни Скрипта"
+
+msgid "Cleanup Script"
+msgstr "Изчисти Скрипта"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
+
+msgid "actool"
+msgstr "actool"
+
+msgid "Distribution Type"
+msgstr "Тип Дистрибуция"
+
+msgid "Liquid Glass Icon"
+msgstr "Liquid Glass Икона"
+
+msgid "Copyright Localized"
+msgstr "Авторски права Локализирани"
+
+msgid "Min macOS Version x86 64"
+msgstr "Мин. macOS Версия x86 64"
+
+msgid "Min macOS Version arm64"
+msgstr "Мин. macOS Версия arm64"
+
+msgid "Export Angle"
+msgstr "Ъгъл на Експорт"
+
+msgid "High Res"
+msgstr "Висока Резолюция"
+
+msgid "Debugging"
+msgstr "Дебъгване"
+
+msgid "Variant"
+msgstr "Вариант"
+
+msgid "Export Icon"
+msgstr "Икона на Експорт"
+
+msgid "Modify Resources"
+msgstr "Модифицирай Ресурси"
+
+msgid "Product Version"
+msgstr "Версия на продукта"
+
+msgid "Export D3D12"
+msgstr "Експортирай D3D12"
+
+msgid "Frame"
+msgstr "Кадър"
+
+msgid "Anchor Mode"
+msgstr "Режим на Котва"
+
+msgid "Ignore Rotation"
+msgstr "Игнорирай Ротацията"
+
+msgid "Left"
+msgstr "Наляво"
+
+msgid "Right"
+msgstr "Надясно"
+
+msgid "Rotation Smoothing"
+msgstr "Изглаждане на Ротация"
+
+msgid "Horizontal Offset"
+msgstr "Хоризонтално Отместване"
+
+msgid "Vertical Offset"
+msgstr "Вертикално Отместване"
+
+msgid "Draw Screen"
+msgstr "Рисувай Екрана"
+
+msgid "Emission Shape"
+msgstr "Форма на излъчването"
+
+msgid "Sphere Radius"
+msgstr "Радиус на сферата"
+
+msgid "Points"
+msgstr "Точки"
+
+msgid "Colors"
+msgstr "Цветове"
+
+msgid "Initial Velocity"
+msgstr "Начална Скорост"
+
+msgid "Color Initial Ramp"
+msgstr "Цветова Начална Рампа"
+
+msgid "Offset Min"
+msgstr "Мин. Отместване"
+
+msgid "Offset Max"
+msgstr "Макс. Отместване"
+
+msgid "Offset Curve"
+msgstr "Отместване на Крива"
+
+msgid "Default Color"
+msgstr "Стандартен цвят"
+
+msgid "Joint Mode"
+msgstr "Режим на Става"
+
+msgid "Path Desired Distance"
+msgstr "Желано Разстояние на Път"
+
+msgid "Path Max Distance"
+msgstr "Макс. Разстояние на Път"
+
+msgid "Pathfinding Algorithm"
+msgstr "Алгоритъм за Намиране на Път"
+
+msgid "Path Postprocessing"
+msgstr "Пост-Обработка на Пътя"
+
+msgid "Path Metadata Flags"
+msgstr "Флагове на Метаданните на Пътя"
+
+msgid "Simplify Path"
+msgstr "Улесни Път"
+
+msgid "Path Return Max Length"
+msgstr "Макс. Дължина на Път За Връщане"
+
+msgid "Path Return Max Radius"
+msgstr "Макс. Радиус на Път за Връщане"
+
+msgid "Path Search Max Polygons"
+msgstr "Макс. Полигони при Търсене на Път"
+
+msgid "Path Search Max Distance"
+msgstr "Макс. Разстояние при Търсене на Път"
+
+msgid "Path Custom Color"
+msgstr "Цвят на Персонализиран Път"
+
+msgid "Path Custom Point Size"
+msgstr "Персонализиран Размер на Точка на Път"
+
+msgid "Path Custom Line Width"
+msgstr "Персонализирана Ширина на Пътна Линия"
+
+msgid "Use Edge Connections"
+msgstr "Ползвай Връзки на Ръбове"
+
+msgid "Scroll Scale"
+msgstr "Мащаб на Превъртане"
+
+msgid "Scroll Offset"
+msgstr "Отместване на Превъртане"
+
+msgid "Autoscroll"
+msgstr "Автоматично Превъртане"
+
+msgid "End"
+msgstr "Край"
+
+msgid "Ignore Camera Scroll"
+msgstr "Игнорирай Превъртане на Камера"
+
+msgid "Screen Offset"
+msgstr "Отместване на Екрана"
+
+msgid "Scroll"
+msgstr "Превърти"
+
+msgid "Base Offset"
+msgstr "Основно Отместване"
+
+msgid "H Offset"
+msgstr "Хоризонтално Отместване"
+
+msgid "V Offset"
+msgstr "Вертикално Отместване"
+
+msgid "Point"
+msgstr "Точка"
+
+msgid "Debug Color"
+msgstr "Дебъг Цвят"
+
+msgid "Initial Offset"
+msgstr "Начално Отместване"
+
+msgid "Bone 2D Nodepath"
+msgstr "Кост 2D Nodepath"
+
+msgid "Auto Configure Joint"
+msgstr "Автоматично Конфигуриране на Ставите"
+
+msgid "Lock Rotation"
+msgstr "Заключи Ротация"
+
+msgid "Linear"
+msgstr "Линейно"
+
+msgid "Bitmask"
+msgstr "Побитова маска"
+
+msgid "Vertex Colors"
+msgstr "Цвят на връх"
+
+msgid "Remote Path"
+msgstr "Отдалечен Път"
+
+msgid "Update"
+msgstr "Обновяване"
+
+msgid "Editor Settings"
+msgstr "Настройки на редактора"
+
+msgid "Node Path"
+msgstr "Път към Възел"
+
+msgid "Degrees"
+msgstr "Градуси"
+
+msgid "Frustum Offset"
+msgstr "Отместване на Отрязването"
+
+msgid "Skeleton Path"
+msgstr "Път към Скелет"
+
+msgid "Alpha Scissor Threshold"
+msgstr "Праг на Алфа Ножицата"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "Алфа Антиалиасинг Ръб"
+
+msgid "Text"
+msgstr "Като текст"
+
+msgid "Uppercase"
+msgstr "Главни букви"
+
+msgid "Quality"
+msgstr "Качество"
+
+msgid "Custom Sky"
+msgstr "Персонализирано небе"
+
+msgid "Custom Color"
+msgstr "Персонализиран цвят"
+
+msgid "Primary Rotation Axis"
+msgstr "Главна Ос на Ротация"
+
+msgid "Use Secondary Rotation"
+msgstr "Използвай Вторична Ротация"
+
+msgid "Primary Damp Threshold"
+msgstr "Праг на Първична Влажност"
+
+msgid "Primary Positive Damp Threshold"
+msgstr "Праг на Позитивна Първична Влажност"
+
+msgid "Primary Negative Damp Threshold"
+msgstr "Праг на Негативна Първична Влажност"
+
+msgid "Secondary Damp Threshold"
+msgstr "Праг на Вторична Влажност"
+
+msgid "Secondary Positive Damp Threshold"
+msgstr "Праг на Позитивна Вторична Влажност"
+
+msgid "Secondary Negative Damp Threshold"
+msgstr "Праг на Негативна Вторична Влажност"
+
+msgid "Path Height Offset"
+msgstr "Отместване на Височината на Път"
+
+msgid "Rotation Edit Mode"
+msgstr "Режим на Редактиране на Ротация"
+
+msgid "Rotation Order"
+msgstr "Ред на Ротация"
+
+msgid "Debug Shape"
+msgstr "Дебъг Форма"
+
+msgid "Rotation Mode"
+msgstr "Режим на Ротация"
+
+msgid "Source Path"
+msgstr "Път Източник"
+
+msgid "Debug Fill"
+msgstr "Дебъг Попълване"
+
+msgid "Joint Constraints"
+msgstr "Ограничения на Ставите"
+
+msgid "Body Offset"
+msgstr "Отместване на Тяло"
+
+msgid "Spatial Attachment Path"
+msgstr "Път към Пространствената Привързаност"
+
+msgid "Wheel"
+msgstr "Колело"
+
+msgid "Origin Offset"
+msgstr "Отместване на Начало"
+
+msgid "Reflection Mask"
+msgstr "Отразителна Маска"
+
+msgid "Mesh LOD Threshold"
+msgstr "Праг на Mesh LOD"
+
+msgid "Color Energy"
+msgstr "Цветова енергия"
+
+msgid "Position Offset"
+msgstr "Отместване на Позиция"
+
+msgid "Rotation Offset"
+msgstr "Отместване на Ротация"
+
+msgid "Sync"
+msgstr "Синхронизиране"
+
+msgid "Root Node"
+msgstr "Коренен Връх"
+
+msgid "Reset"
+msgstr "Нулиране"
+
+msgid "Condition"
+msgstr "Условие"
+
+msgid "Expression"
+msgstr "Израз"
+
+msgid "Default Blend Time"
+msgstr "Стандартно време за преход"
+
+msgid "Animation Path"
+msgstr "Път на Анимация"
+
+msgid "Button Pressed"
+msgstr "Натиснат бутон"
+
+msgid "Button Group"
+msgstr "Група бутони"
+
+msgid "Color Mode"
+msgstr "Цветови режим"
+
+msgid "Color Modes Visible"
+msgstr "Видими цветови режими"
+
+msgid "Anchors Preset"
+msgstr "Шаблон за Котви"
+
+msgid "Anchor Points"
+msgstr "Точки на Котви"
+
+msgid "Anchor Offsets"
+msgstr "Отместване на Котва"
+
+msgid "Pivot Offset"
+msgstr "Отместване на Пивот"
+
+msgid "Pivot Offset Ratio"
+msgstr "Съотнощение на Отместване от Пивот"
+
+msgid "Previous"
+msgstr "Предишна"
+
+msgid "Force Pass Scroll Events"
+msgstr "Принудително Превъртане на Събития"
+
+msgid "Default Cursor Shape"
+msgstr "Стандартна форма на курсор"
+
+msgid "Access"
+msgstr "Достъп"
+
+msgid "Filters"
+msgstr "Филтри"
+
+msgid "Use Native Dialog"
+msgstr "Използвай Родни Диалогови Прозорци"
+
+msgid "Tint Color Enabled"
+msgstr "Включи измяна на цвета"
+
+msgid "Tint Color"
+msgstr "Измени цвета"
+
+msgid "Select Mode"
+msgstr "Режим на избиране"
+
+msgid "Scroll Hint Mode"
+msgstr "Режим на Намек при Превъртане"
+
+msgid "Tile Scroll Hint"
+msgstr "Намек за Превъртане на Плочки"
+
+msgid "Icon Mode"
+msgstr "Режим на иконки"
+
+msgid "Prefer Native Menu"
+msgstr "Предпочитай Родното Меню"
+
+msgid "Step"
+msgstr "Стъпка"
+
+msgid "Scroll Active"
+msgstr "Превъртане Активно"
+
+msgid "Scroll Following"
+msgstr "Превърти Следващото"
+
+msgid "Scroll Following Visible Characters"
+msgstr "Превърти Следващите Видими Символи"
+
+msgid "Hint Underlined"
+msgstr "Намек за Подчертан"
+
+msgid "Scrollbar"
+msgstr "Плъзгаща Лента"
+
+msgid "Scroll Horizontal"
+msgstr "Хоризонтално Превъртане"
+
+msgid "Scroll Vertical"
+msgstr "Вертикално Превъртане"
+
+msgid "Scroll Horizontal Custom Step"
+msgstr "Превърти Хоризонтално с Персонализиран Брой Стъпки"
+
+msgid "Scroll Vertical Custom Step"
+msgstr "Превърти Вертикално с Персонализиран Брой Стъпки"
+
+msgid "Horizontal Scroll Mode"
+msgstr "Режим на Хоризонтално Превъртане"
+
+msgid "Vertical Scroll Mode"
+msgstr "Режим на Вертикално Превъртане"
+
+msgid "Scroll Deadzone"
+msgstr "Мъртва Зона на Превъртане"
+
+msgid "Scroll Hint"
+msgstr "Намек за Превъртане"
+
+msgid "Default Scroll Deadzone"
+msgstr "Стандартна Мъртва Зона на Превъртане"
+
+msgid "Scrollable"
+msgstr "Превъртяем"
+
+msgid "Split Offsets"
+msgstr "Раздели Отмествания"
+
+msgid "Split Offset"
+msgstr "Раздели Отместване"
+
+msgid "Scrolling Enabled"
+msgstr "Превъртане Включено"
+
+msgid "Scroll to Selected"
+msgstr "Превърти към Избран"
+
+msgid "Initial Angle"
+msgstr "Начален Ъгъл"
+
+msgid "Center Offset"
+msgstr "Отместване на Центъра"
+
+msgid "Progress Offset"
+msgstr "Отместване на Прогрес"
+
+msgid "Scroll Horizontal Enabled"
+msgstr "Хоризонтално Превъртане Включено"
+
+msgid "Scroll Vertical Enabled"
+msgstr "Вертикално Превъртане Включено"
+
+msgid "Z Index"
+msgstr "Индекс по Z"
+
+msgid "Timeout"
+msgstr "Таймаут"
+
+msgid "Transfer Mode"
+msgstr "Режим на трансфер"
+
+msgid "Debug Collisions Hint"
+msgstr "Намек за Дебъг Сблъсквания"
+
+msgid "Debug Paths Hint"
+msgstr "Намек за Дебъг Пътища"
+
+msgid "Debug Navigation Hint"
+msgstr "Намек за Дебъг Навигация"
+
+msgid "Shape Color"
+msgstr "Цвят на форма"
+
+msgid "Contact Color"
+msgstr "Цвят на контакт"
+
+msgid "Paths"
+msgstr "Пътища"
+
+msgid "Geometry Color"
+msgstr "Цвят на геометрия"
+
+msgid "Screen Space AA"
+msgstr "Екранно Пространство AA"
+
+msgid "Threshold Pixels"
+msgstr "Праг на Пиксели"
+
+msgid "Atlas Size"
+msgstr "Атлас Размер"
+
+msgid "Atlas Quadrant 0 Subdiv"
+msgstr "Атлас Квадрант 0-во Подделение"
+
+msgid "Atlas Quadrant 1 Subdiv"
+msgstr "Атлас Квадрант 1-во Подделение"
+
+msgid "Atlas Quadrant 2 Subdiv"
+msgstr "Атлас Квадрант 2-ро Подделение"
+
+msgid "Atlas Quadrant 3 Subdiv"
+msgstr "Атлас Квадрант 3-то Подделение"
+
+msgid "Default Environment"
+msgstr "Стандартна околна среда"
+
+msgid "Viewport Path"
+msgstr "Път на Прозореца"
+
+msgid "Debug Draw"
+msgstr "Дебъгване на Рисуване"
+
+msgid "Positional Shadow Atlas"
+msgstr "Атлас на Позиционните Сенки"
+
+msgid "Oversampling Override"
+msgstr "Презапис на Свръхсемплиране"
+
+msgid "Current Screen"
+msgstr "Текущ Екран"
+
+msgid "Popup Wm Hint"
+msgstr "Намек за Изкачащ Прозорец Wm"
+
+msgid "Force Native"
+msgstr "Принуди Роден"
+
+msgid "Source Geometry Mode"
+msgstr "Режим на Геометричен Източник"
+
+msgid "Source Geometry Group Name"
+msgstr "Име на Група на Геометричен Източник"
+
+msgid "Baking Rect Offset"
+msgstr "Отместване на Запищач Rect"
+
+msgid "B"
+msgstr "Б"
+
+msgid "Target Nodepath"
+msgstr "Целеви Nodepath"
+
+msgid "Tip Nodepath"
+msgstr "Съвет за Nodepath"
+
+msgid "Default Joint Settings"
+msgstr "Стандартни Настройки на Ставите"
+
+msgid "Tile Offset Axis"
+msgstr "Осове Отместване на Плочка"
+
+msgid "Edge Fade"
+msgstr "Избледняване на Ръб"
+
+msgid "Item"
+msgstr "Елемент"
+
+msgid "Preview"
+msgstr "Преглед"
+
+msgid "Top Color"
+msgstr "Цвят отгоре"
+
+msgid "Horizon Color"
+msgstr "Цвят на хоризонта"
+
+msgid "Bottom Color"
+msgstr "Цвят отдолу"
+
+msgid "Ground Color"
+msgstr "Земен цвят"
+
+msgid "Fallback Environment"
+msgstr "Резервна Среда"
+
+msgid "Atlas"
+msgstr "Атлас"
+
+msgid "Frustum"
+msgstr "Отрязване"
+
+msgid "Needs Motion Vectors"
+msgstr "Нуждае се от вектори за движение"
+
+msgid "Load Path"
+msgstr "Път на Зареждане"
+
+msgid "Up Vector"
+msgstr "Вектор нагоре"
+
+msgid "Source"
+msgstr "Източник"
+
+msgid "Bloom"
+msgstr "Сияние"
+
+msgid "HDR Threshold"
+msgstr "HDR Праг"
+
+msgid "Light Color"
+msgstr "Светлинен цвят"
+
+msgid "Color Correction"
+msgstr "Цветова редакция"
+
+msgid "Color Space"
+msgstr "Цветово пространтство"
+
+msgid "Offsets"
+msgstr "Отмествания"
+
+msgid "Vertex Color"
+msgstr "Цвят на връх"
+
+msgid "Refraction"
+msgstr "Пречупване"
+
+msgid "Lightmap Size Hint"
+msgstr "Намек за Размер на Светлинна Карта"
+
+msgid "Transform Format"
+msgstr "Формат на трансформацията"
+
+msgid "Use Colors"
+msgstr "Използвай цветове"
+
+msgid "Source Group Name"
+msgstr "Име на Група на Източник"
+
+msgid "Baking AABB Offset"
+msgstr "Запичане на AABB Отместване"
+
+msgid "Spawn"
+msgstr "Създай"
+
+msgid "Emission Shape Offset"
+msgstr "Отместване на Форма на Емисия"
+
+msgid "Emission Color Texture"
+msgstr "Текстура на светлинен цвят"
+
+msgid "Color Curves"
+msgstr "Цветови криви"
+
+msgid "Top Left"
+msgstr "Горе вляво"
+
+msgid "Top Right"
+msgstr "Горе вдясно"
+
+msgid "Bottom Right"
+msgstr "Долу вдясно"
+
+msgid "Bottom Left"
+msgstr "Долу вляво"
+
+msgid "Number Color"
+msgstr "Цвят на числа"
+
+msgid "Symbol Color"
+msgstr "Цвят на символ"
+
+msgid "Function Color"
+msgstr "Цвят на функции"
+
+msgid "Member Variable Color"
+msgstr "Цвят на променливи"
+
+msgid "Keyword Colors"
+msgstr "Цветове на ключови думи"
+
+msgid "Member Keyword Colors"
+msgstr "Цветове на променливи"
+
+msgid "Color Regions"
+msgstr "Цветови региони"
+
+msgid "Default Base Scale"
+msgstr "Стандартна базова скала"
+
+msgid "Default Font"
+msgstr "Стандартен текст"
+
+msgid "Default Font Size"
+msgstr "Стандартен текстов размер"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Constant"
+msgstr "Константа"
+
+msgid "Function"
+msgstr "Функция"
+
+msgid "Hint"
+msgstr "Намек"
+
+msgid "Default Value Enabled"
+msgstr "Включена стандартна стойност"
+
+msgid "Default Value"
+msgstr "Стандартна стойност"
+
+msgid "Color Default"
+msgstr "Цветен стандарт"
+
+msgid "Texture Source"
+msgstr "Източник на Текстура"
+
+msgid "Font Pressed Color"
+msgstr "Цвят на натиснат текст"
+
+msgid "Font Hover Color"
+msgstr "Цвят на активен текст"
+
+msgid "Font Focus Color"
+msgstr "Цвят на фокусиран текст"
+
+msgid "Font Hover Pressed Color"
+msgstr "Цвят на активен и натиснат текст"
+
+msgid "Font Disabled Color"
+msgstr "Цвят на изключен текст"
+
+msgid "Font Outline Color"
+msgstr "Цвят на текстова рамка"
+
+msgid "Icon Normal Color"
+msgstr "Нормален цвят на иконка"
+
+msgid "Icon Pressed Color"
+msgstr "Натиснат цвят на иконка"
+
+msgid "Icon Hover Color"
+msgstr "Активен цвят на иконка"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Активен и натиснат цвят на иконка"
+
+msgid "Icon Focus Color"
+msgstr "Фокусиран цвят на иконка"
+
+msgid "Icon Disabled Color"
+msgstr "Изключен цвят на иконка"
+
+msgid "Check V Offset"
+msgstr "Check Вертикално Отместване"
+
+msgid "Checkbox Checked Color"
+msgstr "Цвят на отметнато тикче"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Цвят на неотметнато тикче"
+
+msgid "Button Checked Color"
+msgstr "Цвят на отметнат бутон"
+
+msgid "Button Unchecked Color"
+msgstr "Цвят на неотметнат бутон"
+
+msgid "Font Shadow Color"
+msgstr "Цвят на текстова сянка"
+
+msgid "Shadow Offset X"
+msgstr "X Отместване на Сянка"
+
+msgid "Shadow Offset Y"
+msgstr "Y Отместване на Сянка"
+
+msgid "Font Selected Color"
+msgstr "Цвят на избран текст"
+
+msgid "Font Uneditable Color"
+msgstr "Цвят на непроменлив текст"
+
+msgid "Font Placeholder Color"
+msgstr "Цвят на заместителен текст"
+
+msgid "Selection Color"
+msgstr "Цвят на избор"
+
+msgid "Clear Button Color"
+msgstr "Цвят на изчистващия бутон"
+
+msgid "Clear Button Color Pressed"
+msgstr "Натиснат цвят на изчистващия бутон"
+
+msgid "Clear"
+msgstr "Изчистване"
+
+msgid "Current Line Color"
+msgstr "Цвят на сегашната линия"
+
+msgid "Caret Background Color"
+msgstr "Фонов цвят за каретката"
+
+msgid "Word Highlighted Color"
+msgstr "Цвят на избрана дума"
+
+msgid "Search Result Color"
+msgstr "Цвят на резултати от търсене"
+
+msgid "Search Result Border Color"
+msgstr "Цвят на рамката на резултати от търсене"
+
+msgid "Wrap Offset"
+msgstr "Отместване на Обвивка"
+
+msgid "Completion Color BG"
+msgstr "Комплиментен фонов цвят"
+
+msgid "Completion Background Color"
+msgstr "Цвят на фона на подсказките"
+
+msgid "Completion Selected Color"
+msgstr "Цвят на избрани подсказки"
+
+msgid "Completion Existing Color"
+msgstr "Цвят на съществуващи подсказки"
+
+msgid "Completion Scroll Color"
+msgstr "Цвят на Привършващо Превъртане"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Цвят на Довършващия Скролер при Посочване"
+
+msgid "Breakpoint Color"
+msgstr "Цвят на прекъсвачна точка"
+
+msgid "Executing Line Color"
+msgstr "Цвят на изпълняваща линия"
+
+msgid "Code Folding Color"
+msgstr "Цвят на сгъване на кода"
+
+msgid "Folded Code Region Color"
+msgstr "Цвят на регион от сгънат код"
+
+msgid "Brace Mismatch Color"
+msgstr "Цвят на грешни скоби"
+
+msgid "Line Number Color"
+msgstr "Цвят на редови номер"
+
+msgid "Line Length Guideline Color"
+msgstr "Цвят на подсказката за дължина на линия"
+
+msgid "Completion Scroll Width"
+msgstr "Ширина на Довършващия Скролер"
+
+msgid "Scroll Focus"
+msgstr "Фокус на Превъртане"
+
+msgid "Grabber Offset"
+msgstr "Отместване на Хващач"
+
+msgid "Tick Offset"
+msgstr "Отместване на Отметка"
+
+msgid "Scroll Hint Vertical"
+msgstr "Намек за Вертикално Превъртане"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Намек за Хоризонтално Превъртане"
+
+msgid "Close"
+msgstr "Затваряне"
+
+msgid "Close H Offset"
+msgstr "Close Хоризонтално Отместване"
+
+msgid "Close V Offset"
+msgstr "Close Вертикално Отместване"
+
+msgid "Reload"
+msgstr "Презареждане"
+
+msgid "Folder Icon Color"
+msgstr "Цвят на папкова иконка"
+
+msgid "File Icon Color"
+msgstr "Цвят на файлова иконка"
+
+msgid "File Disabled Color"
+msgstr "Цвят на изключен файл"
+
+msgid "Submenu"
+msgstr "Подменю"
+
+msgid "Font Separator Color"
+msgstr "Цвят на текстов разделител"
+
+msgid "Font Separator Outline Color"
+msgstr "Рамков цвят на текстов разделител"
+
+msgid "Resizer Color"
+msgstr "Цвят на преоразмерител"
+
+msgid "Port H Offset"
+msgstr "Хоризонтално Отместване на Порт"
+
+msgid "Title Button Color"
+msgstr "Цвят на заглавен бутон"
+
+msgid "Font Hovered Color"
+msgstr "Цвят на активен текст"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Цвят на затъмнен активен текст"
+
+msgid "Font Hovered Selected Color"
+msgstr "Цвят на избран активен текст"
+
+msgid "Drop Position Color"
+msgstr "Цвят на позиция за пускане"
+
+msgid "Scroll Border"
+msgstr "Граница на Превъртане"
+
+msgid "Scroll Speed"
+msgstr "Скорот на Превъртане"
+
+msgid "Scrollbar Margin Left"
+msgstr "Марж Отляво на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Top"
+msgstr "Марж Отгоре на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Right"
+msgstr "Марж Отдясно на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Марж Отдолу на Плъзгащата Лента"
+
+msgid "Scrollbar H Separation"
+msgstr "Хоризонтално Разделение на Плъзгащата Лента"
+
+msgid "Scrollbar V Separation"
+msgstr "Вертикално Разделение на Плъзгащата Лента"
+
+msgid "Font Unselected Color"
+msgstr "Цвят на неизбран текст"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Цвят на фокусиран, нередактиращ курсор"
+
+msgid "Screen Picker"
+msgstr "Избирател на Екран"
+
+msgid "Color Script"
+msgstr "Цвят на програма"
+
+msgid "Color Hue"
+msgstr "Цветова гама"
+
+msgid "Preset FG"
+msgstr "Предварителна настройка FG"
+
+msgid "Normal Font"
+msgstr "Нормален шрифт"
+
+msgid "Connection Hover Tint Color"
+msgstr "Изменен активен цвят на връзка"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Изменен валиден цвят на връзка"
+
+msgid "Hover Font Color"
+msgstr "Цвят на избран текст"
+
+msgid "Collapsed Font Color"
+msgstr "Цвят на сгънат текст"
+
+msgid "Default Theme Scale"
+msgstr "Стандартна скала на тема"
+
+msgid "Fallback values"
+msgstr "Резервни стойности"
+
+msgid "Channel Disable Threshold dB"
+msgstr "Праг за Изключване на Канал в dB"
+
+msgid "Random Volume Offset dB"
+msgstr "Случайно Отместване на Силата на Звука в dB"
+
+msgid "Release (ms)"
+msgstr "Освобождаване (ms)"
+
+msgid "Threshold dB"
+msgstr "Праг в dB"
+
+msgid "Path Types"
+msgstr "Типове Пътища"
+
+msgid "Path Rids"
+msgstr "Път Rids"
+
+msgid "Path Owner IDs"
+msgstr "ID на Притежател на Път"
+
+msgid "Path Length"
+msgstr "Дължина на Път"
+
+msgid "Default Cell Size"
+msgstr "Стандартен размер на клетка"
+
+msgid "Default Edge Connection Margin"
+msgstr "Стандартен Марж за Връзка на Ръб"
+
+msgid "Default Link Connection Radius"
+msgstr "Стандартна линк радиус връзка"
+
+msgid "Edge Connection Color"
+msgstr "Цвят на Връзка на Ръб"
+
+msgid "Geometry Edge Color"
+msgstr "Цвят на Геометричен Ръб"
+
+msgid "Geometry Face Color"
+msgstr "Цвят на геометрично лице"
+
+msgid "Geometry Edge Disabled Color"
+msgstr "Изключен Цвят на Геометричен Ръб"
+
+msgid "Geometry Face Disabled Color"
+msgstr "Цвят на изключено геометрично лице"
+
+msgid "Link Connection Color"
+msgstr "Цвят на линк връзка"
+
+msgid "Link Connection Disabled Color"
+msgstr "Цвят на изключена линк връзка"
+
+msgid "Agent Path Color"
+msgstr "Цват на Пътеката на Агента"
+
+msgid "Enable Edge Connections"
+msgstr "Включи Връзки на Ръбове"
+
+msgid "Enable Edge Lines"
+msgstr "Включи Линии на Ръбове"
+
+msgid "Enable Geometry Face Random Color"
+msgstr "Включи случаен цвят на геометрично лице"
+
+msgid "Enable Agent Paths"
+msgstr "Включи Агентни Пътища"
+
+msgid "Agent Path Point Size"
+msgstr "Агентен Път Размер на Точката"
+
+msgid "Obstacles Radius Color"
+msgstr "Цвят на препятствен радиус"
+
+msgid "Obstacles Static Edge Pushin Color"
+msgstr "Pushin Цвят на Препядствия на Статични Ръбове"
+
+msgid "Obstacles Static Edge Pushout Color"
+msgstr "Pushout Цвят на Препядствия на Статични Ръбове"
+
+msgid "Default Cell Height"
+msgstr "Стандартна височина на клетка"
+
+msgid "Default Up"
+msgstr "Стандартно нагоре"
+
+msgid "Enable Edge Connections X-Ray"
+msgstr "Включи X-Ray за Връзки на Ръбове"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Включи X-Ray за Линии на Ръбове"
+
+msgid "Enable Agent Paths X-Ray"
+msgstr "Включи X-Ray за Агентни Пътища"
+
+msgid "Default Gravity"
+msgstr "Стандартна гравитация"
+
+msgid "Default Gravity Vector"
+msgstr "Стандартен гравитационен вектор"
+
+msgid "Default Linear Damp"
+msgstr "Стандартно линейни забавяне"
+
+msgid "Default Angular Damp"
+msgstr "Стандартно въртеливо забавяне"
+
+msgid "Sleep Threshold Linear"
+msgstr "Праг на Заспиване Линеен"
+
+msgid "Sleep Threshold Angular"
+msgstr "Праг на Заспиване Ъглов"
+
+msgid "Debug Redraw Time"
+msgstr "Дебъгване на Времето за Прерисуване"
+
+msgid "Debug Redraw Color"
+msgstr "Дебъгване на Прерисуване на Цвят"
+
+msgid "Import S3TC BPTC"
+msgstr "Импортирай S3TC BPTC"
+
+msgid "Import ETC2 ASTC"
+msgstr "Импортирай ETC2 ASTC"
+
+msgid "Atlas 16 Bits"
+msgstr "Атлас 16 Бита"
+
+msgid "Shadow Atlas"
+msgstr "Атлас на Сенките"
+
+msgid "Strip Debug"
+msgstr "Премахни Дебъг"
+
+msgid "Reflections"
+msgstr "Отражения"
+
+msgid "Sky Reflections"
+msgstr "Отражения в Небето"
+
+msgid "Texture Array Reflections"
+msgstr "Отражения в Текстурен Масив"
+
+msgid "Reflection Atlas"
+msgstr "Атлас на Отраженията"
+
+msgid "Reflection Size"
+msgstr "Размер на Отраженията"
+
+msgid "Reflection Count"
+msgstr "Брой на Отраженията"
+
+msgid "Default Filters"
+msgstr "Стандартни филтри"
+
+msgid "Screen Space Roughness Limiter"
+msgstr "Ограничител на Грапавостта на Екранното Пространство"
+
+msgid "SMAA Edge Detection Threshold"
+msgstr "Праг на SMAA Откриване на Ръб"
+
+msgid "Screen Space Reflection"
+msgstr "Отражение на Екранното Пространство"
+
+msgid "Subsurface Scattering"
+msgstr "Подповърхностно разсейване"
+
+msgid "Ensure Correct Normals"
+msgstr "Подсигуряване на правилни нормали"
+
+msgid "Debug Shadow Splits"
+msgstr "Дебъг на Разделяне на Сенки"
+
+msgid "Default Font Antialiasing"
+msgstr "Стандартно депикселизиране на текст"
+
+msgid "Default Font Hinting"
+msgstr "Стандартно Намекване за Шрифт"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "Стандартна подпикселова позиция на текст"
+
+msgid "Hand Tracking Source"
+msgstr "Проследяване на Ръцете: Източник"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "Включено ли е Засичането на Котви"

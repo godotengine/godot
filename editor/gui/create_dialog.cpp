@@ -670,6 +670,9 @@ Variant CreateDialog::instantiate_selected() {
 
 void CreateDialog::_item_selected() {
 	String name = get_selected_type();
+	if (name.is_resource_file()) {
+		name = search_options->get_selected()->get_text(0).get_slicec(' ', 0);
+	}
 	select_type(name, false);
 }
 

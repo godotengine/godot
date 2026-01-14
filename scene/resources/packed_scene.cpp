@@ -1560,6 +1560,36 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 				return variants[p[i].value];
 			}
 		}
+
+#ifndef DISABLE_DEPRECATED
+#ifdef TOOLS_ENABLED
+		// Compatibility: In 4.5 and earlier, AnimationMixer used a single "libraries" Dictionary property.
+		// In 4.6+, each library is stored as a separate "libraries/<name>" property.
+		// If we're looking for "libraries/<name>" and didn't find it, check the old format.
+		String prop_str = p_property.operator String();
+		if (prop_str.begins_with("libraries/")) {
+			StringName node_type = get_node_type(p_node);
+			if (node_type != StringName() && ClassDB::is_parent_class(node_type, SNAME("AnimationMixer"))) {
+				String library_name = prop_str.get_slicec('/', 1);
+				static const StringName libraries_sname = "libraries";
+				for (int i = 0; i < pc; i++) {
+					if (namep[p[i].name & FLAG_PROP_NAME_MASK] == libraries_sname) {
+						Variant libs_variant = variants[p[i].value];
+						if (libs_variant.get_type() == Variant::DICTIONARY) {
+							Dictionary libs_dict = libs_variant;
+							if (libs_dict.has(library_name)) {
+								r_found = true;
+								r_node_deferred = false;
+								return libs_dict[library_name];
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+#endif // TOOLS_ENABLED
+#endif // DISABLE_DEPRECATED
 	}
 
 	// Property not found, try on instance.

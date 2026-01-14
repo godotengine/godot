@@ -2350,10 +2350,12 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	}
 
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN || window_get_mode(p_window) == WINDOW_MODE_MAXIMIZED) {
+		WindowMode current_mode = window_get_mode(p_window);
+		window_set_mode(WINDOW_MODE_WINDOWED, p_window);
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
-
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
+		window_set_mode(current_mode, p_window);
 	} else {
 		Rect2i srect = screen_get_usable_rect(p_screen);
 		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));

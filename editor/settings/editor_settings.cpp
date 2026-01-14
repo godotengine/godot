@@ -964,7 +964,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// 3D: Manipulator
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "editors/3d/show_gizmo_during_rotation", 2, "Global,Local");
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);
@@ -1954,7 +1955,6 @@ void EditorSettings::add_shortcut(const String &p_path, const Ref<Shortcut> &p_s
 		p_shortcut->set_name(shortcut_name);
 	}
 	shortcuts[p_path] = p_shortcut;
-	shortcuts[p_path]->set_meta("customized", true);
 }
 
 void EditorSettings::remove_shortcut(const String &p_path) {
@@ -2083,7 +2083,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	}
 
 	// Override the existing shortcut only if it wasn't customized by the user.
-	if (!sc->has_meta("customized")) {
+	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
 		sc->set_events(events);
 	}
 

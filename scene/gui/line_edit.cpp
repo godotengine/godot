@@ -2573,6 +2573,12 @@ void LineEdit::set_editable(bool p_editable) {
 		unedit();
 		emit_signal(SNAME("editing_toggled"), false);
 	}
+
+	if (editable && has_focus() && !editing) {
+		edit();
+		emit_signal(SNAME("editing_toggled"), true);
+	}
+
 	_validate_caret_can_draw();
 
 	update_minimum_size();

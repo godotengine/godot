@@ -127,8 +127,9 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (pl) {
 				int idx = pl->get_index(this);
 				if (idx >= 0) {
+					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
+					pl->select_project(idx, !has_focus(true));
 					pl->ensure_project_visible(idx);
-					pl->select_project(idx);
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -356,6 +357,9 @@ ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
 	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
+	// Left spacer.
+	add_child(memnew(Control));
+
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	add_child(favorite_box);
@@ -399,10 +403,6 @@ ProjectListItemControl::ProjectListItemControl() {
 
 		tag_container = memnew(HBoxContainer);
 		title_hb->add_child(tag_container);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		title_hb->add_child(spacer);
 	}
 
 	// Bottom half, containing the path and view folder button.
@@ -414,6 +414,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button = memnew(Button);
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		explore_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		explore_button->set_tooltip_text(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
@@ -448,10 +449,6 @@ ProjectListItemControl::ProjectListItemControl() {
 		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));
 		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(last_edited_info);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		path_hb->add_child(spacer);
 	}
 
 	if (DisplayServer::get_singleton()->is_touchscreen_available()) {
@@ -459,8 +456,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		touch_menu_button->set_theme_type_variation(SceneStringName(FlatButton));
 		touch_menu_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 		add_child(touch_menu_button);
+		touch_menu_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		touch_menu_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_request_menu));
 	}
+
+	// Right spacer.
+	add_child(memnew(Control));
 }
 
 struct ProjectListComparator {
@@ -1208,7 +1209,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index);
+	select_project(clicked_index, true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,

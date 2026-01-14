@@ -58,13 +58,14 @@
 # kubfaf <kubfaf@gmail.com>, 2025.
 # GrenewerearE <grenewereare@seznam.cz>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Frostcorn <houskam@gasos-ro.cz>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2026-01-05 13:01+0000\n"
+"Last-Translator: Frostcorn <houskam@gasos-ro.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -72,7 +73,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Locked"
+msgstr "Zamčeno"
+
+msgid "Help"
+msgstr "Nápověda"
+
+msgid "unset"
+msgstr "Nenastaveno"
 
 msgid "Physical"
 msgstr "Fyzická klávesa"
@@ -4356,9 +4369,6 @@ msgstr "Otáčí se při překreslování okna editoru."
 msgid "Imported resources can't be saved."
 msgstr "Importované zdroje nelze uložit."
 
-msgid "OK"
-msgstr "OK"
-
 msgid "Error saving resource!"
 msgstr "Chyba při ukládání zdroje!"
 
@@ -5068,9 +5078,6 @@ msgstr "Otevřít předchozí editor"
 
 msgid "Project"
 msgstr "Projekt"
-
-msgid "Help"
-msgstr "Nápověda"
 
 msgid "Update Continuously"
 msgstr "Aktualizovat průběžně"
@@ -7937,6 +7944,9 @@ msgstr "Rychlá nastavení"
 msgid "Language"
 msgstr "Jazyk"
 
+msgid "Style"
+msgstr "Styl"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "Vlastní předvolby lze dále konfigurovat v editoru."
 
@@ -10068,9 +10078,6 @@ msgstr "Zadní perspektivní"
 msgid "[auto]"
 msgstr "[automatické]"
 
-msgid "Locked"
-msgstr "Zamčeno"
-
 msgid "Grouped"
 msgstr "Seskupeno"
 
@@ -10098,24 +10105,6 @@ msgid ""
 msgstr ""
 "Přetažením přepíšete materiál libovolného uzlu geometrie.\n"
 "Podržením %s při přetažení přepíšete konkrétní povrch."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Velikost: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objekty: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Primitivy: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Vykreslovací volání: %d"
@@ -12466,9 +12455,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Následné zpracování"
-
-msgid "Style"
-msgstr "Styl"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalCase na snake_case"
@@ -18697,14 +18683,6 @@ msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Interpolovaná proměnná '%s' nemůže být předána pro parametr '%s' v tomto "
 "kontextu."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"Nelze předat vícepohledový vzorkovač textur jako parametr vlastní funkci. "
-"Zvažte vzorkování provést v hlavní funkci a pak jí předat výsledný vektor."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Neznámý identifikátor ve výrazu: '%s'."

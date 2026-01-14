@@ -1245,7 +1245,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			// Note, sky.setup should have been called up above and setup stuff we need.
 
-			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
+			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, inverse_luminance_multiplier, sky_brightness_multiplier);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
