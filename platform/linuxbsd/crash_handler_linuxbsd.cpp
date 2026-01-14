@@ -31,6 +31,7 @@
 #include "crash_handler_linuxbsd.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/object/script_language.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -66,6 +67,10 @@ static void handle_crash(int sig) {
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
+
+	if (FileAccess::exists(_execpath + ".debugsymbols")) {
+		_execpath = _execpath + ".debugsymbols";
+	}
 
 	String msg;
 	if (ProjectSettings::get_singleton()) {
