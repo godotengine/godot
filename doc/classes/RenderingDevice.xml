@@ -583,6 +583,14 @@
 				Returns the universally unique identifier for the pipeline cache. This is used to cache shader files on disk, which avoids shader recompilations on subsequent engine runs. This UUID varies depending on the graphics card model, but also the driver version. Therefore, updating graphics drivers will invalidate the shader cache.
 			</description>
 		</method>
+		<method name="get_device_enabled_extensions" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of Vulkan device extensions that are currently enabled. This is useful for GDExtensions that need to verify whether specific Vulkan extensions (such as external memory extensions) were successfully enabled.
+				Additional extensions can be requested via the [member ProjectSettings.rendering/rendering_device/vulkan/additional_device_extensions] project setting.
+				[b]Note:[/b] This method only returns meaningful results when using the Vulkan rendering backend. For other backends (D3D12, Metal), an empty array is returned.
+			</description>
+		</method>
 		<method name="get_device_total_memory" qualifiers="const">
 			<return type="int" />
 			<description>

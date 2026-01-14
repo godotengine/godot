@@ -846,6 +846,7 @@ public:
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
+	virtual PackedStringArray get_enabled_device_extensions() const { return PackedStringArray(); }
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 

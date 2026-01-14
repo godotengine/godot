@@ -716,6 +716,7 @@ public:
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
+	virtual PackedStringArray get_enabled_device_extensions() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 
