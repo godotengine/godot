@@ -676,10 +676,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="mouse_picking" type="bool" setter="set_mouse_picking_enabled" getter="is_mouse_picking_enabled" default="false">
-			If [code]true[/code], this [CanvasItem] can receive mouse input events and emit mouse signals.
-			[b]Note:[/b] Input processing should be enabled for this to work by calling set_process_input(true).
-		</member>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
 			The mode in which this node clips its children, acting as a mask.
 			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
