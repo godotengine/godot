@@ -152,8 +152,8 @@ class RID_Alloc : public RID_AllocBase {
 			}
 
 			if constexpr (THREAD_SAFE) {
-				// Store atomically to avoid data race with the load in get_or_null().
-				((std::atomic<uint32_t> *)&max_alloc)->store(max_alloc + elements_in_chunk, std::memory_order_relaxed);
+				// Release ensures all chunk initialization is visible to acquire-load readers.
+				((std::atomic<uint32_t> *)&max_alloc)->store(max_alloc + elements_in_chunk, std::memory_order_release);
 			} else {
 				max_alloc += elements_in_chunk;
 			}
@@ -169,8 +169,8 @@ class RID_Alloc : public RID_AllocBase {
 		id <<= 32;
 		id |= free_index;
 
-		chunks[free_chunk][free_element].validator = validator;
-		chunks[free_chunk][free_element].validator |= 0x80000000; //mark uninitialized bit
+		// Release ensures validator is visible to acquire-load readers.
+		((std::atomic<uint32_t> *)&chunks[free_chunk][free_element].validator)->store(validator | 0x80000000, std::memory_order_release);
 
 		alloc_count++;
 
@@ -203,15 +203,12 @@ public:
 			return nullptr;
 		}
 
-		if constexpr (THREAD_SAFE) {
-			SYNC_ACQUIRE;
-		}
-
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		uint32_t ma;
-		if constexpr (THREAD_SAFE) { // Read atomically to avoid data race with the store in _allocate_rid().
-			ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_relaxed);
+		if constexpr (THREAD_SAFE) {
+			// Acquire synchronizes with release-store in _allocate_rid(), ensuring chunk data is visible.
+			ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_acquire);
 		} else {
 			ma = max_alloc;
 		}
@@ -224,50 +221,38 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
+		uint32_t cur_validator;
 		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_acquire(&chunks[idx_chunk]); // We know not a race in practice.
-			__tsan_acquire(&chunks[idx_chunk][idx_element]); // We know not a race in practice.
-#endif
-		}
-
-		Chunk &c = chunks[idx_chunk][idx_element];
-
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&chunks[idx_chunk]);
-			__tsan_release(&chunks[idx_chunk][idx_element]);
-			__tsan_acquire(&c.validator); // We know not a race in practice.
-#endif
+			// Acquire synchronizes with release-store in _allocate_rid().
+			cur_validator = ((std::atomic<uint32_t> *)&chunks[idx_chunk][idx_element].validator)->load(std::memory_order_acquire);
+		} else {
+			cur_validator = chunks[idx_chunk][idx_element].validator;
 		}
 
 		if (unlikely(p_initialize)) {
-			if (unlikely(!(c.validator & 0x80000000))) {
+			if (unlikely(!(cur_validator & 0x80000000))) {
 				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
 			}
 
-			if (unlikely((c.validator & 0x7FFFFFFF) != validator)) {
+			if (unlikely((cur_validator & 0x7FFFFFFF) != validator)) {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
 			}
 
-			c.validator &= 0x7FFFFFFF; //initialized
+			if constexpr (THREAD_SAFE) {
+				// Release ensures initialized data is visible before clearing init bit.
+				((std::atomic<uint32_t> *)&chunks[idx_chunk][idx_element].validator)->store(cur_validator & 0x7FFFFFFF, std::memory_order_release);
+			} else {
+				chunks[idx_chunk][idx_element].validator = cur_validator & 0x7FFFFFFF;
+			}
 
-		} else if (unlikely(c.validator != validator)) {
-			if ((c.validator & 0x80000000) && c.validator != 0xFFFFFFFF) {
+		} else if (unlikely(cur_validator != validator)) {
+			if ((cur_validator & 0x80000000) && cur_validator != 0xFFFFFFFF) {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to use an uninitialized RID");
 			}
 			return nullptr;
 		}
 
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&c.validator);
-#endif
-		}
-
-		T *ptr = &c.data;
-
-		return ptr;
+		return &chunks[idx_chunk][idx_element].data;
 	}
 	void initialize_rid(RID p_rid) {
 		T *mem = get_or_null(p_rid, true);
@@ -314,15 +299,12 @@ public:
 			return false;
 		}
 
-		if constexpr (THREAD_SAFE) {
-			SYNC_ACQUIRE;
-		}
-
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		uint32_t ma;
 		if constexpr (THREAD_SAFE) {
-			ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_relaxed);
+			// Acquire synchronizes with release-store in _allocate_rid(), ensuring chunk data is visible.
+			ma = ((std::atomic<uint32_t> *)&max_alloc)->load(std::memory_order_acquire);
 		} else {
 			ma = max_alloc;
 		}
@@ -336,32 +318,15 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
+		uint32_t cur_validator;
 		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_acquire(&chunks[idx_chunk]); // We know not a race in practice.
-			__tsan_acquire(&chunks[idx_chunk][idx_element]); // We know not a race in practice.
-#endif
+			// Acquire synchronizes with release-store in _allocate_rid().
+			cur_validator = ((std::atomic<uint32_t> *)&chunks[idx_chunk][idx_element].validator)->load(std::memory_order_acquire);
+		} else {
+			cur_validator = chunks[idx_chunk][idx_element].validator;
 		}
 
-		Chunk &c = chunks[idx_chunk][idx_element];
-
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&chunks[idx_chunk]);
-			__tsan_release(&chunks[idx_chunk][idx_element]);
-			__tsan_acquire(&c.validator); // We know not a race in practice.
-#endif
-		}
-
-		bool owned = (c.validator & 0x7FFFFFFF) == validator;
-
-		if constexpr (THREAD_SAFE) {
-#ifdef TSAN_ENABLED
-			__tsan_release(&c.validator);
-#endif
-		}
-
-		return owned;
+		return (cur_validator & 0x7FFFFFFF) == validator;
 	}
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
