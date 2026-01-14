@@ -196,22 +196,23 @@ void ColorPicker::_notification(int p_what) {
 			const bool out_of_bounds = viewport_size.y >= usable_size.y;
 
 			const int child_count = shape_container ? shape_container->get_child_count() : 0;
-			if (shape_child_original_mins.size() != child_count) {
+
+			if ((int)shape_child_original_mins.size() != child_count) {
 				shape_child_original_mins.clear();
 				shape_child_original_mins.reserve(child_count);
 				for (int i = 0; i < child_count; i++) {
-					Control *c = cast_to<Control>(shape_container->get_child(i));
+					Control *c = Object::cast_to<Control>(shape_container->get_child(i));
 					shape_child_original_mins.push_back(c ? c->get_custom_minimum_size() : Size2());
 				}
 			}
 
 			for (int i = 0; i < child_count; i++) {
-				Control *c = cast_to<Control>(shape_container->get_child(i));
+				Control *c = Object::cast_to<Control>(shape_container->get_child(i));
 				if (!c) {
 					continue;
 				}
 				const Size2 orig = shape_child_original_mins[i];
-				c->set_custom_minimum_size(out_of_bounds ? orig * 0.8f : orig);
+				c->set_custom_minimum_size(out_of_bounds ? (orig * 0.8f) : orig);
 			}
 		} break;
 
