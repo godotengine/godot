@@ -187,6 +187,7 @@ private:
 
 	LocalVector<ColorMode *> modes;
 	LocalVector<ColorPickerShape *> shapes;
+	LocalVector<Size2> shape_child_original_mins;
 
 	Popup *picker_window = nullptr;
 	TextureRect *picker_texture_zoom = nullptr;
