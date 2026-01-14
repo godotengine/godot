@@ -1836,11 +1836,9 @@ void TabBar::_ensure_no_over_offset() {
 
 	int total_w = tabs[max_drawn_tab].ofs_cache + tabs[max_drawn_tab].size_cache - tabs[offset].ofs_cache;
 	for (int i = offset - 1; i >= 0; i--) {
-		if (tabs[i].hidden) {
-			continue;
+		if (!tabs[i].hidden) {
+			total_w += tabs[i].size_cache;
 		}
-
-		total_w += tabs[i].size_cache;
 
 		if (total_w < limit_with_buttons) {
 			offset_with_buttons--;
