@@ -475,7 +475,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-bool Sprite2D::has_point(const Vector2 &p_point) {
+bool Sprite2D::has_point(const Vector2 &p_point) const {
 	if (!texture.is_valid()) {
 		return false;
 	}
