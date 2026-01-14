@@ -561,7 +561,7 @@
 			<param index="0" name="point" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the given [param point] (in local coordinates) is inside the visible area of this [CanvasItem]. The visible area is only calculated in [Sprite2D] and [Polygon2D].
-				This method is used internally for mouse picking when [member mouse_picking] is enabled.
+				This method is used internally for mouse picking when mouse picking is enabled.
 			</description>
 		</method>
 		<method name="hide">
