@@ -366,7 +366,7 @@ static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vecto
 
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
-	static constexpr int64_t volume_vector_size = 4;
+	static constexpr int64_t volume_vector_size = AudioServer::MAX_CHANNELS_PER_BUS;
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(volume_vector_size);
 	for (AudioFrame &frame : output_volume_vector) {
