@@ -467,6 +467,14 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *p_bas
 		copy_2d->set_scale(base_2d->get_scale());
 	}
 
+	Control *copy_control = Object::cast_to<Control>(instantiated_scene);
+	Control *base_control = Object::cast_to<Control>(p_base);
+	if (copy_control && base_control) {
+		copy_control->set_position(base_control->get_position());
+		copy_control->set_rotation(base_control->get_rotation());
+		copy_control->set_scale(base_control->get_scale());
+	}
+
 	Node3D *copy_3d = Object::cast_to<Node3D>(instantiated_scene);
 	Node3D *base_3d = Object::cast_to<Node3D>(p_base);
 	if (copy_3d && base_3d) {
@@ -3489,6 +3497,18 @@ void SceneTreeDock::_new_scene_from(const String &p_file) {
 			}
 			if (reset_scale) {
 				copy_2d->set_scale(Size2(1, 1));
+			}
+		}
+		Control *copy_control = Object::cast_to<Control>(copy);
+		if (copy_control != nullptr) {
+			if (reset_position) {
+				copy_control->set_position(Vector2(0, 0));
+			}
+			if (reset_rotation) {
+				copy_control->set_rotation(0);
+			}
+			if (reset_scale) {
+				copy_control->set_scale(Size2(1, 1));
 			}
 		}
 		Node3D *copy_3d = Object::cast_to<Node3D>(copy);
