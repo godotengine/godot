@@ -1121,13 +1121,13 @@ void CanvasItem::set_canvas_item_use_identity_transform(bool p_enable) {
 		}
 	}
 }
-bool CanvasItem::has_point(const Vector2 &p_point) { //We'll override this in Sprite2D and Polygon2D
+
+bool CanvasItem::has_point(const Vector2 &p_point) const { //We'll override this in Sprite2D and Polygon2D
 	return false;
 }
 
 void CanvasItem::input(const Ref<InputEvent> &p_event) { //It needs to be enabled by setting set_process_input(true);
 	Ref<InputEventMouse> mouse_event = p_event;
-	Vector2 mouse_pos = mouse_event->get_global_position();
 	Ref<InputEventMouseButton> mouse_button_event = mouse_event;
 	if (mouse_button_event.is_valid() && mouse_button_event->is_pressed()) { //If the mouse is over the item and a button is pressed, emit signal
 		emit_signal("mouse_pressed_node", mouse_button_event->get_button_index());
