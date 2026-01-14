@@ -590,8 +590,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	// Register additional device extensions from project settings.
 	{
 		PackedStringArray additional_extensions = GLOBAL_GET("rendering/rendering_device/vulkan/additional_device_extensions");
-		for (int i = 0; i < additional_extensions.size(); i++) {
-			CharString extension_name = additional_extensions[i].utf8();
+		for (const String &additional_extension : additional_extensions) {
+			CharString extension_name = additional_extension.utf8();
 			if (!requested_device_extensions.has(extension_name)) {
 				_register_requested_device_extension(extension_name, false);
 			}
