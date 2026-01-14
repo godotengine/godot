@@ -33,8 +33,8 @@ package org.godotengine.godot;
 import java.util.HashMap;
 import java.util.Set;
 
-public class Dictionary extends HashMap<String, Object> {
-	protected String[] keys_cache;
+public final class Dictionary extends HashMap<String, Object> {
+	private String[] keys_cache;
 
 	public String[] get_keys() {
 		String[] ret = new String[size()];
