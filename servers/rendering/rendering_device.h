@@ -1947,6 +1947,7 @@ public:
 	String get_device_api_name() const;
 	String get_device_api_version() const;
 	String get_device_pipeline_cache_uuid() const;
+	PackedStringArray get_device_enabled_extensions() const;
 
 	DriverWorkarounds get_driver_workarounds() const;
 
