@@ -76,7 +76,6 @@ class Polygon2D : public Node2D {
 	RID mesh;
 
 protected:
-	
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -152,7 +151,7 @@ public:
 	NodePath get_skeleton() const;
 
 	bool has_point(const Vector2 &p_point) override;
-	
+
 #ifndef NAVIGATION_2D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
