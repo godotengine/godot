@@ -135,7 +135,7 @@ public:
 	Rect2 get_rect() const;
 	virtual Rect2 get_anchorable_rect() const override;
 
-	bool has_point(const Vector2 &p_point) override;
+	bool has_point(const Vector2 &p_point) const override;
 
 	Sprite2D();
 };
