@@ -1130,7 +1130,7 @@ void CanvasItem::input(const Ref<InputEvent> &p_event) { //It needs to be enable
 	Vector2 mouse_pos = mouse_event->get_global_position();
 	Ref<InputEventMouseButton> mouse_button_event = mouse_event;
 	if (mouse_button_event.is_valid() && mouse_button_event->is_pressed()) { //If the mouse is over the item and a button is pressed, emit signal
-			emit_signal("mouse_pressed_node", mouse_button_event->get_button_index());
+		emit_signal("mouse_pressed_node", mouse_button_event->get_button_index());
 	}	
 	get_viewport()->set_input_as_handled(); //We mark the event as handled to avoid propagating it to other nodes
 }
@@ -1488,7 +1488,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_mouse_picking_enabled"), &CanvasItem::is_mouse_picking_enabled);
 	ClassDB::bind_method(D_METHOD("set_mouse_picking_enabled", "enabled"), &CanvasItem::set_mouse_picking_enabled);
-	
+
 	ClassDB::bind_method(D_METHOD("has_point", "point"), &CanvasItem::has_point);
 
 	GDVIRTUAL_BIND(_draw);
