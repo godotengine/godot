@@ -38,6 +38,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/settings/editor_settings.h"
@@ -231,6 +232,16 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 void EditorQuickOpenDialog::preview_property() {
 	Ref<Resource> loaded_resource = ResourceLoader::load(container->get_selected());
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + container->get_selected() + "'.");
+
+	Resource *res = Object::cast_to<Resource>(property_object);
+	if (res) {
+		HashSet<Resource *> resources_found;
+		resources_found.insert(res);
+		if (EditorNode::find_recursive_resources(loaded_resource, resources_found)) {
+			EditorToaster::get_singleton()->popup_str(TTR("Recursion detected, Instant Preview failed."), EditorToaster::SEVERITY_ERROR);
+			loaded_resource = Ref<Resource>();
+		}
+	}
 
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't

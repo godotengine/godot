@@ -35,13 +35,14 @@
 # Adrià Rodríguez Pujol <adria_r_p_@hotmail.com>, 2025.
 # Santiago Peralta <speralta.dev@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# marc-marcos <marcmarcosmadruga@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2026-01-08 18:01+0000\n"
+"Last-Translator: marc-marcos <marcmarcosmadruga@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -49,7 +50,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "D'acord"
+
+msgid "Help"
+msgstr "Ajuda"
+
+msgid "unset"
+msgstr "Sense establir"
 
 msgid "Physical"
 msgstr "Físic"
@@ -3020,9 +3030,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Gira quan la finestra de l'editor es redibuixa."
 
-msgid "OK"
-msgstr "D'acord"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -3300,9 +3307,6 @@ msgstr "Obre l'Editor precedent"
 
 msgid "Project"
 msgstr "Projecte"
-
-msgid "Help"
-msgstr "Ajuda"
 
 msgid "Update Continuously"
 msgstr "Actualitzar contínuament"
@@ -4176,6 +4180,9 @@ msgstr "Error"
 
 msgid "Restart Now"
 msgstr "Reinicia"
+
+msgid "Style"
+msgstr "Estil"
 
 msgid "Network Profiler"
 msgstr "Perfilador de Xarxa"
@@ -5488,9 +5495,6 @@ msgstr "Pas"
 
 msgid "Post-Process"
 msgstr "Post-Processat"
-
-msgid "Style"
-msgstr "Estil"
 
 msgid "To Lowercase"
 msgstr "A Minúscules"

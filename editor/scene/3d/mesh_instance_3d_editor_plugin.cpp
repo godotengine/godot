@@ -798,7 +798,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_text(TTR("Mesh"));
 	options->set_switch_on_hover(true);
 	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButton");
+	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);

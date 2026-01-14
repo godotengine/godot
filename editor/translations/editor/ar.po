@@ -105,13 +105,14 @@
 # Elias Dammach <eliasdammach208@gmail.com>, 2025.
 # Ihab Shoully <shoully@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# ahmad aaaz <aaazahmad8@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2025-12-31 16:58+0000\n"
+"Last-Translator: ahmad aaaz <aaazahmad8@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -120,7 +121,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "حسنا"
+
+msgid "Locked"
+msgstr "مُقفل"
+
+msgid "Help"
+msgstr "المساعدة"
+
+msgid "unset"
+msgstr "غير معيّن"
 
 msgid "Physical"
 msgstr "طبيعي"
@@ -156,7 +169,7 @@ msgid "Button"
 msgstr "زر"
 
 msgid "Double Click"
-msgstr "نقرة مضاعفة"
+msgstr "نقرة مزدوجة"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "حركة الفأرة في المكان (%s) بالسرعة (%s)"
@@ -308,6 +321,9 @@ msgstr "حدد"
 
 msgid "Cancel"
 msgstr "إلغاء"
+
+msgid "Close Dialog"
+msgstr "إغلاق الحوار"
 
 msgid "Focus Next"
 msgstr "حدد التالي"
@@ -4334,9 +4350,6 @@ msgstr "يدور عند إعادة رسم نافذة المحرّر."
 msgid "Imported resources can't be saved."
 msgstr "الموارد المستوردة لا يمكن حفظها."
 
-msgid "OK"
-msgstr "حسنا"
-
 msgid "Error saving resource!"
 msgstr "خطأ في حفظ المورد!"
 
@@ -5041,9 +5054,6 @@ msgstr "افتح المُحرر السابق"
 
 msgid "Project"
 msgstr "المشروع"
-
-msgid "Help"
-msgstr "المساعدة"
 
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
@@ -7585,6 +7595,9 @@ msgstr "الإعدادات السريعة"
 msgid "Language"
 msgstr "اللغة"
 
+msgid "Style"
+msgstr "الأسلوب"
+
 msgid "Display Scale"
 msgstr "مقياس العرض"
 
@@ -9115,9 +9128,6 @@ msgstr "نظر من الخلف (متعامد/ليس له بعد ثالث)"
 msgid "Rear Perspective"
 msgstr "نظر من الخلف"
 
-msgid "Locked"
-msgstr "مُقفل"
-
 msgid "Grouped"
 msgstr "جُمعتْ"
 
@@ -9145,24 +9155,6 @@ msgid ""
 msgstr ""
 "قم بالسحب والإفلات لتجاوز مادة أي عقدة هندسية.\n"
 "اضغط مع الاستمرار على %s عند الإسقاط لتجاوز سطح معين."
-
-msgid "X: %s\n"
-msgstr "س: %s\n"
-
-msgid "Y: %s\n"
-msgstr "ص: %s\n"
-
-msgid "Z: %s\n"
-msgstr "ع: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "الحجم: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "العناصر: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "الأوّليّات: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "دعوات الرسم: %d"
@@ -11340,9 +11332,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "المعالجة-اللاحقة Post-Process"
-
-msgid "Style"
-msgstr "الأسلوب"
 
 msgid "PascalCase to snake_case"
 msgstr "حالة أحرف PascalCase إلى snake_case"
@@ -16138,15 +16127,6 @@ msgstr "من المتوقع اسم دالة."
 
 msgid "No matching function found for: '%s'."
 msgstr "لم يتم العثور على دالة مطابقة لـ: '%s'."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"غير قادر على تمرير أداة أخذ عينات نسيج متعددة طرق العرض كمعلمة إلى وظيفة "
-"مخصصة. فكر في أخذ عينات منها في الوظيفة الرئيسية ثم قم بتمرير نتيجة المتجه "
-"إليها."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "معرف غير معروف في التعبير: '%s'."

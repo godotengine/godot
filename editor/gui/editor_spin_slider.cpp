@@ -53,7 +53,15 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 Size2 EditorSpinSlider::get_minimum_size() const {
-	return Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
+	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+
+	Size2 ms = sb->get_minimum_size();
+	ms.height += font->get_height(font_size);
+	ms.height = MAX(ms.height, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
+
+	return ms;
 }
 
 String EditorSpinSlider::get_text_value() const {
@@ -280,9 +288,9 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			} break;
 			case Key::ESCAPE: {
 				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
-				if (value_input_popup) {
+				if (value_input) {
 					value_input_focus_visible = value_input->has_focus(true);
-					value_input_popup->hide();
+					value_input->hide();
 				}
 			} break;
 			default:
@@ -300,14 +308,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 	// default margins.
 	Ref<StyleBox> stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
-	// EditorSpinSliders with a label have more space on the left, so add an
-	// higher margin to match the location where the text begins.
-	// The margin values below were determined by empirical testing.
-	if (is_layout_rtl()) {
-		stylebox->set_content_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
-	} else {
-		stylebox->set_content_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
-	}
+	// TODO: Handle this internally instead of relying on the theme.
+	int margin = get_theme_constant(get_label().is_empty() ? SNAME("line_edit_margin_empty") : SNAME("line_edit_margin"), SNAME("EditorSpinSlider"));
+	stylebox->set_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT, margin);
 
 	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
 }
@@ -429,7 +432,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input && value_input->is_visible());
 			if (grabber->is_visible() != display_grabber) {
 				grabber->set_visible(display_grabber);
 			}
@@ -517,7 +520,7 @@ void EditorSpinSlider::_notification(int p_what) {
 }
 
 LineEdit *EditorSpinSlider::get_line_edit() {
-	_ensure_input_popup();
+	_ensure_value_input();
 	return value_input;
 }
 
@@ -604,24 +607,21 @@ void EditorSpinSlider::_evaluate_input_text() {
 	set_value(v);
 }
 
-//text_submitted signal
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
-	if (value_input_popup) {
+	if (value_input) {
 		value_input_focus_visible = value_input->has_focus(true);
-		value_input_popup->hide();
+		value_input->hide();
 	}
 }
 
-//modal_closed signal
-void EditorSpinSlider::_value_input_closed() {
+void EditorSpinSlider::_value_input_hidden() {
 	_evaluate_input_text();
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 }
 
-//focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-	// discontinue because the focus_exit was caused by right-click context menu
+	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (value_input->is_menu_visible()) {
 		return;
 	}
@@ -632,15 +632,14 @@ void EditorSpinSlider::_value_focus_exited() {
 	}
 
 	_evaluate_input_text();
-	// focus is not on the same element after the value_input was exited
-	// -> focus is on next element
-	// -> TAB was pressed
-	// -> modal_close was not called
-	// -> need to close/hide manually
+	// Focus is not on the same element after the value_input was hidden.
+	// -> Focus is on next element.
+	// -> TAB was pressed.
+	// -> Need to close/hide manually.
 	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 		// Hidden or something else took focus.
-		if (value_input_popup) {
-			value_input_popup->hide();
+		if (value_input) {
+			value_input->hide();
 		}
 	} else {
 		// Enter or Esc was pressed. Keep showing the focus if already present.
@@ -692,12 +691,11 @@ void EditorSpinSlider::_focus_entered(bool p_hide_focus) {
 		return;
 	}
 
-	_ensure_input_popup();
+	_ensure_value_input();
 	value_input->set_text(get_text_value());
-	value_input_popup->set_size(get_size());
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
-	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
+	callable_mp((CanvasItem *)value_input, &CanvasItem::show).call_deferred();
 	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred(p_hide_focus);
 	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
@@ -750,21 +748,18 @@ void EditorSpinSlider::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_disabled_icon, "updown_disabled");
 }
 
-void EditorSpinSlider::_ensure_input_popup() {
-	if (value_input_popup) {
+void EditorSpinSlider::_ensure_value_input() {
+	if (value_input) {
 		return;
 	}
-
-	value_input_popup = memnew(Control);
-	value_input_popup->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
 	value_input->set_emoji_menu_enabled(false);
 	value_input->set_focus_mode(FOCUS_CLICK);
-	value_input_popup->add_child(value_input);
+	value_input->add_theme_constant_override(SNAME("minimum_character_width"), 0);
+	add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	value_input_popup->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_hidden));
 	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));

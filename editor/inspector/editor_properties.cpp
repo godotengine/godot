@@ -445,7 +445,7 @@ void EditorPropertyTextEnum::_option_selected(int p_which) {
 void EditorPropertyTextEnum::_edit_custom_value() {
 	default_layout->hide();
 	edit_custom_layout->show();
-	custom_value_edit->grab_focus();
+	custom_value_edit->grab_focus(true);
 }
 
 void EditorPropertyTextEnum::_custom_value_submitted(const String &p_value) {
@@ -3339,82 +3339,15 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 }
 
-static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &resources_found) {
-	switch (v.get_type()) {
-		case Variant::ARRAY: {
-			Array a = v;
-			for (int i = 0; i < a.size(); i++) {
-				Variant v2 = a[i];
-				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
-					continue;
-				}
-				if (_find_recursive_resources(v2, resources_found)) {
-					return true;
-				}
-			}
-		} break;
-		case Variant::DICTIONARY: {
-			Dictionary d = v;
-			for (const KeyValue<Variant, Variant> &kv : d) {
-				const Variant &k = kv.key;
-				const Variant &v2 = kv.value;
-				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
-					if (_find_recursive_resources(k, resources_found)) {
-						return true;
-					}
-				}
-				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
-					if (_find_recursive_resources(v2, resources_found)) {
-						return true;
-					}
-				}
-			}
-		} break;
-		case Variant::OBJECT: {
-			Ref<Resource> r = v;
-
-			if (r.is_null()) {
-				return false;
-			}
-
-			if (resources_found.has(r.ptr())) {
-				return true;
-			}
-
-			resources_found.insert(r.ptr());
-
-			List<PropertyInfo> plist;
-			r->get_property_list(&plist);
-			for (const PropertyInfo &pinfo : plist) {
-				if (!(pinfo.usage & PROPERTY_USAGE_STORAGE)) {
-					continue;
-				}
-
-				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
-					continue;
-				}
-				if (_find_recursive_resources(r->get(pinfo.name), resources_found)) {
-					return true;
-				}
-			}
-
-			resources_found.erase(r.ptr());
-		} break;
-		default: {
-		}
-	}
-	return false;
-}
-
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
 	Resource *r = Object::cast_to<Resource>(get_edited_object());
 	if (r) {
 		// Check for recursive setting of resource
 		HashSet<Resource *> resources_found;
 		resources_found.insert(r);
-		bool found = _find_recursive_resources(p_resource, resources_found);
+		bool found = EditorNode::find_recursive_resources(p_resource, resources_found);
 		if (found) {
-			EditorNode::get_singleton()->show_warning(TTR("Recursion detected, unable to assign resource to property."));
+			callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(TTR("Recursion detected, unable to assign resource to property."), TTR("Warning!"));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;

@@ -115,13 +115,14 @@
 # JoseLL8 <100429024@alumnos.uc3m.es>, 2025.
 # Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2025.
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
+# Kevin <kevmed39@protonmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-04 15:00+0000\n"
-"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2025-12-28 22:00+0000\n"
+"Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -129,7 +130,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -178,6 +179,9 @@ msgstr "Nombre de Directorio de Usuario Personalizado"
 
 msgid "Project Settings Override"
 msgstr "Anular Configuración del Proyecto"
+
+msgid "Disable Project Settings Override"
+msgstr "Desactivar Sobrescritura de Anulación de Configuración del Proyecto"
 
 msgid "Main Loop Type"
 msgstr "Tipo de Loop Principal"
@@ -434,8 +438,14 @@ msgstr "Retraso de Tooltip (sec)"
 msgid "Common"
 msgstr "Común"
 
+msgid "Drag Threshold"
+msgstr "Umbral de Arrastre"
+
 msgid "Snap Controls to Pixels"
 msgstr "Ajustar Controles a Píxeles"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Mostrar Estado de Enfoque en Evento Apuntado"
 
 msgid "Fonts"
 msgstr "Fuentes"
@@ -580,6 +590,9 @@ msgstr "Errores de Fusión de Bordes de NavMesh"
 
 msgid "NavMesh Cell Size Mismatch"
 msgstr "Tamaño de Celda de NavMesh Incompatible"
+
+msgid "Editor Overrides"
+msgstr "Sobrescrituras del Editor"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Bajo Uso del Procesador"
@@ -869,6 +882,9 @@ msgstr "TCP"
 msgid "Connect Timeout Seconds"
 msgstr "Segundos de Espera de Conexión"
 
+msgid "Unix"
+msgstr "Unix"
+
 msgid "Packet Peer Stream"
 msgstr "Transmisión de Paquetes entre Pares"
 
@@ -893,6 +909,9 @@ msgstr "Proporción de Hilos de Baja Prioridad"
 msgid "Locale"
 msgstr "Configuración Regional"
 
+msgid "Plural Rules Override"
+msgstr "Sobrescrituras de Reglas Plurales"
+
 msgid "Test"
 msgstr "Test"
 
@@ -904,6 +923,9 @@ msgstr "Pseudolocalización"
 
 msgid "Use Pseudolocalization"
 msgstr "Uso de Pseudolocalización"
+
+msgid "Replace with Accents"
+msgstr "Reemplazar con Acentos"
 
 msgid "Double Vowels"
 msgstr "Vocales Dobles"
@@ -983,8 +1005,14 @@ msgstr "Sincronización de Puntos de Interrupción"
 msgid "Title"
 msgstr "Título"
 
+msgid "Global"
+msgstr "Global"
+
 msgid "Transient"
 msgstr "Transitorio"
+
+msgid "Icon Name"
+msgstr "Nombre del Ícono"
 
 msgid "Title Color"
 msgstr "Color del Título"
@@ -1165,6 +1193,9 @@ msgstr "Sólo Lectura"
 
 msgid "Flat"
 msgstr "Plano"
+
+msgid "Control State"
+msgstr "Estado de Control"
 
 msgid "Hide Slider"
 msgstr "Ocultar Deslizador"
@@ -2126,6 +2157,9 @@ msgstr "Tema"
 
 msgid "Follow System Theme"
 msgstr "Seguir Tema del Sistema"
+
+msgid "Style"
+msgstr "Estilo"
 
 msgid "Spacing Preset"
 msgstr "Preconfiguración de Espaciado"
@@ -4602,6 +4636,12 @@ msgstr "Umbral Alcanzado"
 msgid "Off Threshold"
 msgstr "Debajo del Umbral"
 
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Entity"
+msgstr "Entidad"
+
 msgid "Display Refresh Rate"
 msgstr "Mostrar Tasa de Refresco"
 
@@ -5948,6 +5988,9 @@ msgstr "Costo del Viaje"
 
 msgid "Vertices"
 msgstr "Vértices"
+
+msgid "NavigationPolygon"
+msgstr "NavigationPolygon"
 
 msgid "Affect Navigation Mesh"
 msgstr "Afectar Mesh de Navegación"

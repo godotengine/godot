@@ -60,6 +60,12 @@ msgstr ""
 "% 10 == 0) ? 2 : 3));\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "OK"
+msgstr "אישור"
+
+msgid "Help"
+msgstr "עזרה"
+
 msgid "Physical"
 msgstr "פיזי"
 
@@ -2281,9 +2287,6 @@ msgstr "מסתובב כאשר חלון העורך מצויר מחדש."
 msgid "Imported resources can't be saved."
 msgstr "לא ניתן לשמור משאבים מובאים."
 
-msgid "OK"
-msgstr "אישור"
-
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
@@ -2567,9 +2570,6 @@ msgstr "פתיחת העורך הקודם"
 
 msgid "Project"
 msgstr "מיזם"
-
-msgid "Help"
-msgstr "עזרה"
 
 msgid "Update Continuously"
 msgstr "עדכון רציף"
@@ -3287,9 +3287,6 @@ msgstr "כמות:"
 
 msgid "Transform Aborted."
 msgstr "שינוי צורה הופסק."
-
-msgid "Objects: %d\n"
-msgstr "אובייקטים: %d\n"
 
 msgid "Top View."
 msgstr "מבט על."

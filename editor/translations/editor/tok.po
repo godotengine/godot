@@ -22,6 +22,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
+msgid "Help"
+msgstr "pona"
+
 msgid "Physical"
 msgstr "lon"
 
@@ -1692,9 +1695,6 @@ msgstr "o open e ilo ante kama"
 msgid "Open the previous Editor"
 msgstr "o open e ilo ante tawa"
 
-msgid "Help"
-msgstr "pona"
-
 msgid "Update Continuously"
 msgstr "ale la o sin"
 
@@ -3182,15 +3182,6 @@ msgstr "ante pi nasin Y."
 
 msgid "Z-Axis Transform."
 msgstr "ante pi nasin Z."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
 
 msgid "CPU Time: %s ms"
 msgstr "tenpo CPU: ms %s"

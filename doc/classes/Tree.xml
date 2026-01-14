@@ -582,6 +582,9 @@
 		<theme_item name="button_margin" data_type="constant" type="int" default="4">
 			The horizontal space between each button in a cell.
 		</theme_item>
+		<theme_item name="check_h_separation" data_type="constant" type="int" default="4">
+			The horizontal space between the checkbox and the text in a [constant TreeItem.CELL_MODE_CHECK] mode cell.
+		</theme_item>
 		<theme_item name="children_hl_line_width" data_type="constant" type="int" default="1">
 			The width of the relationship lines between the selected [TreeItem] and its children.
 		</theme_item>
@@ -596,6 +599,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
+		</theme_item>
+		<theme_item name="icon_h_separation" data_type="constant" type="int" default="4">
+			The horizontal space between the icon and the text in item's cells.
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
 			The maximum allowed width of the icon in item's cells. This limit is applied on top of the default size of the icon, but before the value set with [method TreeItem.set_icon_max_width]. The height is adjusted according to the icon's ratio.

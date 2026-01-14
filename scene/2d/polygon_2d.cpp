@@ -105,7 +105,7 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
 }
 
-bool Polygon2D::has_point(const Vector2 &p_point) const{
+bool Polygon2D::has_point(const Vector2 &p_point) const {
 	Vector2 local = to_local(p_point);
 	return Geometry2D::is_point_in_polygon(local, polygon);
 }

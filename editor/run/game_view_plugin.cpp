@@ -52,6 +52,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
@@ -573,10 +574,10 @@ void GameView::_update_debugger_buttons() {
 	if (empty) {
 		suspend_button->set_pressed(false);
 		camera_override_button->set_pressed(false);
+		_reset_time_scales();
 	}
-	next_frame_button->set_disabled(!suspend_button->is_pressed());
 
-	_reset_time_scales();
+	next_frame_button->set_disabled(!suspend_button->is_pressed());
 }
 
 void GameView::_handle_shortcut_requested(int p_embed_action) {
@@ -1423,13 +1424,10 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	game_size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	game_size_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_RIGHT);
 
-	panel = memnew(PanelContainer);
+	panel = memnew(Panel);
 	add_child(panel);
 	panel->set_theme_type_variation("GamePanel");
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
-#ifdef MACOS_ENABLED
-	panel->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-#endif
 
 	panel->add_child(embedded_process);
 	embedded_process->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
@@ -1439,8 +1437,17 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedded_process->connect("embedded_process_focused", callable_mp(this, &GameView::_embedded_process_focused));
 	embedded_process->set_custom_minimum_size(Size2i(100, 100));
 
+	MarginContainer *state_container = memnew(MarginContainer);
+	state_container->add_theme_constant_override("margin_left", 8 * EDSCALE);
+	state_container->add_theme_constant_override("margin_right", 8 * EDSCALE);
+	state_container->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+#ifdef MACOS_ENABLED
+	state_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+#endif
+
+	panel->add_child(state_container);
 	state_label = memnew(Label());
-	panel->add_child(state_label);
+	state_container->add_child(state_label);
 	state_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	state_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	state_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);

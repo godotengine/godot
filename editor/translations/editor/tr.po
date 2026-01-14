@@ -111,7 +111,7 @@
 # "Mr.Barnard" <muhammedharun2010kaya@gmail.com>, 2024.
 # Makro <23makro@gmail.com>, 2024.
 # Emre Kadir Karagöz <emrekadir197@gmail.com>, 2024.
-# ulk <ulk.info@gmail.com>, 2024, 2025.
+# ulk <ulk.info@gmail.com>, 2024, 2025, 2026.
 # Murateba <robloxmurat5@gmail.com>, 2025.
 # Mustafa Kara <denizkara3861@gmail.com>, 2025.
 # Deniz Kara <denizkara3861@gmail.com>, 2025.
@@ -125,13 +125,15 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
 # Aras Ege Gündüz <araszekeriya@hotmail.com>, 2025.
+# Volkan <vnyz2002@gmail.com>, 2026.
+# KiiVoZin <kiivozin@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-15 17:00+0000\n"
-"Last-Translator: Aras Ege Gündüz <araszekeriya@hotmail.com>\n"
+"PO-Revision-Date: 2026-01-12 20:12+0000\n"
+"Last-Translator: KiiVoZin <kiivozin@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -139,19 +141,31 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1-dev\n"
+"X-Generator: Weblate 5.15.2-dev\n"
+
+msgid "OK"
+msgstr "Tamam"
+
+msgid "Locked"
+msgstr "Kilitli"
+
+msgid "Help"
+msgstr "Yardım"
+
+msgid "unset"
+msgstr "ayarlamayı kaldır"
 
 msgid "Physical"
 msgstr "Fiziksel"
 
 msgid "Left Mouse Button"
-msgstr "Sol Fare Düğmesi"
+msgstr "Sol Fare Tuşu"
 
 msgid "Right Mouse Button"
-msgstr "Sağ Fare Düğmesi"
+msgstr "Sağ Fare Tuşu"
 
 msgid "Middle Mouse Button"
-msgstr "Orta Fare Düğmesi"
+msgstr "Orta Fare Tuşu"
 
 msgid "Mouse Wheel Up"
 msgstr "Fare Tekerleği Yukarı"
@@ -160,19 +174,19 @@ msgid "Mouse Wheel Down"
 msgstr "Fare Tekerleği Aşağı"
 
 msgid "Mouse Wheel Left"
-msgstr "Fare Tekerleği Sola"
+msgstr "Fare Tekerleği Sol"
 
 msgid "Mouse Wheel Right"
-msgstr "Fare Tekerleği Sağa"
+msgstr "Fare Tekerleği Sağ"
 
 msgid "Mouse Thumb Button 1"
-msgstr "Yan Fare Düğmesi 1"
+msgstr "Yan Fare Tuşu 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Yan Fare Düğmesi 2"
+msgstr "Yan Fare Tuşu 2"
 
 msgid "Button"
-msgstr "Düğme"
+msgstr "Tuş"
 
 msgid "Double Click"
 msgstr "Çift Tıklama"
@@ -771,7 +785,7 @@ msgid "Blend X Value"
 msgstr "Harmanlama X Değeri"
 
 msgid "Blend Y Value"
-msgstr "Y Ekseninde Karıştırma Değeri"
+msgstr "Harmanlama Y Değeri"
 
 msgid "Max Y"
 msgstr "En Büyük Y"
@@ -789,7 +803,7 @@ msgid "X Value"
 msgstr "X Değeri"
 
 msgid "Max X"
-msgstr "Maksimum X Değeri"
+msgstr "En Büyük X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parametre Değişti: %s"
@@ -1258,11 +1272,23 @@ msgstr "Harmanla Süreleri:"
 msgid "Next (Auto Queue):"
 msgstr "Sonraki (Otomatik Kuyruk):"
 
+msgid "Reconnect Transition"
+msgstr "Geçişi Tekrar Bağla"
+
 msgid "Move Node"
 msgstr "Düğümü Taşı"
 
 msgid "Transition exists!"
 msgstr "Geçiş zaten var!"
+
+msgid "Cannot transition to self!"
+msgstr "Kendisine dönüşemez!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "'Start' durumuna geçiş yapılamıyor!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "'End' durumundan geçiş yapılamıyor!"
 
 msgid "Play/Travel to %s"
 msgstr "%s'ye Oynat/Git"
@@ -1272,6 +1298,9 @@ msgstr "%s 'yi Düzenle"
 
 msgid "Add Node and Transition"
 msgstr "Düğüm ve Geçiş Ekle"
+
+msgid "Transition already exists!"
+msgstr "Geçiş zaten var!"
 
 msgid "Add Transition"
 msgstr "Geçiş Ekle"
@@ -1512,6 +1541,22 @@ msgstr "Geliş-Tutamacı:"
 msgid "Out-Handle:"
 msgstr "Gidiş-Tutamacı:"
 
+msgctxt "Bezier Handle Mode"
+msgid "Free"
+msgstr "Serbest"
+
+msgctxt "Bezier Handle Mode"
+msgid "Linear"
+msgstr "Doğrusal"
+
+msgctxt "Bezier Handle Mode"
+msgid "Balanced"
+msgstr "Dengelenmiş"
+
+msgctxt "Bezier Handle Mode"
+msgid "Mirrored"
+msgstr "Aynalanmış"
+
 msgid "Stream:"
 msgstr "Akış:"
 
@@ -1565,6 +1610,9 @@ msgstr "Anahtar(lar)ı Kes"
 
 msgid "Copy Key(s)"
 msgstr "Anahtar(lar)ı Kopyala"
+
+msgid "Send Key(s) to RESET"
+msgstr "Anahtar(lar)ı şuna gönder: \"RESET\""
 
 msgid "Delete Key(s)"
 msgstr "Anahtar(lar)ı Sil"
@@ -1625,6 +1673,12 @@ msgstr "'%s' özelliği"
 msgid "Nearest FPS: %d"
 msgstr "En yakın FPS: %d"
 
+msgid "Bezier Default Mode"
+msgstr "Bezier Varsayılan Biçimi"
+
+msgid "Set the default handle mode of new bezier keys."
+msgstr "Yeni bezier anahtarlarının varsayılan tutamaç biçimini ayarla."
+
 msgid "Change Animation Step"
 msgstr "Canlandırma Adımını Değiştir"
 
@@ -1647,7 +1701,7 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Ses izleri yalnızca şu türdeki düğümlere (node) yönlendirilebilir:\n"
+"Ses izleri yalnızca şu türdeki düğümlere yönlendirilebilir:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
@@ -4659,9 +4713,6 @@ msgstr "Düzenleyici penceresi yeniden çizilirken, dönmeye devam eder."
 msgid "Imported resources can't be saved."
 msgstr "İçe aktarılan kaynaklar kaydedilemez."
 
-msgid "OK"
-msgstr "Tamam"
-
 msgid "Error saving resource!"
 msgstr "Kaynak kaydedilirken hata oluştu!"
 
@@ -5411,9 +5462,6 @@ msgstr "Önceki Düzenleyiciyi Aç"
 
 msgid "Project"
 msgstr "Proje"
-
-msgid "Help"
-msgstr "Yardım"
 
 msgid "Update Mode"
 msgstr "Güncelleme Kipi"
@@ -8564,6 +8612,9 @@ msgstr "Hızlı Ayarlar"
 msgid "Language"
 msgstr "Dil"
 
+msgid "Style"
+msgstr "Tarz"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "Özel hazır ayar, düzenleyici içinden daha fazla yapılandırılabilir."
 
@@ -10840,9 +10891,6 @@ msgstr "Arka Bakış-açılı"
 msgid "[auto]"
 msgstr "[otomatik]"
 
-msgid "Locked"
-msgstr "Kilitli"
-
 msgid "Grouped"
 msgstr "Gruplanmış"
 
@@ -10871,24 +10919,6 @@ msgstr ""
 "Herhangi bir geometri düğümündeki malzemenin üzerine yazmak için sürükle ve "
 "bırak.\n"
 "Belirli bir yüzeyin üzerine yazmak için, bırakırken %s basılı tut."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Boyut: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Nesneler: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "İlkeller: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Çizim Çağrıları: %d"
@@ -11139,8 +11169,8 @@ msgid ""
 "Represents occluders with black pixels. Requires occlusion culling to be "
 "enabled to have a visible effect."
 msgstr ""
-"Occluder’ları siyah piksellerle gösterir. Görünür bir etki için occlusion "
-"culling özelliğinin açık olması gerekir."
+"Perdeleyicileri siyah piksellerle gösterir. Görünür bir etki için perdeleme "
+"kaldırma özelliğinin açık olması gerekir."
 
 msgid "Motion Vectors"
 msgstr "Hareket Vektörleri"
@@ -13448,9 +13478,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "Artçıl-İşlem"
-
-msgid "Style"
-msgstr "Tarz"
 
 msgid "PascalCase to snake_case"
 msgstr "PascalHarfBoyu'ndan yılan_harf_boyu'na dönüştür"
@@ -20148,15 +20175,6 @@ msgstr "Şununla eşleşen fonksiyon bulunamadı: '%s'."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "'%s' Değişeni, ilgili bağlamda '%s' alınan değişkenine geçirilemez."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"Çoklu-görünüm doku örnekleyicisini, özel fonksiyoona bir parametre olarak "
-"geçirmek mümkün değildir. Bunu ana fonksiyonda örneklemeyi, ve ardından "
-"vektör sonucunu buna geçirmeyi düşünün."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "İfadede bilinmeyen tanımlayıcı: '%s'."

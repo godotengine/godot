@@ -340,7 +340,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	tf.format = p_texture_format;
 	tf.width = p_low_quality ? 160 : p_size >> 1; // Always 160x160 when using REALTIME.
 	tf.height = p_low_quality ? 160 : p_size >> 1;
-	tf.mipmaps = p_low_quality ? 7 : mipmaps - 1;
+	tf.mipmaps = p_low_quality ? 5 : mipmaps - 1;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	if (!use_raster_effect) {
 		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -378,10 +378,10 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 
 	if (use_raster_effect) {
 		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-		copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, true, uv_border_size);
+		copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 		for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-			copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, true, uv_border_size);
+			copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, uv_border_size);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 
@@ -399,10 +399,10 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	} else {
 		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-		copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, true, uv_border_size);
+		copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 		for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-			copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, true, uv_border_size);
+			copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, uv_border_size);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		Vector<RID> views;
@@ -429,10 +429,10 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 	if (use_raster_effect) {
 		if (p_base_layer == 1) {
 			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-			copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, false, uv_border_size);
+			copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 			for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-				copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, false, uv_border_size);
+				copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, uv_border_size);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
@@ -460,10 +460,10 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 	} else {
 		if (p_base_layer == 1) {
 			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-			copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, false, uv_border_size);
+			copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 			for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-				copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, false, uv_border_size);
+				copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, uv_border_size);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
@@ -490,10 +490,10 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 			Size2i size = layers[i].mipmaps[j + 1].size;
 			if (use_raster_effect) {
 				RID framebuffer = layers[i].mipmaps[j + 1].framebuffer;
-				copy_effects->octmap_downsample_raster(view, framebuffer, size, false, uv_border_size);
+				copy_effects->octmap_downsample_raster(view, framebuffer, size, uv_border_size);
 			} else {
 				RID texture = layers[i].mipmaps[j + 1].view;
-				copy_effects->octmap_downsample(view, texture, size, false, uv_border_size);
+				copy_effects->octmap_downsample(view, texture, size, uv_border_size);
 			}
 		}
 	}
