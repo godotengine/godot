@@ -1453,13 +1453,13 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 					if (!ci->is_mouse_picking_enabled()) {
 						continue;
 					}
-					if(!ci->is_visible_in_tree()) {
+					if (!ci->is_visible_in_tree()) {
 						continue;
 					}
 					Ref<InputEventMouse> mouse_event = p_input;
 					if (mouse_event.is_valid()) {
 						if (ci->has_point(mouse_event->get_position())) {
-							_change_mouse_over_node(ci); 
+							_change_mouse_over_node(ci);
 							n->_call_input(p_input);
 							break;
 						}
@@ -1468,7 +1468,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 					n->_call_input(p_input);
 					break;
 				}
-				if(i == 0) {
+				if (i == 0) {
 					_change_mouse_over_node(nullptr);
 				}
 				break;
@@ -1885,15 +1885,15 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 }
 
 void SceneTree::_change_mouse_over_node(CanvasItem *p_node) {
-	if ( mouse_over == p_node) { // No change
+	if (mouse_over == p_node) { // No change
 		return;
 	}
 	if (p_node == nullptr) { //Mouse exited node
-		if(mouse_over) {
+		if (mouse_over) {
 			mouse_over->emit_signal(SNAME("mouse_exited_node"));
 		}
 	} else {
-		if(mouse_over) { //Mouse entered new node, so we exit the previous one
+		if (mouse_over) { //Mouse entered new node, so we exit the previous one
 			mouse_over->emit_signal(SNAME("mouse_exited_node"));
 		}
 		mouse_over = p_node;
