@@ -1609,101 +1609,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	}
 }
 
-void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, String> &p_renames) const {
-	// Rename all resources loaded, be it subresources or actual resources.
-	List<Ref<Resource>> cached;
-	ResourceCache::get_cached_resources(&cached);
-
-	for (Ref<Resource> &r : cached) {
-		String base_path = r->get_path();
-		String extra_path;
-		int sep_pos = r->get_path().find("::");
-		if (sep_pos >= 0) {
-			extra_path = base_path.substr(sep_pos);
-			base_path = base_path.substr(0, sep_pos);
-		}
-
-		if (p_renames.has(base_path)) {
-			base_path = p_renames[base_path];
-			r->set_path(base_path + extra_path);
-		}
-	}
-
-	Vector<String> files_to_update;
-	for (const KeyValue<String, String> &E : p_renames) {
-		if (!files_to_update.has(E.key)) {
-			files_to_update.push_back(E.key);
-		}
-		if (!files_to_update.has(E.value)) {
-			files_to_update.push_back(E.value);
-		}
-	}
-	print_verbose("FileSystem: updating file infos.");
-	EditorFileSystem::get_singleton()->update_files(files_to_update);
-}
-
-void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
-	// The following code assumes that the following holds:
-	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
-	// 2) ResourceLoader can use the new paths without needing to call rescan.
-
-	// The currently edited scene should be reloaded first, so get it's path (GH-82652).
-	const String &edited_scene_path = EditorNode::get_editor_data().get_scene_path(EditorNode::get_editor_data().get_edited_scene());
-	List<String> scenes_to_reload;
-	for (const String &E : p_file_owners) {
-		// Because we haven't called a rescan yet the found remap might still be an old path itself.
-		const HashMap<String, String>::ConstIterator I = p_renames.find(E);
-		const String file = I ? I->value : E;
-		print_verbose("Remapping dependencies for: " + file);
-		const Error err = ResourceLoader::rename_dependencies(file, p_renames);
-		if (err == OK) {
-			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
-				if (file == edited_scene_path) {
-					scenes_to_reload.push_front(file);
-				} else {
-					scenes_to_reload.push_back(file);
-				}
-			}
-		} else {
-			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies for:") + "\n" + E + "\n");
-		}
-	}
-
-	for (const String &E : scenes_to_reload) {
-		EditorNode::get_singleton()->reload_scene(E);
-	}
-}
-
-void FileSystemDock::_update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames) {
-	// Find all project settings of type FILE and replace them if needed.
-	const HashMap<StringName, PropertyInfo> prop_info(ProjectSettings::get_singleton()->get_custom_property_info());
-	for (const KeyValue<StringName, PropertyInfo> &E : prop_info) {
-		if (E.value.hint == PROPERTY_HINT_FILE || E.value.hint == PROPERTY_HINT_FILE_PATH) {
-			String old_path = GLOBAL_GET(E.key);
-			if (p_renames.has(old_path)) {
-				ProjectSettings::get_singleton()->set_setting(E.key, p_renames[old_path]);
-			}
-		};
-	}
-
-	// Also search for the file in autoload, as they are stored differently from normal files.
-	List<PropertyInfo> property_list;
-	ProjectSettings::get_singleton()->get_property_list(&property_list);
-	for (const PropertyInfo &E : property_list) {
-		if (E.name.begins_with("autoload/")) {
-			// If the autoload resource paths has a leading "*", it indicates that it is a Singleton,
-			// so we have to handle both cases when updating.
-			String autoload = GLOBAL_GET(E.name);
-			String autoload_singleton = autoload.substr(1);
-			if (p_renames.has(autoload)) {
-				ProjectSettings::get_singleton()->set_setting(E.name, p_renames[autoload]);
-			} else if (autoload.begins_with("*") && p_renames.has(autoload_singleton)) {
-				ProjectSettings::get_singleton()->set_setting(E.name, "*" + p_renames[autoload_singleton]);
-			}
-		}
-	}
-
-	// Update folder colors.
+void FileSystemDock::_update_folder_colors_after_move(const HashMap<String, String> &p_folders_renames) {
 	for (const KeyValue<String, String> &rename : p_folders_renames) {
 		if (assigned_folder_colors.has(rename.key)) {
 			assigned_folder_colors[rename.value] = assigned_folder_colors[rename.key];
@@ -1892,9 +1798,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-	_update_resource_paths_after_move(file_renames);
-	_update_dependencies_after_move(file_renames, file_owners);
-	_update_project_settings_after_move(file_renames, folder_renames);
+	_update_folder_colors_after_move(folder_renames);
 	_update_favorites_after_move(file_renames, folder_renames);
 
 	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
@@ -1905,7 +1809,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	}
 
 	print_verbose("FileSystem: calling rescan.");
-	_rescan();
+	_rescan(old_path.get_base_dir(), !to_rename.is_file);
 }
 
 void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
@@ -2053,20 +1957,19 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			if (to_move[i].path != new_paths[i]) {
 				_try_move_item(to_move[i], new_paths[i], file_renames, folder_renames);
 				is_moved = true;
+				EditorFileSystem::get_singleton()->pending_scan_fs_changes(to_move[i].is_file ? to_move[i].path.get_base_dir() : to_move[i].path.left(-1).get_base_dir(), !to_move[i].is_file);
 			}
 		}
 
 		if (is_moved) {
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
-			_update_resource_paths_after_move(file_renames);
-			_update_dependencies_after_move(file_renames, file_owners);
-			_update_project_settings_after_move(file_renames, folder_renames);
+			_update_folder_colors_after_move(folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
 
 			EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
 
 			print_verbose("FileSystem: calling rescan.");
-			_rescan();
+			_rescan(p_to_path, true);
 
 			current_path = p_to_path;
 			current_path_line_edit->set_text(current_path);
@@ -2853,7 +2756,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	return true;
 }
 
-void FileSystemDock::_rescan() {
+void FileSystemDock::_rescan(const String &p_dir, bool p_recursive) {
 	if (tree->has_focus()) {
 		had_focus = tree;
 	} else if (files->has_focus()) {
@@ -2861,7 +2764,7 @@ void FileSystemDock::_rescan() {
 	}
 
 	_set_scanning_mode();
-	EditorFileSystem::get_singleton()->scan();
+	EditorFileSystem::get_singleton()->pending_scan_fs_changes(p_dir, p_recursive);
 }
 
 void FileSystemDock::_change_split_mode() {

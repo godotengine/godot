@@ -91,7 +91,6 @@ public:
 	static Vector<uint8_t> encode_binary_cache(const Vector<Pair<ID, String>> &p_entries);
 
 	void enable_reverse_cache() { use_reverse_cache = true; }
-	void clear();
 
 	static ResourceUID *get_singleton() { return singleton; }
 
