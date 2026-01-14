@@ -1672,7 +1672,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	Error err;
 
 	Ref<Resource> res;
-	if (force_textfile_extensions.has(p_resource.get_extension())) {
+	if (p_resource.validate_extension(force_textfile_extensions)) {
 		const String resource_type = ResourceLoader::get_resource_type(p_resource);
 		if (resource_type != "Translation" && ResourceLoader::exists(p_resource, "")) {
 			res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
@@ -1685,9 +1685,9 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		}
 	} else if (ResourceLoader::exists(p_resource, "")) {
 		res = ResourceLoader::load(p_resource, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
-	} else if (textfile_extensions.has(p_resource.get_extension())) {
+	} else if (p_resource.validate_extension(textfile_extensions)) {
 		res = ScriptEditor::get_singleton()->open_file(p_resource);
-	} else if (other_file_extensions.has(p_resource.get_extension())) {
+	} else if (p_resource.validate_extension(other_file_extensions)) {
 		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
 		return OK;
 	}

@@ -411,12 +411,9 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	}
 
 	const ShaderCreateDialog::ShaderTypeData &current_type_data = type_data.get(current_type);
-	const String file_extension = stripped_file_path.get_extension();
 
-	for (const String &type_ext : current_type_data.extensions) {
-		if (type_ext.nocasecmp_to(file_extension) == 0) {
-			return "";
-		}
+	if (stripped_file_path.validate_extension(current_type_data.extensions)) {
+		return "";
 	}
 
 	return TTRC("Invalid extension for selected shader type.");
