@@ -32,9 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "modules/modules_enabled.gen.h" // For jsonrpc.
-
-#ifdef MODULE_JSONRPC_ENABLED
+#ifndef GDSCRIPT_NO_LSP
 
 #include "tests/test_macros.h"
 
@@ -607,6 +605,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // MODULE_JSONRPC_ENABLED
+#endif // GDSCRIPT_NO_LSP
 
 #endif // TOOLS_ENABLED
