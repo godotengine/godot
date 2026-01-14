@@ -287,7 +287,7 @@ void EditorFileSystem::_scan_for_uid_directory(const ScannedDirectory *p_scan_di
 
 		const String path = p_scan_dir->full_path.path_join(scan_file);
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
-		if (p_import_extensions.has(ext)) {
+		if (scan_file.validate_extension(p_import_extensions)) {
 			if (FileAccess::exists(path + ".import")) {
 				uid = ResourceFormatImporter::get_singleton()->get_resource_uid(path);
 			}
@@ -829,9 +829,11 @@ bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 	}
 
 	for (int i = 0; i < reimports.size(); i++) {
-		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension().to_lower());
-		if (E) {
-			import_support_tested.write[E->value] = true;
+		const String file = reimports[i].get_file();
+		for (KeyValue<String, int> &E : import_support_test) {
+			if (file.right(E.key.length() + 1).nocasecmp_to("." + E.key) == 0) {
+				import_support_tested.write[E.value] = true;
+			}
 		}
 	}
 
@@ -976,7 +978,7 @@ bool EditorFileSystem::_update_scan_actions() {
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dep : dependencies) {
 						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
-						if (_can_import_file(dep)) {
+						if (dep.validate_extension(import_extensions)) {
 							reimports.push_back(dependency_path);
 						}
 					}
@@ -1216,10 +1218,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 	}
 
 	for (const String &scan_file : p_scan_dir->files) {
-		String ext = scan_file.get_extension().to_lower();
-		if (!valid_extensions.has(ext)) {
+		if (!scan_file.validate_extension(valid_extensions)) {
 			p_progress.increment();
-			continue; //invalid
+			continue; // Invalid.
 		}
 
 		String path = p_scan_dir->full_path.path_join(scan_file);
@@ -1235,7 +1236,9 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
 
-		if (_can_import_file(scan_file)) {
+		const bool is_imported = scan_file.validate_extension(import_extensions);
+
+		if (is_imported) {
 			//is imported
 			uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 
@@ -1330,14 +1333,15 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 					}
 				}
 			} else {
-				//new or modified time
+				// New or modified time.
 				fi->type = ResourceLoader::get_resource_type(path);
 				fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
-				if (fi->type == "" && textfile_extensions.has(ext)) {
-					fi->type = "TextFile";
-				}
-				if (fi->type == "" && other_file_extensions.has(ext)) {
-					fi->type = "OtherFile";
+				if (fi->type.is_empty()) {
+					if (scan_file.validate_extension(textfile_extensions)) {
+						fi->type = "TextFile";
+					} else if (scan_file.validate_extension(other_file_extensions)) {
+						fi->type = "OtherFile";
+					}
 				}
 				fi->uid = ResourceLoader::get_resource_uid(path);
 				fi->class_info = _get_global_script_class(fi->type, path);
@@ -1487,9 +1491,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 				}
 
 			} else {
-				String ext = f.get_extension().to_lower();
-				if (!valid_extensions.has(ext)) {
-					continue; //invalid
+				if (!f.validate_extension(valid_extensions)) {
+					continue; // Invalid.
 				}
 
 				int idx = p_dir->find_file_index(f);
@@ -1506,11 +1509,12 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 					fi->import_dest_paths = Vector<String>();
 					fi->type = ResourceLoader::get_resource_type(path);
 					fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
-					if (fi->type == "" && textfile_extensions.has(ext)) {
-						fi->type = "TextFile";
-					}
-					if (fi->type == "" && other_file_extensions.has(ext)) {
-						fi->type = "OtherFile";
+					if (fi->type.is_empty()) {
+						if (f.validate_extension(textfile_extensions)) {
+							fi->type = "TextFile";
+						} else if (f.validate_extension(other_file_extensions)) {
+							fi->type = "OtherFile";
+						}
 					}
 					fi->class_info = _get_global_script_class(fi->type, path);
 					fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
@@ -1525,8 +1529,8 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 						scan_actions.push_back(ia);
 					}
 
-					if (_can_import_file(f)) {
-						//if it can be imported, and it was added, it needs to be reimported
+					if (f.validate_extension(import_extensions)) {
+						// If it can be imported, and it was added, it needs to be reimported.
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 						ia.dir = p_dir;
@@ -1556,8 +1560,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 		}
 
 		String path = cd.path_join(p_dir->files[i]->file);
-
-		if (_can_import_file(p_dir->files[i]->file)) {
+		if (p_dir->files[i]->file.validate_extension(import_extensions)) {
 			// Check here if file must be imported or not.
 			// Same logic as in _process_file_system, the last modifications dates
 			// needs to be trusted to prevent reading all the .import files and the md5
@@ -2419,11 +2422,12 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 			}
 		} else {
 			String type = ResourceLoader::get_resource_type(file);
-			if (type.is_empty() && textfile_extensions.has(file.get_extension())) {
-				type = "TextFile";
-			}
-			if (type.is_empty() && other_file_extensions.has(file.get_extension())) {
-				type = "OtherFile";
+			if (type.is_empty()) {
+				if (file.validate_extension(textfile_extensions)) {
+					type = "TextFile";
+				} else if (file.validate_extension(other_file_extensions)) {
+					type = "OtherFile";
+				}
 			}
 			String script_class = ResourceLoader::get_resource_script_class(file);
 
@@ -2746,11 +2750,12 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		fs->files[cpos]->deps = _get_dependencies(file);
 		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->type = importer->get_resource_type();
-		if (fs->files[cpos]->type == "" && textfile_extensions.has(file.get_extension())) {
-			fs->files[cpos]->type = "TextFile";
-		}
-		if (fs->files[cpos]->type == "" && other_file_extensions.has(file.get_extension())) {
-			fs->files[cpos]->type = "OtherFile";
+		if (fs->files[cpos]->type.is_empty()) {
+			if (file.validate_extension(textfile_extensions)) {
+				fs->files[cpos]->type = "TextFile";
+			} else if (file.validate_extension(other_file_extensions)) {
+				fs->files[cpos]->type = "OtherFile";
+			}
 		}
 		fs->files[cpos]->import_valid = err == OK;
 
@@ -3739,18 +3744,8 @@ void EditorFileSystem::_update_extensions() {
 	extensionsl.clear();
 	ResourceFormatImporter::get_singleton()->get_recognized_extensions(&extensionsl);
 	for (const String &E : extensionsl) {
-		import_extensions.insert(!E.begins_with(".") ? "." + E : E);
+		import_extensions.insert(E);
 	}
-}
-
-bool EditorFileSystem::_can_import_file(const String &p_file) {
-	for (const String &F : import_extensions) {
-		if (p_file.right(F.length()).nocasecmp_to(F) == 0) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
