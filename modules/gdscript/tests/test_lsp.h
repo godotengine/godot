@@ -413,7 +413,7 @@ func f():
 			CHECK_EQ(actual, expected);
 		}
 	}
-	TEST_CASE("[Editor][workspace][resolve_symbol]") {
+	TEST_CASE("[workspace][resolve_symbol]") {
 		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
@@ -497,7 +497,7 @@ func f():
 		memdelete(efs);
 		finish_language();
 	}
-	TEST_CASE("[Editor][workspace][document_symbol]") {
+	TEST_CASE("[workspace][document_symbol]") {
 		EditorFileSystem *efs = memnew(EditorFileSystem);
 		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
