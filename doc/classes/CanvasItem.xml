@@ -556,6 +556,14 @@
 				Usually, this is the same as this node's viewport (see [method Node.get_viewport] and [method Viewport.find_world_2d]).
 			</description>
 		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the given [param point] (in local coordinates) is inside the visible area of this [CanvasItem]. The visible area is only calculated in [Sprite2D] and [Polygon2D].
+				This method is used internally for mouse picking when [member mouse_picking] is enabled.
+			</description>
+		</method>
 		<method name="hide">
 			<return type="void" />
 			<description>
@@ -566,6 +574,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node receives [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes. This is enabled with [method set_notify_local_transform].
+			</description>
+		</method>
+		<method name="is_mouse_picking_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if mouse picking is enabled for this [CanvasItem].
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
@@ -622,6 +636,13 @@
 				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
 			</description>
 		</method>
+		<method name="set_mouse_picking_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables or disables mouse picking for this [CanvasItem].
+			</description>
+		</method>
 		<method name="set_notify_local_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
@@ -651,27 +672,6 @@
 			<description>
 				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code].
 				[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
-			</description>
-		</method>
-		<method name="has_point">
-			<return type="bool" />
-			<param index="0" name="point" type="Vector2" />
-			<description>
-				Returns [code]true[/code] if the given [param point] (in local coordinates) is inside the visible area of this [CanvasItem]. The visible area is only calculated in [Sprite2D] and [Polygon2D].
-				This method is used internally for mouse picking when [member mouse_picking] is enabled.
-			</description>
-		</method>
-		<method name="is_mouse_picking_enabled" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if mouse picking is enabled for this [CanvasItem].
-			</description>
-		</method>
-		<method name="set_mouse_picking_enabled">
-			<return type="void" />
-			<param index="0" name="enabled" type="bool" />
-			<description>
-				Enables or disables mouse picking for this [CanvasItem].
 			</description>
 		</method>
 	</methods>
@@ -752,12 +752,6 @@
 				Emitted when the [CanvasItem]'s boundaries (position or size) change, or when an action took place that may have affected these boundaries (e.g. changing [member Sprite2D.texture]).
 			</description>
 		</signal>
-		<signal name="visibility_changed">
-			<description>
-				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
-				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_VISIBILITY_CHANGED] notification.
-			</description>
-		</signal>
 		<signal name="mouse_entered_node">
 			<description>
 				Emitted when the mouse cursor enters the CanvasItem boundaries. Requires input processing enabled to be emitted.
@@ -772,6 +766,12 @@
 			<param index="0" name="button_index" type="int" />
 			<description>
 				Emitted when a mouse button is pressed while the cursor is over the CanvasItem boundaries. The [param button_index] indicates which button was pressed. Requires input processing enabled to be emitted.
+			</description>
+		</signal>
+		<signal name="visibility_changed">
+			<description>
+				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
+				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_VISIBILITY_CHANGED] notification.
 			</description>
 		</signal>
 	</signals>

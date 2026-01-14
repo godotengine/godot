@@ -1131,7 +1131,7 @@ void CanvasItem::input(const Ref<InputEvent> &p_event) { //It needs to be enable
 	Ref<InputEventMouseButton> mouse_button_event = mouse_event;
 	if (mouse_button_event.is_valid() && mouse_button_event->is_pressed()) { //If the mouse is over the item and a button is pressed, emit signal
 		emit_signal("mouse_pressed_node", mouse_button_event->get_button_index());
-	}	
+	}
 	get_viewport()->set_input_as_handled(); //We mark the event as handled to avoid propagating it to other nodes
 }
 
