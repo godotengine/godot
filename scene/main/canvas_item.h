@@ -422,7 +422,7 @@ public:
 	CanvasLayer *get_canvas_layer_node() const;
 
 	virtual PackedStringArray get_configuration_warnings() const override;
-	bool virtual has_point(const Vector2 &p_point);
+	bool virtual has_point(const Vector2 &p_point) const;
 
 	CanvasItem();
 	~CanvasItem();
