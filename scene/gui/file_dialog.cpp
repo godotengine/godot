@@ -678,15 +678,16 @@ void FileDialog::update_file_name() {
 		if (idx == -1) {
 			idx += 1;
 		}
-		String filter_str = filters[idx];
 		String file_str = filename_edit->get_text();
-		String base_name = file_str.get_basename();
-		Vector<String> filter_substr = filter_str.split(";");
-		if (filter_substr.size() >= 2) {
-			file_str = base_name + "." + filter_substr[0].strip_edges().get_extension().to_lower();
+		String base_name;
+		if (ext_filter.is_empty() || !file_str.ends_with(ext_filter)) {
+			base_name = file_str.get_basename();
 		} else {
-			file_str = base_name + "." + filter_str.strip_edges().get_extension().to_lower();
+			base_name = file_str.substr(0, file_str.length() - ext_filter.length());
 		}
+		const String filter_str = filters[idx].get_slicec(';', 0).strip_edges();
+		ext_filter = filter_str.substr(filter_str.find_char('.')).to_lower();
+		file_str = base_name + ext_filter;
 		filename_edit->set_text(file_str);
 	}
 }
@@ -1123,6 +1124,7 @@ void FileDialog::_filename_filter_selected() {
 
 void FileDialog::update_filters() {
 	filter->clear();
+	ext_filter.clear();
 	processed_filters.clear();
 
 	if (filters.size() > 1) {

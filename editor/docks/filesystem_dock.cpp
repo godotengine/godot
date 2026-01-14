@@ -1317,19 +1317,9 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
 		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
-			bool is_imported = false;
-			{
-				List<String> importer_exts;
-				ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
-				String extension = fpath.get_extension();
-				for (const String &E : importer_exts) {
-					if (extension.nocasecmp_to(E) == 0) {
-						is_imported = true;
-						break;
-					}
-				}
-			}
-
+			List<String> importer_exts;
+			ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
+			const bool is_imported = fpath.validate_extension(importer_exts);
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type);
 			} else {
@@ -1857,7 +1847,7 @@ void FileSystemDock::_rename_operation_confirm() {
 		EditorNode::get_singleton()->show_warning(TTRC("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
 		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
-		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
+		if (!new_name.validate_extension(EditorFileSystem::get_singleton()->get_valid_extensions())) {
 			unrecognized_ext_dialog->popup_centered_clamped();
 			rename_error = true;
 		}
@@ -3581,25 +3571,26 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		{
 			List<String> resource_extensions;
 			ResourceFormatImporter::get_singleton()->get_recognized_extensions_for_type("Resource", &resource_extensions);
-			HashSet<String> extension_list;
-			for (const String &extension : resource_extensions) {
-				extension_list.insert(extension);
-			}
 
 			bool resource_valid = true;
 			String main_extension;
 
-			for (int i = 0; i != p_paths.size(); ++i) {
-				String extension = p_paths[i].get_extension();
-				if (extension_list.has(extension)) {
-					if (main_extension.is_empty()) {
-						main_extension = extension;
-					} else if (extension != main_extension) {
-						resource_valid = false;
-						break;
+			for (const String &file_path : p_paths) {
+				resource_valid = false;
+				const String file = file_path.get_file();
+				for (const String &ext : resource_extensions) {
+					if (file.right(ext.length() + 1).nocasecmp_to("." + ext) != 0) {
+						continue;
 					}
-				} else {
-					resource_valid = false;
+					if (main_extension.is_empty()) {
+						main_extension = ext;
+						resource_valid = true;
+					} else if (ext != main_extension) {
+						resource_valid = false;
+					}
+					break;
+				}
+				if (!resource_valid) {
 					break;
 				}
 			}
