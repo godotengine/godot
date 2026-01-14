@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/os/mutex.h"
 #include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
