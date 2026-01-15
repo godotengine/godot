@@ -723,6 +723,10 @@
 			If [code]true[/code], the label uses BBCode formatting.
 			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
 		</member>
+		<member name="bbcode_mapping" type="Dictionary" setter="set_bbcode_mapping" getter="get_bbcode_mapping" default="{}">
+			A Dictionary of Strings which can be used to make certain combinations of effects easier when used often. For example, adding an entry with [code]important[/code] as key and [code skip-lint][b][color=red][/code] lets you use [code skip-lint][important]Text here[/important][/code] to apply bold red formatting to [code]Text here[/code].
+			[b]Note:[/b] Keys must not be enclosed in brackets. Values must use tags enclosed in brackets.
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled" default="false">
 			If [code]true[/code], a right-click displays the context menu.
