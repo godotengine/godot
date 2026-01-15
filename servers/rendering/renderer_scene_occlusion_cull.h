@@ -205,7 +205,16 @@ public:
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }
 
 	void _print_warning() {
-		WARN_PRINT_ONCE("Occlusion culling is disabled at build-time.");
+		// Only print the warning when not in the editor, as OccluderInstance3D
+		// already has a node configuration warning when occlusion culling is disabled
+		// at build-time.
+		if (!Engine::get_singleton()->is_editor_hint()) {
+#ifdef WEB_ENABLED
+			WARN_PRINT_ONCE("Occlusion culling support is disabled on the web platform due to binary size and memory usage constraints.");
+#else
+			WARN_PRINT_ONCE("Occlusion culling is disabled at build-time. To be able to use it, use the `module_raycast_enabled=yes` SCons option when compiling Godot.");
+#endif
+		}
 	}
 
 	virtual bool is_occluder(RID p_rid) { return false; }
