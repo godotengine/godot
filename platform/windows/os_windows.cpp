@@ -55,7 +55,6 @@
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
-#include <hidsdi.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <psapi.h>
@@ -64,6 +63,15 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 #include <winternl.h>
+
+// Workaround missing `extern "C"` in MinGW-w64 < 12.0.0.
+#if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 12)
+extern "C" {
+#include <hidsdi.h>
+}
+#else
+#include <hidsdi.h>
+#endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
