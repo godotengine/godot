@@ -191,36 +191,40 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			const Size2 viewport_size = get_viewport_rect().size;
-			const int focused_window = DisplayServer::get_singleton()->get_focused_window();
-			const Size2 window_size = DisplayServer::get_singleton()->window_get_size(focused_window);
+			if (preset_just_toggled) {
+				preset_just_toggled = false;
 
-			const int child_count = shape_container ? shape_container->get_child_count() : 0;
+				const Size2 viewport_size = get_viewport_rect().size;
+				const int focused_window = DisplayServer::get_singleton()->get_focused_window();
+				const Size2 window_size = DisplayServer::get_singleton()->window_get_size(focused_window);
 
-			if ((int)shape_child_original_mins.size() != child_count) {
-				shape_child_original_mins.clear();
-				shape_child_original_mins.reserve(child_count);
+				const int child_count = shape_container ? shape_container->get_child_count() : 0;
+
+				if ((int)shape_child_original_mins.size() != child_count) {
+					shape_child_original_mins.clear();
+					shape_child_original_mins.reserve(child_count);
+					for (int i = 0; i < child_count; i++) {
+						Control *c = Object::cast_to<Control>(shape_container->get_child(i));
+						shape_child_original_mins.push_back(c ? c->get_custom_minimum_size() : Size2());
+					}
+				}
+
+				const bool out_of_bounds = viewport_size.y >= window_size.y * 0.85f;
+
+				float scale_factor = 1.0f;
+				if (out_of_bounds) {
+					scale_factor = (window_size.y * 0.85f) / viewport_size.y;
+					scale_factor = CLAMP(scale_factor, 0.5f, 1.0f);
+				}
+
 				for (int i = 0; i < child_count; i++) {
 					Control *c = Object::cast_to<Control>(shape_container->get_child(i));
-					shape_child_original_mins.push_back(c ? c->get_custom_minimum_size() : Size2());
+					if (!c) {
+						continue;
+					}
+					const Size2 orig = shape_child_original_mins[i];
+					c->set_custom_minimum_size(orig * scale_factor);
 				}
-			}
-
-			const bool out_of_bounds = viewport_size.y >= window_size.y * 0.85f;
-
-			float scale_factor = 1.0f;
-			if (out_of_bounds) {
-				scale_factor = (window_size.y * 0.85f) / viewport_size.y;
-				scale_factor = CLAMP(scale_factor, 0.5f, 1.0f);
-			}
-
-			for (int i = 0; i < child_count; i++) {
-				Control *c = Object::cast_to<Control>(shape_container->get_child(i));
-				if (!c) {
-					continue;
-				}
-				const Size2 orig = shape_child_original_mins[i];
-				c->set_custom_minimum_size(orig * scale_factor);
 			}
 		} break;
 
@@ -1048,6 +1052,8 @@ void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_
 		p_preset_container->hide();
 	}
 	_update_drop_down_arrow(p_is_btn_pressed, p_btn_preset);
+
+	preset_just_toggled = true;
 
 	palette_name->hide();
 	if (btn_preset->is_pressed() && !palette_name->get_text().is_empty()) {
