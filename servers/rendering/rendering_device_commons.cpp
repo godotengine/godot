@@ -587,6 +587,12 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 			r_w = 4;
 			r_h = 4;
 		} break;
+		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK: {
+			r_w = 6;
+			r_h = 6;
+		} break;
 		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK:
@@ -596,9 +602,6 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK:
-		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK:
@@ -731,7 +734,7 @@ uint32_t RenderingDeviceCommons::get_compressed_image_format_block_byte_size(Dat
 	return 1;
 }
 
-uint32_t RenderingDeviceCommons::get_compressed_image_format_pixel_rshift(DataFormat p_format) {
+uint32_t RenderingDeviceCommons::get_compressed_image_format_pixels_shifted(DataFormat p_format, uint32_t p_pixels) {
 	switch (p_format) {
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK: // These formats are half byte size, so rshift is 1.
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
@@ -745,17 +748,18 @@ uint32_t RenderingDeviceCommons::get_compressed_image_format_pixel_rshift(DataFo
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
-			return 1;
+			return (p_pixels >> 1);
+		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK:
+			return (p_pixels * 4) / 9;
 		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK: {
-			return 2;
-		}
-		default: {
-		}
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK:
+			return (p_pixels >> 2);
+		default:
+			return p_pixels;
 	}
-
-	return 0;
 }
 
 uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh, uint32_t *r_depth) {
@@ -767,7 +771,6 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 	uint32_t size = 0;
 
 	uint32_t pixel_size = get_image_format_pixel_size(p_format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(p_format);
 	uint32_t blockw = 0;
 	uint32_t blockh = 0;
 	get_compressed_image_format_block_dimensions(p_format, blockw, blockh);
@@ -779,7 +782,7 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 		uint32_t s = bw * bh;
 
 		s *= pixel_size;
-		s >>= pixel_rshift;
+		s = get_compressed_image_format_pixels_shifted(p_format, s);
 		size += s * d;
 		if (r_blockw) {
 			*r_blockw = bw;
