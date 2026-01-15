@@ -377,7 +377,8 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 		return false;
 	}
 
-	if (texture->get_size().width == 0 || texture->get_size().height == 0) {
+	Vector2 tex_size = texture->get_size();
+	if (tex_size.width == 0 || tex_size.height == 0) {
 		return false;
 	}
 
@@ -398,26 +399,16 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 		q.y = 1.0f - q.y;
 	}
 	q = q * src_rect.size + src_rect.position;
+
 	TextureRepeat repeat_mode = get_texture_repeat_in_tree();
-	bool is_repeat = repeat_mode == TEXTURE_REPEAT_ENABLED || repeat_mode == TEXTURE_REPEAT_MIRROR;
-	bool is_mirrored_repeat = repeat_mode == TEXTURE_REPEAT_MIRROR;
-	if (is_repeat) {
-		int mirror_x = 0;
-		int mirror_y = 0;
-		if (is_mirrored_repeat) {
-			mirror_x = (int)(q.x / texture->get_size().width);
-			mirror_y = (int)(q.y / texture->get_size().height);
-		}
-		q.x = Math::fmod(q.x, texture->get_size().width);
-		q.y = Math::fmod(q.y, texture->get_size().height);
-		if (mirror_x % 2 == 1) {
-			q.x = texture->get_size().width - q.x - 1;
-		}
-		if (mirror_y % 2 == 1) {
-			q.y = texture->get_size().height - q.y - 1;
-		}
+	if (repeat_mode == TEXTURE_REPEAT_ENABLED) {
+		q = q.posmodv(tex_size);
+	} else if (repeat_mode == TEXTURE_REPEAT_MIRROR) {
+		q.x = Math::pingpong(q.x, tex_size.width);
+		q.y = Math::pingpong(q.y, tex_size.height);
+		q = q.min(tex_size - Vector2(1, 1));
 	} else {
-		q = q.min(texture->get_size() - Vector2(1, 1));
+		q = q.clamp(Vector2(), tex_size - Vector2(1, 1));
 	}
 
 	return texture->is_pixel_opaque((int)q.x, (int)q.y);
