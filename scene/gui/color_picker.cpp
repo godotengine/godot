@@ -192,8 +192,8 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			const Size2 viewport_size = get_viewport_rect().size;
-			const Size2 usable_size = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::SCREEN_WITH_MOUSE_FOCUS).size;
-			const bool out_of_bounds = viewport_size.y >= usable_size.y;
+			const int focused_window = DisplayServer::get_singleton()->get_focused_window();
+			const Size2 window_size = DisplayServer::get_singleton()->window_get_size(focused_window);
 
 			const int child_count = shape_container ? shape_container->get_child_count() : 0;
 
@@ -206,13 +206,21 @@ void ColorPicker::_notification(int p_what) {
 				}
 			}
 
+			const bool out_of_bounds = viewport_size.y >= window_size.y * 0.85f;
+
+			float scale_factor = 1.0f;
+			if (out_of_bounds) {
+				scale_factor = (window_size.y * 0.85f) / viewport_size.y;
+				scale_factor = CLAMP(scale_factor, 0.5f, 1.0f);
+			}
+
 			for (int i = 0; i < child_count; i++) {
 				Control *c = Object::cast_to<Control>(shape_container->get_child(i));
 				if (!c) {
 					continue;
 				}
 				const Size2 orig = shape_child_original_mins[i];
-				c->set_custom_minimum_size(out_of_bounds ? (orig * 0.8f) : orig);
+				c->set_custom_minimum_size(orig * scale_factor);
 			}
 		} break;
 
