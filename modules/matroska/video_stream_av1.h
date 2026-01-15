@@ -43,6 +43,8 @@ private:
 	VideoCodingAV1SequenceHeader av1_sequence_header;
 
 	// Decoder State.
+	RID reference_frames[VIDEO_CODING_AV1_NUM_REF_FRAMES];
+
 	uint8_t ref_valid[VIDEO_CODING_AV1_NUM_REF_FRAMES];
 	uint8_t ref_frame_id[VIDEO_CODING_AV1_NUM_REF_FRAMES];
 	VideoCodingAV1FrameType ref_frame_types[VIDEO_CODING_AV1_NUM_REF_FRAMES];
@@ -56,12 +58,9 @@ private:
 	uint8_t segmentation_feature_enabled[VIDEO_CODING_AV1_NUM_REF_FRAMES][VIDEO_CODING_AV1_MAX_SEGMENTS];
 	uint8_t segmentation_feature_data[VIDEO_CODING_AV1_NUM_REF_FRAMES][VIDEO_CODING_AV1_MAX_SEGMENTS][VIDEO_CODING_AV1_SEG_LVL_MAX];
 
-	RenderingDevice *local_device;
-
 	VideoProfile video_profile;
-	RID video_session;
 
-	RID texture_sampler;
+	Vector<RID> present_queue;
 
 	uint64_t read_bits(uint8_t p_bits);
 	uint64_t read_uvlc();

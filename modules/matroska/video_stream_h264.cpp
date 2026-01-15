@@ -660,8 +660,6 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 
 	local_device->video_session_decode(video_session, p_frame_data, dst_yuv, &slice_header);
 	_yuv_to_rgba(dst_yuv, dst_rgba);
-	local_device->submit();
-	local_device->sync();
 	local_device->video_session_end(video_session);
 
 	decode_yuv_index = (decode_yuv_index + 1) % yuv_pool.size();
@@ -671,30 +669,55 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 	current_frame.texture = dst_rgba;
 	current_frame.group_order_count = current_group_order_count;
 	current_frame.picture_order_count = slice_header.pic_order_cnt_top_field;
+	current_frame.presented = false;
 
-	bool frame_set = false;
-	for (size_t i = 1; i < present_queue.size(); i++) {
-		Frame previous_frame = present_queue[i - 1];
-		Frame next_frame = present_queue[i];
-
-		if (next_frame.group_order_count < current_frame.group_order_count) {
-			continue;
-		} else if (previous_frame.picture_order_count < slice_header.pic_order_cnt_top_field && slice_header.pic_order_cnt_top_field < next_frame.picture_order_count) {
-			present_queue.insert(i, current_frame);
-			frame_set = true;
-			break;
-		}
+	if (frame_queue.is_empty()) {
+		frame_queue.push_back(current_frame);
+	} else if (decode_index + 1 == frame_queue.size() && !frame_queue[0].presented) {
+		frame_queue.push_back(current_frame);
+	} else if (decode_index <= present_index) {
+		frame_queue.insert(decode_index, current_frame);
+		present_index += 1;
+	} else {
+		frame_queue.set(decode_index, current_frame);
 	}
 
-	if (!frame_set) {
-		present_queue.push_back(current_frame);
-	}
+	decode_index = (decode_index + 1) % frame_queue.size();
 }
 
 Vector<uint8_t> VideoStreamH264::present_frame() {
-	RID target_texture = present_queue[0].texture;
-	present_queue.remove_at(0);
-	return local_device->texture_get_data(target_texture, 0);
+	Frame next_frame;
+	size_t next_offset;
+
+	size_t offset = 0;
+	while ((present_index + offset) % frame_queue.size() != decode_index) {
+		size_t target_index = (present_index + offset) % frame_queue.size();
+		Frame potential_frame = frame_queue[target_index];
+		if (potential_frame.presented) {
+			offset += 1;
+			continue;
+		}
+
+		if (potential_frame.group_order_count < next_frame.group_order_count) {
+			next_frame = potential_frame;
+			next_offset = offset;
+		} else if (potential_frame.group_order_count == next_frame.group_order_count && potential_frame.picture_order_count < next_frame.picture_order_count) {
+			next_frame = potential_frame;
+			next_offset = offset;
+		}
+
+		offset += 1;
+	}
+
+	size_t target_index = (present_index + next_offset) % frame_queue.size();
+	next_frame.presented = true;
+	frame_queue.set(target_index, next_frame);
+
+	while (frame_queue[present_index].presented) {
+		present_index = (present_index + 1) % frame_queue.size();
+	}
+
+	return local_device->texture_get_data(next_frame.texture, 0);
 }
 
 VideoStreamH264::VideoStreamH264() {

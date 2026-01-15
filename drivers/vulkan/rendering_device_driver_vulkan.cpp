@@ -7377,14 +7377,10 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		av1_video_header.pNext = nullptr;
 		av1_video_header.pStdPictureInfo = &av1_picture_info;
 
-		print_line("---------Decode Frame---------");
-		print_line(vformat("Reference = %s", is_reference_frame));
-		printf("referenceNameSlotIndices:");
 		for (uint32_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
 			size_t ref_frame = rd_frame_header->ref_frame_idx[i];
 			av1_video_header.referenceNameSlotIndices[i] = video_session_info->reference_name_slot_indices[ref_frame];
 			active_ref_frames[i] = video_session_info->reference_name_slot_indices[ref_frame];
-			printf(" %i", video_session_info->reference_name_slot_indices[ref_frame]);
 		}
 
 		av1_video_header.frameHeaderOffset = 0;
@@ -7428,6 +7424,14 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	setup_reference_slot.pNext = video_slot_info;
 	setup_reference_slot.slotIndex = -1;
 	setup_reference_slot.pPictureResource = &setup_picture_resource_info;
+
+	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+		for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
+			if (video_session_info->target_dpb_index == active_ref_frames[j]) {
+				CRASH_NOW_MSG("critical strike.");
+			}
+		}
+	}
 
 	// Rebuild previous references.
 	// The setup target slot will always be at [0].

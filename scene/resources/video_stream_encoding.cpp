@@ -55,11 +55,15 @@ void VideoStreamEncoding::_yuv_to_rgba(RID p_src_yuv, RID p_dst_rgba) {
 	local_device->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 	local_device->compute_list_dispatch(compute_list, 1920, 1080, 1);
 	local_device->compute_list_end();
+	local_device->submit();
+	local_device->sync();
+
+	local_device->free_rid(uniform_set);
 }
 
 void VideoStreamEncoding::initialize(RD::VideoSessionInfo p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template) {
-	const size_t yuv_pool_size = 9;
-	const size_t rgba_pool_size = 9;
+	const size_t yuv_pool_size = 15;
+	const size_t rgba_pool_size = 15;
 
 	local_device = RD::get_singleton()->create_local_device();
 
@@ -110,7 +114,7 @@ void VideoStreamEncoding::initialize(RD::VideoSessionInfo p_session_template, RD
 }
 
 VideoStreamEncoding::~VideoStreamEncoding() {
-	if (local_device) {
+	if (local_device != nullptr) {
 		if (yuv_shader.is_valid()) {
 			local_device->free_rid(yuv_shader);
 		}
@@ -135,6 +139,7 @@ VideoStreamEncoding::~VideoStreamEncoding() {
 			local_device->free_rid(video_session);
 		}
 
-		memdelete(local_device);
+		// TODO: why can we not delete this?
+		//memdelete(local_device);
 	}
 }

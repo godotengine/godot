@@ -36,6 +36,9 @@ struct VideoDecodeAV1Frame {
 	uint32_t tile_start;
 	uint32_t tile_size;
 
+	bool show_frame;
+	uint8_t frame_to_show_map_idx;
+
 	VideoCodingAV1FrameType frame_type;
 
 	uint32_t current_frame_id;

@@ -171,8 +171,7 @@ bool VideoStreamAV1::parse_open_bitstream_unit() {
 		} break;
 
 		case VIDEO_CODING_AV1_OBU_TYPE_FRAME_HEADER: {
-			// TODO: aaaaaaaaaaaaaaaaa
-			is_frame = false;
+			is_frame = true;
 		} break;
 
 		case VIDEO_CODING_AV1_OBU_TYPE_METADATA: {
@@ -436,7 +435,6 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 	uint8_t all_frames = (1 << VIDEO_CODING_AV1_NUM_REF_FRAMES) - 1;
 
 	bool show_existing_frame;
-	bool show_frame;
 	bool showable_frame;
 
 	bool is_intra;
@@ -445,12 +443,12 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 		show_existing_frame = false;
 		std_frame_header.frame_type = VIDEO_CODING_AV1_FRAME_TYPE_KEY;
 		is_intra = true;
-		show_frame = true;
+		std_frame_header.show_frame = true;
 		showable_frame = false;
 	} else {
 		show_existing_frame = read_bits(1);
 		if (show_existing_frame) {
-			uint8_t frame_to_show_map_idx = read_bits(3);
+			std_frame_header.frame_to_show_map_idx = read_bits(3);
 
 			if (av1_sequence_header.decoder_model_info_present_flag && !av1_sequence_header.timing_info.equal_picture_interval) {
 				read_bits(av1_sequence_header.decoder_model_info.frame_presentation_time_length_minus_1 + 1); // frame_presentation_time
@@ -461,7 +459,7 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 				uint32_t display_frame_id = read_bits(id_len);
 			}
 
-			std_frame_header.frame_type = ref_frame_types[frame_to_show_map_idx];
+			std_frame_header.frame_type = ref_frame_types[std_frame_header.frame_to_show_map_idx];
 			if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY) {
 				std_frame_header.refresh_frame_flags = all_frames;
 			}
@@ -476,25 +474,25 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 		std_frame_header.frame_type = VideoCodingAV1FrameType(read_bits(2));
 		is_intra = std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY || std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_INTRA_ONLY;
 
-		show_frame = read_bits(1);
-		if (show_frame && av1_sequence_header.decoder_model_info_present_flag && !av1_sequence_header.timing_info.equal_picture_interval) {
+		std_frame_header.show_frame = read_bits(1);
+		if (std_frame_header.show_frame && av1_sequence_header.decoder_model_info_present_flag && !av1_sequence_header.timing_info.equal_picture_interval) {
 			read_bits(av1_sequence_header.decoder_model_info.frame_presentation_time_length_minus_1 + 1); // frame_presentation_time
 		}
 
-		if (show_frame) {
+		if (std_frame_header.show_frame) {
 			showable_frame = std_frame_header.frame_type != VIDEO_CODING_AV1_FRAME_TYPE_KEY;
 		} else {
 			showable_frame = read_bits(1);
 		}
 
-		if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_SWITCH || (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && show_frame)) {
+		if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_SWITCH || (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && std_frame_header.show_frame)) {
 			std_frame_header.error_resilient_mode_flag = true;
 		} else {
 			std_frame_header.error_resilient_mode_flag = read_bits(1);
 		}
 	}
 
-	if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && show_frame) {
+	if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && std_frame_header.show_frame) {
 		for (uint64_t i = 0; i < VIDEO_CODING_AV1_NUM_REF_FRAMES; i++) {
 			ref_valid[i] = 0;
 			ref_order_hint[i] = 0;
@@ -570,7 +568,7 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 	std_frame_header.use_ref_frame_mvs = false;
 	std_frame_header.allow_intrabc = false;
 
-	if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_SWITCH || (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && show_frame)) {
+	if (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_SWITCH || (std_frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY && std_frame_header.show_frame)) {
 		std_frame_header.refresh_frame_flags = all_frames;
 	} else {
 		std_frame_header.refresh_frame_flags = read_bits(8);
@@ -917,7 +915,7 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 	std_frame_header.reduced_tx_set = read_bits(1);
 
 	parse_global_motion(is_intra, std_frame_header.allow_high_precision_mv, &std_frame_header.global_motion);
-	parse_film_grain(show_frame, showable_frame, std_frame_header.frame_type, &std_frame_header.film_grain);
+	parse_film_grain(std_frame_header.show_frame, showable_frame, std_frame_header.frame_type, &std_frame_header.film_grain);
 
 	return std_frame_header;
 }
@@ -1417,14 +1415,14 @@ RID VideoStreamAV1::_create_video_session(RD::VideoSessionInfo p_session_templat
 	p_session_template.height = av1_sequence_header.max_frame_height_minus_1 + 1;
 	p_session_template.max_active_reference_pictures = VIDEO_CODING_AV1_NUM_REF_FRAMES - 1;
 
-	video_session = local_device->video_session_create(p_session_template);
+	RID video_session = local_device->video_session_create(p_session_template);
 	local_device->video_session_add_av1_parameters(video_session, av1_sequence_header);
 	return video_session;
 }
 
 RID VideoStreamAV1::_create_texture_sampler(RD::SamplerState p_sampler_template) {
 	// TODO override parameters
-	texture_sampler = local_device->sampler_create(p_sampler_template);
+	RID texture_sampler = local_device->sampler_create(p_sampler_template);
 	return texture_sampler;
 }
 
@@ -1436,7 +1434,7 @@ RID VideoStreamAV1::_create_texture(RD::TextureFormat p_texture_template, RD::Te
 	p_texture_template.video_profiles = video_profiles;
 
 	RD::TextureView texture_view;
-	texture_view.ycbcr_sampler = texture_sampler;
+	texture_view.ycbcr_sampler = yuv_sampler;
 
 	return local_device->texture_create(p_texture_template, texture_view);
 }
@@ -1466,20 +1464,46 @@ void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
 	}
 
 	if (obu_type == VIDEO_CODING_AV1_OBU_TYPE_FRAME) {
+		RID yuv_texture = yuv_pool[decode_yuv_index];
+		RID rgba_texture = rgba_pool[decode_rgba_index];
+
 		VideoDecodeAV1Frame frame_header = parse_frame(p_frame_data.size());
 		frame_header.tile_start = src - p_frame_data.begin();
 		frame_header.tile_size = p_frame_data.size() - (src - p_frame_data.begin());
-		local_device->video_session_decode(video_session, p_frame_data, RID(), &frame_header);
+
+		local_device->video_session_decode(video_session, p_frame_data, yuv_texture, &frame_header);
+		_yuv_to_rgba(yuv_texture, rgba_texture);
+		local_device->video_session_end(video_session);
+
+		for (size_t i = 0; i < VIDEO_CODING_AV1_NUM_REF_FRAMES; i++) {
+			if ((frame_header.refresh_frame_flags & (1 << i)) > 0) {
+				reference_frames[i] = rgba_texture;
+			}
+		}
+
+		if (frame_header.frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY) {
+			print_line("--------BEGIN CLUSTER-----------");
+		}
+
+		if (frame_header.show_frame) {
+			present_queue.push_back(rgba_texture);
+			print_line(vformat("Show now [%d]", frame_header.refresh_frame_flags));
+		} else {
+			print_line(vformat("Show later [%d]", frame_header.refresh_frame_flags));
+		}
 	} else if (obu_type == VIDEO_CODING_AV1_OBU_TYPE_FRAME_HEADER) {
-		// May update __stuff__ ?
-		print_line("Parsing frame header");
-		fflush(stdout);
-		parse_frame_header();
+		//TODO: consider updating ref_frame stuff
+		VideoDecodeAV1Frame frame_header = parse_frame_header();
+		RID previous_texture = reference_frames[frame_header.frame_to_show_map_idx];
+		present_queue.push_back(previous_texture);
+		print_line(vformat("Show previous [%d]", frame_header.frame_to_show_map_idx));
 	}
 }
 
 Vector<uint8_t> VideoStreamAV1::present_frame() {
-	return Vector<uint8_t>();
+	RID target_texture = present_queue[0];
+	present_queue.remove_at(0);
+	return local_device->texture_get_data(target_texture, 0);
 }
 
 VideoStreamAV1::VideoStreamAV1() {

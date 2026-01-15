@@ -43,6 +43,7 @@ private:
 		RID texture;
 		size_t group_order_count;
 		size_t picture_order_count;
+		bool presented;
 	};
 
 	const uint8_t *src = nullptr;
@@ -59,7 +60,10 @@ private:
 	Vector<VideoCodingH264SequenceParameterSet> sps_sets;
 	Vector<VideoCodingH264PictureParameterSet> pps_sets;
 
-	Vector<Frame> present_queue;
+	Vector<Frame> frame_queue;
+	size_t decode_index = 0;
+	size_t present_index = 0;
+
 	size_t current_group_order_count = 0;
 	uint64_t prev_pic_order_cnt_lsb;
 	uint64_t prev_pic_order_cnt_msb;
