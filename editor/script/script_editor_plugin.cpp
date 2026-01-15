@@ -1481,7 +1481,7 @@ void ScriptEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated() ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
 				_apply_editor_settings();
@@ -3004,7 +3004,7 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 	// the shortcut to be used regardless of the click location.
 	// This feature can be disabled to avoid interfering with other uses of the additional
 	// mouse buttons, such as push-to-talk in a VoIP program.
-	if (EDITOR_GET("interface/editor/mouse_extra_buttons_navigate_history")) {
+	if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
 		const Ref<InputEventMouseButton> mb = p_event;
 
 		// Navigate the script history using additional mouse buttons present on some mice.

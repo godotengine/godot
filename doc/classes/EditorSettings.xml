@@ -916,174 +916,174 @@
 			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
 			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps. To test the editor with these tools, use [b]Always Active[/b].
 		</member>
-		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
+		<member name="interface/editor/appearance/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog] windows. Different platforms have different conventions for this, which can be overridden through this setting to avoid accidental clicks when using Godot on multiple platforms.
 			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt; Cancel first on macOS and other Linux desktop environments.
 			- [b]Cancel First[/b] forces the Cancel/OK ordering.
 			- [b]OK First[/b] forces the OK/Cancel ordering.
 			To check if these buttons are swapped at runtime, use [method DisplayServer.get_swap_cancel_ok].
 		</member>
-		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
-			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
-		</member>
-		<member name="interface/editor/bottom_dock_tab_style" type="int" setter="" getter="">
-			Tab style of editor docks located at the bottom.
-		</member>
-		<member name="interface/editor/code_font" type="String" setter="" getter="">
-			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
-		</member>
-		<member name="interface/editor/code_font_contextual_ligatures" type="int" setter="" getter="">
-			The font ligatures to enable for the currently configured code font. Not all fonts include support for ligatures.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.
-		</member>
-		<member name="interface/editor/code_font_custom_opentype_features" type="String" setter="" getter="">
-			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
-		</member>
-		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
-			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
-		</member>
-		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
-			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
-		</member>
-		<member name="interface/editor/collapse_main_menu" type="bool" setter="" getter="">
+		<member name="interface/editor/appearance/collapse_main_menu" type="bool" setter="" getter="">
 			If [code]true[/code], the main menu collapses into a [MenuButton].
-			[b]Note:[/b] This setting is only applicable on macOS when [member interface/editor/use_embedded_menu] is [code]true[/code].
+			[b]Note:[/b] This setting is only applicable on macOS when [member interface/editor/appearance/use_embedded_menu] is [code]true[/code].
 			[b]Note:[/b] Defaults to [code]true[/code] on the Android editor.
 		</member>
-		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
+		<member name="interface/editor/appearance/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
-			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
+			[b]Note:[/b] Only effective if [member interface/editor/appearance/display_scale] is set to [b]Custom[/b].
 		</member>
-		<member name="interface/editor/display_scale" type="int" setter="" getter="">
+		<member name="interface/editor/appearance/display_scale" type="int" setter="" getter="">
 			The display scale factor to use for the editor interface. Higher values are more suited to hiDPI/Retina displays.
 			If set to [b]Auto[/b], the editor scale is automatically determined based on the screen resolution and reported display DPI. This heuristic is not always ideal, which means you can get better results by setting the editor scale manually.
-			If set to [b]Custom[/b], the scaling value in [member interface/editor/custom_display_scale] will be used.
+			If set to [b]Custom[/b], the scaling value in [member interface/editor/appearance/custom_display_scale] will be used.
 		</member>
-		<member name="interface/editor/dock_tab_style" type="int" setter="" getter="">
-			Tab style of editor docks, except bottom docks.
-		</member>
-		<member name="interface/editor/dragging_hover_wait_seconds" type="float" setter="" getter="">
-			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
-		</member>
-		<member name="interface/editor/editor_language" type="String" setter="" getter="">
-			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
-			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
-		</member>
-		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
+		<member name="interface/editor/appearance/editor_screen" type="int" setter="" getter="">
 			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
 		</member>
-		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
+		<member name="interface/editor/appearance/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
 		</member>
-		<member name="interface/editor/font_allow_msdf" type="bool" setter="" getter="">
+		<member name="interface/editor/appearance/project_manager_screen" type="int" setter="" getter="">
+			The preferred monitor to display the project manager.
+		</member>
+		<member name="interface/editor/appearance/show_update_spinner" type="int" setter="" getter="">
+			If enabled, displays an icon in the top-right corner of the editor that spins when the editor redraws a frame. This can be used to diagnose situations where the engine is constantly redrawing, which should be avoided as this increases CPU and GPU utilization for no good reason. To further troubleshoot these situations, start the editor with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.
+			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
+			[b]Note:[/b] If [member interface/editor/display/update_continuously] is [code]true[/code], the spinner icon displays in red.
+			[b]Note:[/b] If the editor was started with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], the update spinner will [i]never[/i] display regardless of this setting's value. This is to avoid confusion with what would cause redrawing in real world scenarios.
+		</member>
+		<member name="interface/editor/appearance/use_embedded_menu" type="bool" setter="" getter="">
+			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
+			Specific to the macOS platform.
+		</member>
+		<member name="interface/editor/appearance/use_native_file_dialogs" type="bool" setter="" getter="">
+			If [code]true[/code], editor UI uses OS native file/directory selection dialogs.
+		</member>
+		<member name="interface/editor/behavior/automatically_open_screenshots" type="bool" setter="" getter="">
+			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
+		</member>
+		<member name="interface/editor/behavior/import_resources_when_unfocused" type="bool" setter="" getter="">
+			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
+		</member>
+		<member name="interface/editor/behavior/save_each_scene_on_quit" type="bool" setter="" getter="">
+			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
+		</member>
+		<member name="interface/editor/behavior/save_on_focus_loss" type="bool" setter="" getter="">
+			If [code]true[/code], scenes and scripts are saved when the editor loses focus. Depending on the work flow, this behavior can be less intrusive than [member text_editor/behavior/files/autosave_interval_secs] or remembering to save manually.
+		</member>
+		<member name="interface/editor/behavior/separate_distraction_mode" type="bool" setter="" getter="">
+			If [code]true[/code], the editor's Script tab will have a separate distraction mode setting from the 2D/3D/Game/AssetLib tabs. If [code]false[/code], the distraction-free mode toggle is shared between all tabs.
+		</member>
+		<member name="interface/editor/behavior/show_internal_errors_in_toast_notifications" type="int" setter="" getter="">
+			If enabled, displays internal engine errors in toast notifications (toggleable by clicking the "bell" icon at the bottom of the editor). No matter the value of this setting, non-internal engine errors will always be visible in toast notifications.
+			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
+		</member>
+		<member name="interface/editor/display/keep_screen_on" type="bool" setter="" getter="">
+			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
+		</member>
+		<member name="interface/editor/display/single_window_mode" type="bool" setter="" getter="">
+			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window. Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
+			This is equivalent to [member ProjectSettings.display/window/subwindows/embed_subwindows] in the running project, except the setting's value is inverted.
+			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
+			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
+		</member>
+		<member name="interface/editor/display/update_continuously" type="bool" setter="" getter="">
+			If [code]true[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/appearance/show_update_spinner]).
+			[b]Warning:[/b] This greatly increases CPU and GPU utilization, leading to increased power usage. This should only be enabled for troubleshooting purposes.
+		</member>
+		<member name="interface/editor/display/vsync_mode" type="int" setter="" getter="">
+			Sets the V-Sync mode for the editor. Does not affect the project when run from the editor (this is controlled by [member ProjectSettings.display/window/vsync/vsync_mode]).
+			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
+			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+		</member>
+		<member name="interface/editor/docks/bottom_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the bottom.
+		</member>
+		<member name="interface/editor/docks/dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks, except bottom docks.
+		</member>
+		<member name="interface/editor/fonts/code_font" type="String" setter="" getter="">
+			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+		</member>
+		<member name="interface/editor/fonts/code_font_contextual_ligatures" type="int" setter="" getter="">
+			The font ligatures to enable for the currently configured code font. Not all fonts include support for ligatures.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.
+		</member>
+		<member name="interface/editor/fonts/code_font_custom_opentype_features" type="String" setter="" getter="">
+			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
+		</member>
+		<member name="interface/editor/fonts/code_font_custom_variations" type="String" setter="" getter="">
+			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
+		</member>
+		<member name="interface/editor/fonts/code_font_size" type="int" setter="" getter="">
+			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
+		</member>
+		<member name="interface/editor/fonts/font_allow_msdf" type="bool" setter="" getter="">
 			If set to [code]true[/code], MSDF font rendering will be used for the visual shader graph editor. You may need to set this to [code]false[/code] when using a custom main font, as some fonts will look broken due to the use of self-intersecting outlines in their font data. Downloading the font from the font maker's official website as opposed to a service like Google Fonts can help resolve this issue.
 		</member>
-		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
+		<member name="interface/editor/fonts/font_antialiasing" type="int" setter="" getter="">
 			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>
-		<member name="interface/editor/font_disable_embedded_bitmaps" type="bool" setter="" getter="">
+		<member name="interface/editor/fonts/font_disable_embedded_bitmaps" type="bool" setter="" getter="">
 			If set to [code]true[/code], embedded font bitmap loading is disabled (bitmap-only and color fonts ignore this property).
 		</member>
-		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
+		<member name="interface/editor/fonts/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:
 			- [b]None:[/b] Don't use font hinting when rasterizing the font. This results in a smooth font, but it can look blurry.
 			- [b]Light:[/b] Use hinting on the X axis only. This is a compromise between font sharpness and smoothness.
 			- [b]Normal:[/b] Use hinting on both X and Y axes. This results in a sharp font, but it doesn't look very smooth.
 			If set to [b]Auto[/b], the font hinting mode will be set to match the current operating system in use. This means the [b]Light[/b] hinting mode will be used on Windows and Linux, and the [b]None[/b] hinting mode will be used on macOS.
 		</member>
-		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
+		<member name="interface/editor/fonts/font_subpixel_positioning" type="int" setter="" getter="">
 			The subpixel positioning mode to use when rendering editor font glyphs. This affects both the main and code fonts. [b]Disabled[/b] is the fastest to render and uses the least memory. [b]Auto[/b] only uses subpixel positioning for small font sizes (where the benefit is the most noticeable). [b]One Half of a Pixel[/b] and [b]One Quarter of a Pixel[/b] force the same subpixel positioning mode for all editor fonts, regardless of their size (with [b]One Quarter of a Pixel[/b] being the highest-quality option).
 		</member>
-		<member name="interface/editor/import_resources_when_unfocused" type="bool" setter="" getter="">
-			If [code]true[/code], (re)imports resources even if the editor window is unfocused or minimized. If [code]false[/code], resources are only (re)imported when the editor window is focused. This can be set to [code]true[/code] to speed up iteration by starting the import process earlier when saving files in the project folder. This also allows getting visual feedback on changes without having to click the editor window, which is useful with multi-monitor setups. The downside of setting this to [code]true[/code] is that it increases idle CPU usage and may steal CPU time from other applications when importing resources.
-		</member>
-		<member name="interface/editor/keep_screen_on" type="bool" setter="" getter="">
-			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
-		</member>
-		<member name="interface/editor/localize_settings" type="bool" setter="" getter="">
-			If [code]true[/code], setting names in the editor are localized when possible.
-			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
-		</member>
-		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
-			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
-		</member>
-		<member name="interface/editor/main_font" type="String" setter="" getter="">
+		<member name="interface/editor/fonts/main_font" type="String" setter="" getter="">
 			The font to use for the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 400 (normal) will be used.
 		</member>
-		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
+		<member name="interface/editor/fonts/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
 			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
 		</member>
-		<member name="interface/editor/main_font_custom_opentype_features" type="String" setter="" getter="">
+		<member name="interface/editor/fonts/main_font_custom_opentype_features" type="String" setter="" getter="">
 			List of custom OpenType features to use, if supported by the currently configured main font. Check what OpenType features are supported by your font first.
 			The string should follow the OpenType specification, e.g. [code]ss01,tnum,calt=false[/code]. Microsoft's documentation contains a list of [url=https://learn.microsoft.com/en-us/typography/opentype/spec/featurelist]all registered features[/url].
 			[b]Note:[/b] The default editor main font ([url=https://rsms.me/inter]Inter[/url]) has custom OpenType features in its font file, with [code]ss04[/code] and [code]tnum[/code] enabled and [code]calt[/code] disabled by default. Supported features can be found at its website.
 		</member>
-		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
+		<member name="interface/editor/fonts/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
 		</member>
-		<member name="interface/editor/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
+		<member name="interface/editor/input/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
 			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
 		</member>
-		<member name="interface/editor/project_manager_screen" type="int" setter="" getter="">
-			The preferred monitor to display the project manager.
-		</member>
-		<member name="interface/editor/save_each_scene_on_quit" type="bool" setter="" getter="">
-			If [code]false[/code], the editor will save all scenes when confirming the [b]Save[/b] action when quitting the editor or quitting to the project list. If [code]true[/code], the editor will ask to save each scene individually.
-		</member>
-		<member name="interface/editor/save_on_focus_loss" type="bool" setter="" getter="">
-			If [code]true[/code], scenes and scripts are saved when the editor loses focus. Depending on the work flow, this behavior can be less intrusive than [member text_editor/behavior/files/autosave_interval_secs] or remembering to save manually.
-		</member>
-		<member name="interface/editor/separate_distraction_mode" type="bool" setter="" getter="">
-			If [code]true[/code], the editor's Script tab will have a separate distraction mode setting from the 2D/3D/Game/AssetLib tabs. If [code]false[/code], the distraction-free mode toggle is shared between all tabs.
-		</member>
-		<member name="interface/editor/show_internal_errors_in_toast_notifications" type="int" setter="" getter="">
-			If enabled, displays internal engine errors in toast notifications (toggleable by clicking the "bell" icon at the bottom of the editor). No matter the value of this setting, non-internal engine errors will always be visible in toast notifications.
-			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
-		</member>
-		<member name="interface/editor/show_update_spinner" type="int" setter="" getter="">
-			If enabled, displays an icon in the top-right corner of the editor that spins when the editor redraws a frame. This can be used to diagnose situations where the engine is constantly redrawing, which should be avoided as this increases CPU and GPU utilization for no good reason. To further troubleshoot these situations, start the editor with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
-			Consider enabling this if you are developing editor plugins to ensure they only make the editor redraw when required.
-			The default [b]Auto[/b] value will only enable this if the editor was compiled with the [code]dev_build=yes[/code] SCons option (the default is [code]dev_build=no[/code]).
-			[b]Note:[/b] If [member interface/editor/update_continuously] is [code]true[/code], the spinner icon displays in red.
-			[b]Note:[/b] If the editor was started with the [code]--debug-canvas-item-redraw[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], the update spinner will [i]never[/i] display regardless of this setting's value. This is to avoid confusion with what would cause redrawing in real world scenarios.
-		</member>
-		<member name="interface/editor/single_window_mode" type="bool" setter="" getter="">
-			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window. Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
-			This is equivalent to [member ProjectSettings.display/window/subwindows/embed_subwindows] in the running project, except the setting's value is inverted.
-			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
-			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
-		</member>
-		<member name="interface/editor/tablet_driver" type="int" setter="" getter="">
+		<member name="interface/editor/input/tablet_driver" type="int" setter="" getter="">
 			Overrides the tablet driver used by the editor.
 		</member>
-		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
+		<member name="interface/editor/localization/editor_language" type="String" setter="" getter="">
+			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
+		</member>
+		<member name="interface/editor/localization/localize_settings" type="bool" setter="" getter="">
+			If [code]true[/code], setting names in the editor are localized when possible.
+			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
+		</member>
+		<member name="interface/editor/localization/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
 		</member>
-		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
-			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
+		<member name="interface/editor/timers/dragging_hover_wait_seconds" type="float" setter="" getter="">
+			During a drag-and-drop, this is how long to wait over a UI element before it triggers a reaction (e.g. a section unfolds to show nested items).
 		</member>
-		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
-			If [code]true[/code], redraws the editor every frame even if nothing has changed on screen. When this setting is enabled, the update spinner displays in red (see [member interface/editor/show_update_spinner]).
-			[b]Warning:[/b] This greatly increases CPU and GPU utilization, leading to increased power usage. This should only be enabled for troubleshooting purposes.
+		<member name="interface/editor/timers/low_processor_mode_sleep_usec" type="int" setter="" getter="">
+			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/timers/unfocused_low_processor_mode_sleep_usec].
+			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
-		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
-			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
-			Specific to the macOS platform.
-		</member>
-		<member name="interface/editor/use_native_file_dialogs" type="bool" setter="" getter="">
-			If [code]true[/code], editor UI uses OS native file/directory selection dialogs.
-		</member>
-		<member name="interface/editor/vsync_mode" type="int" setter="" getter="">
-			Sets the V-Sync mode for the editor. Does not affect the project when run from the editor (this is controlled by [member ProjectSettings.display/window/vsync/vsync_mode]).
-			Depending on the platform and used renderer, the engine will fall back to [b]Enabled[/b] if the desired mode is not supported.
-			[b]Note:[/b] V-Sync modes other than [b]Enabled[/b] are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
+		<member name="interface/editor/timers/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
+			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/timers/low_processor_mode_sleep_usec].
+			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
 			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
@@ -1112,7 +1112,7 @@
 			- [b]Raw:[/b] Displays properties in [code]snake_case[/code].
 			- [b]Capitalized:[/b] Displays properties capitalized.
 			- [b]Localized:[/b] Displays the localized string for the current editor language if a translation is available for the given property. If no translation is available, falls back to [b]Capitalized[/b].
-			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localize_settings] instead.
+			[b]Note:[/b] To display translated setting names in Project Settings and Editor Settings, use [member interface/editor/localization/localize_settings] instead.
 		</member>
 		<member name="interface/inspector/delimitate_all_container_and_resources" type="bool" setter="" getter="">
 			If [code]true[/code], add a margin around Array, Dictionary, and Resource Editors that are not already colored.
@@ -1153,7 +1153,7 @@
 		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
 			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, Shader editor, and Game Workspace.
-			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
+			[b]Note:[/b] When [member interface/editor/display/single_window_mode] is [code]true[/code], the multi window support is always disabled.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 		</member>
 		<member name="interface/multi_window/maximize_window" type="bool" setter="" getter="">
@@ -1353,7 +1353,7 @@
 			If [code]true[/code], the editor will clear the Output panel when running the project.
 		</member>
 		<member name="run/output/font_size" type="int" setter="" getter="">
-			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
+			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/fonts/code_font_size]).
 		</member>
 		<member name="run/output/max_lines" type="int" setter="" getter="">
 			Maximum number of lines to show at any one time in the Output panel.

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[EditorFileDialog] is a [FileDialog] tweaked to work in the editor. It automatically handles favorite and recent directory lists, and synchronizes some properties with their corresponding editor settings.
-		[EditorFileDialog] will automatically show a native dialog based on the [member EditorSettings.interface/editor/use_native_file_dialogs] editor setting and ignores [member FileDialog.use_native_dialog].
+		[EditorFileDialog] will automatically show a native dialog based on the [member EditorSettings.interface/editor/appearance/use_native_file_dialogs] editor setting and ignores [member FileDialog.use_native_dialog].
 		[b]Note:[/b] [EditorFileDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>

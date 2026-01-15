@@ -298,7 +298,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 				inspector->get_inspector()->update_tree();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
 			}
 		} break;

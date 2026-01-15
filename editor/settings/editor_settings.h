@@ -124,7 +124,9 @@ private:
 	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
-	void _remove_deprecated_settings();
+	HashMap<String, String> compat_map;
+	void _handle_setting_compatibility();
+	void _rename_setting(const String &p_old_name, const String &p_new_name);
 #endif
 
 	// Bind helpers.

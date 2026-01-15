@@ -130,7 +130,7 @@ void EditorBottomPanel::dock_focused(EditorDock *p_dock, bool p_was_visible) {
 }
 
 DockTabContainer::TabStyle EditorBottomPanel::get_tab_style() const {
-	return (TabStyle)EDITOR_GET("interface/editor/bottom_dock_tab_style").operator int();
+	return (TabStyle)EDITOR_GET("interface/editor/docks/bottom_dock_tab_style").operator int();
 }
 
 bool EditorBottomPanel::can_switch_dock() const {
