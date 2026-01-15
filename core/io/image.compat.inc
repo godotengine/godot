@@ -32,6 +32,25 @@
 
 #include "core/object/class_db.h"
 
+static Image::CompressProfile _astc_format_to_compress_profile(Image::ASTCFormat p_format) {
+	switch (p_format) {
+		case Image::ASTC_FORMAT_4x4:
+			return Image::COMPRESS_PROFILE_MAX_QUALITY;
+		case Image::ASTC_FORMAT_8x8:
+			return Image::COMPRESS_PROFILE_MAX_COMPRESSION;
+		default:
+			return Image::COMPRESS_PROFILE_AUTOMATIC;
+	}
+}
+
+Error Image::_compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format) {
+	return compress(p_mode, p_source, _astc_format_to_compress_profile(p_format));
+}
+
+Error Image::_compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format) {
+	return compress_from_channels(p_mode, p_channels, _astc_format_to_compress_profile(p_format));
+}
+
 Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
 	return save_exr_to_buffer(p_grayscale);
 }
@@ -41,6 +60,8 @@ Error Image::_save_exr_bind_compat_117800(const String &p_path, bool p_grayscale
 }
 
 void Image::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::_compress_bind_compat_115003, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_compatibility_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::_compress_from_channels_compat_115003, DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_bind_compat_117800, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::_save_exr_to_buffer_bind_compat_117800, DEFVAL(false));
 }
