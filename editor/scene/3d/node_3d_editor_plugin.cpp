@@ -2894,8 +2894,9 @@ void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, cons
 	cursor.x_rot = cursor.unsnapped_x_rot;
 	cursor.y_rot = cursor.unsnapped_y_rot;
 
-	if (_is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_1") &&
-			_is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_2")) {
+	bool snap_modifier_configured = !_is_shortcut_empty("spatial_editor/viewport_orbit_snap_modifier_1") || !_is_shortcut_empty("spatial_editor/viewport_orbit_snap_modifier_2");
+
+	if (snap_modifier_configured && _is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_1") && _is_nav_modifier_pressed("spatial_editor/viewport_orbit_snap_modifier_2")) {
 		const real_t snap_angle = Math::deg_to_rad(45.0);
 		const real_t snap_threshold = Math::deg_to_rad((real_t)EDITOR_GET("editors/3d/navigation_feel/angle_snap_threshold"));
 
