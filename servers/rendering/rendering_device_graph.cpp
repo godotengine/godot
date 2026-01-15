@@ -1651,12 +1651,20 @@ void RenderingDeviceGraph::add_buffer_clear(RDD::BufferID p_dst, ResourceTracker
 	int32_t command_index;
 	RecordedBufferClearCommand *command = static_cast<RecordedBufferClearCommand *>(_allocate_command(sizeof(RecordedBufferClearCommand), command_index));
 	command->type = RecordedCommand::TYPE_BUFFER_CLEAR;
-	command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 	command->buffer = p_dst;
 	command->offset = p_offset;
 	command->size = p_size;
 
-	ResourceUsage usage = RESOURCE_USAGE_COPY_TO;
+	ResourceUsage usage;
+	if (driver_clears_with_copy_engine) {
+		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
+		usage = RESOURCE_USAGE_COPY_TO;
+	} else {
+		// If the driver is uncapable of using the copy engine for clearing the buffer (e.g. D3D12), we must transition it to storage buffer read/write usage.
+		command->self_stages = RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT;
+		usage = RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE;
+	}
+
 	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
 }
 
