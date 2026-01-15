@@ -55,11 +55,17 @@
 #endif
 
 // The following macros would need to be implemented somehow
-// for purely weakly ordered architectures. There's a test case
+// for weakly ordered architectures. There's a test case
 // ("[RID_Owner] Thread safety") with potential to catch issues
 // on such architectures if these primitives fail to be implemented.
 // For now, they will be just markers about needs that may arise.
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) // MSVC, x86.
 #define WEAK_MEMORY_ORDER 0
+#elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__)) // GCC/Clang, x86.
+#define WEAK_MEMORY_ORDER 0
+#else
+#define WEAK_MEMORY_ORDER 1
+#endif
 #if WEAK_MEMORY_ORDER
 // Ideally, we'd have implementations that collaborate with the
 // sync mechanism used (e.g., the mutex) so instead of some full
@@ -119,6 +125,7 @@ class RID_Alloc : public RID_AllocBase {
 	_FORCE_INLINE_ RID _allocate_rid() {
 		if constexpr (THREAD_SAFE) {
 			mutex.lock();
+			SYNC_ACQUIRE;
 		}
 
 		if (alloc_count == max_alloc) {
@@ -175,6 +182,7 @@ class RID_Alloc : public RID_AllocBase {
 		alloc_count++;
 
 		if constexpr (THREAD_SAFE) {
+			SYNC_RELEASE;
 			mutex.unlock();
 		}
 
@@ -367,6 +375,7 @@ public:
 	_FORCE_INLINE_ void free(const RID &p_rid) {
 		if constexpr (THREAD_SAFE) {
 			mutex.lock();
+			SYNC_ACQUIRE;
 		}
 
 		uint64_t id = p_rid.get_id();
@@ -401,6 +410,7 @@ public:
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
 
 		if constexpr (THREAD_SAFE) {
+			SYNC_RELEASE;
 			mutex.unlock();
 		}
 	}
@@ -429,6 +439,7 @@ public:
 	void fill_owned_buffer(RID *p_rid_buffer) const {
 		if constexpr (THREAD_SAFE) {
 			mutex.lock();
+			SYNC_ACQUIRE;
 		}
 		uint32_t idx = 0;
 		for (size_t i = 0; i < max_alloc; i++) {
