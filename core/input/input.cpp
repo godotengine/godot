@@ -432,7 +432,7 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, Required
 		return false;
 	}
 
-	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+	if (E->value.pressed_event_id != p_event->get_source_id()) {
 		return false;
 	}
 
@@ -489,7 +489,7 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, Require
 		return false;
 	}
 
-	if (E->value.released_event_id != p_event->get_instance_id()) {
+	if (E->value.released_event_id != p_event->get_source_id()) {
 		return false;
 	}
 
@@ -797,6 +797,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_window_id(mb->get_window_id());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			touch_event->set_source_id(mb->get_source_id());
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
 			_THREAD_SAFE_LOCK_
@@ -827,6 +828,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
 			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			drag_event->set_source_id(mm->get_source_id());
 
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(drag_event);
@@ -872,6 +874,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
 				button_event->set_window_id(st->get_window_id());
+				button_event->set_source_id(st->get_source_id());
 
 				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
@@ -910,6 +913,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_screen_velocity(sd->get_screen_velocity());
 			motion_event->set_button_mask(mouse_button_mask);
 			motion_event->set_window_id(sd->get_window_id());
+			motion_event->set_source_id(sd->get_source_id());
 
 			_parse_input_event_impl(motion_event, true);
 		}
@@ -971,12 +975,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		_update_action_cache(E.key, action_state);
 		// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 		if (action_state.cache.pressed && !was_pressed) {
-			action_state.pressed_event_id = p_event->get_instance_id();
+			action_state.pressed_event_id = p_event->get_source_id();
 			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 		if (!action_state.cache.pressed && was_pressed) {
-			action_state.released_event_id = p_event->get_instance_id();
+			action_state.released_event_id = p_event->get_source_id();
 			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 		}

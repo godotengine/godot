@@ -53,6 +53,7 @@ class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
 	int device = 0;
+	ObjectID source_id;
 
 protected:
 	bool canceled = false;
@@ -72,6 +73,9 @@ public:
 	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
+
+	void set_source_id(ObjectID p_id) { source_id = p_id; }
+	ObjectID get_source_id() const { return source_id.is_valid() ? source_id : get_instance_id(); }
 
 	bool is_canceled() const;
 	bool is_pressed() const;

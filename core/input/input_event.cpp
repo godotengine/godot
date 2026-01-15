@@ -129,6 +129,7 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_id"), "set_source_id", "get_source_id");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
 }
@@ -759,6 +760,7 @@ RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &
 	mb->set_double_click(double_click);
 	mb->set_factor(factor);
 	mb->set_button_index(button_index);
+	mb->set_source_id(get_source_id());
 
 	mb->merge_meta_from(this);
 
@@ -981,6 +983,7 @@ RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &
 	mm->set_relative_screen_position(get_relative_screen_position());
 	mm->set_velocity(p_xform.basis_xform(get_velocity()));
 	mm->set_screen_velocity(get_screen_velocity());
+	mm->set_source_id(get_source_id());
 
 	mm->merge_meta_from(this);
 
@@ -1377,6 +1380,7 @@ RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &
 	st->set_pressed(pressed);
 	st->set_canceled(canceled);
 	st->set_double_tap(double_tap);
+	st->set_source_id(get_source_id());
 
 	st->merge_meta_from(this);
 
@@ -1507,6 +1511,7 @@ RequiredResult<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p
 	sd->set_relative_screen_position(get_relative_screen_position());
 	sd->set_velocity(p_xform.basis_xform(velocity));
 	sd->set_screen_velocity(get_screen_velocity());
+	sd->set_source_id(get_source_id());
 
 	sd->merge_meta_from(this);
 
@@ -1720,6 +1725,7 @@ RequiredResult<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_factor(get_factor());
+	ev->set_source_id(get_source_id());
 
 	ev->merge_meta_from(this);
 
@@ -1762,6 +1768,7 @@ RequiredResult<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p
 
 	ev->set_position(p_xform.xform(get_position() + p_local_ofs));
 	ev->set_delta(get_delta());
+	ev->set_source_id(get_source_id());
 
 	ev->merge_meta_from(this);
 
