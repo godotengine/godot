@@ -239,7 +239,7 @@
 
 // MARK: Orientation
 
-#if TARGET_OS_IPHONE
+#ifdef IOS_ENABLED
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
 	[super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 
@@ -255,7 +255,7 @@
 									 }
 								 }];
 }
-#endif // TARGET_OS_IPHONE
+#endif
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {

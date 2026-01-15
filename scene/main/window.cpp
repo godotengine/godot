@@ -823,6 +823,17 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			focused_window = this;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
 			emit_signal(SceneStringName(focus_entered));
+			if (get_tree() && get_tree()->is_accessibility_enabled()) {
+				Window *w = exclusive_child;
+				while (w) {
+					if (w->exclusive_child) {
+						w = w->exclusive_child;
+					} else {
+						w->grab_focus();
+						break;
+					}
+				}
+			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
@@ -1860,8 +1871,8 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void Window::_window_input_text(const String &p_text) {
-	push_text_input(p_text);
+void Window::_window_input_text(const String &p_text, bool p_emit_signal) {
+	_push_text_input(p_text, p_emit_signal);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {

@@ -132,7 +132,7 @@ private:
 		}
 
 		Size2 get_icon_size() const;
-		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Color &p_color = Color()) const;
+		void draw_icon(const RID &p_where, const Point2 &p_pos, const Size2 &p_size = Size2(), const Rect2i &p_region = Rect2i(), const Color &p_color = Color()) const;
 	};
 
 	mutable RID accessibility_row_element;
@@ -543,6 +543,8 @@ private:
 
 	bool popup_edit_committed = true;
 	RID accessibility_scroll_element;
+	RID header_ci; // Separate canvas item for drawing column headers
+	RID content_ci; // Separate canvas item for drawing tree rows
 
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
@@ -644,6 +646,7 @@ private:
 		Color children_hl_line_color;
 		Color custom_button_font_highlight;
 		Color font_outline_color;
+		Color scroll_hint_color;
 
 		float base_scale = 1.0;
 		int font_outline_size = 0;
@@ -655,6 +658,8 @@ private:
 		int inner_item_margin_right = 0;
 		int inner_item_margin_top = 0;
 		int item_margin = 0;
+		int check_h_separation = 0;
+		int icon_h_separation = 0;
 		int button_margin = 0;
 		int icon_max_width = 0;
 		Point2 offset;
@@ -816,6 +821,8 @@ protected:
 public:
 	PackedStringArray get_accessibility_configuration_warnings() const override;
 	virtual RID get_focused_accessibility_element() const override;
+
+	virtual void set_self_modulate(const Color &p_self_modulate) override;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 

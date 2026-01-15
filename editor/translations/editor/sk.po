@@ -24,13 +24,15 @@
 # Bobo <ctiborboborkapor@gmail.com>, 2024.
 # David Chorváth <dadulo33@gmail.com>, 2024.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Marek J <marek.workspace@gmail.com>, 2026.
+# Martin Sinansky <martin.sinansky@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:08+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2026-01-10 10:01+0000\n"
+"Last-Translator: Martin Sinansky <martin.sinansky@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -38,7 +40,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Help"
+msgstr "Pomoc"
+
+msgid "unset"
+msgstr "Nenastavené"
 
 msgid "Physical"
 msgstr "Fyzická klavesa"
@@ -213,6 +224,12 @@ msgstr "Vstup MIDI na Kanále=%s Správa=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Vstupná udalosť so skratkou=%s"
 
+msgid " or "
+msgstr " alebo "
+
+msgid "Action has no bound inputs"
+msgstr "Akcia nemá priradený vstup"
+
 msgid "Accept"
 msgstr "Potvrdiť"
 
@@ -221,6 +238,9 @@ msgstr "Zvoliť"
 
 msgid "Cancel"
 msgstr "Zrušiť"
+
+msgid "Close Dialog"
+msgstr "Zatvoriť dialógové okno"
 
 msgid "Focus Next"
 msgstr "Zamerať ďalšie"
@@ -378,6 +398,12 @@ msgstr "Duplikovať Nody"
 msgid "Delete Nodes"
 msgstr "Vymazať Nody"
 
+msgid "Follow Input Port Connection"
+msgstr "Nasledovať vstupné pripojenie"
+
+msgid "Follow Output Port Connection"
+msgstr "Nasledovať výstupné pripojenie"
+
 msgid "Go Up One Level"
 msgstr "Ísť vyššie o jednu úroveň"
 
@@ -387,6 +413,9 @@ msgstr "Obnoviť"
 msgid "Show Hidden"
 msgstr "Zobraziť Skryté"
 
+msgid "Find"
+msgstr "Nájsť"
+
 msgid "Focus Path"
 msgstr "Zamerať Cestu"
 
@@ -395,6 +424,12 @@ msgstr "Prevrátiť smer vstupu"
 
 msgid "Start Unicode Character Input"
 msgstr "Začať vstup znaku Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "Výber farby: Vymazať prednastavené"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Dostupnosť: Ťahať a pustiť klávesnicou"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Nesprávny vstup %d (neprešiel) vo výraze"
@@ -495,6 +530,9 @@ msgstr "Pridať Bezier bod"
 msgid "Move Bezier Points"
 msgstr "Presunúť Bazier Points"
 
+msgid "Scale Bezier Points"
+msgstr "Škálovať Bezierove body"
+
 msgid "Animation Duplicate Keys"
 msgstr "Animácia: Duplikovať kľúče"
 
@@ -528,6 +566,9 @@ msgstr "Načítať..."
 msgid "Move Node Point"
 msgstr "Presunúť Bod Nodu"
 
+msgid "Change BlendSpace1D Config"
+msgstr "Zmeniť nastavenia BlendSpace1D"
+
 msgid "Change BlendSpace1D Labels"
 msgstr "Zmeniť BlendSpace1D Označenia"
 
@@ -558,8 +599,20 @@ msgstr "Diskrétne"
 msgid "Capture"
 msgstr "Zachytiť"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Vybratie a presúvanie bodov.\n"
+"RMB: Pridajte bod na kliknutú pozíciu.\n"
+"Shift+LMB+Potiahnuť: Nastavte pozíciu zmiešavania v danom priestore."
+
 msgid "Create points."
 msgstr "Vytvoriť body."
+
+msgid "Set the blending position within the space."
+msgstr "Nastaviť pozíciu zmiešavania v priestore."
 
 msgid "Erase points."
 msgstr "Zmazať body."
@@ -567,14 +620,29 @@ msgstr "Zmazať body."
 msgid "Enable snap and show grid."
 msgstr "Povoliť prichytenie a zobraziť mriežku."
 
+msgid "Grid Step"
+msgstr "Krok mriežky"
+
+msgid "Sync:"
+msgstr "Synchronizácia:"
+
 msgid "Blend:"
 msgstr "Prelínanie:"
 
 msgid "Point"
 msgstr "Bod"
 
+msgid "Blend Value"
+msgstr "Hodnota zmiešavania"
+
 msgid "Open Editor"
 msgstr "Otvorit Editor"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
 
 msgid "Value"
 msgstr "Hodnota"
@@ -587,6 +655,9 @@ msgstr "Trojuholník už existuje."
 
 msgid "Add Triangle"
 msgstr "Pridať Trojuholník"
+
+msgid "Change BlendSpace2D Config"
+msgstr "Zmeniť nastavenia BlendSpace2D"
 
 msgid "Change BlendSpace2D Labels"
 msgstr "Zmeniť Label BlendSpace2D"
@@ -612,6 +683,42 @@ msgstr "Vymazať body a trojuholníky."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Vygenerovať blend trojuholníky Automaticky (nie manuálne)"
+
+msgid "Grid X Step"
+msgstr "Krok mriežky na osi X"
+
+msgid "Grid Y Step"
+msgstr "Krok mriežky na osi Y"
+
+msgid "Blend X Value"
+msgstr "Hodnota zmiešavania na osi X"
+
+msgid "Blend Y Value"
+msgstr "Hodnota zmiešavania na osi Y"
+
+msgid "Max Y"
+msgstr "Max Y"
+
+msgid "Y Value"
+msgstr "Hodnota Y"
+
+msgid "Min Y"
+msgstr "Min Y"
+
+msgid "Min X"
+msgstr "Min X"
+
+msgid "X Value"
+msgstr "Hodnota X"
+
+msgid "Max X"
+msgstr "Max X"
+
+msgid "Parameter Changed: %s"
+msgstr "Zmenený parameter: %s"
+
+msgid "Inspect Filters"
+msgstr "Preskúmať filtre"
 
 msgid "Edit Filters"
 msgstr "Upraviť Filtre"
@@ -649,6 +756,15 @@ msgstr "Zapnúť/Vypnúť Filter"
 msgid "Change Filter"
 msgstr "Zmeniť Filter"
 
+msgid "Fill Selected Filter Children"
+msgstr "Vyplňte zvolených potomkov filtra"
+
+msgid "Invert Filter Selection"
+msgstr "Obrátiť výber filtra"
+
+msgid "Clear Filter Selection"
+msgstr "Vyčistiť výber filtra"
+
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
@@ -665,6 +781,9 @@ msgstr "Zvukové Klipy"
 msgid "Functions"
 msgstr "Funkcie"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Preskúmať filtrované tracky:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Upraviť Filtrované Tracky:"
 
@@ -677,20 +796,181 @@ msgstr "Pridať Node..."
 msgid "Enable Filtering"
 msgstr "Povoliť Filtrovanie"
 
+msgid "Fill Selected Children"
+msgstr "Vyplniť zvolených potomkov"
+
+msgid "Invert"
+msgstr "Obrátiť"
+
 msgid "Clear"
 msgstr "Vyčistiť"
+
+msgid "Start of Animation"
+msgstr "Začiatok animácie"
+
+msgid "End of Animation"
+msgstr "Koniec animácie"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Nastaviť vlastnú časovú os zo značky"
+
+msgid "Select Markers"
+msgstr "Vybrať značku"
+
+msgid "Start Marker"
+msgstr "Značka začiatku"
+
+msgid "End Marker"
+msgstr "Značka konca"
+
+msgid "Library Name:"
+msgstr "Názov knižnice:"
 
 msgid "Animation name can't be empty."
 msgstr "Názov animácie nemôže byť prázdny."
 
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr "Názov animácie obsahuje neplatné znaky: '/', ':', ',' alebo '['."
+
 msgid "Animation with the same name already exists."
 msgstr "Animácia s rovnakým menom už existuje."
+
+msgid "Enter a library name."
+msgstr "Zadajte názov knižnice."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr "Názov knižnice obsahuje neplatné znaky: '/', ':', ',' alebo '['."
+
+msgid "Library with the same name already exists."
+msgstr "Knižnica s rovnakým názvom už existuje."
+
+msgid "Animation name is valid."
+msgstr "Názov animácie je platný."
+
+msgid "Global library will be created."
+msgstr "Bude vytvorená globálna knižnica."
+
+msgid "Library name is valid."
+msgstr "Názov knižnice je platný."
+
+msgid "Add Animation to Library: %s"
+msgstr "Pridať animáciu do knižnice: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "Pridať knižnicu animácií: %s"
 
 msgid "Load Animation"
 msgstr "Načítať Animáciu"
 
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"Táto knižnica animácií nemôže byť uložená lebo nepatrí do upravovanej scény. "
+"Najprv ju spravte jedinečnou."
+
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"Táto knižnica animácií nemôže byť uložená lebo bola importovaná z iného "
+"súboru. Najprv ju spravte jedinečnou."
+
+msgid "Save Library"
+msgstr "Uložiť knižnicu"
+
+msgid "Make Animation Library Unique: %s"
+msgstr "Spraviť knižnicu animácii jedinečnou: %s"
+
+msgid ""
+"This animation can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"Táto animácia nemôže byť uložená lebo nepatrí do upravovanej scény. Najprv ju "
+"spravte jedinečnou."
+
+msgid ""
+"This animation can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"Táto animácia nemôže byť uložená lebo bola importovaná z iného súboru. Najprv "
+"ju spravte jedinečnou."
+
+msgid "Save Animation"
+msgstr "Uložiť animáciu"
+
+msgid "Make Animation Unique: %s"
+msgstr "Spraviť animáciu jedinečnou: %s"
+
+msgid "Save Animation library to File: %s"
+msgstr "Uložiť knižnicu animácií do súboru: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "Uložiť animáciu do súboru: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... → Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Súbor, ktorý ste si vybrali, je importovaná scéna z 3D modelu ako je glTF "
+"alebo FBX.\n"
+"\n"
+"V Godot, môžu byť 3D modely importované buď ako scény alebo knižnice "
+"animácií, čo je dôvod, prečo sa tu zobrazia.\n"
+"\n"
+"Ak chcete používať animácie z tohto 3D modelu, otvorte dialógové okno "
+"rozšírených nastavení importu\n"
+"a uložte animácie pomocou akcie ... → Nastaviť cestu pre ukladanie animácií,\n"
+"alebo importujte celú scénu ako jednu knižnicu animácií panely Import."
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"Súbor, ktorý ste si vybrali, nie je platná knižnica animácií.\n"
+"\n"
+"Ak animácie, ktoré chcete, sú vo vnútri tohto súboru, uložiť ich najprv do "
+"samostatného súboru."
+
+msgid "Some of the selected libraries were already added to the mixer."
+msgstr "Niektoré z vybraných knižníc už boli pridané do zmiešavača."
+
+msgid "Add Animation Libraries"
+msgstr "Pridať knižnice animácií"
+
+msgid "Some Animation files were invalid."
+msgstr "Niektoré zo súborov animácií boli neplatné."
+
+msgid "Some of the selected animations were already added to the library."
+msgstr "Niektoré zo zvolených animácií už boli pridané do knižnice."
+
+msgid "Load Animation into Library: %s"
+msgstr "Načítať animáciu do knižnice: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "Premenovať knižnicu animácií: %s"
+
+msgid "[Global]"
+msgstr "[Globálny]"
+
+msgid "Rename Animation: %s"
+msgstr "Premenovať animáciu: %s"
+
 msgid "Animation Name:"
 msgstr "Meno Animácie:"
+
+msgid "No animation resource in clipboard!"
+msgstr "Žiadny zdroj animácie v schránke!"
 
 msgid "Pasted Animation"
 msgstr "Prilepená Animácia"
@@ -707,8 +987,65 @@ msgstr "Spraviť Jedinečným"
 msgid "Open in Inspector"
 msgstr "Otvorit v Inšpektor-ovi"
 
+msgid "Remove Animation Library: %s"
+msgstr "Vymazať knižnicu animácií: %s"
+
+msgid "Remove Animation from Library: %s"
+msgstr "Odstrániť animáciu z knižnice: %s"
+
+msgid "[built-in]"
+msgstr "[vstavaný]"
+
+msgid "[foreign]"
+msgstr "[cudzý]"
+
+msgid "[imported]"
+msgstr "[importovaný]"
+
+msgid "Add animation to library."
+msgstr "Pridať animáciu do knižnice."
+
+msgid "Load animation from file and add to library."
+msgstr "Načítať animáciu zo súboru a pridať ju do knižnice."
+
+msgid "Paste animation to library from clipboard."
+msgstr "Prilepiť animáciu do knižnice zo schránky."
+
+msgid "Save animation library to resource on disk."
+msgstr "Uložiť knižnicu animácií do prostriedku na disku."
+
+msgid "Remove animation library."
+msgstr "Vymazať knižnicu animácií."
+
+msgid "Copy animation to clipboard."
+msgstr "Kopírovať animáciu do schránky."
+
+msgid "Save animation to resource on disk."
+msgstr "Uložiť animáciu do prostriedku na disku."
+
+msgid "Remove animation from Library."
+msgstr "Odstrániť animáciu z knižnice."
+
+msgid "Edit Animation Libraries"
+msgstr "Upraviť knižnice animácií"
+
+msgid "New Library"
+msgstr "Nová knižnica"
+
+msgid "Create new empty animation library."
+msgstr "Vytvoriť novú prázdnu knižnicu animácií."
+
+msgid "Load Library"
+msgstr "Nahrať knižnicu"
+
+msgid "Load animation library from disk."
+msgstr "Nahrať knižnicu animácií z disku."
+
 msgid "Resource"
 msgstr "Prostriedok"
+
+msgid "Storage"
+msgstr "Úložisko"
 
 msgid "Error:"
 msgstr "Chyba:"
@@ -728,11 +1065,17 @@ msgstr "Premenovať Animáciu"
 msgid "Change Animation Name:"
 msgstr "Zmeniť Meno Animácie:"
 
+msgid "Delete Animation '%s'?"
+msgstr "Naozaj chcete vymazať animáciu '%s'?"
+
 msgid "Remove Animation"
 msgstr "Vymazať Animáciu"
 
 msgid "Invalid animation name!"
 msgstr "Meno animácie je Vadné!"
+
+msgid "Animation '%s' already exists!"
+msgstr "Animácia '%s' už existuje!"
 
 msgid "Duplicate Animation"
 msgstr "Duplikovať Animáciu"
@@ -743,8 +1086,35 @@ msgstr "Blend sa Ďalej Zmenil"
 msgid "Change Blend Time"
 msgstr "Zmeniť Blend Time"
 
+msgid "[Global] (create)"
+msgstr "[Globálne] (vytvoriť)"
+
+msgid "Pause/Stop Animation"
+msgstr "Prerušiť/Zastaviť animáciu"
+
+msgid "Play Animation from Start"
+msgstr "Spustiť animáciu od začiatku"
+
+msgid "Play Animation"
+msgstr "Prehrať animáciu"
+
+msgid "Play Animation Backwards"
+msgstr "Prehrať animáciu odzadu"
+
+msgid "Play Animation Backwards from End"
+msgstr "Prehrať animáciu odzadu od konca"
+
+msgid "Duplicated Animation Name:"
+msgstr "Názov duplikovanej animácie:"
+
+msgid "Onion skinning requires a RESET animation."
+msgstr "Priesvit požaduje RESET animáciu."
+
 msgid "Animation"
 msgstr "Animácia"
+
+msgid "Toggle Animation Dock"
+msgstr "Prepnúť panel animácií"
 
 msgid "Animation position (in seconds)."
 msgstr "Pozícia Animácie (v sekundách)."
@@ -754,6 +1124,9 @@ msgstr "Škálovať prehrávanie animácie globálne pre node."
 
 msgid "Animation Tools"
 msgstr "Animačné Náradie"
+
+msgid "New..."
+msgstr "Nový..."
 
 msgid "Manage Animations..."
 msgstr "Správa animácií..."
@@ -830,14 +1203,35 @@ msgstr "Prelínanie časov:"
 msgid "Next (Auto Queue):"
 msgstr "Ďalej (Automatický Rad):"
 
+msgid "Reconnect Transition"
+msgstr "Opätovne pripojiť prechod"
+
 msgid "Move Node"
 msgstr "Presunúť Node"
 
 msgid "Transition exists!"
 msgstr "Prechod existuje!"
 
+msgid "Cannot transition to self!"
+msgstr "Nemožno spraviť prechod na seba!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "Nemožno spraviť prechod na \"Štart\"!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "Nemožno spraviť prechod z \"Koniec\"!"
+
+msgid "Transition from \"%s\" to \"%s\" already exists!"
+msgstr "prechod z \"%s\" na \"%s\" už existuje!"
+
+msgid "Play/Travel to %s"
+msgstr "Prehrať/Ísť na %s"
+
 msgid "Add Node and Transition"
 msgstr "Pridať Node a Prechod"
+
+msgid "Transition already exists!"
+msgstr "Prechod už existuje!"
 
 msgid "Add Transition"
 msgstr "Pridať Prechod"
@@ -874,6 +1268,9 @@ msgstr ""
 "Shift+LMB+Potihanuť: Pripojí vybrané nody s iným nodom, alebo vytvorí nový "
 "node, ak vyberiete oblasť bez nodov."
 
+msgid "Select and move nodes."
+msgstr "Vybrať a presunúť uzly."
+
 msgid "Create new nodes."
 msgstr "Vytvoriť Nové Nody."
 
@@ -885,6 +1282,9 @@ msgstr "Vymazať vybraný node alebo prechod."
 
 msgid "Transition:"
 msgstr "Prechod:"
+
+msgid "New Transitions Should Auto Advance"
+msgstr "Nové prechody sa majú posúvať automaticky"
 
 msgid "Play Mode:"
 msgstr "Prehrať Mód:"
@@ -900,6 +1300,26 @@ msgstr "Animácia: Zmena 3D Rotácie"
 
 msgid "Animation Change Scale3D"
 msgstr "Animácia: Zmeniť 3D Zväčšenie"
+
+msgid "Animation Multi Change Transition"
+msgstr "Animácia: Prechod s viacerými zmenami (Multi-Change Transition)"
+
+msgid "Animation Multi Change Position3D"
+msgstr "Animácia 3D pozície s viacerými zmenami (Mutli-Change Position3D)"
+
+msgid "Animation Multi Change Rotation3D"
+msgstr "Animácia 3D otočenia s viacerými prechodmi (Multi-Change Rotation 3D)"
+
+msgid "Animation Multi Change Scale3D"
+msgstr "Animácia 3D veľkosti s viacerými zmenami (Mutli Change Scale3D)"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr ""
+"Animácia hodnoty kľúčového snímku (keyframe) s viacerými prechodmi (Multi "
+"Change Keyframe Value)"
+
+msgid "Animation Multi Change Call"
+msgstr "Volanie animácie s viacerými prechodmi"
 
 msgid "Change Animation Length"
 msgstr "Zmeniť Dĺžku Animácie (Change Animation Length)"
@@ -2553,9 +2973,6 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Otáča sa, keď sa okno editora redistribuuje."
 
-msgid "OK"
-msgstr "OK"
-
 msgid ""
 "This resource can't be saved because it was imported from another file. Make "
 "it unique first."
@@ -2902,9 +3319,6 @@ msgstr "Otvoriť predchádzajúci Editor"
 
 msgid "Project"
 msgstr "Projekt"
-
-msgid "Help"
-msgstr "Pomoc"
 
 msgid "Update Continuously"
 msgstr "Aktualizovať priebežne"
@@ -4279,24 +4693,6 @@ msgstr "Ortogonálny Zozadu"
 
 msgid "Rear Perspective"
 msgstr "Perspektívny Zozadu"
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "Veľkosť: %s (%.1fMP)\n"
-
-msgid "Objects: %d\n"
-msgstr "Objekty: %d\n"
-
-msgid "Primitives: %d\n"
-msgstr "Primitívi: %d\n"
 
 msgid "CPU Time: %s ms"
 msgstr "Čas CPU : %s ms"

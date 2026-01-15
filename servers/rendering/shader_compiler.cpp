@@ -1168,6 +1168,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
+					bool is_radiance_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
 
@@ -1314,10 +1315,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									}
 								}
 
+								if (texture_uniform == SNAME("RADIANCE")) {
+									is_radiance_texture = true;
+								}
+
 								String data_type_name = "";
 								if (actions.check_multiview_samplers && (is_screen_texture || is_depth_texture || is_normal_roughness_texture)) {
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
+								} else if (is_radiance_texture) {
+									data_type_name = "sampler2D";
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
 								}
@@ -1349,6 +1356,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						} else if (multiview_uv_needed && !texture_func_no_uv && i == 2) {
 							// UV coordinate after using color, depth or normal roughness texture.
 							node_code = "multiview_uv(" + node_code + ".xy)";
+
+							code += node_code;
+						} else if (is_radiance_texture && !texture_func_no_uv && i == 2) {
+							node_code = "vec3_to_oct_with_border(" + node_code + ", params.border_size)";
 
 							code += node_code;
 						} else {

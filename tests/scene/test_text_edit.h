@@ -2134,6 +2134,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			// Shift click to make a selection from the previous caret position.
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 1).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 1).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 5).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "or s");
@@ -2143,6 +2144,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
 			CHECK(text_edit->is_caret_after_selection_origin());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 5).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 
 			// Shift click above to switch selection direction. Uses original selection position.
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 6).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
@@ -2154,9 +2156,11 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 6);
 			CHECK_FALSE(text_edit->is_caret_after_selection_origin());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(0, 6).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 
 			// Clicking clears selection.
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 7).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 7);
@@ -2164,13 +2168,74 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Cannot select when disabled, but caret still moves.
 			text_edit->set_selecting_enabled(false);
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 0).get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 0).get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 5).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 5).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			text_edit->set_selecting_enabled(true);
+
+			// Shift click to make a selection from caret.
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(0, 1).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			text_edit->set_caret_column(5, false);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 13).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "is some ");
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 5);
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 13);
+			CHECK(text_edit->is_caret_after_selection_origin());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(0, 13).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			text_edit->deselect();
+
+			// Shift click with an existing selection.
+			text_edit->select(1, 2, 1, 5);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(1, 8).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "r sele");
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->get_selection_origin_line() == 1);
+			CHECK(text_edit->get_selection_origin_column() == 2);
+			CHECK(text_edit->get_caret_line() == 1);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK(text_edit->is_caret_after_selection_origin());
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(1, 8).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			text_edit->deselect();
+
+			// Shift selecting after word selection mode keeps the selection on the word.
+			SEND_GUI_DOUBLE_CLICK(text_edit->get_rect_at_line_column(0, 6).get_center() + Point2i(2, 0), Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(0, 6).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "is");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 7);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 5);
+
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 10).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "is so");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 10);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 5);
+
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 3).get_center(), MouseButtonMask::LEFT, Key::NONE);
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "is is");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 2);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 7);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(text_edit->get_rect_at_line_column(0, 3).get_center() + Point2i(2, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 		}
 
 		SUBCASE("[TextEdit] select and deselect") {

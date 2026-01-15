@@ -189,6 +189,7 @@ void SplitContainerDragger::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, RTR("Drag to resize"));
 
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			if (sc->collapsed || sc->valid_children.size() < 2u || !sc->dragging_enabled) {
@@ -409,6 +410,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		if (Math::is_zero_approx(shrink_amount)) {
 			break;
 		}
+		const real_t prev_available_space = available_space;
 		for (StretchData &sdata : stretch_data) {
 			if (sdata.stretch_ratio <= 0 || sdata.final_size <= sdata.min_size) {
 				continue;
@@ -417,6 +419,10 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 			sdata.final_size = CLAMP(prev_size - shrink_amount * sdata.stretch_ratio, sdata.min_size, sdata.final_size);
 			const real_t size_diff = prev_size - sdata.final_size;
 			available_space += size_diff;
+		}
+		if (Math::is_equal_approx(available_space, prev_available_space)) {
+			// Shrinking can fail due to values being too small to have an effect but too large for `is_zero_approx`.
+			break;
 		}
 	}
 
@@ -453,6 +459,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 		}
 		// Don't shrink smaller than needed.
 		target_size = MAX(target_size, largest_size + available_space / largest_count);
+		const real_t prev_available_space = available_space;
 		for (StretchData &sdata : stretch_data) {
 			if (sdata.final_size <= sdata.min_size || (skip_priority_child && sdata.priority)) {
 				continue;
@@ -464,7 +471,7 @@ void SplitContainer::_set_desired_sizes(const PackedInt32Array &p_desired_sizes,
 				available_space += size_diff;
 			}
 		}
-		if (Math::is_zero_approx(available_space)) {
+		if (Math::is_zero_approx(available_space) || Math::is_equal_approx(available_space, prev_available_space)) {
 			break;
 		}
 	}

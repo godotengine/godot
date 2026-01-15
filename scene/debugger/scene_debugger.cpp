@@ -2768,14 +2768,14 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	far_plane.d += zfar;
 	frustum.push_back(far_plane);
 
+	// Keep track of the currently listed nodes, so repeats can be ignored.
+	HashSet<Node *> node_list;
+
 #ifndef PHYSICS_3D_DISABLED
 	Vector<Vector3> points = Geometry3D::compute_convex_mesh_points(&frustum[0], frustum.size());
 	Ref<ConvexPolygonShape3D> shape;
 	shape.instantiate();
 	shape->set_points(points);
-
-	// Keep track of the currently listed nodes, so repeats can be ignored.
-	HashSet<Node *> node_list;
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();

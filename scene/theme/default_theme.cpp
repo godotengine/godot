@@ -666,6 +666,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("scroll_hint_vertical", "ScrollContainer", icons["scroll_hint_vertical"]);
 	theme->set_icon("scroll_hint_horizontal", "ScrollContainer", icons["scroll_hint_horizontal"]);
+	theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0));
+	theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0));
 
 	// Window
 
@@ -907,6 +909,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("parent_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("children_hl_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("custom_button_font_highlight", "Tree", control_font_hover_color);
+	theme->set_color("scroll_hint_color", "Tree", Color(0, 0, 0));
 
 	theme->set_constant("h_separation", "Tree", Math::round(4 * scale));
 	theme->set_constant("v_separation", "Tree", Math::round(4 * scale));
@@ -915,6 +918,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("inner_item_margin_left", "Tree", 0);
 	theme->set_constant("inner_item_margin_right", "Tree", 0);
 	theme->set_constant("inner_item_margin_top", "Tree", 0);
+	theme->set_constant("check_h_separation", "Tree", Math::round(4 * scale));
+	theme->set_constant("icon_h_separation", "Tree", Math::round(4 * scale));
 	theme->set_constant("button_margin", "Tree", Math::round(4 * scale));
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
 	theme->set_constant("relationship_line_width", "Tree", 1);
@@ -952,6 +957,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_selected_color", "ItemList", control_font_pressed_color);
 	theme->set_color("font_outline_color", "ItemList", Color(0, 0, 0));
 	theme->set_color("guide_color", "ItemList", Color(0.7, 0.7, 0.7, 0.25));
+	theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0));
 	theme->set_stylebox("hovered", "ItemList", make_flat_stylebox(Color(1, 1, 1, 0.07)));
 	theme->set_stylebox("hovered_selected", "ItemList", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("hovered_selected_focus", "ItemList", make_flat_stylebox(style_hover_selected_color));

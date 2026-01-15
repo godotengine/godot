@@ -677,7 +677,11 @@ public:
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_MAX
+	};
 
+	enum TransformMode {
+		TRANSFORM_MODE_GLOBAL = 1,
+		TRANSFORM_MODE_LOCAL = 2,
 	};
 
 private:

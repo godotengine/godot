@@ -65,11 +65,7 @@ bool BoneTwistDisperser3D::_set(const StringName &p_path, const Variant &p_value
 		} else if (what == "joints") {
 			int idx = path.get_slicec('/', 3).to_int();
 			String prop = path.get_slicec('/', 4);
-			if (prop == "bone_name") {
-				set_joint_bone_name(which, idx, p_value);
-			} else if (prop == "bone") {
-				set_joint_bone(which, idx, p_value);
-			} else if (prop == "twist_amount") {
+			if (prop == "twist_amount") {
 				set_joint_twist_amount(which, idx, p_value);
 			} else {
 				return false;
@@ -163,7 +159,7 @@ void BoneTwistDisperser3D::_get_property_list(List<PropertyInfo> *p_list) const 
 		for (uint32_t j = 0; j < settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 			props.push_back(PropertyInfo(Variant::FLOAT, joint_path + "twist_amount", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,or_less"));
 		}
 	}
@@ -456,18 +452,6 @@ Ref<Curve> BoneTwistDisperser3D::get_damping_curve(int p_index) const {
 
 // Individual joints.
 
-void BoneTwistDisperser3D::set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name) {
-	// Exists only for indicate bone name on the inspector, no needs to make dirty joint array.
-	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<DisperseJointSetting> &joints = settings[p_index]->joints;
-	ERR_FAIL_INDEX(p_joint, (int)joints.size());
-	joints[p_joint].joint.name = p_bone_name;
-	Skeleton3D *sk = get_skeleton();
-	if (sk) {
-		set_joint_bone(p_index, p_joint, sk->find_bone(joints[p_joint].joint.name));
-	}
-}
-
 String BoneTwistDisperser3D::get_joint_bone_name(int p_index, int p_joint) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), String());
 	const LocalVector<DisperseJointSetting> &joints = settings[p_index]->joints;
@@ -475,7 +459,7 @@ String BoneTwistDisperser3D::get_joint_bone_name(int p_index, int p_joint) const
 	return joints[p_joint].joint.name;
 }
 
-void BoneTwistDisperser3D::set_joint_bone(int p_index, int p_joint, int p_bone) {
+void BoneTwistDisperser3D::_set_joint_bone(int p_index, int p_joint, int p_bone) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	LocalVector<DisperseJointSetting> &joints = settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, (int)joints.size());
@@ -651,7 +635,7 @@ void BoneTwistDisperser3D::_update_joints(int p_index) {
 
 	set_joint_count(p_index, new_joints.size());
 	for (uint32_t i = 0; i < new_joints.size(); i++) {
-		set_joint_bone(p_index, i, new_joints[i]);
+		_set_joint_bone(p_index, i, new_joints[i]);
 	}
 
 	_update_reference_bone(p_index);

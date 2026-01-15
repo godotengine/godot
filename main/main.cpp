@@ -4704,7 +4704,21 @@ int Main::start() {
 	}
 
 	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
+		Size2i movie_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
+		String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
+		if (stretch_mode != "viewport") {
+			// `canvas_items` and `disabled` modes use the window size override instead,
+			// which allows for higher resolution recording with 2D elements designed for a lower resolution.
+			const int window_width_override = GLOBAL_GET("display/window/size/window_width_override");
+			if (window_width_override > 0) {
+				movie_size.width = window_width_override;
+			}
+			const int window_height_override = GLOBAL_GET("display/window/size/window_height_override");
+			if (window_height_override > 0) {
+				movie_size.height = window_height_override;
+			}
+		}
+		movie_writer->begin(movie_size, fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
 
 	GDExtensionManager::get_singleton()->startup();

@@ -84,7 +84,7 @@ public:
 		virtual ~JoypadFeatures() {}
 
 		virtual bool has_joy_light() const { return false; }
-		virtual bool set_joy_light(const Color &p_color) { return false; }
+		virtual void set_joy_light(const Color &p_color) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -360,7 +360,7 @@ public:
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
 
-	bool set_joy_light(int p_device, const Color &p_color);
+	void set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);

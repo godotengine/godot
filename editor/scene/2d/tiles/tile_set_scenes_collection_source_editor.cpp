@@ -256,11 +256,10 @@ void TileSetScenesCollectionSourceEditor::_scene_file_selected(const String &p_p
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add a Scene Tile"));
 	undo_redo->add_do_method(*tile_set_scenes_collection_source, "create_scene_tile", scene, scene_id);
+	undo_redo->add_do_method(this, "_update_all");
 	undo_redo->add_undo_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+	undo_redo->add_undo_method(this, "_update_all");
 	undo_redo->commit_action();
-	_update_scenes_list();
-	_update_action_buttons();
-	_update_tile_inspector();
 }
 
 void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
@@ -271,11 +270,10 @@ void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove a Scene Tile"));
 	undo_redo->add_do_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+	undo_redo->add_do_method(this, "_update_all");
 	undo_redo->add_undo_method(*tile_set_scenes_collection_source, "create_scene_tile", tile_set_scenes_collection_source->get_scene_tile_scene(scene_id), scene_id);
+	undo_redo->add_undo_method(this, "_update_all");
 	undo_redo->commit_action();
-	_update_scenes_list();
-	_update_action_buttons();
-	_update_tile_inspector();
 }
 
 void TileSetScenesCollectionSourceEditor::_update_source_inspector() {
@@ -301,6 +299,12 @@ void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
 void TileSetScenesCollectionSourceEditor::_update_action_buttons() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
 	scene_tile_delete_button->set_disabled(selected_indices.is_empty() || read_only);
+}
+
+void TileSetScenesCollectionSourceEditor::_update_all() {
+	_update_scenes_list();
+	_update_action_buttons();
+	_update_tile_inspector();
 }
 
 void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
@@ -449,22 +453,20 @@ void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, c
 	if (p_from == scene_tiles_list) {
 		// Handle dropping a texture in the list of atlas resources.
 		Dictionary d = p_data;
-		Vector<String> files = d["files"];
-		for (int i = 0; i < files.size(); i++) {
-			Ref<PackedScene> resource = ResourceLoader::load(files[i]);
+		const Vector<String> files = d["files"];
+		for (const String &file : files) {
+			const Ref<PackedScene> resource = ResourceLoader::load(file);
 			if (resource.is_valid()) {
 				int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add a Scene Tile"));
 				undo_redo->add_do_method(*tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
+				undo_redo->add_do_method(this, "_update_all");
 				undo_redo->add_undo_method(*tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
+				undo_redo->add_undo_method(this, "_update_all");
 				undo_redo->commit_action();
 			}
 		}
-
-		_update_scenes_list();
-		_update_action_buttons();
-		_update_tile_inspector();
 	}
 }
 
@@ -499,6 +501,8 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 }
 
 void TileSetScenesCollectionSourceEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_update_all"), &TileSetScenesCollectionSourceEditor::_update_all);
+
 	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 }
 

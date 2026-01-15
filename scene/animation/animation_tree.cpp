@@ -902,9 +902,9 @@ void AnimationTree::_setup_animation_player() {
 // `libraries` is a dynamic property, so we can't use `_validate_property` to change it.
 uint32_t AnimationTree::_get_libraries_property_usage() const {
 	if (!animation_player.is_empty()) {
-		return PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+		return PROPERTY_USAGE_READ_ONLY;
 	}
-	return PROPERTY_USAGE_DEFAULT;
+	return PROPERTY_USAGE_STORAGE;
 }
 
 void AnimationTree::_validate_property(PropertyInfo &p_property) const {

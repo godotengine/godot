@@ -62,7 +62,12 @@ void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 }
 
 bool EditorFileDialog::_should_use_native_popup() const {
+#ifdef ANDROID_ENABLED
+	// Native file dialog on Android, returns a file URI instead of a path and does not support res://, user://, or options. This requires editor-side changes to handle properly, so disabling it for now.
+	return false;
+#else
 	return _can_use_native_popup() && (OS::get_singleton()->is_sandboxed() || EDITOR_GET("interface/editor/use_native_file_dialogs").operator bool());
+#endif
 }
 
 bool EditorFileDialog::_should_hide_file(const String &p_file) const {
@@ -94,6 +99,10 @@ void EditorFileDialog::_validate_property(PropertyInfo &p_property) const {
 }
 
 void EditorFileDialog::_dir_contents_changed() {
+	if (!EditorFileSystem::get_singleton()) {
+		return;
+	}
+
 	bool scan_required = false;
 	switch (get_access()) {
 		case FileDialog::ACCESS_RESOURCES: {
