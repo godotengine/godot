@@ -32,6 +32,7 @@
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
+#include "core/variant/dictionary.h"
 #include "scene/gui/control.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -571,6 +572,8 @@ private:
 
 	HashMap<RID, Rect2> ac_element_bounds_cache;
 
+	Dictionary bbcode_mapping;
+
 	void _update_follow_vc();
 	void _invalidate_accessibility();
 	void _invalidate_current_line(ItemFrame *p_frame);
@@ -588,6 +591,9 @@ private:
 	void _remove_frame(HashSet<Item *> &r_erase_list, ItemFrame *p_frame, int p_line, bool p_erase, int p_char_offset, int p_line_offset);
 
 	void _texture_changed(RID p_item);
+
+	void set_bbcode_mapping(const Dictionary &p_mapping);
+	Dictionary get_bbcode_mapping() const;
 
 	static inline RID_PtrOwner<Item, true> items{ 65536, 1048576 };
 	List<String> tag_stack;
