@@ -5814,7 +5814,7 @@ void EditorInspector::add_custom_property_description(const String &p_class, con
 String EditorInspector::get_custom_property_description(const String &p_property) const {
 	HashMap<String, String>::ConstIterator E = custom_property_descriptions.find(p_property);
 	if (E) {
-		return E->value;
+		return TTR(E->value);
 	}
 	return "";
 }
