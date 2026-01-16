@@ -1155,9 +1155,7 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha_highp = 1.0;
 #endif
-#ifndef FOG_DISABLED
 	vec4 fog_highp = vec4(0.0);
-#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance_highp = vec4(0.0);
 #endif
@@ -1296,9 +1294,7 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	half premul_alpha = half(premul_alpha_highp);
 #endif
-#ifndef FOG_DISABLED
 	hvec4 fog = hvec4(fog_highp);
-#endif
 #ifdef CUSTOM_RADIANCE_USED
 	hvec4 custom_radiance = hvec4(custom_radiance_highp);
 #endif
