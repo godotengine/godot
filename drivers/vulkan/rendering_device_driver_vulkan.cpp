@@ -3891,8 +3891,11 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 	const bool store_respv = use_respv && !shader_refl.specialization_constants.is_empty();
 	const int64_t stage_count = shader_refl.stages_vector.size();
 	shader_info.vk_stages_create_info.reserve(stage_count);
-	shader_info.spirv_stage_bytes.reserve(stage_count);
 	shader_info.original_stage_size.reserve(stage_count);
+
+#if RECORD_PIPELINE_STATISTICS
+	shader_info.spirv_stage_bytes.reserve(stage_count);
+#endif
 
 	if (store_respv) {
 		shader_info.respv_stage_shaders.reserve(stage_count);
@@ -3958,7 +3961,9 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 			}
 		}
 
+#if RECORD_PIPELINE_STATISTICS
 		shader_info.spirv_stage_bytes.push_back(decoded_spirv);
+#endif
 
 		VkShaderModuleCreateInfo shader_module_create_info = {};
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -5676,7 +5681,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 						}
 					}
 
-					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes with constants %s (%d).", shader_info->spirv_stage_bytes[i].size(), respv_optimized_data.size(), spec_constants, p_shader.id));
+					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes with constants %s (%d).", shader_info->respv_stage_shaders[i].inlinedSpirvWords.size() * sizeof(uint32_t), respv_optimized_data.size(), spec_constants, p_shader.id));
 #endif
 
 					// Create the shader module with the optimized output.
