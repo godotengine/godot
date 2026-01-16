@@ -311,6 +311,8 @@ void ImmediateMesh::surface_end() {
 	uses_uvs = false;
 	uses_uv2s = false;
 
+	active_surface_data.vertex_2d = false;
+
 	surface_active = false;
 
 	emit_changed();
