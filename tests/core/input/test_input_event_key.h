@@ -76,6 +76,23 @@ TEST_CASE("[InputEventKey] Key correctly stores and retrieves keycode with modif
 	CHECK(key.get_physical_keycode_with_modifiers() != Key::SPACE);
 }
 
+TEST_CASE("[InputEventKey] Modifiers persist after physical key change") {
+	InputEventKey key;
+
+	key.set_keycode(Key::ENTER);
+	key.set_ctrl_pressed(true);
+
+	CHECK(key.get_keycode_with_modifiers() == (Key::ENTER | KeyModifierMask::CTRL));
+	CHECK(key.get_keycode_with_modifiers() != Key::ENTER);
+
+	// Change key while modifier is active
+	key.set_physical_keycode(Key::SPACE);
+
+	// Modifier must persist
+	CHECK(key.get_physical_keycode_with_modifiers() == (Key::SPACE | KeyModifierMask::CTRL));
+	CHECK(key.get_physical_keycode_with_modifiers() != Key::SPACE);
+}
+
 TEST_CASE("[InputEventKey] Key correctly stores and retrieves unicode") {
 	InputEventKey key;
 
