@@ -241,6 +241,7 @@
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/limit_angular_velocity_modifier_3d.h"
+#include "scene/3d/line_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -649,6 +650,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightmapGIData);
 	GDREGISTER_CLASS(LightmapProbe);
 	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
+
+	GDREGISTER_CLASS(Line3D);
+	Line3D::init_shaders();
+
 	GDREGISTER_CLASS(GPUParticles3D);
 	GDREGISTER_ABSTRACT_CLASS(GPUParticlesCollision3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
@@ -1467,6 +1472,7 @@ void unregister_scene_types() {
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 	FogMaterial::cleanup_shader();
+	Line3D::finish_shaders();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();
