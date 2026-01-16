@@ -5019,7 +5019,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_detach_script->hide();
 
 	button_extend_script = memnew(Button);
-	button_extend_script->set_flat(true);
+	button_extend_script->set_theme_type_variation("FlatMenuButton");
 	button_extend_script->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_EXTEND_SCRIPT, false));
 	button_extend_script->set_tooltip_text(TTRC("Extend the script of the selected node."));
 	button_extend_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/extend_script"));
