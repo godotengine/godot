@@ -142,7 +142,7 @@ void ImmediateMesh::surface_add_vertex_2d(const Vector2 &p_vertex) {
 	Vector3 v(p_vertex.x, p_vertex.y, 0);
 	vertices.push_back(v);
 
-	active_surface_data.vertex_2d = true;
+	active_surface_data.vertex_2d = false;
 }
 
 void ImmediateMesh::surface_end() {
