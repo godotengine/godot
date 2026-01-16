@@ -2507,6 +2507,10 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process_internal(is_visible_in_tree());
+		} break;
 	}
 }
 
@@ -2520,7 +2524,6 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	set_shortcut_context(this);
 	set_process_shortcut_input(true);
-	set_process_internal(true);
 	TileSetEditor::get_singleton()->register_split(this);
 
 	// Middle panel.

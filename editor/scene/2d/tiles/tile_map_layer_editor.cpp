@@ -3675,6 +3675,7 @@ void TileMapLayerEditor::_notification(int p_what) {
 			if (is_visible()) {
 				CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 			}
+			set_process_internal(is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -3689,7 +3690,7 @@ void TileMapLayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (is_visible_in_tree() && tile_map_layer_changed_needs_update) {
+			if (tile_map_layer_changed_needs_update) {
 				_update_bottom_panel();
 				_update_layers_selector();
 				tabs_plugins[tabs_bar->get_current_tab()]->tile_set_changed();
@@ -4460,7 +4461,6 @@ void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 }
 
 TileMapLayerEditor::TileMapLayerEditor() {
-	set_process_internal(true);
 	set_name(TTRC("TileMap"));
 	set_icon_name("TileMapDock");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Open TileMap Dock")));

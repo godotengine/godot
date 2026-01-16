@@ -401,6 +401,7 @@ void TileSetEditor::_notification(int p_what) {
 			if (!is_visible_in_tree()) {
 				remove_expanded_editor();
 			}
+			set_process_internal(is_visible_in_tree());
 		} break;
 	}
 }
@@ -815,8 +816,6 @@ TileSetEditor::TileSetEditor() {
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);
-
-	set_process_internal(true);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
