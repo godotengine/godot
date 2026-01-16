@@ -142,7 +142,7 @@ void ImmediateMesh::surface_add_vertex_2d(const Vector2 &p_vertex) {
 	Vector3 v(p_vertex.x, p_vertex.y, 0);
 	vertices.push_back(v);
 
-	active_surface_data.vertex_2d = false;
+	active_surface_data.vertex_2d = true;
 }
 
 void ImmediateMesh::surface_end() {
@@ -328,6 +328,7 @@ void ImmediateMesh::clear_surfaces() {
 	uv2s.clear();
 	vertices.clear();
 
+	active_surface_data.vertex_2d = false;
 	uses_colors = false;
 	uses_normals = false;
 	uses_tangents = false;
