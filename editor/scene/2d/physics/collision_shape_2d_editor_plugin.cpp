@@ -359,21 +359,13 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	if (mb.is_valid()) {
 		Vector2 gpoint = mb->get_position();
 
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				for (int i = 0; i < handles.size(); i++) {
-					if (xform.xform(handles[i]).distance_to(gpoint) < grab_threshold) {
-						edit_handle = i;
-
-						break;
-					}
-				}
-
+				edit_handle = hover_handle;
 				if (edit_handle == -1) {
 					pressed = false;
 
@@ -409,6 +401,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					set_handle(edit_handle, original_point);
 				}
 
+				CanvasItemEditor::get_singleton()->set_cursor_shape_override();
 				edit_handle = -1;
 				pressed = false;
 
@@ -422,7 +415,12 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-		if (edit_handle == -1 || !pressed) {
+		if (edit_handle == -1) {
+			_update_hover(mm->get_position());
+			return false;
+		}
+
+		if (!pressed) {
 			return false;
 		}
 
@@ -449,6 +447,68 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	}
 
 	return false;
+}
+
+void CollisionShape2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+
+	int new_hover_handle = -1;
+	for (int i = 0; i < handles.size(); i++) {
+		if (xform.xform(handles[i]).distance_to(p_mouse_pos) < grab_threshold) {
+			new_hover_handle = i;
+			break;
+		}
+	}
+
+	if (new_hover_handle == hover_handle) {
+		return;
+	}
+	hover_handle = new_hover_handle;
+
+	if (hover_handle == -1) {
+		CanvasItemEditor::get_singleton()->set_cursor_shape_override();
+		return;
+	}
+
+	static LocalVector<CursorShape> rect_shapes = { CURSOR_HSIZE, CURSOR_FDIAGSIZE, CURSOR_VSIZE, CURSOR_BDIAGSIZE, CURSOR_HSIZE, CURSOR_FDIAGSIZE, CURSOR_VSIZE, CURSOR_BDIAGSIZE };
+
+	CursorShape cursor_shape = CURSOR_ARROW;
+	switch (shape_type) {
+		case CAPSULE_SHAPE: {
+			if (hover_handle == 0) {
+				cursor_shape = CURSOR_HSIZE;
+			} else if (hover_handle == 1) {
+				cursor_shape = CURSOR_VSIZE;
+			}
+		} break;
+
+		case CIRCLE_SHAPE: {
+			cursor_shape = CURSOR_HSIZE;
+		} break;
+
+		case RECTANGLE_SHAPE: {
+			cursor_shape = rect_shapes[hover_handle];
+		} break;
+
+		case CONCAVE_POLYGON_SHAPE:
+		case CONVEX_POLYGON_SHAPE:
+		case WORLD_BOUNDARY_SHAPE:
+		case SEPARATION_RAY_SHAPE:
+		case SEGMENT_SHAPE: {
+			cursor_shape = CURSOR_CROSS;
+		} break;
+	}
+
+	double rotation = node->get_global_rotation();
+	if (!Math::is_zero_approx(rotation)) {
+		// Rotate cursor based on node's rotation.
+		int idx = rect_shapes.find(cursor_shape);
+		if (idx > -1) {
+			int offset = Math::round(rotation / (Math::PI / 4));
+			cursor_shape = rect_shapes[(idx + offset) % rect_shapes.size()];
+		}
+	}
+	CanvasItemEditor::get_singleton()->set_cursor_shape_override(cursor_shape);
 }
 
 void CollisionShape2DEditor::_shape_changed() {
@@ -661,6 +721,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 	} else {
 		if (pressed) {
 			set_handle(edit_handle, original_point);
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override();
 			pressed = false;
 		}
 		edit_handle = -1;
