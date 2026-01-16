@@ -271,6 +271,7 @@ static bool debug_mute_audio = false;
 static int max_fps = -1;
 static int frame_delay = 0;
 static int audio_output_latency = 0;
+static int speaker_mode = -1;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static MovieWriter *movie_writer = nullptr;
@@ -605,6 +606,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("].\n");
 	print_help_option("--audio-output-latency <ms>", "Override audio output latency in milliseconds (default is 15 ms).\n");
 	print_help_option("", "Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.\n");
+	print_help_option("--speaker-mode <mode>", "Override speaker mode used by Godot to mix audio (0: driver default, 1: stereo, 2: 3.1 surround, 3: 5.1 surround, 4: 7.1 surround).\n");
 
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
@@ -1225,6 +1227,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing audio output latency argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--speaker-mode") {
+			if (N) {
+				speaker_mode = N->get().to_int();
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing speaker mode argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "--text-driver") {
@@ -3464,6 +3474,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		// Right moment to create and initialize the audio server.
 		audio_server = memnew(AudioServer);
 		audio_server->init();
+		audio_server->set_speaker_mode_config(speaker_mode);
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}

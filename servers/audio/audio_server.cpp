@@ -1538,7 +1538,7 @@ void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
 
-	speaker_mode_config = GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/speaker_mode", PROPERTY_HINT_ENUM, "Default:-1,Stereo:0,Surround 3.1:1,Surround 5.1:2,Surround 7.1:3"), -1);
+	speaker_mode_config = GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/speaker_mode", PROPERTY_HINT_ENUM, "Default:0,Stereo:1,Surround 3.1:2,Surround 5.1:3,Surround 7.1:4"), 0);
 
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
@@ -1561,12 +1561,20 @@ void AudioServer::init() {
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
 
-	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &AudioServer::project_settings_changed));
+	if (Engine::get_singleton()->is_editor_hint()) {
+		ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &AudioServer::_project_settings_changed_cb));
+	}
 }
 
-void AudioServer::project_settings_changed() {
+void AudioServer::set_speaker_mode_config(int p_speaker_mode) {
+	if (p_speaker_mode >= 0 && p_speaker_mode <= 4) {
+		speaker_mode_config = p_speaker_mode;
+	}
+}
+
+void AudioServer::_project_settings_changed_cb() {
 	lock();
-	speaker_mode_config = GLOBAL_GET("audio/general/speaker_mode");
+	set_speaker_mode_config(GLOBAL_GET("audio/general/speaker_mode"));
 	unlock();
 }
 
@@ -1691,13 +1699,13 @@ void AudioServer::unlock() {
 
 AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
 	switch (speaker_mode_config) {
-		case 0:
-			return SPEAKER_MODE_STEREO;
 		case 1:
-			return SPEAKER_SURROUND_31;
+			return SPEAKER_MODE_STEREO;
 		case 2:
-			return SPEAKER_SURROUND_51;
+			return SPEAKER_SURROUND_31;
 		case 3:
+			return SPEAKER_SURROUND_51;
+		case 4:
 			return SPEAKER_SURROUND_71;
 		default:
 			return get_driver_speaker_mode();
@@ -1706,13 +1714,13 @@ AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
 
 String AudioServer::_get_speaker_mode_name() const {
 	switch (speaker_mode_config) {
-		case 0:
-			return "Stereo";
 		case 1:
-			return "Surround 3.1";
+			return "Stereo";
 		case 2:
-			return "Surround 5.1";
+			return "Surround 3.1";
 		case 3:
+			return "Surround 5.1";
+		case 4:
 			return "Surround 7.1";
 		default:
 			return "Default";

@@ -348,6 +348,8 @@ private:
 	SafeList<CallbackItem *> mix_callback_list;
 	SafeList<CallbackItem *> listener_changed_callback_list;
 
+	void _project_settings_changed_cb();
+
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
 
@@ -381,8 +383,6 @@ public:
 	void set_debug_mute(bool p_mute);
 	bool get_debug_mute() const;
 #endif // DEBUG_ENABLED
-
-	void project_settings_changed();
 
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
@@ -459,6 +459,8 @@ public:
 	String get_driver_name() const;
 	SpeakerMode get_driver_speaker_mode() const;
 	int get_driver_channel_count() const;
+
+	void set_speaker_mode_config(int p_speaker_mode);
 
 	void notify_listener_changed();
 
