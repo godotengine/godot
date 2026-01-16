@@ -774,35 +774,42 @@ void GameView::_update_ui() {
 				state_label->set_text("");
 				show_game_size = true;
 			} else if (embedded_process->is_embedding_in_progress()) {
-				state_label->set_text(TTRC("Game starting..."));
+				state_label->set_text(TTRC("Game is starting..."));
 			} else if (EditorRunBar::get_singleton()->is_playing()) {
-				state_label->set_text(TTRC("Game running not embedded."));
+				state_label->set_text(TTR("Game is currently running, but is not embedded.") +
+						"\n" + vformat(TTR("Embedding will occur on the next run (press %s to re-run the project)."), ED_GET_SHORTCUT("editor/run_project")->get_as_text()));
 			} else if (embed_on_play) {
-				state_label->set_text(TTRC("Press play to start the game."));
+				state_label->set_text(vformat(TTR("Press Play (%s) to start the game."), ED_GET_SHORTCUT("editor/run_project")->get_as_text()));
 			} else {
-				state_label->set_text(TTRC("Embedding is disabled."));
+				state_label->set_text(TTR("Game embedding is disabled.") +
+						"\n" + TTR("You can enable game embedding in the last dropdown at the top (Embed Game on Next Play)."));
 			}
 			break;
 		case EMBED_NOT_AVAILABLE_FEATURE_NOT_SUPPORTED:
-			state_label->set_text(TTRC("Game embedding not available on your OS."));
+			state_label->set_text(vformat(TTR("Game embedding is not available on the %s platform.", OS::get_singleton()->get_name())));
 			break;
 		case EMBED_NOT_AVAILABLE_PROJECT_DISPLAY_DRIVER:
-			state_label->set_text(vformat(TTR("Game embedding not available for the Display Server: '%s'.\nDisplay Server can be modified in the Project Settings (Display > Display Server > Driver)."), GLOBAL_GET("display/display_server/driver")));
+			state_label->set_text(vformat(TTR("Game embedding is not available on the %s display server.", GLOBAL_GET("display/display_server/driver"))) +
+					"\n" + TTR("The display server can be modified in the Project Settings (Display > Display Server > Driver)."));
 			break;
 		case EMBED_NOT_AVAILABLE_MINIMIZED:
-			state_label->set_text(TTR("Game embedding not available when the game starts minimized.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding is not available when the game starts minimized.") +
+					"\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_MAXIMIZED:
-			state_label->set_text(TTR("Game embedding not available when the game starts maximized.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding is not available when the game starts maximized.") +
+					"\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_FULLSCREEN:
-			state_label->set_text(TTR("Game embedding not available when the game starts in fullscreen.") + "\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
+			state_label->set_text(TTR("Game embedding is not available when the game starts in fullscreen.") +
+					"\n" + TTR("Consider overriding the window mode project setting with the editor feature tag to Windowed to use game embedding while leaving the exported project intact."));
 			break;
 		case EMBED_NOT_AVAILABLE_SINGLE_WINDOW_MODE:
-			state_label->set_text(TTRC("Game embedding not available in single window mode."));
+			state_label->set_text(TTR("Game embedding is not available in single window mode.") +
+					"\n" + TTR("Single window mode can be disabled in the Editor Settings (Interface > Editor > Single Window Mode)."));
 			break;
 		case EMBED_NOT_AVAILABLE_HEADLESS:
-			state_label->set_text(TTRC("Game embedding not available when the game starts in headless mode."));
+			state_label->set_text(TTRC("Game embedding is not available when the game starts in headless mode."));
 			break;
 	}
 
