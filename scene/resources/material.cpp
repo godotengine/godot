@@ -1367,7 +1367,16 @@ void vertex() {)";
 		MODELVIEW_MATRIX[2] *= sc;
 	} else {
 		// Scale by depth.
-		float sc = length((MODELVIEW_MATRIX)[3].xyz);
+		// In stereo rendering (XR), EYE_OFFSET is non-zero, and we need to use the
+		// full 3D length to account for the eye offset in the modelview matrix.
+		// In mono rendering, EYE_OFFSET is constant vec3(0), so the GPU compiler
+		// should optimize this branch away (dot(vec3(0), vec3(0)) > 0.0 is always false).
+		float sc;
+		if (dot(EYE_OFFSET, EYE_OFFSET) > 0.0) {
+			sc = length((MODELVIEW_MATRIX)[3].xyz);
+		} else {
+			sc = abs((MODELVIEW_MATRIX)[3].z);
+		}
 		MODELVIEW_MATRIX[0] *= sc;
 		MODELVIEW_MATRIX[1] *= sc;
 		MODELVIEW_MATRIX[2] *= sc;
