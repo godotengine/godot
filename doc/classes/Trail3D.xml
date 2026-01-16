@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Trail3D" inherits="Line3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node to draw lines behind moving objects.
+	</brief_description>
+	<description>
+		The [Trail3D] node draws a flat line in space, with an optional billboard mode.
+		[b]Note:[/b] This node is designed for visual effects. For solid lines, pipes, and tubes, use a [CSGPolygon3D] node in [constant CSGPolygon3D.MODE_PATH] mode.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Clears the trail.
+			</description>
+		</method>
+		<method name="get_current_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the current length of the trail.
+			</description>
+		</method>
+		<method name="rebuild">
+			<return type="void" />
+			<description>
+				Rebuilds the trail mesh.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+			The color of the trail.
+			The color is readable in the shader through the vertex color.
+			[b]Note:[/b] Colors with values above [code]1.0[/code] (overbright) are not supported.
+		</member>
+		<member name="color_gradient" type="Gradient" setter="set_color_gradient" getter="get_color_gradient">
+			The color gradient over the trail length.
+			The color is readable in the shader through the vertex color.
+			[b]Note:[/b] Colors with values above [code]1.0[/code] (overbright) are not supported.
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
+			If [code]true[/code], the trail will generate new points from its head.
+			[b]Note:[/b] Only one active trail is supported. Setting this property to [code]true[/code] will cause the existing trail mesh to be cleared.
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="0.2">
+			The lifetime of the trail when [member limit_mode] is [constant LIMIT_MODE_LIFETIME].
+		</member>
+		<member name="limit_mode" type="int" setter="set_limit_mode" getter="get_limit_mode" enum="Trail3D.LimitMode" default="0">
+			Whether to limit the trail by lifetime or length.
+		</member>
+		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material">
+			The material to assign to the trail mesh when [member material_mode] is [constant Line3D.MATERIAL_MODE_CUSTOM].
+			[b]Tip:[/b] To preserve billboarding, use the following shader as a base:
+			[codeblock lang=text]
+			shader_type spatial;
+			render_mode blend_mix, depth_draw_never, unshaded, skip_vertex_transform, cull_disabled;
+
+			void vertex() {
+				vec3 p = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+				vec3 t = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+				VERTEX = p + UV.y * normalize(cross(p, t));
+				NORMAL = (VIEW_MATRIX * vec4(0, 1, 0, 0)).xyz;
+				UV.y = (sign(UV.y) + 1.0) / 2.0;
+			}
+
+			void fragment() {
+				ALBEDO = COLOR.rgb;
+				ALPHA = COLOR.a;
+			}
+			[/codeblock]
+		</member>
+		<member name="material_mode" type="int" setter="set_material_mode" getter="get_material_mode" enum="Line3D.MaterialMode" default="0">
+			The material mode for the trail. Use [constant Line3D.MATERIAL_MODE_CUSTOM] to supply a custom material.
+		</member>
+		<member name="max_length" type="float" setter="set_max_length" getter="get_max_length">
+			The maximum length of the trail when [member limit_mode] is [constant LIMIT_MODE_MAX_LENGTH].
+		</member>
+		<member name="mesh_alignment" type="int" setter="set_mesh_alignment" getter="get_mesh_alignment" enum="Line3D.MeshAlignment" default="1">
+			Alignment of the trail. Possible options are [constant Line3D.MESH_ALIGNMENT_LOCAL] for a 3D line, and [constant Line3D.MESH_ALIGNMENT_BILLBOARD] for a billboarded line.
+		</member>
+		<member name="min_section_length" type="float" setter="set_min_section_length" getter="get_min_section_length" default="0.2">
+			Minimum required distance before adding a new section.
+		</member>
+		<member name="pin_uv" type="bool" setter="set_pin_uv" getter="get_pin_uv" default="false">
+			If [code]true[/code], pins the UVs to their positions in space.
+		</member>
+		<member name="tiling_mode" type="int" setter="set_tiling_mode" getter="get_tiling_mode" enum="Line3D.TilingMode" default="1">
+			How to tile the UVs across the length of the trail.
+		</member>
+		<member name="tiling_multiplier" type="float" setter="set_tiling_multiplier" getter="get_tiling_multiplier" default="1.0">
+			UV multiplier across the length of the trail.
+		</member>
+		<member name="width" type="float" setter="set_width" getter="get_width" default="0.3">
+			Width of the trail.
+		</member>
+		<member name="width_curve" type="Curve" setter="set_width_curve" getter="get_width_curve">
+			Width across the length of the trail.
+		</member>
+	</members>
+	<constants>
+		<constant name="LIMIT_MODE_LIFETIME" value="0" enum="LimitMode">
+			Limit the trail length in time.
+		</constant>
+		<constant name="LIMIT_MODE_MAX_LENGTH" value="1" enum="LimitMode">
+			Limit the trail length in size.
+		</constant>
+		<constant name="LIMIT_MODE_MAX" value="2" enum="LimitMode">
+			Represents the size of the [enum LimitMode] enum.
+		</constant>
+	</constants>
+</class>
