@@ -75,6 +75,8 @@ void SpriteBase3D::_notification(int p_what) {
 			parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 			if (parent_sprite) {
 				pI = parent_sprite->children.push_back(this);
+
+				_propagate_color_changed();
 			}
 		} break;
 
@@ -83,6 +85,8 @@ void SpriteBase3D::_notification(int p_what) {
 				parent_sprite->children.erase(pI);
 				pI = nullptr;
 				parent_sprite = nullptr;
+
+				_propagate_color_changed();
 			}
 		} break;
 	}
