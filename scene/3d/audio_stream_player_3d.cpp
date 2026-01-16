@@ -414,7 +414,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	tmp_reverb_vector.resize(volume_vector_size);
 
 	bool has_any_listener_in_range = false;
-	linear_attenuation = -FLT_MAX;
+	linear_attenuation = 0;
 	for (Camera3D *camera : cameras) {
 		if (!camera) {
 			continue;
@@ -490,7 +490,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
 			float tightness = cached_global_panning_strength * 2.0f;
 			tightness *= panning_strength;
-			_calc_output_vol(local_pos / dist, tightness, tmp_volume_vector);
+			_calc_output_vol(local_pos.normalized(), tightness, tmp_volume_vector);
 		}
 
 		for (int64_t k = 0; k < volume_vector_size; k++) {
@@ -517,7 +517,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 			const Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 			if (local_velocity != Vector3()) {
-				const float approaching = (local_pos / dist).dot(local_velocity.normalized());
+				const float approaching = (local_pos.normalized()).dot(local_velocity.normalized());
 				const float velocity = local_velocity.length();
 				static constexpr float speed_of_sound = 343.0;
 
