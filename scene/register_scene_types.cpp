@@ -259,6 +259,7 @@
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/remote_transform_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
+#include "scene/3d/ribbon.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/spline_ik_3d.h"
@@ -659,6 +660,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightmapGIData);
 	GDREGISTER_CLASS(LightmapProbe);
 	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
+
+	GDREGISTER_CLASS(Ribbon);
+
 	GDREGISTER_CLASS(GPUParticles3D);
 	GDREGISTER_ABSTRACT_CLASS(GPUParticlesCollision3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
@@ -1424,6 +1428,9 @@ void register_scene_types() {
 		// RenderingServer needs to exist for this to succeed.
 		ColorPickerShape::init_shaders();
 		GraphEdit::init_shaders();
+#ifndef _3D_DISABLED
+		Ribbon::init_shaders();
+#endif //_3D_DISABLED
 	}
 
 	SceneDebugger::initialize();
@@ -1480,6 +1487,7 @@ void unregister_scene_types() {
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 	FogMaterial::cleanup_shader();
+	Ribbon::finish_shaders();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();
