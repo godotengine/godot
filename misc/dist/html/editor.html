@@ -14,20 +14,49 @@
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 		<meta name="msapplication-starturl" content="/latest">
 		<meta property="og:site_name" content="Godot Engine Web Editor">
-		<meta property="og:url" name="twitter:url" content="https://editor.godotengine.org/releases/latest/">
+		<meta property="og:url" name="twitter:url" content="https://editor.godotengine.org/releases/stable/">
 		<meta property="og:title" name="twitter:title" content="Free and open source 2D and 3D game engine">
 		<meta property="og:description" name="twitter:description" content="Use the Godot Engine editor directly in your web browser, without having to install anything.">
-		<meta property="og:image" name="twitter:image" content="https://godotengine.org/themes/godotengine/assets/og_image.png">
+		<meta property="og:image" name="twitter:image" content="https://godotengine.org/assets/share-image.webp">
 		<meta property="og:type" content="website">
 		<meta name="twitter:card" content="summary">
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="favicon.png">
 		<link rel="apple-touch-icon" type="image/png" href="favicon.png">
 		<link rel="manifest" href="manifest.json">
+		<link rel="preload" href="inter-regular.woff2" as="font" crossorigin="anonymous">
+		<link rel="preload" href="inter-bold.woff2" as="font" crossorigin="anonymous">
 		<title>Godot Engine Web Editor (___GODOT_VERSION___)</title>
 		<style>
-*:focus {
+/* Use Inter in the same configuration as used in the editor (e.g. alternate lowercase `l`). */
+@font-face {
+	font-family: "Inter";
+	src: url("inter-regular.woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Inter";
+	src: url("inter-bold.woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+html,
+body,
+button,
+input {
+	/* Apply a modern sans-serif font stack in case the Inter font fails to load. */
+	font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	font-size: 14px;
+	font-feature-settings: "calt" 0, "ss04" 1, "tnum" 1;
+}
+
+*:focus-visible {
 	/* More visible outline for better keyboard navigation. */
-	outline: 0.125rem solid hsl(220, 100%, 62.5%);
+	outline: 0.1875rem solid #538dda;
 	/* Make the outline always appear above other elements. */
 	/* Otherwise, one of its sides can be hidden by tabs in the Download and More layouts. */
 	position: relative;
@@ -35,13 +64,17 @@
 
 body {
 	touch-action: none;
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 	margin: 0;
 	border: 0 none;
 	padding: 0;
+	font-size: 14px;
 	text-align: center;
-	background-color: #333b4f;
+	background-color: #262626;
 	overflow: hidden;
+}
+
+h2 {
+	font-size: 21px;
 }
 
 a {
@@ -76,25 +109,27 @@ a:active {
 }
 
 .welcome-modal-content {
-	background-color: #333b4f;
+	background-color: #262626;
 	box-shadow: 0 0.25rem 0.25rem hsla(0, 0%, 0%, 0.5);
 	line-height: 1.5;
 	max-width: 38rem;
 	margin: 4rem auto 0 auto;
 	color: white;
 	border-radius: 0.5rem;
-	padding: 1rem 1rem 2rem 1rem;
+	padding: 0.125rem 1.25rem 1.25rem 1.25rem;
 }
 
 #tabs-buttons {
+	/* Remove spacing between items. */
+	font-size: 0;
+
 	/* Match the default background color of the editor window for a seamless appearance. */
-	background-color: #202531;
+	background-color: #141414;
 }
 
 #tab-game {
-	/* Use a pure black background to better distinguish the running project */
-	/* from the editor window, and to use a more neutral background color (no tint). */
-	background-color: black;
+	/* Match the default background color of the editor window for a seamless appearance. */
+	background-color: #141414;
 	/* Make the background span the entire page height. */
 	min-height: 100vh;
 }
@@ -114,43 +149,68 @@ a:active {
 }
 
 .godot {
-	color: #e0e0e0;
-	background-color: #3b3943;
+	color: #d0d0d0;
+	background-color: #1b1b1b;
 	background-image: linear-gradient(to bottom, #403e48, #35333c);
-	border: 1px solid #45434e;
-	box-shadow: 0 0 1px 1px #2f2d35;
+	border: 1px solid #484848;
+	box-shadow: 0 0 1px 1px #141414;
 }
 
 .btn {
 	appearance: none;
-	color: #e0e0e0;
-	background-color: #262c3b;
-	border: 1px solid #202531;
-	padding: 0.5rem 1rem;
+	color: #d0d0d0;
+	background-color: #424242;
+	border: 1px solid #484848;
+	/* Vertically center button text. */
+	padding: 0.4375rem 0.5625rem 0.5rem;
 	margin: 0 0.5rem;
+	border-radius: 0.25rem;
 }
 
 .btn:not(:disabled):hover {
-	color: #e0e1e5;
-	border-color: #666c7b;
+	color: #e4e4e4;
+	background-color: #4d4d4d;
+	border-color: #535353;
 }
 
 .btn:active {
-	border-color: #699ce8;
-	color: #699ce8;
+	color: #e5e5e5;
+	background-color: #505050;
+	border-color: #565656;
 }
 
 .btn:disabled {
-	color: #aaa;
-	border-color: #242937;
+	color: #7f7f7f;
+	background-color: #3a3a3a;
+	border-color: #3a3a3a;
+}
+
+.btn.tab-btn,
+.btn.close-btn {
+	/* Match tab colors from the default editor theme. */
+	background-color: transparent;
+	border-color: transparent;
+}
+
+.btn.tab-btn:not(:disabled):hover,
+.btn.close-btn:not(:disabled):hover {
+	background-color: #212121;
+	border-color: #212121;
 }
 
 .btn.tab-btn {
-	padding: 0.3rem 1rem;
+	/* Round top corners only. */
+	border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.btn.next-to-close-btn {
+	/* Round top-left corner only. */
+	border-radius: 0.25rem 0 0 0;
 }
 
 .btn.close-btn {
-	padding: 0.3rem 1rem;
+	/* Round top-right corner only. */
+	border-radius: 0 0.25rem 0 0;
 	margin-left: -0.75rem;
 	font-weight: 700;
 }
@@ -243,14 +303,21 @@ a:active {
 				<h2 id="welcome-modal-title" class="welcome-modal-title">Important - Please read before continuing</h2>
 				<div id="welcome-modal-description">
 					<p>
-						The Godot Web Editor has some limitations compared to the native version.
+						The Godot Web Editor has some limitations compared to the native version.<br>
 						Its main focus is education and experimentation;
 						<strong>it is not recommended for production</strong>.
 					</p>
 					<p>
+						For a more optimal experience, <a
+							href="https://godotengine.org/download/"
+							target="_blank"
+							rel="noopener"
+						>download</a> the native Godot Editor.
+					</p>
+					<p>
 						Refer to the
 						<a
-							href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html"
+							href="https://docs.godotengine.org/en/stable/tutorials/editor/using_the_web_editor.html"
 							target="_blank"
 							rel="noopener"
 						>Web editor documentation</a> for usage instructions and limitations.
@@ -266,7 +333,7 @@ a:active {
 						If you are self-hosting the web editor,
 						refer to
 						<a
-							href="https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_web.html"
+							href="https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html"
 							target="_blank"
 							rel="noopener"
 						>Exporting for the Web</a> for more information.
@@ -274,16 +341,16 @@ a:active {
 				</div>
 				<div style="text-align: center">
 					<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal(true)" style="margin-top: 1rem">
-						OK, don't show again
+						OK - Don't Show Again
 					</button>
 				</div>
 			</div>
 		</div>
 		<div id="tabs-buttons">
 			<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
-			<button id="btn-tab-editor" class="btn tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
+			<button id="btn-tab-editor" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
 			<button id="btn-close-editor" class="btn close-btn" disabled="disabled" onclick="closeEditor()">×</button>
-			<button id="btn-tab-game" class="btn tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
+			<button id="btn-tab-game" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('game')">Game</button>
 			<button id="btn-close-game" class="btn close-btn" disabled="disabled" onclick="closeGame()">×</button>
 			<button id="btn-tab-update" class="btn tab-btn" style="display: none;">Update</button>
 		</div>
@@ -291,32 +358,21 @@ a:active {
 			<div id="tab-loader">
 				<div style="color: #e0e0e0;" id="persistence">
 					<br >
-					<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: min(85%, 50vh); max-height: 250px">
+					<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: min(85%, 50vh); max-height: 200px">
 					<br >
-					___GODOT_VERSION___
-					<br >
-					<a href="releases/">Need an old version?</a>
-					<br >
-					<br >
-					<br >
-					<label for="videoMode" style="margin-right: 1rem">Video driver:</label>
-					<select id="videoMode">
-						<option value="" selected="selected">Auto</option>
-						<option value="opengl3">WebGL 2</option>
-					</select>
+					___GODOT_VERSION___ - <a href="releases/">Change version</a>
 					<br >
 					<br >
 					<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label>
-					<input id="zip-file" type="file" name="files" style="margin-bottom: 1rem">
+					<input id="zip-file" type="file" name="files" style="margin-bottom: 0.5rem">
+					<br>
+					<a href="demo.zip" id="zip-demo">(Try this for example)</a>
 					<br >
-					<a href="demo.zip">(Try this for example)</a>
+					<button id="startButton" class="btn" style="margin-top: 2rem; margin-bottom: 3rem; font-weight: 700">Start Godot Editor</button>
 					<br >
+					<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear Persistent Data</button>
 					<br >
-					<button id="startButton" class="btn" style="margin-bottom: 4rem; font-weight: 700">Start Godot editor</button>
-					<br >
-					<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear persistent data</button>
-					<br >
-					<a href="https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
+					<a href="https://docs.godotengine.org/en/stable/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
 				</div>
 			</div>
 			<div id="tab-editor" style="display: none;">
@@ -423,7 +479,6 @@ let editor = null;
 let game = null;
 let setStatusMode;
 let setStatusNotice;
-let video_driver = '';
 
 function clearPersistence() { // eslint-disable-line no-unused-vars
 	function deleteDB(path) {
@@ -450,11 +505,6 @@ function clearPersistence() { // eslint-disable-line no-unused-vars
 	}).catch(function (err) {
 		alert('Error deleting local files. Please retry after reloading the page.');
 	});
-}
-
-function selectVideoMode() {
-	const select = document.getElementById('videoMode');
-	video_driver = select.selectedOptions[0].value;
 }
 
 const tabs = [
@@ -637,9 +687,6 @@ function startEditor(zip) {
 			return v === '--project-manager';
 		}).length !== 0;
 		const is_game = !is_editor && !is_project_manager;
-		if (video_driver) {
-			args.push('--rendering-driver', video_driver);
-		}
 
 		if (is_game) {
 			if (game) {
@@ -736,13 +783,9 @@ function startEditor(zip) {
 			} catch (e) {
 				// File exists
 			}
-			selectVideoMode();
 			showTab('editor');
 			setLoaderEnabled(false);
 			const args = ['--project-manager', '--single-window'];
-			if (video_driver) {
-				args.push('--rendering-driver', video_driver);
-			}
 			editor.start({ 'args': args, 'persistentDrops': true }).then(function () {
 				setStatusMode('hidden');
 				initializing = false;
@@ -768,6 +811,24 @@ document.getElementById('startButton').onclick = function () {
 		startEditor(zip);
 	});
 };
+
+const zipFile = document.getElementById('zip-file');
+const zipDemo = document.getElementById('zip-demo');
+
+function updateZipDemoDisplay() {
+	console.log(zipFile.files.length);
+	// Hide "Try this for example" link when a file is selected.
+	zipDemo.style.display = zipFile.files.length === 0 ? 'inline' : 'none';
+}
+
+zipFile.addEventListener('change', (_pEvent) => {
+	updateZipDemoDisplay();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+	// Handle situation when a file is already specified on load (e.g. after a page refresh).
+	updateZipDemoDisplay();
+});
 		</script>
 	</body>
 </html>
