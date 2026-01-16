@@ -103,7 +103,7 @@ TEST_CASE("[Shortcut] 'set_events_list' should result in the same events as the 
 	CHECK(result2->get_keycode() == k2->get_keycode());
 }
 
-TEST_CASE("[Shortcut] 'matches_event' should correctly match the same events") {
+TEST_CASE("[Shortcut] 'matches_event' should correctly match the same event") {
 	Ref<InputEventKey> original; // The one we compare with.
 	Ref<InputEventKey> similar_but_not_equal; // Same keycode, different event.
 	Ref<InputEventKey> different; // Different event, different keycode.
