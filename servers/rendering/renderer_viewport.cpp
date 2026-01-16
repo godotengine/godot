@@ -659,6 +659,12 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			scenario_draw_canvas_bg = false;
 		}
 
+		// 2D Render begin (Copy already drawn elements onto 2D MSAA fbo)
+		// Needs only to be done when we already have a 3D scene rendered which needs to be copied
+		if (!scenario_draw_canvas_bg && can_draw_3d) {
+			RSG::texture_storage->render_target_prepare_canvas_msaa(p_viewport->render_target);
+		}
+
 		for (const KeyValue<Viewport::CanvasKey, Viewport::CanvasData *> &E : canvas_map) {
 			RendererCanvasCull::Canvas *canvas = static_cast<RendererCanvasCull::Canvas *>(E.value->canvas);
 
@@ -691,6 +697,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 			}
 
 			if (scenario_draw_canvas_bg && E.key.get_layer() >= scenario_canvas_max_layer) {
+				// We need to resolve already drawn 2D elements to be able to use it in the 3D render
+				// Doesn't matter if this is called before or after clear request since the clear request is only run if no 2D elements were drawn.
+				RSG::texture_storage->render_target_finalize_canvas_msaa(p_viewport->render_target);
 				// There may be an outstanding clear request if a clear was requested, but no 2D elements were drawn.
 				// Clear now otherwise we copy over garbage from the render target.
 				RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
@@ -700,9 +709,13 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 					_draw_3d(p_viewport);
 				}
 
+				// After drawing the 3D scene we need to copy/draw it onto the 2D MSAA buffer again.
+				RSG::texture_storage->render_target_prepare_canvas_msaa(p_viewport->render_target);
 				scenario_draw_canvas_bg = false;
 			}
 		}
+
+		RSG::texture_storage->render_target_finalize_canvas_msaa(p_viewport->render_target);
 
 		if (scenario_draw_canvas_bg) {
 			// There may be an outstanding clear request if a clear was requested, but no 2D elements were drawn.
