@@ -37,6 +37,10 @@
 class Line3D : public MeshInstance3D {
 	GDCLASS(Line3D, MeshInstance3D);
 
+	// Lots of code for this node is inspired/ported from
+	// https://codeberg.org/MajorMcDoom/cozy-cube-godot-addons/src/branch/main
+	// thank you so much for putting it out there!
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
