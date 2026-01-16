@@ -189,6 +189,8 @@ void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_bas
 }
 
 void EditorQuickOpenDialog::ok_pressed() {
+	container->save_selected_item();
+
 	update_property();
 	container->cleanup();
 	search_box->clear();
@@ -216,7 +218,6 @@ void EditorQuickOpenDialog::selection_changed() {
 void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 	// A double-click should always be taken as a "confirm" action.
 	if (p_double_click) {
-		container->save_selected_item();
 		ok_pressed();
 		return;
 	}
@@ -224,7 +225,6 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 	// Single-clicks should be taken as a "confirm" action only if Instant Preview
 	// isn't currently enabled, or the property object is null for some reason.
 	if (!_is_instant_preview_active()) {
-		container->save_selected_item();
 		ok_pressed();
 	}
 }
