@@ -2130,6 +2130,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	// Import Items tab.
 	TabContainer *import_tc = memnew(TabContainer);
+	import_tc->set_theme_type_variation("TabContainerInner");
 	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
 	tc->set_tab_title(1, TTR("Import Items"));
