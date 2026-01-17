@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#pragma once
 
-#include <cstdint>
+#include "core/typedefs.h"
 
 #ifdef THREADS_ENABLED
 
-#include "core/error/error_list.h"
-#include "core/typedefs.h"
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
 #endif
@@ -148,5 +145,3 @@ public:
 };
 
 #endif // THREADS_ENABLED
-
-#endif // SEMAPHORE_H

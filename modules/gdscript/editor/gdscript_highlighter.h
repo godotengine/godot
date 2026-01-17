@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#pragma once
 
-#include "editor/plugins/script_editor_plugin.h"
-#include "scene/gui/text_edit.h"
+#include "editor/script/script_editor_plugin.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
@@ -89,8 +87,9 @@ private:
 	Color function_definition_color;
 	Color built_in_type_color;
 	Color number_color;
-	Color member_color;
+	Color member_variable_color;
 	Color string_color;
+	Color placeholder_color;
 	Color node_path_color;
 	Color node_ref_color;
 	Color annotation_color;
@@ -117,5 +116,3 @@ public:
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
-
-#endif // GDSCRIPT_HIGHLIGHTER_H

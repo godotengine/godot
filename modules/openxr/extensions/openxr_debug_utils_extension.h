@@ -28,20 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_DEBUG_UTILS_EXTENSION_H
-#define OPENXR_DEBUG_UTILS_EXTENSION_H
+#pragma once
 
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
 
 class OpenXRDebugUtilsExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRDebugUtilsExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRDebugUtilsExtension *get_singleton();
 
 	OpenXRDebugUtilsExtension();
 	virtual ~OpenXRDebugUtilsExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
 
@@ -72,5 +76,3 @@ private:
 	EXT_PROTO_XRRESULT_FUNC1(xrSessionEndDebugUtilsLabelRegionEXT, (XrSession), p_session)
 	EXT_PROTO_XRRESULT_FUNC2(xrSessionInsertDebugUtilsLabelEXT, (XrSession), p_session, (const XrDebugUtilsLabelEXT *), p_label_info)
 };
-
-#endif // OPENXR_DEBUG_UTILS_EXTENSION_H

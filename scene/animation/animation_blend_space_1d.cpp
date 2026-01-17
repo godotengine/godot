@@ -45,9 +45,9 @@ Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName 
 	}
 
 	if (p_parameter == closest) {
-		return -1;
+		return (int)-1;
 	} else {
-		return 0;
+		return 0.0;
 	}
 }
 
@@ -366,7 +366,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		double new_closest_dist = 1e20;
 
 		for (int i = 0; i < blend_points_used; i++) {
-			double d = abs(blend_points[i].position - blend_pos);
+			double d = std::abs(blend_points[i].position - blend_pos);
 			if (d < new_closest_dist) {
 				new_closest = i;
 				new_closest_dist = d;
@@ -374,21 +374,26 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		}
 
 		if (new_closest != cur_closest && new_closest != -1) {
-			NodeTimeInfo from;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
-				//for ping-pong loop
+				NodeTimeInfo from;
+				// For ping-pong loop.
 				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
 				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (!na_c.is_null() && !na_n.is_null()) {
+				if (na_c.is_valid() && na_n.is_valid()) {
+					na_n->process_state = process_state;
+					na_c->process_state = process_state;
+
 					na_n->set_backward(na_c->is_backward());
+
+					na_n = nullptr;
+					na_c = nullptr;
 				}
-				//see how much animation remains
+				// See how much animation remains.
 				pi.seeked = false;
 				pi.weight = 0;
-				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, true);
+				pi.time = from.position;
 			}
-
-			pi.time = from.position;
 			pi.seeked = true;
 			pi.weight = 1.0;
 			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);

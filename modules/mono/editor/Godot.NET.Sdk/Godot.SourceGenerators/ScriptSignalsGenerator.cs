@@ -103,13 +103,13 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
             var members = symbol.GetMembers();
@@ -309,7 +309,7 @@ namespace Godot.SourceGenerators
                     // Enums must be converted to the underlying type before they can be implicitly converted to Variant
                     if (paramSymbol.Type.TypeKind == TypeKind.Enum)
                     {
-                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType;
+                        var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType!;
                         source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
                         continue;
                     }

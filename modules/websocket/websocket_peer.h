@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBSOCKET_PEER_H
-#define WEBSOCKET_PEER_H
+#pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 
 class WebSocketPeer : public PacketPeer {
@@ -82,11 +80,11 @@ public:
 		return _create(p_notify_postinitialize);
 	}
 
-	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_stream) = 0;
+	virtual Error connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options = Ref<TLSOptions>()) = 0;
+	virtual Error accept_stream(const Ref<StreamPeer> &p_stream) = 0;
 
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) = 0;
-	virtual void close(int p_code = 1000, String p_reason = "") = 0;
+	virtual void close(int p_code = 1000, const String &p_reason = "") = 0;
 
 	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
@@ -127,5 +125,3 @@ public:
 
 VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);
 VARIANT_ENUM_CAST(WebSocketPeer::State);
-
-#endif // WEBSOCKET_PEER_H

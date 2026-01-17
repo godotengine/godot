@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_STORAGE_RD_H
-#define LIGHT_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
@@ -221,8 +220,8 @@ private:
 
 	struct ReflectionProbe {
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
-		int resolution = 256;
 		float intensity = 1.0;
+		float blend_distance = 1.0;
 		RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
 		Color ambient_color;
 		float ambient_color_energy = 1.0;
@@ -246,15 +245,20 @@ private:
 	struct ReflectionAtlas {
 		int count = 0;
 		int size = 0;
+		int reflection_texture_size = 0;
+		float uv_border_size = 0.0;
+		bool update_always = false;
 
 		RID reflection;
+		RID color_buffer;
+		RID color_views[6];
+		RID color_fbs[6];
 		RID depth_buffer;
 		RID depth_fb;
 
 		struct Reflection {
 			RID owner;
 			RendererRD::SkyRD::ReflectionData data;
-			RID fbs[6];
 		};
 
 		Vector<Reflection> reflections;
@@ -266,6 +270,8 @@ private:
 
 	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
 
+	void _reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas);
+
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance {
@@ -276,7 +282,6 @@ private:
 		bool dirty = true;
 		bool rendering = false;
 		int processing_layer = 1;
-		int processing_side = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t cull_mask = 0;
@@ -303,18 +308,22 @@ private:
 		uint32_t mask;
 		float ambient[3]; // ambient color,
 		float intensity;
+		float blend_distance;
 		uint32_t exterior;
 		uint32_t box_project;
 		uint32_t ambient_mode;
 		float exposure_normalization;
+		uint32_t pad0;
+		uint32_t pad1;
+		uint32_t pad2;
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
 	};
 
 	struct ReflectionProbeInstanceSort {
-		float depth;
+		float size;
 		ReflectionProbeInstance *probe_instance;
 		bool operator<(const ReflectionProbeInstanceSort &p_sort) const {
-			return depth < p_sort.depth;
+			return size < p_sort.size;
 		}
 	};
 
@@ -329,6 +338,8 @@ private:
 
 	struct Lightmap {
 		RID light_texture;
+		RID shadow_texture;
+		RS::ShadowmaskMode shadowmask_mode = RS::SHADOWMASK_MODE_NONE;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
@@ -355,6 +366,8 @@ private:
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
+
+	Vector<RID> shadowmask_textures;
 
 	/* LIGHTMAP INSTANCE */
 
@@ -799,6 +812,16 @@ public:
 	RID get_spot_light_buffer() { return spot_light_buffer; }
 	RID get_directional_light_buffer() { return directional_light_buffer; }
 	uint32_t get_max_directional_lights() { return max_directional_lights; }
+	uint32_t get_directional_light_blend_splits(uint32_t p_directional_light_count) const {
+		uint32_t blend_splits = 0;
+		for (uint32_t i = 0; i < p_directional_light_count; i++) {
+			if (directional_lights[i].blend_splits) {
+				blend_splits |= 1U << i;
+			}
+		}
+
+		return blend_splits;
+	}
 	bool has_directional_shadows(const uint32_t p_directional_light_count) {
 		for (uint32_t i = 0; i < p_directional_light_count; i++) {
 			if (directional_lights[i].shadow_opacity > 0.001) {
@@ -819,6 +842,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
@@ -844,11 +868,11 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;
 
-	int reflection_probe_get_resolution(RID p_probe) const;
 	float reflection_probe_get_baked_exposure(RID p_probe) const;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override;
 
 	float reflection_probe_get_intensity(RID p_probe) const;
+	float reflection_probe_get_blend_distance(RID p_probe) const;
 	bool reflection_probe_is_interior(RID p_probe) const;
 	bool reflection_probe_is_box_projection(RID p_probe) const;
 	RS::ReflectionProbeAmbientMode reflection_probe_get_ambient_mode(RID p_probe) const;
@@ -872,6 +896,18 @@ public:
 		return atlas->reflection;
 	}
 
+	_FORCE_INLINE_ int reflection_atlas_get_texture_size(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
+		ERR_FAIL_NULL_V(atlas, 0);
+		return atlas->reflection_texture_size;
+	}
+
+	_FORCE_INLINE_ float reflection_atlas_get_border_size(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_ref_atlas);
+		ERR_FAIL_NULL_V(atlas, 0.0);
+		return atlas->uv_border_size;
+	}
+
 	/* REFLECTION PROBE INSTANCE */
 
 	bool owns_reflection_probe_instance(RID p_rid) { return reflection_probe_instance_owner.owns(p_rid); }
@@ -884,6 +920,7 @@ public:
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override;
+	virtual bool reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) override;
 	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) override;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override;
 
@@ -947,7 +984,7 @@ public:
 	RID get_reflection_probe_buffer() { return reflection_buffer; }
 	void update_reflection_probe_buffer(RenderDataRD *p_render_data, const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
 	static RD::DataFormat get_reflection_probe_color_format();
-	static uint32_t get_reflection_probe_color_usage_bits();
+	static uint32_t get_reflection_probe_color_usage_bits(bool p_storage);
 	static RD::DataFormat get_reflection_probe_depth_format();
 	static uint32_t get_reflection_probe_depth_usage_bits();
 
@@ -974,6 +1011,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 
 	Dependency *lightmap_get_dependency(RID p_lightmap) const;
+
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;
@@ -1015,6 +1056,12 @@ public:
 	_FORCE_INLINE_ const Vector<RID> &lightmap_array_get_textures() const {
 		ERR_FAIL_COND_V(!using_lightmap_array, lightmap_textures); //only for arrays
 		return lightmap_textures;
+	}
+
+	_FORCE_INLINE_ RID shadowmask_get_texture(RID p_lightmap) const {
+		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+		ERR_FAIL_NULL_V(lm, RID());
+		return lm->shadow_texture;
 	}
 
 	/* LIGHTMAP INSTANCE */
@@ -1133,5 +1180,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // LIGHT_STORAGE_RD_H

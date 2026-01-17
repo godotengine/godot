@@ -28,19 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
-#define OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
-
-#include "../action_map/openxr_interaction_profile_metadata.h"
+#pragma once
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/text_edit.h"
 
 class OpenXRSelectInteractionProfileDialog : public ConfirmationDialog {
 	GDCLASS(OpenXRSelectInteractionProfileDialog, ConfirmationDialog);
@@ -58,11 +51,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void _on_select_interaction_profile(const String p_interaction_profile);
-	void open(PackedStringArray p_do_not_include);
+	void _on_select_interaction_profile(const String &p_interaction_profile);
+	void open(const PackedStringArray &p_do_not_include);
 	virtual void ok_pressed() override;
 
 	OpenXRSelectInteractionProfileDialog();
 };
-
-#endif // OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H

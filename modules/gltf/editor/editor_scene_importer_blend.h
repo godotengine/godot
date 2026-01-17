@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_IMPORTER_BLEND_H
-#define EDITOR_SCENE_IMPORTER_BLEND_H
+#pragma once
 
-#ifdef TOOLS_ENABLED
-
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/import/3d/resource_importer_scene.h"
 
 class Animation;
@@ -60,14 +57,14 @@ public:
 	};
 	enum {
 		BLEND_MATERIAL_EXPORT_PLACEHOLDER,
-		BLEND_MATERIAL_EXPORT_EXPORT
+		BLEND_MATERIAL_EXPORT_EXPORT,
+		BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER,
 	};
 	enum {
 		BLEND_MODIFIERS_NONE,
 		BLEND_MODIFIERS_ALL
 	};
 
-	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			const HashMap<StringName, Variant> &p_options,
@@ -109,10 +106,4 @@ public:
 	virtual bool is_active() const override;
 	virtual Vector<String> get_file_extensions() const override;
 	virtual bool query() override;
-
-	EditorFileSystemImportFormatSupportQueryBlend();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_SCENE_IMPORTER_BLEND_H

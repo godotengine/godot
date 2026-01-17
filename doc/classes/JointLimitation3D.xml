@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JointLimitation3D" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base class of the limitation that interacts with [ChainIK3D].
+	</brief_description>
+	<description>
+		The limitation is attached to each joint and limits the rotation of the bone.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

@@ -102,7 +102,7 @@
 			If [code]true[/code], the blend space is triangulated automatically. The mesh updates every time you add or remove points with [method add_blend_point] and [method remove_blend_point].
 		</member>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace2D.BlendMode" default="0">
-			Controls the interpolation between animations. See [enum BlendMode] constants.
+			Controls the interpolation between animations.
 		</member>
 		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2(1, 1)">
 			The blend space's X and Y axes' upper limit for the points' position. See [method add_blend_point].

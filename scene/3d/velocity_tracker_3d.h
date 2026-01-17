@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VELOCITY_TRACKER_3D_H
-#define VELOCITY_TRACKER_3D_H
+#pragma once
 
-#include "scene/3d/node_3d.h"
+#include "core/object/ref_counted.h"
 
 class VelocityTracker3D : public RefCounted {
+	GDSOFTCLASS(VelocityTracker3D, RefCounted);
+
 	struct PositionHistory {
 		uint64_t frame = 0;
 		Vector3 position;
@@ -55,5 +56,3 @@ public:
 
 	VelocityTracker3D();
 };
-
-#endif // VELOCITY_TRACKER_3D_H

@@ -31,6 +31,7 @@
 #include "property_utils.h"
 
 #include "core/config/engine.h"
+#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/packed_scene.h"
@@ -92,7 +93,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 	// Handle special case "script" property, where the default value is either null or the custom type script.
 	// Do this only if there's no states stack cache to trace for default values.
 	if (!p_states_stack_cache && p_property == CoreStringName(script) && p_object->has_meta(SceneStringName(_custom_type_script))) {
-		Ref<Script> ct_scr = p_object->get_meta(SceneStringName(_custom_type_script));
+		Ref<Script> ct_scr = get_custom_type_script(p_object);
 		if (r_is_valid) {
 			*r_is_valid = true;
 		}
@@ -258,7 +259,7 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 					}
 				}
 				break;
-			} else if (!n->get_scene_file_path().is_empty()) {
+			} else if (n->is_instance()) {
 				const Ref<SceneState> &state = n->get_scene_instance_state();
 				_collect_inheritance_chain(state, n->get_path_to(p_node), states_stack);
 			}
@@ -281,4 +282,37 @@ Vector<SceneState::PackState> PropertyUtils::get_node_states_stack(const Node *p
 		}
 	}
 	return states_stack_ret;
+}
+
+void PropertyUtils::assign_custom_type_script(Object *p_object, const Ref<Script> &p_script) {
+	ERR_FAIL_NULL(p_object);
+	ERR_FAIL_COND(p_script.is_null());
+
+	const String &path = p_script->get_path();
+	ERR_FAIL_COND(!path.is_resource_file());
+
+	ResourceUID::ID script_uid = ResourceLoader::get_resource_uid(path);
+	if (script_uid != ResourceUID::INVALID_ID) {
+		p_object->set_meta(SceneStringName(_custom_type_script), ResourceUID::get_singleton()->id_to_text(script_uid));
+	}
+}
+
+Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
+	Variant custom_script = p_object->get_meta(SceneStringName(_custom_type_script));
+#ifndef DISABLE_DEPRECATED
+	if (custom_script.get_type() == Variant::OBJECT) {
+		// Convert old script meta.
+		Ref<Script> script_object(custom_script);
+		assign_custom_type_script(const_cast<Object *>(p_object), script_object);
+		return script_object;
+	}
+#endif
+	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
+	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
+		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));
+		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script.operator String()));
+	} else {
+		custom_script = ResourceUID::get_singleton()->get_id_path(id);
+	}
+	return ResourceLoader::load(custom_script);
 }

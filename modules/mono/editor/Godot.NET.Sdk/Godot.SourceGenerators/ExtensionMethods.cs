@@ -181,20 +181,15 @@ namespace Godot.SourceGenerators
             };
         }
 
-        public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
-        {
-            return symbol.IsGenericType ?
-                string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
-                symbol.Name;
-        }
-
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
-                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
+                .WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType);
 
         private static SymbolDisplayFormat FullyQualifiedFormatIncludeGlobal { get; } =
             SymbolDisplayFormat.FullyQualifiedFormat
-                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included);
+                .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included)
+                .WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType);
 
         public static string FullQualifiedNameOmitGlobal(this ITypeSymbol symbol)
             => symbol.ToDisplayString(NullableFlowState.NotNull, FullyQualifiedFormatOmitGlobal);
@@ -217,11 +212,17 @@ namespace Godot.SourceGenerators
 
         private static void FullQualifiedSyntax(SyntaxNode node, SemanticModel sm, StringBuilder sb, bool isFirstNode)
         {
-            if (node is NameSyntax ns && isFirstNode)
+            if (node is NameSyntax ns)
             {
-                SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
-                sb.Append(nameInfo.Symbol?.ToDisplayString(FullyQualifiedFormatIncludeGlobal) ?? ns.ToString());
-                return;
+                bool isMemberAccess = !isFirstNode && node.Parent is MemberAccessExpressionSyntax;
+                bool isInitializer = isFirstNode && node.Parent is AssignmentExpressionSyntax { Parent: InitializerExpressionSyntax };
+
+                if (!isMemberAccess && !isInitializer)
+                {
+                    SymbolInfo nameInfo = sm.GetSymbolInfo(ns);
+                    sb.Append(nameInfo.Symbol?.ToDisplayString(FullyQualifiedFormatIncludeGlobal) ?? ns.ToString());
+                    return;
+                }
             }
 
             bool innerIsFirstNode = true;
@@ -268,6 +269,8 @@ namespace Godot.SourceGenerators
 
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
+                // AddSource() doesn't support @ prefix
+                .Replace("@", "")
                 // AddSource() doesn't support angle brackets
                 .Replace("<", "(Of ")
                 .Replace(">", ")");

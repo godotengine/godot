@@ -28,15 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "scene/resources/text_paragraph.h"
+#include "text_paragraph.h"
+#include "text_paragraph.compat.inc"
 
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
+	ClassDB::bind_method(D_METHOD("duplicate"), &TextParagraph::duplicate);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextParagraph::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
+	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextParagraph::get_inferred_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
+	// If compiling the editor with TextServerFallback only,
+	// `--doctool` would change the default value to `TextServer::DIRECTION_LTR`.
+	// Force it so that it's consistent regardless of the backend.
+	ADD_PROPERTY_DEFAULT("direction", TextServer::DIRECTION_AUTO);
 
 	ClassDB::bind_method(D_METHOD("set_custom_punctuation", "custom_punctuation"), &TextParagraph::set_custom_punctuation);
 	ClassDB::bind_method(D_METHOD("get_custom_punctuation"), &TextParagraph::get_custom_punctuation);
@@ -66,6 +73,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextParagraph::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("has_object", "key"), &TextParagraph::has_object);
 
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &TextParagraph::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &TextParagraph::get_alignment);
@@ -87,7 +95,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextParagraph::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextParagraph::get_text_overrun_behavior);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 
 	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &TextParagraph::set_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &TextParagraph::get_ellipsis_char);
@@ -104,6 +112,8 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &TextParagraph::get_rid);
 	ClassDB::bind_method(D_METHOD("get_line_rid", "line"), &TextParagraph::get_line_rid);
 	ClassDB::bind_method(D_METHOD("get_dropcap_rid"), &TextParagraph::get_dropcap_rid);
+
+	ClassDB::bind_method(D_METHOD("get_range"), &TextParagraph::get_range);
 
 	ClassDB::bind_method(D_METHOD("get_line_count"), &TextParagraph::get_line_count);
 
@@ -130,19 +140,19 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dropcap_size"), &TextParagraph::get_dropcap_size);
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color", "oversampling"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color", "oversampling"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
-	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color", "oversampling"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color", "oversampling"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
-	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color", "oversampling"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color", "oversampling"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
 }
 
-void TextParagraph::_shape_lines() {
+void TextParagraph::_shape_lines() const {
 	// When a shaped text is invalidated by an external source, we want to reshape it.
 	if (!TS->shaped_text_is_ready(rid) || !TS->shaped_text_is_ready(dropcap_rid)) {
 		lines_dirty = true;
@@ -210,29 +220,7 @@ void TextParagraph::_shape_lines() {
 			}
 		}
 
-		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
-		}
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 		bool autowrap_enabled = brk_flags.has_flag(TextServer::BREAK_WORD_BOUND) || brk_flags.has_flag(TextServer::BREAK_GRAPHEME_BOUND);
 
@@ -316,7 +304,7 @@ RID TextParagraph::get_rid() const {
 RID TextParagraph::get_line_rid(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), RID());
 	return lines_rid[p_line];
 }
@@ -334,6 +322,33 @@ void TextParagraph::clear() {
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
 	TS->shaped_text_clear(dropcap_rid);
+}
+
+Ref<TextParagraph> TextParagraph::duplicate() const {
+	Ref<TextParagraph> copy;
+	copy.instantiate();
+	if (dropcap_rid.is_valid()) {
+		TS->free_rid(copy->dropcap_rid);
+		copy->dropcap_rid = TS->shaped_text_duplicate(dropcap_rid);
+	}
+	copy->dropcap_lines = dropcap_lines;
+	copy->dropcap_margins = dropcap_margins;
+	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
+		copy->rid = TS->shaped_text_duplicate(rid);
+	}
+	copy->lines_dirty = true;
+	copy->line_spacing = line_spacing;
+	copy->width = width;
+	copy->max_lines_visible = max_lines_visible;
+	copy->brk_flags = brk_flags;
+	copy->jst_flags = jst_flags;
+	copy->el_char = el_char;
+	copy->overrun_behavior = overrun_behavior;
+	copy->alignment = alignment;
+	copy->tab_stops = tab_stops;
+
+	return copy;
 }
 
 void TextParagraph::set_preserve_invalid(bool p_enabled) {
@@ -375,8 +390,15 @@ void TextParagraph::set_direction(TextServer::Direction p_direction) {
 TextServer::Direction TextParagraph::get_direction() const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	return TS->shaped_text_get_direction(rid);
+}
+
+TextServer::Direction TextParagraph::get_inferred_direction() const {
+	_THREAD_SAFE_METHOD_
+
+	const_cast<TextParagraph *>(this)->_shape_lines();
+	return TS->shaped_text_get_inferred_direction(rid);
 }
 
 void TextParagraph::set_custom_punctuation(const String &p_punct) {
@@ -403,7 +425,7 @@ void TextParagraph::set_orientation(TextServer::Orientation p_orientation) {
 TextServer::Orientation TextParagraph::get_orientation() const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	return TS->shaped_text_get_orientation(rid);
 }
 
@@ -453,6 +475,12 @@ bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlig
 	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 	lines_dirty = true;
 	return res;
+}
+
+bool TextParagraph::has_object(Variant p_key) const {
+	_THREAD_SAFE_METHOD_
+
+	return TS->shaped_text_has_object(rid, p_key);
 }
 
 void TextParagraph::set_alignment(HorizontalAlignment p_alignment) {
@@ -551,14 +579,14 @@ float TextParagraph::get_width() const {
 Size2 TextParagraph::get_non_wrapped_size() const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	return TS->shaped_text_get_size(rid);
 }
 
 Size2 TextParagraph::get_size() const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 
 	float h_offset = 0.f;
 	float v_offset = 0.f;
@@ -604,10 +632,16 @@ Size2 TextParagraph::get_size() const {
 	return size;
 }
 
+Vector2i TextParagraph::get_range() const {
+	_THREAD_SAFE_METHOD_
+
+	return TS->shaped_text_get_range(rid);
+}
+
 int TextParagraph::get_line_count() const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	return (int)lines_rid.size();
 }
 
@@ -640,7 +674,7 @@ float TextParagraph::get_line_spacing() const {
 Array TextParagraph::get_line_objects(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Array());
 	return TS->shaped_text_get_objects(lines_rid[p_line]);
 }
@@ -648,7 +682,7 @@ Array TextParagraph::get_line_objects(int p_line) const {
 Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Rect2());
 
 	Vector2 ofs;
@@ -739,7 +773,7 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 Size2 TextParagraph::get_line_size(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Size2());
 	return TS->shaped_text_get_size(lines_rid[p_line]);
 }
@@ -747,7 +781,7 @@ Size2 TextParagraph::get_line_size(int p_line) const {
 Vector2i TextParagraph::get_line_range(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), Vector2i());
 	return TS->shaped_text_get_range(lines_rid[p_line]);
 }
@@ -755,7 +789,7 @@ Vector2i TextParagraph::get_line_range(int p_line) const {
 float TextParagraph::get_line_ascent(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), 0.f);
 	return TS->shaped_text_get_ascent(lines_rid[p_line]);
 }
@@ -763,7 +797,7 @@ float TextParagraph::get_line_ascent(int p_line) const {
 float TextParagraph::get_line_descent(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), 0.f);
 	return TS->shaped_text_get_descent(lines_rid[p_line]);
 }
@@ -771,7 +805,7 @@ float TextParagraph::get_line_descent(int p_line) const {
 float TextParagraph::get_line_width(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), 0.f);
 	return TS->shaped_text_get_width(lines_rid[p_line]);
 }
@@ -779,7 +813,7 @@ float TextParagraph::get_line_width(int p_line) const {
 float TextParagraph::get_line_underline_position(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), 0.f);
 	return TS->shaped_text_get_underline_position(lines_rid[p_line]);
 }
@@ -787,7 +821,7 @@ float TextParagraph::get_line_underline_position(int p_line) const {
 float TextParagraph::get_line_underline_thickness(int p_line) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)lines_rid.size(), 0.f);
 	return TS->shaped_text_get_underline_thickness(lines_rid[p_line]);
 }
@@ -802,10 +836,10 @@ int TextParagraph::get_dropcap_lines() const {
 	return dropcap_lines;
 }
 
-void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color) const {
+void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	Vector2 ofs = p_pos;
 	float h_offset = 0.f;
 	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
@@ -824,7 +858,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 				dc_off.y += width - h_offset;
 			}
 		}
-		TS->shaped_text_draw(dropcap_rid, p_canvas, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color);
+		TS->shaped_text_draw(dropcap_rid, p_canvas, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color, p_oversampling);
 	}
 
 	int lines_visible = (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
@@ -894,7 +928,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 		} else {
 			clip_l = MAX(0, p_pos.y - ofs.y);
 		}
-		TS->shaped_text_draw(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_color);
+		TS->shaped_text_draw(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_color, p_oversampling);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
@@ -905,10 +939,10 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 	}
 }
 
-void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color) const {
+void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	Vector2 ofs = p_pos;
 
 	float h_offset = 0.f;
@@ -928,7 +962,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 				dc_off.y += width - h_offset;
 			}
 		}
-		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color);
+		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color, p_oversampling);
 	}
 
 	for (int i = 0; i < (int)lines_rid.size(); i++) {
@@ -996,7 +1030,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 		} else {
 			clip_l = MAX(0, p_pos.y - ofs.y);
 		}
-		TS->shaped_text_draw_outline(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_outline_size, p_color);
+		TS->shaped_text_draw_outline(lines_rid[i], p_canvas, ofs, clip_l, clip_l + l_width, p_outline_size, p_color, p_oversampling);
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
@@ -1010,7 +1044,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 int TextParagraph::hit_test(const Point2 &p_coords) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	Vector2 ofs;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 		if (ofs.y < 0) {
@@ -1041,7 +1075,7 @@ bool TextParagraph::is_dirty() {
 	return lines_dirty;
 }
 
-void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
+void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
 	Vector2 ofs = p_pos;
@@ -1061,11 +1095,11 @@ void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color
 				ofs.y += width - h_offset;
 			}
 		}
-		TS->shaped_text_draw(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_color);
+		TS->shaped_text_draw(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_color, p_oversampling);
 	}
 }
 
-void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
 	Vector2 ofs = p_pos;
@@ -1085,14 +1119,14 @@ void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int
 				ofs.y += width - h_offset;
 			}
 		}
-		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_color);
+		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_color, p_oversampling);
 	}
 }
 
-void TextParagraph::draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color) const {
+void TextParagraph::draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)lines_rid.size());
 
 	Vector2 ofs = p_pos;
@@ -1102,13 +1136,13 @@ void TextParagraph::draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, co
 	} else {
 		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]);
 	}
-	return TS->shaped_text_draw(lines_rid[p_line], p_canvas, ofs, -1, -1, p_color);
+	return TS->shaped_text_draw(lines_rid[p_line], p_canvas, ofs, -1, -1, p_color, p_oversampling);
 }
 
-void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color) const {
+void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
-	const_cast<TextParagraph *>(this)->_shape_lines();
+	_shape_lines();
 	ERR_FAIL_COND(p_line < 0 || p_line >= (int)lines_rid.size());
 
 	Vector2 ofs = p_pos;
@@ -1117,7 +1151,7 @@ void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_
 	} else {
 		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]);
 	}
-	return TS->shaped_text_draw_outline(lines_rid[p_line], p_canvas, ofs, -1, -1, p_outline_size, p_color);
+	return TS->shaped_text_draw_outline(lines_rid[p_line], p_canvas, ofs, -1, -1, p_outline_size, p_color, p_oversampling);
 }
 
 TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {

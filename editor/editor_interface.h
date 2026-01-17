@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_INTERFACE_H
-#define EDITOR_INTERFACE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -37,6 +36,7 @@
 #include "core/object/script_language.h"
 
 class Control;
+class CreateDialog;
 class EditorCommandPalette;
 class EditorFileSystem;
 class EditorInspector;
@@ -69,11 +69,13 @@ class EditorInterface : public Object {
 	PropertySelector *property_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
 	SceneTreeDialog *node_selector = nullptr;
+	CreateDialog *create_dialog = nullptr;
 
 	void _node_selected(const NodePath &p_node_paths, const Callable &p_callback);
 	void _property_selected(const String &p_property_name, const Callable &p_callback);
 	void _method_selected(const String &p_property_name, const Callable &p_callback);
 	void _quick_open(const String &p_file_path, const Callable &p_callback);
+	void _create_dialog_item_selected(bool p_is_canceled, const Callable &p_callback);
 	void _call_dialog_callback(const Callable &p_callback, const Variant &p_selected, const String &p_context);
 
 	// Editor tools.
@@ -87,7 +89,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types = TypedArray<StringName>());
 	void _popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array());
-
+	void _open_scene_from_path_bind_compat_90057(const String &scene_path);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -99,7 +101,7 @@ public:
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
-	EditorFileSystem *get_resource_file_system() const;
+	EditorFileSystem *get_resource_filesystem() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
@@ -129,6 +131,12 @@ public:
 	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
+	String get_editor_language() const;
+
+	bool is_node_3d_snap_enabled() const;
+	real_t get_node_3d_translate_snap() const;
+	real_t get_node_3d_rotate_snap() const;
+	real_t get_node_3d_scale_snap() const;
 
 	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
 	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
@@ -145,6 +153,7 @@ public:
 	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array(), const String &p_current_value = String());
 	void popup_method_selector(Object *p_object, const Callable &p_callback, const String &p_current_value = String());
 	void popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types = TypedArray<StringName>());
+	void popup_create_dialog(const Callable &p_callback, const StringName &p_base_type = "", const String &p_current_type = "", const String &p_dialog_title = "", const TypedArray<StringName> &p_custom_type_blocklist = TypedArray<StringName>());
 
 	// Editor docks.
 
@@ -163,16 +172,23 @@ public:
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
-	void open_scene_from_path(const String &scene_path);
+	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
 
+	void set_object_edited(Object *p_object, bool p_edited);
+	bool is_object_edited(Object *p_object) const;
+
 	PackedStringArray get_open_scenes() const;
+	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
+
+	void add_root_node(Node *p_node);
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
 	void save_all_scenes();
+	Error close_scene();
 
 	// Scene playback.
 
@@ -186,9 +202,7 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	// Base.
 	static void create();
@@ -196,5 +210,3 @@ public:
 
 	EditorInterface();
 };
-
-#endif // EDITOR_INTERFACE_H

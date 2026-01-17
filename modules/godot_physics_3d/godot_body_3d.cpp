@@ -32,6 +32,7 @@
 
 #include "godot_area_3d.h"
 #include "godot_body_direct_state_3d.h"
+#include "godot_constraint_3d.h"
 #include "godot_space_3d.h"
 
 void GodotBody3D::_mass_properties_changed() {
@@ -700,7 +701,7 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
-		if (contacts.size() == 0 && linear_velocity == Vector3() && angular_velocity == Vector3()) {
+		if (contacts.is_empty() && linear_velocity == Vector3() && angular_velocity == Vector3()) {
 			set_active(false); //stopped moving, deactivate
 		}
 

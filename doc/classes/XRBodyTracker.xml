@@ -15,7 +15,7 @@
 			<return type="int" enum="XRBodyTracker.JointFlags" is_bitfield="true" />
 			<param index="0" name="joint" type="int" enum="XRBodyTracker.Joint" />
 			<description>
-				Returns flags about the validity of the tracking data for the given body joint (see [enum XRBodyTracker.JointFlags]).
+				Returns flags about the validity of the tracking data for the given body joint.
 			</description>
 		</method>
 		<method name="get_joint_transform" qualifiers="const">
@@ -289,7 +289,40 @@
 		<constant name="JOINT_RIGHT_PINKY_FINGER_TIP" value="75" enum="Joint">
 			Right pinky finger tip joint.
 		</constant>
-		<constant name="JOINT_MAX" value="76" enum="Joint">
+		<constant name="JOINT_LOWER_CHEST" value="76" enum="Joint">
+			Lower chest joint.
+		</constant>
+		<constant name="JOINT_LEFT_SCAPULA" value="77" enum="Joint">
+			Left scapula joint.
+		</constant>
+		<constant name="JOINT_LEFT_WRIST_TWIST" value="78" enum="Joint">
+			Left wrist twist joint.
+		</constant>
+		<constant name="JOINT_RIGHT_SCAPULA" value="79" enum="Joint">
+			Right scapula joint.
+		</constant>
+		<constant name="JOINT_RIGHT_WRIST_TWIST" value="80" enum="Joint">
+			Right wrist twist joint.
+		</constant>
+		<constant name="JOINT_LEFT_FOOT_TWIST" value="81" enum="Joint">
+			Left foot twist joint.
+		</constant>
+		<constant name="JOINT_LEFT_HEEL" value="82" enum="Joint">
+			Left heel joint.
+		</constant>
+		<constant name="JOINT_LEFT_MIDDLE_FOOT" value="83" enum="Joint">
+			Left middle foot joint.
+		</constant>
+		<constant name="JOINT_RIGHT_FOOT_TWIST" value="84" enum="Joint">
+			Right foot twist joint.
+		</constant>
+		<constant name="JOINT_RIGHT_HEEL" value="85" enum="Joint">
+			Right heel joint.
+		</constant>
+		<constant name="JOINT_RIGHT_MIDDLE_FOOT" value="86" enum="Joint">
+			Right middle foot joint.
+		</constant>
+		<constant name="JOINT_MAX" value="87" enum="Joint">
 			Represents the size of the [enum Joint] enum.
 		</constant>
 		<constant name="JOINT_FLAG_ORIENTATION_VALID" value="1" enum="JointFlags" is_bitfield="true">

@@ -29,7 +29,8 @@
 /**************************************************************************/
 
 #include "shader_include.h"
-#include "servers/rendering/shader_language.h"
+
+#include "core/io/file_access.h"
 #include "servers/rendering/shader_preprocessor.h"
 
 void ShaderInclude::_dependency_changed() {
@@ -94,7 +95,7 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 
 	String str;
 	if (buffer.size() > 0) {
-		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		error = str.append_utf8((const char *)buffer.ptr(), buffer.size());
 		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader include: " + p_path);
 	}
 
@@ -120,8 +121,7 @@ bool ResourceFormatLoaderShaderInclude::handles_type(const String &p_type) const
 }
 
 String ResourceFormatLoaderShaderInclude::get_resource_type(const String &p_path) const {
-	String extension = p_path.get_extension().to_lower();
-	if (extension == "gdshaderinc") {
+	if (p_path.has_extension("gdshaderinc")) {
 		return "ShaderInclude";
 	}
 	return "";

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_SELECT_ACTION_DIALOG_H
-#define OPENXR_SELECT_ACTION_DIALOG_H
+#pragma once
 
 #include "../action_map/openxr_action_map.h"
 
@@ -58,11 +57,9 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void _on_select_action(const String p_action);
+	void _on_select_action(const String &p_action);
 	void open();
 	virtual void ok_pressed() override;
 
-	OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action_map);
+	OpenXRSelectActionDialog(const Ref<OpenXRActionMap> &p_action_map);
 };
-
-#endif // OPENXR_SELECT_ACTION_DIALOG_H

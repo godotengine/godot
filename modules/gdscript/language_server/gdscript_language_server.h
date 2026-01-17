@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_LANGUAGE_SERVER_H
-#define GDSCRIPT_LANGUAGE_SERVER_H
+#pragma once
 
-#include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
 
 #include "editor/plugins/editor_plugin.h"
@@ -43,6 +41,8 @@ class GDScriptLanguageServer : public EditorPlugin {
 
 	Thread thread;
 	bool thread_running = false;
+	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
+	bool start_attempted = false;
 	bool started = false;
 	bool use_thread = false;
 	String host = "127.0.0.1";
@@ -61,5 +61,3 @@ public:
 };
 
 void register_lsp_types();
-
-#endif // GDSCRIPT_LANGUAGE_SERVER_H

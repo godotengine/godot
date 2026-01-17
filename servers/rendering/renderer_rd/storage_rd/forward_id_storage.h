@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FORWARD_ID_STORAGE_H
-#define FORWARD_ID_STORAGE_H
+#pragma once
 
-#include "servers/rendering/storage/utilities.h"
+#include <cstdint>
 
 class RendererSceneRenderRD;
 
@@ -49,13 +48,13 @@ enum ForwardIDType {
 
 class ForwardIDStorage {
 private:
-	static ForwardIDStorage *singleton;
+	static inline ForwardIDStorage *singleton = nullptr;
 
 public:
 	static ForwardIDStorage *get_singleton() { return singleton; }
 
-	ForwardIDStorage();
-	virtual ~ForwardIDStorage();
+	ForwardIDStorage() { singleton = this; }
+	virtual ~ForwardIDStorage() { singleton = nullptr; }
 
 	virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) { return -1; }
 	virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) {}
@@ -64,5 +63,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // FORWARD_ID_STORAGE_H

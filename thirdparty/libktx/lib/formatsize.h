@@ -13,7 +13,7 @@
  *
  * @brief Struct for returning size information about an image format.
  *
- * @author Mark Callow, www.edgewise-consulting.com
+ * @author Mark Callow, github.com/MarkCallow
  */
 
 #ifndef _FORMATSIZE_H_

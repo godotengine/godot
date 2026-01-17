@@ -44,11 +44,27 @@ struct CompressedString {
 
 void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
-	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
+	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND(p_from.is_null());
+
 	List<StringName> keys;
-	p_from->get_message_list(&keys);
+	{
+		List<StringName> raw_keys;
+		p_from->get_message_list(&raw_keys);
+
+		for (const StringName &key : raw_keys) {
+			const String key_str = key.operator String();
+			int p = key_str.find_char(0x04);
+			if (p == -1) {
+				keys.push_back(key);
+			} else {
+				const String &msgctxt = key_str.substr(0, p);
+				const String &msgid = key_str.substr(p + 1);
+				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", msgid, msgctxt));
+			}
+		}
+	}
 
 	int size = Math::larger_prime(keys.size());
 
@@ -82,20 +98,20 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 		if (ps.orig_len != 0) {
 			CharString dst_s;
-			dst_s.resize(src_s.size());
+			dst_s.resize_uninitialized(src_s.size());
 			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
 			if (ret >= src_s.size()) {
 				//if compressed is larger than original, just use original
 				ps.orig_len = src_s.size();
 				ps.compressed = src_s;
 			} else {
-				dst_s.resize(ret);
+				dst_s.resize_uninitialized(ret);
 				//ps.orig_len=;
 				ps.compressed = dst_s;
 			}
 		} else {
 			ps.orig_len = 1;
-			ps.compressed.resize(1);
+			ps.compressed.resize_uninitialized(1);
 			ps.compressed[0] = 0;
 		}
 
@@ -110,7 +126,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
 		HashMap<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0) {
+		if (b.is_empty()) {
 			continue;
 		}
 
@@ -148,7 +164,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 		const HashMap<uint32_t, int> &t = table[i];
-		if (t.size() == 0) {
+		if (t.is_empty()) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
 		}
@@ -253,17 +269,12 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 	}
 
 	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-		String rstr;
-		rstr.parse_utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
-
-		return rstr;
+		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 	} else {
 		CharString uncomp;
-		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
+		uncomp.resize_uninitialized(bucket.elem[idx].uncomp_size + 1);
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
-		String rstr;
-		rstr.parse_utf8(uncomp.get_data());
-		return rstr;
+		return String::utf8(uncomp.get_data());
 	}
 }
 
@@ -283,15 +294,13 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 			const Bucket &bucket = *(const Bucket *)&btptr[p];
 			for (int j = 0; j < bucket.size; j++) {
 				if (bucket.elem[j].comp_size == bucket.elem[j].uncomp_size) {
-					String rstr;
-					rstr.parse_utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
+					String rstr = String::utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
 					msgs.push_back(rstr);
 				} else {
 					CharString uncomp;
-					uncomp.resize(bucket.elem[j].uncomp_size + 1);
+					uncomp.resize_uninitialized(bucket.elem[j].uncomp_size + 1);
 					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
-					String rstr;
-					rstr.parse_utf8(uncomp.get_data());
+					String rstr = String::utf8(uncomp.get_data());
 					msgs.push_back(rstr);
 				}
 			}
@@ -305,10 +314,24 @@ StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text
 	return get_message(p_src_text, p_context);
 }
 
+Vector<String> OptimizedTranslation::_get_message_list() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return {};
+}
+
+void OptimizedTranslation::get_message_list(List<StringName> *r_messages) const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+}
+
+int OptimizedTranslation::get_message_count() const {
+	WARN_PRINT_ONCE("OptimizedTranslation does not store the message texts to be translated.");
+	return 0;
+}
+
 void OptimizedTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
 

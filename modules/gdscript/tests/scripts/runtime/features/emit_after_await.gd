@@ -8,5 +8,6 @@ func async_func():
 	my_signal.emit()
 
 func test():
+	@warning_ignore("missing_await")
 	async_func()
 	my_signal.emit()

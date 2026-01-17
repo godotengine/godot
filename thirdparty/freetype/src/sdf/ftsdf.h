@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support (specification).
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -57,7 +57,7 @@ FT_BEGIN_HEADER
    *     indicate positions inside of contours.
    *
    *   flip_y ::
-   *     Setting this parameter to true maked the output image flipped
+   *     Setting this parameter to true makes the output image flipped
    *     along the y-axis.
    *
    *   overlaps ::

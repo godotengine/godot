@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2I_H
-#define RECT2I_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2i.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Rect2;
@@ -144,8 +144,8 @@ struct [[nodiscard]] Rect2i {
 		return true;
 	}
 
-	bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
@@ -224,18 +224,27 @@ struct [[nodiscard]] Rect2i {
 		return position + size;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	operator Rect2() const;
 
-	Rect2i() {}
-	Rect2i(int p_x, int p_y, int p_width, int p_height) :
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(position.x));
+		h = hash_murmur3_one_32(uint32_t(position.y), h);
+		h = hash_murmur3_one_32(uint32_t(size.x), h);
+		h = hash_murmur3_one_32(uint32_t(size.y), h);
+		return hash_fmix32(h);
+	}
+
+	Rect2i() = default;
+	constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :
 			position(Point2i(p_x, p_y)),
 			size(Size2i(p_width, p_height)) {
 	}
-	Rect2i(const Point2i &p_pos, const Size2i &p_size) :
+	constexpr Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
 };
 
-#endif // RECT2I_H
+template <>
+struct is_zero_constructible<Rect2i> : std::true_type {};

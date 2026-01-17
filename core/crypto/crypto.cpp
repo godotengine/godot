@@ -30,10 +30,6 @@
 
 #include "crypto.h"
 
-#include "core/config/engine.h"
-#include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
-
 /// Resources
 
 CryptoKey *(*CryptoKey::_create)(bool p_notify_postinitialize) = nullptr;
@@ -235,8 +231,7 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	if (cert.is_valid()) {
 		err = cert->save(p_path);
 	} else if (key.is_valid()) {
-		String el = p_path.get_extension().to_lower();
-		err = key->save(p_path, el == "pub");
+		err = key->save(p_path, p_path.has_extension("pub"));
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}

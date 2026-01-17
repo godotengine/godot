@@ -40,6 +40,8 @@ module_obj = []
 env_fbx.add_source_files(module_obj, "*.cpp")
 env_fbx.add_source_files(module_obj, "structures/*.cpp")
 
+SConscript("extensions/SCsub")
+
 if env.editor_build:
     env_fbx.add_source_files(module_obj, "editor/*.cpp")
 

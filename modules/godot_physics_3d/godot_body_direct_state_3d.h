@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_BODY_DIRECT_STATE_3D_H
-#define GODOT_BODY_DIRECT_STATE_3D_H
+#pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotBody3D;
 
@@ -85,6 +84,12 @@ public:
 	virtual void set_sleep_state(bool p_sleep) override;
 	virtual bool is_sleeping() const override;
 
+	virtual void set_collision_layer(uint32_t p_layer) override;
+	virtual uint32_t get_collision_layer() const override;
+
+	virtual void set_collision_mask(uint32_t p_mask) override;
+	virtual uint32_t get_collision_mask() const override;
+
 	virtual int get_contact_count() const override;
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const override;
@@ -99,9 +104,7 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const override;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const override;
 
-	virtual PhysicsDirectSpaceState3D *get_space_state() override;
+	virtual RequiredResult<PhysicsDirectSpaceState3D> get_space_state() override;
 
 	virtual real_t get_step() const override;
 };
-
-#endif // GODOT_BODY_DIRECT_STATE_3D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LIST_H
-#define TEST_LIST_H
+#pragma once
 
 #include "core/templates/list.h"
 
@@ -43,6 +42,17 @@ static void populate_integers(List<int> &p_list, List<int>::Element *r_elements[
 		List<int>::Element *n = p_list.push_back(i);
 		r_elements[i] = n;
 	}
+}
+
+TEST_CASE("[List] List initialization") {
+	List<int> list{ 0, 1, 2, 3, 4 };
+
+	CHECK(list.size() == 5);
+	CHECK(list.get(0) == 0);
+	CHECK(list.get(1) == 1);
+	CHECK(list.get(2) == 2);
+	CHECK(list.get(3) == 3);
+	CHECK(list.get(4) == 4);
 }
 
 TEST_CASE("[List] Push/pop back") {
@@ -300,19 +310,64 @@ TEST_CASE("[List] Move before") {
 	CHECK(list.front()->next()->get() == n[3]->get());
 }
 
+template <typename T>
+static void compare_lists(const List<T> &p_result, const List<T> &p_expected) {
+	CHECK_EQ(p_result.size(), p_expected.size());
+	const typename List<T>::Element *result_it = p_result.front();
+	const typename List<T>::Element *expected_it = p_expected.front();
+	for (int i = 0; i < p_result.size(); i++) {
+		CHECK(result_it);
+		CHECK(expected_it);
+		CHECK_EQ(result_it->get(), expected_it->get());
+		result_it = result_it->next();
+		expected_it = expected_it->next();
+	}
+	CHECK(!result_it);
+	CHECK(!expected_it);
+
+	result_it = p_result.back();
+	expected_it = p_expected.back();
+	for (int i = 0; i < p_result.size(); i++) {
+		CHECK(result_it);
+		CHECK(expected_it);
+		CHECK_EQ(result_it->get(), expected_it->get());
+		result_it = result_it->prev();
+		expected_it = expected_it->prev();
+	}
+	CHECK(!result_it);
+	CHECK(!expected_it);
+}
+
 TEST_CASE("[List] Sort") {
-	List<String> list;
-	list.push_back("D");
-	list.push_back("B");
-	list.push_back("A");
-	list.push_back("C");
+	List<String> result{ "D", "B", "A", "C" };
+	result.sort();
+	List<String> expected{ "A", "B", "C", "D" };
+	compare_lists(result, expected);
 
-	list.sort();
+	List<int> empty_result{};
+	empty_result.sort();
+	List<int> empty_expected{};
+	compare_lists(empty_result, empty_expected);
 
-	CHECK(list.front()->get() == "A");
-	CHECK(list.front()->next()->get() == "B");
-	CHECK(list.back()->prev()->get() == "C");
-	CHECK(list.back()->get() == "D");
+	List<int> one_result{ 1 };
+	one_result.sort();
+	List<int> one_expected{ 1 };
+	compare_lists(one_result, one_expected);
+
+	List<float> reversed_result{ 2.0, 1.5, 1.0 };
+	reversed_result.sort();
+	List<float> reversed_expected{ 1.0, 1.5, 2.0 };
+	compare_lists(reversed_result, reversed_expected);
+
+	List<int> already_sorted_result{ 1, 2, 3, 4, 5 };
+	already_sorted_result.sort();
+	List<int> already_sorted_expected{ 1, 2, 3, 4, 5 };
+	compare_lists(already_sorted_result, already_sorted_expected);
+
+	List<int> with_duplicates_result{ 1, 2, 3, 1, 2, 3 };
+	with_duplicates_result.sort();
+	List<int> with_duplicates_expected{ 1, 1, 2, 2, 3, 3 };
+	compare_lists(with_duplicates_result, with_duplicates_expected);
 }
 
 TEST_CASE("[List] Swap adjacent front and back") {
@@ -490,59 +545,4 @@ TEST_CASE("[List] Swap adjacent back and front (reverse order of elements)") {
 		}
 	}
 }
-
-static void swap_random(List<int> &p_list, List<int>::Element *r_elements[], size_t p_size, size_t p_iterations) {
-	Math::seed(0);
-
-	for (size_t test_i = 0; test_i < p_iterations; ++test_i) {
-		// A and B elements have corresponding indices as values.
-		const int a_idx = static_cast<int>(Math::rand() % p_size);
-		const int b_idx = static_cast<int>(Math::rand() % p_size);
-		List<int>::Element *a = p_list.find(a_idx); // via find.
-		List<int>::Element *b = r_elements[b_idx]; // via pointer.
-
-		int va = a->get();
-		int vb = b->get();
-
-		p_list.swap(a, b);
-
-		CHECK(va == a->get());
-		CHECK(vb == b->get());
-
-		size_t element_count = 0;
-
-		// Fully traversable after swap?
-		List<int>::Element *it = p_list.front();
-		while (it) {
-			element_count += 1;
-			List<int>::Element *prev_it = it;
-			it = it->next();
-			if (it == prev_it) {
-				FAIL_CHECK("Infinite loop detected.");
-				break;
-			}
-		}
-		// We should not lose anything in the process.
-		if (element_count != p_size) {
-			FAIL_CHECK("Element count mismatch.");
-			break;
-		}
-	}
-}
-
-TEST_CASE("[Stress][List] Swap random 100 elements, 500 iterations.") {
-	List<int> list;
-	List<int>::Element *n[100];
-	populate_integers(list, n, 100);
-	swap_random(list, n, 100, 500);
-}
-
-TEST_CASE("[Stress][List] Swap random 10 elements, 1000 iterations.") {
-	List<int> list;
-	List<int>::Element *n[10];
-	populate_integers(list, n, 10);
-	swap_random(list, n, 10, 1000);
-}
 } // namespace TestList
-
-#endif // TEST_LIST_H

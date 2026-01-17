@@ -61,6 +61,7 @@ struct VORG
 
   bool has_data () const { return version.to_int (); }
 
+  HB_ALWAYS_INLINE
   int get_y_origin (hb_codepoint_t glyph) const
   {
     unsigned int i;

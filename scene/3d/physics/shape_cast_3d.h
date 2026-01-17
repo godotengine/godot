@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHAPE_CAST_3D_H
-#define SHAPE_CAST_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
@@ -136,12 +135,10 @@ public:
 	bool is_colliding() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const CollisionObject3D *p_node);
+	void add_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const CollisionObject3D *p_node);
+	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void clear_exceptions();
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 };
-
-#endif // SHAPE_CAST_3D_H

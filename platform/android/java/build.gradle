@@ -18,14 +18,14 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 
 ext {
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
     supportedFlavors = ["editor", "template"]
-    supportedAndroidDistributions = ["android", "horizonos"]
+    supportedAndroidDistributions = ["android", "horizonos", "picoos"]
     supportedFlavorsBuildTypes = [
         "editor": ["dev", "debug", "release"],
         "template": ["dev", "debug", "release"]
@@ -79,7 +79,7 @@ def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
     if (excludeSconsBuildTasks()) {
-        logger.lifecycle("Excluding Android studio build tasks")
+        logger.info("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
             String[] supportedBuildTypes = supportedFlavorsBuildTypes[flavor]
             for (String buildType : supportedBuildTypes) {
@@ -96,7 +96,7 @@ def templateExcludedBuildTask() {
  * Generates the build tasks for the given flavor
  * @param flavor Must be one of the supported flavors ('template' / 'editor')
  * @param edition Must be one of the supported editions ('standard' / 'mono')
- * @param androidDistro Must be one of the supported Android distributions ('android' / 'horizonos')
+ * @param androidDistro Must be one of the supported Android distributions ('android' / 'horizonos' / 'picoos')
  */
 def generateBuildTasks(String flavor = "template", String edition = "standard", String androidDistro = "android") {
     if (!supportedFlavors.contains(flavor)) {
@@ -173,9 +173,10 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                     buildTasks += tasks.create(name: copyBinaryTaskName, type: Copy) {
                         String filenameSuffix = edition == "mono" ? "${edition}${capitalizedTarget}" : target
                         dependsOn ":app:assemble${capitalizedEdition}${capitalizedTarget}"
-                        from("app/build/outputs/apk/${edition}/${target}")
+                        from("app/build/outputs/apk/${edition}/${target}") {
+                            include("android_${filenameSuffix}.apk")
+                        }
                         into(binDir)
-                        include("android_${filenameSuffix}.apk")
                     }
                 }
             } else {
@@ -186,9 +187,10 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                 } else {
                     buildTasks += tasks.create(name: copyEditorApkTaskName, type: Copy) {
                         dependsOn ":editor:assemble${capitalizedAndroidDistro}${capitalizedTarget}"
-                        from("editor/build/outputs/apk/${androidDistro}/${target}")
+                        from("editor/build/outputs/apk/${androidDistro}/${target}") {
+                            include("android_editor-${androidDistro}-${target}*.apk")
+                        }
                         into(androidEditorBuildsDir)
-                        include("android_editor-${androidDistro}-${target}*.apk")
                     }
                 }
 
@@ -206,7 +208,7 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                 }
             }
         } else {
-            logger.lifecycle("No native shared libs for target $target. Skipping build.")
+            logger.info("No native shared libs for target $target. Skipping build.")
         }
     }
 
@@ -238,6 +240,18 @@ task generateGodotHorizonOSEditor {
 }
 
 /**
+ * Generate the Godot Editor binaries for PicoOS devices.
+ *
+ * Note: Unless the 'generateNativeLibs` argument is specified, the Godot 'tools' shared libraries
+ * must have been generated (via scons) prior to running this gradle task.
+ * The task will only build the binaries for which the shared libraries is available.
+ */
+task generateGodotPicoOSEditor {
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+    dependsOn = generateBuildTasks("editor", "standard", "picoos")
+}
+
+/**
  * Master task used to coordinate the tasks defined above to generate the set of Godot templates.
  */
 task generateGodotTemplates {
@@ -254,19 +268,6 @@ task generateGodotTemplates {
 task generateGodotMonoTemplates {
     gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
     dependsOn = generateBuildTasks("template", "mono")
-
-    finalizedBy 'zipGradleBuild'
-}
-
-/**
- * Generates the same output as generateGodotTemplates but with dev symbols
- */
-task generateDevTemplate {
-    // add parameter to set symbols to true
-    project.ext.doNotStrip = "true"
-
-    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("template")
 
     finalizedBy 'zipGradleBuild'
 }
@@ -328,4 +329,12 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.dev.aar")
     delete("$binDir/godot-lib.release.aar")
+
+    // Delete the native debug symbols files.
+    delete("$binDir/android-editor-debug-native-symbols.zip")
+    delete("$binDir/android-editor-dev-native-symbols.zip")
+    delete("$binDir/android-editor-release-native-symbols.zip")
+    delete("$binDir/android-template-debug-native-symbols.zip")
+    delete("$binDir/android-template-dev-native-symbols.zip")
+    delete("$binDir/android-template-release-native-symbols.zip")
 }

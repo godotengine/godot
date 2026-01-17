@@ -69,7 +69,7 @@
 			If [member root_path] was spawned by a [MultiplayerSpawner], the node will be also be spawned and despawned based on this synchronizer visibility options.
 		</member>
 		<member name="visibility_update_mode" type="int" setter="set_visibility_update_mode" getter="get_visibility_update_mode" enum="MultiplayerSynchronizer.VisibilityUpdateMode" default="0">
-			Specifies when visibility filters are updated (see [enum VisibilityUpdateMode] for options).
+			Specifies when visibility filters are updated.
 		</member>
 	</members>
 	<signals>

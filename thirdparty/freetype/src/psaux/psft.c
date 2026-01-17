@@ -566,12 +566,12 @@
   FT_LOCAL_DEF( void )
   cf2_getBlueValues( PS_Decoder*  decoder,
                      size_t*      count,
-                     FT_Pos*     *data )
+                     FT_Fixed*   *data )
   {
     FT_ASSERT( decoder && decoder->current_subfont );
 
     *count = decoder->current_subfont->private_dict.num_blue_values;
-    *data  = (FT_Pos*)
+    *data  = (FT_Fixed*)
                &decoder->current_subfont->private_dict.blue_values;
   }
 
@@ -579,12 +579,12 @@
   FT_LOCAL_DEF( void )
   cf2_getOtherBlues( PS_Decoder*  decoder,
                      size_t*      count,
-                     FT_Pos*     *data )
+                     FT_Fixed*   *data )
   {
     FT_ASSERT( decoder && decoder->current_subfont );
 
     *count = decoder->current_subfont->private_dict.num_other_blues;
-    *data  = (FT_Pos*)
+    *data  = (FT_Fixed*)
                &decoder->current_subfont->private_dict.other_blues;
   }
 
@@ -592,12 +592,12 @@
   FT_LOCAL_DEF( void )
   cf2_getFamilyBlues( PS_Decoder*  decoder,
                       size_t*      count,
-                      FT_Pos*     *data )
+                      FT_Fixed*   *data )
   {
     FT_ASSERT( decoder && decoder->current_subfont );
 
     *count = decoder->current_subfont->private_dict.num_family_blues;
-    *data  = (FT_Pos*)
+    *data  = (FT_Fixed*)
                &decoder->current_subfont->private_dict.family_blues;
   }
 
@@ -605,12 +605,12 @@
   FT_LOCAL_DEF( void )
   cf2_getFamilyOtherBlues( PS_Decoder*  decoder,
                            size_t*      count,
-                           FT_Pos*     *data )
+                           FT_Fixed*   *data )
   {
     FT_ASSERT( decoder && decoder->current_subfont );
 
     *count = decoder->current_subfont->private_dict.num_family_other_blues;
-    *data  = (FT_Pos*)
+    *data  = (FT_Fixed*)
                &decoder->current_subfont->private_dict.family_other_blues;
   }
 

@@ -32,11 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/templates/local_vector.h"
-
-thread_local Error DirAccess::last_dir_open_error = OK;
 
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
@@ -146,7 +144,7 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		full_dir = p_dir;
 	}
 
-	full_dir = full_dir.replace("\\", "/");
+	full_dir = full_dir.replace_char('\\', '/');
 
 	String base;
 
@@ -323,6 +321,80 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	return da;
 }
 
+Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error *r_error) {
+	const String ERROR_COMMON_PREFIX = "Error while creating temporary directory";
+
+	if (!p_prefix.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+	}
+
+	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_temp_path());
+
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = (p_prefix.is_empty() ? "" : p_prefix + "-") + suffix;
+		if (!path.is_valid_filename()) {
+			*r_error = ERR_FILE_BAD_PATH;
+			return Ref<DirAccess>();
+		}
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+
+	Error err = dir_access->make_dir(path);
+	if (err != OK) {
+		*r_error = err;
+		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
+	}
+	err = dir_access->change_dir(path);
+	if (err != OK) {
+		*r_error = err;
+		return Ref<DirAccess>();
+	}
+
+	dir_access->_is_temp = true;
+	dir_access->_temp_keep_after_free = p_keep;
+	dir_access->_temp_path = dir_access->get_current_dir();
+
+	*r_error = OK;
+	return dir_access;
+}
+
+Ref<DirAccess> DirAccess::_create_temp(const String &p_prefix, bool p_keep) {
+	return create_temp(p_prefix, p_keep, &last_dir_open_error);
+}
+
+void DirAccess::_delete_temp() {
+	if (!_is_temp || _temp_keep_after_free) {
+		return;
+	}
+
+	if (!DirAccess::exists(_temp_path)) {
+		return;
+	}
+
+	Error err;
+	{
+		Ref<DirAccess> dir_access = DirAccess::open(_temp_path, &err);
+		if (err != OK) {
+			return;
+		}
+		err = dir_access->erase_contents_recursive();
+		if (err != OK) {
+			return;
+		}
+	}
+
+	DirAccess::remove_absolute(_temp_path);
+}
+
 Error DirAccess::get_open_error() {
 	return last_dir_open_error;
 }
@@ -418,19 +490,22 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
 			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
-				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				Error err = p_target_da->create_link(read_link(get_current_dir().path_join(n)), p_to + n);
+				if (err) {
+					ERR_PRINT(vformat("Failed to copy symlink \"%s\".", n));
+				}
 			} else if (current_is_dir()) {
 				dirs.push_back(n);
 			} else {
 				const String &rel_path = n;
 				if (!n.is_relative_path()) {
 					list_dir_end();
-					return ERR_BUG;
+					ERR_FAIL_V_MSG(ERR_BUG, vformat("BUG: \"%s\" is not a relative path.", n));
 				}
 				Error err = copy(get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
-					return err;
+					ERR_FAIL_V_MSG(err, vformat("Failed to copy file \"%s\".", n));
 				}
 			}
 		}
@@ -552,11 +627,16 @@ bool DirAccess::is_case_sensitive(const String &p_path) const {
 	return true;
 }
 
+bool DirAccess::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	return p_path_a == p_path_b;
+}
+
 void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("create_temp", "prefix", "keep"), &DirAccess::_create_temp, DEFVAL(""), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
 	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
@@ -588,13 +668,22 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
 	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
+	ClassDB::bind_method(D_METHOD("is_bundle", "path"), &DirAccess::is_bundle);
+
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
 	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
 
+	ClassDB::bind_method(D_METHOD("get_filesystem_type"), &DirAccess::get_filesystem_type);
+
 	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
+	ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
+}
+
+DirAccess::~DirAccess() {
+	_delete_temp();
 }

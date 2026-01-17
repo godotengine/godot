@@ -29,20 +29,20 @@
 
 
 #ifndef HB_BUFFER_MAX_LEN_FACTOR
-#define HB_BUFFER_MAX_LEN_FACTOR 64
+#define HB_BUFFER_MAX_LEN_FACTOR 256
 #endif
 #ifndef HB_BUFFER_MAX_LEN_MIN
-#define HB_BUFFER_MAX_LEN_MIN 16384
+#define HB_BUFFER_MAX_LEN_MIN 65536
 #endif
 #ifndef HB_BUFFER_MAX_LEN_DEFAULT
 #define HB_BUFFER_MAX_LEN_DEFAULT 0x3FFFFFFF /* Shaping more than a billion chars? Let us know! */
 #endif
 
 #ifndef HB_BUFFER_MAX_OPS_FACTOR
-#define HB_BUFFER_MAX_OPS_FACTOR 1024
+#define HB_BUFFER_MAX_OPS_FACTOR 4096
 #endif
 #ifndef HB_BUFFER_MAX_OPS_MIN
-#define HB_BUFFER_MAX_OPS_MIN 16384
+#define HB_BUFFER_MAX_OPS_MIN 65536
 #endif
 #ifndef HB_BUFFER_MAX_OPS_DEFAULT
 #define HB_BUFFER_MAX_OPS_DEFAULT 0x1FFFFFFF /* Shaping more than a billion operations? Let us know! */
@@ -101,7 +101,7 @@
 #endif
 
 #ifndef HB_CFF_MAX_OPS
-#define HB_CFF_MAX_OPS 10000
+#define HB_CFF_MAX_OPS 200000
 #endif
 
 #ifndef HB_MAX_COMPOSITE_OPERATIONS_PER_GLYPH

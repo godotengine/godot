@@ -36,8 +36,8 @@
 
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/storage/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
 // OpenXR requires us to submit sRGB textures so that it recognizes the content
 // as being in sRGB color space. We do fall back on "normal" textures but this
@@ -56,7 +56,7 @@
 // feature off.
 // See: https://registry.khronos.org/OpenGL/extensions/EXT/EXT_sRGB_write_control.txt
 
-HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 #ifdef ANDROID_ENABLED
@@ -141,7 +141,12 @@ XrGraphicsBindingEGLMNDX OpenXROpenGLExtension::graphics_binding_egl;
 #endif
 
 void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_next_pointer) {
-	XrVersion desired_version = XR_MAKE_VERSION(3, 3, 0);
+	GLint gl_version_major = 0;
+	GLint gl_version_minor = 0;
+	glGetIntegerv(GL_MAJOR_VERSION, &gl_version_major);
+	glGetIntegerv(GL_MINOR_VERSION, &gl_version_minor);
+
+	XrVersion desired_version = XR_MAKE_VERSION(gl_version_major, gl_version_minor, 0);
 
 	if (!check_graphics_api_support(desired_version)) {
 		print_line("OpenXR: Trying to initialize with OpenGL anyway...");
@@ -223,38 +228,37 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
 #ifdef ANDROID_ENABLED
-	XrSwapchainImageOpenGLESKHR *images = (XrSwapchainImageOpenGLESKHR *)memalloc(sizeof(XrSwapchainImageOpenGLESKHR) * swapchain_length);
+	LocalVector<XrSwapchainImageOpenGLESKHR> images;
 #else
-	XrSwapchainImageOpenGLKHR *images = (XrSwapchainImageOpenGLKHR *)memalloc(sizeof(XrSwapchainImageOpenGLKHR) * swapchain_length);
+	LocalVector<XrSwapchainImageOpenGLKHR> images;
 #endif
-	ERR_FAIL_NULL_V_MSG(images, false, "OpenXR Couldn't allocate memory for swap chain image");
+	images.resize(swapchain_length);
 
-	for (uint64_t i = 0; i < swapchain_length; i++) {
 #ifdef ANDROID_ENABLED
-		images[i].type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR;
+	for (XrSwapchainImageOpenGLESKHR &image : images) {
+		image.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR;
 #else
-		images[i].type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR;
+	for (XrSwapchainImageOpenGLKHR &image : images) {
+		image.type = XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR;
 #endif
-		images[i].next = nullptr;
-		images[i].image = 0;
+		image.next = nullptr;
+		image.image = 0;
 	}
 
-	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images);
+	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images.ptr());
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
-		memfree(images);
+		print_line("OpenXR: Failed to get swapchain images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
 	SwapchainGraphicsData *data = memnew(SwapchainGraphicsData);
 	if (data == nullptr) {
 		print_line("OpenXR: Failed to allocate memory for swapchain data");
-		memfree(images);
 		return false;
 	}
 	*r_swapchain_graphics_data = data;
@@ -279,14 +283,12 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	data->texture_rids = texture_rids;
 
-	memfree(images);
-
 	return true;
 }
 
 bool OpenXROpenGLExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -315,8 +317,8 @@ void OpenXROpenGLExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)*p_swapchain_graphics_data;
 
-	for (int i = 0; i < data->texture_rids.size(); i++) {
-		texture_storage->texture_free(data->texture_rids[i]);
+	for (const RID &texture_rid : data->texture_rids) {
+		texture_storage->texture_free(texture_rid);
 	}
 	data->texture_rids.clear();
 

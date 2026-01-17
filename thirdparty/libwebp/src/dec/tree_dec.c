@@ -11,12 +11,19 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <string.h>
+
+#include "src/dec/common_dec.h"
+#include "src/webp/types.h"
+#include "src/dec/vp8_dec.h"
 #include "src/dec/vp8i_dec.h"
 #include "src/dsp/cpu.h"
 #include "src/utils/bit_reader_inl_utils.h"
+#include "src/utils/bit_reader_utils.h"
 
 #if !defined(USE_GENERIC_TREE)
-#if !defined(__arm__) && !defined(_M_ARM) && !WEBP_AARCH64
+#if !defined(__arm__) && !defined(_M_ARM) && !WEBP_AARCH64 && \
+    !defined(__wasm__)
 // using a table is ~1-2% slower on ARM. Prefer the coded-tree approach then.
 #define USE_GENERIC_TREE 1   // ALTERNATE_CODE
 #else
@@ -283,40 +290,40 @@ static const uint8_t kBModesProba[NUM_BMODES][NUM_BMODES][NUM_BMODES - 1] = {
 };
 
 void VP8ResetProba(VP8Proba* const proba) {
-  memset(proba->segments_, 255u, sizeof(proba->segments_));
-  // proba->bands_[][] is initialized later
+  memset(proba->segments, 255u, sizeof(proba->segments));
+  // proba->bands[][] is initialized later
 }
 
 static void ParseIntraMode(VP8BitReader* const br,
                            VP8Decoder* const dec, int mb_x) {
-  uint8_t* const top = dec->intra_t_ + 4 * mb_x;
-  uint8_t* const left = dec->intra_l_;
-  VP8MBData* const block = dec->mb_data_ + mb_x;
+  uint8_t* const top = dec->intra_t + 4 * mb_x;
+  uint8_t* const left = dec->intra_l;
+  VP8MBData* const block = dec->mb_data + mb_x;
 
   // Note: we don't save segment map (yet), as we don't expect
   // to decode more than 1 keyframe.
-  if (dec->segment_hdr_.update_map_) {
+  if (dec->segment_hdr.update_map) {
     // Hardcoded tree parsing
-    block->segment_ = !VP8GetBit(br, dec->proba_.segments_[0], "segments")
-                    ?  VP8GetBit(br, dec->proba_.segments_[1], "segments")
-                    :  VP8GetBit(br, dec->proba_.segments_[2], "segments") + 2;
+    block->segment = !VP8GetBit(br, dec->proba.segments[0], "segments")
+                   ?  VP8GetBit(br, dec->proba.segments[1], "segments")
+                   :  VP8GetBit(br, dec->proba.segments[2], "segments") + 2;
   } else {
-    block->segment_ = 0;  // default for intra
+    block->segment = 0;  // default for intra
   }
-  if (dec->use_skip_proba_) block->skip_ = VP8GetBit(br, dec->skip_p_, "skip");
+  if (dec->use_skip_proba) block->skip = VP8GetBit(br, dec->skip_p, "skip");
 
-  block->is_i4x4_ = !VP8GetBit(br, 145, "block-size");
-  if (!block->is_i4x4_) {
+  block->is_i4x4 = !VP8GetBit(br, 145, "block-size");
+  if (!block->is_i4x4) {
     // Hardcoded 16x16 intra-mode decision tree.
     const int ymode =
         VP8GetBit(br, 156, "pred-modes") ?
             (VP8GetBit(br, 128, "pred-modes") ? TM_PRED : H_PRED) :
             (VP8GetBit(br, 163, "pred-modes") ? V_PRED : DC_PRED);
-    block->imodes_[0] = ymode;
+    block->imodes[0] = ymode;
     memset(top, ymode, 4 * sizeof(*top));
     memset(left, ymode, 4 * sizeof(*left));
   } else {
-    uint8_t* modes = block->imodes_;
+    uint8_t* modes = block->imodes;
     int y;
     for (y = 0; y < 4; ++y) {
       int ymode = left[y];
@@ -353,17 +360,17 @@ static void ParseIntraMode(VP8BitReader* const br,
     }
   }
   // Hardcoded UVMode decision tree
-  block->uvmode_ = !VP8GetBit(br, 142, "pred-modes-uv") ? DC_PRED
-                 : !VP8GetBit(br, 114, "pred-modes-uv") ? V_PRED
-                 : VP8GetBit(br, 183, "pred-modes-uv") ? TM_PRED : H_PRED;
+  block->uvmode = !VP8GetBit(br, 142, "pred-modes-uv") ? DC_PRED
+                : !VP8GetBit(br, 114, "pred-modes-uv") ? V_PRED
+                : VP8GetBit(br, 183, "pred-modes-uv") ? TM_PRED : H_PRED;
 }
 
 int VP8ParseIntraModeRow(VP8BitReader* const br, VP8Decoder* const dec) {
   int mb_x;
-  for (mb_x = 0; mb_x < dec->mb_w_; ++mb_x) {
+  for (mb_x = 0; mb_x < dec->mb_w; ++mb_x) {
     ParseIntraMode(br, dec, mb_x);
   }
-  return !dec->br_.eof_;
+  return !dec->br.eof;
 }
 
 //------------------------------------------------------------------------------
@@ -513,7 +520,7 @@ static const uint8_t kBands[16 + 1] = {
 };
 
 void VP8ParseProba(VP8BitReader* const br, VP8Decoder* const dec) {
-  VP8Proba* const proba = &dec->proba_;
+  VP8Proba* const proba = &dec->proba;
   int t, b, c, p;
   for (t = 0; t < NUM_TYPES; ++t) {
     for (b = 0; b < NUM_BANDS; ++b) {
@@ -523,16 +530,16 @@ void VP8ParseProba(VP8BitReader* const br, VP8Decoder* const dec) {
               VP8GetBit(br, CoeffsUpdateProba[t][b][c][p], "global-header") ?
                         VP8GetValue(br, 8, "global-header") :
                         CoeffsProba0[t][b][c][p];
-          proba->bands_[t][b].probas_[c][p] = v;
+          proba->bands[t][b].probas[c][p] = v;
         }
       }
     }
     for (b = 0; b < 16 + 1; ++b) {
-      proba->bands_ptr_[t][b] = &proba->bands_[t][kBands[b]];
+      proba->bands_ptr[t][b] = &proba->bands[t][kBands[b]];
     }
   }
-  dec->use_skip_proba_ = VP8Get(br, "global-header");
-  if (dec->use_skip_proba_) {
-    dec->skip_p_ = VP8GetValue(br, 8, "global-header");
+  dec->use_skip_proba = VP8Get(br, "global-header");
+  if (dec->use_skip_proba) {
+    dec->skip_p = VP8GetValue(br, 8, "global-header");
   }
 }

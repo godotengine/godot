@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DPITexture" inherits="Texture2D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An automatically scalable [Texture2D] based on an SVG image.
+	</brief_description>
+	<description>
+		An automatically scalable [Texture2D] based on an SVG image. [DPITexture]s are used to automatically re-rasterize icons and other texture based UI theme elements to match viewport scale and font oversampling. See also [member ProjectSettings.display/window/stretch/mode] ("canvas_items" mode) and [member Viewport.oversampling_override].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_from_string" qualifiers="static">
+			<return type="DPITexture" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<param index="2" name="saturation" type="float" default="1.0" />
+			<param index="3" name="color_map" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [DPITexture] and initializes it by allocating and setting the SVG data to [param source].
+			</description>
+		</method>
+		<method name="get_scaled_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the texture rasterized to match the oversampling of the currently drawn canvas item.
+			</description>
+		</method>
+		<method name="get_source" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns this SVG texture's source code.
+			</description>
+		</method>
+		<method name="set_size_override">
+			<return type="void" />
+			<param index="0" name="size" type="Vector2i" />
+			<description>
+				Resizes the texture to the specified dimensions.
+			</description>
+		</method>
+		<method name="set_source">
+			<return type="void" />
+			<param index="0" name="source" type="String" />
+			<description>
+				Sets this SVG texture's source code.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="base_scale" type="float" setter="set_base_scale" getter="get_base_scale" default="1.0">
+			Texture scale. [code]1.0[/code] is the original SVG size. Higher values result in a larger image.
+		</member>
+		<member name="color_map" type="Dictionary" setter="set_color_map" getter="get_color_map" default="{}">
+			If set, remaps texture colors according to [Color]-[Color] map.
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="saturation" type="float" setter="set_saturation" getter="get_saturation" default="1.0">
+			Overrides texture saturation.
+		</member>
+	</members>
+</class>

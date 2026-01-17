@@ -4,7 +4,7 @@
  *
  *   Auto-fitter styles (specification only).
  *
- * Copyright (C) 2013-2023 by
+ * Copyright (C) 2013-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -50,36 +50,36 @@
                  AF_COVERAGE_ ## C )
 
 #undef  META_STYLE_LATIN
-#define META_STYLE_LATIN( s, S, ds )                     \
-          STYLE_LATIN( s, S, c2cp, C2CP, ds,             \
+#define META_STYLE_LATIN( s, S, ds )                    \
+          STYLE_LATIN( s, S, c2cp, C2CP, ds,            \
                        "petite capitals from capitals", \
-                       PETITE_CAPITALS_FROM_CAPITALS )   \
-          STYLE_LATIN( s, S, c2sc, C2SC, ds,             \
+                       PETITE_CAPITALS_FROM_CAPITALS )  \
+          STYLE_LATIN( s, S, c2sc, C2SC, ds,            \
                        "small capitals from capitals",  \
-                       SMALL_CAPITALS_FROM_CAPITALS )    \
-          STYLE_LATIN( s, S, ordn, ORDN, ds,             \
-                       "ordinals",                       \
-                       ORDINALS )                        \
-          STYLE_LATIN( s, S, pcap, PCAP, ds,             \
-                       "petite capitals",                \
-                       PETITE_CAPITALS )                 \
-          STYLE_LATIN( s, S, sinf, SINF, ds,             \
-                       "scientific inferiors",           \
-                       SCIENTIFIC_INFERIORS )            \
-          STYLE_LATIN( s, S, smcp, SMCP, ds,             \
-                       "small capitals",                 \
-                       SMALL_CAPITALS )                  \
-          STYLE_LATIN( s, S, subs, SUBS, ds,             \
-                       "subscript",                      \
-                       SUBSCRIPT )                       \
-          STYLE_LATIN( s, S, sups, SUPS, ds,             \
-                       "superscript",                    \
-                       SUPERSCRIPT )                     \
-          STYLE_LATIN( s, S, titl, TITL, ds,             \
-                       "titling",                        \
-                       TITLING )                         \
-          STYLE_LATIN( s, S, dflt, DFLT, ds,             \
-                       "default",                        \
+                       SMALL_CAPITALS_FROM_CAPITALS )   \
+          STYLE_LATIN( s, S, ordn, ORDN, ds,            \
+                       "ordinals",                      \
+                       ORDINALS )                       \
+          STYLE_LATIN( s, S, pcap, PCAP, ds,            \
+                       "petite capitals",               \
+                       PETITE_CAPITALS )                \
+          STYLE_LATIN( s, S, sinf, SINF, ds,            \
+                       "scientific inferiors",          \
+                       SCIENTIFIC_INFERIORS )           \
+          STYLE_LATIN( s, S, smcp, SMCP, ds,            \
+                       "small capitals",                \
+                       SMALL_CAPITALS )                 \
+          STYLE_LATIN( s, S, subs, SUBS, ds,            \
+                       "subscript",                     \
+                       SUBSCRIPT )                      \
+          STYLE_LATIN( s, S, sups, SUPS, ds,            \
+                       "superscript",                   \
+                       SUPERSCRIPT )                    \
+          STYLE_LATIN( s, S, titl, TITL, ds,            \
+                       "titling",                       \
+                       TITLING )                        \
+          STYLE_LATIN( s, S, dflt, DFLT, ds,            \
+                       "default",                       \
                        DEFAULT )
 
 

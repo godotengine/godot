@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HTTP_CLIENT_WEB_H
-#define HTTP_CLIENT_WEB_H
+#pragma once
 
 #include "core/io/http_client.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 typedef enum {
 	GODOT_JS_FETCH_STATE_REQUESTING = 0,
@@ -59,6 +56,8 @@ extern int godot_js_fetch_is_chunked(int p_id);
 #endif
 
 class HTTPClientWeb : public HTTPClient {
+	GDSOFTCLASS(HTTPClientWeb, HTTPClient);
+
 private:
 	int js_id = 0;
 	Status status = STATUS_DISCONNECTED;
@@ -104,5 +103,3 @@ public:
 	HTTPClientWeb();
 	~HTTPClientWeb();
 };
-
-#endif // HTTP_CLIENT_WEB_H

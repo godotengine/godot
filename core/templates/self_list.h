@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SELF_LIST_H
-#define SELF_LIST_H
+#pragma once
 
 #include "core/error/error_macros.h"
+#include "core/templates/sort_list.h"
 #include "core/typedefs.h"
 
 template <typename T>
@@ -115,45 +115,13 @@ public:
 				return;
 			}
 
-			SelfList<T> *from = _first;
-			SelfList<T> *current = from;
-			SelfList<T> *to = from;
-
-			while (current) {
-				SelfList<T> *next = current->_next;
-
-				if (from != current) {
-					current->_prev = nullptr;
-					current->_next = from;
-
-					SelfList<T> *find = from;
-					C less;
-					while (find && less(*find->_self, *current->_self)) {
-						current->_prev = find;
-						current->_next = find->_next;
-						find = find->_next;
-					}
-
-					if (current->_prev) {
-						current->_prev->_next = current;
-					} else {
-						from = current;
-					}
-
-					if (current->_next) {
-						current->_next->_prev = current;
-					} else {
-						to = current;
-					}
-				} else {
-					current->_prev = nullptr;
-					current->_next = nullptr;
-				}
-
-				current = next;
-			}
-			_first = from;
-			_last = to;
+			struct PtrComparator {
+				C compare;
+				_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
+			};
+			using Element = SelfList<T>;
+			SortList<Element, T *, &Element::_self, &Element::_prev, &Element::_next, PtrComparator> sorter;
+			sorter.sort(_first, _last);
 		}
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
@@ -162,7 +130,6 @@ public:
 		// Forbid copying, which has broken behavior.
 		void operator=(const List &) = delete;
 
-		_FORCE_INLINE_ List() {}
 		_FORCE_INLINE_ ~List() {
 			// A self list must be empty on destruction.
 			DEV_ASSERT(_first == nullptr);
@@ -201,5 +168,3 @@ public:
 		}
 	}
 };
-
-#endif // SELF_LIST_H

@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <memory.h>
 #include "tvgMath.h"
@@ -183,7 +184,7 @@ float strToFloat(const char *nPtr, char **endPtr)
         auto scale = 1.0f;
 
         while (exponentPart >= 8U) {
-            scale *= 1E8;
+            scale *= 1E8f;
             exponentPart -= 8U;
         }
         while (exponentPart > 0U) {
@@ -205,16 +206,6 @@ success:
 error:
     if (endPtr) *endPtr = (char *)(nPtr);
     return 0.0f;
-}
-
-
-int str2int(const char* str, size_t n)
-{
-    int ret = 0;
-    for(size_t i = 0; i < n; ++i) {
-        ret = ret * 10 + (str[i] - '0');
-    }
-    return ret;
 }
 
 char* strDuplicate(const char *str, size_t n)
@@ -239,11 +230,12 @@ char* strAppend(char* lhs, const char* rhs, size_t n)
 
 char* strDirname(const char* path)
 {
-    const char *ptr = strrchr(path, '/');
+    auto ptr = strrchr(path, '/');
 #ifdef _WIN32
-    if (ptr) ptr = strrchr(ptr + 1, '\\');
+    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
+    if (ptr2) ptr = ptr2;
 #endif
-    int len = int(ptr + 1 - path);  // +1 to include '/'
+    auto len = ptr ? size_t(ptr - path + 1) : SIZE_MAX;
     return strDuplicate(path, len);
 }
 

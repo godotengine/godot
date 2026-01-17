@@ -30,10 +30,9 @@
 
 #include "debug_adapter_server.h"
 
-#include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 int DebugAdapterServer::port_override = -1;
 

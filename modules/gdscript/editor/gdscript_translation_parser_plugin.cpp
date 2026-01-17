@@ -39,7 +39,7 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 
-Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
+Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
 	// Extract all translatable strings using the parsed tree from GDScriptParser.
 	// The strategy is to find all ExpressionNode and AssignmentNode from the tree and extract strings if relevant, i.e
 	// Search strings in ExpressionNode -> CallNode -> tr(), set_text(), set_placeholder() etc.
@@ -49,11 +49,7 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	ERR_FAIL_COND_V_MSG(err, err, "Failed to load " + p_path);
 
-	ids = r_ids;
-	ids_ctx_plural = r_ids_ctx_plural;
-
-	ids_comment.clear();
-	ids_ctx_plural_comment.clear();
+	translations = r_translations;
 
 	Ref<GDScript> gdscript = loaded_res;
 	String source_code = gdscript->get_source_code();
@@ -75,11 +71,6 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	comment_data = nullptr;
 
 	return OK;
-}
-
-void GDScriptEditorTranslationParserPlugin::get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) {
-	r_ids_comment->append_array(ids_comment);
-	r_ids_ctx_plural_comment->append_array(ids_ctx_plural_comment);
 }
 
 bool GDScriptEditorTranslationParserPlugin::_is_constant_string(const GDScriptParser::ExpressionNode *p_expression) {
@@ -135,8 +126,7 @@ void GDScriptEditorTranslationParserPlugin::_add_id(const String &p_id, int p_li
 		return;
 	}
 
-	ids->push_back(p_id);
-	ids_comment.push_back(comment);
+	translations->push_back({ p_id, String(), String(), comment, itos(p_line) });
 }
 
 void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line) {
@@ -146,8 +136,7 @@ void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<Stri
 		return;
 	}
 
-	ids_ctx_plural->push_back(p_id_ctx_plural);
-	ids_ctx_plural_comment.push_back(comment);
+	translations->push_back({ p_id_ctx_plural[0], p_id_ctx_plural[1], p_id_ctx_plural[2], comment, itos(p_line) });
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
@@ -394,9 +383,14 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 			_add_id(p_call->arguments[1]->reduced_value, p_call->arguments[1]->start_line);
 		}
 	} else if (function_name == fd_add_filter) {
-		// Extract the 'JPE Images' in this example - get_node("FileDialog").add_filter("*.jpg; JPE Images").
-		if (!p_call->arguments.is_empty()) {
+		if (p_call->arguments.size() == 1) {
+			// The first parameter may contain a description, like `"*.jpg; JPEG Images"`.
 			_extract_fd_filter_string(p_call->arguments[0], p_call->arguments[0]->start_line);
+		} else if (p_call->arguments.size() >= 2) {
+			// The second optional parameter can be a description.
+			if (_is_constant_string(p_call->arguments[1])) {
+				_add_id(p_call->arguments[1]->reduced_value, p_call->arguments[1]->start_line);
+			}
 		}
 	} else if (function_name == fd_set_filter) {
 		// Extract from `get_node("FileDialog").set_filters(<filter array>)`.
@@ -407,11 +401,16 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 }
 
 void GDScriptEditorTranslationParserPlugin::_extract_fd_filter_string(const GDScriptParser::ExpressionNode *p_expression, int p_line) {
-	// Extract the name in "extension ; name".
+	// Extract the description from `"filter; Description"` format.
+	// The description part is optional, so we skip if it's missing or empty.
 	if (_is_constant_string(p_expression)) {
-		PackedStringArray arr = p_expression->reduced_value.operator String().split(";", true);
-		ERR_FAIL_COND_MSG(arr.size() != 2, "Argument for setting FileDialog has bad format.");
-		_add_id(arr[1].strip_edges(), p_line);
+		const PackedStringArray arr = p_expression->reduced_value.operator String().split(";", true, 1);
+		if (arr.size() >= 2) {
+			const String description = arr[1].strip_edges();
+			if (!description.is_empty()) {
+				_add_id(description, p_line);
+			}
+		}
 	}
 }
 

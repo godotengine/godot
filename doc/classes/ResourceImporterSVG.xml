@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterSVG" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Imports an SVG file as an automatically scalable texture for use in UI elements and 2D rendering.
+	</brief_description>
+	<description>
+		This importer imports [DPITexture] resources. See also [ResourceImporterTexture] and [ResourceImporterImage].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="base_scale" type="float" setter="" getter="" default="1.0">
+			Texture scale. [code]1.0[/code] is the original SVG size. Higher values result in a larger image.
+		</member>
+		<member name="color_map" type="Dictionary" setter="" getter="" default="{}">
+			If set, remaps texture colors according to [Color]-[Color] map.
+		</member>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], uses lossless compression for the SVG source.
+		</member>
+		<member name="saturation" type="float" setter="" getter="" default="1.0">
+			Overrides texture saturation.
+		</member>
+	</members>
+</class>

@@ -30,7 +30,6 @@
 
 #include "link_button.h"
 
-#include "core/string/translation.h"
 #include "scene/theme/theme_db.h"
 
 void LinkButton::_shape() {
@@ -38,13 +37,19 @@ void LinkButton::_shape() {
 	int font_size = theme_cache.font_size;
 
 	text_buf->clear();
+	text_buf->set_width(-1);
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
 		text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
 	} else {
 		text_buf->set_direction((TextServer::Direction)text_direction);
 	}
 	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, xl_text));
-	text_buf->add_string(xl_text, font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	text_buf->add_string(xl_text, font, font_size, lang);
+	text_buf->set_text_overrun_behavior(overrun_behavior);
+	text_buf->set_ellipsis_char(el_char);
+
+	queue_accessibility_update();
 }
 
 void LinkButton::set_text(const String &p_text) {
@@ -62,6 +67,19 @@ String LinkButton::get_text() const {
 	return text;
 }
 
+void LinkButton::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
+	if (overrun_behavior != p_behavior) {
+		overrun_behavior = p_behavior;
+		_shape();
+		update_minimum_size();
+		queue_redraw();
+	}
+}
+
+TextServer::OverrunBehavior LinkButton::get_text_overrun_behavior() const {
+	return overrun_behavior;
+}
+
 void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
@@ -70,18 +88,41 @@ void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextPar
 	}
 }
 
+void LinkButton::set_ellipsis_char(const String &p_char) {
+	String c = p_char;
+	if (c.length() > 1) {
+		WARN_PRINT("Ellipsis must be exactly one character long (" + itos(c.length()) + " characters given).");
+		c = c.left(1);
+	}
+
+	if (el_char == c) {
+		return;
+	}
+	el_char = c;
+
+	if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		_shape();
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+String LinkButton::get_ellipsis_char() const {
+	return el_char;
+}
+
 TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override() const {
 	return st_parser;
 }
 
-void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
-	st_args = p_args;
+void LinkButton::set_structured_text_bidi_override_options(const Array &p_args) {
+	st_args = Array(p_args);
 	_shape();
 	queue_redraw();
 }
 
 Array LinkButton::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
@@ -110,7 +151,10 @@ String LinkButton::get_language() const {
 }
 
 void LinkButton::set_uri(const String &p_uri) {
-	uri = p_uri;
+	if (uri != p_uri) {
+		uri = p_uri;
+		queue_accessibility_update();
+	}
 }
 
 String LinkButton::get_uri() const {
@@ -134,6 +178,10 @@ Ref<Font> LinkButton::get_button_font() const {
 	return theme_cache.font;
 }
 
+int LinkButton::get_button_font_size() const {
+	return theme_cache.font_size;
+}
+
 void LinkButton::pressed() {
 	if (uri.is_empty()) {
 		return;
@@ -143,11 +191,36 @@ void LinkButton::pressed() {
 }
 
 Size2 LinkButton::get_minimum_size() const {
-	return text_buf->get_size();
+	Size2 minsize = text_buf->get_size();
+	if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		minsize.width = 0;
+	}
+
+	return minsize;
+}
+
+Control::CursorShape LinkButton::get_cursor_shape(const Point2 &p_pos) const {
+	return is_disabled() ? CURSOR_ARROW : get_default_cursor_shape();
 }
 
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LINK);
+			const String &ac_name = get_accessibility_name();
+			if (!xl_text.is_empty() && ac_name.is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
+			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
+			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_url(ae, uri);
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
@@ -159,6 +232,7 @@ void LinkButton::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
+		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 			update_minimum_size();
@@ -173,7 +247,7 @@ void LinkButton::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-					if (has_focus()) {
+					if (has_focus(true)) {
 						color = theme_cache.font_focus_color;
 					} else {
 						color = theme_cache.font_color;
@@ -204,11 +278,14 @@ void LinkButton::_notification(int p_what) {
 				} break;
 			}
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				Ref<StyleBox> style = theme_cache.focus;
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
+			if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+				text_buf->set_width(MAX(1.0f, size.width));
+			}
 			int width = text_buf->get_line_width();
 
 			Color font_outline_color = theme_cache.font_outline_color;
@@ -243,6 +320,10 @@ void LinkButton::_notification(int p_what) {
 void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LinkButton::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LinkButton::get_text);
+	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &LinkButton::set_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &LinkButton::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_ellipsis_char", "char"), &LinkButton::set_ellipsis_char);
+	ClassDB::bind_method(D_METHOD("get_ellipsis_char"), &LinkButton::get_ellipsis_char);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LinkButton::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LinkButton::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
@@ -263,6 +344,10 @@ void LinkButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
+
+	ADD_GROUP("Text Behavior", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
@@ -289,7 +374,7 @@ void LinkButton::_bind_methods() {
 
 LinkButton::LinkButton(const String &p_text) {
 	text_buf.instantiate();
-	set_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 
 	set_text(p_text);

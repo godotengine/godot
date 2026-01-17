@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_CONE_TWIST_JOINT_3D_H
-#define GODOT_CONE_TWIST_JOINT_3D_H
+#pragma once
 
 /*
 Adapted to Godot from the Bullet library.
@@ -80,7 +79,7 @@ public:
 	real_t m_biasFactor = 0.3;
 	real_t m_relaxationFactor = 1.0;
 
-	real_t m_swingSpan1 = Math_TAU / 8.0;
+	real_t m_swingSpan1 = Math::TAU / 8.0;
 	real_t m_swingSpan2 = 0.0;
 	real_t m_twistSpan = 0.0;
 
@@ -138,5 +137,3 @@ public:
 	void set_param(PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::ConeTwistJointParam p_param) const;
 };
-
-#endif // GODOT_CONE_TWIST_JOINT_3D_H

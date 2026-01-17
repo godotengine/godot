@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_WINDOWS_H
-#define DIR_ACCESS_WINDOWS_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -38,6 +37,7 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
+	GDSOFTCLASS(DirAccessWindows, DirAccess);
 	enum {
 		MAX_DRIVES = 26
 	};
@@ -85,11 +85,10 @@ public:
 
 	virtual String get_filesystem_type() const override;
 	virtual bool is_case_sensitive(const String &p_path) const override;
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const override;
 
 	DirAccessWindows();
 	~DirAccessWindows();
 };
 
 #endif // WINDOWS_ENABLED
-
-#endif // DIR_ACCESS_WINDOWS_H

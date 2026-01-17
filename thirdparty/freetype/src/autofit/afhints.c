@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines (body).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -840,6 +840,10 @@
 
     if ( hints->contours != hints->embedded.contours )
       FT_FREE( hints->contours );
+    if ( hints->contour_y_minima != hints->embedded.contour_y_minima )
+      FT_FREE( hints->contour_y_minima );
+    if ( hints->contour_y_maxima != hints->embedded.contour_y_maxima )
+      FT_FREE( hints->contour_y_maxima );
     hints->max_contours = 0;
     hints->num_contours = 0;
 
@@ -896,18 +900,29 @@
     {
       if ( !hints->contours )
       {
-        hints->contours     = hints->embedded.contours;
+        hints->contours         = hints->embedded.contours;
+        hints->contour_y_minima = hints->embedded.contour_y_minima;
+        hints->contour_y_maxima = hints->embedded.contour_y_maxima;
+
         hints->max_contours = AF_CONTOURS_EMBEDDED;
       }
     }
     else if ( new_max > old_max )
     {
       if ( hints->contours == hints->embedded.contours )
-        hints->contours = NULL;
+      {
+        hints->contours         = NULL;
+        hints->contour_y_minima = NULL;
+        hints->contour_y_maxima = NULL;
+      }
 
       new_max = ( new_max + 3 ) & ~3; /* round up to a multiple of 4 */
 
       if ( FT_RENEW_ARRAY( hints->contours, old_max, new_max ) )
+        goto Exit;
+      if ( FT_RENEW_ARRAY( hints->contour_y_minima, old_max, new_max ) )
+        goto Exit;
+      if ( FT_RENEW_ARRAY( hints->contour_y_maxima, old_max, new_max ) )
         goto Exit;
 
       hints->max_contours = new_max;
@@ -979,8 +994,8 @@
       /* compute coordinates & Bezier flags, next and prev */
       {
         FT_Vector*  vec           = outline->points;
-        char*       tag           = outline->tags;
-        FT_Short    endpoint      = outline->contours[0];
+        FT_Byte*    tag           = outline->tags;
+        FT_UShort   endpoint      = outline->contours[0];
         AF_Point    end           = points + endpoint;
         AF_Point    prev          = end;
         FT_Int      contour_index = 0;
@@ -1046,16 +1061,16 @@
 
       /* set up the contours array */
       {
-        AF_Point*  contour       = hints->contours;
-        AF_Point*  contour_limit = contour + hints->num_contours;
-        short*     end           = outline->contours;
-        short      idx           = 0;
+        AF_Point*   contour       = hints->contours;
+        AF_Point*   contour_limit = contour + hints->num_contours;
+        FT_UShort*  end           = outline->contours;
+        FT_Int      idx           = 0;
 
 
         for ( ; contour < contour_limit; contour++, end++ )
         {
           contour[0] = points + idx;
-          idx        = (short)( end[0] + 1 );
+          idx        = *end + 1;
         }
       }
 
@@ -1292,7 +1307,7 @@
     AF_Point    point = hints->points;
     AF_Point    limit = point + hints->num_points;
     FT_Vector*  vec   = outline->points;
-    char*       tag   = outline->tags;
+    FT_Byte*    tag   = outline->tags;
 
 
     for ( ; point < limit; point++, vec++, tag++ )
@@ -1324,7 +1339,7 @@
   af_glyph_hints_align_edge_points( AF_GlyphHints  hints,
                                     AF_Dimension   dim )
   {
-    AF_AxisHints  axis          = & hints->axis[dim];
+    AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
     AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     AF_Segment    seg;

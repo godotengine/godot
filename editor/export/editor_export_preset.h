@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PRESET_H
-#define EDITOR_EXPORT_PRESET_H
+#pragma once
 
 class EditorExportPlatform;
 
@@ -71,10 +70,14 @@ private:
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
-	bool advanced_options_enabled = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;
+	bool patch_delta_encoding_enabled = false;
+	int patch_delta_zstd_level = 19;
+	double patch_delta_min_reduction = 0.1;
+	String patch_delta_include_filter = "*";
+	String patch_delta_exclude_filter;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
@@ -95,7 +98,7 @@ private:
 	uint64_t seed = 0;
 
 	String script_key;
-	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	ScriptExportMode script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -106,6 +109,11 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	int _get_script_export_mode_bind_compat_107167() const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Ref<EditorExportPlatform> get_platform() const;
 
@@ -115,6 +123,8 @@ public:
 	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
+	HashSet<String> get_selected_files() const;
+	void set_selected_files(const HashSet<String> &p_files);
 	Dictionary get_customized_files() const;
 	int get_customized_files_count() const;
 	void set_customized_files(const Dictionary &p_files);
@@ -126,13 +136,14 @@ public:
 	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
 	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
 
+	Variant get_project_setting(const StringName &p_name);
+
 	void set_name(const String &p_name);
 	String get_name() const;
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
 
-	void set_advanced_options_enabled(bool p_enabled);
 	bool are_advanced_options_enabled() const;
 
 	void set_dedicated_server(bool p_enable);
@@ -149,10 +160,27 @@ public:
 
 	void add_patch(const String &p_path, int p_at_pos = -1);
 	void set_patch(int p_index, const String &p_path);
+
 	String get_patch(int p_index);
 	void remove_patch(int p_index);
+
 	void set_patches(const Vector<String> &p_patches);
 	Vector<String> get_patches() const;
+
+	void set_patch_delta_encoding_enabled(bool p_enable);
+	bool is_patch_delta_encoding_enabled() const;
+
+	void set_patch_delta_zstd_level(int p_level);
+	int get_patch_delta_zstd_level() const;
+
+	void set_patch_delta_min_reduction(double p_ratio);
+	double get_patch_delta_min_reduction() const;
+
+	void set_patch_delta_include_filter(const String &p_filter);
+	String get_patch_delta_include_filter() const;
+
+	void set_patch_delta_exclude_filter(const String &p_filter);
+	String get_patch_delta_exclude_filter() const;
 
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;
@@ -178,8 +206,8 @@ public:
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
 
-	void set_script_export_mode(int p_mode);
-	int get_script_export_mode() const;
+	void set_script_export_mode(ScriptExportMode p_mode);
+	ScriptExportMode get_script_export_mode() const;
 
 	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
 		return get_or_env(p_name, p_env_var);
@@ -195,12 +223,8 @@ public:
 
 	const HashMap<StringName, PropertyInfo> &get_properties() const { return properties; }
 	const HashMap<StringName, Variant> &get_values() const { return values; }
-
-	EditorExportPreset();
 };
 
 VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);
 VARIANT_ENUM_CAST(EditorExportPreset::FileExportMode);
 VARIANT_ENUM_CAST(EditorExportPreset::ScriptExportMode);
-
-#endif // EDITOR_EXPORT_PRESET_H

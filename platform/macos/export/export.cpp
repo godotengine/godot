@@ -45,6 +45,8 @@ void register_macos_exporter() {
 #else
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE));
 #endif
+	EDITOR_DEF_BASIC("export/macos/actool", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/actool", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 
 	Ref<EditorExportPlatformMacOS> platform;

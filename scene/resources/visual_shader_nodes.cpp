@@ -31,8 +31,6 @@
 #include "visual_shader_nodes.h"
 #include "visual_shader_nodes.compat.inc"
 
-#include "scene/resources/image_texture.h"
-
 ////////////// Vector Base
 
 VisualShaderNodeVectorBase::PortType VisualShaderNodeVectorBase::get_input_port_type(int p_port) const {
@@ -582,9 +580,17 @@ Quaternion VisualShaderNodeVec4Constant::get_constant() const {
 	return constant;
 }
 
+void VisualShaderNodeVec4Constant::_set_constant_v4(const Vector4 &p_constant) {
+	set_constant(Quaternion(p_constant.x, p_constant.y, p_constant.z, p_constant.w));
+}
+
+Vector4 VisualShaderNodeVec4Constant::_get_constant_v4() const {
+	return Vector4(constant.x, constant.y, constant.z, constant.w);
+}
+
 Vector<StringName> VisualShaderNodeVec4Constant::get_editable_properties() const {
 	Vector<StringName> props;
-	props.push_back("constant");
+	props.push_back("constant_v4");
 	return props;
 }
 
@@ -592,7 +598,11 @@ void VisualShaderNodeVec4Constant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant", "constant"), &VisualShaderNodeVec4Constant::set_constant);
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeVec4Constant::get_constant);
 
+	ClassDB::bind_method(D_METHOD("_set_constant_v4", "constant"), &VisualShaderNodeVec4Constant::_set_constant_v4);
+	ClassDB::bind_method(D_METHOD("_get_constant_v4"), &VisualShaderNodeVec4Constant::_get_constant_v4);
+
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "constant"), "set_constant", "get_constant");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR4, "constant_v4", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_constant_v4", "_get_constant_v4");
 }
 
 VisualShaderNodeVec4Constant::VisualShaderNodeVec4Constant() {
@@ -1747,12 +1757,13 @@ String VisualShaderNodeWorldPositionFromDepth::generate_code(Shader::Mode p_mode
 
 	code += "		float __log_depth = textureLod(" + make_unique_id(p_type, p_id, "depth_tex") + ", " + uv + ", 0.0).x;\n";
 	if (!RenderingServer::get_singleton()->is_low_end()) {
-		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(" + uv + " * 2.0 - 1.0, __log_depth, 1.0);\n";
+		code += "		vec4 __ndc = vec4(" + uv + " * 2.0 - 1.0, __log_depth, 1.0);\n";
 	} else {
-		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(vec3(" + uv + ", __log_depth) * 2.0 - 1.0, 1.0);\n";
+		code += "		vec4 __ndc = vec4(vec3(" + uv + ", __log_depth) * 2.0 - 1.0, 1.0);\n";
 	}
-	code += "		__depth_view.xyz /= __depth_view.w;\n";
-	code += vformat("		%s = (INV_VIEW_MATRIX * __depth_view).xyz;\n", p_output_vars[0]);
+	code += "		vec4 __position_world = INV_VIEW_MATRIX * INV_PROJECTION_MATRIX * __ndc;\n";
+	code += "		__position_world.xyz /= __position_world.w;\n";
+	code += vformat("		%s = __position_world.xyz;\n", p_output_vars[0]);
 
 	code += "	}\n";
 	return code;
@@ -4616,6 +4627,30 @@ String VisualShaderNodeVectorRefract::get_input_port_name(int p_port) const {
 	return String();
 }
 
+VisualShaderNodeVectorRefract::PortType VisualShaderNodeVectorRefract::get_input_port_type(int p_port) const {
+	switch (op_type) {
+		case OP_TYPE_VECTOR_2D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_2D;
+		case OP_TYPE_VECTOR_3D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_4D:
+			if (p_port == 2) {
+				break;
+			}
+			return PORT_TYPE_VECTOR_4D;
+		default:
+			break;
+	}
+
+	return PORT_TYPE_SCALAR;
+}
+
 int VisualShaderNodeVectorRefract::get_output_port_count() const {
 	return 1;
 }
@@ -4903,19 +4938,22 @@ void VisualShaderNodeVectorCompose::set_op_type(OpType p_op_type) {
 		case OP_TYPE_VECTOR_3D: {
 			float p1 = get_input_port_default_value(0);
 			float p2 = get_input_port_default_value(1);
+			float p3 = get_input_port_default_value(2);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, 0.0);
+			set_input_port_default_value(2, p3);
 		} break;
 		case OP_TYPE_VECTOR_4D: {
 			float p1 = get_input_port_default_value(0);
 			float p2 = get_input_port_default_value(1);
+			float p3 = get_input_port_default_value(2);
+			float p4 = get_input_port_default_value(3);
 
 			set_input_port_default_value(0, p1);
 			set_input_port_default_value(1, p2);
-			set_input_port_default_value(2, 0.0);
-			set_input_port_default_value(3, 0.0);
+			set_input_port_default_value(2, p3);
+			set_input_port_default_value(3, p4);
 		} break;
 		default:
 			break;
@@ -5199,12 +5237,22 @@ String VisualShaderNodeFloatParameter::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeFloatParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "";
+	bool add_comma = true;
 	if (hint == HINT_RANGE) {
 		code += _get_qual_str() + "uniform float " + get_parameter_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
 		code += _get_qual_str() + "uniform float " + get_parameter_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ")";
 	} else {
 		code += _get_qual_str() + "uniform float " + get_parameter_name();
+		add_comma = false;
+	}
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		if (add_comma) {
+			code += ", ";
+		} else {
+			code += ": ";
+		}
+		code += vformat("instance_index(%d)", get_instance_index());
 	}
 	if (default_value_enabled) {
 		code += " = " + rtos(default_value);
@@ -5390,6 +5438,7 @@ String VisualShaderNodeIntParameter::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "";
+	bool add_comma = true;
 	if (hint == HINT_RANGE) {
 		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
@@ -5410,6 +5459,15 @@ String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, Visual
 		code += ")";
 	} else {
 		code += _get_qual_str() + "uniform int " + get_parameter_name();
+		add_comma = false;
+	}
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		if (add_comma) {
+			code += ", ";
+		} else {
+			code += ": ";
+		}
+		code += vformat("instance_index(%d)", get_instance_index());
 	}
 	if (default_value_enabled) {
 		code += " = " + itos(default_value);
@@ -5615,6 +5673,9 @@ String VisualShaderNodeUIntParameter::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeUIntParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform uint " + get_parameter_name();
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(": instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		code += " = " + itos(default_value);
 	}
@@ -5745,6 +5806,9 @@ bool VisualShaderNodeBooleanParameter::get_default_value() const {
 
 String VisualShaderNodeBooleanParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform bool " + get_parameter_name();
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(": instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		if (default_value) {
 			code += " = true";
@@ -5855,6 +5919,9 @@ Color VisualShaderNodeColorParameter::get_default_value() const {
 
 String VisualShaderNodeColorParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform vec4 " + get_parameter_name() + " : source_color";
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(", instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		code += vformat(" = vec4(%.6f, %.6f, %.6f, %.6f)", default_value.r, default_value.g, default_value.b, default_value.a);
 	}
@@ -5951,6 +6018,9 @@ Vector2 VisualShaderNodeVec2Parameter::get_default_value() const {
 
 String VisualShaderNodeVec2Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform vec2 " + get_parameter_name();
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(": instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		code += vformat(" = vec2(%.6f, %.6f)", default_value.x, default_value.y);
 	}
@@ -6051,6 +6121,9 @@ Vector3 VisualShaderNodeVec3Parameter::get_default_value() const {
 
 String VisualShaderNodeVec3Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform vec3 " + get_parameter_name();
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(": instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		code += vformat(" = vec3(%.6f, %.6f, %.6f)", default_value.x, default_value.y, default_value.z);
 	}
@@ -6151,6 +6224,9 @@ Vector4 VisualShaderNodeVec4Parameter::get_default_value() const {
 
 String VisualShaderNodeVec4Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = _get_qual_str() + "uniform vec4 " + get_parameter_name();
+	if (get_qualifier() == QUAL_INSTANCE_INDEX) {
+		code += vformat(": instance_index(%d)", get_instance_index());
+	}
 	if (default_value_enabled) {
 		code += vformat(" = vec4(%.6f, %.6f, %.6f, %.6f)", default_value.x, default_value.y, default_value.z, default_value.w);
 	}
@@ -6286,7 +6362,7 @@ bool VisualShaderNodeTransformParameter::is_use_prop_slots() const {
 }
 
 bool VisualShaderNodeTransformParameter::is_qualifier_supported(Qualifier p_qual) const {
-	if (p_qual == Qualifier::QUAL_INSTANCE) {
+	if (p_qual == Qualifier::QUAL_INSTANCE || p_qual == Qualifier::QUAL_INSTANCE_INDEX) {
 		return false;
 	}
 	return true;
@@ -6688,6 +6764,8 @@ bool VisualShaderNodeTextureParameter::is_qualifier_supported(Qualifier p_qual) 
 		case Qualifier::QUAL_GLOBAL:
 			return true;
 		case Qualifier::QUAL_INSTANCE:
+			return false;
+		case Qualifier::QUAL_INSTANCE_INDEX:
 			return false;
 		default:
 			break;
@@ -7248,7 +7326,7 @@ String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader:
 		normal = p_input_vars[0];
 	}
 	if (p_input_vars[1].is_empty()) {
-		if (p_mode == Shader::MODE_SPATIAL) {
+		if (p_mode == Shader::MODE_SPATIAL && !p_for_preview) {
 			view = "VIEW";
 		} else {
 			view = "vec3(0.0)";

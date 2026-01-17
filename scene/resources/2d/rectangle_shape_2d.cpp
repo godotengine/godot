@@ -30,8 +30,8 @@
 
 #include "rectangle_shape_2d.h"
 
-#include "servers/physics_server_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 void RectangleShape2D::_update_shape() {
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), size * 0.5);
 	emit_changed();
@@ -59,6 +59,9 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 
 void RectangleShape2D::set_size(const Size2 &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
+	if (size == p_size) {
+		return;
+	}
 	size = p_size;
 	_update_shape();
 }

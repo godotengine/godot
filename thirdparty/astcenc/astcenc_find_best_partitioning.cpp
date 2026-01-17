@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -226,7 +226,7 @@ static void kmeans_update(
 
 	uint8_t partition_texel_count[BLOCK_MAX_PARTITIONS] { 0 };
 
-	// Find the center-of-gravity in each cluster
+	// Find the center of gravity in each cluster
 	for (unsigned int i = 0; i < texel_count; i++)
 	{
 		uint8_t partition = partition_of_texel[i];
@@ -425,8 +425,8 @@ static unsigned int get_partition_ordering_by_mismatch_bits(
 	}
 
 	// Create a running sum from the histogram array
-	// Cells store previous values only; i.e. exclude self after sum
-	unsigned int sum = 0;
+	// Indices store previous values only; i.e. exclude self after sum
+	uint16_t sum = 0;
 	for (unsigned int i = 0; i < texel_count; i++)
 	{
 		uint16_t cnt = mscount[i];

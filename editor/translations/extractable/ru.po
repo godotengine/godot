@@ -28,25 +28,15 @@ msgstr "Взять цвет с экрана."
 msgid "Pick a color from the application window."
 msgstr "Выберите цвет в окне приложения."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Цвет: #%s\n"
-"ЛКМ: Применить цвет\n"
-"ПКМ: Удалить пресет"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Цвет: #%s\n"
-"ЛКМ: Применить цвет"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"red\")."
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Clear"
+msgstr "Очистить"
 
 msgid "Select a picker shape."
 msgstr "Выберите форму виджета."
@@ -100,9 +90,6 @@ msgstr "Открыть каталог"
 msgid "Open a File or Directory"
 msgstr "Открыть каталог или файл"
 
-msgid "Save"
-msgstr "Сохранить"
-
 msgid "Save a File"
 msgstr "Сохранить файл"
 
@@ -121,11 +108,11 @@ msgstr "Путь:"
 msgid "Refresh files."
 msgstr "Обновить файлы."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Переключить видимость скрытых файлов."
-
 msgid "Directories & Files:"
 msgstr "Каталоги и файлы:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Переключить видимость скрытых файлов."
 
 msgid "File:"
 msgstr "Файл:"
@@ -245,9 +232,6 @@ msgstr "Вставить"
 
 msgid "Select All"
 msgstr "Выделить всё"
-
-msgid "Clear"
-msgstr "Очистить"
 
 msgid "Undo"
 msgstr "Отменить"

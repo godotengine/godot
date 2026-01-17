@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_INTERACTION_PROFILE_METADATA_H
-#define OPENXR_INTERACTION_PROFILE_METADATA_H
+#pragma once
 
 ///////////////////////////////////////////////////////////////////////////
 // Stores available interaction profile metadata
@@ -65,31 +64,33 @@ public:
 	struct TopLevelPath {
 		String display_name; // User friendly display name (i.e. Left controller)
 		String openxr_path; // Path in OpenXR (i.e. /user/hand/left)
-		String openxr_extension_name; // If set, only available if extension is enabled (i.e. XR_HTCX_vive_tracker_interaction)
+		String openxr_extension_names; // If set, only available if extension is enabled (i.e. XR_HTCX_vive_tracker_interaction)
 	};
 
 	struct IOPath {
 		String display_name; // User friendly display name (i.e. Grip pose (left controller))
 		String top_level_path; // Top level path identifying the usage of the device in relation to this input/output
 		String openxr_path; // Path in OpenXR (i.e. /user/hand/left/input/grip/pose)
-		String openxr_extension_name; // If set, only available if extension is enabled (i.e. XR_EXT_palm_pose)
+		String openxr_extension_names; // If set, only available if extension is enabled (i.e. XR_EXT_palm_pose)
 		OpenXRAction::ActionType action_type; // Type of input/output
 	};
 
 	struct InteractionProfile {
 		String display_name; // User friendly display name (i.e. Simple controller)
 		String openxr_path; // Path in OpenXR (i.e. /interaction_profiles/khr/simple_controller)
-		String openxr_extension_name; // If set, only available if extension is enabled (i.e. XR_HTCX_vive_tracker_interaction)
+		String openxr_extension_names; // If set, only available if extension is enabled (i.e. XR_HTCX_vive_tracker_interaction)
 		Vector<IOPath> io_paths; // Inputs and outputs for this device
 
-		bool has_io_path(const String p_io_path) const;
-		const IOPath *get_io_path(const String p_io_path) const;
+		bool has_io_path(const String &p_io_path) const;
+		const IOPath *get_io_path(const String &p_io_path) const;
 	};
 
 private:
 	static OpenXRInteractionProfileMetadata *singleton;
 
 	HashMap<String, String> profile_renames;
+	HashMap<String, String> path_renames;
+
 	Vector<TopLevelPath> top_level_paths;
 	Vector<InteractionProfile> interaction_profiles;
 
@@ -107,19 +108,20 @@ public:
 	void register_profile_rename(const String &p_old_name, const String &p_new_name);
 	String check_profile_name(const String &p_name) const;
 
-	void register_top_level_path(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name);
-	bool has_top_level_path(const String p_openxr_path) const;
-	String get_top_level_name(const String p_openxr_path) const;
-	String get_top_level_extension(const String p_openxr_path) const;
+	void register_path_rename(const String &p_old_name, const String &p_new_name);
+	String check_path_name(const String &p_name) const;
 
-	void register_interaction_profile(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_name);
-	bool has_interaction_profile(const String p_openxr_path) const;
-	String get_interaction_profile_extension(const String p_openxr_path) const;
-	const InteractionProfile *get_profile(const String p_openxr_path) const;
+	void register_top_level_path(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_names);
+	bool has_top_level_path(const String &p_openxr_path) const;
+	String get_top_level_name(const String &p_openxr_path) const;
+	String get_top_level_extensions(const String &p_openxr_path) const;
+
+	void register_interaction_profile(const String &p_display_name, const String &p_openxr_path, const String &p_openxr_extension_names);
+	bool has_interaction_profile(const String &p_openxr_path) const;
+	String get_interaction_profile_extensions(const String &p_openxr_path) const;
+	const InteractionProfile *get_profile(const String &p_openxr_path) const;
 	PackedStringArray get_interaction_profile_paths() const;
 
-	void register_io_path(const String &p_interaction_profile, const String &p_display_name, const String &p_toplevel_path, const String &p_openxr_path, const String &p_openxr_extension_name, OpenXRAction::ActionType p_action_type);
-	const IOPath *get_io_path(const String p_interaction_profile, const String p_io_path) const;
+	void register_io_path(const String &p_interaction_profile, const String &p_display_name, const String &p_toplevel_path, const String &p_openxr_path, const String &p_openxr_extension_names, OpenXRAction::ActionType p_action_type);
+	const IOPath *get_io_path(const String &p_interaction_profile, const String &p_io_path) const;
 };
-
-#endif // OPENXR_INTERACTION_PROFILE_METADATA_H

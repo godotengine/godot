@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINE_2D_H
-#define LINE_2D_H
+#pragma once
 
-#include "node_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/gradient.h"
 
 class Line2D : public Node2D {
 	GDCLASS(Line2D, Node2D);
@@ -146,5 +146,3 @@ private:
 VARIANT_ENUM_CAST(Line2D::LineJointMode)
 VARIANT_ENUM_CAST(Line2D::LineCapMode)
 VARIANT_ENUM_CAST(Line2D::LineTextureMode)
-
-#endif // LINE_2D_H

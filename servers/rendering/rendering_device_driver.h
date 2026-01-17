@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_H
-#define RENDERING_DEVICE_DRIVER_H
+#pragma once
 
 // ***********************************************************************************
 // RenderingDeviceDriver - Design principles
@@ -48,40 +47,11 @@
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
-#include "servers/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
-#include <algorithm>
-
-// This may one day be used in Godot for interoperability between C arrays, Vector and LocalVector.
-// (See https://github.com/godotengine/godot-proposals/issues/5144.)
-template <typename T>
-class VectorView {
-	const T *_ptr = nullptr;
-	const uint32_t _size = 0;
-
-public:
-	const T &operator[](uint32_t p_index) {
-		DEV_ASSERT(p_index < _size);
-		return _ptr[p_index];
-	}
-
-	_ALWAYS_INLINE_ const T *ptr() const { return _ptr; }
-	_ALWAYS_INLINE_ uint32_t size() const { return _size; }
-
-	VectorView() = default;
-	VectorView(const T &p_ptr) :
-			// With this one you can pass a single element very conveniently!
-			_ptr(&p_ptr),
-			_size(1) {}
-	VectorView(const T *p_ptr, uint32_t p_size) :
-			_ptr(p_ptr), _size(p_size) {}
-	VectorView(const Vector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-	VectorView(const LocalVector<T> &p_lv) :
-			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
-};
+class RenderingShaderContainer;
+class RenderingShaderContainerFormat;
 
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
@@ -100,7 +70,7 @@ public:
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = std::max_element(RESOURCE_SIZES, RESOURCE_SIZES + sizeof...(RESOURCE_TYPES))[0];
+	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -118,6 +88,8 @@ struct VersatileResourceTemplate {
 };
 
 class RenderingDeviceDriver : public RenderingDeviceCommons {
+	GDSOFTCLASS(RenderingDeviceDriver, RenderingDeviceCommons);
+
 public:
 	struct ID {
 		uint64_t id = 0;
@@ -126,20 +98,28 @@ public:
 				id(p_id) {}
 	};
 
-#define DEFINE_ID(m_name)                                                                             \
-	struct m_name##ID : public ID {                                                                   \
-		_ALWAYS_INLINE_ explicit operator bool() const { return id != 0; }                            \
-		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {                                   \
-			id = p_other.id;                                                                          \
-			return *this;                                                                             \
-		}                                                                                             \
-		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const { return id < p_other.id; }   \
-		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const { return id == p_other.id; } \
-		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const { return id != p_other.id; } \
-		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {}                     \
-		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}                            \
-		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {}                     \
-		_ALWAYS_INLINE_ m_name##ID() = default;                                                       \
+#define DEFINE_ID(m_name)                                                         \
+	struct m_name##ID : public ID {                                               \
+		_ALWAYS_INLINE_ explicit operator bool() const {                          \
+			return id != 0;                                                       \
+		}                                                                         \
+		_ALWAYS_INLINE_ m_name##ID &operator=(m_name##ID p_other) {               \
+			id = p_other.id;                                                      \
+			return *this;                                                         \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator<(const m_name##ID &p_other) const {         \
+			return id < p_other.id;                                               \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator==(const m_name##ID &p_other) const {        \
+			return id == p_other.id;                                              \
+		}                                                                         \
+		_ALWAYS_INLINE_ bool operator!=(const m_name##ID &p_other) const {        \
+			return id != p_other.id;                                              \
+		}                                                                         \
+		_ALWAYS_INLINE_ m_name##ID(const m_name##ID &p_other) : ID(p_other.id) {} \
+		_ALWAYS_INLINE_ explicit m_name##ID(uint64_t p_int) : ID(p_int) {}        \
+		_ALWAYS_INLINE_ explicit m_name##ID(void *p_ptr) : ID((uint64_t)p_ptr) {} \
+		_ALWAYS_INLINE_ m_name##ID() = default;                                   \
 	};
 
 	// Id types declared before anything else to prevent cyclic dependencies between the different concerns.
@@ -190,19 +170,34 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
+		// There are no Vulkan-equivalent. Try to use unused/unclaimed bits.
+		BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT = (1 << 31),
 	};
 
 	enum {
 		BUFFER_WHOLE_SIZE = ~0ULL
 	};
 
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) = 0;
+	/** Allocates a new GPU buffer. Must be destroyed with buffer_free().
+	 * @param p_size The size in bytes of the buffer.
+	 * @param p_usage Usage flags.
+	 * @param p_allocation_type See MemoryAllocationType.
+	 * @param p_frames_drawn Used for debug checks when BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT is set.
+	 * @return the buffer.
+	 */
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) = 0;
 	virtual uint8_t *buffer_map(BufferID p_buffer) = 0;
 	virtual void buffer_unmap(BufferID p_buffer) = 0;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) = 0;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) = 0;
+	virtual void buffer_flush(BufferID p_buffer) {}
+	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -228,7 +223,8 @@ public:
 		TEXTURE_LAYOUT_COPY_DST_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL,
 		TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL,
-		TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL,
+		TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL,
 		TEXTURE_LAYOUT_MAX
 	};
 
@@ -237,6 +233,11 @@ public:
 		TEXTURE_ASPECT_DEPTH = 1,
 		TEXTURE_ASPECT_STENCIL = 2,
 		TEXTURE_ASPECT_MAX
+	};
+
+	enum TextureUsageMethod {
+		TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT = TEXTURE_USAGE_MAX_BIT << 1,
+		TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT = TEXTURE_USAGE_MAX_BIT << 2,
 	};
 
 	enum TextureAspectBits {
@@ -252,14 +253,14 @@ public:
 	};
 
 	struct TextureSubresourceLayers {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t mipmap = 0;
 		uint32_t base_layer = 0;
 		uint32_t layer_count = 0;
 	};
 
 	struct TextureSubresourceRange {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t base_mipmap = 0;
 		uint32_t mipmap_count = 0;
 		uint32_t base_layer = 0;
@@ -267,23 +268,22 @@ public:
 	};
 
 	struct TextureCopyableLayout {
-		uint64_t offset = 0;
 		uint64_t size = 0;
 		uint64_t row_pitch = 0;
-		uint64_t depth_pitch = 0;
-		uint64_t layer_pitch = 0;
 	};
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) = 0;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) = 0;
 	// texture_create_shared_*() can only use original, non-view textures as original. RenderingDevice is responsible for ensuring that.
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
+	// Returns a texture layout for buffer <-> texture copies. If you are copying multiple texture subresources to/from the same buffer,
+	// you are responsible for correctly aligning the start offset for every buffer region. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) = 0;
-	virtual void texture_unmap(TextureID p_texture) = 0;
+	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
+	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
@@ -299,7 +299,7 @@ public:
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) = 0;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) = 0;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) = 0;
 
 	/******************/
@@ -325,6 +325,8 @@ public:
 		PIPELINE_STAGE_ALL_GRAPHICS_BIT = (1 << 15),
 		PIPELINE_STAGE_ALL_COMMANDS_BIT = (1 << 16),
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
+		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
+		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
 	};
 
 	enum BarrierAccessBits {
@@ -346,28 +348,30 @@ public:
 		BARRIER_ACCESS_MEMORY_READ_BIT = (1 << 15),
 		BARRIER_ACCESS_MEMORY_WRITE_BIT = (1 << 16),
 		BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT = (1 << 23),
-		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 24),
-		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 25),
+		BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT = (1 << 24),
+		BARRIER_ACCESS_RESOLVE_READ_BIT = (1 << 25),
+		BARRIER_ACCESS_RESOLVE_WRITE_BIT = (1 << 26),
 		BARRIER_ACCESS_STORAGE_CLEAR_BIT = (1 << 27),
 	};
 
-	struct MemoryBarrier {
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+	// https://github.com/godotengine/godot/pull/110360 - "MemoryBarrier" conflicts with Windows header defines
+	struct MemoryAccessBarrier {
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
 	struct BufferBarrier {
 		BufferID buffer;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		uint64_t offset = 0;
 		uint64_t size = 0;
 	};
 
 	struct TextureBarrier {
 		TextureID texture;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 		TextureLayout prev_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureLayout next_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureSubresourceRange subresources;
@@ -377,7 +381,7 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<MemoryBarrier> p_memory_barriers,
+			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers) = 0;
 
@@ -426,6 +430,7 @@ public:
 	};
 
 	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) = 0;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) = 0;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) = 0;
 
 	// ----- BUFFER -----
@@ -476,17 +481,20 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual String shader_get_binary_cache_key() = 0;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) = 0;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) = 0;
+	struct ImmutableSampler {
+		UniformType type = UNIFORM_TYPE_MAX;
+		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
+		LocalVector<ID> ids;
+	};
+
+	// Creates a Pipeline State Object (PSO) out of the shader and all the input data it needs.
+	// Immutable samplers can be embedded when creating the pipeline layout on the condition they remain valid and unchanged, so they don't need to be
+	// specified when creating uniform sets PSO resource for binding.
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) = 0;
 	// Only meaningful if API_TRAIT_SHADER_CHANGE_INVALIDATION is SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH.
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) { return 0; }
 	virtual void shader_free(ShaderID p_shader) = 0;
 	virtual void shader_destroy_modules(ShaderID p_shader) = 0;
-
-protected:
-	// An optional service to implementations.
-	Error _reflect_spirv(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection);
 
 public:
 	/*********************/
@@ -497,10 +505,20 @@ public:
 		UniformType type = UNIFORM_TYPE_MAX;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
+		// Flag to indicate  that this is an immutable sampler so it is skipped when creating uniform
+		// sets, as it would be set previously when creating the pipeline layout.
+		bool immutable_sampler = false;
+
+		_FORCE_INLINE_ bool is_dynamic() const {
+			return type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC || type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		}
 	};
 
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) = 0;
+	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) {}
 	virtual void uniform_set_free(UniformSetID p_uniform_set) = 0;
+	virtual bool uniform_sets_have_linear_pools() const { return false; }
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const = 0;
 
 	// ----- COMMANDS -----
 
@@ -526,7 +544,8 @@ public:
 
 	struct BufferTextureCopyRegion {
 		uint64_t buffer_offset = 0;
-		TextureSubresourceLayers texture_subresources;
+		uint64_t row_pitch = 0;
+		TextureSubresource texture_subresource;
 		Vector3i texture_offset;
 		Vector3i texture_region_size;
 	};
@@ -537,6 +556,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) = 0;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) = 0;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) = 0;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) = 0;
 
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) = 0;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) = 0;
@@ -587,31 +607,33 @@ public:
 	};
 
 	struct AttachmentReference {
-		static const uint32_t UNUSED = 0xffffffff;
+		static constexpr uint32_t UNUSED = 0xffffffff;
 		uint32_t attachment = UNUSED;
 		TextureLayout layout = TEXTURE_LAYOUT_UNDEFINED;
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 	};
 
 	struct Subpass {
 		LocalVector<AttachmentReference> input_references;
 		LocalVector<AttachmentReference> color_references;
 		AttachmentReference depth_stencil_reference;
+		AttachmentReference depth_resolve_reference;
 		LocalVector<AttachmentReference> resolve_references;
 		LocalVector<uint32_t> preserve_attachments;
-		AttachmentReference vrs_reference;
+		AttachmentReference fragment_shading_rate_reference;
+		Size2i fragment_shading_rate_texel_size;
 	};
 
 	struct SubpassDependency {
 		uint32_t src_subpass = 0xffffffff;
 		uint32_t dst_subpass = 0xffffffff;
-		BitField<PipelineStageBits> src_stages;
-		BitField<PipelineStageBits> dst_stages;
-		BitField<BarrierAccessBits> src_access;
-		BitField<BarrierAccessBits> dst_access;
+		BitField<PipelineStageBits> src_stages = {};
+		BitField<PipelineStageBits> dst_stages = {};
+		BitField<BarrierAccessBits> src_access = {};
+		BitField<BarrierAccessBits> dst_access = {};
 	};
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) = 0;
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) = 0;
 	virtual void render_pass_free(RenderPassID p_render_pass) = 0;
 
 	// ----- COMMANDS -----
@@ -627,7 +649,7 @@ public:
 	};
 
 	struct AttachmentClear {
-		BitField<TextureAspectBits> aspect;
+		BitField<TextureAspectBits> aspect = {};
 		uint32_t color_attachment = 0xffffffff;
 		RenderPassClearValue value;
 	};
@@ -641,7 +663,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) = 0;
@@ -652,7 +674,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) = 0;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) = 0;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) = 0;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) = 0;
 
 	// Dynamic state.
@@ -683,7 +705,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
@@ -692,6 +714,12 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+
+	/******************/
+	/**** CALLBACK ****/
+	/******************/
+
+	typedef void (*DriverCallback)(RenderingDeviceDriver *p_driver, CommandBufferID p_command_buffer, void *p_userdata);
 
 	/*****************/
 	/**** QUERIES ****/
@@ -749,6 +777,26 @@ public:
 		uint32_t max_instance_count = 0;
 	};
 
+	struct FragmentShadingRateCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i max_fragment_size;
+		bool pipeline_supported = false;
+		bool primitive_supported = false;
+		bool attachment_supported = false;
+	};
+
+	struct FragmentDensityMapCapabilities {
+		Size2i min_texel_size;
+		Size2i max_texel_size;
+		Size2i offset_granularity;
+		bool attachment_supported = false;
+		bool dynamic_attachment_supported = false;
+		bool non_subsampled_images_supported = false;
+		bool invocations_supported = false;
+		bool offset_supported = false;
+	};
+
 	enum ApiTrait {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
@@ -758,6 +806,7 @@ public:
 		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
+		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
 	};
 
 	enum ShaderChangeInvalidation {
@@ -785,14 +834,18 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) = 0;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) = 0;
 	virtual uint64_t get_total_memory_used() = 0;
+	virtual uint64_t get_lazily_memory_used() = 0;
 	virtual uint64_t limit_get(Limit p_limit) = 0;
 	virtual uint64_t api_trait_get(ApiTrait p_trait);
 	virtual bool has_feature(Features p_feature) = 0;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;
 	virtual const Capabilities &get_capabilities() const = 0;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 
@@ -802,5 +855,3 @@ public:
 };
 
 using RDD = RenderingDeviceDriver;
-
-#endif // RENDERING_DEVICE_DRIVER_H

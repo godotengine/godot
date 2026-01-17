@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformAppleEmbedded" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for the Apple embedded platform exporters (iOS and visionOS).
+	</brief_description>
+	<description>
+		The base class for Apple embedded platform exporters. These include iOS and visionOS, but not macOS. See the classes inheriting from this one for more details.
+	</description>
+	<tutorials>
+		<link title="Exporting for iOS">$DOCS_URL/tutorials/export/exporting_for_ios.html</link>
+		<link title="iOS plugins documentation index">$DOCS_URL/tutorials/platform/ios/index.html</link>
+	</tutorials>
+</class>

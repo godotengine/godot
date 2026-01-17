@@ -18,6 +18,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.4\n"
 
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
 msgid "Network"
 msgstr "شبکه"
 
@@ -45,9 +51,6 @@ msgstr "یک دیکشنری را باز کن"
 msgid "Open a File or Directory"
 msgstr "یک پرونده یا پوشه را باز کن"
 
-msgid "Save"
-msgstr "ذخیره"
-
 msgid "Save a File"
 msgstr "یک پرونده را ذخیره کن"
 
@@ -66,11 +69,11 @@ msgstr "مسیر:"
 msgid "Refresh files."
 msgstr "نوسازی پرونده‌ها."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
-
 msgid "Directories & Files:"
 msgstr "پوشه‌ها و پرونده‌ها:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
 
 msgid "File:"
 msgstr "پرونده:"
@@ -110,9 +113,6 @@ msgstr "چسباندن"
 
 msgid "Select All"
 msgstr "انتخاب همه"
-
-msgid "Clear"
-msgstr "پاک کردن"
 
 msgid "Undo"
 msgstr "عقب‌گرد"

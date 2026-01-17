@@ -686,8 +686,8 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 	VkApplicationInfo app_info = {};
 	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	app_info.pApplicationName = cs.get_data();
-	app_info.pEngineName = VERSION_NAME;
-	app_info.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	app_info.pEngineName = GODOT_VERSION_NAME;
+	app_info.engineVersion = VK_MAKE_VERSION(GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH);
 	app_info.apiVersion = application_api_version;
 
 	TightLocalVector<const char *> enabled_layer_names;
@@ -843,7 +843,7 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 
 		Device &driver_device = driver_devices[i];
 		driver_device.name = String::utf8(props.deviceName);
-		driver_device.vendor = Vendor(props.vendorID);
+		driver_device.vendor = props.vendorID;
 		driver_device.type = DeviceType(props.deviceType);
 		driver_device.workarounds = Workarounds();
 
@@ -880,7 +880,7 @@ void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDev
 	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
 	//
 	r_device.workarounds.avoid_compute_after_draw =
-			r_device.vendor == VENDOR_QUALCOMM &&
+			r_device.vendor == Vendor::VENDOR_QUALCOMM &&
 			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
 			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
 			r_device.name.find("Turnip") < 0;

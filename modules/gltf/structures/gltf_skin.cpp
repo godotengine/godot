@@ -81,15 +81,15 @@ Vector<GLTFNodeIndex> GLTFSkin::get_joints_original() {
 	return joints_original;
 }
 
-void GLTFSkin::set_joints_original(Vector<GLTFNodeIndex> p_joints_original) {
-	joints_original = p_joints_original;
+void GLTFSkin::set_joints_original(const Vector<GLTFNodeIndex> &p_joints_original) {
+	joints_original = Vector<GLTFNodeIndex>(p_joints_original);
 }
 
 TypedArray<Transform3D> GLTFSkin::get_inverse_binds() {
 	return GLTFTemplateConvert::to_array(inverse_binds);
 }
 
-void GLTFSkin::set_inverse_binds(TypedArray<Transform3D> p_inverse_binds) {
+void GLTFSkin::set_inverse_binds(const TypedArray<Transform3D> &p_inverse_binds) {
 	GLTFTemplateConvert::set_from_array(inverse_binds, p_inverse_binds);
 }
 
@@ -97,24 +97,24 @@ Vector<GLTFNodeIndex> GLTFSkin::get_joints() {
 	return joints;
 }
 
-void GLTFSkin::set_joints(Vector<GLTFNodeIndex> p_joints) {
-	joints = p_joints;
+void GLTFSkin::set_joints(const Vector<GLTFNodeIndex> &p_joints) {
+	joints = Vector<GLTFNodeIndex>(p_joints);
 }
 
 Vector<GLTFNodeIndex> GLTFSkin::get_non_joints() {
 	return non_joints;
 }
 
-void GLTFSkin::set_non_joints(Vector<GLTFNodeIndex> p_non_joints) {
-	non_joints = p_non_joints;
+void GLTFSkin::set_non_joints(const Vector<GLTFNodeIndex> &p_non_joints) {
+	non_joints = Vector<GLTFNodeIndex>(p_non_joints);
 }
 
 Vector<GLTFNodeIndex> GLTFSkin::get_roots() {
 	return roots;
 }
 
-void GLTFSkin::set_roots(Vector<GLTFNodeIndex> p_roots) {
-	roots = p_roots;
+void GLTFSkin::set_roots(const Vector<GLTFNodeIndex> &p_roots) {
+	roots = Vector<GLTFNodeIndex>(p_roots);
 }
 
 int GLTFSkin::get_skeleton() {
@@ -129,7 +129,7 @@ Dictionary GLTFSkin::get_joint_i_to_bone_i() {
 	return GLTFTemplateConvert::to_dictionary(joint_i_to_bone_i);
 }
 
-void GLTFSkin::set_joint_i_to_bone_i(Dictionary p_joint_i_to_bone_i) {
+void GLTFSkin::set_joint_i_to_bone_i(const Dictionary &p_joint_i_to_bone_i) {
 	GLTFTemplateConvert::set_from_dictionary(joint_i_to_bone_i, p_joint_i_to_bone_i);
 }
 
@@ -143,11 +143,10 @@ Dictionary GLTFSkin::get_joint_i_to_name() {
 	return ret;
 }
 
-void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
+void GLTFSkin::set_joint_i_to_name(const Dictionary &p_joint_i_to_name) {
 	joint_i_to_name = HashMap<int, StringName>();
-	Array keys = p_joint_i_to_name.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		joint_i_to_name[keys[i]] = p_joint_i_to_name[keys[i]];
+	for (const KeyValue<Variant, Variant> &kv : p_joint_i_to_name) {
+		joint_i_to_name[kv.key] = kv.value;
 	}
 }
 
@@ -155,7 +154,7 @@ Ref<Skin> GLTFSkin::get_godot_skin() {
 	return godot_skin;
 }
 
-void GLTFSkin::set_godot_skin(Ref<Skin> p_godot_skin) {
+void GLTFSkin::set_godot_skin(const Ref<Skin> &p_godot_skin) {
 	godot_skin = p_godot_skin;
 }
 
@@ -205,18 +204,18 @@ Error GLTFSkin::from_dictionary(const Dictionary &dict) {
 	ERR_FAIL_COND_V(!dict.has("joint_i_to_bone_i"), ERR_INVALID_DATA);
 	Dictionary joint_i_to_bone_i_dict = dict["joint_i_to_bone_i"];
 	joint_i_to_bone_i.clear();
-	for (int i = 0; i < joint_i_to_bone_i_dict.keys().size(); ++i) {
-		int key = joint_i_to_bone_i_dict.keys()[i];
-		int value = joint_i_to_bone_i_dict[key];
+	for (const KeyValue<Variant, Variant> &kv : joint_i_to_bone_i_dict) {
+		int key = kv.key;
+		int value = kv.value;
 		joint_i_to_bone_i[key] = value;
 	}
 
 	ERR_FAIL_COND_V(!dict.has("joint_i_to_name"), ERR_INVALID_DATA);
 	Dictionary joint_i_to_name_dict = dict["joint_i_to_name"];
 	joint_i_to_name.clear();
-	for (int i = 0; i < joint_i_to_name_dict.keys().size(); ++i) {
-		int key = joint_i_to_name_dict.keys()[i];
-		StringName value = joint_i_to_name_dict[key];
+	for (const KeyValue<Variant, Variant> &kv : joint_i_to_name_dict) {
+		int key = kv.key;
+		StringName value = kv.value;
 		joint_i_to_name[key] = value;
 	}
 	if (dict.has("godot_skin")) {

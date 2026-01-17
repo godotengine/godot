@@ -34,10 +34,10 @@
 
 #include "upnp_device_miniupnp.h"
 
-#include <miniwget.h>
-#include <upnpcommands.h>
+#include <miniupnpc/miniwget.h>
+#include <miniupnpc/upnpcommands.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 void UPNPMiniUPNP::make_default() {
 	UPNP::_create = UPNPMiniUPNP::_create;

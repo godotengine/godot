@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STEAM_TRACKER_H
-#define STEAM_TRACKER_H
+#pragma once
 
 #if defined(STEAMAPI_ENABLED)
 
@@ -62,7 +61,7 @@ class SteamTracker {
 	SteamAPI_InitFunction steam_init_function = nullptr;
 	SteamAPI_InitFlatFunction steam_init_flat_function = nullptr;
 	SteamAPI_ShutdownFunction steam_shutdown_function = nullptr;
-	bool steam_initalized = false;
+	bool steam_initialized = false;
 
 public:
 	SteamTracker();
@@ -70,5 +69,3 @@ public:
 };
 
 #endif // STEAMAPI_ENABLED
-
-#endif // STEAM_TRACKER_H

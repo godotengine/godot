@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_3D_H
-#define SPRITE_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sprite_frames.h"
@@ -93,6 +92,7 @@ private:
 	float alpha_antialiasing_edge = 0.0f;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+	bool redraw_needed = false;
 	bool pending_update = false;
 	void _im_update();
 
@@ -172,7 +172,7 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	Ref<TriangleMesh> generate_triangle_mesh() const;
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
 	SpriteBase3D();
 	~SpriteBase3D();
@@ -231,7 +231,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 	String autoplay;
 
 	bool playing = false;
-	StringName animation = "default";
+	StringName animation = SceneStringName(default_);
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
@@ -296,5 +296,3 @@ public:
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);
-
-#endif // SPRITE_3D_H

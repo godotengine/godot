@@ -186,12 +186,12 @@ MeshStorage::MeshStorage() {
 MeshStorage::~MeshStorage() {
 	//def buffers
 	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
-		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
+		RD::get_singleton()->free_rid(mesh_default_rd_buffers[i]);
 	}
 
 	skeleton_shader.shader.version_free(skeleton_shader.version);
 
-	RD::get_singleton()->free(default_rd_storage_buffer);
+	RD::get_singleton()->free_rid(default_rd_storage_buffer);
 
 	singleton = nullptr;
 }
@@ -370,7 +370,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	s->format = new_surface.format;
 	s->primitive = new_surface.primitive;
 
-	bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
+	const bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
+	const BitField<RD::BufferCreationBits> as_storage_flag = use_as_storage ? RD::BUFFER_CREATION_AS_STORAGE_BIT : 0;
 
 	if (new_surface.vertex_data.size()) {
 		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
@@ -382,21 +383,22 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, use_as_storage);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, use_as_storage);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_surface.vertex_data.size();
 		}
 	}
 
 	if (new_surface.attribute_data.size()) {
 		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data);
+		s->attribute_buffer_size = new_surface.attribute_data.size();
 	}
 	if (new_surface.skin_data.size()) {
-		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, use_as_storage);
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, as_storage_flag);
 		s->skin_buffer_size = new_surface.skin_data.size();
 	}
 
@@ -410,6 +412,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		bool is_index_16 = new_surface.vertex_count <= 65536 && new_surface.vertex_count > 0;
 
 		s->index_buffer = RD::get_singleton()->index_buffer_create(new_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.index_data, false);
+		s->index_buffer_size = new_surface.index_data.size();
 		s->index_count = new_surface.index_count;
 		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->index_count);
 		if (new_surface.lods.size()) {
@@ -419,6 +422,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			for (int i = 0; i < new_surface.lods.size(); i++) {
 				uint32_t indices = new_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
 				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, new_surface.lods[i].index_data);
+				s->lods[i].index_buffer_size = new_surface.lods[i].index_data.size();
 				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
 				s->lods[i].edge_length = new_surface.lods[i].edge_length;
 				s->lods[i].index_count = indices;
@@ -436,6 +440,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 	if (mesh->blend_shape_count > 0) {
 		s->blend_shape_buffer = RD::get_singleton()->storage_buffer_create(new_surface.blend_shape_data.size(), new_surface.blend_shape_data);
+		s->blend_shape_buffer_size = new_surface.blend_shape_data.size();
 	}
 
 	if (use_as_storage) {
@@ -505,6 +510,40 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	mesh->material_cache.clear();
 }
 
+void MeshStorage::_mesh_surface_clear(Mesh *p_mesh, int p_surface) {
+	Mesh::Surface &s = *p_mesh->surfaces[p_surface];
+
+	if (s.vertex_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
+	}
+	if (s.attribute_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(s.attribute_buffer);
+	}
+	if (s.skin_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(s.skin_buffer);
+	}
+	if (s.versions) {
+		memfree(s.versions); // reallocs, so free with memfree.
+	}
+
+	if (s.index_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(s.index_buffer);
+	}
+
+	if (s.lod_count) {
+		for (uint32_t j = 0; j < s.lod_count; j++) {
+			RD::get_singleton()->free_rid(s.lods[j].index_buffer);
+		}
+		memdelete_arr(s.lods);
+	}
+
+	if (s.blend_shape_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(s.blend_shape_buffer);
+	}
+
+	memdelete(p_mesh->surfaces[p_surface]);
+}
+
 int MeshStorage::mesh_get_blend_shape_count(RID p_mesh) const {
 	const Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL_V(mesh, -1);
@@ -526,11 +565,12 @@ RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 }
 
 void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->vertex_buffer.is_null());
+
 	uint64_t data_size = p_data.size();
 	const uint8_t *r = p_data.ptr();
 
@@ -538,11 +578,12 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 }
 
 void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->attribute_buffer.is_null());
+
 	uint64_t data_size = p_data.size();
 	const uint8_t *r = p_data.ptr();
 
@@ -550,15 +591,29 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 }
 
 void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND(mesh->surfaces[p_surface]->skin_buffer.is_null());
+
 	uint64_t data_size = p_data.size();
 	const uint8_t *r = p_data.ptr();
 
 	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->skin_buffer, p_offset, data_size, r);
+}
+
+void RendererRD::MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_COND(mesh->surfaces[p_surface]->index_buffer.is_null());
+
+	uint64_t data_size = p_data.size();
+	const uint8_t *r = p_data.ptr();
+
+	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->index_buffer, p_offset, data_size, r);
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
@@ -812,36 +867,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	}
 
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
-		Mesh::Surface &s = *mesh->surfaces[i];
-		if (s.vertex_buffer.is_valid()) {
-			RD::get_singleton()->free(s.vertex_buffer); //clears arrays as dependency automatically, including all versions
-		}
-		if (s.attribute_buffer.is_valid()) {
-			RD::get_singleton()->free(s.attribute_buffer);
-		}
-		if (s.skin_buffer.is_valid()) {
-			RD::get_singleton()->free(s.skin_buffer);
-		}
-		if (s.versions) {
-			memfree(s.versions); //reallocs, so free with memfree.
-		}
-
-		if (s.index_buffer.is_valid()) {
-			RD::get_singleton()->free(s.index_buffer);
-		}
-
-		if (s.lod_count) {
-			for (uint32_t j = 0; j < s.lod_count; j++) {
-				RD::get_singleton()->free(s.lods[j].index_buffer);
-			}
-			memdelete_arr(s.lods);
-		}
-
-		if (s.blend_shape_buffer.is_valid()) {
-			RD::get_singleton()->free(s.blend_shape_buffer);
-		}
-
-		memdelete(mesh->surfaces[i]);
+		_mesh_surface_clear(mesh, i);
 	}
 	if (mesh->surfaces) {
 		memfree(mesh->surfaces);
@@ -851,12 +877,92 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
 	mesh->has_bone_weights = false;
+	mesh->aabb = AABB();
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
 	for (Mesh *E : mesh->shadow_owners) {
 		Mesh *shadow_owner = E;
 		shadow_owner->shadow_mesh = RID();
 		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	}
+}
+
+void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	// Clear instance data before mesh data.
+	for (MeshInstance *mi : mesh->instances) {
+		_mesh_instance_remove_surface(mi, p_surface);
+	}
+
+	_mesh_surface_clear(mesh, p_surface);
+
+	if ((uint32_t)p_surface < mesh->surface_count - 1) {
+		memmove(mesh->surfaces + p_surface, mesh->surfaces + p_surface + 1, sizeof(Mesh::Surface *) * (mesh->surface_count - (p_surface + 1)));
+	}
+	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count - 1));
+	--mesh->surface_count;
+
+	mesh->material_cache.clear();
+
+	mesh->skeleton_aabb_version = 0;
+
+	if (mesh->has_bone_weights) {
+		mesh->has_bone_weights = false;
+		for (uint32_t i = 0; i < mesh->surface_count; i++) {
+			if (mesh->surfaces[i]->format & RS::ARRAY_FORMAT_BONES) {
+				mesh->has_bone_weights = true;
+				break;
+			}
+		}
+	}
+
+	if (mesh->surface_count == 0) {
+		mesh->aabb = AABB();
+	} else {
+		mesh->aabb = mesh->surfaces[0]->aabb;
+		for (uint32_t i = 1; i < mesh->surface_count; i++) {
+			mesh->aabb.merge_with(mesh->surfaces[i]->aabb);
+		}
+	}
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+
+	for (Mesh *E : mesh->shadow_owners) {
+		Mesh *shadow_owner = E;
+		shadow_owner->shadow_mesh = RID();
+		shadow_owner->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	}
+}
+
+void MeshStorage::mesh_debug_usage(List<RS::MeshInfo> *r_info) {
+	for (const RID &mesh_rid : mesh_owner.get_owned_list()) {
+		Mesh *mesh = mesh_owner.get_or_null(mesh_rid);
+		if (!mesh) {
+			continue;
+		}
+		RS::MeshInfo mesh_info;
+		mesh_info.mesh = mesh_rid;
+		mesh_info.path = mesh->path;
+
+		for (uint32_t surface_index = 0; surface_index < mesh->surface_count; surface_index++) {
+			MeshStorage::Mesh::Surface *surface = mesh->surfaces[surface_index];
+
+			mesh_info.vertex_buffer_size += surface->vertex_buffer_size;
+			mesh_info.attribute_buffer_size += surface->attribute_buffer_size;
+			mesh_info.skin_buffer_size += surface->skin_buffer_size;
+			mesh_info.index_buffer_size += surface->index_buffer_size;
+			mesh_info.blend_shape_buffer_size += surface->blend_shape_buffer_size;
+			mesh_info.vertex_count += surface->vertex_count;
+
+			for (uint32_t lod_index = 0; lod_index < surface->lod_count; lod_index++) {
+				mesh_info.lod_index_buffers_size += surface->lods[lod_index].index_buffer_size;
+			}
+		}
+
+		r_info->push_back(mesh_info);
 	}
 }
 
@@ -925,29 +1031,10 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 }
 
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
-	for (const RendererRD::MeshStorage::MeshInstance::Surface &surface : mi->surfaces) {
-		if (surface.versions) {
-			for (uint32_t j = 0; j < surface.version_count; j++) {
-				RD::get_singleton()->free(surface.versions[j].vertex_array);
-			}
-			memfree(surface.versions);
-		}
-
-		for (uint32_t i = 0; i < 2; i++) {
-			if (surface.vertex_buffer[i].is_valid()) {
-				RD::get_singleton()->free(surface.vertex_buffer[i]);
-			}
-		}
+	while (mi->surfaces.size()) {
+		_mesh_instance_remove_surface(mi, mi->surfaces.size() - 1);
 	}
-	mi->surfaces.clear();
-
-	if (mi->blend_weights_buffer.is_valid()) {
-		RD::get_singleton()->free(mi->blend_weights_buffer);
-		mi->blend_weights_buffer = RID();
-	}
-	mi->blend_weights.clear();
-	mi->weights_dirty = false;
-	mi->skeleton_version = 0;
+	mi->dirty = false;
 }
 
 void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface) {
@@ -956,7 +1043,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 		for (float &weight : mi->blend_weights) {
 			weight = 0;
 		}
-		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
+		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.span().reinterpret<uint8_t>());
 		mi->weights_dirty = true;
 	}
 
@@ -970,7 +1057,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 }
 
 void MeshStorage::_mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index) {
-	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), true);
+	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_AS_STORAGE_BIT);
 
 	Vector<RD::Uniform> uniforms;
 	{
@@ -992,6 +1079,36 @@ void MeshStorage::_mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh
 		uniforms.push_back(u);
 	}
 	s->uniform_set[p_buffer_index] = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_INSTANCE);
+}
+
+void MeshStorage::_mesh_instance_remove_surface(MeshInstance *mi, int p_surface) {
+	MeshInstance::Surface &surface = mi->surfaces[p_surface];
+
+	if (surface.versions) {
+		for (uint32_t j = 0; j < surface.version_count; j++) {
+			RD::get_singleton()->free_rid(surface.versions[j].vertex_array);
+		}
+		memfree(surface.versions);
+	}
+	for (uint32_t i = 0; i < 2; i++) {
+		if (surface.vertex_buffer[i].is_valid()) {
+			RD::get_singleton()->free_rid(surface.vertex_buffer[i]);
+		}
+	}
+
+	mi->surfaces.remove_at(p_surface);
+
+	if (mi->surfaces.is_empty()) {
+		if (mi->blend_weights_buffer.is_valid()) {
+			RD::get_singleton()->free_rid(mi->blend_weights_buffer);
+			mi->blend_weights_buffer = RID();
+		}
+
+		mi->blend_weights.clear();
+		mi->weights_dirty = false;
+		mi->skeleton_version = 0;
+	}
+	mi->dirty = true;
 }
 
 void MeshStorage::mesh_instance_check_for_update(RID p_mesh_instance) {
@@ -1142,7 +1259,7 @@ void MeshStorage::update_mesh_instances() {
 	RD::get_singleton()->compute_list_end();
 }
 
-RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, uint32_t &r_position_stride) {
+RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_surface_format, uint64_t p_input_mask, bool p_instanced_surface, bool p_input_motion_vectors, bool p_point_size_emulated, uint32_t &r_position_stride) {
 	Vector<RD::VertexAttribute> attributes;
 	uint32_t normal_tangent_stride = 0;
 	uint32_t attribute_stride = 0;
@@ -1279,6 +1396,10 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 					skin_stride += sizeof(int16_t) * 4;
 				} break;
 			}
+
+			if (p_point_size_emulated) {
+				vd.frequency = RD::VERTEX_FREQUENCY_INSTANCE;
+			}
 		}
 
 		if (!(p_input_mask & (1ULL << i))) {
@@ -1330,9 +1451,9 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 	return RD::get_singleton()->vertex_format_create(attributes);
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
 	uint32_t position_stride = 0;
-	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, position_stride);
+	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
 
 	Vector<RID> buffers;
 	Vector<uint64_t> offsets;
@@ -1396,7 +1517,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	v.current_buffer = p_current_buffer;
 	v.previous_buffer = p_previous_buffer;
 	v.input_motion_vectors = p_input_motion_vectors;
-	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers, offsets);
+	v.point_size_emulated = p_point_size_emulated;
+	v.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : s->vertex_count, v.vertex_format, buffers, offsets);
 }
 
 ////////////////// MULTIMESH
@@ -1418,7 +1540,7 @@ void MeshStorage::_multimesh_free(RID p_rid) {
 	multimesh_owner.free(p_rid);
 }
 
-void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 
@@ -1427,7 +1549,7 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	}
 
 	if (multimesh->buffer.is_valid()) {
-		RD::get_singleton()->free(multimesh->buffer);
+		RD::get_singleton()->free_rid(multimesh->buffer);
 		multimesh->buffer = RID();
 		multimesh->uniform_set_2d = RID(); //cleared by dependency
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
@@ -1453,6 +1575,9 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RS:
 	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + (p_use_colors ? 4 : 0);
 	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
 	multimesh->buffer_set = false;
+
+	multimesh->indirect = p_use_indirect;
+	multimesh->command_buffer = RID();
 
 	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = Vector<float>();
@@ -1502,7 +1627,7 @@ void MeshStorage::_multimesh_enable_motion_vectors(MultiMesh *multimesh) {
 	}
 
 	if (multimesh->buffer.is_valid()) {
-		RD::get_singleton()->free(multimesh->buffer);
+		RD::get_singleton()->free_rid(multimesh->buffer);
 	}
 
 	multimesh->buffer = new_buffer;
@@ -1541,6 +1666,30 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		return;
 	}
 	multimesh->mesh = p_mesh;
+
+	if (multimesh->indirect) {
+		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_NULL(mesh);
+		if (mesh->surface_count > 0) {
+			if (multimesh->command_buffer.is_valid()) {
+				RD::get_singleton()->free_rid(multimesh->command_buffer);
+			}
+
+			Vector<uint8_t> newVector;
+			newVector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
+
+			for (uint32_t i = 0; i < mesh->surface_count; i++) {
+				uint32_t count = mesh_surface_get_vertices_drawn_count(mesh->surfaces[i]);
+				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE, static_cast<uint8_t>(count));
+				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 1, static_cast<uint8_t>(count >> 8));
+				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 2, static_cast<uint8_t>(count >> 16));
+				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 3, static_cast<uint8_t>(count >> 24));
+			}
+
+			RID newBuffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, newVector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+			multimesh->command_buffer = newBuffer;
+		}
+	}
 
 	if (multimesh->instances == 0) {
 		return;
@@ -1997,6 +2146,12 @@ void MeshStorage::_multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_
 	}
 }
 
+RID MeshStorage::_multimesh_get_command_buffer_rd_rid(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, RID());
+	return multimesh->command_buffer;
+}
+
 RID MeshStorage::_multimesh_get_buffer_rd_rid(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, RID());
@@ -2043,6 +2198,15 @@ void MeshStorage::_multimesh_set_visible_instances(RID p_multimesh, int p_visibl
 	}
 
 	multimesh->visible_instances = p_visible;
+
+	if (multimesh->indirect) { //we have to update the command buffer for the instance counts, in each stride this will be the second integer.
+		Mesh *mesh = mesh_owner.get_or_null(multimesh->mesh);
+		if (mesh != nullptr) {
+			for (uint32_t i = 0; i < mesh->surface_count; i++) {
+				RD::get_singleton()->buffer_update(multimesh->command_buffer, (i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE) + sizeof(uint32_t), sizeof(uint32_t), &p_visible);
+			}
+		}
+	}
 
 	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES);
 }
@@ -2182,7 +2346,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 	skeleton->uniform_set_3d = RID();
 
 	if (skeleton->buffer.is_valid()) {
-		RD::get_singleton()->free(skeleton->buffer);
+		RD::get_singleton()->free_rid(skeleton->buffer);
 		skeleton->buffer = RID();
 		skeleton->data.clear();
 		skeleton->uniform_set_mi = RID();

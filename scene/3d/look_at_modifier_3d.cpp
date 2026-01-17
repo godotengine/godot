@@ -30,13 +30,13 @@
 
 #include "look_at_modifier_3d.h"
 
-void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
+#include "scene/resources/animation.h"
 
-	if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
+void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
+	if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "bone_name" || p_property.name == "origin_bone_name")) {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
-			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
 			p_property.hint_string = skeleton->get_concatenated_bone_names();
 		} else {
 			p_property.hint = PROPERTY_HINT_NONE;
@@ -75,6 +75,20 @@ PackedStringArray LookAtModifier3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+void LookAtModifier3D::_validate_bone_names() {
+	// Prior bone name.
+	if (!bone_name.is_empty()) {
+		set_bone_name(bone_name);
+	} else if (bone != -1) {
+		set_bone(bone);
+	}
+	if (!origin_bone_name.is_empty()) {
+		set_origin_bone_name(origin_bone_name);
+	} else if (origin_bone != -1) {
+		set_origin_bone(origin_bone);
+	}
+}
+
 void LookAtModifier3D::set_bone_name(const String &p_bone_name) {
 	bone_name = p_bone_name;
 	Skeleton3D *sk = get_skeleton();
@@ -109,7 +123,7 @@ void LookAtModifier3D::set_forward_axis(BoneAxis p_axis) {
 	update_configuration_warnings();
 }
 
-LookAtModifier3D::BoneAxis LookAtModifier3D::get_forward_axis() const {
+SkeletonModifier3D::BoneAxis LookAtModifier3D::get_forward_axis() const {
 	return forward_axis;
 }
 
@@ -129,6 +143,14 @@ void LookAtModifier3D::set_use_secondary_rotation(bool p_enabled) {
 
 bool LookAtModifier3D::is_using_secondary_rotation() const {
 	return use_secondary_rotation;
+}
+
+void LookAtModifier3D::set_relative(bool p_enabled) {
+	relative = p_enabled;
+}
+
+bool LookAtModifier3D::is_relative() const {
+	return relative;
 }
 
 void LookAtModifier3D::set_target_node(const NodePath &p_target_node) {
@@ -382,9 +404,11 @@ void LookAtModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_rotation_axis"), &LookAtModifier3D::get_primary_rotation_axis);
 	ClassDB::bind_method(D_METHOD("set_use_secondary_rotation", "enabled"), &LookAtModifier3D::set_use_secondary_rotation);
 	ClassDB::bind_method(D_METHOD("is_using_secondary_rotation"), &LookAtModifier3D::is_using_secondary_rotation);
+	ClassDB::bind_method(D_METHOD("set_relative", "enabled"), &LookAtModifier3D::set_relative);
+	ClassDB::bind_method(D_METHOD("is_relative"), &LookAtModifier3D::is_relative);
+
 	ClassDB::bind_method(D_METHOD("set_origin_safe_margin", "margin"), &LookAtModifier3D::set_origin_safe_margin);
 	ClassDB::bind_method(D_METHOD("get_origin_safe_margin"), &LookAtModifier3D::get_origin_safe_margin);
-
 	ClassDB::bind_method(D_METHOD("set_origin_from", "origin_from"), &LookAtModifier3D::set_origin_from);
 	ClassDB::bind_method(D_METHOD("get_origin_from"), &LookAtModifier3D::get_origin_from);
 	ClassDB::bind_method(D_METHOD("set_origin_bone_name", "bone_name"), &LookAtModifier3D::set_origin_bone_name);
@@ -445,9 +469,10 @@ void LookAtModifier3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, ""), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, "+X,-X,+Y,-Y,+Z,-Z"), "set_forward_axis", "get_forward_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "forward_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_bone_axis()), "set_forward_axis", "get_forward_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "primary_rotation_axis", PROPERTY_HINT_ENUM, "X,Y,Z"), "set_primary_rotation_axis", "get_primary_rotation_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_secondary_rotation"), "set_use_secondary_rotation", "is_using_secondary_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "relative"), "set_relative", "is_relative");
 
 	ADD_GROUP("Origin Settings", "origin_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "origin_from", PROPERTY_HINT_ENUM, "Self,SpecificBone,ExternalNode"), "set_origin_from", "get_origin_from");
@@ -482,35 +507,27 @@ void LookAtModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_negative_limit_angle", PROPERTY_HINT_RANGE, "0,180,0.01,radians_as_degrees"), "set_secondary_negative_limit_angle", "get_secondary_negative_limit_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "secondary_negative_damp_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_secondary_negative_damp_threshold", "get_secondary_negative_damp_threshold");
 
-	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
-	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);
-	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Y);
-	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Y);
-	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Z);
-	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Z);
-
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_SELF);
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_SPECIFIC_BONE);
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_EXTERNAL_NODE);
 }
 
-void LookAtModifier3D::_process_modification() {
-	if (!is_inside_tree()) {
-		return;
-	}
-
+void LookAtModifier3D::_process_modification(double p_delta) {
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton || bone < 0 || bone >= skeleton->get_bone_count()) {
 		return;
 	}
 
 	// Calculate bone rest space in the world.
+	Transform3D bone_rest = relative ? skeleton->get_bone_pose(bone) : skeleton->get_bone_rest(bone);
 	Transform3D bone_rest_space;
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
-		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_rest(bone);
+		bone_rest_space = skeleton->get_global_transform_interpolated();
+		bone_rest_space.translate_local(bone_rest.origin);
 	} else {
-		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_global_pose(parent_bone) * skeleton->get_bone_rest(bone);
+		bone_rest_space = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(parent_bone);
+		bone_rest_space.translate_local(bone_rest.origin);
 	}
 
 	// Calculate forward_vector and destination.
@@ -523,24 +540,24 @@ void LookAtModifier3D::_process_modification() {
 	} else {
 		Transform3D origin_tr;
 		if (origin_from == ORIGIN_FROM_SPECIFIC_BONE && origin_bone >= 0 && origin_bone < skeleton->get_bone_count()) {
-			origin_tr = skeleton->get_global_transform() * skeleton->get_bone_global_pose(origin_bone);
+			origin_tr = skeleton->get_global_transform_interpolated() * skeleton->get_bone_global_pose(origin_bone);
 		} else if (origin_from == ORIGIN_FROM_EXTERNAL_NODE) {
 			Node3D *origin_src = Object::cast_to<Node3D>(get_node_or_null(origin_external_node));
 			if (origin_src) {
-				origin_tr = origin_src->get_global_transform();
+				origin_tr = origin_src->get_global_transform_interpolated();
 			} else {
 				origin_tr = bone_rest_space;
 			}
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_transform_interpolated().origin - origin_tr.translated_local(origin_offset).origin);
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);
 			forward_vector = Vector3(0, 0, 0); // The zero-vector to be used for checking in the line immediately below to avoid animation glitch.
 		} else {
-			destination = look_at_with_axes(skeleton->get_bone_rest(bone)).basis.get_rotation_quaternion();
+			destination = look_at_with_axes(bone_rest).basis.get_rotation_quaternion();
 		}
 	}
 
@@ -554,18 +571,18 @@ void LookAtModifier3D::_process_modification() {
 			(prev_forward_vector != Vector3(0, 0, 0) && forward_vector == Vector3(0, 0, 0)) ||
 			(prev_forward_vector == Vector3(0, 0, 0) && forward_vector != Vector3(0, 0, 0))) {
 		init_transition();
-	} else if (is_flippable && signbit(prev_forward_vector[secondary_rotation_axis]) != signbit(forward_vector[secondary_rotation_axis])) {
+	} else if (is_flippable && std::signbit(prev_forward_vector[secondary_rotation_axis]) != std::signbit(forward_vector[secondary_rotation_axis])) {
 		// Flipping by angle_limitation can be detected by sign of secondary rotation axes during forward_vector is rotated more than 90 degree from forward_axis (means dot production is negative).
 		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
 		if (symmetry_limitation) {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
 			}
 		} else {
-			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math_TAU)) &&
+			if ((is_not_max_influence || !Math::is_equal_approx(primary_positive_limit_angle + primary_negative_limit_angle, (float)Math::TAU)) &&
 					prev_forward_vector_nrm.dot(rest_forward_vector) < 0 &&
 					forward_vector_nrm.dot(rest_forward_vector) < 0) {
 				init_transition();
@@ -575,18 +592,12 @@ void LookAtModifier3D::_process_modification() {
 
 	// Do time-based interpolation.
 	if (remaining > 0) {
-		double delta = 0.0;
-		if (skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE) {
-			delta = get_process_delta_time();
-		} else {
-			delta = get_physics_process_delta_time();
-		}
-		remaining = MAX(0, remaining - time_step * delta);
+		remaining = MAX(0, remaining - time_step * p_delta);
 		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
 			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
 			float weight = Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0);
-			destination = rest * Quaternion().slerp(rest.inverse() * from_q, 1 - weight) * Quaternion().slerp(rest.inverse() * destination, weight);
+			destination = Animation::interpolate_via_rest(Animation::interpolate_via_rest(rest, from_q, 1 - weight, rest), destination, weight, rest);
 		} else {
 			destination = from_q.slerp(destination, Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0));
 		}
@@ -607,10 +618,10 @@ bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3
 		return false;
 	}
 
-	return signbit(p_prev[p_flipping_axis]) != signbit(p_current[p_flipping_axis]);
+	return std::signbit(p_prev[p_flipping_axis]) != std::signbit(p_current[p_flipping_axis]);
 }
 
-Vector3 LookAtModifier3D::get_basis_vector_from_bone_axis(const Basis &p_basis, LookAtModifier3D::BoneAxis p_axis) const {
+Vector3 LookAtModifier3D::get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis) {
 	Vector3 ret;
 	switch (p_axis) {
 		case BONE_AXIS_PLUS_X: {
@@ -635,67 +646,12 @@ Vector3 LookAtModifier3D::get_basis_vector_from_bone_axis(const Basis &p_basis, 
 	return ret;
 }
 
-Vector3 LookAtModifier3D::get_vector_from_bone_axis(const LookAtModifier3D::BoneAxis &p_axis) const {
-	Vector3 ret;
-	switch (p_axis) {
-		case BONE_AXIS_PLUS_X: {
-			ret = Vector3(1, 0, 0);
-		} break;
-		case BONE_AXIS_MINUS_X: {
-			ret = Vector3(-1, 0, 0);
-		} break;
-		case BONE_AXIS_PLUS_Y: {
-			ret = Vector3(0, 1, 0);
-		} break;
-		case BONE_AXIS_MINUS_Y: {
-			ret = Vector3(0, -1, 0);
-		} break;
-		case BONE_AXIS_PLUS_Z: {
-			ret = Vector3(0, 0, 1);
-		} break;
-		case BONE_AXIS_MINUS_Z: {
-			ret = Vector3(0, 0, -1);
-		} break;
-	}
-	return ret;
+Vector3::Axis LookAtModifier3D::get_secondary_rotation_axis(BoneAxis p_forward_axis, Vector3::Axis p_primary_rotation_axis) {
+	Vector3 secondary_plane = get_vector_from_bone_axis(p_forward_axis) + get_vector_from_axis(p_primary_rotation_axis);
+	return Math::is_zero_approx(secondary_plane.x) ? Vector3::AXIS_X : (Math::is_zero_approx(secondary_plane.y) ? Vector3::AXIS_Y : Vector3::AXIS_Z);
 }
 
-Vector3 LookAtModifier3D::get_vector_from_axis(const Vector3::Axis &p_axis) const {
-	Vector3 ret;
-	switch (p_axis) {
-		case Vector3::AXIS_X: {
-			ret = Vector3(1, 0, 0);
-		} break;
-		case Vector3::AXIS_Y: {
-			ret = Vector3(0, 1, 0);
-		} break;
-		case Vector3::AXIS_Z: {
-			ret = Vector3(0, 0, 1);
-		} break;
-	}
-	return ret;
-}
-
-Vector3::Axis LookAtModifier3D::get_axis_from_bone_axis(BoneAxis p_axis) const {
-	Vector3::Axis ret = Vector3::AXIS_X;
-	switch (p_axis) {
-		case BONE_AXIS_PLUS_X:
-		case BONE_AXIS_MINUS_X: {
-			ret = Vector3::AXIS_X;
-		} break;
-		case BONE_AXIS_PLUS_Y:
-		case BONE_AXIS_MINUS_Y: {
-			ret = Vector3::AXIS_Y;
-		} break;
-		case BONE_AXIS_PLUS_Z:
-		case BONE_AXIS_MINUS_Z: {
-			ret = Vector3::AXIS_Z;
-		} break;
-	}
-	return ret;
-}
-
-Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) const {
+Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) {
 	// NOTE: axis is swapped between 2D and 3D.
 	Vector2 ret;
 	switch (p_axis) {
@@ -713,7 +669,7 @@ Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, Vector3
 }
 
 float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_threshold, float p_value) const {
-	float sign = signbit(p_value) ? -1.0f : 1.0f;
+	float sign = std::signbit(p_value) ? -1.0f : 1.0f;
 	float abs_value = Math::abs(p_value);
 
 	if (Math::is_equal_approx(p_damp_threshold, 1.0f) || Math::is_zero_approx(p_to)) {
@@ -726,7 +682,7 @@ float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_thre
 		return sign * CLAMP(abs_value, p_from, p_to);
 	}
 
-	double limit = Math_PI;
+	double limit = Math::PI;
 	double inv_to = 1.0 / p_to;
 	double end_x = limit * inv_to;
 	double position = abs_value * inv_to;
@@ -773,7 +729,7 @@ Transform3D LookAtModifier3D::look_at_with_axes(const Transform3D &p_rest) {
 			limit_angle = primary_limit_angle * 0.5f;
 			damp_threshold = primary_damp_threshold;
 		} else {
-			if (signbit(calculated_angle)) {
+			if (std::signbit(calculated_angle)) {
 				limit_angle = primary_negative_limit_angle;
 				damp_threshold = primary_negative_damp_threshold;
 			} else {
@@ -789,8 +745,7 @@ Transform3D LookAtModifier3D::look_at_with_axes(const Transform3D &p_rest) {
 	}
 
 	// Needs for detecting flipping even if use_secondary_rotation is false.
-	Vector3 secondary_plane = get_vector_from_bone_axis(forward_axis) + get_vector_from_axis(primary_rotation_axis);
-	secondary_rotation_axis = Math::is_zero_approx(secondary_plane.x) ? Vector3::AXIS_X : (Math::is_zero_approx(secondary_plane.y) ? Vector3::AXIS_Y : Vector3::AXIS_Z);
+	secondary_rotation_axis = get_secondary_rotation_axis(forward_axis, primary_rotation_axis);
 
 	if (!use_secondary_rotation) {
 		return current_result;
@@ -807,7 +762,7 @@ Transform3D LookAtModifier3D::look_at_with_axes(const Transform3D &p_rest) {
 			limit_angle = secondary_limit_angle * 0.5f;
 			damp_threshold = secondary_damp_threshold;
 		} else {
-			if (signbit(calculated_angle)) {
+			if (std::signbit(calculated_angle)) {
 				limit_angle = secondary_negative_limit_angle;
 				damp_threshold = secondary_negative_damp_threshold;
 			} else {

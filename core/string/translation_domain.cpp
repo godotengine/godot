@@ -32,6 +32,7 @@
 
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
+#include "core/variant/typed_array.h"
 
 struct _character_accent_pair {
 	const char32_t character;
@@ -182,7 +183,7 @@ const char32_t *TranslationDomain::_get_accented_version(char32_t p_character) c
 		return nullptr;
 	}
 
-	for (unsigned int i = 0; i < sizeof(_character_to_accented) / sizeof(_character_to_accented[0]); i++) {
+	for (unsigned int i = 0; i < std_size(_character_to_accented); i++) {
 		if (_character_to_accented[i].character == p_character) {
 			return _character_to_accented[i].accented_character;
 		}
@@ -202,7 +203,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			const StringName r = E->get_message(p_message, p_context);
@@ -225,7 +225,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			const StringName r = E->get_plural_message(p_message, p_message_plural, p_n, p_context);
@@ -246,7 +245,6 @@ StringName TranslationDomain::get_message_from_translations(const String &p_loca
 PackedStringArray TranslationDomain::get_loaded_locales() const {
 	PackedStringArray locales;
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
 		const String &locale = E->get_locale();
 		if (!locales.has(locale)) {
 			locales.push_back(locale);
@@ -255,13 +253,12 @@ PackedStringArray TranslationDomain::get_loaded_locales() const {
 	return locales;
 }
 
+#ifndef DISABLE_DEPRECATED
 Ref<Translation> TranslationDomain::get_translation_object(const String &p_locale) const {
 	Ref<Translation> res;
 	int best_score = 0;
 
 	for (const Ref<Translation> &E : translations) {
-		ERR_CONTINUE(E.is_null());
-
 		int score = TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale());
 		if (score > 0 && score >= best_score) {
 			res = E;
@@ -273,8 +270,10 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 	}
 	return res;
 }
+#endif
 
 void TranslationDomain::add_translation(const Ref<Translation> &p_translation) {
+	ERR_FAIL_COND_MSG(p_translation.is_null(), "Invalid translation provided.");
 	translations.insert(p_translation);
 }
 
@@ -286,8 +285,75 @@ void TranslationDomain::clear() {
 	translations.clear();
 }
 
+const HashSet<Ref<Translation>> TranslationDomain::get_translations() const {
+	return translations;
+}
+
+HashSet<Ref<Translation>> TranslationDomain::find_translations(const String &p_locale, bool p_exact) const {
+	HashSet<Ref<Translation>> res;
+	if (p_exact) {
+		for (const Ref<Translation> &E : translations) {
+			if (E->get_locale() == p_locale) {
+				res.insert(E);
+			}
+		}
+	} else {
+		for (const Ref<Translation> &E : translations) {
+			if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
+				res.insert(E);
+			}
+		}
+	}
+	return res;
+}
+
+bool TranslationDomain::has_translation(const Ref<Translation> &p_translation) const {
+	return translations.has(p_translation);
+}
+
+bool TranslationDomain::has_translation_for_locale(const String &p_locale, bool p_exact) const {
+	if (p_exact) {
+		for (const Ref<Translation> &E : translations) {
+			if (E->get_locale() == p_locale) {
+				return true;
+			}
+		}
+	} else {
+		for (const Ref<Translation> &E : translations) {
+			if (TranslationServer::get_singleton()->compare_locales(p_locale, E->get_locale()) > 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+TypedArray<Translation> TranslationDomain::get_translations_bind() const {
+	TypedArray<Translation> res;
+	res.reserve(translations.size());
+	for (const Ref<Translation> &E : translations) {
+		res.push_back(E);
+	}
+	return res;
+}
+
+TypedArray<Translation> TranslationDomain::find_translations_bind(const String &p_locale, bool p_exact) const {
+	const HashSet<Ref<Translation>> &found = find_translations(p_locale, p_exact);
+
+	TypedArray<Translation> res;
+	res.reserve(found.size());
+	for (const Ref<Translation> &E : found) {
+		res.push_back(E);
+	}
+	return res;
+}
+
 StringName TranslationDomain::translate(const StringName &p_message, const StringName &p_context) const {
-	const String &locale = TranslationServer::get_singleton()->get_locale();
+	if (!enabled) {
+		return p_message;
+	}
+
+	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
@@ -302,7 +368,11 @@ StringName TranslationDomain::translate(const StringName &p_message, const Strin
 }
 
 StringName TranslationDomain::translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const {
-	const String &locale = TranslationServer::get_singleton()->get_locale();
+	if (!enabled) {
+		return p_n == 1 ? p_message : p_message_plural;
+	}
+
+	const String &locale = locale_override.is_empty() ? TranslationServer::get_singleton()->get_locale() : locale_override;
 	StringName res = get_message_from_translations(locale, p_message, p_message_plural, p_n, p_context);
 
 	const String &fallback = TranslationServer::get_singleton()->get_fallback_locale();
@@ -317,6 +387,22 @@ StringName TranslationDomain::translate_plural(const StringName &p_message, cons
 		return p_message_plural;
 	}
 	return res;
+}
+
+String TranslationDomain::get_locale_override() const {
+	return locale_override;
+}
+
+void TranslationDomain::set_locale_override(const String &p_locale) {
+	locale_override = p_locale.is_empty() ? p_locale : TranslationServer::get_singleton()->standardize_locale(p_locale);
+}
+
+bool TranslationDomain::is_enabled() const {
+	return enabled;
+}
+
+void TranslationDomain::set_enabled(bool p_enabled) {
+	enabled = p_enabled;
 }
 
 bool TranslationDomain::is_pseudolocalization_enabled() const {
@@ -418,12 +504,23 @@ StringName TranslationDomain::pseudolocalize(const StringName &p_message) const 
 }
 
 void TranslationDomain::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationDomain::get_translation_object);
+#endif
+
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationDomain::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationDomain::remove_translation);
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationDomain::clear);
+	ClassDB::bind_method(D_METHOD("get_translations"), &TranslationDomain::get_translations_bind);
+	ClassDB::bind_method(D_METHOD("has_translation_for_locale", "locale", "exact"), &TranslationDomain::has_translation_for_locale);
+	ClassDB::bind_method(D_METHOD("has_translation", "translation"), &TranslationDomain::has_translation);
+	ClassDB::bind_method(D_METHOD("find_translations", "locale", "exact"), &TranslationDomain::find_translations_bind);
 	ClassDB::bind_method(D_METHOD("translate", "message", "context"), &TranslationDomain::translate, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("translate_plural", "message", "message_plural", "n", "context"), &TranslationDomain::translate_plural, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_locale_override"), &TranslationDomain::get_locale_override);
+	ClassDB::bind_method(D_METHOD("set_locale_override", "locale"), &TranslationDomain::set_locale_override);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &TranslationDomain::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &TranslationDomain::set_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationDomain::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationDomain::set_pseudolocalization_enabled);
@@ -445,6 +542,7 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_suffix", "suffix"), &TranslationDomain::set_pseudolocalization_suffix);
 	ClassDB::bind_method(D_METHOD("pseudolocalize", "message"), &TranslationDomain::pseudolocalize);
 
+	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_enabled"), "set_pseudolocalization_enabled", "is_pseudolocalization_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_accents_enabled"), "set_pseudolocalization_accents_enabled", "is_pseudolocalization_accents_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::BOOL, "pseudolocalization_double_vowels_enabled"), "set_pseudolocalization_double_vowels_enabled", "is_pseudolocalization_double_vowels_enabled");
@@ -454,7 +552,4 @@ void TranslationDomain::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::Type::FLOAT, "pseudolocalization_expansion_ratio"), "set_pseudolocalization_expansion_ratio", "get_pseudolocalization_expansion_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::STRING, "pseudolocalization_prefix"), "set_pseudolocalization_prefix", "get_pseudolocalization_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::Type::STRING, "pseudolocalization_suffix"), "set_pseudolocalization_suffix", "get_pseudolocalization_suffix");
-}
-
-TranslationDomain::TranslationDomain() {
 }

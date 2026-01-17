@@ -1,11 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TriangleMesh" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Internal mesh type.
+		Triangle geometry for efficient, physicsless intersection queries.
 	</brief_description>
 	<description>
-		Mesh type used internally for collision calculations.
+		Creates a bounding volume hierarchy (BVH) tree structure around triangle geometry.
+		The triangle BVH tree can be used for efficient intersection queries without involving a physics engine.
+		For example, this can be used in editor tools to select objects with complex shapes based on the mouse cursor position.
+		[b]Performance:[/b] Creating the BVH tree for complex geometry is a slow process and best done in a background thread.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="create_from_faces">
+			<return type="bool" />
+			<param index="0" name="faces" type="PackedVector3Array" />
+			<description>
+				Creates the BVH tree from an array of faces. Each 3 vertices of the input [param faces] array represent one triangle (face).
+				Returns [code]true[/code] if the tree is successfully built, [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="get_faces" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns a copy of the geometry faces. Each 3 vertices of the array represent one triangle (face).
+			</description>
+		</method>
+		<method name="intersect_ray" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="begin" type="Vector3" />
+			<param index="1" name="dir" type="Vector3" />
+			<description>
+				Tests for intersection with a ray starting at [param begin] and facing [param dir] and extending toward infinity.
+				If an intersection with a triangle happens, returns a [Dictionary] with the following fields:
+				[code]position[/code]: The position on the intersected triangle.
+				[code]normal[/code]: The normal of the intersected triangle.
+				[code]face_index[/code]: The index of the intersected triangle.
+				Returns an empty [Dictionary] if no intersection happens.
+				See also [method intersect_segment], which is similar but uses a finite-length segment.
+			</description>
+		</method>
+		<method name="intersect_segment" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="begin" type="Vector3" />
+			<param index="1" name="end" type="Vector3" />
+			<description>
+				Tests for intersection with a segment going from [param begin] to [param end].
+				If an intersection with a triangle happens returns a [Dictionary] with the following fields:
+				[code]position[/code]: The position on the intersected triangle.
+				[code]normal[/code]: The normal of the intersected triangle.
+				[code]face_index[/code]: The index of the intersected triangle.
+				Returns an empty [Dictionary] if no intersection happens.
+				See also [method intersect_ray], which is similar but uses an infinite-length ray.
+			</description>
+		</method>
+	</methods>
 </class>

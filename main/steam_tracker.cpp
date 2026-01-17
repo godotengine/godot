@@ -32,6 +32,8 @@
 
 #include "steam_tracker.h"
 
+#include "core/io/file_access.h"
+
 // https://partner.steamgames.com/doc/sdk/api#initialization_and_shutdown
 
 SteamTracker::SteamTracker() {
@@ -92,14 +94,14 @@ SteamTracker::SteamTracker() {
 
 	if (steam_init_flat_function) {
 		char err_msg[1024] = {};
-		steam_initalized = (steam_init_flat_function(&err_msg[0]) == SteamAPIInitResult_OK);
+		steam_initialized = (steam_init_flat_function(&err_msg[0]) == SteamAPIInitResult_OK);
 	} else if (steam_init_function) {
-		steam_initalized = steam_init_function();
+		steam_initialized = steam_init_function();
 	}
 }
 
 SteamTracker::~SteamTracker() {
-	if (steam_shutdown_function && steam_initalized) {
+	if (steam_shutdown_function && steam_initialized) {
 		steam_shutdown_function();
 	}
 	if (steam_library_handle) {

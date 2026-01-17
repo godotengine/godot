@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -535,7 +535,8 @@
    *     The tag of table to load.  Use the value 0 if you want
    *     to access the whole font file, else set this parameter
    *     to a valid TrueType table tag that you can forge with
-   *     the MAKE_TT_TAG macro.
+   *     the MAKE_TT_TAG macro.  Use value 1 to access the table
+   *     directory.
    *
    *   offset ::
    *     The starting offset in the table (or the file if
@@ -577,7 +578,29 @@
     FT_ULong   size;
 
 
-    if ( tag != 0 )
+    if ( tag == 0 )
+    {
+      /* The whole font file. */
+      size = face->root.stream->size;
+    }
+    else if ( tag == 1 )
+    {
+      /* The currently selected font's table directory.            */
+      /*                                                           */
+      /* Note that `face_index` is also used to enumerate elements */
+      /* of containers like a Mac Resource; this means we must     */
+      /* check whether we actually have a TTC (with multiple table */
+      /* directories).                                             */
+      FT_Long  idx = face->root.face_index & 0xFFFF;
+
+
+      if ( idx >= face->ttc_header.count )
+        idx = 0;
+
+      offset += face->ttc_header.offsets[idx];
+      size    = 4 + 8 + 16 * face->num_tables;
+    }
+    else
     {
       /* look for tag in font directory */
       table = tt_face_lookup_table( face, tag );
@@ -590,9 +613,6 @@
       offset += table->Offset;
       size    = table->Length;
     }
-    else
-      /* tag == 0 -- the user wants to access the font file directly */
-      size = face->root.stream->size;
 
     if ( length && *length == 0 )
     {
@@ -1046,7 +1066,7 @@
   FT_LOCAL_DEF( void )
   tt_face_free_name( TT_Face  face )
   {
-    FT_Memory     memory = face->root.driver->root.memory;
+    FT_Memory     memory = face->root.memory;
     TT_NameTable  table  = &face->name_table;
 
 

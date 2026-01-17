@@ -37,10 +37,6 @@
 #include "config.h"
 #include "utilities.h"
 
-#ifdef ANDROID_ENABLED
-#define glFramebufferTextureMultiviewOVR GLES3::Config::get_singleton()->eglFramebufferTextureMultiviewOVR
-#endif
-
 using namespace GLES3;
 
 TextureStorage *TextureStorage::singleton = nullptr;
@@ -50,12 +46,12 @@ TextureStorage *TextureStorage::get_singleton() {
 }
 
 static const GLenum _cube_side_enum[6] = {
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 };
 
 TextureStorage::TextureStorage() {
@@ -106,7 +102,12 @@ TextureStorage::TextureStorage() {
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
 
 			Vector<Ref<Image>> images;
-			for (int i = 0; i < 6; i++) {
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
@@ -132,6 +133,31 @@ TextureStorage::TextureStorage() {
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+
+			Vector<Ref<Image>> images;
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
+				images.push_back(image);
+			}
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color(0, 0, 0, 0));
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{
@@ -334,15 +360,8 @@ void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS:
 
 /* Texture API */
 
-Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
+static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type) {
 	Config *config = Config::get_singleton();
-	r_gl_format = 0;
-	Ref<Image> image = p_image;
-	r_compressed = false;
-	r_real_format = p_format;
-
-	bool need_decompress = false;
-	bool decompress_ra_to_rg = false;
 
 	switch (p_format) {
 		case Image::FORMAT_L8: {
@@ -371,55 +390,91 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			r_gl_internal_format = GL_R8;
 			r_gl_format = GL_RED;
 			r_gl_type = GL_UNSIGNED_BYTE;
-
 		} break;
 		case Image::FORMAT_RG8: {
 			r_gl_internal_format = GL_RG8;
 			r_gl_format = GL_RG;
 			r_gl_type = GL_UNSIGNED_BYTE;
-
 		} break;
 		case Image::FORMAT_RGB8: {
 			r_gl_internal_format = GL_RGB8;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_BYTE;
-
 		} break;
 		case Image::FORMAT_RGBA8: {
-			r_gl_format = GL_RGBA;
 			r_gl_internal_format = GL_RGBA8;
+			r_gl_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_BYTE;
-
 		} break;
 		case Image::FORMAT_RGBA4444: {
 			r_gl_internal_format = GL_RGBA4;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
-
+		} break;
+		case Image::FORMAT_RGB565: {
+			r_gl_internal_format = GL_RGB565;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_SHORT_5_6_5;
 		} break;
 		case Image::FORMAT_RF: {
-			r_gl_internal_format = GL_R32F;
-			r_gl_format = GL_RED;
-			r_gl_type = GL_FLOAT;
-
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_R32F;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_FLOAT;
+			} else {
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RH);
+				}
+				r_real_format = Image::FORMAT_RH;
+				r_gl_internal_format = GL_R16F;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGF: {
-			r_gl_internal_format = GL_RG32F;
-			r_gl_format = GL_RG;
-			r_gl_type = GL_FLOAT;
-
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RG32F;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_FLOAT;
+			} else {
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGH);
+				}
+				r_real_format = Image::FORMAT_RGH;
+				r_gl_internal_format = GL_RG16F;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGBF: {
-			r_gl_internal_format = GL_RGB32F;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_FLOAT;
-
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RGB32F;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
+			} else {
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGBH);
+				}
+				r_real_format = Image::FORMAT_RGBH;
+				r_gl_internal_format = GL_RGB16F;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RGBAF: {
-			r_gl_internal_format = GL_RGBA32F;
-			r_gl_format = GL_RGBA;
-			r_gl_type = GL_FLOAT;
-
+			if (config->float_texture_linear_supported) {
+				r_gl_internal_format = GL_RGBA32F;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_FLOAT;
+			} else {
+				if (p_image.is_valid()) {
+					p_image->convert(Image::FORMAT_RGBAH);
+				}
+				r_real_format = Image::FORMAT_RGBAH;
+				r_gl_internal_format = GL_RGBA16F;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_HALF_FLOAT;
+			}
 		} break;
 		case Image::FORMAT_RH: {
 			r_gl_internal_format = GL_R16F;
@@ -430,30 +485,177 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			r_gl_internal_format = GL_RG16F;
 			r_gl_format = GL_RG;
 			r_gl_type = GL_HALF_FLOAT;
-
 		} break;
 		case Image::FORMAT_RGBH: {
 			r_gl_internal_format = GL_RGB16F;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_HALF_FLOAT;
-
 		} break;
 		case Image::FORMAT_RGBAH: {
 			r_gl_internal_format = GL_RGBA16F;
 			r_gl_format = GL_RGBA;
 			r_gl_type = GL_HALF_FLOAT;
-
 		} break;
 		case Image::FORMAT_RGBE9995: {
 			r_gl_internal_format = GL_RGB9_E5;
 			r_gl_format = GL_RGB;
 			r_gl_type = GL_UNSIGNED_INT_5_9_9_9_REV;
-
 		} break;
+		case Image::FORMAT_R16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_R16;
+				r_gl_format = GL_RED;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RF);
+					}
+					r_real_format = Image::FORMAT_RF;
+					r_gl_internal_format = GL_R32F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RH);
+					}
+					r_real_format = Image::FORMAT_RH;
+					r_gl_internal_format = GL_R16F;
+					r_gl_format = GL_RED;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RG16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RG16;
+				r_gl_format = GL_RG;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGF);
+					}
+					r_real_format = Image::FORMAT_RGF;
+					r_gl_internal_format = GL_RG32F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RG16F;
+					r_gl_format = GL_RG;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGB16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGB16;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBF);
+					}
+					r_real_format = Image::FORMAT_RGBF;
+					r_gl_internal_format = GL_RGB32F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBH);
+					}
+					r_real_format = Image::FORMAT_RGBH;
+					r_gl_internal_format = GL_RGB16F;
+					r_gl_format = GL_RGB;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_RGBA16: {
+			if (config->unorm16_texture_supported) {
+				r_gl_internal_format = _EXT_RGBA16;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_SHORT;
+			} else {
+				if (config->float_texture_linear_supported) {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGBAF);
+					}
+					r_real_format = Image::FORMAT_RGBAF;
+					r_gl_internal_format = GL_RGBA32F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_FLOAT;
+				} else {
+					if (p_image.is_valid()) {
+						p_image->convert(Image::FORMAT_RGH);
+					}
+					r_real_format = Image::FORMAT_RGH;
+					r_gl_internal_format = GL_RGBA16F;
+					r_gl_format = GL_RGBA;
+					r_gl_type = GL_HALF_FLOAT;
+				}
+			}
+		} break;
+		case Image::FORMAT_R16I: {
+			r_gl_internal_format = GL_R16UI;
+			r_gl_format = GL_RED_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RG16I: {
+			r_gl_internal_format = GL_RG16UI;
+			r_gl_format = GL_RG_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGB16I: {
+			r_gl_internal_format = GL_RGB16UI;
+			r_gl_format = GL_RGB_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		case Image::FORMAT_RGBA16I: {
+			r_gl_internal_format = GL_RGBA16UI;
+			r_gl_format = GL_RGBA_INTEGER;
+			r_gl_type = GL_UNSIGNED_SHORT;
+		} break;
+		default: {
+			return ERR_UNAVAILABLE;
+		}
+	}
+
+	return OK;
+}
+
+Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const {
+	Config *config = Config::get_singleton();
+	r_gl_format = 0;
+	Ref<Image> image = p_image;
+	r_compressed = false;
+	r_real_format = p_format;
+
+	if (!Image::is_format_compressed(p_format)) {
+		Error err = _get_gl_uncompressed_format(p_image, p_format, r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", p_format));
+
+		if (p_format != r_real_format) {
+			WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(p_format), Image::get_format_name(r_real_format)));
+		}
+
+		return p_image;
+	}
+
+	// For compressed images, some formats may not be supported by the current device and will require decompression.
+	bool need_decompress = false;
+	bool decompress_ra_to_rg = false;
+
+	switch (p_format) {
 		case Image::FORMAT_DXT1: {
 			if (config->s3tc_supported) {
-				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-				r_gl_format = GL_RGBA;
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_S3TC_DXT1_EXT;
+				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else {
@@ -536,7 +738,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RED;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -547,7 +748,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RED;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -558,7 +758,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RG;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -569,7 +768,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RG;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -581,7 +779,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGB;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -592,7 +789,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -603,7 +799,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -642,7 +837,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -653,7 +847,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -664,7 +857,6 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
@@ -675,55 +867,34 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-
 			} else {
 				need_decompress = true;
 			}
 		} break;
 		default: {
-			ERR_FAIL_V_MSG(Ref<Image>(), "The image format " + itos(p_format) + " is not supported by the GL Compatibility rendering backend.");
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", p_format));
 		}
 	}
 
 	if (need_decompress || p_force_decompress) {
-		if (!image.is_null()) {
+		if (image.is_valid()) {
 			image = image->duplicate();
 			image->decompress();
 			ERR_FAIL_COND_V(image->is_compressed(), image);
+
 			if (decompress_ra_to_rg) {
 				image->convert_ra_rgba8_to_rg();
 				image->convert(Image::FORMAT_RG8);
 			}
-			switch (image->get_format()) {
-				case Image::FORMAT_RG8: {
-					r_gl_format = GL_RG;
-					r_gl_internal_format = GL_RG8;
-					r_gl_type = GL_UNSIGNED_BYTE;
-					r_real_format = Image::FORMAT_RG8;
-					r_compressed = false;
-				} break;
-				case Image::FORMAT_RGB8: {
-					r_gl_format = GL_RGB;
-					r_gl_internal_format = GL_RGB;
-					r_gl_type = GL_UNSIGNED_BYTE;
-					r_real_format = Image::FORMAT_RGB8;
-					r_compressed = false;
-				} break;
-				case Image::FORMAT_RGBA8: {
-					r_gl_format = GL_RGBA;
-					r_gl_internal_format = GL_RGBA;
-					r_gl_type = GL_UNSIGNED_BYTE;
-					r_real_format = Image::FORMAT_RGBA8;
-					r_compressed = false;
-				} break;
-				default: {
-					image->convert(Image::FORMAT_RGBA8);
-					r_gl_format = GL_RGBA;
-					r_gl_internal_format = GL_RGBA;
-					r_gl_type = GL_UNSIGNED_BYTE;
-					r_real_format = Image::FORMAT_RGBA8;
-					r_compressed = false;
-				} break;
+
+			Error err = _get_gl_uncompressed_format(image, image->get_format(), r_real_format, r_gl_format, r_gl_internal_format, r_gl_type);
+			ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("The image format %d is not supported by the Compatibility renderer.", image->get_format()));
+
+			r_real_format = image->get_format();
+			r_compressed = false;
+
+			if (p_format != image->get_format()) {
+				WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(p_format), Image::get_format_name(image->get_format())));
 			}
 		}
 
@@ -764,7 +935,7 @@ void TextureStorage::texture_free(RID p_texture) {
 
 	texture_atlas_remove_texture(p_texture);
 
-	for (int i = 0; i < t->proxies.size(); i++) {
+	for (uint32_t i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
 		ERR_CONTINUE(!p);
 		p->proxy_to = RID();
@@ -841,7 +1012,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	ERR_FAIL_COND(p_layers.is_empty());
 
 	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
-	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the GL Compatibility backend.");
+	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the Compatibility renderer.");
 
 	const Ref<Image> &image = p_layers[0];
 	{
@@ -1039,6 +1210,27 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 	proxy_to->proxies.push_back(p_texture);
 }
 
+void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture) {
+	Texture *from_tex = texture_owner.get_or_null(p_from_texture);
+	ERR_FAIL_NULL(from_tex);
+	ERR_FAIL_COND(from_tex->is_proxy);
+	Texture *to_tex = texture_owner.get_or_null(p_to_texture);
+	ERR_FAIL_NULL(to_tex);
+	ERR_FAIL_COND(to_tex->is_proxy);
+
+	if (from_tex == to_tex) {
+		return;
+	}
+
+	// Make a local copy, we're about to change the content of the original.
+	thread_local LocalVector<RID> proxies = from_tex->proxies;
+
+	// Now change them to our new texture.
+	for (RID &proxy : proxies) {
+		texture_proxy_update(proxy, p_to_texture);
+	}
+}
+
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	texture_2d_initialize(p_texture, texture_2d_placeholder);
 }
@@ -1072,7 +1264,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		// It also allows for reading compressed textures, mipmaps, and more formats.
 		Vector<uint8_t> data;
 
-		int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
+		int64_t data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->real_format, texture->mipmaps > 1);
 
 		data.resize(data_size * 2); // Add some memory at the end, just in case for buggy drivers.
 		uint8_t *w = data.ptrw();
@@ -1084,7 +1276,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 		for (int i = 0; i < texture->mipmaps; i++) {
-			int ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
+			int64_t ofs = Image::get_image_mipmap_offset(texture->alloc_width, texture->alloc_height, texture->real_format, i);
 
 			if (texture->compressed) {
 				glPixelStorei(GL_PACK_ALIGNMENT, 4);
@@ -1099,8 +1291,12 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, texture->real_format, data);
-		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
-		if (texture->format != texture->real_format) {
+		if (image->is_empty()) {
+			const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+		}
+
+		if (texture->format != texture->real_format && !Image::is_format_compressed(texture->real_format)) {
 			image->convert(texture->format);
 		}
 	}
@@ -1110,7 +1306,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		Vector<uint8_t> data;
 
 		// On web and mobile we always read an RGBA8 image with no mipmaps.
-		int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+		int64_t data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
 
 		data.resize(data_size * 2); // Add some memory at the end, just in case for buggy drivers.
 		uint8_t *w = data.ptrw();
@@ -1155,9 +1351,12 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 
 		ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 		image = Image::create_from_data(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data);
-		ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+		if (image->is_empty()) {
+			const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+		}
 
-		if (texture->format != Image::FORMAT_RGBA8) {
+		if (texture->format != Image::FORMAT_RGBA8 && !Image::is_format_compressed(texture->format)) {
 			image->convert(texture->format);
 		}
 
@@ -1182,7 +1381,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	Vector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+	int64_t data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	uint8_t *w = data.ptrw();
@@ -1227,9 +1426,12 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image = Image::create_from_data(texture->width, texture->height, false, Image::FORMAT_RGBA8, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (image->is_empty()) {
+		const String &path_str = texture->path.is_empty() ? "with no path" : vformat("with path '%s'", texture->path);
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+	}
 
-	if (texture->format != Image::FORMAT_RGBA8) {
+	if (texture->format != Image::FORMAT_RGBA8 && !Image::is_format_compressed(texture->format)) {
 		image->convert(texture->format);
 	}
 
@@ -1251,7 +1453,7 @@ Vector<Ref<Image>> TextureStorage::_texture_3d_read_framebuffer(GLES3::Texture *
 	int depth = p_texture->depth;
 
 	for (int mipmap_level = 0; mipmap_level < p_texture->mipmaps; mipmap_level++) {
-		int data_size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
+		int64_t data_size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
 		glViewport(0, 0, width, height);
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -1270,7 +1472,7 @@ Vector<Ref<Image>> TextureStorage::_texture_3d_read_framebuffer(GLES3::Texture *
 			Ref<Image> img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, data);
 			ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
 
-			if (p_texture->format != Image::FORMAT_RGBA8) {
+			if (p_texture->format != Image::FORMAT_RGBA8 && !Image::is_format_compressed(p_texture->format)) {
 				img->convert(p_texture->format);
 			}
 
@@ -1357,8 +1559,8 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex_to->tex_id = 0;
 	}
 
-	Vector<RID> proxies_to_update = tex_to->proxies;
-	Vector<RID> proxies_to_redirect = tex_from->proxies;
+	Vector<RID> proxies_to_update = Vector<RID>(tex_to->proxies);
+	Vector<RID> proxies_to_redirect = Vector<RID>(tex_from->proxies);
 
 	*tex_to = *tex_from;
 
@@ -1435,11 +1637,8 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, RS::Te
 }
 
 void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
-	List<RID> textures;
-	texture_owner.get_owned_list(&textures);
-
-	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
-		Texture *t = texture_owner.get_or_null(E->get());
+	for (const RID &rid : texture_owner.get_owned_list()) {
+		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
 		}
@@ -1449,6 +1648,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
 		tinfo.bytes = t->total_data_size;
+		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
 			case Texture::TYPE_3D:
@@ -1525,8 +1725,17 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	GLenum internal_format;
 	bool compressed = false;
 
+	bool needs_decompress = texture->resize_to_po2;
+
+	// Support for RGTC-compressed Texture Arrays isn't mandated by GLES3/WebGL.
+	if (!RasterizerGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
+		if (p_image->get_format() == Image::FORMAT_RGTC_R || p_image->get_format() == Image::FORMAT_RGTC_RG) {
+			needs_decompress = true;
+		}
+	}
+
 	Image::Format real_format;
-	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, needs_decompress);
 	ERR_FAIL_COND(img.is_null());
 	if (texture->resize_to_po2) {
 		if (p_image->is_compressed()) {
@@ -1623,7 +1832,7 @@ void TextureStorage::_texture_set_3d_data(RID p_texture, const Vector<Ref<Image>
 	Ref<Image> img = _get_gl_image_and_format(p_data[0], p_data[0]->get_format(), real_format, format, internal_format, type, compressed, texture->resize_to_po2);
 	ERR_FAIL_COND(img.is_null());
 
-	ERR_FAIL_COND_MSG(compressed, "Compressed 3D textures are not supported in the GL Compatibility backend.");
+	ERR_FAIL_COND_MSG(compressed, "Compressed 3D textures are not supported in the Compatibility renderer.");
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -2052,7 +2261,7 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 
 GLuint TextureStorage::system_fbo = 0;
 
-void TextureStorage::_update_render_target(RenderTarget *rt) {
+void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 	// do not allocate a render target with no size
 	if (rt->size.x <= 0 || rt->size.y <= 0) {
 		return;
@@ -2141,14 +2350,15 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			ERR_FAIL_NULL(texture);
 
 			rt->depth = texture->tex_id;
+			rt->depth_has_stencil = rt->overridden.depth_has_stencil;
 		} else {
 			glGenTextures(1, &rt->depth);
 			glBindTexture(texture_target, rt->depth);
 
 			if (use_multiview) {
-				glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+				glTexImage3D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 			} else {
-				glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+				glTexImage2D(texture_target, 0, GL_DEPTH24_STENCIL8, rt->size.x, rt->size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 			}
 
 			glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -2156,16 +2366,19 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 3, "Render target depth texture");
+			rt->depth_has_stencil = true;
+
+			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 4, "Render target depth texture");
 		}
+
 #ifndef IOS_ENABLED
 		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
 		} else {
 #else
 		{
 #endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture_target, rt->depth, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, texture_target, rt->depth, 0);
 		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -2218,6 +2431,60 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+}
+
+void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
+	GLuint new_velocity_fbo;
+	glGenFramebuffers(1, &new_velocity_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, new_velocity_fbo);
+
+	uint32_t view_count = rt->view_count;
+	GLuint texture_target = view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+
+	GLuint velocity_texture_id = texture_get_texid(rt->overridden.velocity);
+	glBindTexture(texture_target, velocity_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0, view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, velocity_texture_id, 0);
+	}
+
+	GLuint velocity_depth_texture_id = texture_get_texid(rt->overridden.velocity_depth);
+	glBindTexture(texture_target, velocity_depth_texture_id);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+#ifndef IOS_ENABLED
+	if (view_count > 1) {
+		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0, view_count);
+	} else {
+#else
+	{
+#endif
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, velocity_depth_texture_id, 0);
+	}
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		glDeleteFramebuffers(1, &new_velocity_fbo);
+		WARN_PRINT(vformat("Could not create motion vector render target, status: %s.", GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status)));
+	} else {
+		rt->overridden.velocity_fbo = new_velocity_fbo;
+	}
+
+	glBindTexture(texture_target, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
@@ -2274,71 +2541,18 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 }
-void GLES3::TextureStorage::check_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture) {
-	if (rt->backbuffer != 0 && rt->backbuffer_depth != 0) {
-		return;
-	}
 
-	Config *config = Config::get_singleton();
-	bool use_multiview = rt->view_count > 1 && config->multiview_supported;
-	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
-	if (rt->backbuffer_fbo == 0) {
-		glGenFramebuffers(1, &rt->backbuffer_fbo);
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
-	if (rt->backbuffer == 0 && uses_screen_texture) {
-		glGenTextures(1, &rt->backbuffer);
-		glBindTexture(texture_target, rt->backbuffer);
-		if (use_multiview) {
-			glTexImage3D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, rt->view_count, 0, rt->color_format, rt->color_type, nullptr);
-		} else {
-			glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target backbuffer color texture (3D)");
-		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#ifndef IOS_ENABLED
-		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->backbuffer, 0, 0, rt->view_count);
-		} else {
-#else
-		{
-#endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, 0);
-		}
-	}
-	if (rt->backbuffer_depth == 0 && uses_depth_texture) {
-		glGenTextures(1, &rt->backbuffer_depth);
-		glBindTexture(texture_target, rt->backbuffer_depth);
-		if (use_multiview) {
-			glTexImage3D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, rt->view_count, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-		} else {
-			glTexImage2D(texture_target, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-		}
-		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer_depth, rt->size.x * rt->size.y * rt->view_count * 3, "Render target backbuffer depth texture");
-
-		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#ifndef IOS_ENABLED
-		if (use_multiview) {
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rt->backbuffer_depth, 0, 0, rt->view_count);
-		} else {
-#else
-		{
-#endif
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->backbuffer_depth, 0);
-		}
-	}
-}
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	// there is nothing else to clear when DIRECT_TO_SCREEN is used
 	if (rt->direct_to_screen) {
 		return;
 	}
+
+	for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
+		glDeleteFramebuffers(1, &E.value);
+	}
+	rt->overridden.velocity_fbo_cache.clear();
+	rt->overridden.velocity_fbo = 0;
 
 	// Dispose of the cached fbo's and the allocated textures
 	for (KeyValue<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry> &E : rt->overridden.fbo_cache) {
@@ -2392,7 +2606,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	}
 	rt->depth = 0;
 
-	rt->overridden.velocity = RID();
 	rt->overridden.is_overridden = false;
 
 	if (rt->backbuffer_fbo != 0) {
@@ -2421,7 +2634,7 @@ RID TextureStorage::render_target_create() {
 	t.is_render_target = true;
 
 	render_target.texture = texture_owner.make_rid(t);
-	_update_render_target(&render_target);
+	_update_render_target_color(&render_target);
 	return render_target_owner.make_rid(render_target);
 }
 
@@ -2470,7 +2683,7 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 	rt->size = Size2i(p_width, p_height);
 	rt->view_count = p_view_count;
 
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 // TODO: convert to Size2i internally
@@ -2481,21 +2694,30 @@ Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
 	return rt->size;
 }
 
-void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 	ERR_FAIL_COND(rt->direct_to_screen);
 
-	rt->overridden.velocity = p_velocity_texture;
+	// Remember what our current color output is.
+	RID was_color_texture = render_target_get_texture(p_render_target);
 
-	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture) {
+	bool create_new_color_fbo = true;
+	bool create_new_velocity_fbo = true;
+
+	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture && rt->overridden.velocity == p_velocity_texture && rt->overridden.velocity_depth == p_velocity_depth_texture) {
 		return;
 	}
 
 	if (p_color_texture.is_null() && p_depth_texture.is_null()) {
+		// Set this back to our default textures.
+		if (was_color_texture.is_valid()) {
+			texture_remap_proxies(was_color_texture, rt->texture);
+		}
+
 		_clear_render_target(rt);
-		_update_render_target(rt);
-		return;
+		_update_render_target_color(rt);
+		create_new_color_fbo = false;
 	}
 
 	if (!rt->overridden.is_overridden) {
@@ -2504,7 +2726,16 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	rt->overridden.color = p_color_texture;
 	rt->overridden.depth = p_depth_texture;
+	rt->overridden.depth_has_stencil = p_depth_texture.is_null();
+	rt->overridden.velocity = p_velocity_texture;
+	rt->overridden.velocity_depth = p_velocity_depth_texture;
 	rt->overridden.is_overridden = true;
+
+	// Update to our new color output.
+	RID new_color_texture = render_target_get_texture(p_render_target);
+	if (was_color_texture.is_valid() && new_color_texture.is_valid()) {
+		texture_remap_proxies(was_color_texture, new_color_texture);
+	}
 
 	uint32_t hash_key = hash_murmur3_one_64(p_color_texture.get_id());
 	hash_key = hash_murmur3_one_64(p_depth_texture.get_id(), hash_key);
@@ -2515,26 +2746,54 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		rt->fbo = cache->get().fbo;
 		rt->color = cache->get().color;
 		rt->depth = cache->get().depth;
+		rt->depth_has_stencil = cache->get().depth_has_stencil;
 		rt->size = cache->get().size;
 		rt->texture = p_color_texture;
-		return;
+		create_new_color_fbo = false;
 	}
 
-	_update_render_target(rt);
+	uint32_t velocity_hash_key = hash_murmur3_one_64(p_velocity_texture.get_id());
+	velocity_hash_key = hash_murmur3_one_64(p_velocity_depth_texture.get_id(), velocity_hash_key);
+	velocity_hash_key = hash_fmix32(velocity_hash_key);
 
-	RenderTarget::RTOverridden::FBOCacheEntry new_entry;
-	new_entry.fbo = rt->fbo;
-	new_entry.color = rt->color;
-	new_entry.depth = rt->depth;
-	new_entry.size = rt->size;
-	// Keep track of any textures we had to allocate because they weren't overridden.
-	if (p_color_texture.is_null()) {
-		new_entry.allocated_textures.push_back(rt->color);
+	RBMap<uint32_t, GLuint>::Element *fbo = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
+	if (fbo != nullptr) {
+		rt->overridden.velocity_fbo = fbo->get();
+		create_new_velocity_fbo = false;
 	}
-	if (p_depth_texture.is_null()) {
-		new_entry.allocated_textures.push_back(rt->depth);
+
+	if (p_velocity_texture.is_null()) {
+		for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
+			glDeleteFramebuffers(1, &E.value);
+		}
+
+		rt->overridden.velocity_fbo_cache.clear();
+		rt->overridden.velocity_fbo = 0;
+		create_new_velocity_fbo = false;
 	}
-	rt->overridden.fbo_cache.insert(hash_key, new_entry);
+
+	if (create_new_color_fbo) {
+		_update_render_target_color(rt);
+
+		RenderTarget::RTOverridden::FBOCacheEntry new_entry;
+		new_entry.fbo = rt->fbo;
+		new_entry.color = rt->color;
+		new_entry.depth = rt->depth;
+		new_entry.size = rt->size;
+		// Keep track of any textures we had to allocate because they weren't overridden.
+		if (p_color_texture.is_null()) {
+			new_entry.allocated_textures.push_back(rt->color);
+		}
+		if (p_depth_texture.is_null()) {
+			new_entry.allocated_textures.push_back(rt->depth);
+		}
+		rt->overridden.fbo_cache.insert(hash_key, new_entry);
+	}
+
+	if (create_new_velocity_fbo) {
+		_update_render_target_velocity(rt);
+		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, rt->overridden.velocity_fbo);
+	}
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -2558,6 +2817,27 @@ RID TextureStorage::render_target_get_override_velocity(RID p_render_target) con
 	return rt->overridden.velocity;
 }
 
+RID TextureStorage::render_target_get_override_velocity_depth(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+
+	return rt->overridden.velocity_depth;
+}
+
+void TextureStorage::render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->render_region = p_render_region;
+}
+
+Rect2i TextureStorage::render_target_get_render_region(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Rect2i());
+
+	return rt->render_region;
+}
+
 RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RID());
@@ -2569,6 +2849,20 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
+void TextureStorage::render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->velocity_target_size = p_target_size;
+}
+
+Size2i TextureStorage::render_target_get_velocity_target_size(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Size2i(0, 0));
+
+	return rt->velocity_target_size;
+}
+
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
@@ -2577,7 +2871,7 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_t
 
 	if (rt->overridden.color.is_null()) {
 		_clear_render_target(rt);
-		_update_render_target(rt);
+		_update_render_target_color(rt);
 	}
 }
 
@@ -2603,8 +2897,9 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();
 		rt->overridden.velocity = RID();
+		rt->overridden.velocity_depth = RID();
 	}
-	_update_render_target(rt);
+	_update_render_target_color(rt);
 }
 
 bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
@@ -2638,9 +2933,11 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 
 	WARN_PRINT("2D MSAA is not yet supported for GLES3.");
 
-	_clear_render_target(rt);
-	rt->msaa = p_msaa;
-	_update_render_target(rt);
+	if (rt->overridden.color.is_null()) {
+		_clear_render_target(rt);
+		rt->msaa = p_msaa;
+		_update_render_target_color(rt);
+	}
 }
 
 RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
@@ -2658,9 +2955,11 @@ void TextureStorage::render_target_set_use_hdr(RID p_render_target, bool p_use_h
 		return;
 	}
 
-	_clear_render_target(rt);
-	rt->hdr = p_use_hdr_2d;
-	_update_render_target(rt);
+	if (rt->overridden.color.is_null()) {
+		_clear_render_target(rt);
+		rt->hdr = p_use_hdr_2d;
+		_update_render_target_color(rt);
+	}
 }
 
 bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
@@ -2768,6 +3067,13 @@ GLuint TextureStorage::render_target_get_depth(RID p_render_target) const {
 	} else {
 		return rt->depth;
 	}
+}
+
+bool TextureStorage::render_target_get_depth_has_stencil(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, 0);
+
+	return rt->depth_has_stencil;
 }
 
 void TextureStorage::render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const {

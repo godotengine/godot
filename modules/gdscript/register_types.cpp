@@ -31,9 +31,8 @@
 #include "register_types.h"
 
 #include "gdscript.h"
-#include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
-#include "gdscript_tokenizer.h"
+#include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_utility_functions.h"
 
@@ -50,16 +49,13 @@
 #include "tests/test_gdscript.h"
 #endif
 
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/resource_loader.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/export/editor_export.h"
+#include "editor/translations/editor_translation_parser.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "core/config/engine.h"
@@ -82,8 +78,8 @@ Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
 class EditorExportGDScript : public EditorExportPlugin {
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
-	static constexpr int DEFAULT_SCRIPT_MODE = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
-	int script_mode = DEFAULT_SCRIPT_MODE;
+	static constexpr EditorExportPreset::ScriptExportMode DEFAULT_SCRIPT_MODE = EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	EditorExportPreset::ScriptExportMode script_mode = DEFAULT_SCRIPT_MODE;
 
 protected:
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) override {
@@ -105,8 +101,7 @@ protected:
 			return;
 		}
 
-		String source;
-		source.parse_utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
+		String source = String::utf8(reinterpret_cast<const char *>(file.ptr()), file.size());
 		GDScriptTokenizerBuffer::CompressMode compress_mode = script_mode == EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED ? GDScriptTokenizerBuffer::COMPRESS_ZSTD : GDScriptTokenizerBuffer::COMPRESS_NONE;
 		file = GDScriptTokenizerBuffer::parse_code_string(source, compress_mode);
 		if (file.is_empty()) {
@@ -166,12 +161,7 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		gdscript_translation_parser_plugin.instantiate();
 		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 	} else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		ClassDB::APIType prev_api = ClassDB::get_current_api();
-		ClassDB::set_current_api(ClassDB::API_EDITOR);
-
 		GDREGISTER_CLASS(GDScriptSyntaxHighlighter);
-
-		ClassDB::set_current_api(prev_api);
 	}
 #endif // TOOLS_ENABLED
 }

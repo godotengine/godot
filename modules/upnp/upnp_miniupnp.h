@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UPNP_MINIUPNP_H
-#define UPNP_MINIUPNP_H
+#pragma once
 
 #ifndef WEB_ENABLED
 
 #include "upnp.h"
 
-#include <miniupnpc.h>
+#include <miniupnpc/miniupnpc.h>
 
 class UPNPMiniUPNP : public UPNP {
 	GDCLASS(UPNPMiniUPNP, UPNP);
@@ -89,5 +88,3 @@ public:
 };
 
 #endif // WEB_ENABLED
-
-#endif // UPNP_MINIUPNP_H

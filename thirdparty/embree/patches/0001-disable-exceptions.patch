@@ -1,0 +1,349 @@
+diff --git a/thirdparty/embree/common/algorithms/parallel_reduce.h b/thirdparty/embree/common/algorithms/parallel_reduce.h
+index b52b1e2e13..fbff38f660 100644
+--- a/thirdparty/embree/common/algorithms/parallel_reduce.h
++++ b/thirdparty/embree/common/algorithms/parallel_reduce.h
+@@ -58,15 +58,15 @@ namespace embree
+     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
+       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
+       reduction,context);
+-    if (context.is_group_execution_cancelled())
+-      throw std::runtime_error("task cancelled");
++    //if (context.is_group_execution_cancelled())
++    //  throw std::runtime_error("task cancelled");
+     return v;
+   #else
+     const Value v = tbb::parallel_reduce(tbb::blocked_range<Index>(first,last,minStepSize),identity,
+       [&](const tbb::blocked_range<Index>& r, const Value& start) { return reduction(start,func(range<Index>(r.begin(),r.end()))); },
+       reduction);
+-    if (tbb::task::self().is_cancelled())
+-      throw std::runtime_error("task cancelled");
++    //if (tbb::task::self().is_cancelled())
++    //  throw std::runtime_error("task cancelled");
+     return v;
+   #endif
+ #else // TASKING_PPL
+diff --git a/thirdparty/embree/common/lexers/stringstream.cpp b/thirdparty/embree/common/lexers/stringstream.cpp
+index 42ffb10176..9779fc74c7 100644
+--- a/thirdparty/embree/common/lexers/stringstream.cpp
++++ b/thirdparty/embree/common/lexers/stringstream.cpp
+@@ -39,7 +39,7 @@ namespace embree
+     std::vector<char> str; str.reserve(64);
+     while (cin->peek() != EOF && !isSeparator(cin->peek())) {
+       int c = cin->get();
+-      if (!isValidChar(c)) throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
++      if (!isValidChar(c)) abort(); //throw std::runtime_error("invalid character "+std::string(1,c)+" in input");
+       str.push_back((char)c);
+     }
+     str.push_back(0);
+diff --git a/thirdparty/embree/common/sys/alloc.cpp b/thirdparty/embree/common/sys/alloc.cpp
+index c92bb99ece..2288df76ef 100644
+--- a/thirdparty/embree/common/sys/alloc.cpp
++++ b/thirdparty/embree/common/sys/alloc.cpp
+@@ -20,7 +20,7 @@ namespace embree
+     assert((align & (align-1)) == 0);
+     void* ptr = _mm_malloc(size,align);
+     if (size != 0 && ptr == nullptr)
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+     return ptr;
+   }
+ 
+@@ -50,7 +50,7 @@ namespace embree
+       ptr = sycl::aligned_alloc_shared(align,size,*device,*context);
+ 
+     if (size != 0 && ptr == nullptr)
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+ 
+     return ptr;
+   }
+@@ -83,7 +83,7 @@ namespace embree
+     }
+ 
+     if (size != 0 && ptr == nullptr)
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+ 
+     return ptr;
+   }
+@@ -199,7 +199,7 @@ namespace embree
+     /* fall back to 4k pages */
+     int flags = MEM_COMMIT | MEM_RESERVE;
+     char* ptr = (char*) VirtualAlloc(nullptr,bytes,flags,PAGE_READWRITE);
+-    if (ptr == nullptr) throw std::bad_alloc();
++    if (ptr == nullptr) abort(); //throw std::bad_alloc();
+     hugepages = false;
+     return ptr;
+   }
+@@ -216,7 +216,7 @@ namespace embree
+       return bytesOld;
+ 
+     if (!VirtualFree((char*)ptr+bytesNew,bytesOld-bytesNew,MEM_DECOMMIT))
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+ 
+     return bytesNew;
+   }
+@@ -227,7 +227,7 @@ namespace embree
+       return;
+ 
+     if (!VirtualFree(ptr,0,MEM_RELEASE))
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+   }
+ 
+   void os_advise(void *ptr, size_t bytes)
+@@ -331,7 +331,7 @@ namespace embree
+ 
+     /* fallback to 4k pages */
+     void* ptr = (char*) mmap(0, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+-    if (ptr == MAP_FAILED) throw std::bad_alloc();
++    if (ptr == MAP_FAILED) abort(); //throw std::bad_alloc();
+     hugepages = false;
+ 
+     /* advise huge page hint for THP */
+@@ -348,7 +348,7 @@ namespace embree
+       return bytesOld;
+ 
+     if (munmap((char*)ptr+bytesNew,bytesOld-bytesNew) == -1)
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+ 
+     return bytesNew;
+   }
+@@ -362,7 +362,7 @@ namespace embree
+     const size_t pageSize = hugepages ? PAGE_SIZE_2M : PAGE_SIZE_4K;
+     bytes = (bytes+pageSize-1) & ~(pageSize-1);
+     if (munmap(ptr,bytes) == -1)
+-      throw std::bad_alloc();
++      abort(); //throw std::bad_alloc();
+   }
+ 
+   /* hint for transparent huge pages (THP) */
+diff --git a/thirdparty/embree/common/sys/alloc.h b/thirdparty/embree/common/sys/alloc.h
+index 5c63d0bfaf..1f6f230ed3 100644
+--- a/thirdparty/embree/common/sys/alloc.h
++++ b/thirdparty/embree/common/sys/alloc.h
+@@ -131,7 +131,7 @@ namespace embree
+       typedef std::ptrdiff_t difference_type;
+ 
+       __forceinline pointer allocate( size_type n ) {
+-        throw std::runtime_error("no allocation supported");
++        abort(); //throw std::runtime_error("no allocation supported");
+       }
+ 
+       __forceinline void deallocate( pointer p, size_type n ) {
+diff --git a/thirdparty/embree/common/sys/platform.h b/thirdparty/embree/common/sys/platform.h
+index 6dc0cf3318..1e5b02550e 100644
+--- a/thirdparty/embree/common/sys/platform.h
++++ b/thirdparty/embree/common/sys/platform.h
+@@ -214,10 +214,11 @@
+ 
+ #if defined(DEBUG) // only report file and line in debug mode
+   #define THROW_RUNTIME_ERROR(str) \
+-    throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
++    //throw std::runtime_error(std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+ #else
+   #define THROW_RUNTIME_ERROR(str) \
+-    throw std::runtime_error(str);
++    abort(); //throw std::runtime_error(str);
+ #endif
+ 
+ #define FATAL(x)   THROW_RUNTIME_ERROR(x)
+diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
+index 83ead95122..e89ae04f8b 100644
+--- a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
++++ b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
+@@ -48,13 +48,13 @@ namespace embree
+     {
+       Task* prevTask = thread.task;
+       thread.task = this;
+-      try {
+-        if (context->cancellingException == nullptr)
++      //try {
++      //  if (context->cancellingException == nullptr)
+           closure->execute();
+-      } catch (...) {
+-        if (context->cancellingException == nullptr)
+-          context->cancellingException = std::current_exception();
+-      }
++      //} catch (...) {
++      //  if (context->cancellingException == nullptr)
++      //    context->cancellingException = std::current_exception();
++      //}
+       thread.task = prevTask;
+       add_dependencies(-1);
+     }
+diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.h b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+index b01bebf7c3..d4e0c7386b 100644
+--- a/thirdparty/embree/common/tasking/taskschedulerinternal.h
++++ b/thirdparty/embree/common/tasking/taskschedulerinternal.h
+@@ -131,7 +131,7 @@ namespace embree
+       {
+         size_t ofs = bytes + ((align - stackPtr) & (align-1));
+         if (stackPtr + ofs > CLOSURE_STACK_SIZE)
+-          throw std::runtime_error("closure stack overflow");
++          abort(); //throw std::runtime_error("closure stack overflow");
+         stackPtr += ofs;
+         return &stack[stackPtr-bytes];
+       }
+@@ -140,7 +140,7 @@ namespace embree
+       __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure, TaskGroupContext* context)
+       {
+         if (right >= TASK_STACK_SIZE)
+-          throw std::runtime_error("task stack overflow");
++          abort(); //throw std::runtime_error("task stack overflow");
+ 
+ 	/* allocate new task on right side of stack */
+         size_t oldStackPtr = stackPtr;
+diff --git a/thirdparty/embree/kernels/bvh/bvh_statistics.cpp b/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
+index 40f9043736..f3b93e5925 100644
+--- a/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
++++ b/thirdparty/embree/kernels/bvh/bvh_statistics.cpp
+@@ -150,7 +150,7 @@ namespace embree
+       }
+     }
+     else {
+-      throw std::runtime_error("not supported node type in bvh_statistics");
++      abort(); //throw std::runtime_error("not supported node type in bvh_statistics");
+     }
+     return s;
+   } 
+diff --git a/thirdparty/embree/kernels/common/alloc.h b/thirdparty/embree/kernels/common/alloc.h
+index 2bd292de4d..10f629a244 100644
+--- a/thirdparty/embree/kernels/common/alloc.h
++++ b/thirdparty/embree/kernels/common/alloc.h
+@@ -190,7 +190,7 @@ namespace embree
+       , primrefarray(device,0)
+     {
+       if (osAllocation && useUSM)
+-        throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
++        abort(); //throw std::runtime_error("USM allocation cannot be combined with OS allocation.");
+ 
+       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++)
+       {
+@@ -503,7 +503,7 @@ namespace embree
+         if (myUsedBlocks) {
+           void* ptr = myUsedBlocks->malloc(device,bytes,align,partial);
+           if (ptr == nullptr && !blockAllocation)
+-            throw std::bad_alloc();
++            abort(); //throw std::bad_alloc();
+           if (ptr) return ptr;
+         }
+ 
+diff --git a/thirdparty/embree/kernels/common/rtcore.cpp b/thirdparty/embree/kernels/common/rtcore.cpp
+index 8da5c9d86c..a34eb2a0c4 100644
+--- a/thirdparty/embree/kernels/common/rtcore.cpp
++++ b/thirdparty/embree/kernels/common/rtcore.cpp
+@@ -358,7 +358,7 @@ RTC_NAMESPACE_BEGIN;
+     if (quality != RTC_BUILD_QUALITY_LOW &&
+         quality != RTC_BUILD_QUALITY_MEDIUM &&
+         quality != RTC_BUILD_QUALITY_HIGH)
+-      throw std::runtime_error("invalid build quality");
++      abort(); //throw std::runtime_error("invalid build quality");
+     scene->setBuildQuality(quality);
+     RTC_CATCH_END2(scene);
+   }
+@@ -1831,7 +1831,7 @@ RTC_API void rtcSetGeometryTransform(RTCGeometry hgeometry, unsigned int timeSte
+         quality != RTC_BUILD_QUALITY_MEDIUM &&
+         quality != RTC_BUILD_QUALITY_HIGH &&
+         quality != RTC_BUILD_QUALITY_REFIT)
+-      throw std::runtime_error("invalid build quality");
++      abort(); //throw std::runtime_error("invalid build quality");
+     geometry->setBuildQuality(quality);
+     RTC_CATCH_END2(geometry);
+   }
+diff --git a/thirdparty/embree/kernels/common/rtcore.h b/thirdparty/embree/kernels/common/rtcore.h
+index 73a061de11..cd7a6f4395 100644
+--- a/thirdparty/embree/kernels/common/rtcore.h
++++ b/thirdparty/embree/kernels/common/rtcore.h
+@@ -13,7 +13,7 @@ namespace embree
+   __forceinline bool isIncoherent(RTCRayQueryFlags flags) { return (flags & RTC_RAY_QUERY_FLAG_COHERENT) == RTC_RAY_QUERY_FLAG_INCOHERENT; }
+ 
+ /*! Macros used in the rtcore API implementation */
+-#if 0
++#if 1
+ #  define RTC_CATCH_BEGIN
+ #  define RTC_CATCH_END(device)
+ #  define RTC_CATCH_END2(scene)
+@@ -94,6 +94,7 @@ namespace embree
+ #define RTC_TRACE(x) 
+ #endif
+ 
++#if 0
+   /*! used to throw embree API errors */
+   struct rtcore_error : public std::exception
+   {
+@@ -109,13 +110,16 @@ namespace embree
+     RTCError error;
+     std::string str;
+   };
++#endif
+ 
+ #if defined(DEBUG) // only report file and line in debug mode
+   #define throw_RTCError(error,str) \
+-    throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
++    printf("%s (%d): %s", __FILE__, __LINE__, std::string(str).c_str()), abort();
++    //throw rtcore_error(error,std::string(__FILE__) + " (" + toString(__LINE__) + "): " + std::string(str));
+ #else
+   #define throw_RTCError(error,str) \
+-    throw rtcore_error(error,str);
++    abort();
++    //throw rtcore_error(error,str);
+ #endif
+ 
+ #define RTC_BUILD_ARGUMENTS_HAS(settings,member) \
+diff --git a/thirdparty/embree/kernels/common/scene.cpp b/thirdparty/embree/kernels/common/scene.cpp
+index 84a84f8c69..3bfcebd298 100644
+--- a/thirdparty/embree/kernels/common/scene.cpp
++++ b/thirdparty/embree/kernels/common/scene.cpp
+@@ -962,16 +962,16 @@ namespace embree
+     }
+ 
+     /* initiate build */
+-    try {
++    //try {
+       TaskScheduler::TaskGroupContext context;
+       scheduler->spawn_root([&]() { commit_task(); Lock<MutexSys> lock(taskGroup->schedulerMutex); taskGroup->scheduler = nullptr; }, &context, 1, !join);
+-    }
+-    catch (...) {
+-      accels_clear();
+-      Lock<MutexSys> lock(taskGroup->schedulerMutex);
+-      taskGroup->scheduler = nullptr;
+-      throw;
+-    }
++    //}
++    //catch (...) {
++    //  accels_clear();
++    //  Lock<MutexSys> lock(taskGroup->schedulerMutex);
++    //  taskGroup->scheduler = nullptr;
++    //  throw;
++    //}
+   }
+ 
+ #endif
+diff --git a/thirdparty/embree/kernels/common/state.cpp b/thirdparty/embree/kernels/common/state.cpp
+index cce5eafce1..509dbc7120 100644
+--- a/thirdparty/embree/kernels/common/state.cpp
++++ b/thirdparty/embree/kernels/common/state.cpp
+@@ -199,13 +199,13 @@ namespace embree
+   bool State::parseFile(const FileName& fileName)
+   { 
+     Ref<Stream<int> > file;
+-    try {
++    //try {
+       file = new FileStream(fileName);
+-    }
+-    catch (std::runtime_error& e) {
+-      (void) e;
+-      return false;
+-    }
++    //}
++    //catch (std::runtime_error& e) {
++    //  (void) e;
++    //  return false;
++    //}
+     
+     std::vector<std::string> syms;
+     for (size_t i=0; i<sizeof(symbols)/sizeof(void*); i++) 

@@ -30,6 +30,9 @@
 
 #include "animated_texture.h"
 
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+
 void AnimatedTexture::_update_proxy() {
 	RWLockRead r(rw_lock);
 
@@ -45,7 +48,7 @@ void AnimatedTexture::_update_proxy() {
 
 	time += delta;
 
-	float speed = speed_scale == 0 ? 0 : abs(1.0 / speed_scale);
+	float speed = speed_scale == 0 ? 0 : std::abs(1.0 / speed_scale);
 
 	int iter_max = frame_count;
 	while (iter_max && !pause) {
@@ -174,7 +177,7 @@ float AnimatedTexture::get_speed_scale() const {
 int AnimatedTexture::get_width() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return 1;
 	}
 
@@ -184,7 +187,7 @@ int AnimatedTexture::get_width() const {
 int AnimatedTexture::get_height() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return 1;
 	}
 
@@ -198,7 +201,7 @@ RID AnimatedTexture::get_rid() const {
 bool AnimatedTexture::has_alpha() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return false;
 	}
 
@@ -208,7 +211,7 @@ bool AnimatedTexture::has_alpha() const {
 Ref<Image> AnimatedTexture::get_image() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return Ref<Image>();
 	}
 
@@ -286,6 +289,6 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(proxy);
-	RS::get_singleton()->free(proxy_ph);
+	RS::get_singleton()->free_rid(proxy);
+	RS::get_singleton()->free_rid(proxy_ph);
 }

@@ -24,30 +24,6 @@
 #include "mbedtls/threading.h"
 #endif
 
-/**
- * Tell if PSA is ready for this hash.
- *
- * \note            For now, only checks the state of the driver subsystem,
- *                  not the algorithm. Might do more in the future.
- *
- * \param hash_alg  The hash algorithm (ignored for now).
- *
- * \return 1 if the driver subsytem is ready, 0 otherwise.
- */
-int psa_can_do_hash(psa_algorithm_t hash_alg);
-
-/**
- * Tell if PSA is ready for this cipher.
- *
- * \note            For now, only checks the state of the driver subsystem,
- *                  not the algorithm. Might do more in the future.
- *
- * \param cipher_alg  The cipher algorithm (ignored for now).
- *
- * \return 1 if the driver subsytem is ready, 0 otherwise.
- */
-int psa_can_do_cipher(psa_key_type_t key_type, psa_algorithm_t cipher_alg);
-
 typedef enum {
     PSA_SLOT_EMPTY = 0,
     PSA_SLOT_FILLING,
@@ -155,7 +131,11 @@ typedef struct {
     /* Dynamically allocated key data buffer.
      * Format as specified in psa_export_key(). */
     struct key_data {
+#if defined(MBEDTLS_PSA_STATIC_KEY_SLOTS)
+        uint8_t data[MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE];
+#else
         uint8_t *data;
+#endif
         size_t bytes;
     } key;
 } psa_key_slot_t;

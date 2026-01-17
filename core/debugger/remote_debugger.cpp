@@ -40,7 +40,7 @@
 #include "core/math/expression.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	Object *performance = nullptr;
@@ -48,9 +48,9 @@ class RemoteDebugger::PerformanceProfiler : public EngineProfiler {
 	uint64_t last_monitor_modification_time = 0;
 
 public:
-	void toggle(bool p_enable, const Array &p_opts) {}
-	void add(const Array &p_data) {}
-	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
+	void toggle(bool p_enable, const Array &p_opts) override {}
+	void add(const Array &p_data) override {}
+	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) override {
 		if (!performance) {
 			return;
 		}
@@ -62,11 +62,16 @@ public:
 		last_perf_time = pt;
 
 		Array custom_monitor_names = performance->call("get_custom_monitor_names");
+		Array custom_monitor_types = performance->call("get_custom_monitor_types");
+
+		Array custom_monitor_data;
+		custom_monitor_data.push_back(custom_monitor_names);
+		custom_monitor_data.push_back(custom_monitor_types);
 
 		uint64_t monitor_modification_time = performance->call("get_monitor_modification_time");
 		if (monitor_modification_time > last_monitor_modification_time) {
 			last_monitor_modification_time = monitor_modification_time;
-			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_names);
+			EngineDebugger::get_singleton()->send_message("performance:profile_names", custom_monitor_data);
 		}
 
 		int max = performance->get("MONITOR_MAX");
@@ -95,10 +100,7 @@ public:
 };
 
 Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
-	Array msg;
-	msg.push_back(p_message);
-	msg.push_back(Thread::get_caller_id());
-	msg.push_back(p_data);
+	Array msg = { p_message, Thread::get_caller_id(), p_data };
 	Error err = peer->put_message(msg);
 	if (err != OK) {
 		n_messages_dropped++;
@@ -107,10 +109,6 @@ Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
 }
 
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
-	if (p_type == ERR_HANDLER_SCRIPT) {
-		return; //ignore script errors, those go through debugger
-	}
-
 	RemoteDebugger *rd = static_cast<RemoteDebugger *>(p_this);
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
 		return;
@@ -235,9 +233,7 @@ void RemoteDebugger::flush_output() {
 			types.push_back(MESSAGE_TYPE_LOG);
 		}
 
-		Array arr;
-		arr.push_back(strings);
-		arr.push_back(types);
+		Array arr = { strings, types };
 		_put_msg("output", arr);
 		output_strings.clear();
 	}
@@ -412,14 +408,17 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 	}
 
+	if (p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks()) {
+		return;
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
-	const String error_str = script_lang ? script_lang->debug_get_error() : "";
-	Array msg;
-	msg.push_back(p_can_continue);
-	msg.push_back(error_str);
-	ERR_FAIL_NULL(script_lang);
-	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
-	msg.push_back(Thread::get_caller_id() == Thread::get_main_id() ? String(RTR("Main Thread")) : itos(Thread::get_caller_id()));
+	Array msg = {
+		p_can_continue,
+		script_lang ? script_lang->debug_get_error() : String(),
+		script_lang && (script_lang->debug_get_stack_level_count() > 0),
+		Thread::get_caller_id()
+	};
 	if (allow_focus_steal_fn) {
 		allow_focus_steal_fn();
 	}
@@ -462,6 +461,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_debugger->set_lines_left(1);
 				break;
 
+			} else if (command == "out") {
+				script_debugger->set_depth(1);
+				script_debugger->set_lines_left(1);
+				break;
+
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
@@ -473,19 +477,24 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			} else if (command == "get_stack_dump") {
 				DebuggerMarshalls::ScriptStackDump dump;
-				int slc = script_lang->debug_get_stack_level_count();
-				for (int i = 0; i < slc; i++) {
-					ScriptLanguage::StackInfo frame;
-					frame.file = script_lang->debug_get_stack_level_source(i);
-					frame.line = script_lang->debug_get_stack_level_line(i);
-					frame.func = script_lang->debug_get_stack_level_function(i);
-					dump.frames.push_back(frame);
+				if (script_lang) {
+					int slc = script_lang->debug_get_stack_level_count();
+					for (int i = 0; i < slc; i++) {
+						ScriptLanguage::StackInfo frame;
+						frame.file = script_lang->debug_get_stack_level_source(i);
+						frame.line = script_lang->debug_get_stack_level_line(i);
+						frame.func = script_lang->debug_get_stack_level_function(i);
+						dump.frames.push_back(frame);
+					}
 				}
 				send_message("stack_dump", dump.serialize());
 
 			} else if (command == "get_stack_frame_vars") {
 				ERR_FAIL_COND(data.size() != 1);
-				ERR_FAIL_NULL(script_lang);
+				if (!script_lang) {
+					send_message("stack_frame_vars", Array{ 0 });
+					continue;
+				}
 				int lv = data[0];
 
 				List<String> members;
@@ -507,8 +516,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				Array var_size;
-				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() };
 				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);
@@ -530,6 +538,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
+			} else if (command == "set_ignore_error_breaks") {
+				ERR_FAIL_COND(data.is_empty());
+				script_debugger->set_ignore_error_breaks(data[0]);
 			} else if (command == "evaluate") {
 				String expression_str = data[0];
 				int frame = data[1];
@@ -539,25 +550,60 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 					break;
 				}
 
+				PackedStringArray input_names;
+				Array input_vals;
+
 				List<String> locals;
 				List<Variant> local_vals;
-
 				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
 				ERR_FAIL_COND(locals.size() != local_vals.size());
 
-				PackedStringArray locals_vector;
 				for (const String &S : locals) {
-					locals_vector.append(S);
+					input_names.append(S);
 				}
 
-				Array local_vals_array;
 				for (const Variant &V : local_vals) {
-					local_vals_array.append(V);
+					input_vals.append(V);
+				}
+
+				List<String> globals;
+				List<Variant> globals_vals;
+				script_debugger->get_break_language()->debug_get_globals(&globals, &globals_vals);
+				ERR_FAIL_COND(globals.size() != globals_vals.size());
+
+				for (const String &S : globals) {
+					input_names.append(S);
+				}
+
+				for (const Variant &V : globals_vals) {
+					input_vals.append(V);
+				}
+
+				LocalVector<StringName> native_types;
+				ClassDB::get_class_list(native_types);
+				for (const StringName &class_name : native_types) {
+					if (!ClassDB::is_class_exposed(class_name) || !Engine::get_singleton()->has_singleton(class_name) || Engine::get_singleton()->is_singleton_editor_only(class_name)) {
+						continue;
+					}
+
+					input_names.append(class_name);
+					input_vals.append(Engine::get_singleton()->get_singleton_object(class_name));
+				}
+
+				LocalVector<StringName> user_types;
+				ScriptServer::get_global_class_list(user_types);
+				for (const StringName &class_name : user_types) {
+					String scr_path = ScriptServer::get_global_class_path(class_name);
+					Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
+					ERR_CONTINUE_MSG(scr.is_null(), vformat(R"(Could not load the global class %s from resource path: "%s".)", class_name, scr_path));
+
+					input_names.append(class_name);
+					input_vals.append(scr);
 				}
 
 				Expression expression;
-				expression.parse(expression_str, locals_vector);
-				const Variant return_val = expression.execute(local_vals_array, breaked_instance->get_owner());
+				expression.parse(expression_str, input_names);
+				const Variant return_val = expression.execute(input_vals, breaked_instance->get_owner());
 
 				DebuggerMarshalls::ScriptStackVariable stvar;
 				stvar.name = expression_str;
@@ -635,10 +681,18 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 			reload_all_scripts = false;
 		} else if (!script_paths_to_reload.is_empty()) {
 			Array scripts_to_reload;
-			for (int i = 0; i < script_paths_to_reload.size(); ++i) {
-				String path = script_paths_to_reload[i];
+			for (const Variant &v : script_paths_to_reload) {
+				const String &path = v;
 				Error err = OK;
-				Ref<Script> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+				Ref<Script> script = ResourceCache::get_ref(path);
+				if (script.is_null()) {
+					if (path.is_resource_file()) {
+						script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+					} else {
+						// Built-in script that isn't in ResourceCache, no need to reload.
+						continue;
+					}
+				}
 				ERR_CONTINUE_MSG(err != OK, vformat("Could not reload script '%s': %s", path, error_names[err]));
 				ERR_CONTINUE_MSG(script.is_null(), vformat("Could not reload script '%s': Not a script!", path, error_names[err]));
 				scripts_to_reload.push_back(script);
@@ -669,6 +723,9 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "set_skip_breakpoints") {
 		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
+	} else if (p_cmd == "set_ignore_error_breaks") {
+		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
+		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
 	} else {

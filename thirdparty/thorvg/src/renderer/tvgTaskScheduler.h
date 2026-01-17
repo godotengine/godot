@@ -103,7 +103,6 @@ struct TaskScheduler
     static void init(uint32_t threads);
     static void term();
     static void request(Task* task);
-    static void async(bool on);
 };
 
 }  //namespace

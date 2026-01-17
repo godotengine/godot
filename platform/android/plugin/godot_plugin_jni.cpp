@@ -33,7 +33,6 @@
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
 #include "jni_utils.h"
-#include "string_android.h"
 
 #include "core/config/engine.h"
 #include "core/error/error_macros.h"
@@ -129,12 +128,16 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
-		ERR_FAIL_NULL(j_param);
 		memnew_placement(&variant_params[i], Variant(_jobject_to_variant(env, j_param)));
 		args[i] = &variant_params[i];
 		env->DeleteLocalRef(j_param);
 	}
 
 	singleton->emit_signalp(StringName(signal_name), args, count);
+
+	// Manually invoke the destructor to decrease the reference counts for the variant arguments.
+	for (int i = 0; i < count; i++) {
+		variant_params[i].~Variant();
+	}
 }
 }

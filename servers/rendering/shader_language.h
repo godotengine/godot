@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_LANGUAGE_H
-#define SHADER_LANGUAGE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 #include "scene/resources/shader_include.h"
@@ -164,6 +164,7 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
+		TK_STENCIL_MODE,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
 		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_DEFAULT_TRANSPARENT_TEXTURE,
@@ -176,6 +177,7 @@ public:
 		TK_HINT_ROUGHNESS_GRAY,
 		TK_HINT_ANISOTROPY_TEXTURE,
 		TK_HINT_SOURCE_COLOR,
+		TK_HINT_COLOR_CONVERSION_DISABLED,
 		TK_HINT_RANGE,
 		TK_HINT_ENUM,
 		TK_HINT_INSTANCE_INDEX,
@@ -619,10 +621,8 @@ public:
 		struct Varying {
 			enum Stage {
 				STAGE_UNKNOWN,
-				STAGE_VERTEX, // transition stage to STAGE_VERTEX_TO_FRAGMENT_LIGHT, emits warning if it's not used
-				STAGE_FRAGMENT, // transition stage to STAGE_FRAGMENT_TO_LIGHT, emits warning if it's not used
-				STAGE_VERTEX_TO_FRAGMENT_LIGHT,
-				STAGE_FRAGMENT_TO_LIGHT,
+				STAGE_VERTEX,
+				STAGE_FRAGMENT,
 			};
 
 			Stage stage = STAGE_UNKNOWN;
@@ -631,6 +631,28 @@ public:
 			DataPrecision precision = PRECISION_DEFAULT;
 			int array_size = 0;
 			TkPos tkpos;
+
+			uint32_t get_size() const {
+				uint32_t size = 1;
+				if (array_size > 0) {
+					size = (uint32_t)array_size;
+				}
+
+				switch (type) {
+					case TYPE_MAT2:
+						size *= 2;
+						break;
+					case TYPE_MAT3:
+						size *= 3;
+						break;
+					case TYPE_MAT4:
+						size *= 4;
+						break;
+					default:
+						break;
+				}
+				return size;
+			}
 
 			Varying() {}
 		};
@@ -641,6 +663,7 @@ public:
 				HINT_RANGE,
 				HINT_ENUM,
 				HINT_SOURCE_COLOR,
+				HINT_COLOR_CONVERSION_DISABLED,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
 				HINT_ROUGHNESS_R,
@@ -701,6 +724,8 @@ public:
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
+		Vector<StringName> stencil_modes;
+		int stencil_reference = -1;
 
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
@@ -777,6 +802,7 @@ public:
 		COMPLETION_NONE,
 		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
+		COMPLETION_STENCIL_MODE,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
 		COMPLETION_FUNCTION_CALL,
@@ -824,7 +850,9 @@ public:
 	static bool is_scalar_type(DataType p_type);
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
+	static bool is_hint_color(ShaderNode::Uniform::Hint p_hint);
 	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
@@ -833,17 +861,19 @@ public:
 	static bool is_control_flow_keyword(String p_keyword);
 	static void get_builtin_funcs(List<String> *r_keywords);
 
-	static int instance_counter;
+	static SafeNumeric<int> instance_counter;
 
 	struct BuiltInInfo {
 		DataType type = TYPE_VOID;
 		bool constant = false;
+		Vector<Scalar> values;
 
 		BuiltInInfo() {}
 
-		BuiltInInfo(DataType p_type, bool p_constant = false) :
+		BuiltInInfo(DataType p_type, bool p_constant = false, const Vector<Scalar> &p_values = {}) :
 				type(p_type),
-				constant(p_constant) {}
+				constant(p_constant),
+				values(p_values) {}
 	};
 
 	struct StageFunctionInfo {
@@ -910,6 +940,13 @@ public:
 			options.push_back(p_arg4);
 			options.push_back(p_arg5);
 			options.push_back(p_arg6);
+		}
+
+		ModeInfo(const StringName &p_name, std::initializer_list<StringName> p_args) :
+				name(p_name) {
+			for (const StringName &arg : p_args) {
+				options.push_back(arg);
+			}
 		}
 	};
 
@@ -1022,6 +1059,7 @@ private:
 	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
+	uint32_t base_varying_index = 0;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -1094,10 +1132,10 @@ private:
 #endif // DEBUG_ENABLED
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
-	bool _validate_operator(const BlockNode *p_block, OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
+	bool _validate_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr, StringName *r_ret_struct_name = nullptr);
 
-	Vector<Scalar> _get_node_values(const BlockNode *p_block, Node *p_node);
-	bool _eval_operator(const BlockNode *p_block, OperatorNode *p_op);
+	Vector<Scalar> _get_node_values(const BlockNode *p_block, const FunctionInfo &p_function_info, Node *p_node);
+	bool _eval_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op);
 	Scalar _eval_unary_scalar(const Scalar &p_a, Operator p_op, DataType p_ret_type);
 	Scalar _eval_scalar(const Scalar &p_a, const Scalar &p_b, Operator p_op, DataType p_ret_type, bool &r_is_valid);
 	Vector<Scalar> _eval_unary_vector(const Vector<Scalar> &p_va, DataType p_ret_type, Operator p_op);
@@ -1187,10 +1225,13 @@ private:
 	String _get_shader_type_list(const HashSet<String> &p_shader_types) const;
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
+	bool _parse_numeric_constant_expression(const FunctionInfo &p_function_info, float &r_constant);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Vector<ModeInfo> &p_stencil_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
+
+	Error _parse_shader_mode(bool p_is_stencil, const Vector<ModeInfo> &p_modes, HashMap<String, String> &r_defined_modes);
 
 public:
 #ifdef DEBUG_ENABLED
@@ -1213,10 +1254,12 @@ public:
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
+		Vector<ModeInfo> stencil_modes;
 		VaryingFunctionNames varying_function_names;
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
 		bool is_include = false;
+		uint32_t base_varying_index = 0;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
@@ -1233,5 +1276,3 @@ public:
 	ShaderLanguage();
 	~ShaderLanguage();
 };
-
-#endif // SHADER_LANGUAGE_H

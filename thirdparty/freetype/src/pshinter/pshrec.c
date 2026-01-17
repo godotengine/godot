@@ -4,7 +4,7 @@
  *
  *   FreeType PostScript hints recorder (body).
  *
- * Copyright (C) 2001-2023 by
+ * Copyright (C) 2001-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -467,7 +467,7 @@
       table->num_masks--;
     }
     else
-      FT_TRACE0(( "ps_mask_table_merge: ignoring invalid indices (%d,%d)\n",
+      FT_TRACE0(( "ps_mask_table_merge: ignoring invalid indices (%u,%u)\n",
                   index1, index2 ));
 
   Exit:
@@ -806,7 +806,7 @@
   ps_hints_stem( PS_Hints  hints,
                  FT_UInt   dimension,
                  FT_Int    count,
-                 FT_Long*  stems )
+                 FT_Pos*   stems )
   {
     PS_Dimension  dim;
 
@@ -817,7 +817,7 @@
     /* limit "dimension" to 0..1 */
     if ( dimension > 1 )
     {
-      FT_TRACE0(( "ps_hints_stem: invalid dimension (%d) used\n",
+      FT_TRACE0(( "ps_hints_stem: invalid dimension (%u) used\n",
                   dimension ));
       dimension = ( dimension != 0 );
     }
@@ -870,7 +870,7 @@
       /* limit "dimension" to 0..1 */
       if ( dimension > 1 )
       {
-        FT_TRACE0(( "ps_hints_t1stem3: invalid dimension (%d) used\n",
+        FT_TRACE0(( "ps_hints_t1stem3: invalid dimension (%u) used\n",
                     dimension ));
         dimension = ( dimension != 0 );
       }
@@ -976,7 +976,7 @@
       if ( bit_count !=  count1 + count2 )
       {
         FT_TRACE0(( "ps_hints_t2mask:"
-                    " called with invalid bitcount %d (instead of %d)\n",
+                    " called with invalid bitcount %u (instead of %u)\n",
                    bit_count, count1 + count2 ));
 
         /* simply ignore the operator */
@@ -1022,7 +1022,7 @@
       if ( bit_count !=  count1 + count2 )
       {
         FT_TRACE0(( "ps_hints_t2counter:"
-                    " called with invalid bitcount %d (instead of %d)\n",
+                    " called with invalid bitcount %u (instead of %u)\n",
                    bit_count, count1 + count2 ));
 
         /* simply ignore the operator */

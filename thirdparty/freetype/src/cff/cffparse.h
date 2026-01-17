@@ -4,7 +4,7 @@
  *
  *   CFF token stream parser (specification)
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -107,6 +107,7 @@ FT_BEGIN_HEADER
     cff_kind_string,
     cff_kind_bool,
     cff_kind_delta,
+    cff_kind_delta_fixed,
     cff_kind_callback,
     cff_kind_blend,
 

@@ -31,6 +31,7 @@
 #include "movie_writer_pngwav.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 
 uint32_t MovieWriterPNGWAV::get_audio_mix_rate() const {
 	return mix_rate;
@@ -44,7 +45,7 @@ void MovieWriterPNGWAV::get_supported_extensions(List<String> *r_extensions) con
 }
 
 bool MovieWriterPNGWAV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "png";
+	return p_path.has_extension("png");
 }
 
 String MovieWriterPNGWAV::zeros_str(uint32_t p_index) {
@@ -140,7 +141,7 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 }
 
 Error MovieWriterPNGWAV::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
-	ERR_FAIL_COND_V(!f_wav.is_valid(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(f_wav.is_null(), ERR_UNCONFIGURED);
 
 	Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
 

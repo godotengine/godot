@@ -1,0 +1,136 @@
+diff --git a/thirdparty/amd-fsr2/ffx_fsr2.cpp b/thirdparty/amd-fsr2/ffx_fsr2.cpp
+index 051018e437..3970aa7f5b 100644
+--- a/thirdparty/amd-fsr2/ffx_fsr2.cpp
++++ b/thirdparty/amd-fsr2/ffx_fsr2.cpp
+@@ -36,6 +36,15 @@
+ #pragma clang diagnostic ignored "-Wunused-variable"
+ #endif
+ 
++#ifndef _countof
++#define _countof(array) (sizeof(array) / sizeof(array[0]))
++#endif
++
++#ifndef _MSC_VER
++#include <wchar.h>
++#define wcscpy_s wcscpy
++#endif
++
+ // max queued frames for descriptor management
+ static const uint32_t FSR2_MAX_QUEUED_FRAMES = 16;
+ 
+diff --git a/thirdparty/amd-fsr2/ffx_types.h b/thirdparty/amd-fsr2/ffx_types.h
+index 74edd192c4..f71b259cce 100644
+--- a/thirdparty/amd-fsr2/ffx_types.h
++++ b/thirdparty/amd-fsr2/ffx_types.h
+@@ -22,6 +22,7 @@
+ #pragma once
+ 
+ #include <stdint.h>
++#include <stdlib.h>
+ 
+ #if defined (FFX_GCC)
+ /// FidelityFX exported functions
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_accumulate_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_accumulate_pass.glsl
+index ebbe610ffa..31d68292d4 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_accumulate_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_accumulate_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_autogen_reactive_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_autogen_reactive_pass.glsl
+index 7ae41cf0c1..3b86c17d4d 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_autogen_reactive_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_autogen_reactive_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_compute_luminance_pyramid_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_compute_luminance_pyramid_pass.glsl
+index 15186e3bb6..8439c4e9d4 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_compute_luminance_pyramid_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_compute_luminance_pyramid_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
+index fcb2b76528..45ec5bdb86 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_lock_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_lock_pass.glsl
+index f7cad59c20..7c3a4c2740 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_lock_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_lock_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_rcas_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_rcas_pass.glsl
+index f0823c2bc8..8b4ebc6afc 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_rcas_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_rcas_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_reconstruct_previous_depth_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_reconstruct_previous_depth_pass.glsl
+index 20e17eef8c..be4395aaed 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_reconstruct_previous_depth_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_reconstruct_previous_depth_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_tcr_autogen_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_tcr_autogen_pass.glsl
+index bebca91099..7d6a66b8ac 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_tcr_autogen_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_tcr_autogen_pass.glsl
+@@ -19,7 +19,7 @@
+ // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ // THE SOFTWARE.
+ 
+-#version 450
++//#version 450
+ 
+ #extension GL_GOOGLE_include_directive : require
+ #extension GL_EXT_samplerless_texture_functions : require

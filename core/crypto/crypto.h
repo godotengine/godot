@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CRYPTO_H
-#define CRYPTO_H
+#pragma once
 
 #include "core/crypto/hashing_context.h"
 #include "core/io/resource.h"
@@ -115,7 +114,6 @@ public:
 	virtual Error update(const PackedByteArray &p_data) = 0;
 	virtual PackedByteArray finish() = 0;
 
-	HMACContext() {}
 	virtual ~HMACContext() {}
 };
 
@@ -145,23 +143,27 @@ public:
 	// Compares two PackedByteArrays for equality without leaking timing information in order to prevent timing attacks.
 	// @see: https://paragonie.com/blog/2015/11/preventing-timing-attacks-on-string-comparison-with-double-hmac-strategy
 	bool constant_time_compare(const PackedByteArray &p_trusted, const PackedByteArray &p_received);
-
-	Crypto() {}
 };
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderCrypto, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
+
+	// Treat certificates as text files, do not generate a `*.{crt,key,pub}.uid` file.
+	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override { return ResourceUID::INVALID_ID; }
+	virtual bool has_custom_uid_support() const override { return true; }
 };
 
 class ResourceFormatSaverCrypto : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverCrypto, ResourceFormatSaver);
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // CRYPTO_H

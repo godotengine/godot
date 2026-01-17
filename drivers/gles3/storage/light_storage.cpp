@@ -33,7 +33,6 @@
 #include "light_storage.h"
 #include "../rasterizer_gles3.h"
 #include "../rasterizer_scene_gles3.h"
-#include "config.h"
 #include "core/config/project_settings.h"
 #include "texture_storage.h"
 
@@ -210,7 +209,7 @@ void LightStorage::light_set_cull_mask(RID p_light, uint32_t p_mask) {
 	light->cull_mask = p_mask;
 
 	light->version++;
-	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void LightStorage::light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) {
@@ -351,7 +350,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float angle = Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE]);
+
+			if (angle > Math::PI * 0.5) {
+				// Light casts backwards as well.
+				return AABB(Vector3(-1, -1, -1) * len, Vector3(2, 2, 2) * len);
+			}
+
+			float size = Math::sin(angle) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -471,6 +477,13 @@ void LightStorage::reflection_probe_set_intensity(RID p_probe, float p_intensity
 	reflection_probe->intensity = p_intensity;
 }
 
+void LightStorage::reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) {
+	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
+	ERR_FAIL_NULL(reflection_probe);
+
+	reflection_probe->blend_distance = p_blend_distance;
+}
+
 void LightStorage::reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(reflection_probe);
@@ -556,10 +569,7 @@ void LightStorage::reflection_probe_set_reflection_mask(RID p_probe, uint32_t p_
 }
 
 void LightStorage::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
-	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
-	ERR_FAIL_NULL(reflection_probe);
-
-	reflection_probe->resolution = p_resolution;
+	WARN_PRINT_ONCE("reflection_probe_set_resolution is not available in Godot 4. ReflectionProbe size is configured in the project settings with the rendering/reflections/reflection_atlas/reflection_size setting.");
 }
 
 AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
@@ -801,6 +811,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ERR_FAIL_NULL_V(atlas, false);
 
+	ERR_FAIL_COND_V_MSG(atlas->size < 4, false, "Attempted to render to a reflection atlas of invalid resolution.");
+	ERR_FAIL_COND_V_MSG(atlas->count < 1, false, "Attempted to render to a reflection atlas of size < 1.");
+
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
 
@@ -973,6 +986,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	return true;
 }
 
+bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_reflection_atlas) {
+	return true;
+}
+
 Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
 	ERR_FAIL_NULL_V(atlas, Ref<RenderSceneBuffersGLES3>());
@@ -1026,6 +1043,7 @@ GLuint LightStorage::reflection_probe_instance_get_texture(RID p_instance) {
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
 
 	return atlas->reflections[rpi->atlas_index].radiance;
 }
@@ -1037,6 +1055,8 @@ GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, i
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
+
 	return atlas->reflections[rpi->atlas_index].fbos[p_index];
 }
 
@@ -1175,7 +1195,7 @@ void LightStorage::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point,
 		return; // Nothing could be done.
 	}
 
-	node = ABS(node) - 1;
+	node = Math::abs(node) - 1;
 
 	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
 	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
@@ -1202,6 +1222,33 @@ void LightStorage::lightmap_set_probe_capture_update_speed(float p_speed) {
 
 float LightStorage::lightmap_get_probe_capture_update_speed() const {
 	return lightmap_probe_capture_update_speed;
+}
+
+void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->shadow_texture = p_shadow;
+
+	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->shadow_texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+
+RS::ShadowmaskMode LightStorage::lightmap_get_shadowmask_mode(RID p_lightmap) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lightmap, RS::SHADOWMASK_MODE_NONE);
+
+	return lightmap->shadowmask_mode;
+}
+
+void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->shadowmask_mode = p_mode;
 }
 
 /* LIGHTMAP INSTANCE */
@@ -1237,7 +1284,7 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
 	ERR_FAIL_NULL(shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-	p_size = next_power_of_2(p_size);
+	p_size = next_power_of_2((uint32_t)p_size);
 
 	if (p_size == shadow_atlas->size && p_16_bits == shadow_atlas->use_16_bits) {
 		return;
@@ -1284,7 +1331,7 @@ void LightStorage::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quad
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
-	uint32_t subdiv = next_power_of_2(p_subdivision);
+	uint32_t subdiv = next_power_of_2((uint32_t)p_subdivision);
 	if (subdiv & 0xaaaaaaaa) { // sqrt(subdiv) must be integer.
 		subdiv <<= 1;
 	}
@@ -1358,7 +1405,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(quad_size * p_coverage));
+	int desired_fit = MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
@@ -1405,7 +1452,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		old_shadow = old_key & SHADOW_INDEX_MASK;
 
 		// Only re-allocate if a better option is available, and enough time has passed.
-		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick - tick > shadow_atlas_realloc_tolerance_msec);
+		should_realloc = shadow_atlas->quadrants[old_quadrant].subdivision != (uint32_t)best_subdiv && (tick - shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].alloc_tick > shadow_atlas_realloc_tolerance_msec);
 		should_redraw = shadow_atlas->quadrants[old_quadrant].shadows[old_shadow].version != p_light_version;
 
 		if (!should_realloc) {

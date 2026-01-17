@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VALIDATE_TESTING_H
-#define TEST_VALIDATE_TESTING_H
+#pragma once
 
 #include "core/core_globals.h"
 #include "core/os/os.h"
@@ -125,9 +124,7 @@ TEST_SUITE("Validate tests") {
 		dict["color"] = color;
 		INFO(dict);
 
-		Array arr;
-		arr.push_back(string);
-		arr.push_back(color);
+		Array arr = { string, color };
 		INFO(arr);
 
 		PackedByteArray byte_arr;
@@ -203,5 +200,3 @@ TEST_SUITE("Validate tests") {
 		REQUIRE(ed.has_error);
 	}
 }
-
-#endif // TEST_VALIDATE_TESTING_H

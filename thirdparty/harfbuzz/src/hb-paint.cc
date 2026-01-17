@@ -87,7 +87,7 @@ hb_paint_image_nil (hb_paint_funcs_t *funcs, void *paint_data,
                     unsigned int width,
                     unsigned int height,
                     hb_tag_t format,
-                    float slant_xy,
+                    float slant_xy_deprecated,
                     hb_glyph_extents_t *extents,
                     void *user_data) { return false; }
 
@@ -465,6 +465,42 @@ hb_paint_push_transform (hb_paint_funcs_t *funcs, void *paint_data,
 }
 
 /**
+ * hb_paint_push_font_transform:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @font: a font
+ *
+ * Push the transform reflecting the font's scale and slant
+ * settings onto the paint functions.
+ *
+ * Since: 11.0.0
+ */
+void
+hb_paint_push_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                              const hb_font_t *font)
+{
+  funcs->push_font_transform (paint_data, font);
+}
+
+/**
+ * hb_paint_push_inverse_font_transform:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @font: a font
+ *
+ * Push the inverse of the transform reflecting the font's
+ * scale and slant settings onto the paint functions.
+ *
+ * Since: 11.0.0
+ */
+void
+hb_paint_push_inverse_font_transform (hb_paint_funcs_t *funcs, void *paint_data,
+                                      const hb_font_t *font)
+{
+  funcs->push_inverse_font_transform (paint_data, font);
+}
+
+/**
  * hb_paint_pop_transform:
  * @funcs: paint functions
  * @paint_data: associated data passed by the caller
@@ -579,7 +615,7 @@ hb_paint_color (hb_paint_funcs_t *funcs, void *paint_data,
  * @width: width of the raster image in pixels, or 0
  * @height: height of the raster image in pixels, or 0
  * @format: the image format as a tag
- * @slant: the synthetic slant ratio to be applied to the image during rendering
+ * @slant: Deprecated. set to 0.0
  * @extents: (nullable): the extents of the glyph
  *
  * Perform a "image" paint operation.
@@ -592,10 +628,10 @@ hb_paint_image (hb_paint_funcs_t *funcs, void *paint_data,
                 unsigned int width,
                 unsigned int height,
                 hb_tag_t format,
-                float slant,
+                HB_UNUSED float slant,
                 hb_glyph_extents_t *extents)
 {
-  funcs->image (paint_data, image, width, height, format, slant, extents);
+  funcs->image (paint_data, image, width, height, format, 0.f, extents);
 }
 
 /**
@@ -646,7 +682,7 @@ hb_paint_radial_gradient (hb_paint_funcs_t *funcs, void *paint_data,
                           float x0, float y0, float r0,
                           float x1, float y1, float r1)
 {
-  funcs->radial_gradient (paint_data, color_line, x0, y0, r0, y1, x1, r1);
+  funcs->radial_gradient (paint_data, color_line, x0, y0, r0, x1, y1, r1);
 }
 
 /**

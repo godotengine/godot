@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_STORAGE_RD_H
-#define TEXTURE_STORAGE_RD_H
+#pragma once
 
-#include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
@@ -59,10 +57,14 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_CUBEMAP_TRANSPARENT,
+		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
 		DEFAULT_RD_TEXTURE_3D_BLACK,
+		DEFAULT_RD_TEXTURE_3D_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_TRANSPARENT,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_NORMAL,
 		DEFAULT_RD_TEXTURE_2D_ARRAY_DEPTH,
 		DEFAULT_RD_TEXTURE_2D_UINT,
@@ -91,6 +93,8 @@ public:
 		_FORCE_INLINE_ bool is_null() const { return diffuse.is_null(); }
 	};
 
+	typedef void (*InvalidationCallback)(bool p_deleted, void *p_userdata);
+
 private:
 	friend class LightStorage;
 	friend class MaterialStorage;
@@ -118,6 +122,9 @@ private:
 		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		CanvasTextureCache info_cache[2];
+
+		InvalidationCallback invalidated_callback = nullptr;
+		void *invalidated_callback_userdata = nullptr;
 
 		Size2i size_cache = Size2i(1, 1);
 		bool use_normal_cache = false;
@@ -363,6 +370,7 @@ private:
 
 		bool is_transparent = false;
 		bool use_hdr = false;
+		bool use_debanding = false;
 
 		bool sdf_enabled = false;
 
@@ -389,11 +397,14 @@ private:
 		RS::ViewportVRSUpdateMode vrs_update_mode = RS::VIEWPORT_VRS_UPDATE_ONCE;
 		RID vrs_texture;
 
+		Rect2i render_region;
+
 		// overridden textures
 		struct RTOverridden {
 			RID color;
 			RID depth;
 			RID velocity;
+			RID velocity_depth;
 
 			// In a multiview scenario, which is the most likely where we
 			// override our destination textures, we need to obtain slices
@@ -498,6 +509,7 @@ public:
 	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) override;
 
 	CanvasTextureInfo canvas_texture_get_info(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, bool p_use_srgb, bool p_texture_is_data);
+	void canvas_texture_set_invalidation_callback(RID p_canvas_texture, InvalidationCallback p_callback, void *p_userdata);
 
 	/* Texture API */
 
@@ -752,6 +764,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override;
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
@@ -779,14 +793,21 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override;
 
-	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) override;
+	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) override;
 	virtual RID render_target_get_override_color(RID p_render_target) const override;
 	virtual RID render_target_get_override_depth(RID p_render_target) const override;
 	RID render_target_get_override_depth_slice(RID p_render_target, const uint32_t p_layer) const;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 	RID render_target_get_override_velocity_slice(RID p_render_target, const uint32_t p_layer) const;
+	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override;
+
+	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
+	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
+
+	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
+	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const override { return Size2i(0, 0); }
 
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
@@ -806,5 +827,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // TEXTURE_STORAGE_RD_H

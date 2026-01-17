@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FBX_DOCUMENT_H
-#define FBX_DOCUMENT_H
+#pragma once
 
 #include "fbx_state.h"
 
@@ -40,6 +39,8 @@
 
 class FBXDocument : public GLTFDocument {
 	GDCLASS(FBXDocument, GLTFDocument);
+
+	int _naming_version = 2;
 
 public:
 	enum {
@@ -53,13 +54,16 @@ public:
 	static String _gen_unique_name(HashSet<String> &unique_names, const String &p_name);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String()) override;
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
+	Error append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, const String &p_base_path = String()) override;
+	Error append_from_buffer(const PackedByteArray &p_bytes, const String &p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
 	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0) override;
 
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
 	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
+
+	void set_naming_version(int p_version);
+	int get_naming_version() const;
 
 private:
 	String _get_texture_path(const String &p_base_directory, const String &p_source_file_path) const;
@@ -97,7 +101,5 @@ public:
 	void _generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<FBXState> p_state, AnimationPlayer *p_animation_player,
 			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
-	Error _parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> p_file);
+	Error _parse(Ref<FBXState> p_state, const String &p_path, Ref<FileAccess> p_file);
 };
-
-#endif // FBX_DOCUMENT_H

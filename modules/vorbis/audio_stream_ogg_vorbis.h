@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_OGG_VORBIS_H
-#define AUDIO_STREAM_OGG_VORBIS_H
+#pragma once
 
 #include "core/variant/variant.h"
-#include "modules/ogg/ogg_packet_sequence.h"
 #include "servers/audio/audio_stream.h"
+
+#include "modules/ogg/ogg_packet_sequence.h"
 
 #include <vorbis/codec.h>
 
@@ -133,13 +133,15 @@ class AudioStreamOggVorbis : public AudioStream {
 	double bpm = 0;
 	int beat_count = 0;
 	int bar_beats = 4;
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
 
 public:
 	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
-	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
+	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 
@@ -154,6 +156,9 @@ public:
 
 	void set_bar_beats(int p_bar_beats);
 	virtual int get_bar_beats() const override;
+
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
@@ -175,5 +180,3 @@ public:
 	AudioStreamOggVorbis();
 	virtual ~AudioStreamOggVorbis();
 };
-
-#endif // AUDIO_STREAM_OGG_VORBIS_H

@@ -22,7 +22,6 @@
 
 #include "tvgSwCommon.h"
 #include "tvgMath.h"
-#include "tvgLines.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -102,9 +101,8 @@ static bool _outlineClose(SwOutline& outline)
 static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& transform)
 {
     Line cur = {dash.ptCur, *to};
-    auto len = lineLength(cur.pt1, cur.pt2);
-
-    if (mathZero(len)) {
+    auto len = cur.length();
+    if (tvg::zero(len)) {
         _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
     //draw the current line fully
     } else if (len <= dash.curLen) {
@@ -118,11 +116,11 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
         }
     //draw the current line partially
     } else {
-        while (len - dash.curLen > 0.0001f) {
+        while (len - dash.curLen > DASH_PATTERN_THRESHOLD) {
             Line left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
-                lineSplitAt(cur, dash.curLen, left, right);
+                cur.split(dash.curLen, left, right);
                 if (!dash.curOpGap) {
                     if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLOAT_EPSILON) {
                         _outlineMoveTo(*dash.outline, &left.pt1, transform);
@@ -163,10 +161,10 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
 static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ctrl2, const Point* to, const Matrix& transform)
 {
     Bezier cur = {dash.ptCur, *ctrl1, *ctrl2, *to};
-    auto len = bezLength(cur);
+    auto len = cur.length();
 
     //draw the current line fully
-    if (mathZero(len)) {
+    if (tvg::zero(len)) {
         _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
     } else if (len <= dash.curLen) {
         dash.curLen -= len;
@@ -179,11 +177,11 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
         }
     //draw the current line partially
     } else {
-        while ((len - dash.curLen) > 0.0001f) {
+        while ((len - dash.curLen) > DASH_PATTERN_THRESHOLD) {
             Bezier left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
-                bezSplitAt(cur, dash.curLen, left, right);
+                cur.split(dash.curLen, left, right);
                 if (!dash.curOpGap) {
                     if (dash.move || dash.pattern[dash.curIdx] - dash.curLen < FLOAT_EPSILON) {
                         _outlineMoveTo(*dash.outline, &left.start, transform);
@@ -284,7 +282,7 @@ static float _outlineLength(const RenderShape* rshape, uint32_t shiftPts, uint32
     if (cmdCnt <= 0 || ptsCnt <= 0) return 0.0f;
 
     const Point* close = nullptr;
-    auto length = 0.0f;
+    auto len = 0.0f;
 
     //must begin with moveTo
     if (cmds[0] == PathCommand::MoveTo) {
@@ -297,30 +295,30 @@ static float _outlineLength(const RenderShape* rshape, uint32_t shiftPts, uint32
     while (cmdCnt-- > 0) {
         switch (*cmds) {
             case PathCommand::Close: {
-                length += mathLength(pts - 1, close);
-                if (subpath) return length;
+                len += length(pts - 1, close);
+                if (subpath) return len;
                 break;
             }
             case PathCommand::MoveTo: {
-                if (subpath) return length;
+                if (subpath) return len;
                 close = pts;
                 ++pts;
                 break;
             }
             case PathCommand::LineTo: {
-                length += mathLength(pts - 1, pts);
+                len += length(pts - 1, pts);
                 ++pts;
                 break;
             }
             case PathCommand::CubicTo: {
-                length += bezLength({*(pts - 1), *pts, *(pts + 1), *(pts + 2)});
+                len += Bezier{*(pts - 1), *pts, *(pts + 1), *(pts + 2)}.length();
                 pts += 3;
                 break;
             }
         }
         ++cmds;
     }
-    return length;
+    return len;
 }
 
 
@@ -355,7 +353,7 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix& trans
     //offset
     auto patternLength = 0.0f;
     uint32_t offIdx = 0;
-    if (!mathZero(offset)) {
+    if (!tvg::zero(offset)) {
         for (size_t i = 0; i < dash.cnt; ++i) patternLength += dash.pattern[i];
         bool isOdd = dash.cnt % 2;
         if (isOdd) patternLength *= 2;
@@ -370,7 +368,8 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix& trans
         }
     }
 
-    dash.outline = mpoolReqDashOutline(mpool, tid);
+    mpoolRetOutline(mpool, tid);  //retreive the outline cache and use it for dash outline.
+    dash.outline = mpoolReqOutline(mpool, tid);
 
     //must begin with moveTo
     if (cmds[0] == PathCommand::MoveTo) {
@@ -499,7 +498,6 @@ bool shapePrepare(SwShape* shape, const RenderShape* rshape, const Matrix& trans
     if (!_genOutline(shape, rshape, transform, mpool, tid, hasComposite)) return false;
     if (!mathUpdateOutlineBBox(shape->outline, clipRegion, renderRegion, shape->fastTrack)) return false;
 
-    //Keep it for Rasterization Region
     shape->bbox = renderRegion;
 
     //Check valid region
@@ -519,7 +517,7 @@ bool shapePrepared(const SwShape* shape)
 }
 
 
-bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool antiAlias)
+bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, SwMpool* mpool, unsigned tid, bool antiAlias)
 {
     //FIXME: Should we draw it?
     //Case: Stroke Line
@@ -529,7 +527,7 @@ bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool anti
     if (shape->fastTrack) return true;
 
     //Case B: Normal Shape RLE Drawing
-    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, antiAlias))) return true;
+    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, mpool, tid, antiAlias))) return true;
 
     return false;
 }
@@ -545,7 +543,6 @@ void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid)
 void shapeReset(SwShape* shape)
 {
     rleReset(shape->rle);
-    rleReset(shape->strokeRle);
     shape->fastTrack = false;
     shape->bbox.reset();
 }
@@ -591,17 +588,13 @@ void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix& t
 bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
 {
     SwOutline* shapeOutline = nullptr;
-    SwOutline* strokeOutline = nullptr;
-    auto dashStroking = false;
-    auto ret = true;
 
     //Dash style (+trimming)
     auto trimmed = rshape->strokeTrim();
     if (rshape->stroke->dashCnt > 0 || trimmed) {
         shapeOutline = _genDashOutline(rshape, transform, trimmed, mpool, tid);
         if (!shapeOutline) return false;
-        dashStroking = true;
-    //Normal style
+    //Trimming & Normal style
     } else {
         if (!shape->outline) {
             if (!_genOutline(shape, rshape, transform, mpool, tid, false)) return false;
@@ -609,24 +602,11 @@ bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& 
         shapeOutline = shape->outline;
     }
 
-    if (!strokeParseOutline(shape->stroke, *shapeOutline)) {
-        ret = false;
-        goto clear;
-    }
-
-    strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
-
-    if (!mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false)) {
-        ret = false;
-        goto clear;
-    }
-
-    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, true);
-
-clear:
-    if (dashStroking) mpoolRetDashOutline(mpool, tid);
+    if (!strokeParseOutline(shape->stroke, *shapeOutline)) return false;
+    auto strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
+    auto ret = mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false);
+    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, mpool, tid, true);
     mpoolRetStrokeOutline(mpool, tid);
-
     return ret;
 }
 

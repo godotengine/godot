@@ -32,8 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "thirdparty/misc/smolv.h"
 #include "vulkan_hooks.h"
+
+#include "thirdparty/misc/smolv.h"
 
 #if defined(ANDROID_ENABLED)
 #include "platform/android/java_godot_wrapper.h"
@@ -45,9 +46,30 @@
 #include "thirdparty/swappy-frame-pacing/swappyVk.h"
 #endif
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define ARRAY_SIZE(a) std_size(a)
 
 #define PRINT_NATIVE_COMMANDS 0
+
+// Enable the use of re-spirv for optimizing shaders after applying specialization constants.
+#define RESPV_ENABLED 1
+
+// Only enable function inlining for re-spirv when dealing with a shader that uses specialization constants.
+#define RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS 1
+
+// Print additional information about every shader optimized with re-spirv.
+#define RESPV_VERBOSE 0
+
+// Disable dead code elimination when using re-spirv.
+#define RESPV_DONT_REMOVE_DEAD_CODE 0
+
+// Record numerous statistics about pipeline creation such as time and shader sizes. When combined with enabling
+// and disabling re-spirv, this can be used to measure its effects.
+#define RECORD_PIPELINE_STATISTICS 0
+
+#if RECORD_PIPELINE_STATISTICS
+#include "core/io/file_access.h"
+#define RECORD_PIPELINE_STATISTICS_PATH "./pipelines.csv"
+#endif
 
 /*****************/
 /**** GENERIC ****/
@@ -56,6 +78,8 @@
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 static const uint32_t BREADCRUMB_BUFFER_ENTRIES = 512u;
 #endif
+
+static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
 
 static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_R4G4_UNORM_PACK8,
@@ -276,6 +300,20 @@ static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 	VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
+	VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK,
 };
 
 static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
@@ -290,7 +328,8 @@ static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_COPY_DST_OPTIMAL
 	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL
 	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL
-	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR, // TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL
+	VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT, // TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL
 };
 
 static VkPipelineStageFlags _rd_to_vk_pipeline_stages(BitField<RDD::PipelineStageBits> p_stages) {
@@ -504,6 +543,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true);
 	_register_requested_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
@@ -513,6 +554,14 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false);
+
+	// We don't actually use this extension, but some runtime components on some platforms
+	// can and will fill the validation layers with useless info otherwise if not enabled.
+	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -719,6 +768,14 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 	device_capabilities.version_major = VK_API_VERSION_MAJOR(physical_device_properties.apiVersion);
 	device_capabilities.version_minor = VK_API_VERSION_MINOR(physical_device_properties.apiVersion);
 
+	// Cache extension availability we query often.
+	framebuffer_depth_resolve = enabled_device_extension_names.has(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
+
+	bool use_fdm_offsets = false;
+	if (VulkanHooks::get_singleton() != nullptr) {
+		use_fdm_offsets = VulkanHooks::get_singleton()->use_fragment_density_offsets();
+	}
+
 	// References:
 	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_multiview.html
 	// https://www.khronos.org/blog/vulkan-subgroup-tutorial
@@ -730,7 +787,11 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		void *next_features = nullptr;
 		VkPhysicalDeviceVulkan12Features device_features_vk_1_2 = {};
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
-		VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+		VkPhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features = {};
+		VkPhysicalDeviceVulkanMemoryModelFeaturesKHR vulkan_memory_model_features = {};
+		VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
+		VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
+		VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM fdmo_features_qcom = {};
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 		VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 		VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
@@ -740,16 +801,40 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			device_features_vk_1_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 			device_features_vk_1_2.pNext = next_features;
 			next_features = &device_features_vk_1_2;
-		} else if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
-			shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
-			shader_features.pNext = next_features;
-			next_features = &shader_features;
+		} else {
+			if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+				shader_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR;
+				shader_features.pNext = next_features;
+				next_features = &shader_features;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
+				buffer_device_address_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR;
+				buffer_device_address_features.pNext = next_features;
+				next_features = &buffer_device_address_features;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR;
+				vulkan_memory_model_features.pNext = next_features;
+				next_features = &vulkan_memory_model_features;
+			}
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-			vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-			vrs_features.pNext = next_features;
-			next_features = &vrs_features;
+			fsr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+			fsr_features.pNext = next_features;
+			next_features = &fsr_features;
+		}
+
+		if (enabled_device_extension_names.has(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME)) {
+			fdm_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+			fdm_features.pNext = next_features;
+			next_features = &fdm_features;
+		}
+
+		if (use_fdm_offsets && enabled_device_extension_names.has(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME)) {
+			fdmo_features_qcom.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM;
+			fdmo_features_qcom.pNext = next_features;
+			next_features = &fdmo_features_qcom;
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
@@ -783,18 +868,46 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 				shader_capabilities.shader_float16_is_supported = device_features_vk_1_2.shaderFloat16;
 				shader_capabilities.shader_int8_is_supported = device_features_vk_1_2.shaderInt8;
 			}
+			if (enabled_device_extension_names.has(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
+				buffer_device_address_support = device_features_vk_1_2.bufferDeviceAddress;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_support = device_features_vk_1_2.vulkanMemoryModel;
+				vulkan_memory_model_device_scope_support = device_features_vk_1_2.vulkanMemoryModelDeviceScope;
+			}
 		} else {
 			if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
 				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
 				shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
 			}
+			if (enabled_device_extension_names.has(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
+				buffer_device_address_support = buffer_device_address_features.bufferDeviceAddress;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_support = vulkan_memory_model_features.vulkanMemoryModel;
+				vulkan_memory_model_device_scope_support = vulkan_memory_model_features.vulkanMemoryModelDeviceScope;
+			}
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-			vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
-			vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
-			vrs_capabilities.attachment_vrs_supported = vrs_features.attachmentFragmentShadingRate;
+			fsr_capabilities.pipeline_supported = fsr_features.pipelineFragmentShadingRate;
+			fsr_capabilities.primitive_supported = fsr_features.primitiveFragmentShadingRate;
+			fsr_capabilities.attachment_supported = fsr_features.attachmentFragmentShadingRate;
 		}
+
+		if (enabled_device_extension_names.has(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME)) {
+			fdm_capabilities.attachment_supported = fdm_features.fragmentDensityMap;
+			fdm_capabilities.dynamic_attachment_supported = fdm_features.fragmentDensityMapDynamic;
+			fdm_capabilities.non_subsampled_images_supported = fdm_features.fragmentDensityMapNonSubsampledImages;
+		}
+
+		if (enabled_device_extension_names.has(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME)) {
+			fdm_capabilities.offset_supported = fdmo_features_qcom.fragmentDensityMapOffset;
+		}
+
+		// Multiple VRS techniques can't co-exist during the existence of one device, so we must
+		// choose one at creation time and only report one of them as available.
+		_choose_vrs_capabilities();
 
 		if (enabled_device_extension_names.has(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
 			multiview_capabilities.is_supported = multiview_features.multiview;
@@ -825,7 +938,9 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
 		void *next_properties = nullptr;
-		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrs_properties = {};
+		VkPhysicalDeviceFragmentShadingRatePropertiesKHR fsr_properties = {};
+		VkPhysicalDeviceFragmentDensityMapPropertiesEXT fdm_properties = {};
+		VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM fdmo_properties = {};
 		VkPhysicalDeviceMultiviewProperties multiview_properties = {};
 		VkPhysicalDeviceSubgroupProperties subgroup_properties = {};
 		VkPhysicalDeviceSubgroupSizeControlProperties subgroup_size_control_properties = {};
@@ -851,10 +966,22 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			next_properties = &multiview_properties;
 		}
 
-		if (vrs_capabilities.attachment_vrs_supported) {
-			vrs_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-			vrs_properties.pNext = next_properties;
-			next_properties = &vrs_properties;
+		if (fsr_capabilities.attachment_supported) {
+			fsr_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+			fsr_properties.pNext = next_properties;
+			next_properties = &fsr_properties;
+		}
+
+		if (fdm_capabilities.attachment_supported) {
+			fdm_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
+			fdm_properties.pNext = next_properties;
+			next_properties = &fdm_properties;
+		}
+
+		if (fdm_capabilities.offset_supported) {
+			fdmo_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM;
+			fdmo_properties.pNext = next_properties;
+			next_properties = &fdmo_properties;
 		}
 
 		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -877,31 +1004,64 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			subgroup_capabilities.max_size = subgroup_size_control_properties.maxSubgroupSize;
 		}
 
-		if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-			print_verbose("- Vulkan Variable Rate Shading supported:");
-			if (vrs_capabilities.pipeline_vrs_supported) {
+		if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
+			print_verbose("- Vulkan Fragment Shading Rate supported:");
+			if (fsr_capabilities.pipeline_supported) {
 				print_verbose("  Pipeline fragment shading rate");
 			}
-			if (vrs_capabilities.primitive_vrs_supported) {
+			if (fsr_capabilities.primitive_supported) {
 				print_verbose("  Primitive fragment shading rate");
 			}
-			if (vrs_capabilities.attachment_vrs_supported) {
+			if (fsr_capabilities.attachment_supported) {
 				// TODO: Expose these somehow to the end user.
-				vrs_capabilities.min_texel_size.x = vrs_properties.minFragmentShadingRateAttachmentTexelSize.width;
-				vrs_capabilities.min_texel_size.y = vrs_properties.minFragmentShadingRateAttachmentTexelSize.height;
-				vrs_capabilities.max_texel_size.x = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.width;
-				vrs_capabilities.max_texel_size.y = vrs_properties.maxFragmentShadingRateAttachmentTexelSize.height;
-				vrs_capabilities.max_fragment_size.x = vrs_properties.maxFragmentSize.width; // either 4 or 8
-				vrs_capabilities.max_fragment_size.y = vrs_properties.maxFragmentSize.height; // generally the same as width
+				fsr_capabilities.min_texel_size.x = fsr_properties.minFragmentShadingRateAttachmentTexelSize.width;
+				fsr_capabilities.min_texel_size.y = fsr_properties.minFragmentShadingRateAttachmentTexelSize.height;
+				fsr_capabilities.max_texel_size.x = fsr_properties.maxFragmentShadingRateAttachmentTexelSize.width;
+				fsr_capabilities.max_texel_size.y = fsr_properties.maxFragmentShadingRateAttachmentTexelSize.height;
+				fsr_capabilities.max_fragment_size.x = fsr_properties.maxFragmentSize.width; // either 4 or 8
+				fsr_capabilities.max_fragment_size.y = fsr_properties.maxFragmentSize.height; // generally the same as width
 
-				// We'll attempt to default to a texel size of 16x16.
-				vrs_capabilities.texel_size = Vector2i(16, 16).clamp(vrs_capabilities.min_texel_size, vrs_capabilities.max_texel_size);
-
-				print_verbose(String("  Attachment fragment shading rate") + String(", min texel size: (") + itos(vrs_capabilities.min_texel_size.x) + String(", ") + itos(vrs_capabilities.min_texel_size.y) + String(")") + String(", max texel size: (") + itos(vrs_capabilities.max_texel_size.x) + String(", ") + itos(vrs_capabilities.max_texel_size.y) + String(")") + String(", max fragment size: (") + itos(vrs_capabilities.max_fragment_size.x) + String(", ") + itos(vrs_capabilities.max_fragment_size.y) + String(")"));
+				print_verbose(String("  Attachment fragment shading rate") +
+						String(", min texel size: (") + itos(fsr_capabilities.min_texel_size.x) + String(", ") + itos(fsr_capabilities.min_texel_size.y) + String(")") +
+						String(", max texel size: (") + itos(fsr_capabilities.max_texel_size.x) + String(", ") + itos(fsr_capabilities.max_texel_size.y) + String(")") +
+						String(", max fragment size: (") + itos(fsr_capabilities.max_fragment_size.x) + String(", ") + itos(fsr_capabilities.max_fragment_size.y) + String(")"));
 			}
 
 		} else {
 			print_verbose("- Vulkan Variable Rate Shading not supported");
+		}
+
+		if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
+			fdm_capabilities.min_texel_size.x = fdm_properties.minFragmentDensityTexelSize.width;
+			fdm_capabilities.min_texel_size.y = fdm_properties.minFragmentDensityTexelSize.height;
+			fdm_capabilities.max_texel_size.x = fdm_properties.maxFragmentDensityTexelSize.width;
+			fdm_capabilities.max_texel_size.y = fdm_properties.maxFragmentDensityTexelSize.height;
+			fdm_capabilities.invocations_supported = fdm_properties.fragmentDensityInvocations;
+
+			print_verbose(String("- Vulkan Fragment Density Map supported") +
+					String(", min texel size: (") + itos(fdm_capabilities.min_texel_size.x) + String(", ") + itos(fdm_capabilities.min_texel_size.y) + String(")") +
+					String(", max texel size: (") + itos(fdm_capabilities.max_texel_size.x) + String(", ") + itos(fdm_capabilities.max_texel_size.y) + String(")"));
+
+			if (fdm_capabilities.dynamic_attachment_supported) {
+				print_verbose("  - dynamic fragment density map supported");
+			}
+
+			if (fdm_capabilities.non_subsampled_images_supported) {
+				print_verbose("  - non-subsampled images supported");
+			}
+		} else {
+			print_verbose("- Vulkan Fragment Density Map not supported");
+		}
+
+		if (fdm_capabilities.offset_supported) {
+			print_verbose("- Vulkan Fragment Density Map Offset supported");
+
+			fdm_capabilities.offset_granularity.x = fdmo_properties.fragmentDensityOffsetGranularity.width;
+			fdm_capabilities.offset_granularity.y = fdmo_properties.fragmentDensityOffsetGranularity.height;
+
+			print_verbose(vformat("  Offset granularity: (%d, %d)", fdm_capabilities.offset_granularity.x, fdm_capabilities.offset_granularity.y));
+		} else if (use_fdm_offsets) {
+			print_verbose("- Vulkan Fragment Density Map Offset not supported");
 		}
 
 		if (multiview_capabilities.is_supported) {
@@ -927,6 +1087,22 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 	}
 
 	return OK;
+}
+
+void RenderingDeviceDriverVulkan::_choose_vrs_capabilities() {
+	bool prefer_fdm_on_qualcomm = physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM;
+	if (fdm_capabilities.attachment_supported && (!fsr_capabilities.attachment_supported || prefer_fdm_on_qualcomm)) {
+		// If available, we prefer using fragment density maps on Qualcomm as they adjust tile distribution when using
+		// this technique. Performance as a result is higher than when using fragment shading rate.
+		fsr_capabilities = FragmentShadingRateCapabilities();
+	} else if (fsr_capabilities.attachment_supported) {
+		// Disable any possibility of fragment density maps being used.
+		fdm_capabilities = FragmentDensityMapCapabilities();
+	} else {
+		// Do not report or enable any VRS capabilities if attachment is not supported.
+		fsr_capabilities = FragmentShadingRateCapabilities();
+		fdm_capabilities = FragmentDensityMapCapabilities();
+	}
 }
 
 Error RenderingDeviceDriverVulkan::_add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info) {
@@ -971,14 +1147,49 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 	shader_features.shaderInt8 = shader_capabilities.shader_int8_is_supported;
 	create_info_next = &shader_features;
 
-	VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
-	if (vrs_capabilities.pipeline_vrs_supported || vrs_capabilities.primitive_vrs_supported || vrs_capabilities.attachment_vrs_supported) {
-		vrs_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
-		vrs_features.pNext = create_info_next;
-		vrs_features.pipelineFragmentShadingRate = vrs_capabilities.pipeline_vrs_supported;
-		vrs_features.primitiveFragmentShadingRate = vrs_capabilities.primitive_vrs_supported;
-		vrs_features.attachmentFragmentShadingRate = vrs_capabilities.attachment_vrs_supported;
-		create_info_next = &vrs_features;
+	VkPhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features = {};
+	if (buffer_device_address_support) {
+		buffer_device_address_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR;
+		buffer_device_address_features.pNext = create_info_next;
+		buffer_device_address_features.bufferDeviceAddress = buffer_device_address_support;
+		create_info_next = &buffer_device_address_features;
+	}
+
+	VkPhysicalDeviceVulkanMemoryModelFeaturesKHR vulkan_memory_model_features = {};
+	if (vulkan_memory_model_support && vulkan_memory_model_device_scope_support) {
+		vulkan_memory_model_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR;
+		vulkan_memory_model_features.pNext = create_info_next;
+		vulkan_memory_model_features.vulkanMemoryModel = vulkan_memory_model_support;
+		vulkan_memory_model_features.vulkanMemoryModelDeviceScope = vulkan_memory_model_device_scope_support;
+		create_info_next = &vulkan_memory_model_features;
+	}
+
+	VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
+	if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
+		fsr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+		fsr_features.pNext = create_info_next;
+		fsr_features.pipelineFragmentShadingRate = fsr_capabilities.pipeline_supported;
+		fsr_features.primitiveFragmentShadingRate = fsr_capabilities.primitive_supported;
+		fsr_features.attachmentFragmentShadingRate = fsr_capabilities.attachment_supported;
+		create_info_next = &fsr_features;
+	}
+
+	VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
+	if (fdm_capabilities.attachment_supported || fdm_capabilities.dynamic_attachment_supported || fdm_capabilities.non_subsampled_images_supported) {
+		fdm_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+		fdm_features.pNext = create_info_next;
+		fdm_features.fragmentDensityMap = fdm_capabilities.attachment_supported;
+		fdm_features.fragmentDensityMapDynamic = fdm_capabilities.dynamic_attachment_supported;
+		fdm_features.fragmentDensityMapNonSubsampledImages = fdm_capabilities.non_subsampled_images_supported;
+		create_info_next = &fdm_features;
+	}
+
+	VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM fdm_offset_features = {};
+	if (fdm_capabilities.offset_supported) {
+		fdm_offset_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM;
+		fdm_offset_features.pNext = create_info_next;
+		fdm_offset_features.fragmentDensityMapOffset = VK_TRUE;
+		create_info_next = &fdm_offset_features;
 	}
 
 	VkPhysicalDevicePipelineCreationCacheControlFeatures pipeline_cache_control_features = {};
@@ -1084,6 +1295,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		if (enabled_device_extension_names.has(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
 			device_functions.CreateRenderPass2KHR = PFN_vkCreateRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRenderPass2KHR"));
+			device_functions.EndRenderPass2KHR = PFN_vkCmdEndRenderPass2KHR(functions.GetDeviceProcAddr(vk_device, "vkCmdEndRenderPass2KHR"));
 		}
 
 		// Debug marker extensions.
@@ -1111,6 +1323,9 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 	const bool use_1_3_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_3;
 	if (use_1_3_features) {
 		allocator_info.flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
+	}
+	if (buffer_device_address_support) {
+		allocator_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vmaCreateAllocator failed with error " + itos(err) + ".");
@@ -1383,6 +1598,23 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	physical_device = context_driver->physical_device_get(p_device_index);
 	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
 
+	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
+	// Which eventually run out of memory. In such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
+	// Confirmed by Qualcomm.
+	if (linear_descriptor_pools_enabled) {
+		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
+		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
+		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
+	}
+
+	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
+	// there are empty descriptor set layouts placed between non-empty ones.
+	adreno_5xx_empty_descriptor_set_layout_workaround =
+			physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			physical_device_properties.deviceID >= 0x5000000 &&
+			physical_device_properties.deviceID < 0x6000000;
+
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -1417,7 +1649,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU);
+	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
 #endif
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
@@ -1430,6 +1662,16 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 		swappy_frame_pacer_enable = false;
 		OS::get_singleton()->print("VulkanHooks detected (e.g. OpenXR): Force-disabling Swappy Frame Pacing.\n");
 	}
+#endif
+
+	shader_container_format.set_debug_info_enabled(Engine::get_singleton()->is_generate_spirv_debug_info_enabled());
+
+#if RECORD_PIPELINE_STATISTICS
+	pipeline_statistics.file_access = FileAccess::open(RECORD_PIPELINE_STATISTICS_PATH, FileAccess::WRITE);
+	ERR_FAIL_NULL_V_MSG(pipeline_statistics.file_access, ERR_CANT_CREATE, "Unable to write pipeline statistics file.");
+
+	pipeline_statistics.file_access->store_csv_line({ "name", "hash", "stage", "spec", "glslang", "re-spirv", "time" });
+	pipeline_statistics.file_access->flush();
 #endif
 
 	return OK;
@@ -1478,13 +1720,34 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_STORAGE_BIT, VK_BUFFER_USAGE_
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDEX_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 
-RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
+RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
+	uint32_t alignment = 16u; // 16 bytes is reasonable.
+	if (p_usage.has_flag(BUFFER_USAGE_UNIFORM_BIT)) {
+		// Some GPUs (e.g. NVIDIA) have absurdly high alignments, like 256 bytes.
+		alignment = MAX(alignment, physical_device_properties.limits.minUniformBufferOffsetAlignment);
+	}
+	if (p_usage.has_flag(BUFFER_USAGE_STORAGE_BIT)) {
+		// This shouldn't be a problem since it's often <= 16 bytes. But do it just in case.
+		alignment = MAX(alignment, physical_device_properties.limits.minStorageBufferOffsetAlignment);
+	}
+	// Align the size. This is specially important for BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT buffers.
+	// For the rest, it should work thanks to VMA taking care of the details. But still align just in case.
+	p_size = STEPIFY(p_size, alignment);
+
+	const size_t original_size = p_size;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		p_size = p_size * frame_count;
+	}
 	VkBufferCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	create_info.size = p_size;
-	create_info.usage = p_usage;
+	create_info.usage = p_usage & ~BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	VmaMemoryUsage vma_usage = VMA_MEMORY_USAGE_UNKNOWN;
+	uint32_t vma_flags_to_remove = 0;
 
 	VmaAllocationCreateInfo alloc_create_info = {};
 	switch (p_allocation_type) {
@@ -1494,14 +1757,27 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 			if (is_src && !is_dst) {
 				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+				vma_flags_to_remove |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			}
 			if (is_dst && !is_src) {
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
 				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+				alloc_create_info.preferredFlags |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+				vma_flags_to_remove |= VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
 			}
+			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
 			alloc_create_info.requiredFlags = (VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
+			vma_usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+			if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+				// We must set it right now or else vmaFindMemoryTypeIndexForBufferInfo will use wrong parameters.
+				alloc_create_info.usage = vma_usage;
+			}
+			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+				alloc_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+			}
 			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 			if (p_size <= SMALL_ALLOCATION_MAX_SIZE) {
 				uint32_t mem_type_index = 0;
@@ -1515,19 +1791,41 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
 
-	VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
-	err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
-	ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		alloc_create_info.preferredFlags &= ~vma_flags_to_remove;
+		alloc_create_info.usage = vma_usage;
+		VkResult err = vmaCreateBuffer(allocator, &create_info, &alloc_create_info, &vk_buffer, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	} else {
+		VkResult err = vkCreateBuffer(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER), &vk_buffer);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		err = vmaAllocateMemoryForBuffer(allocator, vk_buffer, &alloc_create_info, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't allocate memory for buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+		err = vmaBindBufferMemory2(allocator, allocation, 0, vk_buffer, nullptr);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "Can't bind memory to buffer of size: " + itos(p_size) + ", error " + itos(err) + ".");
+	}
 
 	// Bookkeep.
-	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		void *persistent_ptr = nullptr;
+		VkResult err = vmaMapMemory(allocator, allocation, &persistent_ptr);
+		ERR_FAIL_COND_V_MSG(err, BufferID(), "vmaMapMemory failed with error " + itos(err) + ".");
+
+		BufferDynamicInfo *dyn_buffer = VersatileResource::allocate<BufferDynamicInfo>(resources_allocator);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+		dyn_buffer->frame_idx = 0u;
+		dyn_buffer->persistent_ptr = (uint8_t *)persistent_ptr;
+	} else {
+		buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	}
 	buf_info->vk_buffer = vk_buffer;
 	buf_info->allocation.handle = allocation;
 	buf_info->allocation.size = alloc_info.size;
-	buf_info->size = p_size;
+	buf_info->size = original_size;
 
 	return BufferID(buf_info);
 }
@@ -1555,10 +1853,22 @@ void RenderingDeviceDriverVulkan::buffer_free(BufferID p_buffer) {
 		vkDestroyBufferView(vk_device, buf_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER_VIEW));
 	}
 
-	vkDestroyBuffer(vk_device, buf_info->vk_buffer, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
-	vmaFreeMemory(allocator, buf_info->allocation.handle);
+	if (buf_info->is_dynamic()) {
+		vmaUnmapMemory(allocator, buf_info->allocation.handle);
+	}
 
-	VersatileResource::free(resources_allocator, buf_info);
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		vmaDestroyBuffer(allocator, buf_info->vk_buffer, buf_info->allocation.handle);
+	} else {
+		vkDestroyBuffer(vk_device, buf_info->vk_buffer, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+		vmaFreeMemory(allocator, buf_info->allocation.handle);
+	}
+
+	if (buf_info->is_dynamic()) {
+		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
+	} else {
+		VersatileResource::free(resources_allocator, buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverVulkan::buffer_get_allocation_size(BufferID p_buffer) {
@@ -1568,6 +1878,7 @@ uint64_t RenderingDeviceDriverVulkan::buffer_get_allocation_size(BufferID p_buff
 
 uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), nullptr, "Buffer must NOT have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_persistent_map_advance() instead.");
 	void *data_ptr = nullptr;
 	VkResult err = vmaMapMemory(allocator, buf_info->allocation.handle, &data_ptr);
 	ERR_FAIL_COND_V_MSG(err, nullptr, "vmaMapMemory failed with error " + itos(err) + ".");
@@ -1577,6 +1888,64 @@ uint8_t *RenderingDeviceDriverVulkan::buffer_map(BufferID p_buffer) {
 void RenderingDeviceDriverVulkan::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	vmaUnmapMemory(allocator, buf_info->allocation.handle);
+}
+
+uint8_t *RenderingDeviceDriverVulkan::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	buf_info->frame_idx = (buf_info->frame_idx + 1u) % frame_count;
+	return buf_info->persistent_ptr + buf_info->frame_idx * buf_info->size;
+}
+
+uint64_t RenderingDeviceDriverVulkan::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
+	uint64_t mask = 0u;
+	uint64_t shift = 0u;
+
+	for (const BufferID &buf : p_buffers) {
+		const BufferInfo *buf_info = (const BufferInfo *)buf.id;
+		if (!buf_info->is_dynamic()) {
+			continue;
+		}
+		mask |= buf_info->frame_idx << shift;
+		// We can encode the frame index in 2 bits since frame_count won't be > 4.
+		shift += 2UL;
+	}
+
+	return mask;
+}
+
+void RenderingDeviceDriverVulkan::buffer_flush(BufferID p_buffer) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+
+	VkMemoryPropertyFlags mem_props_flags;
+	vmaGetAllocationMemoryProperties(allocator, buf_info->allocation.handle, &mem_props_flags);
+
+	const bool needs_flushing = !(mem_props_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	if (needs_flushing) {
+		if (buf_info->is_dynamic()) {
+			pending_flushes.allocations.push_back(buf_info->allocation.handle);
+			pending_flushes.offsets.push_back(buf_info->frame_idx * buf_info->size);
+			pending_flushes.sizes.push_back(buf_info->size);
+		} else {
+			pending_flushes.allocations.push_back(buf_info->allocation.handle);
+			pending_flushes.offsets.push_back(0u);
+			pending_flushes.sizes.push_back(VK_WHOLE_SIZE);
+		}
+	}
+}
+
+uint64_t RenderingDeviceDriverVulkan::buffer_get_device_address(BufferID p_buffer) {
+	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
+	VkBufferDeviceAddressInfo address_info = {};
+	address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+	address_info.pNext = nullptr;
+	address_info.buffer = buf_info->vk_buffer;
+	return vkGetBufferDeviceAddress(vk_device, &address_info);
 }
 
 /*****************/
@@ -1675,6 +2044,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		create_info.flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT;
 	}*/
 
+	if (fdm_capabilities.offset_supported && (p_format.usage_bits & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_INPUT_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT | TEXTURE_USAGE_VRS_ATTACHMENT_BIT))) {
+		create_info.flags |= VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
+	}
+
 	create_info.imageType = RD_TEX_TYPE_TO_VK_IMG_TYPE[p_format.texture_type];
 
 	create_info.format = RD_TO_VK_FORMAT[p_format.format];
@@ -1699,14 +2072,17 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if ((p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
 		create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -1728,7 +2104,29 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 
 	VmaAllocationCreateInfo alloc_create_info = {};
 	alloc_create_info.flags = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT : 0;
-	alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+	if (p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) {
+		uint32_t memory_type_index = 0;
+		VmaAllocationCreateInfo lazy_memory_requirements = alloc_create_info;
+		lazy_memory_requirements.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+		VkResult result = vmaFindMemoryTypeIndex(allocator, UINT32_MAX, &lazy_memory_requirements, &memory_type_index);
+		if (VK_SUCCESS == result) {
+			alloc_create_info = lazy_memory_requirements;
+			create_info.usage |= VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+			// VUID-VkImageCreateInfo-usage-00963 :
+			// If usage includes VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+			// then bits other than VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			// and VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT must not be set.
+			create_info.usage &= (VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
+		} else {
+			alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+		}
+	} else if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
+		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+	} else {
+		alloc_create_info.preferredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	}
+
 	if (image_size <= SMALL_ALLOCATION_MAX_SIZE) {
 		uint32_t mem_type_index = 0;
 		vmaFindMemoryTypeIndexForImageInfo(allocator, &create_info, &alloc_create_info, &mem_type_index);
@@ -1741,12 +2139,18 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	VmaAllocation allocation = nullptr;
 	VmaAllocationInfo alloc_info = {};
 
-	VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
-	err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
-	err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
-	ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
+	if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+		alloc_create_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+		VkResult err = vmaCreateImage(allocator, &create_info, &alloc_create_info, &vk_image, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, TextureID(), "vmaCreateImage failed with error " + itos(err) + ".");
+	} else {
+		VkResult err = vkCreateImage(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &vk_image);
+		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImage failed with error " + itos(err) + ".");
+		err = vmaAllocateMemoryForImage(allocator, vk_image, &alloc_create_info, &allocation, &alloc_info);
+		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't allocate memory for image, error: " + itos(err) + ".");
+		err = vmaBindImageMemory2(allocator, allocation, 0, vk_image, nullptr);
+		ERR_FAIL_COND_V_MSG(err, TextureID(), "Can't bind memory to image, error: " + itos(err) + ".");
+	}
 
 	// Create view.
 
@@ -1761,7 +2165,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	image_view_create_info.components.a = (VkComponentSwizzle)p_view.swizzle_a;
 	image_view_create_info.subresourceRange.levelCount = create_info.mipLevels;
 	image_view_create_info.subresourceRange.layerCount = create_info.arrayLayers;
-	if ((p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	} else {
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1778,10 +2182,15 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
+	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
 	if (err) {
-		vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
-		vmaFreeMemory(allocator, allocation);
+		if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+			vmaDestroyImage(allocator, vk_image, allocation);
+		} else {
+			vkDestroyImage(vk_device, vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
+			vmaFreeMemory(allocator, allocation);
+		}
+
 		ERR_FAIL_COND_V_MSG(err, TextureID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
@@ -1794,6 +2203,9 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	tex_info->vk_create_info = create_info;
 	tex_info->vk_view_create_info = image_view_create_info;
 	tex_info->allocation.handle = allocation;
+#ifdef DEBUG_ENABLED
+	tex_info->transient = (p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) != 0;
+#endif
 	vmaGetAllocationInfo(allocator, tex_info->allocation.handle, &tex_info->allocation.info);
 
 #if PRINT_NATIVE_COMMANDS
@@ -1803,7 +2215,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	return TextureID(tex_info);
 }
 
-RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) {
+RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) {
 	VkImage vk_image = (VkImage)p_native_texture;
 
 	// We only need to create a view into the already existing natively-provided texture.
@@ -1817,7 +2229,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_G;
 	image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_B;
 	image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_A;
-	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.baseMipLevel = 0;
+	image_view_create_info.subresourceRange.levelCount = p_mipmaps;
 	image_view_create_info.subresourceRange.layerCount = p_array_layers;
 	image_view_create_info.subresourceRange.aspectMask = p_depth_stencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
@@ -1866,10 +2279,10 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 				vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_view.format], &properties);
 				const VkFormatFeatureFlags &supported_flags = owner_tex_info->vk_create_info.tiling == VK_IMAGE_TILING_LINEAR ? properties.linearTilingFeatures : properties.optimalTilingFeatures;
 				if ((usage_info->usage & VK_IMAGE_USAGE_STORAGE_BIT) && !(supported_flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
-					usage_info->usage &= ~VK_IMAGE_USAGE_STORAGE_BIT;
+					usage_info->usage &= ~uint32_t(VK_IMAGE_USAGE_STORAGE_BIT);
 				}
 				if ((usage_info->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) && !(supported_flags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT)) {
-					usage_info->usage &= ~VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+					usage_info->usage &= ~uint32_t(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 				}
 			}
 
@@ -1953,8 +2366,12 @@ void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
 	vkDestroyImageView(vk_device, tex_info->vk_view, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW));
 	if (tex_info->allocation.handle) {
-		vkDestroyImage(vk_device, tex_info->vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
-		vmaFreeMemory(allocator, tex_info->allocation.handle);
+		if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
+			vmaDestroyImage(allocator, tex_info->vk_view_create_info.image, tex_info->allocation.handle);
+		} else {
+			vkDestroyImage(vk_device, tex_info->vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_BUFFER));
+			vmaFreeMemory(allocator, tex_info->allocation.handle);
+		}
 	}
 	VersatileResource::free(resources_allocator, tex_info);
 }
@@ -1967,76 +2384,98 @@ uint64_t RenderingDeviceDriverVulkan::texture_get_allocation_size(TextureID p_te
 void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
 
+	uint32_t w = MAX(1u, tex_info->vk_create_info.extent.width >> p_subresource.mipmap);
+	uint32_t h = MAX(1u, tex_info->vk_create_info.extent.height >> p_subresource.mipmap);
+	uint32_t d = MAX(1u, tex_info->vk_create_info.extent.depth >> p_subresource.mipmap);
+
+	uint32_t bw = 0, bh = 0;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, bw, bh);
+
+	uint32_t sbw = 0, sbh = 0;
 	*r_layout = {};
-
-	if (tex_info->vk_create_info.tiling == VK_IMAGE_TILING_LINEAR) {
-		VkImageSubresource vk_subres = {};
-		vk_subres.aspectMask = (VkImageAspectFlags)(1 << p_subresource.aspect);
-		vk_subres.arrayLayer = p_subresource.layer;
-		vk_subres.mipLevel = p_subresource.mipmap;
-
-		VkSubresourceLayout vk_layout = {};
-		vkGetImageSubresourceLayout(vk_device, tex_info->vk_view_create_info.image, &vk_subres, &vk_layout);
-
-		r_layout->offset = vk_layout.offset;
-		r_layout->size = vk_layout.size;
-		r_layout->row_pitch = vk_layout.rowPitch;
-		r_layout->depth_pitch = vk_layout.depthPitch;
-		r_layout->layer_pitch = vk_layout.arrayPitch;
-	} else {
-		// Tight.
-		uint32_t w = tex_info->vk_create_info.extent.width;
-		uint32_t h = tex_info->vk_create_info.extent.height;
-		uint32_t d = tex_info->vk_create_info.extent.depth;
-		if (p_subresource.mipmap > 0) {
-			r_layout->offset = get_image_format_required_size(tex_info->rd_format, w, h, d, p_subresource.mipmap);
-		}
-		for (uint32_t i = 0; i < p_subresource.mipmap; i++) {
-			w = MAX(1u, w >> 1);
-			h = MAX(1u, h >> 1);
-			d = MAX(1u, d >> 1);
-		}
-		uint32_t bw = 0, bh = 0;
-		get_compressed_image_format_block_dimensions(tex_info->rd_format, bw, bh);
-		uint32_t sbw = 0, sbh = 0;
-		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
-		r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
-		r_layout->depth_pitch = r_layout->size / d;
-		r_layout->layer_pitch = r_layout->size / tex_info->vk_create_info.arrayLayers;
-	}
+	r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
+	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
-uint8_t *RenderingDeviceDriverVulkan::texture_map(TextureID p_texture, const TextureSubresource &p_subresource) {
-	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
+Vector<uint8_t> RenderingDeviceDriverVulkan::texture_get_data(TextureID p_texture, uint32_t p_layer) {
+	const TextureInfo *tex = (const TextureInfo *)p_texture.id;
 
-	VkImageSubresource vk_subres = {};
-	vk_subres.aspectMask = (VkImageAspectFlags)(1 << p_subresource.aspect);
-	vk_subres.arrayLayer = p_subresource.layer;
-	vk_subres.mipLevel = p_subresource.mipmap;
+	DataFormat tex_format = tex->rd_format;
+	uint32_t tex_width = tex->vk_create_info.extent.width;
+	uint32_t tex_height = tex->vk_create_info.extent.height;
+	uint32_t tex_depth = tex->vk_create_info.extent.depth;
+	uint32_t tex_mipmaps = tex->vk_create_info.mipLevels;
 
-	VkSubresourceLayout vk_layout = {};
-	vkGetImageSubresourceLayout(vk_device, tex_info->vk_view_create_info.image, &vk_subres, &vk_layout);
+	uint32_t width, height, depth;
+	uint32_t tight_mip_size = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, tex_mipmaps, &width, &height, &depth);
+
+	Vector<uint8_t> image_data;
+	image_data.resize(tight_mip_size);
+
+	uint32_t blockw, blockh;
+	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_format);
+	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
 
 	void *data_ptr = nullptr;
-	VkResult err = vkMapMemory(
-			vk_device,
-			tex_info->allocation.info.deviceMemory,
-			tex_info->allocation.info.offset + vk_layout.offset,
-			vk_layout.size,
-			0,
-			&data_ptr);
+	VkResult err = vmaMapMemory(allocator, tex->allocation.handle, &data_ptr);
+	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), "vmaMapMemory failed with error " + itos(err) + ".");
 
-	vmaMapMemory(allocator, tex_info->allocation.handle, &data_ptr);
-	ERR_FAIL_COND_V_MSG(err, nullptr, "vkMapMemory failed with error " + itos(err) + ".");
-	return (uint8_t *)data_ptr;
-}
+	{
+		uint8_t *w = image_data.ptrw();
 
-void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
-	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vmaUnmapMemory(allocator, tex_info->allocation.handle);
+		uint32_t mipmap_offset = 0;
+		for (uint32_t mm_i = 0; mm_i < tex_mipmaps; mm_i++) {
+			uint32_t image_total = get_image_format_required_size(tex_format, tex_width, tex_height, tex_depth, mm_i + 1, &width, &height, &depth);
+
+			uint8_t *write_ptr_mipmap = w + mipmap_offset;
+			tight_mip_size = image_total - mipmap_offset;
+
+			VkImageSubresource vk_subres = {};
+			vk_subres.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			vk_subres.arrayLayer = p_layer;
+			vk_subres.mipLevel = mm_i;
+
+			VkSubresourceLayout vk_layout = {};
+			vkGetImageSubresourceLayout(vk_device, tex->vk_view_create_info.image, &vk_subres, &vk_layout);
+
+			for (uint32_t z = 0; z < depth; z++) {
+				uint8_t *write_ptr = write_ptr_mipmap + z * tight_mip_size / depth;
+				const uint8_t *slice_read_ptr = (uint8_t *)data_ptr + vk_layout.offset + z * vk_layout.depthPitch;
+
+				if (block_size > 1) {
+					// Compressed.
+					uint32_t line_width = (block_size * (width / blockw));
+					for (uint32_t y = 0; y < height / blockh; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * vk_layout.rowPitch;
+						uint8_t *wptr = write_ptr + y * line_width;
+
+						memcpy(wptr, rptr, line_width);
+					}
+				} else {
+					// Uncompressed.
+					for (uint32_t y = 0; y < height; y++) {
+						const uint8_t *rptr = slice_read_ptr + y * vk_layout.rowPitch;
+						uint8_t *wptr = write_ptr + y * pixel_size * width;
+						memcpy(wptr, rptr, (uint64_t)pixel_size * width);
+					}
+				}
+			}
+
+			mipmap_offset = image_total;
+		}
+	}
+
+	vmaUnmapMemory(allocator, tex->allocation.handle);
+
+	return image_data;
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
+	if (p_format >= DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK && p_format <= DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK && !enabled_device_extension_names.has(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME)) {
+		// Formats that were introduced later with extensions must not reach vkGetPhysicalDeviceFormatProperties if the extension isn't available. This means it's not supported.
+		return 0;
+	}
 	VkFormatProperties properties = {};
 	vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 
@@ -2053,6 +2492,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	}
 	if (!(flags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		supported.clear_flag(TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT);
 	}
 	if (!(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_STORAGE_BIT);
@@ -2060,8 +2500,7 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_
 	if (!(flags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT)) {
 		supported.clear_flag(TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
 	}
-	// Validation via VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR fails if VRS attachment is not supported.
-	if (p_format != DATA_FORMAT_R8_UINT) {
+	if (p_format != DATA_FORMAT_R8_UINT && p_format != DATA_FORMAT_R8G8_UNORM) {
 		supported.clear_flag(TEXTURE_USAGE_VRS_ATTACHMENT_BIT);
 	}
 
@@ -2142,19 +2581,23 @@ bool RenderingDeviceDriverVulkan::sampler_is_format_supported_for_filter(DataFor
 /**** VERTEX ARRAY ****/
 /**********************/
 
-RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) {
+RDD::VertexFormatID RenderingDeviceDriverVulkan::vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) {
 	// Pre-bookkeep.
 	VertexFormatInfo *vf_info = VersatileResource::allocate<VertexFormatInfo>(resources_allocator);
 
-	vf_info->vk_bindings.resize(p_vertex_attribs.size());
+	vf_info->vk_bindings.reserve(p_vertex_bindings.size());
+	for (const VertexAttributeBindingsMap::KV &E : p_vertex_bindings) {
+		const VertexAttributeBinding &binding = E.value;
+		VkVertexInputBindingDescription vk_binding = {};
+		vk_binding.binding = E.key;
+		vk_binding.stride = binding.stride;
+		vk_binding.inputRate = binding.frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+		vf_info->vk_bindings.push_back(vk_binding);
+	}
 	vf_info->vk_attributes.resize(p_vertex_attribs.size());
 	for (uint32_t i = 0; i < p_vertex_attribs.size(); i++) {
-		vf_info->vk_bindings[i] = {};
-		vf_info->vk_bindings[i].binding = i;
-		vf_info->vk_bindings[i].stride = p_vertex_attribs[i].stride;
-		vf_info->vk_bindings[i].inputRate = p_vertex_attribs[i].frequency == VERTEX_FREQUENCY_INSTANCE ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
 		vf_info->vk_attributes[i] = {};
-		vf_info->vk_attributes[i].binding = i;
+		vf_info->vk_attributes[i].binding = p_vertex_attribs[i].binding;
 		vf_info->vk_attributes[i].location = p_vertex_attribs[i].location;
 		vf_info->vk_attributes[i].format = RD_TO_VK_FORMAT[p_vertex_attribs[i].format];
 		vf_info->vk_attributes[i].offset = p_vertex_attribs[i].offset;
@@ -2195,6 +2638,8 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPE
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT, VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT));
 
 // RDD::BarrierAccessBits == VkAccessFlagBits.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT, VK_ACCESS_INDIRECT_COMMAND_READ_BIT));
@@ -2213,12 +2658,13 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_HOST_WRITE_BIT, VK_ACCESS_H
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_MEMORY_WRITE_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT, VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT, VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT));
 
 void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		CommandBufferID p_cmd_buffer,
 		BitField<PipelineStageBits> p_src_stages,
 		BitField<PipelineStageBits> p_dst_stages,
-		VectorView<MemoryBarrier> p_memory_barriers,
+		VectorView<MemoryAccessBarrier> p_memory_barriers,
 		VectorView<BufferBarrier> p_buffer_barriers,
 		VectorView<TextureBarrier> p_texture_barriers) {
 	VkMemoryBarrier *vk_memory_barriers = ALLOCA_ARRAY(VkMemoryBarrier, p_memory_barriers.size());
@@ -2278,8 +2724,9 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 	}
 #endif
 
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	vkCmdPipelineBarrier(
-			(VkCommandBuffer)p_cmd_buffer.id,
+			command_buffer->vk_command_buffer,
 			_rd_to_vk_pipeline_stages(p_src_stages),
 			_rd_to_vk_pipeline_stages(p_dst_stages),
 			0,
@@ -2384,7 +2831,7 @@ RDD::CommandQueueFamilyID RenderingDeviceDriverVulkan::command_queue_family_get(
 		// Preferring a queue with less bits will get us closer to getting a queue that performs better for our requirements.
 		// For example, dedicated compute and transfer queues are usually indicated as such.
 		const VkQueueFlags option_queue_flags = queue_family_properties[i].queueFlags;
-		const bool includes_all_bits = (option_queue_flags & p_cmd_queue_family_bits) == p_cmd_queue_family_bits;
+		const bool includes_all_bits = p_cmd_queue_family_bits.get_shared(option_queue_flags) == p_cmd_queue_family_bits;
 		const bool prefer_less_bits = option_queue_flags < picked_queue_flags;
 		if (includes_all_bits && prefer_less_bits) {
 			picked_family_index = i;
@@ -2471,41 +2918,40 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		wait_semaphores_stages.push_back(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 	}
 
+	if (!pending_flushes.allocations.is_empty()) {
+		// We must do this now, even if p_cmd_buffers is empty; because afterwards pending_flushes.allocations
+		// could become dangling. We cannot delay this call for the next frame(s).
+		err = vmaFlushAllocations(allocator, pending_flushes.allocations.size(),
+				pending_flushes.allocations.ptr(), pending_flushes.offsets.ptr(),
+				pending_flushes.sizes.ptr());
+		pending_flushes.allocations.clear();
+		pending_flushes.offsets.clear();
+		pending_flushes.sizes.clear();
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+	}
+
 	if (p_cmd_buffers.size() > 0) {
 		thread_local LocalVector<VkCommandBuffer> command_buffers;
+		thread_local LocalVector<VkSemaphore> present_semaphores;
 		thread_local LocalVector<VkSemaphore> signal_semaphores;
 		command_buffers.clear();
+		present_semaphores.clear();
 		signal_semaphores.clear();
 
 		for (uint32_t i = 0; i < p_cmd_buffers.size(); i++) {
-			command_buffers.push_back(VkCommandBuffer(p_cmd_buffers[i].id));
+			const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)(p_cmd_buffers[i].id);
+			command_buffers.push_back(command_buffer->vk_command_buffer);
 		}
 
 		for (uint32_t i = 0; i < p_cmd_semaphores.size(); i++) {
 			signal_semaphores.push_back(VkSemaphore(p_cmd_semaphores[i].id));
 		}
 
-		VkSemaphore present_semaphore = VK_NULL_HANDLE;
-		if (p_swap_chains.size() > 0) {
-			if (command_queue->present_semaphores.is_empty()) {
-				// Create the semaphores used for presentation if they haven't been created yet.
-				VkSemaphore semaphore = VK_NULL_HANDLE;
-				VkSemaphoreCreateInfo create_info = {};
-				create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-				for (uint32_t i = 0; i < frame_count; i++) {
-					err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &semaphore);
-					ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
-					command_queue->present_semaphores.push_back(semaphore);
-				}
-			}
-
-			// If a presentation semaphore is required, cycle across the ones available on the queue. It is technically possible
-			// and valid to reuse the same semaphore for this particular operation, but we create multiple ones anyway in case
-			// some hardware expects multiple semaphores to be used.
-			present_semaphore = command_queue->present_semaphores[command_queue->present_semaphore_index];
-			signal_semaphores.push_back(present_semaphore);
-			command_queue->present_semaphore_index = (command_queue->present_semaphore_index + 1) % command_queue->present_semaphores.size();
+		for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
+			const SwapChain *swap_chain = (const SwapChain *)(p_swap_chains[i].id);
+			VkSemaphore semaphore = swap_chain->present_semaphores[swap_chain->image_index];
+			present_semaphores.push_back(semaphore);
+			signal_semaphores.push_back(semaphore);
 		}
 
 		VkSubmitInfo submit_info = {};
@@ -2539,10 +2985,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 			command_queue->pending_semaphores_for_fence.clear();
 		}
 
-		if (present_semaphore != VK_NULL_HANDLE) {
+		if (!present_semaphores.is_empty()) {
 			// If command buffers were executed, swap chains must wait on the present semaphore used by the command queue.
-			wait_semaphores.clear();
-			wait_semaphores.push_back(present_semaphore);
+			wait_semaphores = present_semaphores;
 		}
 	}
 
@@ -2627,11 +3072,6 @@ void RenderingDeviceDriverVulkan::command_queue_free(CommandQueueID p_cmd_queue)
 
 	CommandQueue *command_queue = (CommandQueue *)(p_cmd_queue.id);
 
-	// Erase all the semaphores used for presentation.
-	for (VkSemaphore semaphore : command_queue->present_semaphores) {
-		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
-	}
-
 	// Erase all the semaphores used for image acquisition.
 	for (VkSemaphore semaphore : command_queue->image_semaphores) {
 		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
@@ -2659,7 +3099,10 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	VkCommandPoolCreateInfo cmd_pool_info = {};
 	cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmd_pool_info.queueFamilyIndex = family_index;
-	cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (!command_pool_reset_enabled) {
+		cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	}
 
 	VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 	VkResult res = vkCreateCommandPool(vk_device, &cmd_pool_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL), &vk_command_pool);
@@ -2671,10 +3114,24 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	return CommandPoolID(command_pool);
 }
 
+bool RenderingDeviceDriverVulkan::command_pool_reset(CommandPoolID p_cmd_pool) {
+	DEV_ASSERT(p_cmd_pool);
+
+	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
+	VkResult err = vkResetCommandPool(vk_device, command_pool->vk_command_pool, 0);
+	ERR_FAIL_COND_V_MSG(err, false, "vkResetCommandPool failed with error " + itos(err) + ".");
+
+	return true;
+}
+
 void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
 	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
+	for (CommandBufferInfo *command_buffer : command_pool->command_buffers_created) {
+		VersatileResource::free(resources_allocator, command_buffer);
+	}
+
 	vkDestroyCommandPool(vk_device, command_pool->vk_command_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_COMMAND_POOL));
 	memdelete(command_pool);
 }
@@ -2684,7 +3141,7 @@ void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
 RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
-	const CommandPool *command_pool = (const CommandPool *)(p_cmd_pool.id);
+	CommandPool *command_pool = (CommandPool *)(p_cmd_pool.id);
 	VkCommandBufferAllocateInfo cmd_buf_info = {};
 	cmd_buf_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	cmd_buf_info.commandPool = command_pool->vk_command_pool;
@@ -2696,34 +3153,37 @@ RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandP
 		cmd_buf_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	}
 
-	VkCommandBuffer vk_cmd_buffer = VK_NULL_HANDLE;
-	VkResult err = vkAllocateCommandBuffers(vk_device, &cmd_buf_info, &vk_cmd_buffer);
+	VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
+	VkResult err = vkAllocateCommandBuffers(vk_device, &cmd_buf_info, &vk_command_buffer);
 	ERR_FAIL_COND_V_MSG(err, CommandBufferID(), "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
 
-	return CommandBufferID(vk_cmd_buffer);
+	CommandBufferInfo *command_buffer = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
+	command_buffer->vk_command_buffer = vk_command_buffer;
+	command_pool->command_buffers_created.push_back(command_buffer);
+	return CommandBufferID(command_buffer);
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buffer) {
-	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
 
 	VkCommandBufferBeginInfo cmd_buf_begin_info = {};
 	cmd_buf_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	VkResult err = vkBeginCommandBuffer((VkCommandBuffer)p_cmd_buffer.id, &cmd_buf_begin_info);
+	VkResult err = vkBeginCommandBuffer(command_buffer->vk_command_buffer, &cmd_buf_begin_info);
 	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 
 	return true;
 }
 
 bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
-	// Reset is implicit (VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT).
-
 	Framebuffer *framebuffer = (Framebuffer *)(p_framebuffer.id);
+	RenderPassInfo *render_pass = (RenderPassInfo *)(p_render_pass.id);
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
 
 	VkCommandBufferInheritanceInfo inheritance_info = {};
 	inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-	inheritance_info.renderPass = (VkRenderPass)p_render_pass.id;
+	inheritance_info.renderPass = render_pass->vk_render_pass;
 	inheritance_info.subpass = p_subpass;
 	inheritance_info.framebuffer = framebuffer->vk_framebuffer;
 
@@ -2732,18 +3192,27 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID
 	cmd_buf_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 	cmd_buf_begin_info.pInheritanceInfo = &inheritance_info;
 
-	VkResult err = vkBeginCommandBuffer((VkCommandBuffer)p_cmd_buffer.id, &cmd_buf_begin_info);
+	VkResult err = vkBeginCommandBuffer(command_buffer->vk_command_buffer, &cmd_buf_begin_info);
 	ERR_FAIL_COND_V_MSG(err, false, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
 
 	return true;
 }
 
 void RenderingDeviceDriverVulkan::command_buffer_end(CommandBufferID p_cmd_buffer) {
-	vkEndCommandBuffer((VkCommandBuffer)p_cmd_buffer.id);
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
+	vkEndCommandBuffer(command_buffer->vk_command_buffer);
 }
 
 void RenderingDeviceDriverVulkan::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
-	vkCmdExecuteCommands((VkCommandBuffer)p_cmd_buffer.id, p_secondary_cmd_buffers.size(), (const VkCommandBuffer *)p_secondary_cmd_buffers.ptr());
+	thread_local LocalVector<VkCommandBuffer> secondary_command_buffers;
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
+	secondary_command_buffers.resize(p_secondary_cmd_buffers.size());
+	for (uint32_t i = 0; i < p_secondary_cmd_buffers.size(); i++) {
+		CommandBufferInfo *secondary_command_buffer = (CommandBufferInfo *)(p_secondary_cmd_buffers[i].id);
+		secondary_command_buffers[i] = secondary_command_buffer->vk_command_buffer;
+	}
+
+	vkCmdExecuteCommands(command_buffer->vk_command_buffer, p_secondary_cmd_buffers.size(), secondary_command_buffers.ptr());
 }
 
 /********************/
@@ -2784,6 +3253,12 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 
 	swap_chain->command_queues_acquired.clear();
 	swap_chain->command_queues_acquired_semaphores.clear();
+
+	for (VkSemaphore semaphore : swap_chain->present_semaphores) {
+		vkDestroySemaphore(vk_device, semaphore, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE));
+	}
+
+	swap_chain->present_semaphores.clear();
 }
 
 RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
@@ -2855,15 +3330,18 @@ RenderingDeviceDriver::SwapChainID RenderingDeviceDriverVulkan::swap_chain_creat
 	pass_info.subpassCount = 1;
 	pass_info.pSubpasses = &subpass;
 
-	VkRenderPass render_pass = VK_NULL_HANDLE;
-	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &render_pass);
+	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
+	err = _create_render_pass(vk_device, &pass_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
 	ERR_FAIL_COND_V(err != VK_SUCCESS, SwapChainID());
+
+	RenderPassInfo *render_pass_info = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
+	render_pass_info->vk_render_pass = vk_render_pass;
 
 	SwapChain *swap_chain = memnew(SwapChain);
 	swap_chain->surface = p_surface;
 	swap_chain->format = format;
 	swap_chain->color_space = color_space;
-	swap_chain->render_pass = RenderPassID(render_pass);
+	swap_chain->render_pass = RenderPassID(render_pass_info);
 	return SwapChainID(swap_chain);
 }
 
@@ -3095,9 +3573,10 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 	swap_chain->framebuffers.reserve(image_count);
 
+	const RenderPassInfo *render_pass = (const RenderPassInfo *)(swap_chain->render_pass.id);
 	VkFramebufferCreateInfo fb_create_info = {};
 	fb_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	fb_create_info.renderPass = VkRenderPass(swap_chain->render_pass.id);
+	fb_create_info.renderPass = render_pass->vk_render_pass;
 	fb_create_info.attachmentCount = 1;
 	fb_create_info.width = surface->width;
 	fb_create_info.height = surface->height;
@@ -3114,6 +3593,17 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		framebuffer->swap_chain_image = swap_chain->images[i];
 		framebuffer->swap_chain_image_subresource_range = view_create_info.subresourceRange;
 		swap_chain->framebuffers.push_back(RDD::FramebufferID(framebuffer));
+	}
+
+	VkSemaphore vk_semaphore = VK_NULL_HANDLE;
+	for (uint32_t i = 0; i < image_count; i++) {
+		VkSemaphoreCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		err = vkCreateSemaphore(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SEMAPHORE), &vk_semaphore);
+		ERR_FAIL_COND_V(err != VK_SUCCESS, FAILED);
+
+		swap_chain->present_semaphores.push_back(vk_semaphore);
 	}
 
 	// Once everything's been created correctly, indicate the surface no longer needs to be resized.
@@ -3238,8 +3728,8 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);
 
-	if (swap_chain->render_pass.id != 0) {
-		vkDestroyRenderPass(vk_device, VkRenderPass(swap_chain->render_pass.id), VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
+	if (swap_chain->render_pass) {
+		render_pass_free(swap_chain->render_pass);
 	}
 
 	memdelete(swap_chain);
@@ -3250,14 +3740,18 @@ void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
 /*********************/
 
 RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
+	RenderPassInfo *render_pass = (RenderPassInfo *)(p_render_pass.id);
+
+	uint32_t fragment_density_map_offsets_layers = 0;
 	VkImageView *vk_img_views = ALLOCA_ARRAY(VkImageView, p_attachments.size());
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
-		vk_img_views[i] = ((const TextureInfo *)p_attachments[i].id)->vk_view;
+		const TextureInfo *texture = (const TextureInfo *)p_attachments[i].id;
+		vk_img_views[i] = texture->vk_view;
 	}
 
 	VkFramebufferCreateInfo framebuffer_create_info = {};
 	framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	framebuffer_create_info.renderPass = (VkRenderPass)p_render_pass.id;
+	framebuffer_create_info.renderPass = render_pass->vk_render_pass;
 	framebuffer_create_info.attachmentCount = p_attachments.size();
 	framebuffer_create_info.pAttachments = vk_img_views;
 	framebuffer_create_info.width = p_width;
@@ -3278,6 +3772,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 
 	Framebuffer *framebuffer = memnew(Framebuffer);
 	framebuffer->vk_framebuffer = vk_framebuffer;
+	framebuffer->fragment_density_map_offsets_layers = fragment_density_map_offsets_layers;
 	return FramebufferID(framebuffer);
 }
 
@@ -3299,272 +3794,65 @@ static VkShaderStageFlagBits RD_STAGE_TO_VK_SHADER_STAGE_BITS[RDD::SHADER_STAGE_
 	VK_SHADER_STAGE_COMPUTE_BIT,
 };
 
-String RenderingDeviceDriverVulkan::shader_get_binary_cache_key() {
-	return "Vulkan-SV" + uitos(ShaderBinary::VERSION);
-}
+RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
+	ShaderReflection shader_refl = p_shader_container->get_shader_reflection();
+	ShaderInfo shader_info;
+	shader_info.name = p_shader_container->shader_name.get_data();
 
-Vector<uint8_t> RenderingDeviceDriverVulkan::shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) {
-	ShaderReflection shader_refl;
-	if (_reflect_spirv(p_spirv, shader_refl) != OK) {
-		return Vector<uint8_t>();
-	}
-
-	ERR_FAIL_COND_V_MSG((uint32_t)shader_refl.uniform_sets.size() > physical_device_properties.limits.maxBoundDescriptorSets, Vector<uint8_t>(),
-			"Number of uniform sets is larger than what is supported by the hardware (" + itos(physical_device_properties.limits.maxBoundDescriptorSets) + ").");
-
-	// Collect reflection data into binary data.
-	ShaderBinary::Data binary_data;
-	Vector<Vector<ShaderBinary::DataBinding>> uniforms; // Set bindings.
-	Vector<ShaderBinary::SpecializationConstant> specialization_constants;
-	{
-		binary_data.vertex_input_mask = shader_refl.vertex_input_mask;
-		binary_data.fragment_output_mask = shader_refl.fragment_output_mask;
-		binary_data.specialization_constants_count = shader_refl.specialization_constants.size();
-		binary_data.is_compute = shader_refl.is_compute;
-		binary_data.compute_local_size[0] = shader_refl.compute_local_size[0];
-		binary_data.compute_local_size[1] = shader_refl.compute_local_size[1];
-		binary_data.compute_local_size[2] = shader_refl.compute_local_size[2];
-		binary_data.set_count = shader_refl.uniform_sets.size();
-		binary_data.push_constant_size = shader_refl.push_constant_size;
-		for (uint32_t i = 0; i < SHADER_STAGE_MAX; i++) {
-			if (shader_refl.push_constant_stages.has_flag((ShaderStage)(1 << i))) {
-				binary_data.vk_push_constant_stages_mask |= RD_STAGE_TO_VK_SHADER_STAGE_BITS[i];
-			}
-		}
-
-		for (const Vector<ShaderUniform> &set_refl : shader_refl.uniform_sets) {
-			Vector<ShaderBinary::DataBinding> set_bindings;
-			for (const ShaderUniform &uniform_refl : set_refl) {
-				ShaderBinary::DataBinding binding;
-				binding.type = (uint32_t)uniform_refl.type;
-				binding.binding = uniform_refl.binding;
-				binding.stages = (uint32_t)uniform_refl.stages;
-				binding.length = uniform_refl.length;
-				binding.writable = (uint32_t)uniform_refl.writable;
-				set_bindings.push_back(binding);
-			}
-			uniforms.push_back(set_bindings);
-		}
-
-		for (const ShaderSpecializationConstant &refl_sc : shader_refl.specialization_constants) {
-			ShaderBinary::SpecializationConstant spec_constant;
-			spec_constant.type = (uint32_t)refl_sc.type;
-			spec_constant.constant_id = refl_sc.constant_id;
-			spec_constant.int_value = refl_sc.int_value;
-			spec_constant.stage_flags = (uint32_t)refl_sc.stages;
-			specialization_constants.push_back(spec_constant);
+	for (uint32_t i = 0; i < SHADER_STAGE_MAX; i++) {
+		if (shader_refl.push_constant_stages.has_flag((ShaderStage)(1 << i))) {
+			shader_info.vk_push_constant_stages |= RD_STAGE_TO_VK_SHADER_STAGE_BITS[i];
 		}
 	}
 
-	Vector<Vector<uint8_t>> compressed_stages;
-	Vector<uint32_t> smolv_size;
-	Vector<uint32_t> zstd_size; // If 0, zstd not used.
-
-	uint32_t stages_binary_size = 0;
-
-	bool strip_debug = false;
-
-	for (uint32_t i = 0; i < p_spirv.size(); i++) {
-		smolv::ByteArray smolv;
-		if (!smolv::Encode(p_spirv[i].spirv.ptr(), p_spirv[i].spirv.size(), smolv, strip_debug ? smolv::kEncodeFlagStripDebugInfo : 0)) {
-			ERR_FAIL_V_MSG(Vector<uint8_t>(), "Error compressing shader stage :" + String(SHADER_STAGE_NAMES[p_spirv[i].shader_stage]));
-		} else {
-			smolv_size.push_back(smolv.size());
-			{ // zstd.
-				Vector<uint8_t> zstd;
-				zstd.resize(Compression::get_max_compressed_buffer_size(smolv.size(), Compression::MODE_ZSTD));
-				int dst_size = Compression::compress(zstd.ptrw(), &smolv[0], smolv.size(), Compression::MODE_ZSTD);
-
-				if (dst_size > 0 && (uint32_t)dst_size < smolv.size()) {
-					zstd_size.push_back(dst_size);
-					zstd.resize(dst_size);
-					compressed_stages.push_back(zstd);
-				} else {
-					Vector<uint8_t> smv;
-					smv.resize(smolv.size());
-					memcpy(smv.ptrw(), &smolv[0], smolv.size());
-					zstd_size.push_back(0); // Not using zstd.
-					compressed_stages.push_back(smv);
-				}
-			}
-		}
-		uint32_t s = compressed_stages[i].size();
-		stages_binary_size += STEPIFY(s, 4);
-	}
-
-	binary_data.specialization_constants_count = specialization_constants.size();
-	binary_data.set_count = uniforms.size();
-	binary_data.stage_count = p_spirv.size();
-
-	CharString shader_name_utf = p_shader_name.utf8();
-
-	binary_data.shader_name_len = shader_name_utf.length();
-
-	uint32_t total_size = sizeof(uint32_t) * 3; // Header + version + main datasize;.
-	total_size += sizeof(ShaderBinary::Data);
-
-	total_size += STEPIFY(binary_data.shader_name_len, 4);
-
-	for (int i = 0; i < uniforms.size(); i++) {
-		total_size += sizeof(uint32_t);
-		total_size += uniforms[i].size() * sizeof(ShaderBinary::DataBinding);
-	}
-
-	total_size += sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size();
-
-	total_size += compressed_stages.size() * sizeof(uint32_t) * 3; // Sizes.
-	total_size += stages_binary_size;
-
-	Vector<uint8_t> ret;
-	ret.resize(total_size);
-	{
-		uint32_t offset = 0;
-		uint8_t *binptr = ret.ptrw();
-		binptr[0] = 'G';
-		binptr[1] = 'S';
-		binptr[2] = 'B';
-		binptr[3] = 'D'; // Godot Shader Binary Data.
-		offset += 4;
-		encode_uint32(ShaderBinary::VERSION, binptr + offset);
-		offset += sizeof(uint32_t);
-		encode_uint32(sizeof(ShaderBinary::Data), binptr + offset);
-		offset += sizeof(uint32_t);
-		memcpy(binptr + offset, &binary_data, sizeof(ShaderBinary::Data));
-		offset += sizeof(ShaderBinary::Data);
-
-#define ADVANCE_OFFSET_WITH_ALIGNMENT(m_bytes)                         \
-	{                                                                  \
-		offset += m_bytes;                                             \
-		uint32_t padding = STEPIFY(m_bytes, 4) - m_bytes;              \
-		memset(binptr + offset, 0, padding); /* Avoid garbage data. */ \
-		offset += padding;                                             \
-	}
-
-		if (binary_data.shader_name_len > 0) {
-			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-			ADVANCE_OFFSET_WITH_ALIGNMENT(binary_data.shader_name_len);
-		}
-
-		for (int i = 0; i < uniforms.size(); i++) {
-			int count = uniforms[i].size();
-			encode_uint32(count, binptr + offset);
-			offset += sizeof(uint32_t);
-			if (count > 0) {
-				memcpy(binptr + offset, uniforms[i].ptr(), sizeof(ShaderBinary::DataBinding) * count);
-				offset += sizeof(ShaderBinary::DataBinding) * count;
-			}
-		}
-
-		if (specialization_constants.size()) {
-			memcpy(binptr + offset, specialization_constants.ptr(), sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size());
-			offset += sizeof(ShaderBinary::SpecializationConstant) * specialization_constants.size();
-		}
-
-		for (int i = 0; i < compressed_stages.size(); i++) {
-			encode_uint32(p_spirv[i].shader_stage, binptr + offset);
-			offset += sizeof(uint32_t);
-			encode_uint32(smolv_size[i], binptr + offset);
-			offset += sizeof(uint32_t);
-			encode_uint32(zstd_size[i], binptr + offset);
-			offset += sizeof(uint32_t);
-			memcpy(binptr + offset, compressed_stages[i].ptr(), compressed_stages[i].size());
-			ADVANCE_OFFSET_WITH_ALIGNMENT(compressed_stages[i].size());
-		}
-
-		DEV_ASSERT(offset == (uint32_t)ret.size());
-	}
-
-	return ret;
-}
-
-RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
-	r_shader_desc = {}; // Driver-agnostic.
-	ShaderInfo shader_info; // Driver-specific.
-
-	const uint8_t *binptr = p_shader_binary.ptr();
-	uint32_t binsize = p_shader_binary.size();
-
-	uint32_t read_offset = 0;
-
-	// Consistency check.
-	ERR_FAIL_COND_V(binsize < sizeof(uint32_t) * 3 + sizeof(ShaderBinary::Data), ShaderID());
-	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'S' || binptr[2] != 'B' || binptr[3] != 'D', ShaderID());
-
-	uint32_t bin_version = decode_uint32(binptr + 4);
-	ERR_FAIL_COND_V(bin_version != ShaderBinary::VERSION, ShaderID());
-
-	uint32_t bin_data_size = decode_uint32(binptr + 8);
-
-	const ShaderBinary::Data &binary_data = *(reinterpret_cast<const ShaderBinary::Data *>(binptr + 12));
-
-	r_shader_desc.push_constant_size = binary_data.push_constant_size;
-	shader_info.vk_push_constant_stages = binary_data.vk_push_constant_stages_mask;
-
-	r_shader_desc.vertex_input_mask = binary_data.vertex_input_mask;
-	r_shader_desc.fragment_output_mask = binary_data.fragment_output_mask;
-
-	r_shader_desc.is_compute = binary_data.is_compute;
-	r_shader_desc.compute_local_size[0] = binary_data.compute_local_size[0];
-	r_shader_desc.compute_local_size[1] = binary_data.compute_local_size[1];
-	r_shader_desc.compute_local_size[2] = binary_data.compute_local_size[2];
-
-	read_offset += sizeof(uint32_t) * 3 + bin_data_size;
-
-	if (binary_data.shader_name_len) {
-		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
-		read_offset += STEPIFY(binary_data.shader_name_len, 4);
-	}
-
+	// Set bindings.
 	Vector<Vector<VkDescriptorSetLayoutBinding>> vk_set_bindings;
-
-	r_shader_desc.uniform_sets.resize(binary_data.set_count);
-	vk_set_bindings.resize(binary_data.set_count);
-
-	for (uint32_t i = 0; i < binary_data.set_count; i++) {
-		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) >= binsize, ShaderID());
-		uint32_t set_count = decode_uint32(binptr + read_offset);
-		read_offset += sizeof(uint32_t);
-		const ShaderBinary::DataBinding *set_ptr = reinterpret_cast<const ShaderBinary::DataBinding *>(binptr + read_offset);
-		uint32_t set_size = set_count * sizeof(ShaderBinary::DataBinding);
-		ERR_FAIL_COND_V(read_offset + set_size >= binsize, ShaderID());
-
-		for (uint32_t j = 0; j < set_count; j++) {
-			ShaderUniform info;
-			info.type = UniformType(set_ptr[j].type);
-			info.writable = set_ptr[j].writable;
-			info.length = set_ptr[j].length;
-			info.binding = set_ptr[j].binding;
-			info.stages = set_ptr[j].stages;
-
+	vk_set_bindings.resize(shader_refl.uniform_sets.size());
+	for (uint32_t i = 0; i < shader_refl.uniform_sets.size(); i++) {
+		for (uint32_t j = 0; j < shader_refl.uniform_sets[i].size(); j++) {
+			const ShaderUniform &uniform = shader_refl.uniform_sets[i][j];
 			VkDescriptorSetLayoutBinding layout_binding = {};
-			layout_binding.binding = set_ptr[j].binding;
+			layout_binding.binding = uniform.binding;
 			layout_binding.descriptorCount = 1;
 			for (uint32_t k = 0; k < SHADER_STAGE_MAX; k++) {
-				if ((set_ptr[j].stages & (1 << k))) {
+				if ((uniform.stages.has_flag(ShaderStage(1U << k)))) {
 					layout_binding.stageFlags |= RD_STAGE_TO_VK_SHADER_STAGE_BITS[k];
 				}
 			}
 
-			switch (info.type) {
+			switch (uniform.type) {
 				case UNIFORM_TYPE_SAMPLER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-					layout_binding.descriptorCount = set_ptr[j].length;
+					layout_binding.descriptorCount = uniform.length;
+					// Immutable samplers: here they get set in the layoutbinding, given that they will not be changed later.
+					int immutable_bind_index = -1;
+					if (immutable_samplers_enabled && p_immutable_samplers.size() > 0) {
+						for (int k = 0; k < p_immutable_samplers.size(); k++) {
+							if (p_immutable_samplers[k].binding == layout_binding.binding) {
+								immutable_bind_index = k;
+								break;
+							}
+						}
+						if (immutable_bind_index >= 0) {
+							layout_binding.pImmutableSamplers = (VkSampler *)&p_immutable_samplers[immutable_bind_index].ids[0].id;
+						}
+					}
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					layout_binding.descriptorCount = set_ptr[j].length;
+					layout_binding.descriptorCount = uniform.length;
 				} break;
 				case UNIFORM_TYPE_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-					layout_binding.descriptorCount = set_ptr[j].length;
+					layout_binding.descriptorCount = uniform.length;
 				} break;
 				case UNIFORM_TYPE_IMAGE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-					layout_binding.descriptorCount = set_ptr[j].length;
+					layout_binding.descriptorCount = uniform.length;
 				} break;
 				case UNIFORM_TYPE_TEXTURE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-					layout_binding.descriptorCount = set_ptr[j].length;
+					layout_binding.descriptorCount = uniform.length;
 				} break;
 				case UNIFORM_TYPE_IMAGE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
@@ -3572,8 +3860,14 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 				case UNIFORM_TYPE_UNIFORM_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				} break;
+				case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+				} break;
 				case UNIFORM_TYPE_STORAGE_BUFFER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				} break;
+				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
 				} break;
 				case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
@@ -3583,114 +3877,134 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 				}
 			}
 
-			r_shader_desc.uniform_sets.write[i].push_back(info);
 			vk_set_bindings.write[i].push_back(layout_binding);
 		}
-
-		read_offset += set_size;
 	}
-
-	ERR_FAIL_COND_V(read_offset + binary_data.specialization_constants_count * sizeof(ShaderBinary::SpecializationConstant) >= binsize, ShaderID());
-
-	r_shader_desc.specialization_constants.resize(binary_data.specialization_constants_count);
-	for (uint32_t i = 0; i < binary_data.specialization_constants_count; i++) {
-		const ShaderBinary::SpecializationConstant &src_sc = *(reinterpret_cast<const ShaderBinary::SpecializationConstant *>(binptr + read_offset));
-		ShaderSpecializationConstant sc;
-		sc.type = PipelineSpecializationConstantType(src_sc.type);
-		sc.constant_id = src_sc.constant_id;
-		sc.int_value = src_sc.int_value;
-		sc.stages = src_sc.stage_flags;
-		r_shader_desc.specialization_constants.write[i] = sc;
-
-		read_offset += sizeof(ShaderBinary::SpecializationConstant);
-	}
-
-	Vector<Vector<uint8_t>> stages_spirv;
-	stages_spirv.resize(binary_data.stage_count);
-	r_shader_desc.stages.resize(binary_data.stage_count);
-
-	for (uint32_t i = 0; i < binary_data.stage_count; i++) {
-		ERR_FAIL_COND_V(read_offset + sizeof(uint32_t) * 3 >= binsize, ShaderID());
-
-		uint32_t stage = decode_uint32(binptr + read_offset);
-		read_offset += sizeof(uint32_t);
-		uint32_t smolv_size = decode_uint32(binptr + read_offset);
-		read_offset += sizeof(uint32_t);
-		uint32_t zstd_size = decode_uint32(binptr + read_offset);
-		read_offset += sizeof(uint32_t);
-
-		uint32_t buf_size = (zstd_size > 0) ? zstd_size : smolv_size;
-
-		Vector<uint8_t> smolv;
-		const uint8_t *src_smolv = nullptr;
-
-		if (zstd_size > 0) {
-			// Decompress to smolv.
-			smolv.resize(smolv_size);
-			int dec_smolv_size = Compression::decompress(smolv.ptrw(), smolv.size(), binptr + read_offset, zstd_size, Compression::MODE_ZSTD);
-			ERR_FAIL_COND_V(dec_smolv_size != (int32_t)smolv_size, ShaderID());
-			src_smolv = smolv.ptr();
-		} else {
-			src_smolv = binptr + read_offset;
-		}
-
-		Vector<uint8_t> &spirv = stages_spirv.ptrw()[i];
-		uint32_t spirv_size = smolv::GetDecodedBufferSize(src_smolv, smolv_size);
-		spirv.resize(spirv_size);
-		if (!smolv::Decode(src_smolv, smolv_size, spirv.ptrw(), spirv_size)) {
-			ERR_FAIL_V_MSG(ShaderID(), "Malformed smolv input uncompressing shader stage:" + String(SHADER_STAGE_NAMES[stage]));
-		}
-
-		r_shader_desc.stages.set(i, ShaderStage(stage));
-
-		buf_size = STEPIFY(buf_size, 4);
-		read_offset += buf_size;
-		ERR_FAIL_COND_V(read_offset > binsize, ShaderID());
-	}
-
-	ERR_FAIL_COND_V(read_offset != binsize, ShaderID());
 
 	// Modules.
-
+	VkResult res;
 	String error_text;
+	Vector<uint8_t> decompressed_code;
+	VkShaderModule vk_module;
+	PackedByteArray decoded_spirv;
+	const bool use_respv = RESPV_ENABLED && !shader_container_format.get_debug_info_enabled();
+	const bool store_respv = use_respv && !shader_refl.specialization_constants.is_empty();
+	const int64_t stage_count = shader_refl.stages_vector.size();
+	shader_info.vk_stages_create_info.reserve(stage_count);
+	shader_info.spirv_stage_bytes.reserve(stage_count);
+	shader_info.original_stage_size.reserve(stage_count);
 
-	for (int i = 0; i < r_shader_desc.stages.size(); i++) {
+	if (store_respv) {
+		shader_info.respv_stage_shaders.reserve(stage_count);
+	}
+
+	for (int i = 0; i < stage_count; i++) {
+		const RenderingShaderContainer::Shader &shader = p_shader_container->shaders[i];
+		bool requires_decompression = (shader.code_decompressed_size > 0);
+		if (requires_decompression) {
+			decompressed_code.resize(shader.code_decompressed_size);
+			bool decompressed = p_shader_container->decompress_code(shader.code_compressed_bytes.ptr(), shader.code_compressed_bytes.size(), shader.code_compression_flags, decompressed_code.ptrw(), decompressed_code.size());
+			if (!decompressed) {
+				error_text = vformat("Failed to decompress code on shader stage %s.", String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
+				break;
+			}
+		}
+
+		const uint8_t *smolv_input = requires_decompression ? decompressed_code.ptr() : shader.code_compressed_bytes.ptr();
+		uint32_t smolv_input_size = requires_decompression ? decompressed_code.size() : shader.code_compressed_bytes.size();
+		if (shader.code_compression_flags & RenderingShaderContainerVulkan::COMPRESSION_FLAG_SMOLV) {
+			decoded_spirv.resize(smolv::GetDecodedBufferSize(smolv_input, smolv_input_size));
+			if (decoded_spirv.is_empty()) {
+				error_text = vformat("Malformed smolv input on shader stage %s.", String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
+				break;
+			}
+
+			if (!smolv::Decode(smolv_input, smolv_input_size, decoded_spirv.ptrw(), decoded_spirv.size())) {
+				error_text = vformat("Malformed smolv input on shader stage %s.", String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
+				break;
+			}
+		} else {
+			decoded_spirv.resize(smolv_input_size);
+			memcpy(decoded_spirv.ptrw(), smolv_input, decoded_spirv.size());
+		}
+
+		shader_info.original_stage_size.push_back(decoded_spirv.size());
+
+		if (use_respv) {
+			const bool inline_data = store_respv || !RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS;
+			respv::Shader respv_shader(decoded_spirv.ptr(), decoded_spirv.size(), inline_data);
+			if (respv_shader.empty()) {
+#if RESPV_VERBOSE
+				print_line("re-spirv failed to parse the shader, skipping optimization.");
+#endif
+				if (store_respv) {
+					shader_info.respv_stage_shaders.push_back(respv::Shader());
+				}
+			} else if (store_respv) {
+				shader_info.respv_stage_shaders.push_back(respv_shader);
+			} else {
+				std::vector<uint8_t> respv_optimized_data;
+				if (respv::Optimizer::run(respv_shader, nullptr, 0, respv_optimized_data)) {
+#if RESPV_VERBOSE
+					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes.", decoded_spirv.size(), respv_optimized_data.size()));
+#endif
+					decoded_spirv.resize(respv_optimized_data.size());
+					memcpy(decoded_spirv.ptrw(), respv_optimized_data.data(), respv_optimized_data.size());
+				} else {
+#if RESPV_VERBOSE
+					print_line("re-spirv failed to optimize the shader.");
+#endif
+				}
+			}
+		}
+
+		shader_info.spirv_stage_bytes.push_back(decoded_spirv);
+
 		VkShaderModuleCreateInfo shader_module_create_info = {};
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		shader_module_create_info.codeSize = stages_spirv[i].size();
-		shader_module_create_info.pCode = (const uint32_t *)stages_spirv[i].ptr();
+		shader_module_create_info.codeSize = decoded_spirv.size();
+		shader_module_create_info.pCode = (const uint32_t *)(decoded_spirv.ptr());
 
-		VkShaderModule vk_module = VK_NULL_HANDLE;
-		VkResult res = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &vk_module);
-		if (res) {
-			error_text = "Error (" + itos(res) + ") creating shader module for stage: " + String(SHADER_STAGE_NAMES[r_shader_desc.stages[i]]);
+		res = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &vk_module);
+		if (res != VK_SUCCESS) {
+			error_text = vformat("Error (%d) creating module for shader stage %s.", res, String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
 			break;
 		}
 
 		VkPipelineShaderStageCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		create_info.stage = RD_STAGE_TO_VK_SHADER_STAGE_BITS[r_shader_desc.stages[i]];
+		create_info.stage = RD_STAGE_TO_VK_SHADER_STAGE_BITS[shader_refl.stages_vector[i]];
 		create_info.module = vk_module;
 		create_info.pName = "main";
-
 		shader_info.vk_stages_create_info.push_back(create_info);
 	}
 
 	// Descriptor sets.
-
 	if (error_text.is_empty()) {
-		DEV_ASSERT((uint32_t)vk_set_bindings.size() == binary_data.set_count);
-		for (uint32_t i = 0; i < binary_data.set_count; i++) {
+		// For Adreno 5XX driver bug.
+		VkDescriptorSetLayoutBinding placeholder_binding = {};
+		placeholder_binding.binding = 0;
+		placeholder_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		placeholder_binding.descriptorCount = 1;
+		placeholder_binding.stageFlags = VK_SHADER_STAGE_ALL;
+
+		for (uint32_t i = 0; i < shader_refl.uniform_sets.size(); i++) {
 			// Empty ones are fine if they were not used according to spec (binding count will be 0).
 			VkDescriptorSetLayoutCreateInfo layout_create_info = {};
 			layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			layout_create_info.bindingCount = vk_set_bindings[i].size();
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
 
+			// ...not so fine on Adreno 5XX.
+			if (adreno_5xx_empty_descriptor_set_layout_workaround && layout_create_info.bindingCount == 0) {
+				layout_create_info.bindingCount = 1;
+				layout_create_info.pBindings = &placeholder_binding;
+			}
+
 			VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-			VkResult res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
+			res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
 			if (res) {
-				error_text = "Error (" + itos(res) + ") creating descriptor set layout for set " + itos(i);
+				error_text = vformat("Error (%d) creating descriptor set layout for set %d.", res, i);
 				break;
 			}
 
@@ -3700,24 +4014,23 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 
 	if (error_text.is_empty()) {
 		// Pipeline layout.
-
 		VkPipelineLayoutCreateInfo pipeline_layout_create_info = {};
 		pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_create_info.setLayoutCount = binary_data.set_count;
+		pipeline_layout_create_info.setLayoutCount = shader_info.vk_descriptor_set_layouts.size();
 		pipeline_layout_create_info.pSetLayouts = shader_info.vk_descriptor_set_layouts.ptr();
 
-		if (binary_data.push_constant_size) {
+		if (shader_refl.push_constant_size > 0) {
 			VkPushConstantRange *push_constant_range = ALLOCA_SINGLE(VkPushConstantRange);
 			*push_constant_range = {};
-			push_constant_range->stageFlags = binary_data.vk_push_constant_stages_mask;
-			push_constant_range->size = binary_data.push_constant_size;
+			push_constant_range->stageFlags = shader_info.vk_push_constant_stages;
+			push_constant_range->size = shader_refl.push_constant_size;
 			pipeline_layout_create_info.pushConstantRangeCount = 1;
 			pipeline_layout_create_info.pPushConstantRanges = push_constant_range;
 		}
 
-		VkResult err = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT), &shader_info.vk_pipeline_layout);
-		if (err) {
-			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
+		res = vkCreatePipelineLayout(vk_device, &pipeline_layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE_LAYOUT), &shader_info.vk_pipeline_layout);
+		if (res != VK_SUCCESS) {
+			error_text = vformat("Error (%d) creating pipeline layout.", res);
 		}
 	}
 
@@ -3726,7 +4039,7 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 		for (uint32_t i = 0; i < shader_info.vk_stages_create_info.size(); i++) {
 			vkDestroyShaderModule(vk_device, shader_info.vk_stages_create_info[i].module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
 		}
-		for (uint32_t i = 0; i < binary_data.set_count; i++) {
+		for (uint32_t i = 0; i < shader_info.vk_descriptor_set_layouts.size(); i++) {
 			vkDestroyDescriptorSetLayout(vk_device, shader_info.vk_descriptor_set_layouts[i], VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT));
 		}
 
@@ -3734,7 +4047,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 	}
 
 	// Bookkeep.
-
 	ShaderInfo *shader_info_ptr = VersatileResource::allocate<ShaderInfo>(resources_allocator);
 	*shader_info_ptr = shader_info;
 	return ShaderID(shader_info_ptr);
@@ -3770,21 +4082,7 @@ void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
 /*********************/
 /**** UNIFORM SET ****/
 /*********************/
-
-VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it) {
-	DescriptorSetPools::Iterator pool_sets_it = descriptor_set_pools.find(p_key);
-
-	if (pool_sets_it) {
-		for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
-			if (E.value < max_descriptor_sets_per_pool) {
-				*r_pool_sets_it = pool_sets_it;
-				return E.key;
-			}
-		}
-	}
-
-	// Create a new one.
-
+VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool) {
 	// Here comes more vulkan API strangeness.
 	VkDescriptorPoolSize *vk_sizes = ALLOCA_ARRAY(VkDescriptorPoolSize, UNIFORM_TYPE_MAX);
 	uint32_t vk_sizes_count = 0;
@@ -3839,10 +4137,24 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 			curr_vk_size++;
 			vk_sizes_count++;
 		}
+		if (p_key.uniform_type[UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC]) {
+			*curr_vk_size = {};
+			curr_vk_size->type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC] * max_descriptor_sets_per_pool;
+			curr_vk_size++;
+			vk_sizes_count++;
+		}
 		if (p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER]) {
 			*curr_vk_size = {};
 			curr_vk_size->type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER] * max_descriptor_sets_per_pool;
+			curr_vk_size++;
+			vk_sizes_count++;
+		}
+		if (p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC]) {
+			*curr_vk_size = {};
+			curr_vk_size->type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+			curr_vk_size->descriptorCount = p_key.uniform_type[UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC] * max_descriptor_sets_per_pool;
 			curr_vk_size++;
 			vk_sizes_count++;
 		}
@@ -3858,7 +4170,11 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 
 	VkDescriptorPoolCreateInfo descriptor_set_pool_create_info = {};
 	descriptor_set_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
+	if (linear_descriptor_pools_enabled && p_linear_pool) {
+		descriptor_set_pool_create_info.flags = 0;
+	} else {
+		descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
+	}
 	descriptor_set_pool_create_info.maxSets = max_descriptor_sets_per_pool;
 	descriptor_set_pool_create_info.poolSizeCount = vk_sizes_count;
 	descriptor_set_pool_create_info.pPoolSizes = vk_sizes;
@@ -3869,97 +4185,122 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
 
-	// Bookkeep.
-
-	if (!pool_sets_it) {
-		pool_sets_it = descriptor_set_pools.insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
-	}
-	HashMap<VkDescriptorPool, uint32_t> &pool_rcs = pool_sets_it->value;
-	pool_rcs.insert(vk_pool, 0);
-	*r_pool_sets_it = pool_sets_it;
 	return vk_pool;
 }
 
-void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool) {
+void RenderingDeviceDriverVulkan::_descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index) {
 	HashMap<VkDescriptorPool, uint32_t>::Iterator pool_rcs_it = p_pool_sets_it->value.find(p_vk_descriptor_pool);
 	pool_rcs_it->value--;
 	if (pool_rcs_it->value == 0) {
 		vkDestroyDescriptorPool(vk_device, p_vk_descriptor_pool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
 		p_pool_sets_it->value.erase(p_vk_descriptor_pool);
 		if (p_pool_sets_it->value.is_empty()) {
-			descriptor_set_pools.remove(p_pool_sets_it);
+			if (linear_descriptor_pools_enabled && p_linear_pool_index >= 0) {
+				linear_descriptor_set_pools[p_linear_pool_index].remove(p_pool_sets_it);
+			} else {
+				descriptor_set_pools.remove(p_pool_sets_it);
+			}
 		}
 	}
 }
 
-RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) {
+RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+	if (!linear_descriptor_pools_enabled) {
+		p_linear_pool_index = -1;
+	}
 	DescriptorSetPoolKey pool_key;
 
+	// We first gather dynamic arrays in a local array because TightLocalVector's
+	// growth is not efficient when the number of elements is unknown.
+	const BufferInfo *dynamic_buffers[MAX_DYNAMIC_BUFFERS];
+	uint32_t num_dynamic_buffers = 0u;
+
+	// Immutable samplers will be skipped so we need to track the number of vk_writes used.
 	VkWriteDescriptorSet *vk_writes = ALLOCA_ARRAY(VkWriteDescriptorSet, p_uniforms.size());
+	uint32_t writes_amount = 0;
 	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
 		const BoundUniform &uniform = p_uniforms[i];
 
-		vk_writes[i] = {};
-		vk_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		vk_writes[i].dstBinding = uniform.binding;
-		vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM; // Invalid value.
+		vk_writes[writes_amount] = {};
+		vk_writes[writes_amount].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 
+		bool add_write = true;
 		uint32_t num_descriptors = 1;
 
 		switch (uniform.type) {
 			case UNIFORM_TYPE_SAMPLER: {
 				num_descriptors = uniform.ids.size();
-				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
-				for (uint32_t j = 0; j < num_descriptors; j++) {
-					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
-					vk_img_infos[j].imageView = VK_NULL_HANDLE;
-					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				if (uniform.immutable_sampler && immutable_samplers_enabled) {
+					add_write = false;
+				} else {
+					VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
+
+					for (uint32_t j = 0; j < num_descriptors; j++) {
+						vk_img_infos[j] = {};
+						vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
+						vk_img_infos[j].imageView = VK_NULL_HANDLE;
+						vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+					}
+
+					vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+					vk_writes[writes_amount].pImageInfo = vk_img_infos;
 				}
-
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-				vk_writes[i].pImageInfo = vk_img_infos;
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 				num_descriptors = uniform.ids.size() / 2;
 				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
+#ifdef DEBUG_ENABLED
+					if (((const TextureInfo *)uniform.ids[j * 2 + 1].id)->transient) {
+						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
+					}
+#endif
 					vk_img_infos[j] = {};
 					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j * 2 + 0].id;
 					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j * 2 + 1].id)->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				vk_writes[i].pImageInfo = vk_img_infos;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				vk_writes[writes_amount].pImageInfo = vk_img_infos;
 			} break;
 			case UNIFORM_TYPE_TEXTURE: {
 				num_descriptors = uniform.ids.size();
 				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
+#ifdef DEBUG_ENABLED
+					if (((const TextureInfo *)uniform.ids[j].id)->transient) {
+						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
+					}
+#endif
 					vk_img_infos[j] = {};
 					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j].id)->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-				vk_writes[i].pImageInfo = vk_img_infos;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+				vk_writes[writes_amount].pImageInfo = vk_img_infos;
 			} break;
 			case UNIFORM_TYPE_IMAGE: {
 				num_descriptors = uniform.ids.size();
 				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
 				for (uint32_t j = 0; j < num_descriptors; j++) {
+#ifdef DEBUG_ENABLED
+					if (((const TextureInfo *)uniform.ids[j].id)->transient) {
+						ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT texture must not be used for sampling in a shader.");
+					}
+#endif
 					vk_img_infos[j] = {};
 					vk_img_infos[j].imageView = ((const TextureInfo *)uniform.ids[j].id)->vk_view;
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				vk_writes[i].pImageInfo = vk_img_infos;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				vk_writes[writes_amount].pImageInfo = vk_img_infos;
 			} break;
 			case UNIFORM_TYPE_TEXTURE_BUFFER: {
 				num_descriptors = uniform.ids.size();
@@ -3975,9 +4316,9 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					vk_buf_views[j] = buf_info->vk_view;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-				vk_writes[i].pBufferInfo = vk_buf_infos;
-				vk_writes[i].pTexelBufferView = vk_buf_views;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_infos;
+				vk_writes[writes_amount].pTexelBufferView = vk_buf_views;
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER: {
 				num_descriptors = uniform.ids.size() / 2;
@@ -3997,10 +4338,10 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					vk_buf_views[j] = buf_info->vk_view;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
-				vk_writes[i].pImageInfo = vk_img_infos;
-				vk_writes[i].pBufferInfo = vk_buf_infos;
-				vk_writes[i].pTexelBufferView = vk_buf_views;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+				vk_writes[writes_amount].pImageInfo = vk_img_infos;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_infos;
+				vk_writes[writes_amount].pTexelBufferView = vk_buf_views;
 			} break;
 			case UNIFORM_TYPE_IMAGE_BUFFER: {
 				CRASH_NOW_MSG("Unimplemented!"); // TODO.
@@ -4012,8 +4353,27 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_buf_info->buffer = buf_info->vk_buffer;
 				vk_buf_info->range = buf_info->size;
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				vk_writes[i].pBufferInfo = vk_buf_info;
+				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER instead of UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC.");
+
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+			} break;
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
+				*vk_buf_info = {};
+				vk_buf_info->buffer = buf_info->vk_buffer;
+				vk_buf_info->range = buf_info->size;
+
+				ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC instead of UNIFORM_TYPE_UNIFORM_BUFFER.");
+				ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+						"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+				dynamic_buffers[num_dynamic_buffers++] = buf_info;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
 				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
@@ -4022,8 +4382,27 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				vk_buf_info->buffer = buf_info->vk_buffer;
 				vk_buf_info->range = buf_info->size;
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				vk_writes[i].pBufferInfo = vk_buf_info;
+				ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
+			} break;
+			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+				const BufferInfo *buf_info = (const BufferInfo *)uniform.ids[0].id;
+				VkDescriptorBufferInfo *vk_buf_info = ALLOCA_SINGLE(VkDescriptorBufferInfo);
+				*vk_buf_info = {};
+				vk_buf_info->buffer = buf_info->vk_buffer;
+				vk_buf_info->range = buf_info->size;
+
+				ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+						"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC instead of UNIFORM_TYPE_STORAGE_BUFFER.");
+				ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+						"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+				dynamic_buffers[num_dynamic_buffers++] = buf_info;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+				vk_writes[writes_amount].pBufferInfo = vk_buf_info;
 			} break;
 			case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				num_descriptors = uniform.ids.size();
@@ -4035,63 +4414,158 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				}
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-				vk_writes[i].pImageInfo = vk_img_infos;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+				vk_writes[writes_amount].pImageInfo = vk_img_infos;
 			} break;
 			default: {
 				DEV_ASSERT(false);
 			}
 		}
 
-		vk_writes[i].descriptorCount = num_descriptors;
+		if (add_write) {
+			vk_writes[writes_amount].dstBinding = uniform.binding;
+			vk_writes[writes_amount].descriptorCount = num_descriptors;
+			writes_amount++;
+		}
 
-		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(),
-				"Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
+		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(), "Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
 		pool_key.uniform_type[uniform.type] += num_descriptors;
 	}
 
-	// Need a descriptor pool.
-	DescriptorSetPools::Iterator pool_sets_it;
-	VkDescriptorPool vk_pool = _descriptor_set_pool_find_or_create(pool_key, &pool_sets_it);
-	DEV_ASSERT(vk_pool);
-	pool_sets_it->value[vk_pool]++;
+	bool linear_pool = p_linear_pool_index >= 0;
+	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(pool_key) : descriptor_set_pools.find(pool_key);
+	if (!pool_sets_it) {
+		if (linear_pool) {
+			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		} else {
+			pool_sets_it = descriptor_set_pools.insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		}
+	}
 
 	VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {};
 	descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptor_set_allocate_info.descriptorPool = vk_pool;
 	descriptor_set_allocate_info.descriptorSetCount = 1;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
 
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
-	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
-	if (res) {
-		_descriptor_set_pool_unreference(pool_sets_it, vk_pool);
-		ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+	for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
+		if (E.value < max_descriptor_sets_per_pool) {
+			descriptor_set_allocate_info.descriptorPool = E.key;
+			VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+			// Break early on success.
+			if (res == VK_SUCCESS) {
+				break;
+			}
+
+			// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
+			if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
+				ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			}
+		}
 	}
 
-	for (uint32_t i = 0; i < p_uniforms.size(); i++) {
+	// Create a new pool when no allocations could be made from the existing pools.
+	if (vk_descriptor_set == VK_NULL_HANDLE) {
+		descriptor_set_allocate_info.descriptorPool = _descriptor_set_pool_create(pool_key, linear_pool);
+		VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+		// All errors are unexpected at this stage.
+		if (res) {
+			vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+			ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+		}
+	}
+
+	DEV_ASSERT(descriptor_set_allocate_info.descriptorPool != VK_NULL_HANDLE && vk_descriptor_set != VK_NULL_HANDLE);
+	pool_sets_it->value[descriptor_set_allocate_info.descriptorPool]++;
+
+	for (uint32_t i = 0; i < writes_amount; i++) {
 		vk_writes[i].dstSet = vk_descriptor_set;
 	}
-	vkUpdateDescriptorSets(vk_device, p_uniforms.size(), vk_writes, 0, nullptr);
+	vkUpdateDescriptorSets(vk_device, writes_amount, vk_writes, 0, nullptr);
 
 	// Bookkeep.
 
 	UniformSetInfo *usi = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 	usi->vk_descriptor_set = vk_descriptor_set;
-	usi->vk_descriptor_pool = vk_pool;
+	if (p_linear_pool_index >= 0) {
+		usi->vk_linear_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
+	} else {
+		usi->vk_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
+	}
 	usi->pool_sets_it = pool_sets_it;
+	usi->dynamic_buffers.resize(num_dynamic_buffers);
+	for (uint32_t i = 0u; i < num_dynamic_buffers; ++i) {
+		usi->dynamic_buffers[i] = dynamic_buffers[i];
+	}
 
 	return UniformSetID(usi);
 }
 
 void RenderingDeviceDriverVulkan::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *usi = (UniformSetInfo *)p_uniform_set.id;
-	vkFreeDescriptorSets(vk_device, usi->vk_descriptor_pool, 1, &usi->vk_descriptor_set);
 
-	_descriptor_set_pool_unreference(usi->pool_sets_it, usi->vk_descriptor_pool);
+	if (usi->vk_linear_descriptor_pool) {
+		// Nothing to do. All sets are freed at once using vkResetDescriptorPool.
+		//
+		// We can NOT decrease the reference count (i.e. call _descriptor_set_pool_unreference())
+		// because the pool is linear (i.e. the freed set can't be recycled) and further calls to
+		// _descriptor_set_pool_find_or_create() need usi->pool_sets_it->value to stay so that we can
+		// tell if the pool has ran out of space and we need to create a new pool.
+	} else {
+		vkFreeDescriptorSets(vk_device, usi->vk_descriptor_pool, 1, &usi->vk_descriptor_set);
+		_descriptor_set_pool_unreference(usi->pool_sets_it, usi->vk_descriptor_pool, -1);
+	}
 
 	VersatileResource::free(resources_allocator, usi);
+}
+
+bool RenderingDeviceDriverVulkan::uniform_sets_have_linear_pools() const {
+	return true;
+}
+
+uint32_t RenderingDeviceDriverVulkan::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+#ifdef DEV_ENABLED
+	uint32_t curr_dynamic_offset = 0u;
+#endif
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		for (const BufferInfo *dynamic_buffer : usi->dynamic_buffers) {
+			DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+			mask |= dynamic_buffer->frame_idx << shift;
+			shift += 4u;
+		}
+#ifdef DEV_ENABLED
+		curr_dynamic_offset += usi->dynamic_buffers.size();
+#endif
+	}
+
+	return mask;
+}
+
+void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
+	if (linear_descriptor_pools_enabled) {
+		DescriptorSetPools &pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
+		DescriptorSetPools::Iterator curr_pool = pools_to_reset.begin();
+
+		while (curr_pool != pools_to_reset.end()) {
+			HashMap<VkDescriptorPool, uint32_t>::Iterator curr_pair = curr_pool->value.begin();
+			while (curr_pair != curr_pool->value.end()) {
+				vkResetDescriptorPool(vk_device, curr_pair->key, 0);
+				curr_pair->value = 0;
+				++curr_pair;
+			}
+			++curr_pool;
+		}
+	}
 }
 
 // ----- COMMANDS -----
@@ -4122,10 +4596,14 @@ static void _texture_subresource_layers_to_vk(const RDD::TextureSubresourceLayer
 	r_vk_subreources->layerCount = p_subresources.layer_count;
 }
 
-static void _buffer_texture_copy_region_to_vk(const RDD::BufferTextureCopyRegion &p_copy_region, VkBufferImageCopy *r_vk_copy_region) {
+static void _buffer_texture_copy_region_to_vk(const RDD::BufferTextureCopyRegion &p_copy_region, uint32_t p_buffer_row_length, VkBufferImageCopy *r_vk_copy_region) {
 	*r_vk_copy_region = {};
 	r_vk_copy_region->bufferOffset = p_copy_region.buffer_offset;
-	_texture_subresource_layers_to_vk(p_copy_region.texture_subresources, &r_vk_copy_region->imageSubresource);
+	r_vk_copy_region->bufferRowLength = p_buffer_row_length;
+	r_vk_copy_region->imageSubresource.aspectMask = (VkImageAspectFlags)(1 << p_copy_region.texture_subresource.aspect);
+	r_vk_copy_region->imageSubresource.mipLevel = p_copy_region.texture_subresource.mipmap;
+	r_vk_copy_region->imageSubresource.baseArrayLayer = p_copy_region.texture_subresource.layer;
+	r_vk_copy_region->imageSubresource.layerCount = 1;
 	r_vk_copy_region->imageOffset.x = p_copy_region.texture_offset.x;
 	r_vk_copy_region->imageOffset.y = p_copy_region.texture_offset.y;
 	r_vk_copy_region->imageOffset.z = p_copy_region.texture_offset.z;
@@ -4150,14 +4628,16 @@ static void _texture_copy_region_to_vk(const RDD::TextureCopyRegion &p_copy_regi
 }
 
 void RenderingDeviceDriverVulkan::command_clear_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, uint64_t p_offset, uint64_t p_size) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_size, 0);
+	vkCmdFillBuffer(command_buffer->vk_command_buffer, buf_info->vk_buffer, p_offset, p_size, 0);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_dst_buffer, VectorView<BufferCopyRegion> p_regions) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *src_buf_info = (const BufferInfo *)p_src_buffer.id;
 	const BufferInfo *dst_buf_info = (const BufferInfo *)p_dst_buffer.id;
-	vkCmdCopyBuffer((VkCommandBuffer)p_cmd_buffer.id, src_buf_info->vk_buffer, dst_buf_info->vk_buffer, p_regions.size(), (const VkBufferCopy *)p_regions.ptr());
+	vkCmdCopyBuffer(command_buffer->vk_command_buffer, src_buf_info->vk_buffer, dst_buf_info->vk_buffer, p_regions.size(), (const VkBufferCopy *)p_regions.ptr());
 }
 
 void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) {
@@ -4166,12 +4646,24 @@ void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buf
 		_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
 	}
 
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const TextureInfo *src_tex_info = (const TextureInfo *)p_src_texture.id;
 	const TextureInfo *dst_tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
+
+#ifdef DEBUG_ENABLED
+	if (src_tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_src_texture must not be used in command_copy_texture.");
+	}
+	if (dst_tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_copy_texture.");
+	}
+#endif
+
+	vkCmdCopyImage(command_buffer->vk_command_buffer, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const TextureInfo *src_tex_info = (const TextureInfo *)p_src_texture.id;
 	const TextureInfo *dst_tex_info = (const TextureInfo *)p_dst_texture.id;
 
@@ -4188,7 +4680,16 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 	vk_resolve.extent.height = MAX(1u, src_tex_info->vk_create_info.extent.height >> p_src_mipmap);
 	vk_resolve.extent.depth = MAX(1u, src_tex_info->vk_create_info.extent.depth >> p_src_mipmap);
 
-	vkCmdResolveImage((VkCommandBuffer)p_cmd_buffer.id, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], 1, &vk_resolve);
+#ifdef DEBUG_ENABLED
+	if (src_tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_src_texture must not be used in command_resolve_texture. Use a resolve store action pass instead.");
+	}
+	if (dst_tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_resolve_texture.");
+	}
+#endif
+
+	vkCmdResolveImage(command_buffer->vk_command_buffer, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], 1, &vk_resolve);
 }
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
@@ -4198,30 +4699,78 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	VkImageSubresourceRange vk_subresources = {};
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
 
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
-	vkCmdClearColorImage((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_texture must not be used in command_clear_color_texture. Use a clear store action pass instead.");
+	}
+#endif
+	vkCmdClearColorImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
+}
+
+void RenderingDeviceDriverVulkan::command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) {
+	VkClearDepthStencilValue vk_depth_stencil = {};
+	vk_depth_stencil.depth = p_depth;
+	vk_depth_stencil.stencil = p_stencil;
+
+	VkImageSubresourceRange vk_subresources = {};
+	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
+
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_texture must not be used in command_clear_depth_stencil_texture. Use a clear store action pass instead.");
+	}
+#endif
+	vkCmdClearDepthStencilImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_depth_stencil, 1, &vk_subresources);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
+	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_info->rd_format);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_info->rd_format);
+	uint32_t block_w, block_h;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, block_w, block_h);
+
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
+		_buffer_texture_copy_region_to_vk(p_regions[i], p_regions[i].row_pitch * block_w / (pixel_size * block_size), &vk_copy_regions[i]);
 	}
 
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_src_buffer.id;
-	const TextureInfo *tex_info = (const TextureInfo *)p_dst_texture.id;
-	vkCmdCopyBufferToImage((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_copy_buffer_to_texture.");
+	}
+#endif
+	vkCmdCopyBufferToImage(command_buffer->vk_command_buffer, buf_info->vk_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) {
+	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
+
+	uint32_t pixel_size = get_image_format_pixel_size(tex_info->rd_format);
+	uint32_t block_size = get_compressed_image_format_block_byte_size(tex_info->rd_format);
+	uint32_t block_w, block_h;
+	get_compressed_image_format_block_dimensions(tex_info->rd_format, block_w, block_h);
+
 	VkBufferImageCopy *vk_copy_regions = ALLOCA_ARRAY(VkBufferImageCopy, p_regions.size());
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
-		_buffer_texture_copy_region_to_vk(p_regions[i], &vk_copy_regions[i]);
+		_buffer_texture_copy_region_to_vk(p_regions[i], p_regions[i].row_pitch * block_w / (pixel_size * block_size), &vk_copy_regions[i]);
 	}
 
-	const TextureInfo *tex_info = (const TextureInfo *)p_src_texture.id;
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_dst_buffer.id;
-	vkCmdCopyImageToBuffer((VkCommandBuffer)p_cmd_buffer.id, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_src_texture must not be used in command_copy_texture_to_buffer.");
+	}
+#endif
+	vkCmdCopyImageToBuffer(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], buf_info->vk_buffer, p_regions.size(), vk_copy_regions);
 }
 
 /******************/
@@ -4235,8 +4784,9 @@ void RenderingDeviceDriverVulkan::pipeline_free(PipelineID p_pipeline) {
 // ----- BINDING -----
 
 void RenderingDeviceDriverVulkan::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, VectorView<uint32_t> p_data) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	vkCmdPushConstants((VkCommandBuffer)p_cmd_buffer.id, shader_info->vk_pipeline_layout, shader_info->vk_push_constant_stages, p_dst_first_index * sizeof(uint32_t), p_data.size() * sizeof(uint32_t), p_data.ptr());
+	vkCmdPushConstants(command_buffer->vk_command_buffer, shader_info->vk_pipeline_layout, shader_info->vk_push_constant_stages, p_dst_first_index * sizeof(uint32_t), p_data.size() * sizeof(uint32_t), p_data.ptr());
 }
 
 // ----- CACHE -----
@@ -4367,7 +4917,7 @@ static void _attachment_reference_to_vk(const RDD::AttachmentReference &p_attach
 	r_vk_attachment_reference->aspectMask = (VkImageAspectFlags)p_attachment_reference.aspect;
 }
 
-RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	// These are only used if we use multiview but we need to define them in scope.
 	const uint32_t view_mask = (1 << p_view_count) - 1;
 	const uint32_t correlation_mask = (1 << p_view_count) - 1;
@@ -4422,22 +4972,42 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		vk_subpasses[i].preserveAttachmentCount = p_subpasses[i].preserve_attachments.size();
 		vk_subpasses[i].pPreserveAttachments = p_subpasses[i].preserve_attachments.ptr();
 
-		// VRS.
-		if (vrs_capabilities.attachment_vrs_supported && p_subpasses[i].vrs_reference.attachment != AttachmentReference::UNUSED) {
-			VkAttachmentReference2KHR *vk_subpass_vrs_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
-			*vk_subpass_vrs_attachment = {};
-			vk_subpass_vrs_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
-			vk_subpass_vrs_attachment->attachment = p_subpasses[i].vrs_reference.attachment;
-			vk_subpass_vrs_attachment->layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+		// Fragment shading rate.
+		if (fsr_capabilities.attachment_supported && p_subpasses[i].fragment_shading_rate_reference.attachment != AttachmentReference::UNUSED) {
+			VkAttachmentReference2KHR *vk_subpass_fsr_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
+			*vk_subpass_fsr_attachment = {};
+			vk_subpass_fsr_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			vk_subpass_fsr_attachment->attachment = p_subpasses[i].fragment_shading_rate_reference.attachment;
+			vk_subpass_fsr_attachment->layout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
 
-			VkFragmentShadingRateAttachmentInfoKHR *vk_vrs_info = ALLOCA_SINGLE(VkFragmentShadingRateAttachmentInfoKHR);
-			*vk_vrs_info = {};
-			vk_vrs_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
-			vk_vrs_info->pFragmentShadingRateAttachment = vk_subpass_vrs_attachment;
-			vk_vrs_info->shadingRateAttachmentTexelSize.width = vrs_capabilities.texel_size.x;
-			vk_vrs_info->shadingRateAttachmentTexelSize.height = vrs_capabilities.texel_size.y;
+			VkFragmentShadingRateAttachmentInfoKHR *vk_fsr_info = ALLOCA_SINGLE(VkFragmentShadingRateAttachmentInfoKHR);
+			*vk_fsr_info = {};
+			vk_fsr_info->sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+			vk_fsr_info->pNext = vk_subpasses[i].pNext;
+			vk_fsr_info->pFragmentShadingRateAttachment = vk_subpass_fsr_attachment;
+			vk_fsr_info->shadingRateAttachmentTexelSize.width = p_subpasses[i].fragment_shading_rate_texel_size.x;
+			vk_fsr_info->shadingRateAttachmentTexelSize.height = p_subpasses[i].fragment_shading_rate_texel_size.y;
 
-			vk_subpasses[i].pNext = vk_vrs_info;
+			vk_subpasses[i].pNext = vk_fsr_info;
+		}
+
+		// Depth resolve.
+		if (framebuffer_depth_resolve && p_subpasses[i].depth_resolve_reference.attachment != AttachmentReference::UNUSED) {
+			VkAttachmentReference2KHR *vk_subpass_depth_resolve_attachment = ALLOCA_SINGLE(VkAttachmentReference2KHR);
+			*vk_subpass_depth_resolve_attachment = {};
+			vk_subpass_depth_resolve_attachment->sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+			vk_subpass_depth_resolve_attachment->attachment = p_subpasses[i].depth_resolve_reference.attachment;
+			vk_subpass_depth_resolve_attachment->layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+			VkSubpassDescriptionDepthStencilResolveKHR *vk_depth_resolve_info = ALLOCA_SINGLE(VkSubpassDescriptionDepthStencilResolveKHR);
+			*vk_depth_resolve_info = {};
+			vk_depth_resolve_info->sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE;
+			vk_depth_resolve_info->pNext = vk_subpasses[i].pNext;
+			vk_depth_resolve_info->depthResolveMode = VK_RESOLVE_MODE_MAX_BIT_KHR;
+			vk_depth_resolve_info->stencilResolveMode = VK_RESOLVE_MODE_NONE_KHR; // we don't resolve our stencil (for now)
+			vk_depth_resolve_info->pDepthStencilResolveAttachment = vk_subpass_depth_resolve_attachment;
+
+			vk_subpasses[i].pNext = vk_depth_resolve_info;
 		}
 	}
 
@@ -4486,15 +5056,31 @@ RDD::RenderPassID RenderingDeviceDriverVulkan::render_pass_create(VectorView<Att
 		create_info.pNext = multiview_create_info;
 	}
 
+	// Fragment density map.
+	bool uses_fragment_density_map = fdm_capabilities.attachment_supported && p_fragment_density_map_attachment.attachment != AttachmentReference::UNUSED;
+	if (uses_fragment_density_map) {
+		VkRenderPassFragmentDensityMapCreateInfoEXT *vk_fdm_info = ALLOCA_SINGLE(VkRenderPassFragmentDensityMapCreateInfoEXT);
+		vk_fdm_info->sType = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT;
+		vk_fdm_info->fragmentDensityMapAttachment.attachment = p_fragment_density_map_attachment.attachment;
+		vk_fdm_info->fragmentDensityMapAttachment.layout = RD_TO_VK_LAYOUT[p_fragment_density_map_attachment.layout];
+		vk_fdm_info->pNext = create_info.pNext;
+		create_info.pNext = vk_fdm_info;
+	}
+
 	VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 	VkResult res = _create_render_pass(vk_device, &create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS), &vk_render_pass);
 	ERR_FAIL_COND_V_MSG(res, RenderPassID(), "vkCreateRenderPass2KHR failed with error " + itos(res) + ".");
 
-	return RenderPassID(vk_render_pass);
+	RenderPassInfo *render_pass = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
+	render_pass->vk_render_pass = vk_render_pass;
+	render_pass->uses_fragment_density_map = uses_fragment_density_map;
+	return RenderPassID(render_pass);
 }
 
 void RenderingDeviceDriverVulkan::render_pass_free(RenderPassID p_render_pass) {
-	vkDestroyRenderPass(vk_device, (VkRenderPass)p_render_pass.id, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
+	RenderPassInfo *render_pass = (RenderPassInfo *)(p_render_pass.id);
+	vkDestroyRenderPass(vk_device, render_pass->vk_render_pass, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_RENDER_PASS));
+	VersatileResource::free<RenderPassInfo>(resources_allocator, render_pass);
 }
 
 // ----- COMMANDS -----
@@ -4502,7 +5088,10 @@ void RenderingDeviceDriverVulkan::render_pass_free(RenderPassID p_render_pass) {
 static_assert(ARRAYS_COMPATIBLE_FIELDWISE(RDD::RenderPassClearValue, VkClearValue));
 
 void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, FramebufferID p_framebuffer, CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RenderPassClearValue> p_clear_values) {
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
+	RenderPassInfo *render_pass = (RenderPassInfo *)(p_render_pass.id);
 	Framebuffer *framebuffer = (Framebuffer *)(p_framebuffer.id);
+
 	if (framebuffer->swap_chain_acquired) {
 		// Insert a barrier to wait for the acquisition of the framebuffer before the render pass begins.
 		VkImageMemoryBarrier image_barrier = {};
@@ -4513,13 +5102,13 @@ void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cm
 		image_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_barrier.image = framebuffer->swap_chain_image;
 		image_barrier.subresourceRange = framebuffer->swap_chain_image_subresource_range;
-		vkCmdPipelineBarrier((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_barrier);
+		vkCmdPipelineBarrier(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_barrier);
 		framebuffer->swap_chain_acquired = false;
 	}
 
 	VkRenderPassBeginInfo render_pass_begin = {};
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_begin.renderPass = (VkRenderPass)p_render_pass.id;
+	render_pass_begin.renderPass = render_pass->vk_render_pass;
 	render_pass_begin.framebuffer = framebuffer->vk_framebuffer;
 
 	render_pass_begin.renderArea.offset.x = p_rect.position.x;
@@ -4531,7 +5120,10 @@ void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cm
 	render_pass_begin.pClearValues = (const VkClearValue *)p_clear_values.ptr();
 
 	VkSubpassContents vk_subpass_contents = p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
-	vkCmdBeginRenderPass((VkCommandBuffer)p_cmd_buffer.id, &render_pass_begin, vk_subpass_contents);
+	vkCmdBeginRenderPass(command_buffer->vk_command_buffer, &render_pass_begin, vk_subpass_contents);
+
+	command_buffer->active_framebuffer = framebuffer;
+	command_buffer->active_render_pass = render_pass;
 
 #if PRINT_NATIVE_COMMANDS
 	print_line(vformat("vkCmdBeginRenderPass Pass 0x%uX Framebuffer 0x%uX", p_render_pass.id, p_framebuffer.id));
@@ -4539,7 +5131,35 @@ void RenderingDeviceDriverVulkan::command_begin_render_pass(CommandBufferID p_cm
 }
 
 void RenderingDeviceDriverVulkan::command_end_render_pass(CommandBufferID p_cmd_buffer) {
-	vkCmdEndRenderPass((VkCommandBuffer)p_cmd_buffer.id);
+	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
+	DEV_ASSERT(command_buffer->active_framebuffer != nullptr && "A framebuffer must be active.");
+	DEV_ASSERT(command_buffer->active_render_pass != nullptr && "A render pass must be active.");
+
+	if (device_functions.EndRenderPass2KHR != nullptr && fdm_capabilities.offset_supported && command_buffer->active_render_pass->uses_fragment_density_map) {
+		LocalVector<VkOffset2D> fragment_density_offsets;
+		if (VulkanHooks::get_singleton() != nullptr) {
+			VulkanHooks::get_singleton()->get_fragment_density_offsets(fragment_density_offsets, fdm_capabilities.offset_granularity);
+		}
+		if (fragment_density_offsets.size() > 0) {
+			VkSubpassFragmentDensityMapOffsetEndInfoQCOM offset_info = {};
+			offset_info.sType = VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM;
+			offset_info.pFragmentDensityOffsets = fragment_density_offsets.ptr();
+			offset_info.fragmentDensityOffsetCount = fragment_density_offsets.size();
+
+			VkSubpassEndInfo subpass_end_info = {};
+			subpass_end_info.sType = VK_STRUCTURE_TYPE_SUBPASS_END_INFO;
+			subpass_end_info.pNext = &offset_info;
+
+			device_functions.EndRenderPass2KHR(command_buffer->vk_command_buffer, &subpass_end_info);
+		} else {
+			vkCmdEndRenderPass(command_buffer->vk_command_buffer);
+		}
+	} else {
+		vkCmdEndRenderPass(command_buffer->vk_command_buffer);
+	}
+
+	command_buffer->active_render_pass = nullptr;
+	command_buffer->active_framebuffer = nullptr;
 
 #if PRINT_NATIVE_COMMANDS
 	print_line("vkCmdEndRenderPass");
@@ -4547,11 +5167,13 @@ void RenderingDeviceDriverVulkan::command_end_render_pass(CommandBufferID p_cmd_
 }
 
 void RenderingDeviceDriverVulkan::command_next_render_subpass(CommandBufferID p_cmd_buffer, CommandBufferType p_cmd_buffer_type) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	VkSubpassContents vk_subpass_contents = p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
-	vkCmdNextSubpass((VkCommandBuffer)p_cmd_buffer.id, vk_subpass_contents);
+	vkCmdNextSubpass(command_buffer->vk_command_buffer, vk_subpass_contents);
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_viewport(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_viewports) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	VkViewport *vk_viewports = ALLOCA_ARRAY(VkViewport, p_viewports.size());
 	for (uint32_t i = 0; i < p_viewports.size(); i++) {
 		vk_viewports[i] = {};
@@ -4562,14 +5184,17 @@ void RenderingDeviceDriverVulkan::command_render_set_viewport(CommandBufferID p_
 		vk_viewports[i].minDepth = 0.0f;
 		vk_viewports[i].maxDepth = 1.0f;
 	}
-	vkCmdSetViewport((VkCommandBuffer)p_cmd_buffer.id, 0, p_viewports.size(), vk_viewports);
+	vkCmdSetViewport(command_buffer->vk_command_buffer, 0, p_viewports.size(), vk_viewports);
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_scissor(CommandBufferID p_cmd_buffer, VectorView<Rect2i> p_scissors) {
-	vkCmdSetScissor((VkCommandBuffer)p_cmd_buffer.id, 0, p_scissors.size(), (VkRect2D *)p_scissors.ptr());
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdSetScissor(command_buffer->vk_command_buffer, 0, p_scissors.size(), (VkRect2D *)p_scissors.ptr());
 }
 
 void RenderingDeviceDriverVulkan::command_render_clear_attachments(CommandBufferID p_cmd_buffer, VectorView<AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+
 	VkClearAttachment *vk_clears = ALLOCA_ARRAY(VkClearAttachment, p_attachment_clears.size());
 	for (uint32_t i = 0; i < p_attachment_clears.size(); i++) {
 		vk_clears[i] = {};
@@ -4589,68 +5214,116 @@ void RenderingDeviceDriverVulkan::command_render_clear_attachments(CommandBuffer
 		vk_rects[i].layerCount = 1;
 	}
 
-	vkCmdClearAttachments((VkCommandBuffer)p_cmd_buffer.id, p_attachment_clears.size(), vk_clears, p_rects.size(), vk_rects);
+	vkCmdClearAttachments(command_buffer->vk_command_buffer, p_attachment_clears.size(), vk_clears, p_rects.size(), vk_rects);
 }
 
 void RenderingDeviceDriverVulkan::command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
-	vkCmdBindPipeline((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)p_pipeline.id);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+	if (p_set_count == 0) {
+		return;
+	}
+
+	thread_local LocalVector<VkDescriptorSet> sets;
+	sets.clear();
+	sets.resize(p_set_count);
+
+	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
+	uint32_t curr_dynamic_offset = 0u;
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+
+		sets[i] = usi->vk_descriptor_set;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
+		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
+		}
+	}
+
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
+	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], curr_dynamic_offset, dynamic_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
-	vkCmdDraw((VkCommandBuffer)p_cmd_buffer.id, p_vertex_count, p_instance_count, p_base_vertex, p_first_instance);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdDraw(command_buffer->vk_command_buffer, p_vertex_count, p_instance_count, p_base_vertex, p_first_instance);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw_indexed(CommandBufferID p_cmd_buffer, uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index, int32_t p_vertex_offset, uint32_t p_first_instance) {
-	vkCmdDrawIndexed((VkCommandBuffer)p_cmd_buffer.id, p_index_count, p_instance_count, p_first_index, p_vertex_offset, p_first_instance);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdDrawIndexed(command_buffer->vk_command_buffer, p_index_count, p_instance_count, p_first_index, p_vertex_offset, p_first_instance);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw_indexed_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_indirect_buffer.id;
-	vkCmdDrawIndexedIndirect((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_draw_count, p_stride);
+	vkCmdDrawIndexedIndirect(command_buffer->vk_command_buffer, buf_info->vk_buffer, p_offset, p_draw_count, p_stride);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw_indexed_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *indirect_buf_info = (const BufferInfo *)p_indirect_buffer.id;
 	const BufferInfo *count_buf_info = (const BufferInfo *)p_count_buffer.id;
-	vkCmdDrawIndexedIndirectCount((VkCommandBuffer)p_cmd_buffer.id, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
+	vkCmdDrawIndexedIndirectCount(command_buffer->vk_command_buffer, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_indirect_buffer.id;
-	vkCmdDrawIndirect((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_draw_count, p_stride);
+	vkCmdDrawIndirect(command_buffer->vk_command_buffer, buf_info->vk_buffer, p_offset, p_draw_count, p_stride);
 }
 
 void RenderingDeviceDriverVulkan::command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *indirect_buf_info = (const BufferInfo *)p_indirect_buffer.id;
 	const BufferInfo *count_buf_info = (const BufferInfo *)p_count_buffer.id;
-	vkCmdDrawIndirectCount((VkCommandBuffer)p_cmd_buffer.id, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
+	vkCmdDrawIndirectCount(command_buffer->vk_command_buffer, indirect_buf_info->vk_buffer, p_offset, count_buf_info->vk_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
-void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
+void RenderingDeviceDriverVulkan::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	VkBuffer *vk_buffers = ALLOCA_ARRAY(VkBuffer, p_binding_count);
+	uint64_t *vk_offsets = ALLOCA_ARRAY(uint64_t, p_binding_count);
 	for (uint32_t i = 0; i < p_binding_count; i++) {
+		const BufferInfo *buf_info = (const BufferInfo *)p_buffers[i].id;
+		uint64_t offset = p_offsets[i];
+		if (buf_info->is_dynamic()) {
+			uint64_t frame_idx = p_dynamic_offsets & 0x3; // Assuming max 4 frames.
+			p_dynamic_offsets >>= 2;
+			offset += frame_idx * buf_info->size;
+		}
 		vk_buffers[i] = ((const BufferInfo *)p_buffers[i].id)->vk_buffer;
+		vk_offsets[i] = offset;
 	}
-	vkCmdBindVertexBuffers((VkCommandBuffer)p_cmd_buffer.id, 0, p_binding_count, vk_buffers, p_offsets);
+	vkCmdBindVertexBuffers(command_buffer->vk_command_buffer, 0, p_binding_count, vk_buffers, vk_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	vkCmdBindIndexBuffer((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset, p_format == INDEX_BUFFER_FORMAT_UINT16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(command_buffer->vk_command_buffer, buf_info->vk_buffer, p_offset, p_format == INDEX_BUFFER_FORMAT_UINT16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_blend_constants(CommandBufferID p_cmd_buffer, const Color &p_constants) {
-	vkCmdSetBlendConstants((VkCommandBuffer)p_cmd_buffer.id, p_constants.components);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdSetBlendConstants(command_buffer->vk_command_buffer, p_constants.components);
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_line_width(CommandBufferID p_cmd_buffer, float p_width) {
-	vkCmdSetLineWidth((VkCommandBuffer)p_cmd_buffer.id, p_width);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdSetLineWidth(command_buffer->vk_command_buffer, p_width);
 }
 
 // ----- PIPELINE -----
@@ -4922,23 +5595,22 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	dynamic_state_create_info.dynamicStateCount = vk_dynamic_states_count;
 	dynamic_state_create_info.pDynamicStates = vk_dynamic_states;
 
-	// VRS.
-
 	void *graphics_pipeline_nextptr = nullptr;
 
-	if (vrs_capabilities.attachment_vrs_supported) {
-		// If VRS is used, this defines how the different VRS types are combined.
-		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) VRS.
-		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment VRS.
+	if (fsr_capabilities.attachment_supported) {
+		// Fragment shading rate.
+		// If FSR is used, this defines how the different FSR types are combined.
+		// combinerOps[0] decides how we use the output of pipeline and primitive (drawcall) FSR.
+		// combinerOps[1] decides how we use the output of combinerOps[0] and our attachment FSR.
 
-		VkPipelineFragmentShadingRateStateCreateInfoKHR *vrs_create_info = ALLOCA_SINGLE(VkPipelineFragmentShadingRateStateCreateInfoKHR);
-		*vrs_create_info = {};
-		vrs_create_info->sType = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR;
-		vrs_create_info->fragmentSize = { 4, 4 };
-		vrs_create_info->combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; // We don't use pipeline/primitive VRS so this really doesn't matter.
-		vrs_create_info->combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR; // Always use the outcome of attachment VRS if enabled.
+		VkPipelineFragmentShadingRateStateCreateInfoKHR *fsr_create_info = ALLOCA_SINGLE(VkPipelineFragmentShadingRateStateCreateInfoKHR);
+		*fsr_create_info = {};
+		fsr_create_info->sType = VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR;
+		fsr_create_info->fragmentSize = { 4, 4 };
+		fsr_create_info->combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; // We don't use pipeline/primitive FSR so this really doesn't matter.
+		fsr_create_info->combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR; // Always use the outcome of attachment FSR if enabled.
 
-		graphics_pipeline_nextptr = vrs_create_info;
+		graphics_pipeline_nextptr = fsr_create_info;
 	}
 
 	// Finally, pipeline create info.
@@ -4955,29 +5627,108 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 			"Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created.");
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
+	thread_local std::vector<uint8_t> respv_optimized_data;
+	thread_local LocalVector<respv::SpecConstant> respv_spec_constants;
+	thread_local LocalVector<VkShaderModule> respv_shader_modules;
+	thread_local LocalVector<VkSpecializationMapEntry> specialization_entries;
+
+#if RECORD_PIPELINE_STATISTICS
+	thread_local LocalVector<uint64_t> respv_run_time;
+	thread_local LocalVector<uint64_t> respv_size;
+	uint32_t stage_count = shader_info->vk_stages_create_info.size();
+	respv_run_time.clear();
+	respv_size.clear();
+	respv_run_time.resize_initialized(stage_count);
+	respv_size.resize_initialized(stage_count);
+#endif
+
+	respv_shader_modules.clear();
+	specialization_entries.clear();
+
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
 		vk_pipeline_stages[i] = shader_info->vk_stages_create_info[i];
 
 		if (p_specialization_constants.size()) {
-			VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, p_specialization_constants.size());
-			for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
-				specialization_map_entries[j] = {};
-				specialization_map_entries[j].constantID = p_specialization_constants[j].constant_id;
-				specialization_map_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
-				specialization_map_entries[j].size = sizeof(uint32_t);
+			bool use_pipeline_spec_constants = true;
+			if ((i < shader_info->respv_stage_shaders.size()) && !shader_info->respv_stage_shaders[i].empty()) {
+#if RECORD_PIPELINE_STATISTICS
+				uint64_t respv_start_time = OS::get_singleton()->get_ticks_usec();
+#endif
+				// Attempt to optimize the shader using re-spirv before relying on the driver.
+				respv_spec_constants.resize(p_specialization_constants.size());
+				for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+					respv_spec_constants[j].specId = p_specialization_constants[j].constant_id;
+					respv_spec_constants[j].values.resize(1);
+					respv_spec_constants[j].values[0] = p_specialization_constants[j].int_value;
+				}
+
+				respv::Options respv_options;
+#if RESPV_DONT_REMOVE_DEAD_CODE
+				respv_options.removeDeadCode = false;
+#endif
+				if (respv::Optimizer::run(shader_info->respv_stage_shaders[i], respv_spec_constants.ptr(), respv_spec_constants.size(), respv_optimized_data, respv_options)) {
+#if RESPV_VERBOSE
+					String spec_constants;
+					for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+						spec_constants += vformat("%d: %d", p_specialization_constants[j].constant_id, p_specialization_constants[j].int_value);
+						if (j < p_specialization_constants.size() - 1) {
+							spec_constants += ", ";
+						}
+					}
+
+					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes with constants %s (%d).", shader_info->spirv_stage_bytes[i].size(), respv_optimized_data.size(), spec_constants, p_shader.id));
+#endif
+
+					// Create the shader module with the optimized output.
+					VkShaderModule shader_module = VK_NULL_HANDLE;
+					VkShaderModuleCreateInfo shader_module_create_info = {};
+					shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+					shader_module_create_info.pCode = (const uint32_t *)(respv_optimized_data.data());
+					shader_module_create_info.codeSize = respv_optimized_data.size();
+					VkResult err = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &shader_module);
+					if (err == VK_SUCCESS) {
+						// Replace the module used in the creation info.
+						vk_pipeline_stages[i].module = shader_module;
+						respv_shader_modules.push_back(shader_module);
+						use_pipeline_spec_constants = false;
+					}
+
+#if RECORD_PIPELINE_STATISTICS
+					respv_run_time[i] = OS::get_singleton()->get_ticks_usec() - respv_start_time;
+					respv_size[i] = respv_optimized_data.size();
+#endif
+				} else {
+#if RESPV_VERBOSE
+					print_line("re-spirv failed to optimize the shader.");
+#endif
+				}
 			}
 
-			VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
-			*specialization_info = {};
-			specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
-			specialization_info->pData = p_specialization_constants.ptr();
-			specialization_info->mapEntryCount = p_specialization_constants.size();
-			specialization_info->pMapEntries = specialization_map_entries;
+			if (use_pipeline_spec_constants) {
+				// Use specialization constants through the driver.
+				if (specialization_entries.is_empty()) {
+					specialization_entries.resize(p_specialization_constants.size());
+					for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+						specialization_entries[j] = {};
+						specialization_entries[j].constantID = p_specialization_constants[j].constant_id;
+						specialization_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
+						specialization_entries[j].size = sizeof(uint32_t);
+					}
+				}
 
-			vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
+				VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
+				*specialization_info = {};
+				specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
+				specialization_info->pData = p_specialization_constants.ptr();
+				specialization_info->mapEntryCount = specialization_entries.size();
+				specialization_info->pMapEntries = specialization_entries.ptr();
+
+				vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
+			}
 		}
 	}
 
+	const RenderPassInfo *render_pass = (const RenderPassInfo *)(p_render_pass.id);
 	pipeline_create_info.pStages = vk_pipeline_stages;
 	pipeline_create_info.pVertexInputState = vertex_input_state_create_info;
 	pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
@@ -4989,14 +5740,43 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
 	pipeline_create_info.pDynamicState = &dynamic_state_create_info;
 	pipeline_create_info.layout = shader_info->vk_pipeline_layout;
-	pipeline_create_info.renderPass = (VkRenderPass)p_render_pass.id;
+	pipeline_create_info.renderPass = render_pass->vk_render_pass;
 	pipeline_create_info.subpass = p_render_subpass;
 
-	// ---
+#if RECORD_PIPELINE_STATISTICS
+	uint64_t pipeline_start_time = OS::get_singleton()->get_ticks_usec();
+#endif
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+
+#if RECORD_PIPELINE_STATISTICS
+	{
+		MutexLock lock(pipeline_statistics.file_access_mutex);
+		uint64_t pipeline_creation_time = OS::get_singleton()->get_ticks_usec() - pipeline_start_time;
+		for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
+			PackedStringArray csv_array = {
+				shader_info->name,
+				String::num_uint64(hash_murmur3_buffer(shader_info->spirv_stage_bytes[i].ptr(), shader_info->spirv_stage_bytes[i].size())),
+				String::num_uint64(i),
+				String::num_uint64(respv_size[i] > 0),
+				String::num_uint64(shader_info->original_stage_size[i]),
+				String::num_uint64(respv_size[i] > 0 ? respv_size[i] : shader_info->spirv_stage_bytes[i].size()),
+				String::num_uint64(respv_run_time[i] + pipeline_creation_time)
+			};
+
+			pipeline_statistics.file_access->store_csv_line(csv_array);
+		}
+
+		pipeline_statistics.file_access->flush();
+	}
+#endif
+
+	// Destroy any modules created temporarily by re-spirv.
+	for (VkShaderModule vk_module : respv_shader_modules) {
+		vkDestroyShaderModule(vk_device, vk_module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
+	}
 
 	return PipelineID(vk_pipeline);
 }
@@ -5008,22 +5788,53 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverVulkan::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
-	vkCmdBindPipeline((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)p_pipeline.id);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
+void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+	if (p_set_count == 0) {
+		return;
+	}
+
+	thread_local LocalVector<VkDescriptorSet> sets;
+	sets.clear();
+	sets.resize(p_set_count);
+
+	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
+	uint32_t curr_dynamic_offset = 0u;
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+
+		sets[i] = usi->vk_descriptor_set;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
+		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
+		}
+	}
+
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-	vkCmdBindDescriptorSets((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, 0, nullptr);
+	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_first_set_index, p_set_count, &sets[0], curr_dynamic_offset, dynamic_offsets);
 }
 
 void RenderingDeviceDriverVulkan::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
-	vkCmdDispatch((VkCommandBuffer)p_cmd_buffer.id, p_x_groups, p_y_groups, p_z_groups);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdDispatch(command_buffer->vk_command_buffer, p_x_groups, p_y_groups, p_z_groups);
 }
 
 void RenderingDeviceDriverVulkan::command_compute_dispatch_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const BufferInfo *buf_info = (const BufferInfo *)p_indirect_buffer.id;
-	vkCmdDispatchIndirect((VkCommandBuffer)p_cmd_buffer.id, buf_info->vk_buffer, p_offset);
+	vkCmdDispatchIndirect(command_buffer->vk_command_buffer, buf_info->vk_buffer, p_offset);
 }
 
 // ----- PIPELINE -----
@@ -5122,11 +5933,13 @@ uint64_t RenderingDeviceDriverVulkan::timestamp_query_result_to_time(uint64_t p_
 }
 
 void RenderingDeviceDriverVulkan::command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) {
-	vkCmdResetQueryPool((VkCommandBuffer)p_cmd_buffer.id, (VkQueryPool)p_pool_id.id, 0, p_query_count);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdResetQueryPool(command_buffer->vk_command_buffer, (VkQueryPool)p_pool_id.id, 0, p_query_count);
 }
 
 void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) {
-	vkCmdWriteTimestamp((VkCommandBuffer)p_cmd_buffer.id, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, (VkQueryPool)p_pool_id.id, p_index);
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	vkCmdWriteTimestamp(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, (VkQueryPool)p_pool_id.id, p_index);
 }
 
 /****************/
@@ -5134,6 +5947,7 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 /****************/
 
 void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	if (!functions.CmdBeginDebugUtilsLabelEXT) {
 		if (functions.CmdDebugMarkerBeginEXT) {
@@ -5146,7 +5960,7 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 			marker.color[1] = p_color[1];
 			marker.color[2] = p_color[2];
 			marker.color[3] = p_color[3];
-			functions.CmdDebugMarkerBeginEXT((VkCommandBuffer)p_cmd_buffer.id, &marker);
+			functions.CmdDebugMarkerBeginEXT(command_buffer->vk_command_buffer, &marker);
 		}
 		return;
 	}
@@ -5158,19 +5972,20 @@ void RenderingDeviceDriverVulkan::command_begin_label(CommandBufferID p_cmd_buff
 	label.color[1] = p_color[1];
 	label.color[2] = p_color[2];
 	label.color[3] = p_color[3];
-	functions.CmdBeginDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id, &label);
+	functions.CmdBeginDebugUtilsLabelEXT(command_buffer->vk_command_buffer, &label);
 }
 
 void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
 	if (!functions.CmdEndDebugUtilsLabelEXT) {
 		if (functions.CmdDebugMarkerEndEXT) {
 			// Debug marker extensions.
-			functions.CmdDebugMarkerEndEXT((VkCommandBuffer)p_cmd_buffer.id);
+			functions.CmdDebugMarkerEndEXT(command_buffer->vk_command_buffer);
 		}
 		return;
 	}
-	functions.CmdEndDebugUtilsLabelEXT((VkCommandBuffer)p_cmd_buffer.id);
+	functions.CmdEndDebugUtilsLabelEXT(command_buffer->vk_command_buffer);
 }
 
 /****************/
@@ -5182,6 +5997,7 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 		return;
 	}
 
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	if (Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
 		// Force a full barrier so commands are not executed in parallel.
 		// This will mean that the last breadcrumb to see was actually the
@@ -5221,7 +6037,7 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 				VK_ACCESS_HOST_WRITE_BIT;
 
 		vkCmdPipelineBarrier(
-				(VkCommandBuffer)p_cmd_buffer.id,
+				command_buffer->vk_command_buffer,
 				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
 				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
 				0, 1u, &memoryBarrier, 0u, nullptr, 0u, nullptr);
@@ -5229,8 +6045,8 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 
 	// We write to a circular buffer. If you're getting barrier sync errors here,
 	// increase the value of BREADCRUMB_BUFFER_ENTRIES.
-	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo *)breadcrumb_buffer.id)->vk_buffer, breadcrumb_offset, sizeof(uint32_t), breadcrumb_id++);
-	vkCmdFillBuffer((VkCommandBuffer)p_cmd_buffer.id, ((BufferInfo *)breadcrumb_buffer.id)->vk_buffer, breadcrumb_offset + sizeof(uint32_t), sizeof(uint32_t), p_data);
+	vkCmdFillBuffer(command_buffer->vk_command_buffer, ((BufferInfo *)breadcrumb_buffer.id)->vk_buffer, breadcrumb_offset, sizeof(uint32_t), breadcrumb_id++);
+	vkCmdFillBuffer(command_buffer->vk_command_buffer, ((BufferInfo *)breadcrumb_buffer.id)->vk_buffer, breadcrumb_offset + sizeof(uint32_t), sizeof(uint32_t), p_data);
 	breadcrumb_offset += sizeof(uint32_t) * 2u;
 	if (breadcrumb_offset >= BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u) {
 		breadcrumb_offset = 0u;
@@ -5557,8 +6373,13 @@ uint64_t RenderingDeviceDriverVulkan::get_total_memory_used() {
 	return stats.total.statistics.allocationBytes;
 }
 
+uint64_t RenderingDeviceDriverVulkan::get_lazily_memory_used() {
+	return vmaCalculateLazilyAllocatedBytes(allocator);
+}
+
 uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 	const VkPhysicalDeviceLimits &limits = physical_device_properties.limits;
+	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return limits.maxBoundDescriptorSets;
@@ -5628,6 +6449,8 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return limits.maxComputeWorkGroupSize[1];
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxComputeWorkGroupSize[2];
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return limits.maxComputeSharedMemorySize;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:
 			return limits.maxViewportDimensions[0];
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
@@ -5642,16 +6465,16 @@ uint64_t RenderingDeviceDriverVulkan::limit_get(Limit p_limit) {
 			return subgroup_capabilities.supported_stages_flags_rd();
 		case LIMIT_SUBGROUP_OPERATIONS:
 			return subgroup_capabilities.supported_operations_flags_rd();
-		case LIMIT_VRS_TEXEL_WIDTH:
-			return vrs_capabilities.texel_size.x;
-		case LIMIT_VRS_TEXEL_HEIGHT:
-			return vrs_capabilities.texel_size.y;
-		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
-			return vrs_capabilities.max_fragment_size.x;
-		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
-			return vrs_capabilities.max_fragment_size.y;
-		default:
-			ERR_FAIL_V(0);
+		case LIMIT_MAX_SHADER_VARYINGS:
+			// The Vulkan spec states that built in varyings like gl_FragCoord should count against this, but in
+			// practice, that doesn't seem to be the case. The validation layers don't even complain.
+			return MIN(limits.maxVertexOutputComponents / 4, limits.maxFragmentInputComponents / 4);
+		default: {
+#ifdef DEV_ENABLED
+			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
+#endif
+			return safe_unbounded;
+		}
 	}
 }
 
@@ -5668,13 +6491,24 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW:
-			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
-		case SUPPORTS_FSR_HALF_FLOAT:
+		case SUPPORTS_HALF_FLOAT:
 			return shader_capabilities.shader_float16_is_supported && physical_device_features.shaderInt16 && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
-		case SUPPORTS_ATTACHMENT_VRS:
-			return vrs_capabilities.attachment_vrs_supported && physical_device_features.shaderStorageImageExtendedFormats;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
+			return true;
+		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
+			return buffer_device_address_support;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
+			// MoltenVK has previously had issues with 32-bit atomics on images.
+			return false;
+#else
+			return true;
+#endif
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return framebuffer_depth_resolve;
+		case SUPPORTS_POINT_SIZE:
 			return true;
 		default:
 			return false;
@@ -5683,6 +6517,14 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverVulkan::get_multiview_capabilities() {
 	return multiview_capabilities;
+}
+
+const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverVulkan::get_fragment_shading_rate_capabilities() {
+	return fsr_capabilities;
+}
+
+const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverVulkan::get_fragment_density_map_capabilities() {
+	return fdm_capabilities;
 }
 
 String RenderingDeviceDriverVulkan::get_api_name() const {
@@ -5700,6 +6542,10 @@ String RenderingDeviceDriverVulkan::get_pipeline_cache_uuid() const {
 
 const RDD::Capabilities &RenderingDeviceDriverVulkan::get_capabilities() const {
 	return device_capabilities;
+}
+
+const RenderingShaderContainerFormat &RenderingDeviceDriverVulkan::get_shader_container_format() const {
+	return shader_container_format;
 }
 
 bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_queue) const {
@@ -5720,7 +6566,9 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	buffer_free(breadcrumb_buffer);
+	if (breadcrumb_buffer != BufferID()) {
+		buffer_free(breadcrumb_buffer);
+	}
 #endif
 
 	while (small_allocs_pools.size()) {
@@ -5729,6 +6577,15 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 		small_allocs_pools.remove(E);
 	}
 	vmaDestroyAllocator(allocator);
+
+	// Destroy linearly allocated descriptor pools.
+	for (KeyValue<int, DescriptorSetPools> &pool_map : linear_descriptor_set_pools) {
+		for (KeyValue<DescriptorSetPoolKey, HashMap<VkDescriptorPool, uint32_t>> pools : pool_map.value) {
+			for (KeyValue<VkDescriptorPool, uint32_t> descriptor_pool : pools.value) {
+				vkDestroyDescriptorPool(vk_device, descriptor_pool.key, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+			}
+		}
+	}
 
 	if (vk_device != VK_NULL_HANDLE) {
 		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));

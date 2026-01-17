@@ -28,12 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_HTC_CONTROLLER_EXTENSION_H
-#define OPENXR_HTC_CONTROLLER_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
 class OpenXRHTCControllerExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRHTCControllerExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	enum HTCControllers {
 		// Note, HTC Vive Wand controllers are part of the core spec and not part of our extension.
@@ -43,7 +47,7 @@ public:
 		HTC_MAX_CONTROLLERS
 	};
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	PackedStringArray get_suggested_tracker_names() override;
 
@@ -54,5 +58,3 @@ public:
 private:
 	bool available[HTC_MAX_CONTROLLERS] = { false, false };
 };
-
-#endif // OPENXR_HTC_CONTROLLER_EXTENSION_H

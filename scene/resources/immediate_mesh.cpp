@@ -420,5 +420,5 @@ ImmediateMesh::ImmediateMesh() {
 }
 ImmediateMesh::~ImmediateMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(mesh);
 }

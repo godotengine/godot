@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EXPORT_TEMPLATE_MANAGER_H
-#define EXPORT_TEMPLATE_MANAGER_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -68,6 +67,7 @@ class ExportTemplateManager : public AcceptDialog {
 	};
 
 	MenuButton *mirror_options_button = nullptr;
+	HBoxContainer *enable_online_hb = nullptr;
 	HBoxContainer *download_progress_hb = nullptr;
 	ProgressBar *download_progress_bar = nullptr;
 	Label *download_progress_label = nullptr;
@@ -96,6 +96,7 @@ class ExportTemplateManager : public AcceptDialog {
 	void _cancel_template_download();
 	void _refresh_mirrors();
 	void _refresh_mirrors_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
+	void _force_online_mode();
 
 	bool _humanize_http_status(HTTPRequest *p_request, String *r_status, int *r_downloaded_bytes, int *r_total_bytes);
 	void _set_current_progress_status(const String &p_status, bool p_error = false);
@@ -134,5 +135,3 @@ public:
 
 	ExportTemplateManager();
 };
-
-#endif // EXPORT_TEMPLATE_MANAGER_H

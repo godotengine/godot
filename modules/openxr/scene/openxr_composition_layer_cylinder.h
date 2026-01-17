@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_CYLINDER_H
-#define OPENXR_COMPOSITION_LAYER_CYLINDER_H
+#pragma once
 
 #include <openxr/openxr.h>
 
@@ -38,32 +37,18 @@
 class OpenXRCompositionLayerCylinder : public OpenXRCompositionLayer {
 	GDCLASS(OpenXRCompositionLayerCylinder, OpenXRCompositionLayer);
 
-	XrCompositionLayerCylinderKHR composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		1.0, // radius
-		Math_PI / 2.0, // centralAngle
-		1.0, // aspectRatio
-	};
-
 	float radius = 1.0;
 	float aspect_ratio = 1.0;
-	float central_angle = Math_PI / 2.0;
+	float central_angle = Math::PI / 2.0;
 	uint32_t fallback_segments = 10;
 
 protected:
 	static void _bind_methods();
 
-	void _notification(int p_what);
-
-	void update_transform();
-
 	virtual Ref<Mesh> _create_fallback_mesh() override;
+	virtual XrStructureType _get_openxr_type() const override {
+		return XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR;
+	}
 
 public:
 	void set_radius(float p_radius);
@@ -83,5 +68,3 @@ public:
 	OpenXRCompositionLayerCylinder();
 	~OpenXRCompositionLayerCylinder();
 };
-
-#endif // OPENXR_COMPOSITION_LAYER_CYLINDER_H

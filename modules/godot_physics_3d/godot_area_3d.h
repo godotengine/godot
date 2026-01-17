@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_AREA_3D_H
-#define GODOT_AREA_3D_H
+#pragma once
 
 #include "godot_collision_object_3d.h"
 
 #include "core/templates/self_list.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotSpace3D;
 class GodotBody3D;
@@ -236,5 +235,3 @@ struct AreaCMP {
 		refCount = 1;
 	}
 };
-
-#endif // GODOT_AREA_3D_H

@@ -33,13 +33,13 @@
 
 #include "core/io/file_access.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "servers/rendering_server.h"
 #include "texture.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
@@ -156,8 +156,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 
 #ifdef TOOLS_ENABLED
 	DocData::ClassDoc class_doc;
-	class_doc.name = get_path();
-	class_doc.is_script_doc = true;
+	bool generate_doc = Engine::get_singleton()->is_editor_hint() && !get_path().is_empty();
+	if (generate_doc) {
+		class_doc.name = get_path().trim_prefix("res://").quote();
+		class_doc.is_script_doc = true;
+		class_doc.inherits = "Shader";
+	}
 #endif
 
 	for (PropertyInfo &pi : local) {
@@ -176,10 +180,9 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 				pi.type = Variant::OBJECT;
 			}
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
+			if (generate_doc) {
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
-#ifdef MODULE_REGEX_ENABLED
 				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
 				Ref<RegExMatch> pattern_ref = pattern.search(code);
 				if (pattern_ref.is_valid()) {
@@ -189,17 +192,18 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 					RegExMatch *match_tip = pattern_tip_ref.ptr();
 					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
 					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+
+					pi.class_name = class_doc.name;
+					class_doc.properties.push_back(prop_doc);
 				}
-#endif
-				class_doc.properties.push_back(prop_doc);
 			}
 #endif
 			p_params->push_back(pi);
 		}
 	}
 #ifdef TOOLS_ENABLED
-	if (EditorHelp::get_doc_data() != nullptr && Engine::get_singleton()->is_editor_hint() && !class_doc.name.is_empty() && p_params) {
-		EditorHelp::get_doc_data()->add_doc(class_doc);
+	if (generate_doc && class_doc.properties.size() > 0) {
+		EditorHelp::add_doc(class_doc);
 	}
 #endif
 }
@@ -277,7 +281,7 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader_uniform_list", "get_groups"), &Shader::_get_shader_uniform_list, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Shader::inspect_native_shader_code);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
@@ -295,7 +299,7 @@ Shader::Shader() {
 Shader::~Shader() {
 	if (shader_rid.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(shader_rid);
+		RenderingServer::get_singleton()->free_rid(shader_rid);
 	}
 }
 
@@ -312,7 +316,7 @@ Ref<Resource> ResourceFormatLoaderShader::load(const String &p_path, const Strin
 
 	String str;
 	if (buffer.size() > 0) {
-		error = str.parse_utf8((const char *)buffer.ptr(), buffer.size());
+		error = str.append_utf8((const char *)buffer.ptr(), buffer.size());
 		ERR_FAIL_COND_V_MSG(error, nullptr, "Cannot parse shader: " + p_path);
 	}
 
@@ -338,8 +342,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdshader") {
+	if (p_path.has_extension("gdshader")) {
 		return "Shader";
 	}
 	return "";

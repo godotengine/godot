@@ -1,0 +1,7 @@
+GH-81070
+--------
+Validate extension JSON: API was removed: classes/TileMap/methods/get_quadrant_size
+Validate extension JSON: API was removed: classes/TileMap/methods/set_quadrant_size
+Validate extension JSON: API was removed: classes/TileMap/properties/cell_quadrant_size
+
+cell_quadrant_size/quadrant_size of the TileMap API was renamed to rendering_quadrant_size.

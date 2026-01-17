@@ -64,6 +64,7 @@ void EditorValidationPanel::add_line(int p_id, const String &p_valid_message) {
 	ERR_FAIL_COND(valid_messages.has(p_id));
 
 	Label *label = memnew(Label);
+	label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	message_container->add_child(label);
 	label->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

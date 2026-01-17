@@ -34,8 +34,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
-#include "editor/editor_settings.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #endif //TOOLS_ENABLED
 
 bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {
@@ -329,7 +329,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 		rel = Vector2(Math::cos(bone_angle), Math::sin(bone_angle)) * length * get_global_scale();
 	}
 
-	Vector2 relt = rel.rotated(Math_PI * 0.5).normalized() * bone_width;
+	Vector2 relt = rel.rotated(Math::PI * 0.5).normalized() * bone_width;
 	Vector2 reln = rel.normalized();
 	Vector2 reltn = relt.normalized();
 
@@ -504,7 +504,7 @@ Bone2D::~Bone2D() {
 #ifdef TOOLS_ENABLED
 	if (!editor_gizmo_rid.is_null()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(editor_gizmo_rid);
+		RenderingServer::get_singleton()->free_rid(editor_gizmo_rid);
 	}
 #endif // TOOLS_ENABLED
 }
@@ -613,6 +613,7 @@ int Skeleton2D::get_bone_count() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), 0);
 
 	if (bone_setup_dirty) {
+		// TODO: Is this necessary? It doesn't seem to change bones.size()
 		const_cast<Skeleton2D *>(this)->_update_bone_setup();
 	}
 
@@ -766,7 +767,7 @@ Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 }
 
 void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
-	if (!modification_stack.is_valid()) {
+	if (modification_stack.is_null()) {
 		return;
 	}
 
@@ -837,5 +838,5 @@ Skeleton2D::Skeleton2D() {
 
 Skeleton2D::~Skeleton2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free_rid(skeleton);
 }

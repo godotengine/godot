@@ -1,0 +1,6 @@
+GH-81298
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_vertex/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DRenderingServerHandler/methods/_set_normal/arguments/1': type changed value in new API, from "const void*" to "Vector3".
+
+Intentional compatibility breakage to be consistent with the new non-virtual set_vertex/set_normal.

@@ -181,8 +181,15 @@ namespace embree
     return sycl::select(b,a,mask);
   }
   
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
   __forceinline const sycl::sub_group this_sub_group() {
-    return sycl::ext::oneapi::experimental::this_sub_group(); 
+#if __LIBSYCL_MAJOR_VERSION >= 8
+    return sycl::ext::oneapi::this_work_item::get_sub_group();
+#else
+    return sycl::ext::oneapi::experimental::this_sub_group();
+#endif
   }
   
   __forceinline const uint32_t get_sub_group_local_id() {
@@ -273,18 +280,6 @@ namespace embree
 
   template <typename T, class BinaryOperation> __forceinline T sub_group_inclusive_scan(T x, BinaryOperation binary_op, T init) {
     return sycl::inclusive_scan_over_group(this_sub_group(),x,binary_op,init);
-  }
-
-  template <typename T> __forceinline T sub_group_shuffle(T x, sycl::id<1> local_id) {
-    return this_sub_group().shuffle(x, local_id);
-  }
-
-  template <typename T> __forceinline T sub_group_shuffle_down(T x, uint32_t delta) {
-    return this_sub_group().shuffle_down(x, delta);
-  }
-  
-  template <typename T> __forceinline T sub_group_shuffle_up(T x, uint32_t delta) {
-    return this_sub_group().shuffle_up(x, delta);
   }
 
   template <typename T> __forceinline T sub_group_load(const void* src) {
