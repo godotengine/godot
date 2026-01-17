@@ -3384,6 +3384,7 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 		Popup::_popup_base(p_bounds);
 	}
 }
+
 void PopupMenu::set_shrink_height(bool p_shrink) {
 	shrink_height = p_shrink;
 }
