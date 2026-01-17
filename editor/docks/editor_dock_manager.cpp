@@ -350,9 +350,9 @@ void EditorDockManager::update_docks_menu() {
 		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock->is_open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
-			docks_menu->set_item_tooltip(id, vformat(TTR("Open the %s dock."), dock->get_display_title()));
+			docks_menu->set_item_tooltip(id, vformat(TTR("Open the %s dock."), TTR(dock->get_display_title())));
 		} else {
-			docks_menu->set_item_tooltip(id, vformat(TTR("Focus on the %s dock."), dock->get_display_title()));
+			docks_menu->set_item_tooltip(id, vformat(TTR("Focus on the %s dock."), TTR(dock->get_display_title())));
 		}
 		docks_menu_docks.push_back(dock);
 		id++;
