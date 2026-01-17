@@ -6815,7 +6815,7 @@ void RenderingDeviceDriverVulkan::_rd_to_vk_av1_params(VideoDecodeAV1Frame *p_fr
 	r_picture_info->pGlobalMotion = global_motion;
 
 	// TODO Pray these aren't actually required
-	StdVideoAV1FilmGrain *film_grain = (StdVideoAV1FilmGrain *)malloc(sizeof(StdVideoAV1FilmGrain));
+	//TODO StdVideoAV1FilmGrain *film_grain = (StdVideoAV1FilmGrain *)malloc(sizeof(StdVideoAV1FilmGrain));
 	r_picture_info->pFilmGrain = nullptr;
 
 	r_reference_info->flags.disable_frame_end_update_cdf = p_frame_header->disable_frame_end_update_cdf;
@@ -7438,7 +7438,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	Vector<VkVideoReferenceSlotInfoKHR> reference_slots;
 	reference_slots.push_back(setup_reference_slot);
 
-	for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
+	for (int64_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
 		if (video_session_info->std_reference_infos[i] == nullptr) {
 			break;
 		}

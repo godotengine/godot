@@ -61,8 +61,8 @@ private:
 	Vector<VideoCodingH264PictureParameterSet> pps_sets;
 
 	Vector<Frame> frame_queue;
-	size_t decode_index = 0;
-	size_t present_index = 0;
+	int64_t decode_index = 0;
+	int64_t present_index = 0;
 
 	size_t current_group_order_count = 0;
 	uint64_t prev_pic_order_cnt_lsb;

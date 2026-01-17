@@ -60,11 +60,11 @@ private:
 	uint32_t width = 0;
 	uint32_t height = 0;
 
-	const size_t buffered_frames = 13;
+	const uint32_t buffered_frames = 13;
 
 	// The current cluster + block index
-	size_t cluster_index = 0;
-	size_t block_index = 0;
+	int64_t cluster_index = 0;
+	int64_t block_index = 0;
 
 	double block_position = 0.0;
 	double playback_position = 0.0;

@@ -456,7 +456,7 @@ VideoDecodeAV1Frame VideoStreamAV1::parse_frame_header() {
 
 			std_frame_header.refresh_frame_flags = 0;
 			if (av1_sequence_header.frame_id_numbers_present_flag) {
-				uint32_t display_frame_id = read_bits(id_len);
+				read_bits(id_len); // uint32_t display_frame_id =
 			}
 
 			std_frame_header.frame_type = ref_frame_types[std_frame_header.frame_to_show_map_idx];
@@ -1355,7 +1355,7 @@ Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	bool monochrome = read_bits(1) > 0;
 	bool chroma_subsampling_x = read_bits(1) > 0;
 	bool chroma_subsampling_y = read_bits(1) > 0;
-	uint8_t chroma_subsampling_position = read_bits(2);
+	read_bits(2); //TODO: uint8_t chroma_subsampling_position =
 	read_bits(3); // reserved.
 
 	if (high_bitdepth && twelve_bit) {

@@ -687,9 +687,9 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 
 Vector<uint8_t> VideoStreamH264::present_frame() {
 	Frame next_frame;
-	size_t next_offset;
+	int64_t next_offset;
 
-	size_t offset = 0;
+	int64_t offset = 0;
 	while ((present_index + offset) % frame_queue.size() != decode_index) {
 		size_t target_index = (present_index + offset) % frame_queue.size();
 		Frame potential_frame = frame_queue[target_index];

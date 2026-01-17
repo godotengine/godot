@@ -764,7 +764,6 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 			uint64_t target_track = read_size();
 
-			// local_time = (src[0] << 8) | src[1]
 			src += 2;
 
 			uint8_t flags = src[0];

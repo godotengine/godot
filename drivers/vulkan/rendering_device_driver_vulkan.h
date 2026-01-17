@@ -95,20 +95,20 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	// TODO: allow other formats/operations than decode H.264
 	struct VideoCapabilities {
 		// Video properties.
-		VkVideoCapabilityFlagsKHR video_capability_flags;
-		uint32_t min_bitstream_buffer_offset_alignment;
-		uint32_t min_bitstream_buffer_size_alignment;
-		VkExtent2D picture_access_granularity;
-		VkExtent2D min_coded_extent;
-		VkExtent2D max_coded_extent;
-		uint32_t max_dpb_slots;
-		uint32_t max_active_reference_pictures;
-		VkExtensionProperties std_header_version;
+		VkVideoCapabilityFlagsKHR video_capability_flags = 0;
+		uint32_t min_bitstream_buffer_offset_alignment = 4096;
+		uint32_t min_bitstream_buffer_size_alignment = 4096;
+		VkExtent2D picture_access_granularity = { 64, 64 };
+		VkExtent2D min_coded_extent = { 0, 0 };
+		VkExtent2D max_coded_extent = { 0, 0 };
+		uint32_t max_dpb_slots = 0;
+		uint32_t max_active_reference_pictures = 0;
+		VkExtensionProperties std_header_version = {};
 		// Video Decode properties.
-		VkVideoDecodeFlagsKHR video_decode_capability_flags;
+		VkVideoDecodeFlagsKHR video_decode_capability_flags = 0;
 		// H.264 Decode properties.
-		StdVideoH264LevelIdc max_level_idc;
-		VkOffset2D field_offset_granularity;
+		StdVideoH264LevelIdc max_level_idc = STD_VIDEO_H264_LEVEL_IDC_1_0;
+		VkOffset2D field_offset_granularity = { 0, 0 };
 	};
 
 	struct DeviceFunctions {
@@ -736,7 +736,7 @@ public:
 
 		VideoCodingOperation video_operation;
 
-		uint64_t target_dpb_index;
+		int64_t target_dpb_index;
 		Vector<TextureInfo *> dpb_views;
 		Vector<void *> std_reference_infos;
 		// TODO: move into AV1Stream
