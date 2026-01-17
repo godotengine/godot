@@ -366,7 +366,7 @@ ProjectListItemControl::ProjectListItemControl() {
 
 	favorite_button = memnew(TextureButton);
 	favorite_button->set_name("FavoriteButton");
-	favorite_button->set_tooltip_text(TTRC("Toggle Favorite"));
+	favorite_button->set_shortcut(ED_SHORTCUT("project_manager/toggle_favorite", TTRC("Toggle Favorite"), Key::F));
 	favorite_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -415,7 +415,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 		explore_button->set_mouse_filter(MOUSE_FILTER_PASS);
-		explore_button->set_tooltip_text(TTRC("Open in file manager"));
+		explore_button->set_shortcut(ED_SHORTCUT("project_manager/show_in_file_manager", TTRC("Open in File Manager"), Key::E));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
 		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
