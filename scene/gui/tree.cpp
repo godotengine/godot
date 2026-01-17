@@ -5114,9 +5114,7 @@ void Tree::_notification(int p_what) {
 			const Rect2 main_clip_rect = Rect2(0.0f, clip_top, get_size().x, clip_bottom - clip_top);
 			RenderingServer *rendering_server = RenderingServer::get_singleton();
 
-			rendering_server->canvas_item_add_clip_ignore(ci, true);
 			bg->draw(ci, Rect2(Point2(), get_size()));
-			rendering_server->canvas_item_add_clip_ignore(ci, false);
 
 			Rect2 header_clip_rect = Rect2(content_rect.position.x, 0.0f, content_rect.size.x, get_size().y); // Keep headers out of the scrollbar area.
 			if (v_scroll->is_visible()) {
