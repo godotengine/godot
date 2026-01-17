@@ -166,6 +166,7 @@ private:
 		bool sdfgi_use_occlusion = false;
 		float sdfgi_bounce_feedback = 0.5;
 		bool sdfgi_read_sky_light = true;
+		float sdfgi_sky_energy_multiplier = 1.0;
 		float sdfgi_energy = 1.0;
 		float sdfgi_normal_bias = 1.1;
 		float sdfgi_probe_bias = 1.1;
@@ -311,13 +312,14 @@ public:
 	float environment_get_ssil_normal_rejection(RID p_env) const;
 
 	// SDFGI
-	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
+	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_sky_energy_multiplier, float p_energy, float p_normal_bias, float p_probe_bias);
 	bool environment_get_sdfgi_enabled(RID p_env) const;
 	int environment_get_sdfgi_cascades(RID p_env) const;
 	float environment_get_sdfgi_min_cell_size(RID p_env) const;
 	bool environment_get_sdfgi_use_occlusion(RID p_env) const;
 	float environment_get_sdfgi_bounce_feedback(RID p_env) const;
 	bool environment_get_sdfgi_read_sky_light(RID p_env) const;
+	float environment_get_sdfgi_sky_energy_multiplier(RID p_env) const;
 	float environment_get_sdfgi_energy(RID p_env) const;
 	float environment_get_sdfgi_normal_bias(RID p_env) const;
 	float environment_get_sdfgi_probe_bias(RID p_env) const;

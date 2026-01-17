@@ -814,7 +814,7 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 
 // SDFGI
 
-void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_sky_energy_multiplier, float p_normal_bias, float p_probe_bias) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
@@ -829,6 +829,7 @@ void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable,
 	env->sdfgi_bounce_feedback = p_bounce_feedback;
 	env->sdfgi_read_sky_light = p_read_sky;
 	env->sdfgi_energy = p_energy;
+	env->sdfgi_sky_energy_multiplier = p_sky_energy_multiplier;
 	env->sdfgi_normal_bias = p_normal_bias;
 	env->sdfgi_probe_bias = p_probe_bias;
 	env->sdfgi_y_scale = p_y_scale;
@@ -868,6 +869,12 @@ bool RendererEnvironmentStorage::environment_get_sdfgi_read_sky_light(RID p_env)
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, true);
 	return env->sdfgi_read_sky_light;
+}
+
+float RendererEnvironmentStorage::environment_get_sdfgi_sky_energy_multiplier(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->sdfgi_sky_energy_multiplier;
 }
 
 float RendererEnvironmentStorage::environment_get_sdfgi_energy(RID p_env) const {
