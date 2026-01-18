@@ -2216,7 +2216,7 @@ Ref<AnimatedValuesBackup> AnimationMixer::make_backup() {
 	make_animation_instance(SceneStringName(RESET), pi);
 	_build_backup_track_cache();
 
-	backup->set_data(track_cache);
+	backup->set_data(AHashMap<Animation::TypeHash, TrackCache *, HashHasher>(track_cache));
 	clear_animation_instances();
 
 	return backup;

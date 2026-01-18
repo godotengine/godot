@@ -1649,7 +1649,7 @@ Vector<String> EditorSettings::get_favorite_folders() const {
 }
 
 HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
-	return favorite_properties;
+	return HashMap<String, PackedStringArray>(favorite_properties);
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog) {

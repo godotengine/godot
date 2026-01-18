@@ -673,7 +673,7 @@ public:
 		p_other._size = 0;
 	}
 
-	AHashMap(const AHashMap &p_other) {
+	explicit AHashMap(const AHashMap &p_other) {
 		_init_from(p_other);
 	}
 

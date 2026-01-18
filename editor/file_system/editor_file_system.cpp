@@ -2790,7 +2790,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	//try to obtain existing params
 
-	HashMap<StringName, Variant> params = p_custom_options;
+	HashMap<StringName, Variant> params(p_custom_options);
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
