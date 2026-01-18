@@ -1314,7 +1314,7 @@ void VideoStreamAV1::parse_global_motion(bool p_is_intra, bool p_allow_high_prec
 void VideoStreamAV1::parse_film_grain(bool p_show_frame, bool p_showable_frame, VideoCodingAV1FrameType p_frame_type, VideoCodingAV1FilmGrain *r_film_grain) {
 	r_film_grain->apply_grain = false;
 	return;
-
+	/*
 	if (!av1_sequence_header.film_grain_params_present_flag || (!p_show_frame && !p_showable_frame)) {
 		// TODO reset grain params
 	} else {
@@ -1336,6 +1336,7 @@ void VideoStreamAV1::parse_film_grain(bool p_show_frame, bool p_showable_frame, 
 			}
 		}
 	}
+	*/
 }
 
 Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) {
