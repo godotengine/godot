@@ -196,7 +196,7 @@ Transform2D Camera2D::get_camera_transform() {
 		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
 			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
 			real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-			real_t c = MIN(1.0f, position_smoothing_speed * delta); 
+			real_t c = MIN(1.0f, position_smoothing_speed * delta);
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 			//camera_pos=camera_pos*(1.0-position_smoothing_speed)+new_camera_pos*position_smoothing_speed;
