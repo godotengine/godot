@@ -2057,10 +2057,10 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_selected", "TabContainer");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_hover_selected");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");

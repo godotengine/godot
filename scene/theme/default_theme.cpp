@@ -1083,6 +1083,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("sample_focus", "ColorPicker", focus);
 	theme->set_stylebox("picker_focus_rectangle", "ColorPicker", focus);
 	theme->set_stylebox("picker_focus_circle", "ColorPicker", focus_circle);
+	theme->set_stylebox("tab_selected", "ColorPicker", style_tab_selected);
+	theme->set_stylebox("tab_unselected", "ColorPicker", style_tab_unselected);
+	theme->set_stylebox("tab_hovered", "ColorPicker", style_tab_hovered);
+	theme->set_stylebox("tab_hover_selected", "ColorPicker", style_tab_selected);
 	theme->set_color("focused_not_editing_cursor_color", "ColorPicker", Color(1, 1, 1, 0.275f));
 
 	theme->set_icon("menu_option", "ColorPicker", icons["tabs_menu_hl"]);
