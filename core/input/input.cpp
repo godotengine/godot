@@ -545,10 +545,49 @@ float Input::get_axis(const StringName &p_negative_action, const StringName &p_p
 	return get_action_strength(p_positive_action) - get_action_strength(p_negative_action);
 }
 
+void Input::_get_action_axis_joy_separate(const StringName &p_negative, const StringName &p_positive, real_t &r_out_joy, real_t &r_out_other) const {
+	float joy_negative = 0.0f;
+	float joy_positive = 0.0f;
+	float other_negative = 0.0f;
+	float other_positive = 0.0f;
+	int max_event;
+
+	const ActionState *action_state = action_states.getptr(p_negative);
+	if (action_state) {
+		max_event = InputMap::get_singleton()->action_get_events(p_negative)->size() + 1; // +1 comes from InputEventAction.
+		for (const KeyValue<int, ActionState::DeviceState> &kv : action_state->device_states) {
+			const ActionState::DeviceState &device_state = kv.value;
+			for (int i = 0; i < max_event; i++) {
+				if (device_state.event_type[i] == InputEventType::JOY_MOTION) {
+					joy_negative = MAX(joy_negative, device_state.raw_strength[i]);
+				} else {
+					other_negative = MAX(other_negative, device_state.raw_strength[i]);
+				}
+			}
+		}
+	}
+
+	action_state = action_states.getptr(p_positive);
+	if (action_state) {
+		for (const KeyValue<int, ActionState::DeviceState> &kv : action_state->device_states) {
+			max_event = InputMap::get_singleton()->action_get_events(p_positive)->size() + 1; // +1 comes from InputEventAction.
+			const ActionState::DeviceState &device_state = kv.value;
+			for (int i = 0; i < max_event; i++) {
+				if (device_state.event_type[i] == InputEventType::JOY_MOTION) {
+					joy_positive = MAX(joy_positive, device_state.raw_strength[i]);
+				} else {
+					other_positive = MAX(other_positive, device_state.raw_strength[i]);
+				}
+			}
+		}
+	}
+
+	r_out_joy = joy_positive - joy_negative;
+	r_out_other = other_positive - other_negative;
+}
+
 Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone) const {
-	Vector2 vector = Vector2(
-			get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
-			get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
+	Vector2 vector;
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
@@ -557,6 +596,34 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 						InputMap::get_singleton()->action_get_deadzone(p_negative_x) +
 						InputMap::get_singleton()->action_get_deadzone(p_positive_y) +
 						InputMap::get_singleton()->action_get_deadzone(p_negative_y));
+	}
+
+	bool has_joypads = false;
+	HashMap<int, Joypad>::ConstIterator elem = joy_names.begin();
+	while (elem) {
+		if (elem->value.connected) {
+			has_joypads = true;
+			break;
+		}
+		++elem;
+	}
+	if (has_joypads) {
+		Vector2 joy_vector;
+		Vector2 other_vector;
+		_get_action_axis_joy_separate(p_negative_x, p_positive_x, joy_vector.x, other_vector.x);
+		_get_action_axis_joy_separate(p_negative_y, p_positive_y, joy_vector.y, other_vector.y);
+
+		if (other_vector.length() > p_deadzone) {
+			vector = other_vector;
+		}
+		// We don't want joysticks held below the deadzone (or still) to influence the result.
+		if (joy_vector.length() > p_deadzone) {
+			vector += joy_vector;
+		}
+	} else {
+		vector = Vector2(
+				get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
+				get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
 	}
 
 	// Circular length limiting and deadzone.
@@ -959,6 +1026,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		device_state.pressed[event_index] = is_pressed;
 		device_state.strength[event_index] = p_event->get_action_strength(E.key);
 		device_state.raw_strength[event_index] = p_event->get_action_raw_strength(E.key);
+		device_state.event_type[event_index] = p_event->get_type();
 
 		// Update the action's global state and cache.
 		if (!is_pressed) {
