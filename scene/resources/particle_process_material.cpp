@@ -950,10 +950,10 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	bool just_spawned = CUSTOM.y == 0.0;\n";
 	}
 
-	code += "	CUSTOM.y += DELTA / LIFETIME;\n";
+	code += "	CUSTOM.y += DELTA / (LIFETIME * params.lifetime);\n";
 	code += "	CUSTOM.y = mix(CUSTOM.y, 1.0, INTERPOLATE_TO_END);\n";
-	code += "	float lifetime_percent = CUSTOM.y / params.lifetime;\n";
-	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
+	code += "	float lifetime_percent = CUSTOM.y;\n";
+	code += "	if (CUSTOM.y > 1.0) {\n";
 	code += "		ACTIVE = false;\n";
 	code += "	}\n\n";
 
@@ -1081,9 +1081,9 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	base_angle *= texture(angle_texture, vec2(lifetime_percent)).r;\n";
 	}
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity * texture(angular_velocity_texture, vec2(lifetime_percent)).r;\n";
+		code += "	base_angle += CUSTOM.y * LIFETIME * params.lifetime * dynamic_params.angular_velocity * texture(angular_velocity_texture, vec2(lifetime_percent)).r;\n";
 	} else {
-		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity;\n";
+		code += "	base_angle += CUSTOM.y * LIFETIME * params.lifetime * dynamic_params.angular_velocity;\n";
 	}
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n";
 	code += "	COLOR = params.color;\n\n";
@@ -1158,7 +1158,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	int emit_count = 0;\n";
 		switch (sub_emitter_mode) {
 			case SUB_EMITTER_CONSTANT: {
-				code += "	float interval_from = CUSTOM.y * LIFETIME - DELTA;\n";
+				code += "	float interval_from = CUSTOM.y * LIFETIME * params.lifetime - DELTA;\n";
 				code += "	float interval_rem = sub_emitter_frequency - mod(interval_from, sub_emitter_frequency);\n";
 				code += "	if (DELTA >= interval_rem) {\n";
 				code += "		emit_count = 1;\n";
@@ -1170,7 +1170,7 @@ void ParticleProcessMaterial::_update_shader() {
 				code += "	}\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
-				code += "	if ((CUSTOM.y / CUSTOM.w * LIFETIME) > (LIFETIME - DELTA)) {\n";
+				code += "	if ((CUSTOM.y * LIFETIME) > (LIFETIME - DELTA)) {\n";
 				code += "		emit_count = sub_emitter_amount_at_end;\n";
 				code += "	}\n";
 			} break;
@@ -1191,7 +1191,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	}\n\n";
 	}
 
-	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
+	code += "	if (CUSTOM.y > 1.0) {\n";
 	code += "		ACTIVE = false;\n";
 	code += "	}\n";
 	code += "}\n";
