@@ -94,6 +94,7 @@ private:
 	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	bool redraw_needed = false;
 	bool pending_update = false;
+	bool use_rgss_supersampling = false;
 	void _im_update();
 
 	void _propagate_color_changed();
@@ -167,6 +168,9 @@ public:
 
 	void set_texture_filter(StandardMaterial3D::TextureFilter p_filter);
 	StandardMaterial3D::TextureFilter get_texture_filter() const;
+
+	bool get_use_rgss_supersampling() const;
+	void set_use_rgss_supersampling(bool p_flag);
 
 	virtual Rect2 get_item_rect() const = 0;
 

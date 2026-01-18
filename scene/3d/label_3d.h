@@ -147,6 +147,8 @@ private:
 
 	void _generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
 
+	bool rgss_use_supersampling = false;
+
 protected:
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 
@@ -256,6 +258,9 @@ public:
 
 	virtual AABB get_aabb() const override;
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
+
+	void set_use_rgss_supersampling(bool p_flag);
+	bool get_use_rgss_supersampling() const;
 
 	Label3D();
 	~Label3D();

@@ -31,6 +31,7 @@
 #include "sprite_3d.h"
 
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -292,7 +293,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, texture_repeat, &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, texture_repeat, use_rgss_supersampling, &shader_rid);
 
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
@@ -618,6 +619,20 @@ StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
 	return texture_filter;
 }
 
+bool SpriteBase3D::get_use_rgss_supersampling() const {
+	return use_rgss_supersampling;
+}
+
+void SpriteBase3D::set_use_rgss_supersampling(bool p_flag) {
+	if (use_rgss_supersampling == p_flag) {
+		return;
+	}
+
+	use_rgss_supersampling = p_flag;
+
+	_queue_redraw();
+}
+
 void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &SpriteBase3D::is_centered);
@@ -670,6 +685,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_use_rgss_supersampling", "flag"), &SpriteBase3D::set_use_rgss_supersampling);
+	ClassDB::bind_method(D_METHOD("get_use_rgss_supersampling"), &SpriteBase3D::get_use_rgss_supersampling);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -691,6 +709,8 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rgss_supersampling"), "set_use_rgss_supersampling", "get_use_rgss_supersampling");
 
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_SHADED);

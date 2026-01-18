@@ -112,6 +112,9 @@
 			[b]Note:[/b] This only applies if [member alpha_cut] is set to [constant ALPHA_CUT_DISABLED] (default value).
 			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
+		<member name="rgss_supersampling" type="bool" setter="set_use_rgss_supersampling" getter="get_use_rgss_supersampling" default="false">
+			If [code]true[/code], enables RGSS (Rotated Grid Super Sampling) for the label's texture. RGSS reduces aliasing by sampling the texture at four rotated grid positions and averaging the results. This improves visual quality but may have a performance impact.
+		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="false">
 			If [code]true[/code], the [Light3D] in the [Environment] has effects on the label.
 		</member>

@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/object/object.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 
@@ -1495,6 +1496,36 @@ vec4 triplanar_texture(sampler2D p_sampler, vec3 p_weights, vec3 p_triplanar_pos
 )";
 	}
 
+	if (flags[FLAG_USE_RGSS_SUPERSAMPLING]) {
+		code += R"(
+vec4 texture_rgss(sampler2D p_sampler, vec2 p_uv) {
+	// Get per-pixel partial derivatives.
+	vec2 dx = dFdx(p_uv);
+	vec2 dy = dFdy(p_uv);
+
+	// Rotated grid UV offsets.
+	const vec2 UV_OFFSETS = vec2(0.125, 0.375);
+	vec2 offset_uv = vec2(0.0);
+
+	// Supersample using 2×2 rotated grid.
+	vec4 samp = vec4(0.0);
+
+	float lod = 0.5 * log2(max(dot(dx, dx), dot(dy, dy)));
+	lod += -1.0;
+
+	offset_uv.xy = p_uv + UV_OFFSETS.x * dx + UV_OFFSETS.y * dy;
+	samp += textureLod(p_sampler, offset_uv, lod);
+	offset_uv.xy = p_uv - UV_OFFSETS.x * dx - UV_OFFSETS.y * dy;
+	samp += textureLod(p_sampler, offset_uv, lod);
+	offset_uv.xy = p_uv + UV_OFFSETS.y * dx - UV_OFFSETS.x * dy;
+	samp += textureLod(p_sampler, offset_uv, lod);
+	offset_uv.xy = p_uv - UV_OFFSETS.y * dx + UV_OFFSETS.x * dy;
+	samp += textureLod(p_sampler, offset_uv, lod);
+
+	return samp * 0.25;
+})";
+	}
+
 	// Generate fragment shader.
 	code += R"(
 void fragment() {)";
@@ -1605,6 +1636,10 @@ void fragment() {)";
 		code += R"(
 	// Use Point Size: Enabled
 	vec4 albedo_tex = texture(texture_albedo, POINT_COORD);
+)";
+	} else if (flags[FLAG_USE_RGSS_SUPERSAMPLING]) {
+		code += R"(
+	vec4 albedo_tex = texture_rgss(texture_albedo, base_uv);
 )";
 	} else {
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
@@ -2495,7 +2530,8 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 			p_flag == FLAG_UV2_USE_TRIPLANAR ||
 			p_flag == FLAG_USE_Z_CLIP_SCALE ||
 			p_flag == FLAG_USE_FOV_OVERRIDE ||
-			p_flag == FLAG_DISABLE_DEPTH_TEST) {
+			p_flag == FLAG_DISABLE_DEPTH_TEST ||
+			p_flag == FLAG_USE_RGSS_SUPERSAMPLING) {
 		notify_property_list_changed();
 	}
 
@@ -3010,7 +3046,7 @@ float BaseMaterial3D::get_fov_override() const {
 	return fov_override;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, RID *r_shader_rid) {
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, bool p_use_rgss, RID *r_shader_rid) {
 	uint64_t key = 0;
 	key |= ((int8_t)p_shaded & 0x01) << 0;
 	key |= ((int8_t)p_transparency & 0x07) << 1; // Bits 1-3.
@@ -3023,6 +3059,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	key |= ((int8_t)p_filter & 0x07) << 10; // Bits 10-12.
 	key |= ((int8_t)p_alpha_antialiasing_mode & 0x07) << 13; // Bits 13-15.
 	key |= ((int8_t)p_texture_repeat & 0x01) << 16;
+	key |= ((int8_t)p_use_rgss & 0x01) << 17;
 
 	if (materials_for_2d.has(key)) {
 		if (r_shader_rid) {
@@ -3043,6 +3080,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth);
 	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
 	material->set_flag(FLAG_USE_TEXTURE_REPEAT, p_texture_repeat);
+	material->set_flag(FLAG_USE_RGSS_SUPERSAMPLING, p_use_rgss);
 	material->set_alpha_antialiasing(p_alpha_antialiasing_mode);
 	material->set_texture_filter(p_filter);
 	if (p_billboard || p_billboard_y) {
@@ -3772,6 +3810,9 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "stencil_color", PROPERTY_HINT_NONE), "set_stencil_effect_color", "get_stencil_effect_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stencil_outline_thickness", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_stencil_effect_outline_thickness", "get_stencil_effect_outline_thickness");
 
+	ADD_GROUP("Supersampling", "rgss_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "rgss_use_supersampling"), "set_flag", "get_flag", FLAG_USE_RGSS_SUPERSAMPLING);
+
 	BIND_ENUM_CONSTANT(TEXTURE_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_METALLIC);
 	BIND_ENUM_CONSTANT(TEXTURE_ROUGHNESS);
@@ -3877,6 +3918,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_SPECULAR_OCCLUSION);
 	BIND_ENUM_CONSTANT(FLAG_USE_Z_CLIP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_USE_FOV_OVERRIDE);
+	BIND_ENUM_CONSTANT(FLAG_USE_RGSS_SUPERSAMPLING);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
