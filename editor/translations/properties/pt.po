@@ -45,7 +45,7 @@
 # Marcia Perez <cristianemarcia50@gmail.com>, 2024.
 # Rick and Morty <7777rickandmorty@gmail.com>, 2024.
 # JulianoV <ventolajuliano@gmail.com>, 2024.
-# 100Nome <100nome.portugal@gmail.com>, 2024, 2025.
+# 100Nome <100nome.portugal@gmail.com>, 2024, 2025, 2026.
 # Ruan Victor <ruanvictordossantoscorrea128@gmail.com>, 2024.
 # rtvr5656 <rtvr5656@gmail.com>, 2025.
 # Larissa Camargo <larissacar26@gmail.com>, 2025.
@@ -55,7 +55,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-08-28 06:30+0000\n"
+"PO-Revision-Date: 2026-01-11 23:26+0000\n"
 "Last-Translator: 100Nome <100nome.portugal@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
@@ -64,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.15.1\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -460,10 +460,16 @@ msgid "Max Threads"
 msgstr "Máx. threads"
 
 msgid "Baking"
-msgstr "Pré-cálculo"
+msgstr "Precálculo"
 
 msgid "Use Crash Prevention Checks"
 msgstr "Usar verificações de prevenção de crash"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Pré-cálculo Usar Múltiplas Threads"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Precalcular usando threads de alta prioridade"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de baixo uso do processador"
@@ -750,6 +756,9 @@ msgstr "Threading"
 msgid "Low Priority Thread Ratio"
 msgstr "Taxa de threads de baixa prioridade"
 
+msgid "Fallback"
+msgstr "Recurso"
+
 msgid "Pseudolocalization"
 msgstr "Pseudolocalização"
 
@@ -800,6 +809,9 @@ msgstr "Desvio final"
 
 msgid "Easing"
 msgstr "Suavização"
+
+msgid "Asset Library"
+msgstr "Biblioteca de Recursos"
 
 msgid "Available URLs"
 msgstr "URLs disponíveis"
@@ -910,7 +922,7 @@ msgid "Performance A 12"
 msgstr "Desempenho A 12"
 
 msgid "Shader Baker"
-msgstr "Pré-calculador de sombreadores"
+msgstr "Precalculador de shaders"
 
 msgid "Enabled"
 msgstr "Ativado"
@@ -1153,37 +1165,37 @@ msgid "Max Concavity"
 msgstr "Concavidade máx."
 
 msgid "Symmetry Planes Clipping Bias"
-msgstr "Corte no Bias de Plano de Simetria"
+msgstr "Tendência de corte dos planos de simetria"
 
 msgid "Revolution Axes Clipping Bias"
-msgstr "Bias de Corte nos eixos de revolução"
+msgstr "Tendência de corte dos eixos de revolução"
 
 msgid "Min Volume per Convex Hull"
-msgstr "Volume mínimo per Convex Hull"
+msgstr "Mín. volume por invólucro convexo"
 
 msgid "Resolution"
 msgstr "Resolução"
 
 msgid "Max Num Vertices per Convex Hull"
-msgstr "Quantidade Máxima de Vértices por Convex Hull"
+msgstr "Máx. n.º de vértices por invólucro convexo"
 
 msgid "Plane Downsampling"
 msgstr "Rebaixamento de plano"
 
 msgid "Convexhull Downsampling"
-msgstr "Rebaixamento de Convexhull"
+msgstr "ebaixamento de invólucro convexo"
 
 msgid "Normalize Mesh"
-msgstr "Normalizar Malha"
+msgstr "Normalizar malha"
 
 msgid "Convexhull Approximation"
-msgstr "Aproximação Convexhull"
+msgstr "Aproximação de invólucro convexo"
 
 msgid "Max Convex Hulls"
-msgstr "Convexhull Máximo"
+msgstr "Máx. invólucros convexos"
 
 msgid "Project Hull Vertices"
-msgstr "Vértices Hull do projeto"
+msgstr "Projetar vértices do invólucro"
 
 msgid "Primitive"
 msgstr "Primitivo"
@@ -1194,35 +1206,32 @@ msgstr "Altura"
 msgid "Radius"
 msgstr "Raio"
 
-msgid "Occluder"
-msgstr "Oclusor"
-
 msgid "Simplification Distance"
-msgstr "Distância de Simplificação"
+msgstr "Distância de simplificação"
 
 msgid "Save to File"
-msgstr "Salvar ao Arquivo"
+msgstr "Guardar em ficheiro"
 
 msgid "Shadow Meshes"
-msgstr "Malhas de Shader"
+msgstr "Malhas de sombra"
 
 msgid "Lightmap UV"
-msgstr "UV do Lightmap"
+msgstr "UV de lightmap"
 
 msgid "LODs"
 msgstr "LOD (Níveis de detalhe)"
 
 msgid "Normal Merge Angle"
-msgstr "Ângulo de junção da NORMAL"
+msgstr "Ângulo de fusão de normais"
 
 msgid "Use External"
-msgstr "Usar Externo"
+msgstr "Usar externo"
 
 msgid "Loop Mode"
-msgstr "Modo de Loop"
+msgstr "Modo de repetição"
 
 msgid "Keep Custom Tracks"
-msgstr "Manter Faixas Personalizadas"
+msgstr "Manter faixas personalizadas"
 
 msgid "Slices"
 msgstr "Fatias"
@@ -1234,70 +1243,76 @@ msgid "Optimizer"
 msgstr "Otimizador"
 
 msgid "Max Velocity Error"
-msgstr "Erro de Máx. Velocidade"
+msgstr "Erro máx. de velocidade"
 
 msgid "Max Angular Error"
-msgstr "Máximo de Erros Angulares"
+msgstr "Erro máx. angular"
 
 msgid "Max Precision Error"
-msgstr "Erro de Máxima Precisão"
+msgstr "Erro máx. de precisão"
 
 msgid "Page Size"
-msgstr "Tamanho da Página"
+msgstr "Tamanho da página"
 
 msgid "Import Tracks"
-msgstr "Importar Trilhas"
+msgstr "Importar faixas"
 
 msgid "Rest Pose"
-msgstr "Pose de Repouso"
+msgstr "Pose de repouso"
 
 msgid "Load Pose"
-msgstr "Carregar Pose"
+msgstr "Carregar pose"
 
 msgid "External Animation Library"
-msgstr "Módulo de Animação Externo"
+msgstr "Biblioteca de animação externa"
 
 msgid "Selected Animation"
-msgstr "Animação Selecionada"
+msgstr "Animação selecionada"
 
 msgid "Selected Timestamp"
-msgstr "Tempo Selecionado"
+msgstr "Carimbo temporal selecionado"
 
 msgid "Bone Map"
-msgstr "Mapa de Ossos"
+msgstr "Mapa de ossos"
 
 msgid "Nodes"
 msgstr "Nós"
 
 msgid "Root Type"
-msgstr "Tipo da Raiz"
+msgstr "Tipo de raiz"
 
 msgid "Root Name"
-msgstr "Nome da Raiz"
+msgstr "Nome da raiz"
+
+msgid "Root Script"
+msgstr "Script da raiz"
 
 msgid "Apply Root Scale"
-msgstr "Aplicar Escala da Raiz"
+msgstr "Aplicar escala da raiz"
 
 msgid "Root Scale"
-msgstr "Escala da Raiz"
+msgstr "Escala da raiz"
 
 msgid "Import as Skeleton Bones"
-msgstr "Importar como Ossos de Esqueleto"
+msgstr "Importar como ossos de esqueleto"
+
+msgid "Use Name Suffixes"
+msgstr "Usar sufixos de nome"
 
 msgid "Use Node Type Suffixes"
-msgstr "Usar Sufixos de Tipo de Nó"
+msgstr "Usar sufixos de tipo de nó"
 
 msgid "Meshes"
 msgstr "Malhas"
 
 msgid "Ensure Tangents"
-msgstr "Assegurar Tangentes"
+msgstr "Garantir tangentes"
 
 msgid "Create Shadow Meshes"
-msgstr "Criar Malha de Sombra"
+msgstr "Criar malhas de sombra"
 
 msgid "Light Baking"
-msgstr "Baking de Luz"
+msgstr "Precálculo de luz"
 
 msgid "Lightmap Texel Size"
 msgstr "Tamanho do Texel do Mapa de Luz"
@@ -1357,7 +1372,7 @@ msgid "MSDF Size"
 msgstr "Tamanho do MSDF"
 
 msgid "Allow System Fallback"
-msgstr "Permitir Fallback do Sistema"
+msgstr "Permitir recurso do sistema"
 
 msgid "Force Autohinter"
 msgstr "Forçar Autohinter"
@@ -1387,7 +1402,7 @@ msgid "OpenType Features"
 msgstr "Funcionalidades OpenType"
 
 msgid "Fallbacks"
-msgstr "Fallbacks"
+msgstr "Recursos"
 
 msgid "Compress"
 msgstr "Comprimir"
@@ -1655,7 +1670,7 @@ msgid "Convert Text Resources to Binary"
 msgstr "Converter Recursos de Texto para Binário"
 
 msgid "Version Control"
-msgstr "Controle de Versões"
+msgstr "Controlo de versão"
 
 msgid "Plugin Name"
 msgstr "Nome do Plugin"
@@ -2717,7 +2732,7 @@ msgid "Show Previous Outline"
 msgstr "Exibir Prévia Anterior"
 
 msgid "Auto Bake Delay"
-msgstr "Atraso da Geração Automática"
+msgstr "Atraso do precálculo automático"
 
 msgid "Autorename Animation Tracks"
 msgstr "Renomear Automaticamente Faixa de Animação"
@@ -2999,13 +3014,13 @@ msgid "Driver"
 msgstr "Driver"
 
 msgid "Fallback to Vulkan"
-msgstr "Regredir ao Vulkan"
+msgstr "Recurso para Vulkan"
 
 msgid "Fallback to D3D12"
-msgstr "Regredir ao D3D12"
+msgstr "Recurso para D3D12"
 
 msgid "Fallback to OpenGL 3"
-msgstr "Regredir ao OpenGL 3"
+msgstr "Recurso para OpenGL 3"
 
 msgid "GL Compatibility"
 msgstr "Compatibilidade GL"
@@ -3014,13 +3029,13 @@ msgid "Nvidia Disable Threaded Optimization"
 msgstr "Nvidia Desabilitar Otimização em Threads"
 
 msgid "Fallback to Angle"
-msgstr "Regredir ao ANGLE"
+msgstr "Recurso para Angle"
 
 msgid "Fallback to Native"
-msgstr "Regredir a Renderização Nativa"
+msgstr "Recurso para nativo"
 
 msgid "Fallback to GLES"
-msgstr "Regredir ao GLES"
+msgstr "Recurso para GLES"
 
 msgid "Force Angle on Devices"
 msgstr "Forçar Ângulo em Dispositivos"
@@ -3473,7 +3488,7 @@ msgid "Copyright"
 msgstr "Direitos Autorais"
 
 msgid "Bake FPS"
-msgstr "FPS de Pré-cálculo"
+msgstr "FPS de precálculo"
 
 msgid "glTF"
 msgstr "'glTF'"
@@ -3543,6 +3558,12 @@ msgstr "Malha de Importador"
 
 msgid "Image Format"
 msgstr "Formato de Imagem"
+
+msgid "Fallback Image Format"
+msgstr "Formato da imagem de recurso"
+
+msgid "Fallback Image Quality"
+msgstr "Qualidade da imagem de recurso"
 
 msgid "Root Node Mode"
 msgstr "Modo do Nó Raiz"
@@ -3797,7 +3818,7 @@ msgid "Priority"
 msgstr "Prioridade"
 
 msgid "Bake Navigation"
-msgstr "Navegação Pré-Processada"
+msgstr "Precalcular navegação"
 
 msgid "Clip Count"
 msgstr "Quantidade de Clipes"
@@ -3923,7 +3944,7 @@ msgid "Lightmapping"
 msgstr "Mapeamento de Luz"
 
 msgid "Bake Quality"
-msgstr "Qualidade Bake"
+msgstr "Qualidade de precálculo"
 
 msgid "Low Quality Ray Count"
 msgstr "Contagem de Raios de Baixa Qualidade"
@@ -3938,7 +3959,7 @@ msgid "Ultra Quality Ray Count"
 msgstr "Contagem de Raios de Ultra Qualidade"
 
 msgid "Bake Performance"
-msgstr "Performance do Bake"
+msgstr "Desempenho do precálculo"
 
 msgid "Max Rays per Pass"
 msgstr "Máximo de Raios por Passagem"
@@ -4177,6 +4198,9 @@ msgstr "Háptico Ativado"
 msgid "Off Haptic"
 msgstr "Háptico Desativado"
 
+msgid "Relax Frame Interval"
+msgstr "Intervalo de descontração do frame"
+
 msgid "On Threshold"
 msgstr "Limiar Ativado"
 
@@ -4220,7 +4244,7 @@ msgid "Central Angle"
 msgstr "Ângulo Inicial"
 
 msgid "Fallback Segments"
-msgstr "Segmentos de Fallback"
+msgstr "Segmentos de recurso"
 
 msgid "Central Horizontal Angle"
 msgstr "Ângulo Horizontal Central"
@@ -6055,7 +6079,7 @@ msgid "Thickness"
 msgstr "Espessura"
 
 msgid "Bake Mask"
-msgstr "Gerar Máscara"
+msgstr "Máscara de precálculo"
 
 msgid "Update Mode"
 msgstr "Modo de Atualização"
@@ -6202,7 +6226,7 @@ msgid "Specular"
 msgstr "Especular"
 
 msgid "Bake Mode"
-msgstr "Modo de Pré-cálculo"
+msgstr "Modo de precálculo"
 
 msgid "Normal Bias"
 msgstr "Bias Normal"
@@ -6445,7 +6469,7 @@ msgid "Visibility Parent"
 msgstr "Visibilidade do Pai"
 
 msgid "Bake"
-msgstr "Gerar"
+msgstr "Precalcular"
 
 msgid "Debug Shape"
 msgstr "Forma de Depuração"
@@ -8402,10 +8426,10 @@ msgid "Cells"
 msgstr "Células"
 
 msgid "Baking Rect"
-msgstr "Rect de Pré-Calculo"
+msgstr "Rect de precálculo"
 
 msgid "Baking Rect Offset"
-msgstr "Deslocamento de Rect de Pré-Cálculo"
+msgstr "Desvio do rect de precálculo"
 
 msgid "A"
 msgstr "A"
@@ -8741,7 +8765,7 @@ msgid "Night Sky"
 msgstr "Céu da Noite"
 
 msgid "Fallback Environment"
-msgstr "Ambiente Substituto"
+msgstr "Ambiente de recurso"
 
 msgid "Plane"
 msgstr "Plano"
@@ -8888,10 +8912,10 @@ msgid "Max Domain"
 msgstr "Max. Domínio"
 
 msgid "Bake Resolution"
-msgstr "Resolução de Pré-Cálculo"
+msgstr "Resolução de precálculo"
 
 msgid "Bake Interval"
-msgstr "Intervalo de Bake"
+msgstr "Intervalo de precálculo"
 
 msgid "Up Vector"
 msgstr "Vetor de Cima"
@@ -9398,10 +9422,10 @@ msgid "Walkable Low Height Spans"
 msgstr "Vãos de Baixa Altura Caminháveis"
 
 msgid "Baking AABB"
-msgstr "Gerando AABB"
+msgstr "AABB de precálculo"
 
 msgid "Baking AABB Offset"
-msgstr "Gerando Deslocamento AABB"
+msgstr "Desvio da AABB de precálculo"
 
 msgid "Damping as Friction"
 msgstr "Amortecimento como Fricção"
@@ -10652,7 +10676,7 @@ msgid "Custom Font"
 msgstr "Fonte Personalizada"
 
 msgid "Fallback values"
-msgstr "Valores Padrão"
+msgstr "Valores de recurso"
 
 msgid "Enable Input"
 msgstr "Ativar Entrada"
@@ -10812,6 +10836,9 @@ msgstr "Movie Writer"
 
 msgid "Speaker Mode"
 msgstr "Modo de Alto-falantes"
+
+msgid "Keyframe Interval"
+msgstr "Intervalo de keyframes"
 
 msgid "Movie File"
 msgstr "Ficheiro de Vídeo"

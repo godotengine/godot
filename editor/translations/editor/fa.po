@@ -77,6 +77,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
+msgid "OK"
+msgstr "باشه"
+
+msgid "Locked"
+msgstr "قفلیده"
+
+msgid "Help"
+msgstr "راهنما"
+
 msgid "Physical"
 msgstr "فیزیکی"
 
@@ -4567,9 +4576,6 @@ msgstr "هنگامی که پنجرهٔ ویراستار دوباره کشیده 
 msgid "Imported resources can't be saved."
 msgstr "بنمایه‌های درون‌برد شده نمی‌توانند ذخیره شوند."
 
-msgid "OK"
-msgstr "باشه"
-
 msgid "Error saving resource!"
 msgstr "خطا در ذخیره‌سازی بنمایه!"
 
@@ -5311,9 +5317,6 @@ msgstr "گشودن ویراستار پیشین"
 
 msgid "Project"
 msgstr "پروژه"
-
-msgid "Help"
-msgstr "راهنما"
 
 msgid "Update Mode"
 msgstr "حالت به‌روزرسانی"
@@ -8407,6 +8410,9 @@ msgstr "تنظیمات تند"
 msgid "Language"
 msgstr "زبان"
 
+msgid "Style"
+msgstr "شیوه"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "پیش‌نشاندهٔ سفارشی می‌تواند در ویراستار بیشتر پیکربندی شود."
 
@@ -10529,9 +10535,6 @@ msgstr "نمای پشتی پرسپکتیو"
 msgid "[auto]"
 msgstr "[خودکار]"
 
-msgid "Locked"
-msgstr "قفلیده"
-
 msgid "Grouped"
 msgstr "گروه شده"
 
@@ -10559,21 +10562,6 @@ msgid ""
 msgstr ""
 "بکشید و رها کنید تا ماده هر گره هندسی را بازنویسی کنید. \n"
 "هنگام رها کردن، %s را نگه دارید تا سطح مشخصی را بازنویسی کنید."
-
-msgid "X: %s\n"
-msgstr "X: %s\n"
-
-msgid "Y: %s\n"
-msgstr "Y: %s\n"
-
-msgid "Z: %s\n"
-msgstr "Z: %s\n"
-
-msgid "Size: %s (%.1fMP)\n"
-msgstr "اندازه: %s (%.1f مگاپیکسل)\n"
-
-msgid "Objects: %d\n"
-msgstr "اشیا: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "فراخوانی‌های رسم: %d"
@@ -12826,9 +12814,6 @@ msgstr ""
 
 msgid "Post-Process"
 msgstr "پس-پردازش"
-
-msgid "Style"
-msgstr "شیوه"
 
 msgid "To Lowercase"
 msgstr "با حروف کوچک"
@@ -18020,15 +18005,6 @@ msgstr "هیچ تابعی برای «%s» پیدا نشد."
 
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "متغیر '%s' را نمی‌توان برای پارامتر '%s' در این زمینه ارسال کرد."
-
-msgid ""
-"Unable to pass a multiview texture sampler as a parameter to custom function. "
-"Consider to sample it in the main function and then pass the vector result to "
-"it."
-msgstr ""
-"قادر به ارسال نمونه‌بردار بافت چندنمایی به عنوان پارامتر به تابع سفارشی نیست. "
-"در نظر بگیرید که آن را در تابع اصلی نمونه‌برداری کنید و سپس بردار حاصل را به "
-"آن ارسال کنید."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "شناسه ناشناخته در عبارت: '%s'."

@@ -44,7 +44,8 @@
 // Helper.
 static Color _get_base_color(EditorThemeManager::ThemeConfiguration &p_config, float p_dimness_ofs = 0.0, float p_saturation_mult = 1.0) {
 	Color color = p_config.base_color;
-	color.set_v(CLAMP(Math::lerp(color.get_v(), 0, p_config.contrast * p_dimness_ofs), 0, 1));
+	const float final_contrast = (p_dimness_ofs < 0) ? CLAMP(p_config.contrast, -0.1, 0.5) : p_config.contrast;
+	color.set_v(CLAMP(Math::lerp(color.get_v(), 0, final_contrast * p_dimness_ofs), 0, 1));
 	color.set_s(color.get_s() * p_saturation_mult);
 	return color;
 }
@@ -467,6 +468,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("focus", "Button", p_config.focus_style);
 		p_theme->set_stylebox("disabled", "Button", p_config.button_style_disabled);
 
+		p_theme->set_stylebox("normal_mirrored", "Button", p_config.button_style);
+		p_theme->set_stylebox("hover_mirrored", "Button", p_config.button_style_hover);
+		p_theme->set_stylebox("pressed_mirrored", "Button", p_config.button_style_pressed);
+		p_theme->set_stylebox("hover_pressed_mirrored", "Button", p_config.button_style_pressed);
+		p_theme->set_stylebox("disabled_mirrored", "Button", p_config.button_style_disabled);
+
 		p_theme->set_color(SceneStringName(font_color), "Button", p_config.font_color);
 		p_theme->set_color("font_hover_color", "Button", p_config.font_hover_color);
 		p_theme->set_color("font_hover_pressed_color", "Button", p_config.font_hover_pressed_color);
@@ -508,17 +515,10 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// OptionButton.
 
-		p_theme->set_stylebox("focus", "OptionButton", p_config.focus_style);
-		p_theme->set_stylebox(CoreStringName(normal), "OptionButton", p_config.button_style);
-		p_theme->set_stylebox(SceneStringName(hover), "OptionButton", p_config.button_style_hover);
-		p_theme->set_stylebox(SceneStringName(pressed), "OptionButton", p_config.button_style_pressed);
-		p_theme->set_stylebox("disabled", "OptionButton", p_config.button_style_disabled);
-
 		p_theme->set_icon("arrow", "OptionButton", p_theme->get_icon(SNAME("GuiOptionArrow"), EditorStringName(EditorIcons)));
 		p_theme->set_constant("arrow_margin", "OptionButton", p_config.base_margin * 2 * EDSCALE);
 		p_theme->set_constant("modulate_arrow", "OptionButton", true);
 		p_theme->set_constant("h_separation", "OptionButton", 4 * EDSCALE);
-		p_theme->set_constant("outline_size", "OptionButton", 0);
 
 		// CheckButton.
 
@@ -527,6 +527,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("disabled", "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox(SceneStringName(hover), "CheckButton", p_config.panel_container_style);
 		p_theme->set_stylebox("hover_pressed", "CheckButton", p_config.panel_container_style);
+
+		p_theme->set_stylebox("normal_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("pressed_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("disabled_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("hover_mirrored", "CheckButton", p_config.panel_container_style);
+		p_theme->set_stylebox("hover_pressed_mirrored", "CheckButton", p_config.panel_container_style);
 
 		p_theme->set_icon("checked", "CheckButton", p_theme->get_icon(SNAME("GuiToggleOn"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("checked_disabled", "CheckButton", p_theme->get_icon(SNAME("GuiToggleOnDisabled"), EditorStringName(EditorIcons)));
@@ -554,6 +560,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_stylebox("disabled", "CheckBox", checkbox_style);
 			p_theme->set_stylebox(SceneStringName(hover), "CheckBox", checkbox_style);
 			p_theme->set_stylebox("hover_pressed", "CheckBox", checkbox_style);
+
+			p_theme->set_stylebox("normal_mirrored", "CheckBox", checkbox_style_normal);
+			p_theme->set_stylebox("pressed_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("disabled_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("hover_mirrored", "CheckBox", checkbox_style);
+			p_theme->set_stylebox("hover_pressed_mirrored", "CheckBox", checkbox_style);
 
 			p_theme->set_icon("checked", "CheckBox", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
 
@@ -634,6 +646,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("inner_item_margin_bottom", "Tree", p_config.base_margin * 0.75 * EDSCALE);
 			p_theme->set_constant("inner_item_margin_left", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("inner_item_margin_right", "Tree", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("check_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
+			p_theme->set_constant("icon_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("dragging_unfold_wait_msec", "Tree", p_config.dragging_hover_wait_msec);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
@@ -1534,6 +1548,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_stylebox("picker_focus_circle", "ColorPicker", circle_style_focus);
 		p_theme->set_color("focused_not_editing_cursor_color", "ColorPicker", p_config.highlight_color);
 
+		p_theme->set_icon("menu_option", "ColorPicker", p_theme->get_icon(SNAME("GuiTabMenuHl"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("expanded_arrow", "ColorPicker", p_theme->get_icon(SNAME("GuiTreeArrowDown"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("folded_arrow", "ColorPicker", p_theme->get_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("screen_picker", "ColorPicker", p_theme->get_icon(SNAME("ColorPick"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("shape_circle", "ColorPicker", p_theme->get_icon(SNAME("PickerShapeCircle"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("shape_rect", "ColorPicker", p_theme->get_icon(SNAME("PickerShapeRectangle"), EditorStringName(EditorIcons)));
@@ -1672,11 +1689,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
 		// Game view.
-		p_theme->set_type_variation("GamePanel", "PanelContainer");
+		p_theme->set_type_variation("GamePanel", "Panel");
 		Ref<StyleBoxFlat> game_panel = p_theme->get_stylebox(SceneStringName(panel), SNAME("Panel"))->duplicate();
 		game_panel->set_corner_radius_all(0);
-		game_panel->set_content_margin_all(0);
-		game_panel->set_draw_center(true);
 		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
 
 		// Main menu.
@@ -1689,7 +1704,21 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
 
-		p_theme->set_color("font_pressed_color", "MainScreenButton", p_config.mono_color_font);
+		// Main screen buttons.
+		const Color mb_font_color = p_config.font_color * Color(1, 1, 1, 0.95);
+		const Color mb_font_hover_color = p_config.font_hover_color * Color(1, 1, 1, 0.95);
+		const Color mb_font_hover_pressed_color = p_config.accent_color.lerp(p_config.mono_color, 0.2);
+
+		p_theme->set_color(SceneStringName(font_color), "MainScreenButton", mb_font_color);
+		p_theme->set_color("font_hover_color", "MainScreenButton", mb_font_hover_color);
+		p_theme->set_color("font_pressed_color", "MainScreenButton", p_config.accent_color);
+		p_theme->set_color("font_hover_pressed_color", "MainScreenButton", mb_font_hover_pressed_color);
+
+		const Color mb_icon_normal_color = p_config.icon_normal_color * Color(1, 1, 1, 0.95);
+		const Color mb_icon_hover_color = p_config.icon_hover_color * Color(1, 1, 1, 0.95);
+
+		p_theme->set_color("icon_normal_color", "MainScreenButton", mb_icon_normal_color);
+		p_theme->set_color("icon_hover_color", "MainScreenButton", mb_icon_hover_color);
 
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", p_config.flat_button);
@@ -1796,9 +1825,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		editor_spin_label_bg->set_content_margin_all(p_config.base_margin * EDSCALE);
 		p_theme->set_stylebox("label_bg", "EditorSpinSlider", editor_spin_label_bg);
 
-		// TODO Use separate arrows instead like on SpinBox. Planned for a different PR.
+		// TODO: Use separate arrows instead like on SpinBox. Planned for a different PR.
 		p_theme->set_icon("updown", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("updown_disabled", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
+
+		// EditorSpinSliders with a label have more space on the left, so add an
+		// higher margin to match the location where the text begins.
+		// The margin values below were determined by empirical testing.
+		p_theme->set_constant("line_edit_margin", "EditorSpinSlider", 28 * EDSCALE);
+		p_theme->set_constant("line_edit_margin_empty", "EditorSpinSlider", 20 * EDSCALE);
 
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad_movie = p_config.base_style->duplicate();
@@ -1869,16 +1904,33 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox("hover_pressed", SceneStringName(FlatButton), p_config.flat_button_hover_pressed);
 			p_theme->set_stylebox("disabled", SceneStringName(FlatButton), p_config.base_empty_wide_style);
 
+			p_theme->set_stylebox("normal_mirrored", SceneStringName(FlatButton), p_config.base_empty_wide_style);
+			p_theme->set_stylebox("hover_mirrored", SceneStringName(FlatButton), p_config.flat_button_hover);
+			p_theme->set_stylebox("pressed_mirrored", SceneStringName(FlatButton), p_config.flat_button_pressed);
+			p_theme->set_stylebox("hover_pressed_mirrored", SceneStringName(FlatButton), p_config.flat_button_hover_pressed);
+			p_theme->set_stylebox("disabled_mirrored", SceneStringName(FlatButton), p_config.base_empty_wide_style);
+
 			p_theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", p_config.base_empty_wide_style);
 			p_theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "FlatMenuButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "FlatMenuButton", p_config.flat_button_hover_pressed);
 			p_theme->set_stylebox("disabled", "FlatMenuButton", p_config.base_empty_wide_style);
 
+			p_theme->set_stylebox("normal_mirrored", "FlatMenuButton", p_config.base_empty_wide_style);
+			p_theme->set_stylebox("hover_mirrored", "FlatMenuButton", p_config.flat_button_hover);
+			p_theme->set_stylebox("pressed_mirrored", "FlatMenuButton", p_config.flat_button_pressed);
+			p_theme->set_stylebox("hover_pressed_mirrored", "FlatMenuButton", p_config.flat_button_hover_pressed);
+			p_theme->set_stylebox("disabled_mirrored", "FlatMenuButton", p_config.base_empty_wide_style);
+
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
 			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
 			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
+
+			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
+			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
 
 			// Variation for Editor Log filter buttons.
 
@@ -1897,6 +1949,14 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(hover), "EditorLogFilterButton", p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "EditorLogFilterButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "EditorLogFilterButton", p_config.flat_button_hover_pressed);
+		}
+
+		// Checkbox.
+		{
+			p_theme->set_type_variation("CheckBoxNoIconTint", "CheckBox");
+			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.mono_color);
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).
@@ -2060,7 +2120,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			Ref<StyleBoxFlat> style_tabbar_background_inner = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
 			style_tabbar_background_inner->set_content_margin_all(p_config.base_margin * EDSCALE);
-			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius * EDSCALE + p_config.base_margin * EDSCALE);
+			style_tabbar_background_inner->set_corner_radius_all(p_config.corner_radius > 0 ? (p_config.corner_radius + p_config.base_margin) * EDSCALE : 0);
 			style_tabbar_background_inner->set_bg_color(background_color);
 
 			p_theme->set_stylebox("tabbar_background", "TabContainerInner", style_tabbar_background_inner);
@@ -2141,6 +2201,81 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "PanelForeground", p_config.foreground_panel);
 			p_theme->set_stylebox(SceneStringName(panel), "EditorInspectorForeground", p_config.foreground_panel);
 		}
+
+		// TreeTable.
+		{
+			p_theme->set_type_variation("TreeTable", "Tree");
+
+			p_theme->set_constant("h_separation", "TreeTable", 0);
+			p_theme->set_constant("inner_item_margin_top", "TreeTable", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("inner_item_margin_bottom", "TreeTable", p_config.base_margin * EDSCALE);
+			p_theme->set_constant("inner_item_margin_left", "TreeTable", p_config.base_margin * 3 * EDSCALE);
+			p_theme->set_constant("inner_item_margin_right", "TreeTable", p_config.base_margin * 3 * EDSCALE);
+			p_theme->set_constant("item_margin", "TreeTable", 16 * EDSCALE);
+			p_theme->set_constant("button_margin", "TreeTable", 0);
+
+			Ref<StyleBoxEmpty> style_tree_panel = p_config.base_empty_style->duplicate();
+			style_tree_panel->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * 0.75 * EDSCALE);
+			p_theme->set_stylebox(SceneStringName(panel), "TreeTable", style_tree_panel);
+
+			const Ref<StyleBoxFlat> style_tree_title = p_theme->get_stylebox("title_button_normal", "Tree")->duplicate();
+			style_tree_title->set_content_margin_individual(p_config.base_margin * 3 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE, p_config.base_margin * 3 * EDSCALE, p_config.base_margin * 1.5 * EDSCALE);
+			p_theme->set_stylebox("title_button_normal", "TreeTable", style_tree_title);
+			p_theme->set_stylebox("title_button_hover", "TreeTable", style_tree_title);
+			p_theme->set_stylebox("title_button_pressed", "TreeTable", style_tree_title);
+
+			const Ref<StyleBoxFlat> style_tree_selected = p_theme->get_stylebox("selected", "Tree")->duplicate();
+			style_tree_selected->set_border_color(Color(style_tree_selected->get_bg_color(), 0));
+			style_tree_selected->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_selected->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("selected", "TreeTable", style_tree_selected);
+
+			const Ref<StyleBoxFlat> style_tree_hover = p_theme->get_stylebox("hovered", "Tree")->duplicate();
+			style_tree_hover->set_border_color(Color(style_tree_hover->get_bg_color(), 0));
+			style_tree_hover->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_hover->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered", "TreeTable", style_tree_hover);
+
+			const Ref<StyleBoxFlat> style_tree_hovered_selected = p_theme->get_stylebox("hovered_selected", "Tree")->duplicate();
+			style_tree_hovered_selected->set_border_color(Color(style_tree_hovered_selected->get_bg_color(), 0));
+			style_tree_hovered_selected->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_hovered_selected->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered_selected", "TreeTable", style_tree_hovered_selected);
+
+			const Ref<StyleBoxFlat> style_tree_dimmed = p_theme->get_stylebox("hovered_dimmed", "Tree")->duplicate();
+			style_tree_dimmed->set_border_color(Color(style_tree_dimmed->get_bg_color(), 0));
+			style_tree_dimmed->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_tree_dimmed->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("hovered_dimmed", "TreeTable", p_theme->get_stylebox("hovered_dimmed", "Tree"));
+
+			const Ref<StyleBoxFlat> style_button_pressed = p_theme->get_stylebox("button_pressed", "Tree")->duplicate();
+			style_button_pressed->set_content_margin_individual(p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE, 0);
+			style_button_pressed->set_border_color(Color(style_button_pressed->get_bg_color(), 0));
+			style_button_pressed->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_button_pressed->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("button_pressed", "TreeTable", style_button_pressed);
+			p_theme->set_stylebox("custom_button_pressed", "TreeTable", style_button_pressed);
+
+			const Ref<StyleBoxFlat> style_button_hover = p_theme->get_stylebox("button_hover", "Tree")->duplicate();
+			style_button_hover->set_content_margin_individual(p_config.base_margin * EDSCALE, 0, p_config.base_margin * EDSCALE, 0);
+			style_button_hover->set_border_color(Color(style_button_hover->get_bg_color(), 0));
+			style_button_hover->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_button_hover->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("button_hover", "TreeTable", style_button_hover);
+			p_theme->set_stylebox("custom_button_hover", "TreeTable", style_button_hover);
+
+			const Ref<StyleBoxFlat> style_cursor = p_theme->get_stylebox("cursor", "Tree")->duplicate();
+			style_cursor->set_border_color(Color(style_cursor->get_bg_color(), 0));
+			style_cursor->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_cursor->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("cursor", "TreeTable", style_cursor);
+
+			const Ref<StyleBoxFlat> style_cursor_unfocused = p_theme->get_stylebox("cursor_unfocused", "Tree")->duplicate();
+			style_cursor_unfocused->set_border_color(Color(style_cursor_unfocused->get_bg_color(), 0));
+			style_cursor_unfocused->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
+			style_cursor_unfocused->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
+			p_theme->set_stylebox("cursor_unfocused", "TreeTable", style_cursor_unfocused);
+		}
 	}
 
 	// Editor inspector.
@@ -2210,17 +2345,20 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox = p_config.base_style->duplicate();
 		prop_subsection_stylebox->set_bg_color(p_theme->get_color("prop_subsection_stylebox_color", EditorStringName(Editor)));
+		prop_subsection_stylebox->set_border_color(Color(prop_subsection_stylebox_color, 0));
 		prop_subsection_stylebox->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		p_theme->set_stylebox("prop_subsection_stylebox", EditorStringName(Editor), prop_subsection_stylebox);
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox_left = prop_subsection_stylebox->duplicate();
 		prop_subsection_stylebox_left->set_corner_radius(CORNER_TOP_RIGHT, 0);
 		prop_subsection_stylebox_left->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+		prop_subsection_stylebox_left->set_border_width(SIDE_LEFT, Math::ceil(EDSCALE));
 		p_theme->set_stylebox("prop_subsection_stylebox_left", EditorStringName(Editor), prop_subsection_stylebox_left);
 
 		Ref<StyleBoxFlat> prop_subsection_stylebox_right = prop_subsection_stylebox->duplicate();
 		prop_subsection_stylebox_right->set_corner_radius(CORNER_TOP_LEFT, 0);
 		prop_subsection_stylebox_right->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		prop_subsection_stylebox_right->set_border_width(SIDE_RIGHT, Math::ceil(EDSCALE));
 		p_theme->set_stylebox("prop_subsection_stylebox_right", EditorStringName(Editor), prop_subsection_stylebox_right);
 
 		p_theme->set_color("prop_subsection", EditorStringName(Editor), Color(1, 1, 1, 0));
@@ -2347,6 +2485,12 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(pressed), "EditorInspectorButton", style_inspector_button_pressed);
 		p_theme->set_stylebox("hover_pressed", "EditorInspectorButton", style_inspector_button_pressed);
 		p_theme->set_stylebox("disabled", "EditorInspectorButton", style_inspector_button_disabled);
+
+		p_theme->set_stylebox("normal_mirrored", "EditorInspectorButton", style_inspector_button);
+		p_theme->set_stylebox("hover_mirrored", "EditorInspectorButton", style_inspector_button_hover);
+		p_theme->set_stylebox("pressed_mirrored", "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("hover_pressed_mirrored", "EditorInspectorButton", style_inspector_button_pressed);
+		p_theme->set_stylebox("disabled_mirrored", "EditorInspectorButton", style_inspector_button_disabled);
 
 		// Make the height for properties uniform.
 		Ref<StyleBoxFlat> inspector_button_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("EditorInspectorButton"));

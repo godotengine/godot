@@ -1004,12 +1004,13 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	_update_joypad_features(p_device);
 }
 
-bool Input::set_joy_light(int p_device, const Color &p_color) {
+void Input::set_joy_light(int p_device, const Color &p_color) {
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || joypad->features == nullptr) {
-		return false;
+	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
+		return;
 	}
-	return joypad->features->set_joy_light(p_color);
+	Color linear = p_color.srgb_to_linear();
+	joypad->features->set_joy_light(linear);
 }
 
 bool Input::has_joy_light(int p_device) const {

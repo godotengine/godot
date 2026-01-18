@@ -71,6 +71,7 @@ class ViewportRotationControl : public Control {
 		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
+		bool is_positive = true;
 	};
 
 	struct Axis2DCompare {

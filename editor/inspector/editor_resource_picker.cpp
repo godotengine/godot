@@ -126,7 +126,7 @@ void EditorResourcePicker::_update_resource() {
 		bool is_internal = EditorNode::get_singleton()->is_resource_internal_to_scene(edited_resource);
 		int num_of_copies = EditorNode::get_singleton()->get_resource_count(edited_resource);
 		make_unique_button->set_button_icon(get_editor_theme_icon(SNAME("Instance")));
-		make_unique_button->set_visible((num_of_copies > 1 || !is_internal) && !Object::cast_to<Script>(edited_resource.ptr()));
+		make_unique_button->set_visible(num_of_copies > 1 || (!is_internal && !Object::cast_to<Script>(edited_resource.ptr())));
 		make_unique_button->set_disabled((!unique_enable && !unique_recursive_enabled) || !editable);
 
 		String tooltip;
@@ -1408,7 +1408,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	}
 	Ref<Resource> parent_resource = _has_parent_resource();
 	EditorNode *en = EditorNode::get_singleton();
-	bool internal_to_scene = en->is_resource_internal_to_scene(edited_resource);
+	bool internal_to_scene = edited_resource->is_built_in();
 	List<Node *> node_list = en->get_editor_selection()->get_full_selected_node_list();
 
 	// Todo: Implement a more elegant solution for multiple selected Nodes. This should suffice for the time being.
@@ -1417,7 +1417,7 @@ bool EditorResourcePicker::_is_uniqueness_enabled(bool p_check_recursive) {
 	}
 
 	if (!internal_to_scene) {
-		if (parent_resource.is_valid() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
+		if (parent_resource.is_valid() && parent_resource->is_built_in() && (!EditorNode::get_singleton()->is_resource_internal_to_scene(parent_resource) || en->get_resource_count(parent_resource) > 1)) {
 			return false;
 		} else if (!p_check_recursive) {
 			return true;

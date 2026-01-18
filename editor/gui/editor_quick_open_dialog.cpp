@@ -38,6 +38,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/settings/editor_settings.h"
@@ -188,6 +189,8 @@ void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_bas
 }
 
 void EditorQuickOpenDialog::ok_pressed() {
+	container->save_selected_item();
+
 	update_property();
 	container->cleanup();
 	search_box->clear();
@@ -215,7 +218,6 @@ void EditorQuickOpenDialog::selection_changed() {
 void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 	// A double-click should always be taken as a "confirm" action.
 	if (p_double_click) {
-		container->save_selected_item();
 		ok_pressed();
 		return;
 	}
@@ -223,7 +225,6 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 	// Single-clicks should be taken as a "confirm" action only if Instant Preview
 	// isn't currently enabled, or the property object is null for some reason.
 	if (!_is_instant_preview_active()) {
-		container->save_selected_item();
 		ok_pressed();
 	}
 }
@@ -231,6 +232,16 @@ void EditorQuickOpenDialog::item_pressed(bool p_double_click) {
 void EditorQuickOpenDialog::preview_property() {
 	Ref<Resource> loaded_resource = ResourceLoader::load(container->get_selected());
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + container->get_selected() + "'.");
+
+	Resource *res = Object::cast_to<Resource>(property_object);
+	if (res) {
+		HashSet<Resource *> resources_found;
+		resources_found.insert(res);
+		if (EditorNode::find_recursive_resources(loaded_resource, resources_found)) {
+			EditorToaster::get_singleton()->popup_str(TTR("Recursion detected, Instant Preview failed."), EditorToaster::SEVERITY_ERROR);
+			loaded_resource = Ref<Resource>();
+		}
+	}
 
 	// MultiNodeEdit has adding to the undo/redo stack baked into its set function.
 	// As such, we have to specifically call a version of its setter that doesn't

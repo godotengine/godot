@@ -346,7 +346,7 @@ void ViewportRotationControl::_draw() {
 
 void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	const bool focused = focused_axis == p_axis.axis;
-	const bool positive = p_axis.axis < 3;
+	const bool positive = p_axis.is_positive;
 	const int direction = p_axis.axis % 3;
 
 	const Color axis_color = axis_colors[direction];
@@ -404,24 +404,28 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2 axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) <= 1.0) {
+		if (Math::abs(axis_3d.z) < 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
 			pos_axis.z_axis = axis_3d.z;
+			pos_axis.is_positive = true;
 			r_axis.push_back(pos_axis);
 
 			Axis2D neg_axis;
 			neg_axis.axis = i + 3;
 			neg_axis.screen_point = center - axis_vector;
 			neg_axis.z_axis = -axis_3d.z;
+			neg_axis.is_positive = false;
 			r_axis.push_back(neg_axis);
 		} else {
-			// Special case when the camera is aligned with one axis
+			// Special case when the camera is aligned with one axis.
 			Axis2D axis;
 			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
+			// Invert display style to fix aligned axis rendering.
+			axis.is_positive = (axis_3d.z > 0);
 			r_axis.push_back(axis);
 		}
 	}

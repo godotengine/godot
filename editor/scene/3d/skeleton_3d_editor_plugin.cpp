@@ -1042,7 +1042,7 @@ void Skeleton3DEditor::create_editors() {
 	// Create Skeleton Option in Top Menu Bar.
 	skeleton_options = memnew(MenuButton);
 	skeleton_options->set_flat(false);
-	skeleton_options->set_theme_type_variation("FlatMenuButton");
+	skeleton_options->set_theme_type_variation("FlatMenuButtonNoIconTint");
 	topmenu_bar->add_child(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));

@@ -3415,8 +3415,9 @@ void PopupMenu::_pre_popup() {
 		p = p->get_parent();
 	}
 
-	if (scale_with_parent && p) {
-		Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
+	Viewport *vp = get_parent_viewport();
+	if (scale_with_parent && vp) {
+		Size2 scale = is_embedded() ? vp->get_popup_base_transform().get_scale() : vp->get_popup_base_transform_native().get_scale();
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
 		if (c) {
 			scale *= c->get_global_transform_with_canvas().get_scale();
