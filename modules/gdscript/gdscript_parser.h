@@ -1074,6 +1074,42 @@ public:
 		}
 	};
 
+	struct StructNode : public Node {
+		struct Member {
+			IdentifierNode *identifier = nullptr;
+			TypeNode *datatype_specifier = nullptr;
+			ExpressionNode *initializer = nullptr;
+
+			int start_line = 0, end_line = 0;
+			int start_column = 0, end_column = 0;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
+		};
+
+		IdentifierNode *identifier = nullptr;
+		Vector<Member> members;
+		HashMap<StringName, int> members_indices;
+
+		bool is_anonymous = false; // For inline struct type definitions
+
+#ifdef TOOLS_ENABLED
+		MemberDocData doc_data;
+#endif // TOOLS_ENABLED
+
+		bool has_member(const StringName &p_name) const {
+			return members_indices.has(p_name);
+		}
+
+		const Member &get_member(const StringName &p_name) const {
+			return members[members_indices[p_name]];
+		}
+
+		StructNode() {
+			type = STRUCT;
+		}
+	};
+
 	struct SubscriptNode : public ExpressionNode {
 		ExpressionNode *base = nullptr;
 		union {

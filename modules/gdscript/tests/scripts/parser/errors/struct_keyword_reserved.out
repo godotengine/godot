@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Expected identifier after "var" but found "struct" instead.
