@@ -403,7 +403,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 	Vector<AudioFrame> output_reverb_vector;
 	output_reverb_vector.resize(volume_vector_size);
-	for (AudioFrame &frame : output_volume_vector) {
+	for (AudioFrame &frame : output_reverb_vector) {
 		frame = AudioFrame(0, 0);
 	}
 
