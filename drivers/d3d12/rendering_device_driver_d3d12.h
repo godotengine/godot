@@ -858,6 +858,8 @@ public:
 	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) override final;
 	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override final;
 
+	virtual QueryPoolID video_query_pool_create(uint32_t p_query_count, const VideoProfile &p_video_profile) override final;
+
 	/****************/
 	/**** LABELS ****/
 	/****************/

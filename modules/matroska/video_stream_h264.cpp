@@ -617,9 +617,9 @@ RID VideoStreamH264::_create_video_session(RD::VideoSessionInfo p_session_templa
 	p_session_template.height += 0; // TODO: cropping / how do we know this?
 	p_session_template.max_active_reference_pictures = 16; // sps.max_num_ref_frames
 
-	RID video_session = local_device->video_session_create(p_session_template);
-	local_device->video_session_add_h264_parameters(video_session, sps_sets, pps_sets);
-	return video_session;
+	RID rid = local_device->video_session_create(p_session_template);
+	local_device->video_session_add_h264_parameters(rid, sps_sets, pps_sets);
+	return rid;
 }
 
 RID VideoStreamH264::_create_texture_sampler(RD::SamplerState p_sampler_template) {
@@ -686,8 +686,8 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 }
 
 Vector<uint8_t> VideoStreamH264::present_frame() {
-	Frame next_frame;
-	int64_t next_offset;
+	Frame next_frame = {};
+	int64_t next_offset = 0;
 
 	int64_t offset = 0;
 	while ((present_index + offset) % frame_queue.size() != decode_index) {

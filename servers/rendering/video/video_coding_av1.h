@@ -304,7 +304,7 @@ struct VideoCodingAV1LoopFilter {
 	uint8_t update_ref_delta;
 	bool loop_filter_delta_enabled;
 	bool loop_filter_delta_update;
-	bool update_mode_delta;
+	uint8_t update_mode_delta;
 };
 
 struct VideoCodingAV1Quantization {

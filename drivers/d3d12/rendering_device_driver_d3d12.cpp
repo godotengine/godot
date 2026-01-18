@@ -5537,6 +5537,10 @@ void RenderingDeviceDriverD3D12::command_timestamp_write(CommandBufferID p_cmd_b
 	cmd_buf_info->cmd_list->ResolveQueryData(tqp_info->query_heap.Get(), D3D12_QUERY_TYPE_TIMESTAMP, p_index, 1, results_buffer, p_index * sizeof(uint64_t));
 }
 
+RDD::QueryPoolID RenderingDeviceDriverD3D12::video_query_pool_create(uint32_t p_query_count, const VideoProfile &p_video_profile) {
+	return RDD::QueryPoolID(nullptr);
+}
+
 void RenderingDeviceDriverD3D12::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
 #ifdef PIX_ENABLED
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;

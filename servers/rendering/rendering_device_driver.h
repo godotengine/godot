@@ -210,7 +210,7 @@ public:
 		TextureSwizzle swizzle_g = TEXTURE_SWIZZLE_G;
 		TextureSwizzle swizzle_b = TEXTURE_SWIZZLE_B;
 		TextureSwizzle swizzle_a = TEXTURE_SWIZZLE_A;
-		SamplerID ycbcr_sampler;
+		SamplerID ycbcr_sampler = SamplerID(nullptr);
 	};
 
 	enum TextureLayout {

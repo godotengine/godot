@@ -108,7 +108,7 @@ uint64_t VideoStreamAV1::read_leb128() {
 
 int64_t VideoStreamAV1::read_su(uint8_t p_bits) {
 	int64_t value = read_bits(p_bits);
-	uint64_t sign_mask = 1 << (p_bits - 1);
+	uint64_t sign_mask = 1ULL << (p_bits - 1);
 	if (value & sign_mask) {
 		value -= 2 * sign_mask;
 	}
@@ -1208,7 +1208,7 @@ void VideoStreamAV1::parse_cdef(bool p_coded_lossless, bool p_allow_intrabc, Vid
 	} else {
 		r_cdef->cdef_damping_minus_3 = read_bits(2);
 		r_cdef->cdef_bits = read_bits(2);
-		for (uint32_t i = 0; i < (1 << r_cdef->cdef_bits); i++) {
+		for (uint32_t i = 0; i < (1U << r_cdef->cdef_bits); i++) {
 			r_cdef->cdef_y_pri_strength[i] = read_bits(4);
 			r_cdef->cdef_y_sec_strength[i] = read_bits(2);
 			if (r_cdef->cdef_y_sec_strength[i] == 3) {
@@ -1379,12 +1379,16 @@ Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t
 		video_profile.chroma_subsampling = VIDEO_CODING_CHROMA_SUBSAMPLING_444;
 	}
 
-	bool initial_presentation_delay_present = read_bits(1) > 0;
+	read_bits(1); // initial_presentation_delay_present
+	read_bits(4); // initial_presentation_delay_minus_one || reserved
+
+	/* Need to comment this branch because of clang warnings
 	if (initial_presentation_delay_present) {
 		read_bits(4); // initial_presentation_delay_minus_one
 	} else {
 		read_bits(4); // reserved.
 	}
+	*/
 
 	while (src < p_stream + p_size) {
 		parse_open_bitstream_unit();
@@ -1415,9 +1419,9 @@ RID VideoStreamAV1::_create_video_session(RD::VideoSessionInfo p_session_templat
 	p_session_template.height = av1_sequence_header.max_frame_height_minus_1 + 1;
 	p_session_template.max_active_reference_pictures = VIDEO_CODING_AV1_NUM_REF_FRAMES - 1;
 
-	RID video_session = local_device->video_session_create(p_session_template);
-	local_device->video_session_add_av1_parameters(video_session, av1_sequence_header);
-	return video_session;
+	RID rid = local_device->video_session_create(p_session_template);
+	local_device->video_session_add_av1_parameters(rid, av1_sequence_header);
+	return rid;
 }
 
 RID VideoStreamAV1::_create_texture_sampler(RD::SamplerState p_sampler_template) {
