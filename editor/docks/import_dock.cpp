@@ -686,7 +686,7 @@ void ImportDock::_reimport() {
 	}
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
+	EditorFileSystem::get_singleton()->filesystem_changed(); //it changed, so force emitting the signal
 
 	_set_dirty(false);
 }

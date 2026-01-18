@@ -362,7 +362,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
+	EditorFileSystem::get_singleton()->filesystem_changed();
 }
 
 void EditorInterface::add_root_node(Node *p_node) {

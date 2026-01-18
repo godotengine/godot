@@ -394,6 +394,8 @@ public:
 	HashSet<String> get_valid_extensions() const;
 	void register_global_class_script(const String &p_search_path, const String &p_target_path);
 
+	void filesystem_changed();
+
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;
 	EditorFileSystemDirectory *find_file(const String &p_file, int *r_index) const;

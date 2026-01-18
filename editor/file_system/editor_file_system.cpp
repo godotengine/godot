@@ -2581,6 +2581,18 @@ void EditorFileSystem::register_global_class_script(const String &p_search_path,
 	}
 }
 
+void EditorFileSystem::filesystem_changed() {
+	if (Thread::is_main_thread()) {
+		emit_signal("filesystem_changed");
+		return;
+	}
+	// If not already queued, queue a deferred call to notify about filesystem changes.
+	if (!filesystem_changed_queued) {
+		filesystem_changed_queued = true;
+		callable_mp(this, &EditorFileSystem::_notify_filesystem_changed).call_deferred();
+	}
+}
+
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
 	String importer_name;
 
@@ -3698,7 +3710,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
-	ADD_SIGNAL(MethodInfo("filesystem_changed"));
+	ADD_SIGNAL(MethodInfo("filesystem_changed")); // May only be emitted on the main thread.
 	ADD_SIGNAL(MethodInfo("script_classes_updated"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimporting", PropertyInfo(Variant::PACKED_STRING_ARRAY, "resources")));
