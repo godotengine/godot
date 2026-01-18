@@ -123,6 +123,7 @@ public:
 			SELF,
 			SIGNAL,
 			STATIC,
+			STRUCT,
 			SUPER,
 			TRAIT,
 			VAR,
