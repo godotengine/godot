@@ -3091,10 +3091,6 @@ void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3
 		return;
 	}
 
-	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
-		return;
-	}
-
 	WindowState *ws = wl_surface_get_window_state(surface);
 	if (!ws) {
 		return;
