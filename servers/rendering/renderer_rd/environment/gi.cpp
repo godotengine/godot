@@ -1890,12 +1890,12 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 
 		SDFGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
 		uint32_t idx = 0;
-		for (uint32_t j = 0; j < (uint32_t)p_render_data->sdfgi_update_data->directional_lights->size(); j++) {
+		for (uint32_t j = 0; j < p_render_data->sdfgi_update_data->directional_light_count; j++) {
 			if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
 				break;
 			}
 
-			RID light_instance = p_render_data->sdfgi_update_data->directional_lights->get(j);
+			RID light_instance = p_render_data->sdfgi_update_data->directional_light_instances[j];
 			ERR_CONTINUE(!light_storage->owns_light_instance(light_instance));
 
 			RID light = light_storage->light_instance_get_base_light(light_instance);

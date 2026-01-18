@@ -293,7 +293,8 @@ public:
 		uint32_t *static_cascade_indices = nullptr;
 		PagedArray<RID> *static_positional_lights;
 
-		const Vector<RID> *directional_lights;
+		const RID *directional_light_instances;
+		uint32_t directional_light_count;
 		const RID *positional_light_instances;
 		uint32_t positional_light_count;
 	};
