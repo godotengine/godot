@@ -1328,6 +1328,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data_block.data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(scene_data_block.data.view_matrix * model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
 		actions.renames["VIEW_RIGHT"] = "uint(1)";

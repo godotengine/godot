@@ -19,6 +19,12 @@
 #define IN_SHADOW_PASS false
 #endif
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -824,6 +830,12 @@ void main() {
 #define IN_SHADOW_PASS true
 #else
 #define IN_SHADOW_PASS false
+#endif
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
 #endif
 
 /* Include half precision types. */

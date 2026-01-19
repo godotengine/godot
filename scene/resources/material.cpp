@@ -1367,7 +1367,15 @@ void vertex() {)";
 		MODELVIEW_MATRIX[2] *= sc;
 	} else {
 		// Scale by depth.
-		float sc = -(MODELVIEW_MATRIX)[3].z;
+		float sc;
+		if (IS_MULTIVIEW) {
+			// Assuming stereo rendering.
+			// Moving in the z-plane gives the illusion of the object growing/shrinking in size.
+			// We need to take the full distance to camera to compensate.
+			sc = length((MODELVIEW_MATRIX)[3].xyz);
+		} else {
+			sc = -(MODELVIEW_MATRIX)[3].z;
+		}
 		MODELVIEW_MATRIX[0] *= sc;
 		MODELVIEW_MATRIX[1] *= sc;
 		MODELVIEW_MATRIX[2] *= sc;
