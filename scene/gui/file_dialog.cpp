@@ -535,26 +535,6 @@ void FileDialog::_cancel_pressed() {
 	hide();
 }
 
-bool FileDialog::_is_open_should_be_disabled() {
-	if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_SAVE_FILE) {
-		return false;
-	}
-
-	Vector<int> items = file_list->get_selected_items();
-	if (items.is_empty()) {
-		return mode != FILE_MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
-	}
-
-	for (const int idx : items) {
-		Dictionary d = file_list->get_item_metadata(idx);
-
-		if (((mode == FILE_MODE_OPEN_FILE || mode == FILE_MODE_OPEN_FILES) && d["dir"]) || (mode == FILE_MODE_OPEN_DIR && !d["dir"])) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void FileDialog::_go_up() {
 	_change_dir(get_current_dir().trim_suffix("/").get_base_dir());
 	_push_history();
@@ -589,7 +569,7 @@ void FileDialog::deselect_all() {
 	file_list->deselect_all();
 
 	// And change get_ok title.
-	get_ok_button()->set_disabled(_is_open_should_be_disabled());
+	get_ok_button()->set_disabled(false);
 
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
@@ -622,7 +602,7 @@ void FileDialog::_file_list_multi_selected(int p_item, bool p_selected) {
 	if (p_selected) {
 		_file_list_selected(p_item);
 	} else {
-		get_ok_button()->set_disabled(_is_open_should_be_disabled());
+		get_ok_button()->set_disabled(false);
 	}
 }
 
@@ -643,7 +623,7 @@ void FileDialog::_file_list_selected(int p_item) {
 		}
 	}
 
-	get_ok_button()->set_disabled(_is_open_should_be_disabled());
+	get_ok_button()->set_disabled(false);
 }
 
 void FileDialog::_file_list_item_activated(int p_item) {
@@ -1394,7 +1374,7 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 		file_list->set_select_mode(ItemList::SELECT_SINGLE);
 	}
 
-	get_ok_button()->set_disabled(_is_open_should_be_disabled());
+	get_ok_button()->set_disabled(false);
 }
 
 FileDialog::FileMode FileDialog::get_file_mode() const {

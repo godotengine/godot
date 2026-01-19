@@ -353,7 +353,6 @@ private:
 	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
 	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
-	bool _is_open_should_be_disabled();
 	void _thumbnail_callback(const Ref<Texture2D> &p_texture, const String &p_path);
 
 	TypedArray<Dictionary> _get_options() const;
