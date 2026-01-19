@@ -50,6 +50,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/main/node.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/accessibility_settings.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
@@ -262,6 +263,9 @@ void SceneTree::_process_accessibility_changes(DisplayServerEnums::WindowID p_wi
 			continue; // Another window, skip.
 		}
 		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
+		if (node->get_accessibility_settings().is_valid()) {
+			node->get_accessibility_settings()->_update_elements(node->get_accessibility_element());
+		}
 		processed.push_back(id);
 	}
 
