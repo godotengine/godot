@@ -48,6 +48,12 @@ RENDER_MOTION_VECTORS = false
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 #if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
 #define IN_SHADOW_PASS true
 #else
@@ -1020,6 +1026,12 @@ void main() {
 
 #define SHADER_IS_SRGB true
 #define SHADER_SPACE_FAR -1.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 #if defined(RENDER_SHADOWS) || defined(RENDER_SHADOWS_LINEAR)
 #define IN_SHADOW_PASS true

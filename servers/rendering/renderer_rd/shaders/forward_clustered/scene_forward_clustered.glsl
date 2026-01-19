@@ -12,6 +12,12 @@
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
 
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
+
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -862,6 +868,12 @@ void main() {
 
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
+
+#ifdef USE_MULTIVIEW
+#define OUTPUT_IS_MULTIVIEW true
+#else
+#define OUTPUT_IS_MULTIVIEW false
+#endif
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
