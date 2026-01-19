@@ -292,7 +292,8 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 }
 
 bool JoypadSDL::Joypad::has_joy_light() const {
-	SDL_PropertiesID properties_id = SDL_GetJoystickProperties(get_sdl_joystick());
+	SDL_Joystick *joystick = get_sdl_joystick();
+	SDL_PropertiesID properties_id = SDL_GetJoystickProperties(joystick);
 	if (properties_id == 0) {
 		return false;
 	}
