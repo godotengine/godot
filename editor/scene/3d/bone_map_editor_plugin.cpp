@@ -38,6 +38,8 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
@@ -294,6 +296,32 @@ void BoneMapper::create_editor() {
 	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 
+	HBoxContainer *mirror_hbox = memnew(HBoxContainer);
+	add_child(mirror_hbox);
+
+	mirror_hbox->add_child(memnew(Label(TTR("Original"))));
+
+	original_suffix_edit = memnew(LineEdit);
+	original_suffix_edit->set_placeholder(".L");
+	original_suffix_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	original_suffix_edit->connect(SceneStringName(text_changed), callable_mp(this, &BoneMapper::_mirror_text_changed));
+	mirror_hbox->add_child(original_suffix_edit);
+
+	mirror_hbox->add_child(memnew(Label(TTR("Mirrored"))));
+
+	mirrored_suffix_edit = memnew(LineEdit);
+	mirrored_suffix_edit->set_placeholder(".R");
+	mirrored_suffix_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	mirrored_suffix_edit->connect(SceneStringName(text_changed), callable_mp(this, &BoneMapper::_mirror_text_changed));
+	mirror_hbox->add_child(mirrored_suffix_edit);
+
+	mirror_selection_button = memnew(Button);
+	mirror_selection_button->set_text(TTR("Mirror Selection"));
+	mirror_selection_button->set_tooltip_text(TTR("Mirror bone mapping based on suffix."));
+	mirror_selection_button->set_disabled(true);
+	mirror_selection_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_mirror_selection));
+	mirror_hbox->add_child(mirror_selection_button);
+
 	bone_mapper_field = memnew(AspectRatioContainer);
 	bone_mapper_field->set_stretch_mode(AspectRatioContainer::STRETCH_FIT);
 	bone_mapper_field->set_custom_minimum_size(Vector2(0, 256.0) * EDSCALE);
@@ -521,6 +549,79 @@ void BoneMapper::_clear_mapping_current_group() {
 			}
 			recreate_items();
 		}
+	}
+}
+
+void BoneMapper::_mirror_selection() {
+	if (bone_map.is_null()) {
+		return;
+	}
+
+	Ref<SkeletonProfile> profile = bone_map->get_profile();
+	if (profile.is_null()) {
+		return;
+	}
+
+	String original_suffix = original_suffix_edit->get_text();
+	String mirrored_suffix = mirrored_suffix_edit->get_text();
+
+	if (original_suffix.is_empty() || mirrored_suffix.is_empty()) {
+		return;
+	}
+
+	int len = profile->get_bone_size();
+	for (int i = 0; i < len; i++) {
+		StringName profile_bone_name = profile->get_bone_name(i);
+		StringName skeleton_bone_name = bone_map->get_skeleton_bone_name(profile_bone_name);
+
+		if (skeleton_bone_name.is_empty()) {
+			continue;
+		}
+
+		String skeleton_bone_str = skeleton_bone_name;
+		String mirrored_bone_name = skeleton_bone_str;
+		bool found = false;
+
+		int pos = 0;
+		while ((pos = mirrored_bone_name.findn(original_suffix, pos)) != -1) {
+			mirrored_bone_name = mirrored_bone_name.substr(0, pos) + mirrored_suffix + mirrored_bone_name.substr(pos + original_suffix.length());
+			pos += mirrored_suffix.length();
+			found = true;
+		}
+
+		if (found) {
+			// Find corresponding profile bone.
+			// Assuming standard naming convention for Humanoid profile (e.g. LeftLowerArm -> RightLowerArm).
+			String profile_bone_str = profile_bone_name;
+			String target_profile_bone_str;
+
+			if (profile_bone_str.begins_with("Left")) {
+				target_profile_bone_str = "Right" + profile_bone_str.substr(4);
+			} else if (profile_bone_str.begins_with("Right")) {
+				target_profile_bone_str = "Left" + profile_bone_str.substr(5);
+			}
+
+			if (!target_profile_bone_str.is_empty()) {
+				// Don't overwrite if target slot already has a bone assigned.
+				if (bone_map->get_skeleton_bone_name(target_profile_bone_str) != StringName()) {
+					continue;
+				}
+				int target_idx = profile->find_bone(target_profile_bone_str);
+				if (target_idx != -1) {
+					// Check if target bone exists in skeleton.
+					if (skeleton->find_bone(mirrored_bone_name) != -1) {
+						bone_map->set_skeleton_bone_name(target_profile_bone_str, mirrored_bone_name);
+					}
+				}
+			}
+		}
+	}
+	recreate_items();
+}
+
+void BoneMapper::_mirror_text_changed(const String &p_text) {
+	if (mirror_selection_button) {
+		mirror_selection_button->set_disabled(original_suffix_edit->get_text().is_empty() || mirrored_suffix_edit->get_text().is_empty() || original_suffix_edit->get_text() == mirrored_suffix_edit->get_text());
 	}
 }
 
