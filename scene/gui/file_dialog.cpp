@@ -95,6 +95,10 @@ bool FileDialog::_can_use_native_popup() const {
 	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
 }
 
+Vector2i FileDialog::_get_list_mode_icon_size() const {
+	return theme_cache.file->get_size();
+}
+
 void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
 #ifdef TOOLS_ENABLED
 	if (is_part_of_edited_scene()) {
@@ -825,7 +829,7 @@ void FileDialog::update_file_list() {
 		file_list->set_max_columns(1);
 		file_list->set_max_text_lines(1);
 		file_list->set_fixed_column_width(0);
-		file_list->set_fixed_icon_size(theme_cache.file->get_size());
+		file_list->set_fixed_icon_size(_get_list_mode_icon_size());
 	}
 
 	dir_access->list_dir_begin();
