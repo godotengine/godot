@@ -333,6 +333,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
 		&&OPCODE_ITERATE_BEGIN_STRING,                   \
 		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
+		&&OPCODE_ITERATE_BEGIN_TYPED_DICTIONARY,         \
 		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
 		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,        \
 		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,       \
@@ -355,6 +356,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ITERATE_VECTOR3I,                       \
 		&&OPCODE_ITERATE_STRING,                         \
 		&&OPCODE_ITERATE_DICTIONARY,                     \
+		&&OPCODE_ITERATE_TYPED_DICTIONARY,               \
 		&&OPCODE_ITERATE_ARRAY,                          \
 		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,              \
 		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,             \
@@ -3285,6 +3287,33 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BEGIN_TYPED_DICTIONARY) {
+				// Optimized iteration for Dictionary[K, V]
+				CHECK_SPACE(8);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				const Dictionary *dict = VariantInternal::get_dictionary(container);
+				
+				// Initialize counter (use Array to store keys for faster access)
+				VariantInternal::initialize(counter, Variant::ARRAY);
+				Array *keys_array = VariantInternal::get_array(counter);
+				keys_array->clear();
+				keys_array->append_array(dict->keys());
+
+				if (keys_array->size() > 0) {
+					GET_VARIANT_PTR(iterator, 2);
+					*iterator = (*keys_array)[0];
+					ip += 5;
+				} else {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE_BEGIN_DICTIONARY) {
 				CHECK_SPACE(8); // Check space for iterate instruction too.
 
@@ -3655,6 +3684,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*VariantInternal::get_string(iterator) = str->substr(*idx, 1);
 
 					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_TYPED_DICTIONARY) {
+				// Optimized iteration continuation for Dictionary[K, V]
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(iterator, 1);
+
+				Array *keys_array = VariantInternal::get_array(counter);
+				int64_t idx = keys_array->find(*iterator) + 1;
+
+				if (idx > 0 && idx < keys_array->size()) {
+					*iterator = (*keys_array)[idx];
+					int jumpto = _code_ptr[ip + 3];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					ip += 4;
 				}
 			}
 			DISPATCH_OPCODE;
