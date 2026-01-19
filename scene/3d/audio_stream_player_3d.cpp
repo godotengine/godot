@@ -517,7 +517,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 			const Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 			if (local_velocity != Vector3()) {
-				const float approaching = (local_pos.normalized()).dot(local_velocity.normalized());
+				const float approaching = local_pos.normalized().dot(local_velocity.normalized());
 				const float velocity = local_velocity.length();
 				static constexpr float speed_of_sound = 343.0;
 
