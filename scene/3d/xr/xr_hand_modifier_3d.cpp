@@ -256,15 +256,32 @@ void XRHandModifier3D::_process_modification(double p_delta) {
 	Transform3D *previous_relative_transforms_ptr = previous_relative_transforms.ptrw();
 
 	for (int joint = 0; joint < XRHandTracker::HAND_JOINT_MAX; joint++) {
-		// Get the skeleton bone (skip if none).
+		// Get the skeleton bone (skip if none or if we don't have tracking data).
 		const int bone = joints[joint].bone;
 		if (bone == -1) {
+			continue;
+		} else if (!has_valid_data[joint]) {
 			continue;
 		}
 
 		// Calculate the relative relationship to the parent bone joint.
 		const int parent_joint = joints[joint].parent_joint;
-		const Transform3D relative_transform = inv_transforms[parent_joint] * transforms[joint];
+		Transform3D relative_transform;
+		if (has_valid_data[parent_joint]) {
+			relative_transform = inv_transforms[parent_joint] * transforms[joint];
+		} else {
+			// Use our parents global pose, this may have been updated by updating previous bones.
+			// This only works due to the order in which we update our bones guaranteeing all parent
+			// bones have already been updated.
+			Transform3D parent_transform = skeleton->get_bone_global_pose(parent_joint);
+
+			// Note that this isn't truly global, but our bone pose in relation to our skeletons root,
+			// so we need to correct this but we use out tracking root!
+			parent_transform = transforms[XRHandTracker::HAND_JOINT_PALM] * parent_transform;
+
+			// Now we can calculate our relative transform.
+			relative_transform = parent_transform.affine_inverse() * transforms[joint];
+		}
 		previous_relative_transforms_ptr[joint] = relative_transform;
 
 		// Update the bone position if enabled by update mode.
