@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device.h"
+#include "core/object/class_db.h"
 #include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
@@ -2003,6 +2004,314 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 	draw_graph.add_texture_update(texture->driver_id, texture->draw_tracker, command_buffer_to_texture_copies_vector);
 
 	return OK;
+}
+
+RID RenderingDevice::texture_create_from_existing_mipchain(RID p_existing_texture, const TextureFormat &p_format, const TextureView &p_view, uint32_t p_copy_mips_count, const Vector<Vector<uint8_t>> &p_new_mip_data) {
+	ERR_RENDER_THREAD_GUARD_V(RID());
+
+	ERR_FAIL_COND_V_MSG(draw_list.active || compute_list.active, RID(), "Creating textures is forbidden during creation of a draw or compute list");
+
+	// Validate the existing texture.
+	Texture *existing_texture = texture_owner.get_or_null(p_existing_texture);
+	ERR_FAIL_NULL_V(existing_texture, RID());
+
+	// Follow to the owner if this is a shared texture.
+	RID existing_texture_rid = p_existing_texture;
+	if (existing_texture->owner.is_valid()) {
+		existing_texture_rid = existing_texture->owner;
+		existing_texture = texture_owner.get_or_null(existing_texture->owner);
+		ERR_FAIL_NULL_V(existing_texture, RID());
+	}
+
+	ERR_FAIL_COND_V_MSG(existing_texture->bound, RID(),
+			"Source texture can't be copied while a draw list that uses it as part of a framebuffer is being created.");
+
+	ERR_FAIL_COND_V_MSG(!(existing_texture->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), RID(),
+			"Source texture requires the `RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT` to be set.");
+
+	// Validate format compatibility.
+	ERR_FAIL_COND_V_MSG(existing_texture->format != p_format.format, RID(),
+			"Existing texture format must match the new texture format.");
+
+	// Validate mip chain parameters.
+	ERR_FAIL_COND_V_MSG(p_copy_mips_count > existing_texture->mipmaps, RID(),
+			"Cannot copy more mips than exist in the source texture.");
+	ERR_FAIL_COND_V_MSG(p_copy_mips_count > p_format.mipmaps, RID(),
+			"Cannot copy more mips than specified in the new format.");
+
+	// If we're increasing quality (adding new mips at higher detail), we need data for those new mips.
+	// The new mips are at the beginning of the mip chain (mip 0 is highest detail).
+	// p_copy_mips_count tells us how many of the existing (lower detail) mips to copy.
+	// The remaining mips (p_format.mipmaps - p_copy_mips_count) need new data.
+	uint32_t new_mips_count = p_format.mipmaps - p_copy_mips_count;
+
+	if (new_mips_count > 0) {
+		ERR_FAIL_COND_V_MSG(p_new_mip_data.size() != (int)p_format.array_layers, RID(),
+				"New mip data must be provided for all array layers when increasing quality. Expected " + itos(p_format.array_layers) + " layers, got " + itos(p_new_mip_data.size()) + ".");
+
+		// Validate data sizes for new mips.
+		for (uint32_t layer = 0; layer < p_format.array_layers; layer++) {
+			uint32_t required_size = 0;
+			for (uint32_t mip = 0; mip < new_mips_count; mip++) {
+				required_size += get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, mip + 1) -
+						(mip > 0 ? get_image_format_required_size(p_format.format, p_format.width, p_format.height, p_format.depth, mip) : 0);
+			}
+			ERR_FAIL_COND_V_MSG((uint32_t)p_new_mip_data[layer].size() != required_size, RID(),
+					"New mip data for layer " + itos(layer) + " has incorrect size. Expected " + itos(required_size) + ", got " + itos(p_new_mip_data[layer].size()) + ".");
+		}
+	}
+
+	// Create the new texture first (similar to texture_create).
+	TextureFormat format = p_format;
+	format.usage_bits |= TEXTURE_USAGE_CAN_COPY_TO_BIT; // Ensure we can copy to it.
+
+	// Transfer and validate view info.
+	RDD::TextureView tv;
+	if (p_view.format_override == DATA_FORMAT_MAX) {
+		tv.format = format.format;
+	} else {
+		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
+		tv.format = p_view.format_override;
+	}
+	ERR_FAIL_INDEX_V(p_view.swizzle_r, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_g, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_b, TEXTURE_SWIZZLE_MAX, RID());
+	ERR_FAIL_INDEX_V(p_view.swizzle_a, TEXTURE_SWIZZLE_MAX, RID());
+	tv.swizzle_r = p_view.swizzle_r;
+	tv.swizzle_g = p_view.swizzle_g;
+	tv.swizzle_b = p_view.swizzle_b;
+	tv.swizzle_a = p_view.swizzle_a;
+
+	// Create the new texture.
+	Texture new_texture;
+	new_texture.driver_id = driver->texture_create(format, tv);
+	ERR_FAIL_COND_V(!new_texture.driver_id, RID());
+	new_texture.type = format.texture_type;
+	new_texture.format = format.format;
+	new_texture.width = format.width;
+	new_texture.height = format.height;
+	new_texture.depth = format.depth;
+	new_texture.layers = format.array_layers;
+	new_texture.mipmaps = format.mipmaps;
+	new_texture.base_mipmap = 0;
+	new_texture.base_layer = 0;
+	new_texture.is_resolve_buffer = format.is_resolve_buffer;
+	new_texture.is_discardable = format.is_discardable;
+	new_texture.usage_flags = format.usage_bits;
+	new_texture.samples = format.samples;
+	new_texture.allowed_shared_formats = format.shareable_formats;
+	new_texture.has_initial_data = true;
+
+	if ((format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
+		new_texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		new_texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		if (format_has_stencil(format.format)) {
+			new_texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
+		}
+	} else {
+		new_texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+		new_texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
+	}
+
+	new_texture.bound = false;
+
+	texture_memory += driver->texture_get_allocation_size(new_texture.driver_id);
+
+	RID new_texture_rid = texture_owner.make_rid(new_texture);
+#ifdef DEV_ENABLED
+	set_resource_name(new_texture_rid, "RID:" + itos(new_texture_rid.get_id()));
+#endif
+
+	// Get the new texture pointer after registration.
+	Texture *new_texture_ptr = texture_owner.get_or_null(new_texture_rid);
+	ERR_FAIL_NULL_V(new_texture_ptr, RID());
+
+	// Initialize new mip levels with provided data using transfer workers (background upload).
+	// This is done BEFORE making the texture mutable to avoid synchronization stalls.
+	if (new_mips_count > 0 && !p_new_mip_data.is_empty()) {
+		uint32_t block_w, block_h;
+		get_compressed_image_format_block_dimensions(format.format, block_w, block_h);
+
+		uint32_t pixel_size = get_image_format_pixel_size(format.format);
+		uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(format.format);
+		uint32_t block_size = get_compressed_image_format_block_byte_size(format.format);
+		uint32_t required_align = _texture_alignment(new_texture_ptr);
+
+		// Use a two-pass algorithm like _texture_initialize:
+		// Pass 0: Calculate total staging buffer size needed
+		// Pass 1: Acquire transfer worker and copy data
+		for (uint32_t layer = 0; layer < format.array_layers; layer++) {
+			uint32_t staging_worker_offset = 0;
+			uint32_t staging_local_offset = 0;
+			TransferWorker *transfer_worker = nullptr;
+			const uint8_t *read_ptr = p_new_mip_data[layer].ptr();
+			uint8_t *write_ptr = nullptr;
+
+			for (uint32_t pass = 0; pass < 2; pass++) {
+				const bool copy_pass = (pass == 1);
+				if (copy_pass) {
+					transfer_worker = _acquire_transfer_worker(staging_local_offset, required_align, staging_worker_offset);
+					new_texture_ptr->transfer_worker_index = transfer_worker->index;
+
+					{
+						MutexLock lock(transfer_worker->operations_mutex);
+						new_texture_ptr->transfer_worker_operation = ++transfer_worker->operations_counter;
+					}
+
+					staging_local_offset = 0;
+
+					write_ptr = driver->buffer_map(transfer_worker->staging_buffer);
+					ERR_FAIL_NULL_V(write_ptr, RID());
+
+					if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+						// Transition the texture to the optimal layout for copying.
+						RDD::TextureBarrier tb;
+						tb.texture = new_texture_ptr->driver_id;
+						tb.dst_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
+						tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+						tb.next_layout = RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
+						tb.subresources.aspect = new_texture_ptr->barrier_aspect_flags;
+						tb.subresources.mipmap_count = new_mips_count;
+						tb.subresources.base_layer = layer;
+						tb.subresources.layer_count = 1;
+						driver->command_pipeline_barrier(transfer_worker->command_buffer, RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, RDD::PIPELINE_STAGE_COPY_BIT, {}, {}, tb, {});
+					}
+				}
+
+				uint32_t mipmap_offset = 0;
+				uint32_t logic_width = format.width;
+				uint32_t logic_height = format.height;
+
+				for (uint32_t mip = 0; mip < new_mips_count; mip++) {
+					uint32_t width, height, depth;
+					uint32_t image_total = get_image_format_required_size(format.format, format.width, format.height, format.depth, mip + 1, &width, &height, &depth);
+					const uint8_t *read_ptr_mipmap = read_ptr + mipmap_offset;
+					uint32_t tight_mip_size = image_total - mipmap_offset;
+
+					for (uint32_t z = 0; z < depth; z++) {
+						if (required_align > 0) {
+							uint32_t align_offset = staging_local_offset % required_align;
+							if (align_offset != 0) {
+								staging_local_offset += required_align - align_offset;
+							}
+						}
+
+						uint32_t pitch = (width * pixel_size * block_w) >> pixel_rshift;
+						uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
+						pitch = STEPIFY(pitch, pitch_step);
+						uint32_t to_allocate = pitch * height;
+						to_allocate >>= pixel_rshift;
+
+						if (copy_pass) {
+							const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
+							uint64_t staging_buffer_offset = staging_worker_offset + staging_local_offset;
+							uint8_t *write_ptr_mipmap_layer = write_ptr + staging_buffer_offset;
+							_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr_mipmap_layer, 0, 0, width, width, height, block_w, block_h, pitch, pixel_size, block_size);
+
+							RDD::BufferTextureCopyRegion copy_region;
+							copy_region.buffer_offset = staging_buffer_offset;
+							copy_region.row_pitch = pitch;
+							copy_region.texture_subresource.aspect = new_texture_ptr->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+							copy_region.texture_subresource.mipmap = mip;
+							copy_region.texture_subresource.layer = layer;
+							copy_region.texture_offset = Vector3i(0, 0, z);
+							copy_region.texture_region_size = Vector3i(logic_width, logic_height, 1);
+							driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, new_texture_ptr->driver_id, RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL, copy_region);
+						}
+
+						staging_local_offset += to_allocate;
+					}
+
+					mipmap_offset = image_total;
+					logic_width = MAX(1u, logic_width >> 1);
+					logic_height = MAX(1u, logic_height >> 1);
+				}
+
+				if (copy_pass) {
+					driver->buffer_unmap(transfer_worker->staging_buffer);
+
+					// Add barrier to transition new mips to shader read optimal after upload completes.
+					if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+						RDD::TextureBarrier tb;
+						tb.texture = new_texture_ptr->driver_id;
+						tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
+						tb.prev_layout = RDD::TEXTURE_LAYOUT_COPY_DST_OPTIMAL;
+						tb.next_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						tb.subresources.aspect = new_texture_ptr->barrier_aspect_flags;
+						tb.subresources.mipmap_count = new_mips_count;
+						tb.subresources.base_layer = layer;
+						tb.subresources.layer_count = 1;
+						transfer_worker->texture_barriers.push_back(tb);
+					}
+
+					_release_transfer_worker(transfer_worker);
+				}
+			}
+		}
+	}
+
+	// Now handle copying existing mips from the source texture.
+	// This requires synchronization with the source texture.
+	if (p_copy_mips_count > 0) {
+		// Wait for any pending transfer operations on the source texture.
+		_check_transfer_worker_texture(existing_texture);
+
+		// Wait for any pending transfer operations on the new texture (from the upload above).
+		_check_transfer_worker_texture(new_texture_ptr);
+
+		// Make source texture mutable for the copy operation.
+		bool src_made_mutable = _texture_make_mutable(existing_texture, existing_texture_rid);
+
+		// Make new texture mutable for copies.
+		bool dst_made_mutable = _texture_make_mutable(new_texture_ptr, new_texture_rid);
+
+		if (src_made_mutable || dst_made_mutable) {
+			draw_graph.add_synchronization();
+		}
+
+		// Calculate the mip offset in the new texture where copied mips should go.
+		uint32_t dst_mip_offset = new_mips_count; // Start after any new (higher detail) mips.
+
+		// Calculate the mip offset in the source texture where we copy from.
+		// We want to copy the last p_copy_mips_count mips from the source.
+		uint32_t src_mip_offset = existing_texture->mipmaps - p_copy_mips_count;
+
+		for (uint32_t layer = 0; layer < format.array_layers; layer++) {
+			for (uint32_t mip = 0; mip < p_copy_mips_count; mip++) {
+				uint32_t src_mip = src_mip_offset + mip;
+				uint32_t dst_mip = dst_mip_offset + mip;
+
+				uint32_t src_width, src_height, src_depth;
+				get_image_format_required_size(existing_texture->format, existing_texture->width, existing_texture->height, existing_texture->depth, src_mip + 1, &src_width, &src_height, &src_depth);
+
+				RDD::TextureCopyRegion copy_region;
+				copy_region.src_subresources.aspect = existing_texture->read_aspect_flags;
+				copy_region.src_subresources.mipmap = src_mip;
+				copy_region.src_subresources.base_layer = layer;
+				copy_region.src_subresources.layer_count = 1;
+				copy_region.src_offset = Vector3i(0, 0, 0);
+
+				copy_region.dst_subresources.aspect = new_texture_ptr->read_aspect_flags;
+				copy_region.dst_subresources.mipmap = dst_mip;
+				copy_region.dst_subresources.base_layer = layer;
+				copy_region.dst_subresources.layer_count = 1;
+				copy_region.dst_offset = Vector3i(0, 0, 0);
+
+				copy_region.size = Vector3i(src_width, src_height, src_depth);
+
+				draw_graph.add_texture_copy(existing_texture->driver_id, existing_texture->draw_tracker, new_texture_ptr->driver_id, new_texture_ptr->draw_tracker, copy_region);
+			}
+		}
+	} else {
+		// No mip copying needed, but if we uploaded new mips, we need to make the texture mutable
+		// for subsequent use and wait for the transfer to complete.
+		if (new_mips_count > 0) {
+			_check_transfer_worker_texture(new_texture_ptr);
+			_texture_make_mutable(new_texture_ptr, new_texture_rid);
+		}
+	}
+
+	return new_texture_rid;
 }
 
 void RenderingDevice::_texture_check_shared_fallback(Texture *p_texture) {
@@ -8311,6 +8620,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
 	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers", "mipmaps"), &RenderingDevice::texture_create_from_extension, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("texture_create_from_existing_mipchain", "existing_texture", "format", "view", "copy_mips_count", "new_mip_data"), &RenderingDevice::_texture_create_from_existing_mipchain, DEFVAL(Array()));
 
 	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data"), &RenderingDevice::texture_update);
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
@@ -9147,6 +9457,17 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type);
+}
+
+RID RenderingDevice::_texture_create_from_existing_mipchain(RID p_existing_texture, const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, uint32_t p_copy_mips_count, const TypedArray<PackedByteArray> &p_new_mip_data) {
+	ERR_FAIL_COND_V(p_format.is_null(), RID());
+	ERR_FAIL_COND_V(p_view.is_null(), RID());
+	Vector<Vector<uint8_t>> data;
+	for (int i = 0; i < p_new_mip_data.size(); i++) {
+		Vector<uint8_t> byte_slice = p_new_mip_data[i];
+		data.push_back(byte_slice);
+	}
+	return texture_create_from_existing_mipchain(p_existing_texture, p_format->base, p_view->base, p_copy_mips_count, data);
 }
 
 Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {

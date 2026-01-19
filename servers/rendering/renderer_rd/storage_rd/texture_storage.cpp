@@ -34,9 +34,9 @@
 #include "../framebuffer_cache_rd.h"
 #include "../uniform_set_cache_rd.h"
 #include "material_storage.h"
+#include "modules/texture_streaming/texture_streaming.h"
 #include "render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-
 using namespace RendererRD;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1983,7 +1983,11 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
+	RID streaming_state = tex->streaming_state;
+
 	*tex = *by_tex;
+
+	tex->streaming_state = streaming_state; // restore streaming state
 
 	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
 
@@ -2171,6 +2175,92 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	texture.is_proxy = false;
 
 	texture_owner.initialize_rid(p_texture, texture);
+}
+
+RID TextureStorage::texture_2d_create_from_texture(RID p_src_texture, int p_new_width, int p_new_height, uint32_t p_copy_mips_count, const Vector<uint8_t> &p_new_mip_data) {
+	if (p_src_texture.is_null() || !p_src_texture.is_valid()) {
+		return RID();
+	}
+	Texture *src_tex = texture_owner.get_or_null(p_src_texture);
+	if (!src_tex) {
+		return RID();
+	}
+	ERR_FAIL_NULL_V(src_tex, RID());
+	ERR_FAIL_COND_V(src_tex->type != TextureStorage::TYPE_2D, RID());
+
+	// Prepare new mip data for the RD layer.
+	Vector<Vector<uint8_t>> new_mip_data_raw;
+	if (!p_new_mip_data.is_empty()) {
+		// For 2D textures, there's only 1 layer, so we wrap the data in a single-element vector.
+		new_mip_data_raw.push_back(p_new_mip_data);
+	}
+
+	// Calculate the new mipmap count.
+	int new_mipmaps = Image::get_image_required_mipmaps(p_new_width, p_new_height, src_tex->format) + 1;
+
+	// Set up the texture format for the new texture.
+	RD::TextureFormat rd_format;
+	rd_format.format = src_tex->rd_format;
+	rd_format.width = p_new_width;
+	rd_format.height = p_new_height;
+	rd_format.depth = 1;
+	rd_format.array_layers = 1;
+	rd_format.mipmaps = new_mipmaps;
+	rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+	rd_format.samples = RD::TEXTURE_SAMPLES_1;
+	rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	if (src_tex->rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_format.shareable_formats.push_back(src_tex->rd_format);
+		rd_format.shareable_formats.push_back(src_tex->rd_format_srgb);
+	}
+
+	RD::TextureView rd_view = src_tex->rd_view;
+	// Reset format_override - it will be set later when creating the SRGB shared texture.
+	rd_view.format_override = RD::DATA_FORMAT_MAX;
+
+	// Create the new RD texture from the existing mipchain.
+	RID new_rd_texture = RD::get_singleton()->texture_create_from_existing_mipchain(
+			src_tex->rd_texture,
+			rd_format,
+			rd_view,
+			p_copy_mips_count,
+			new_mip_data_raw);
+	ERR_FAIL_COND_V(new_rd_texture.is_null(), RID());
+
+	// Set up the Texture structure.
+	Texture texture;
+	texture.type = TextureStorage::TYPE_2D;
+	texture.width = p_new_width;
+	texture.height = p_new_height;
+	texture.layers = 1;
+	texture.mipmaps = new_mipmaps;
+	texture.depth = 1;
+	texture.format = src_tex->format;
+	texture.validated_format = src_tex->validated_format;
+
+	texture.rd_type = RD::TEXTURE_TYPE_2D;
+	texture.rd_format = src_tex->rd_format;
+	texture.rd_format_srgb = src_tex->rd_format_srgb;
+
+	texture.rd_texture = new_rd_texture;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free_rid(texture.rd_texture);
+			ERR_FAIL_COND_V(texture.rd_texture_srgb.is_null(), RID());
+		}
+	}
+
+	// Used for 2D, overridable.
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	RID new_texture = texture_owner.make_rid(texture);
+	return new_texture;
 }
 
 RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
@@ -4915,4 +5005,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 		// FIXME: Storage bit should only be requested when FSR is required.
 		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
+}
+
+void TextureStorage::texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_MSG(tex, "Invalid texture RID.");
+	tex->streaming_state = p_streaming_state;
 }

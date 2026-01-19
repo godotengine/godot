@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureStreaming" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manages dynamic texture mipmap streaming to optimize VRAM usage.
+	</brief_description>
+	<description>
+		The TextureStreaming singleton manages dynamic loading and unloading of texture mipmap levels based on what is visible in the current frame. This allows projects with many large textures to significantly reduce VRAM usage while maintaining visual quality for visible textures.
+		Texture streaming works by analyzing shader feedback to determine which textures are actively being used and at what resolution they're being displayed. Textures that are far from the camera or not currently visible have their higher-resolution mipmap levels unloaded, while textures being displayed up close are loaded at higher resolutions.
+		The system includes a memory budget feature that automatically manages texture resolutions to stay within a specified VRAM limit. When the budget is exceeded, the system prioritizes textures based on how recently they were used and how much screen space they occupy.
+		[b]Note:[/b] Texture streaming must be enabled in the Project Settings ([member ProjectSettings.rendering/textures/streaming/enabled]) and textures must be imported with streaming support to use this feature.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_memory_budget_bytes_used">
+			<return type="int" />
+			<description>
+				Returns the current VRAM usage of streamed textures in bytes. This represents the total memory consumed by all streamed textures at their currently loaded mipmap levels.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max_lod_override" type="int" setter="set_max_lod_override" getter="get_max_lod_override" default="255">
+			Overrides the maximum LOD (mipmap level) that can be loaded for streamed textures at runtime. Lower values allow higher resolution textures. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). A value of [code]255[/code] disables the override and uses the default from [member ProjectSettings.rendering/textures/streaming/max_lod].
+		</member>
+		<member name="memory_budget_mb_override" type="int" setter="set_memory_budget_mb_override" getter="get_memory_budget_mb_override" default="4294967295">
+			Overrides the memory budget for streamed textures at runtime (in megabytes). When the budget is exceeded, the system reduces texture resolution to stay within the limit. A value of [code]4294967295[/code] (max uint32) disables the override and uses the default from [member ProjectSettings.rendering/textures/streaming/memory_budget_mb].
+		</member>
+		<member name="min_lod_override" type="int" setter="set_min_lod_override" getter="get_min_lod_override" default="255">
+			Overrides the minimum LOD (mipmap level) that textures start at when loaded. Higher values result in lower initial resolution. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). A value of [code]255[/code] disables the override and uses the default from [member ProjectSettings.rendering/textures/streaming/min_lod].
+		</member>
+	</members>
+</class>

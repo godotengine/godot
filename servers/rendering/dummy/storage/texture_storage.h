@@ -219,6 +219,9 @@ public:
 
 	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
 	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const override { return Size2i(0, 0); }
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override {}
+	virtual RID texture_2d_create_from_texture(RID p_src_texture, int p_new_width, int p_new_height, uint32_t p_copy_mips_count, const Vector<uint8_t> &p_new_mip_data = Vector<uint8_t>()) override { return RID(); }
 };
 
 } // namespace RendererDummy

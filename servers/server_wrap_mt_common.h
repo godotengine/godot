@@ -434,7 +434,7 @@
 	}
 
 #define FUNC5R(m_r, m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5) \
-	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) override { \
 		WRITE_ACTION \
 		if (ASYNC_COND_PUSH_AND_RET) { \
 			m_r ret; \

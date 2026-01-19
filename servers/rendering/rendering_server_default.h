@@ -264,6 +264,9 @@ public:
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
 
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
+	FUNC5R(RID, texture_2d_create_from_texture, RID, int, int, uint32_t, const Vector<uint8_t> &);
+
 	/* SHADER API */
 
 #undef ServerName
