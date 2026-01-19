@@ -74,15 +74,13 @@ protected:
 
 	GDVIRTUAL0(_redraw)
 
+	GDVIRTUAL0RC(bool, _has_boundary)
 	GDVIRTUAL0RC(Rect2, _get_boundary)
-	GDVIRTUAL0(_begin_boundary_action)
 	GDVIRTUAL1(_set_boundary, Rect2)
-	GDVIRTUAL2(_commit_boundary, Rect2, bool)
 
+	GDVIRTUAL0RC(bool, _has_pivot)
 	GDVIRTUAL0RC(Vector2, _get_pivot)
-	GDVIRTUAL0(_begin_pivot_action)
 	GDVIRTUAL1(_set_pivot, Vector2)
-	GDVIRTUAL2(_commit_pivot, Vector2, bool)
 
 	GDVIRTUAL2RC(String, _get_handle_name, int, bool)
 	GDVIRTUAL2RC(bool, _is_handle_highlighted, int, bool)
@@ -111,15 +109,12 @@ public:
 
 	virtual bool has_boundary() const;
 	virtual Rect2 get_boundary() const;
-	virtual void begin_boundary_action();
+	virtual Rect2 _get_boundary() const;
 	virtual void set_boundary(const Rect2 &p_rect);
-	virtual void commit_boundary(const Rect2 &p_restore, bool p_cancel = false);
 
 	virtual bool has_pivot() const;
 	virtual Vector2 get_pivot() const;
-	virtual void begin_pivot_action();
 	virtual void set_pivot(const Vector2 &p_pivot);
-	virtual void commit_pivot(const Vector2 &p_restore, bool p_cancel = false);
 
 	virtual bool is_handle_highlighted(int p_id, bool p_secondary) const;
 	virtual String get_handle_name(int p_id, bool p_secondary) const;
@@ -188,15 +183,13 @@ protected:
 
 	GDVIRTUAL1(_redraw, Ref<EditorCanvasItemGizmo>)
 
-	GDVIRTUAL1(_begin_boundary_action, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL1RC(bool, _has_boundary, Ref<EditorCanvasItemGizmo>)
 	GDVIRTUAL2(_set_boundary, Ref<EditorCanvasItemGizmo>, Rect2)
 	GDVIRTUAL1RC(Rect2, _get_boundary, Ref<EditorCanvasItemGizmo>)
-	GDVIRTUAL3(_commit_boundary, Ref<EditorCanvasItemGizmo>, Rect2, bool)
 
-	GDVIRTUAL1(_begin_pivot_action, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL1RC(bool, _has_pivot, Ref<EditorCanvasItemGizmo>)
 	GDVIRTUAL2(_set_pivot, Ref<EditorCanvasItemGizmo>, Vector2)
 	GDVIRTUAL1RC(Vector2, _get_pivot, Ref<EditorCanvasItemGizmo>)
-	GDVIRTUAL3(_commit_pivot, Ref<EditorCanvasItemGizmo>, Vector2, bool)
 
 	GDVIRTUAL3RC(String, _get_handle_name, Ref<EditorCanvasItemGizmo>, int, bool)
 	GDVIRTUAL3RC(bool, _is_handle_highlighted, Ref<EditorCanvasItemGizmo>, int, bool)
@@ -212,7 +205,7 @@ protected:
 	GDVIRTUAL4(_commit_subgizmos, Ref<EditorCanvasItemGizmo>, Vector<int>, TypedArray<Transform2D>, bool)
 
 public:
-	static Transform2D calculate_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after);
+	static Transform2D boundary_change_to_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after);
 
 	virtual String get_gizmo_name() const;
 	virtual int get_priority() const;
@@ -223,19 +216,27 @@ public:
 	virtual void redraw(EditorCanvasItemGizmo *p_gizmo);
 	// boundary handle
 	virtual bool has_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void begin_boundary_action(const EditorCanvasItemGizmo *p_gizmo);
 	virtual void set_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect);
 	virtual Rect2 get_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void commit_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_restore, bool p_cancel = false);
+
+private:
+	virtual bool _has_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void _set_boundary(const EditorCanvasItemGizmo *p_gizmo, Rect2 p_rect);
+	virtual Rect2 _get_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
 
 	// pivot handle
+public:
 	virtual bool has_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void begin_pivot_action(const EditorCanvasItemGizmo *p_gizmo);
-	virtual void set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
 	virtual Vector2 get_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void commit_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_restore, bool p_cancel = false);
+	virtual void set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
+
+private:
+	virtual bool _has_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual Vector2 _get_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void _set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
 
 	// extra handles
+public:
 	virtual bool is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
 	virtual String get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
 	virtual Variant get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;

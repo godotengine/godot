@@ -69,6 +69,7 @@ public:
 	// the gizmo that is currently supplying subgizmos
 	Ref<EditorCanvasItemGizmo> gizmo;
 	HashMap<int, Transform2D> subgizmos; // Key: Subgizmo ID, Value: Initial subgizmo transform.
+	Vector2 pre_drag_pivot;
 
 	Dictionary undo_state;
 };
