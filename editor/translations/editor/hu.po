@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-13 15:50+0000\n"
+"PO-Revision-Date: 2026-01-19 09:53+0000\n"
 "Last-Translator: Tallyrald <tally.github@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
@@ -60,13 +60,52 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Unauthorized"
+msgstr "Nem engedélyezett"
+
+msgid "Out of memory"
+msgstr "Nincs elég memória"
+
+msgid "File: Bad drive"
+msgstr "Fájl: Hibás meghajtó"
+
+msgid "File: Bad path"
+msgstr "Fájl: Hibás útvonal"
+
+msgid "File: Permission denied"
+msgstr "Fájl: Nem engedélyezett"
+
+msgid "File unrecognized"
+msgstr "Ismeretlen fájl"
+
+msgid "File corrupt"
+msgstr "Sérült fájl"
+
+msgid "Can't write database"
+msgstr "Nem lehet írni az adatbázisba"
+
+msgid "Cyclic link detected"
+msgstr "Ciklikus hivatkozás érzékelve"
+
+msgid "Busy"
+msgstr "Foglalt"
+
+msgid "Skip"
+msgstr "Kihagyás"
+
 msgid "Help"
 msgstr "Súgó"
+
+msgid "Bug"
+msgstr "Hiba"
+
+msgid "Printer on fire"
+msgstr "Ég a nyomtató"
 
 msgid "Physical"
 msgstr "Fizikai"
@@ -6136,6 +6175,9 @@ msgstr ""
 "A projekt stabil FPS-sel fog futni és az audiovizuális kimenet videófájlként "
 "rögzül."
 
+msgid "No Remote Deploy export presets configured."
+msgstr "Nincs beállított Távoli Telepítő export előbeállítás (preset)."
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -6144,8 +6186,169 @@ msgstr ""
 "Nem található futtatható exportállomány ehhez a platformhoz.\n"
 "Kérem adjon hozzá egy futtatható exportállományt az export menüben."
 
+msgid ""
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
+"\n"
+"Run \"Remote Deploy\" anyway?"
+msgstr ""
+"Figyelmeztetés: A(z) \"%s\" CPU architektúra inaktív az export "
+"előbeállításokban (preset).\n"
+"\n"
+"Futtassuk a \"Távoli Telepítést\"?"
+
+msgid "Deploy to First Device in List"
+msgstr "Telepítés a lista Első Eszközére"
+
+msgid "Deploy to Second Device in List"
+msgstr "Telepítés a lista Második Eszközére"
+
+msgid "Deploy to Third Device in List"
+msgstr "Telepítés a lista Harmadik Eszközére"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Telepítés a lista Negyedik Eszközére"
+
+msgid "Suspend/Resume Embedded Project"
+msgstr "Beágyazott Projekt Felfüggesztése/Folytatása"
+
+msgid "Game running not embedded."
+msgstr "A futó játék nincs beágyazva."
+
+msgid "Press play to start the game."
+msgstr "A játék indításához kattintson az indítás gombra."
+
+msgid "Game embedding not available on your OS."
+msgstr "Játék beágyazás nem elérhető ezen a rendszeren."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"Játék beágyazás nem elérhető a Megjelenítő Szerverhez: \"%s\".\n"
+"A Megjelenítő Szerver módosítható a Projekt Beállításokban (Megjelenítés > "
+"Megjelenítő Szerver > Meghajtóprogram)."
+
+msgid "Game embedding not available when the game starts minimized."
+msgstr "Játék beágyazás nem elérhető, ha a játék kisméretűként indul."
+
+msgid ""
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"A játék beágyazáshoz átállíthatja az ablakbeállítás projekt tulajdonságot "
+"Ablakosra a szerkesztő funkciócímkéjével, ezzel megőrizve az exportált "
+"projekt épségét."
+
+msgid "Game embedding not available when the game starts maximized."
+msgstr ""
+"Játék beágyazás nem elérhető, ha a játék maximalizált méretben indul el."
+
+msgid "Game embedding not available when the game starts in fullscreen."
+msgstr ""
+"Játék beágyazás nem elérhető, ha a játék teljes képernyős módban indul el."
+
+msgid "Game embedding not available in single window mode."
+msgstr "Játék beágyazás nem elérhető egyablakos módban."
+
+msgid "Game embedding not available when the game starts in headless mode."
+msgstr "Játék beágyazás nem elérhető, ha a játék headless módban indul el."
+
+msgid "Unmute game audio."
+msgstr "Játék audió némítás feloldása."
+
+msgid "Mute game audio."
+msgstr "Játék audió némítása."
+
+msgid "Suspend"
+msgstr "Felfüggesztés"
+
+msgid ""
+"Force pause at SceneTree level. Stops all processing, but you can still "
+"interact with the project."
+msgstr ""
+"Kényszerített szünet a SceneTree szintjén. Minden feldolgozást megállít, de "
+"továbbra is használható a projekt."
+
+msgid "Speed State"
+msgstr "Sebesség Állapota"
+
+msgid "Allow game input."
+msgstr "Játékbemenet engedélyezése."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Játékbemenet letiltása és Node2D, Control kijelölésésének, valamint a 2D "
+"kamera manipulálásának engedélyezése."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Játékbemenet letiltása és Node3D kijelölésének, valamint a 3D kamera "
+"manipulálásának engedélyezése."
+
+msgid "Reset 2D Camera"
+msgstr "2D Kamera Alaphelyzetbe"
+
+msgid "Reset 3D Camera"
+msgstr "3D Kamera Alaphelyzetbe"
+
+msgid "Manipulate In-Game"
+msgstr "Játékbeli Manipuláció"
+
+msgid "Manipulate From Editors"
+msgstr "Manipulálás Szerkesztőkből"
+
+msgid "Embed Game on Next Play"
+msgstr "Játék Beágyazása a Következő Indításkor"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Játék Munkatér Lebegtetése a Következő Indításkor"
+
+msgid "Embedded Window Sizing"
+msgstr "Beágyazott Ablak Méretezés"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"A beágyazott játék mérete a projek beállításoktól függ.\n"
+"A \"Képarány Megtartása\" módot az elvárt méretnél kisebb Játék Munkatér "
+"esetén használjuk."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "A beágyazott játék képarányának megtartása."
+
+msgid "Stretch to Fit"
+msgstr "Rugalmas Igazítás"
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr "A beágyazott játék rugalmasan illeszkedik a Játék Munkatér méretéhez."
+
 msgid "Clear All"
 msgstr "Mind Bezárása"
+
+msgid "Space-separated arguments, example: host player1 blue"
+msgstr "Szóközzel elválasztott argumentumok, például: host player1 blue"
+
+msgid "Comma-separated tags, example: demo, steam, event"
+msgstr "Vesszővel elválasztott címkék, például: demo, steam, event"
+
+msgid "Enable Multiple Instances"
+msgstr "Több Példány Engedélyezése"
+
+msgid "Override Main Run Args"
+msgstr "Fő Futtatási Arg-ok Felülírása"
+
+msgid "Launch Arguments"
+msgstr "Indítási Argumentumok"
+
+msgid "Move Origin to Geometric Center"
+msgstr "Eredet a Geometrikus Középpontba"
 
 msgid "Create Polygon"
 msgstr "Sokszög létrehozása"
@@ -6159,6 +6362,9 @@ msgstr ""
 "Bal Egérgomb: Pont mozgatása\n"
 "Jobb Egérgomb: Pont törlése"
 
+msgid "Move center of gravity to geometric center."
+msgstr "A gravitációs középpont geometrikus középpontba helyezése."
+
 msgid "Edit Polygon"
 msgstr "Sokszög szerkesztése"
 
@@ -6171,14 +6377,51 @@ msgstr "Sokszög szerkesztése (pont eltávolítása)"
 msgid "Remove Polygon And Point"
 msgstr "Sokszög és pont eltávolítása"
 
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "Camera2D Határok Betekintőhöz illesztése"
+
+msgid "Camera2D"
+msgstr "Camera2D"
+
+msgid "Snap the Limits to the Viewport"
+msgstr "Határok Betekintőhöz Illesztése"
+
 msgid "Create Occluder Polygon"
 msgstr "Árnyékoló Sokszög Létrehozása"
+
+msgid "ParallaxBackground"
+msgstr "ParallaxBackground"
 
 msgid "Generate Visibility Rect"
 msgstr "Láthatósági Téglalap Generálása"
 
 msgid "Load Emission Mask"
 msgstr "Kibocsátási Maszk Betöltése"
+
+msgid "Solid Pixels"
+msgstr "Tömör Pixelek"
+
+msgid "Border Pixels"
+msgstr "Szegélypixelek"
+
+msgid "Loading emission mask requires ParticleProcessMaterial."
+msgstr "Az emissziós maszk betöltése ParticleProcessMaterial-t igényel."
+
+msgid "Failed to convert mask texture to RGBA8."
+msgstr "A maszk textúra RGBA8-ra konvertálása sikertelen."
+
+msgid "Mask texture has an invalid size."
+msgstr "A maszk textúra mérete érvénytelen."
+
+msgid "Failed to convert direction texture to RGBA8."
+msgstr "Az iránytextúra RGBA8-ra konvertálása sikertelen."
+
+msgid ""
+"Direction texture has an invalid size. It must have the same size as the mask "
+"texture."
+msgstr ""
+"Az iránytextúra mérete érvénytelen. Mérete meg kell egyezzen a maszk "
+"textúráéval."
 
 msgid "GPUParticles2D"
 msgstr "GPUParticles2D"
@@ -6204,6 +6447,9 @@ msgstr "Pont Mozgatása a Görbén"
 msgid "Add Point to Curve"
 msgstr "Pont Hozzáadása a Görbéhez"
 
+msgid "Split Curve"
+msgstr "Görbe Felosztása"
+
 msgid "Move In-Control in Curve"
 msgstr "Be-Vezérlő Mozgatása a Görbén"
 
@@ -6225,14 +6471,31 @@ msgstr "Görbe Lezárása"
 msgid "Please Confirm..."
 msgstr "Kérjük erősítse meg..."
 
+msgid "Mirror Handle Angles"
+msgstr "Fogantyú Szögének Tükrözése"
+
+msgid "Mirror Handle Lengths"
+msgstr "Fogantyú Hosszok Tükrözése"
+
 msgid "Set Handle"
 msgstr "Fogantyú Beállítása"
+
+msgid ""
+"The skeleton property of the Polygon2D does not point to a Skeleton2D node"
+msgstr "A Polygon2D váz tulajdonsága nem Skeleton2D node-ra mutat"
 
 msgid "Sync Bones"
 msgstr "Csontok szinkronizálása"
 
 msgid "Create UV Map"
 msgstr "UV Térkép Létrehozása"
+
+msgid ""
+"Polygon 2D has internal vertices, so it can no longer be edited in the "
+"viewport."
+msgstr ""
+"A Polygon2D belső csúcsokkal rendelkezik, ezért a betekintőben már nem "
+"módosítható."
 
 msgid "Create Polygon & UV"
 msgstr "Sokszög és UV létrehozása"
@@ -6242,6 +6505,9 @@ msgstr "Belső csúcspont létrehozása"
 
 msgid "Remove Internal Vertex"
 msgstr "Belső csúcspont eltávolítása"
+
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr "Érvénytelen Sokszög (3 különböző csúcsra van szükség)"
 
 msgid "Add Custom Polygon"
 msgstr "Egyéni sokszög hozzáadása"
@@ -6255,11 +6521,17 @@ msgstr "UV Térkép Transzformálása"
 msgid "Transform Polygon"
 msgstr "Sokszög átalakítása"
 
+msgid "Paint Bone Weights"
+msgstr "Csont Súlyok Festése"
+
 msgid "Points"
 msgstr "Pontok"
 
 msgid "Polygons"
 msgstr "Sokszögek"
+
+msgid "UV"
+msgstr "UV"
 
 msgid "Bones"
 msgstr "Csontok"
@@ -6272,6 +6544,27 @@ msgstr "Sokszög Forgatása"
 
 msgid "Scale Polygon"
 msgstr "Sokszög Skálázása"
+
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr "Egyedi sokszög létrehozása. Bekapcsolja az egyedi sokszög renderelést."
+
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is disabled."
+msgstr ""
+"Eltávolít egy egyedi sokszöget. Ha nincs több, akkor az egyedi sokszög "
+"renderelés kikapcsolódik."
+
+msgid "Paint weights with specified intensity."
+msgstr "Súlyok adott erősségűre festése."
+
+msgid "Unpaint weights with specified intensity."
+msgstr "Adott erősségű súlyok festésének visszavonása."
+
+msgid "Strength"
+msgstr "Erő"
+
+msgid "Radius:"
+msgstr "Sugár:"
 
 msgid "Copy Polygon to UV"
 msgstr "Sokszög UV-ba másolása"
@@ -6306,14 +6599,133 @@ msgstr "Rács X eltolása:"
 msgid "Grid Offset Y:"
 msgstr "Rács Y eltolása:"
 
+msgid "Grid Step X:"
+msgstr "Rács Beosztás X:"
+
+msgid "Grid Step Y:"
+msgstr "Rács Beosztás Y:"
+
 msgid "Sync Bones to Polygon"
 msgstr "Csontok Szinkronizálása Sokszögre"
+
+msgid "This skeleton has no bones, create some children Bone2D nodes."
+msgstr ""
+"Ennek a váznak nincsenek csontjai, hozzon létre gyermek Bone2D node csontokat."
+
+msgid "Set Rest Pose to Bones"
+msgstr "Pihenő Póz Beállítása Csontokhoz"
+
+msgid "Create Rest Pose from Bones"
+msgstr "Pihenő Póz Létrehozása Csontokból"
+
+msgid "MeshInstance2D Preview"
+msgstr "MeshInstance2D Előnézet"
+
+msgid "Create Polygon2D"
+msgstr "Polygon2D Létrehozása"
+
+msgid "Polygon2D Preview"
+msgstr "Polygon2D Előnézet"
+
+msgid "Create CollisionPolygon2D"
+msgstr "CollisionPolygon2D Létrehozása"
+
+msgid "CollisionPolygon2D Preview"
+msgstr "CollisionPolygon2D Előnézet"
+
+msgid "Create LightOccluder2D"
+msgstr "LightOccluder2D Létrehozása"
+
+msgid "LightOccluder2D Preview"
+msgstr "LightOccluder2D Előnézet"
+
+msgid "Invalid geometry, can't replace by mesh."
+msgstr "Érvénytelen geometria, mesh alapján nem cserélhető."
+
+msgid "Invalid geometry, can't create polygon."
+msgstr "Érvénytelen geometria, nem hozható létre sokszög."
+
+msgid "Convert to Polygon2D"
+msgstr "Polygon2D-re Konvertálás"
+
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "Érvénytelen geometria, nem hozható létre az ütközési sokszög."
+
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "CollisionPolygon2D Testvér Létrehozása"
+
+msgid "Invalid geometry, can't create light occluder."
+msgstr "Érvénytelen geometria, az árnyékoló nem hozható létre."
+
+msgid "Create LightOccluder2D Sibling"
+msgstr "LightOccluder2D Testvér Létrehozása"
+
+msgid "Sprite's region needs to be enabled in the inspector."
+msgstr "A sprite területe bekapcsolt állapotban kell legyen az elemzőben."
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
+
+msgid "Drag to Resize Region Rect"
+msgstr "Húzással Átméretezhető Terület Téglalap"
+
+msgid "Shrink (Pixels):"
+msgstr "Zsugorítás (Pixelek):"
+
+msgid "Grow (Pixels):"
+msgstr "Növesztés (Pixelek):"
 
 msgid "Update Preview"
 msgstr "Előnézet frissítése"
 
 msgid "Settings:"
 msgstr "Beállítások:"
+
+msgid "Merge TileSetAtlasSource"
+msgstr "TileSetAtlasSource Összevonása"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "Összevonás (Eredeti Atlaszok megtartásával)"
+
+msgid "Merge"
+msgstr "Összevonás"
+
+msgid "Next Line After Column"
+msgstr "Következő Utáni Sor Oszlop"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"Forrás: %d\n"
+"Atlasz koordináták: %s\n"
+"Alternatíva: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Forrás: %d\n"
+"Atlasz koordináták: %s\n"
+"Alternatíva: %d"
+
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"A kiválasztott atlasz forrásnak nincs érvényes textúrája. Rendeljen hozzá egy "
+"textúrát az alsó TileSet fülön."
+
+msgid "Flip Polygons Vertically"
+msgstr "Sokszögek Vertikális Tükrözése"
+
+msgid "Edit points tool"
+msgstr "Pontmódosító eszköz"
 
 msgid "Advanced"
 msgstr "Speciális"
@@ -6324,23 +6736,541 @@ msgstr "Forgatás jobbra"
 msgid "Rotate Left"
 msgstr "Forgatás balra"
 
+msgid "Flip Horizontally"
+msgstr "Horizontális Tükrözés"
+
+msgid "Flip Vertically"
+msgstr "Vertikális Tükrözés"
+
 msgid "Grid Snap"
 msgstr "Rácsra Illesztés"
+
+msgid "Subdivision"
+msgstr "Felosztás"
+
+msgid "No terrains"
+msgstr "Nincsenek terepek"
+
+msgid "No terrain"
+msgstr "Nincs terep"
+
+msgid "Painting Terrain Set"
+msgstr "Terepkészlet Festése"
+
+msgid "Painting Terrain"
+msgstr "Terepfestés"
+
+msgid "Pick"
+msgstr "Kiválaszt"
+
+msgid "Drawing Rect:"
+msgstr "Rajz Téglalap:"
+
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr "A mintákat nem lehet forgatni, ha nem négyzetes a csempe rács."
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "Nincs Textúra Atlasz Forrás (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "Jelenetgyűjtemény Forrás (ID: %d)"
+
+msgid "Empty Scene Collection Source (ID: %d)"
+msgstr "Üres Jelenetgyűjtemény Forrás (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Ismeretlen Típus Forrás (ID: %d)"
+
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"A kiválasztott jelenetgyűjtemény forrásban nincsenek jelenetek. Adjon hozzá "
+"jeleneteket az alsó TileSet fülön."
+
+msgid "Bucket Tool"
+msgstr "Vödör Eszköz"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr ""
+"Alternatívaként %s nyomvatartása mellett más eszközökkel is választhat "
+"csempét."
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "Alternatívaként RMB használható a csempék törléséhez."
+
+msgid "Erase"
+msgstr "Törlés"
+
+msgid "Flip Tile Vertically"
+msgstr "Csempe Horizontális Tükrözése"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr ""
+"Módosítja annak az esélyét, hogy véletlenszerű helyett üres csempét fest."
 
 msgid "Tiles"
 msgstr "Csempék"
 
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"A TileMap-hez tartozó TileSet-nek nincs beállított forrása. Az alsó TileSet "
+"panelet adjon hozzá egyet."
+
+msgid "Sort by ID (Ascending)"
+msgstr "ID sorrend (Növekvő)"
+
+msgid "Sort by ID (Descending)"
+msgstr "ID sorrend (Csökkenő)"
+
+msgid "Patterns"
+msgstr "Minták"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr "Minta tárolásához húzzon rá vagy illesszen be egy TileMap szelekciót."
+
+msgid "Matches Corners and Sides"
+msgstr "Sarkokhoz és Oldalakhoz Igazítás"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Terepkészlet %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Kapcsolási mód: terepet fest és összekapcsolja az ugyanolyan környező terep "
+"csempékkel."
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Útvonal mód: terepet fest és összekapcsolja az előző csempével, ami ugyanazon "
+"mozdulattal készült."
+
+msgid "Terrains"
+msgstr "Terepek"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "TileMap rétegek kicsomagolása TileMapLayer node-okként"
+
+msgid "Can't edit multiple layers at once."
+msgstr "Egyszerre több réteg módosítása nem lehetséges."
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "A kiválasztott TileMap-nek nincsenek rétegei."
+
+msgid "The edited layer is disabled or invisible"
+msgstr "A módosított réteg le van tiltva vagy láthatatlan"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"A módosított TileMap vagy TileMapLayer node-nak nincs TileSet erőforrása.\n"
+"Hozzon létre vagy töltsön be egy TileSet erőforrást az elemző Tile Set "
+"tulajdonságánál."
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Előző Tile Map Réteg Kiválasztása"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Kiválasztott TileMap Réteg Kiemelése"
+
+msgid "Automatically Replace Tiles with Proxies"
+msgstr "Csempék Automatikus Cseréje Proxy-kra"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Alternatív-szintű Csempe Proxy Létrehozása"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Koordináta-szintű Csempe Proxy Létrehozása"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Forrás-szintű Csempe Proxy Létrehozása"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Összes Érvénytelen Proxy Törlése"
+
+msgid "Tile Proxies Management"
+msgstr "Csempe Proxy Menedzsment"
+
+msgid "Source-level proxies"
+msgstr "Forrás-szintű proxy-k"
+
+msgid "Coords-level proxies"
+msgstr "Koordináta-szintű proxy-k"
+
+msgid "Alternative-level proxies"
+msgstr "Alternatív-szintű proxy-k"
+
+msgid "Add a new tile proxy:"
+msgstr "Új csempe proxy hozzáadása:"
+
+msgid "Atlas"
+msgstr "Atlasz"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Kiválasztott csempe:\n"
+"Forrás: %d\n"
+"Atlasz koordináták: %s\n"
+"Alternatíva: %d"
+
+msgid "Texture Origin"
+msgstr "Textúra Eredet"
+
 msgid "Z Index"
 msgstr "Z Index"
+
+msgid "Probability"
+msgstr "Valószínűség"
+
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr ""
+"Fizika rétegek létrehozása és testreszabása az elemző TileSet erőforrásával "
+"lehetséges."
 
 msgid "Navigation"
 msgstr "Navigáció"
 
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Navigációs rétegek létrehozása és testreszabása az elemző TileSet "
+"erőforrásával lehetséges."
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Egyedi adatrétegek létrehozása és testreszabása az elemző TileSet "
+"erőforrásával lehetséges."
+
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr ""
+"A TileSet csak-olvasható módban van. Tegye egyedivé az erőforrást a TileSet "
+"tulajdonáságainak módosításához."
+
+msgid "Remove Tiles Outside the Texture"
+msgstr "Textúrán Kívüli Csempék Eltávolítása"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "Csempék létrehozása átlátszatlan textúra régiókban"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "Teljesen átlátszó régiók csempéinek eltávolítása"
+
+msgid ""
+"The tile's unique identifier within this TileSet. Each tile stores its source "
+"ID, so changing one may make tiles invalid."
+msgstr ""
+"A csempe TileSet-en belüli egyedi azonosítója. Minden csempe eltárolja a "
+"forrás azonosítót, ezért annak módosítása érvénytelenné teheti a csempéket."
+
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"Ember által értelmezhető atlasznév. Könnyen érthető nevet használjon "
+"szervezettségi okokból (például \"terep\", \"dekoráció\", stb.)."
+
+msgid "The image from which the tiles will be created."
+msgstr "A kép, amiből a csempék létrejönnek."
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"A margók a kép szélén, amelyek nem választhatók ki csempeként (pixelben). "
+"Ennek növelése hasznos lehet, ha olyan csempelapot tölt le, aminek margó van "
+"a szélén (pl. tulajdonjog miatt)."
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"Az atlasz csempéi közötti elválasztás pixelszáma. Ennek növelése hasznos "
+"lehet, ha a használt csempelap elválasztókat tartalmaz (például körvonalak a "
+"csempék körül)."
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"Az atlasz csempéinek mérete pixelben. A legtöbb esetben ez meg kell egyezzen "
+"a TileMap tulajdonságban meghatározott mérettel (bár nem szigorúan kötelező)."
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"Bekapcsolva, hozzáad 1-pixeles átlátszó körvonalat a csempék körül, ezzel "
+"megelőzve a textúra átfolyást szűrés alkalmazása mellett. Javasolt "
+"bekapcsolva hagyni, kivéve, ha renderelési problémák merülnek fel a textúra "
+"padding miatt."
+
+msgid ""
+"The position of the tile's top-left corner in the atlas. The position and "
+"size must be within the atlas and can't overlap another tile.\n"
+"Each painted tile has associated atlas coords, so changing this property may "
+"cause your TileMaps to not display properly."
+msgstr ""
+"A csempe bal-felső sarkának pozíciója az atlaszban. A pozíció és méret az "
+"atlaszon belül kell legyen és nem fedhet át más csempéket.\n"
+"Minden megfestett csempének hozzárendelt atlasz koordinátája van, ezért ezen "
+"tulajdonság megváltoztatása a TileMap-ek megjelenítésében hibákat okozhat."
+
+msgid "The unit size of the tile."
+msgstr "A csempe egységmérete."
+
+msgid ""
+"Number of columns for the animation grid. If number of columns is lower than "
+"number of frames, the animation will automatically adjust row count."
+msgstr ""
+"Oszlopok száma az animáció rácson. Ha a képkockák számánál kevesebb, akkor az "
+"animáció automatikusan hozzáigazítja a sorok számát."
+
+msgid "The space (in tiles) between each frame of the animation."
+msgstr "Hely (csempék száma) az animáció képkockái között."
+
+msgid ""
+"Determines how animation will start. In \"Default\" mode all tiles start "
+"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
+"animation with a random offset."
+msgstr ""
+"Meghatározza az animáció kezdetét. \"Alapértelmezett\" módban minden csempe "
+"animációja ugyanazon képkockánál kezdődik. A \"Véletlenszerű Kezdési Idő\" "
+"módban véletlenszerű eltolással kezdődnek a csempe animációk."
+
+msgid "If [code]true[/code], the tile is horizontally flipped."
+msgstr "Ha [code]true[/code], akkor a csempe horizontálisan tükrözött."
+
+msgid "If [code]true[/code], the tile is vertically flipped."
+msgstr "Ha [code]true[/code], akkor a csempe vertikálisan tükrözött."
+
+msgid ""
+"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
+"and then flipped vertically. In practice, this means that to rotate a tile by "
+"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
+"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
+"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
+"[b]Flip V[/b] and [b]Transpose[/b]."
+msgstr ""
+"Ha [code]true[/code], a csempe 90 fokkal el van forgatva [i]az óramutató "
+"járásával ellentétesen[/i] és utána vertikálisan tükrözött. A gyakorlatban ez "
+"azt jelenti, hogy ha a csempét 90 fokkal az óramutató járásával megyegyő "
+"irányba szeretné forgatni tükrözés nélkül, akkor a [b]Tökrözés H[/b] és "
+"[b]Transzponálás[/b] opciókat kell használnia. 180 fokkal forgatásához "
+"b]Tükrözés H[/b] és [b]Tükrözés V[/b] használható. 270 fokkal az óramutató "
+"járásával megyező irányba forgatáshoz [b]Tükrözés V[/b] és [b]Transzponálás[/"
+"b] használható."
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"A csempe rajzolásához használandó eredet. Az alapcsempéhez képesti vizuális "
+"eltoláshoz használható."
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "A csempe rendereléséhez használandó szín szorzó."
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr ""
+"A csempéhez használt anyag. Másfajta keverési módhoz vagy egyetlen csempe "
+"egyedi shader-rel történő használatához való."
+
+msgid ""
+"The sorting order for this tile. Higher values will make the tile render in "
+"front of others on the same layer. The index is relative to the TileMap's own "
+"Z index."
+msgstr ""
+"Rendezési sorrend a csempéhez. Magasabb értékekkel ugyanazon rétegen lévő "
+"csempékhez képest előrébb kerül a rendereléskor. Az index a TileMap saját Z "
+"indexéhez képest relatív."
+
+msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"A csempe Y koordinátája alapján meghatározott sorrendiségéhez használt "
+"vertikális eltolás (pixelben). Ezzel a rétegek úgy használhatóak felülnézetes "
+"játékokhoz, mintha különböző magasságokban lennének. Bizonyos csempesorrend "
+"problémákhoz való. Csak \"Y Rendezés Bekapcsolás\" esetén működik azon a "
+"TileMap-en, amire rá van helyezve."
+
+msgid ""
+"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
+"will not be used in terrains."
+msgstr ""
+"A hozzá tartozó terepkészlet indexe. [code]-1[/code] esetén a terepekhez nem "
+"lesz használatban."
+
+msgid ""
+"The index of the terrain inside the terrain set this tile belongs to. "
+"[code]-1[/code] means it will not be used in terrains."
+msgstr ""
+"A terep indexe a terepkészletben, amihez a csempe tartozik. [code]-1[/code] "
+"esetén a terepekhez nem lesz használatban."
+
+msgid ""
+"The relative probability of this tile appearing when painting with \"Place "
+"Random Tile\" enabled."
+msgstr ""
+"Ezen csempe relatív megjelenési esélye \"Véletlenszerű Csempe Elhelyezés\" "
+"segítségével történő festés során."
+
+msgid "Setup"
+msgstr "Beállítás"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr ""
+"Atlasz beállítás. Hozzáadás/Eltávolítás eszköz (shift billentyűvel nagy "
+"csempéket, control billentyűvel téglalap módosítást használhat)."
+
+msgid "Paint"
+msgstr "Festés"
+
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"Nincs kijelölt csempe.\n"
+"Jelöljön ki egy vagy több csempét a palettáról a tulajdonságainak "
+"módosításához."
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "Csempék Létrehozása Átlátszatlan Textúra Régiókban"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "Csempék Eltávolítása Teljesen Átlátszó Textúra Régiókban"
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"A jelenlegi atlasz forrásnak a textúrán kívül is vannak csempéi.\n"
+"Eltávolíthatja őket a \"%s\" opcióval a három pöttyös menüben."
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "Automatikus Csempelétrehozás Átlátszatlan Textúra Régiókban?"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"Az atlasz textúra módosult.\n"
+"Szeretne automatikusan csempéket létrehozni az atlaszban?"
+
 msgid "Yes"
 msgstr "Igen"
 
+msgid "A palette of tiles made from a texture."
+msgstr "Textúrából létrejött csempepaletta."
+
+msgid "A collection of scenes that can be instantiated and placed as tiles."
+msgstr "Jelenetcsoport, amely példányosítható és csempeként elhelyezhető."
+
+msgid "Open Atlas Merging Tool"
+msgstr "Atlasz Egyesítés Eszköz Megnyitása"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Nincs kijelölt TileSet forrás. Válasszon ki vagy hozzon létre egy TileSet "
+"forrást.\n"
+"Új forrás létrehozásához használja a Hozzáadás gombot a bal oldalon vagy "
+"dobjon egy tileset textúrát a forráslistára."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "Új minták hozzáadása a TileMap módosítás módban."
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"Figyelmeztetés: A forrás ID módosítása minden ezen forrást használó TileMap "
+"forrásreferenciáját érvényteleníti. Ez váratlan adatvesztéshez vezethet. "
+"Legyen óvatos az ID változtatásánál."
+
+msgid "Drag and drop scenes here or use the Add button."
+msgstr "Húzzon ide jeleneteket vagy használja a Hozzáadás gombot."
+
+msgid ""
+"The human-readable name for the scene collection. Use a descriptive name here "
+"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
+msgstr ""
+"Ember által értelmezhető jelentcsoportnév. Könnyen érthető nevet használjon "
+"szervezettségi okokból (például \"akadályok\", \"dekoráció\", stb.)."
+
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"A jelenetcsempe azonosítója a csoporton belül. Minden megfestett csempének "
+"van azonosítója, ezért ezen tulajdonság megváltoztatása a TileMap-ek "
+"megjelenítésében hibákat okozhat."
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "A csempéhez rendelt jelenet abszolút útvonala."
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"Ha [code]true[/code], akkor egy placeholder jelző jelenik meg a jelenet "
+"előnézete felett. A jelző akkor is megjelenik, ha a jelenetnek nincs érvényes "
+"előnézete."
+
+msgid "Eraser Tool"
+msgstr "Radír Eszköz"
+
+msgid ""
+"Source ID: %d\n"
+"Texture path: %s"
+msgstr ""
+"Forrás ID: %d\n"
+"Textúra útvonal: %s"
+
+msgid "Bone Picker:"
+msgstr "Csont Pipetta:"
+
+msgid "Clear mappings in current group."
+msgstr "A csoport hozzárendeléseinek kiürítése."
+
 msgid "Preview"
 msgstr "Előnézet"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "AudioStreamPlayer3D Kibocsátási Szögének Változtatása"
 
 msgid "Change Camera FOV"
 msgstr "Kamera látószög változtatás"
@@ -6348,17 +7278,185 @@ msgstr "Kamera látószög változtatás"
 msgid "Change Camera Size"
 msgstr "Kamera méret változtatás"
 
+msgid "Change Light Radius"
+msgstr "Fény Sugarának Változtatása"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Gömb Alak Sugár Változtatása"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Kapszula Alak Sugár Változtatása"
+
+msgid "Change Capsule Shape Height"
+msgstr "Kapszula Alak Magasság Változtatása"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Cilinder Alak Sugár Változtatása"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Cilinder Alak Magasság Változtatása"
+
+msgid "Remove SoftBody3D pinned point %d"
+msgstr "SoftBody3D rögzített pont %d törlése"
+
+msgid "Add SoftBody3D pinned point %d"
+msgstr "SoftBody3D rögzített pont %d hozzáadása"
+
+msgid "Change Notifier AABB"
+msgstr "AABB Értesítő Változtatása"
+
+msgid "Subdivisions: %s"
+msgstr "Felosztások: %s"
+
+msgid "Cell size: %s"
+msgstr "Cellaméret: %s"
+
+msgid "Video RAM size: %s MB (%s)"
+msgstr "Videó RAM méret: %s MB (%s)"
+
+msgid "Bake SDF"
+msgstr "SDF égetése"
+
+msgid ""
+"No faces detected during GPUParticlesCollisionSDF3D bake.\n"
+"Check whether there are visible meshes matching the bake mask within its "
+"extents."
+msgstr ""
+"Nem található oldallap a GPUParticlesCollisionSDF3D égetés során.\n"
+"Ellenőrizze, hogy vannak-e látható mesh-ek az égetőmaszkhoz rendelve annak "
+"befoglaló területén belül."
+
+msgid "Select path for SDF Texture"
+msgstr "Válasszon útvonalat az SDF textúrához"
+
+msgid ""
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
+msgstr ""
+"Nincsenek lighmap-et támogató mesh-ek az égetéshez. Ellenőrizze, hogy van UV2 "
+"adatuk és hogy a Globális Megvilágítás tulajdonság Statikus."
+
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
+msgstr ""
+"Lightmapping támogatással történő jelenetimportáláshoz állítsa a Mesh-ek > "
+"Fények égetése opciót Statikus Lightmap-ekre az import dokkon."
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"A lightmap támogatás engedélyezhető a primitív mesh-ekhez az elemzőbeli "
+"PrimitiveMesh erőforrásnál az UV2 Hozzáadása opcióval."
+
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"A lightmap támogatás engedélyezhető a CSG mesh-ekhez, ehhez a CSG gyökér node "
+"kiválasztása után a CSG > Mesh Példány Égetés opciót kell választani a 3D "
+"szerkesztő betekintője fölött.\n"
+"Válassza ki a MeshInstance3D node-ot és használja a Mesh > UV2 Kicsomagolás "
+"Lightmap/AO-hoz opciót a 3D szerkesztő betekintője fölött."
+
+msgid "Lightmap data is not local to the scene."
+msgstr "A lightmap adatok nem lokálisak a jeleneten."
+
+msgid ""
+"Maximum texture size is too small for the lightmap images.\n"
+"While this can be fixed by increasing the maximum texture size, it is "
+"recommended you split the scene into more objects instead."
+msgstr ""
+"A maximális textúra méret túl kicsi a lightmap képekhez.\n"
+"Bár ez javítható a maximális textúra méret növelésével, javasolt inkább a "
+"jelenetet több objektumra osztani."
+
+msgid ""
+"Failed creating lightmap images. Make sure all meshes to bake have the "
+"Lightmap Size Hint property set high enough, and the LightmapGI's Texel Scale "
+"value is not too low."
+msgstr ""
+"A lightmap képek létrehozása sikertelen. Ellenőrizze, hogy az égetéshez "
+"használt összes mesh-nek elég magas-e a Lightmap Méret Célja, illetve a "
+"LightmapGI Texel Skála értéke nem túl alacsony-e."
+
+msgid ""
+"Failed fitting a lightmap image into an atlas. This should never happen and "
+"should be reported."
+msgstr ""
+"Egy lightmap kép atlaszba illesztése nem sikerült. Ennek nem szabad "
+"megtörténnie és jelenteni szükséges."
+
 msgid "Bake Lightmaps"
 msgstr "Fény Besütése"
+
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Ezen a GPU-n (%s) nem támogatott a lightmap égetés."
+
+msgid "Lightmaps cannot be baked on %s."
+msgstr "Lightmap-ek nem égethetőek ezen: %s."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"Lightmap-ek nem égethetőek, mert a `lightmapper_rd` modult letiltották a "
+"szoftverváltozat készítésekor."
+
+msgid "LightMap Bake"
+msgstr "LightMap Égetés"
+
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "TriMesh ütközési alakzatának létrehozása sikertelen."
 
 msgid "Couldn't create any collision shapes."
 msgstr "Nem sikerült ütközési alakzatokat létrehozni."
 
+msgid "Create %s Static Body Child"
+msgstr "%s Statikus Test Gyermek Létrehozása"
+
+msgid "Trimesh"
+msgstr "Trimesh"
+
+msgid "Create %s Static Body Children"
+msgstr "%s Statikus Test Gyermekek Létrehozása"
+
+msgid "Bounding Box"
+msgstr "Befoglaló Doboz"
+
+msgid "Capsule"
+msgstr "Kapszula"
+
+msgid "Cylinder"
+msgstr "Cilinder"
+
+msgid "Sphere"
+msgstr "Gömb"
+
 msgid "Mesh is empty!"
 msgstr "A háló üres!"
 
+msgid ""
+"Mesh cannot unwrap UVs because it belongs to another resource which was "
+"imported from another file type. Make it unique first."
+msgstr ""
+"A mesh nem tudja kicsomagolni az UV-ket, mert másik erőforráshoz tartozik, "
+"amely más fájltípusból volt importálva. Tegye először egyedivé."
+
+msgid "Unwrap UV2"
+msgstr "UV2 Kicsomagolása"
+
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "A tartalmazott Mesh nem ArrayMesh típusú."
+
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Lightmap kicsomagoláshoz csak a háromszögek támogatottak."
+
+msgid "Normals are required for lightmap unwrap."
+msgstr "Lightmap kicsomagoláshoz normálokra van szükség."
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV kibontás sikertelen, a mesh talán nem sokrétű?"
@@ -6378,6 +7476,17 @@ msgstr "Mesh"
 msgid "Create Outline Mesh..."
 msgstr "Körvonalháló Létrehozása..."
 
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals flipped "
+"automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Statikus körvonal mesh-t hoz létre. A körvonal mesh normáljai automatikusan "
+"tükröződnek.\n"
+"Ez a StandardMaterial Növesztés tulajdonsága helyett használható, amikor az a "
+"tulajdonság nem elérhető."
+
 msgid "View UV1"
 msgstr "UV1 Megtekintése"
 
@@ -6393,14 +7502,154 @@ msgstr "Körvonalháló Készítése"
 msgid "Outline Size:"
 msgstr "Körvonal Mérete:"
 
+msgid "Static Body Child"
+msgstr "Statikus Test Gyermek"
+
+msgid "Creates a StaticBody3D as child and assigns collision shapes to it."
+msgstr "StaticBody3D gyermeket hoz létre és ütközési alakokat rendel hozzá."
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Sokszög-alapú ütközési alakzatot hoz létre.\n"
+"Ez a legpontosabb (de leglassabb) opció az ütközések érzékeléséhez."
+
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the faster than the trimesh or multiple convex option, but is less "
+"accurate for collision detection."
+msgstr ""
+"Egyetlen konvex ütközési alakzatot hoz létre.\n"
+"Ez a trimesh vagy többszörös konvex opcióknál gyorsabb, de kevésbé pontos az "
+"ütközések érzékelésénél."
+
+msgid ""
+"Creates a simplified convex collision shape.\n"
+"This is similar to single collision shape, but can result in a simpler "
+"geometry in some cases, at the cost of accuracy."
+msgstr ""
+"Egyszerűsített konvex ütközési alakzatot hoz létre.\n"
+"Ez hasonló az egyetlen konvex ütközési alakzathoz, de bizonyos esetekben "
+"egyszerűbb geometriához vezethet némi pontosság feláldozása árán."
+
+msgid ""
+"Creates multiple convex collision shapes. These are decomposed from the "
+"original mesh.\n"
+"This is a performance and accuracy middle-ground between a single convex "
+"collision and a polygon-based trimesh collision."
+msgstr ""
+"Több konvex ütközési alakzatot hoz létre. Ezek az eredeti mesh "
+"visszabontásával készülnek.\n"
+"Ez egy középút a teljesítmény és pontosság, illetve az egyetlen konvex "
+"ütközés és sokszög-alapú trimesh ütközés között."
+
+msgid ""
+"Creates an bounding box collision shape.\n"
+"This will use the mesh's AABB if the shape is not a built-in BoxMesh.\n"
+"This is faster than the convex collision shape option for collision detection."
+msgstr ""
+"Befoglaló doboz ütközési alakzatot hoz létre.\n"
+"Ez a mesh AABB tulajdonságát használja, ha a mesh-nek nincs beépített BoxMesh-"
+"e.\n"
+"Ütközésérzékeléshez gyorsabb, mint a konvex ütközési alakzat opció."
+
+msgid ""
+"Creates a capsule collision shape.\n"
+"This will use the mesh's AABB if the shape is not a built-in CapsuleMesh.\n"
+"This is faster than the convex collision shape option for collision detection."
+msgstr ""
+"Kapszula ütközési alakzatot hoz létre.\n"
+"Ez a mesh AABB tulajdonságát használja, ha a mesh-nek nincs beépített "
+"CapsuleMesh-e.\n"
+"Ütközésérzékeléshez gyorsabb, mint a konvex ütközési alakzat opció."
+
+msgid ""
+"Creates a cylinder collision shape.\n"
+"This will use the mesh's AABB if the shape is not a built-in CylinderMesh.\n"
+"This is faster than the convex collision shape option for collision detection."
+msgstr ""
+"Cilinder ütközési alakzatot hoz létre.\n"
+"Ez a mesh AABB tulajdonságát használja, ha a mesh-nek nincs beépített "
+"CylinderMesh-e.\n"
+"Ütközésérzékeléshez gyorsabb, mint a konvex ütközési alakzat opció."
+
+msgid ""
+"Creates a sphere collision shape.\n"
+"This will use the mesh's AABB if the shape is not a built-in SphereMesh.\n"
+"This is faster than the convex collision shape option for collision detection."
+msgstr ""
+"Gömb ütközési alakzatot hoz létre.\n"
+"Ez a mesh AABB tulajdonságát használja, ha a mesh-nek nincs beépített "
+"SphereMesh-e.\n"
+"Ütközésérzékeléshez gyorsabb, mint a konvex ütközési alakzat opció."
+
+msgid ""
+"Creates a box, capsule, cylinder, or sphere primitive collision shape if the "
+"mesh is a primitive.\n"
+"The mesh must use the built-in BoxMesh, CapsuleMesh, CylinderMesh, or "
+"SphereMesh primitive.\n"
+"This is faster than the convex collision shape option for collision detection."
+msgstr ""
+"Doboz, kapszula, cilinder vagy gömb primitív ütközési alakzatot hoz létre, ha "
+"a mesh primitív.\n"
+"A mesh-nek a beépített BoxMesh, CapsuleMesh, vagy SphereMesh primitíveket "
+"kell használnia.\n"
+"Ütközésérzékeléshez gyorsabb, mint a konvex ütközési alakzat opció."
+
+msgid "Alignment Axis"
+msgstr "Igazítási Tengely"
+
+msgid "Longest Axis"
+msgstr "Leghosszabb Tengely"
+
+msgid "Create the shape along the longest axis of the mesh's AABB."
+msgstr ""
+"Létrehozza az alakzatot a mesh AABB tulajdonságának leghosszabb tengelye "
+"mentén."
+
 msgid "X-Axis"
 msgstr "X-Tengely"
+
+msgid "Create the shape along the local X-Axis."
+msgstr "A lokális X-tengely mentén hozza létre az alakzatot."
 
 msgid "Y-Axis"
 msgstr "Y-Tengely"
 
+msgid "Create the shape along the local Y-Axis."
+msgstr "A lokális Y-tengely mentén hozza létre az alakzatot."
+
 msgid "Z-Axis"
 msgstr "Z-Tengely"
+
+msgid "Create the shape along the local Z-Axis."
+msgstr "A lokális Z-tengely mentén hozza létre az alakzatot."
+
+msgid "UV Channel Debug"
+msgstr "UV Csatorna Hibakeresés"
+
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"Mielőtt egy renderelő mesh-t navigációs mesh-sé alakít, ellenőrizze az "
+"alábbiakat:\n"
+"\n"
+"- A mesh kétdimenziós.\n"
+"- A mesh-nek nincs felületátfedése.\n"
+"- A mesh-nek nincs önmetszése.\n"
+"- A mesh felületeinek vannak indexei.\n"
+"\n"
+"Ha a mesh nem teljesíti ezeket a feltételeket, akkor az útkeresés nem fog "
+"működni."
 
 msgid "Remove item %d?"
 msgstr "%d elem eltávolítása?"
@@ -6411,6 +7660,9 @@ msgid ""
 msgstr ""
 "Frissíti a meglévő jelenetből?:\n"
 "%s"
+
+msgid "MeshLibrary"
+msgstr "MeshLibrary"
 
 msgid "Add Item"
 msgstr "Elem Hozzáadása"
@@ -6491,6 +7743,9 @@ msgstr "Ortogonális"
 msgid "Perspective"
 msgstr "Perspektíva"
 
+msgid "[auto]"
+msgstr "[auto]"
+
 msgid "X-Axis Transform."
 msgstr "X-Tengely Transzformáció."
 
@@ -6508,6 +7763,30 @@ msgstr "A kulcsolás le van tiltva (nincs kulcs megadva)."
 
 msgid "Animation Key Inserted."
 msgstr "Animációs Kulcs Beillesztve."
+
+msgid ""
+"Drag and drop to override the material of any geometry node.\n"
+"Hold %s when dropping to override a specific surface."
+msgstr ""
+"Ráhúzással felülírható bármely geometria node anyaga.\n"
+"Tartsa nyomva a %s billentyűt a ráejtéskor egy konkrét felület felülírásához."
+
+msgid ""
+"This debug draw mode is only supported when using the Forward+ or Mobile "
+"renderer."
+msgstr ""
+"Ez a hibakereső rajz mód csak a Forward+ és Mobile rendermotorok esetén "
+"támogatott."
+
+msgid "This debug draw mode is only supported when using the Forward+ renderer."
+msgstr ""
+"Ez a hibakereső rajz mód csak a Forward+ rendermotorok esetén támogatott."
+
+msgid "CPU Time: %s ms"
+msgstr "CPU Idő: %s ms"
+
+msgid "GPU Time: %s ms"
+msgstr "GPU Idő: %s ms"
 
 msgid "FPS: %d"
 msgstr "FPS: %d"
@@ -6530,11 +7809,32 @@ msgstr "Első nézet."
 msgid "Rear View."
 msgstr "Hátsó nézet."
 
+msgid "Align Transform with View"
+msgstr "Transzformáció Nézethez Igazítása"
+
+msgid "Align Rotation with View"
+msgstr "Forgás Nézethez Igazítása"
+
+msgid "Set Surface %d Override Material"
+msgstr "Felület %d Felülíró Anyagának Beállítása"
+
+msgid "Circular dependency found at %s"
+msgstr "Körkörös függőség található itt: %s"
+
 msgid "Rotating %s degrees."
 msgstr "%s fokkal való forgatás."
 
+msgid "Rotating %f degrees."
+msgstr "Forgatás %f fokkal."
+
 msgid "View"
 msgstr "Nézet"
+
+msgid "Auto Orthogonal Enabled"
+msgstr "Auto Ortogonális Bekapcsolva"
+
+msgid "Lock View Rotation"
+msgstr "Nézet Forgás Zárolása"
 
 msgid "Display Normal"
 msgstr "Normális Nézet"
@@ -6542,11 +7842,171 @@ msgstr "Normális Nézet"
 msgid "Display Wireframe"
 msgstr "Drótváz Nézet"
 
+msgid "Display Overdraw"
+msgstr "Megjelenítés Túlrajzolás"
+
+msgid "Display Unshaded"
+msgstr "Megjelenítés Shading Nélkül"
+
+msgid ""
+"Displays directional shadow splits in different colors to make adjusting "
+"split thresholds easier. \n"
+"Red: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, "
+"Yellow: 4th split (furthest from the camera)"
+msgstr ""
+"Színezett irányított árnyszeleteket jelenít meg, megkönnyítve ezzel a "
+"szeletek küszöbértékeinek beállítását. \n"
+"Piros: 1. szelet (legközelebb a kamerához), Zöld: 2. szelet, Kék: 3. szelet, "
+"Sárga: 4. szelet (legtávolabb a kamerától)"
+
 msgid "Normal Buffer"
 msgstr "Normál Buffer"
 
+msgid "Shadow Atlas"
+msgstr "Árnyékatlasz"
+
+msgid ""
+"Displays the shadow atlas used for positional (omni/spot) shadow mapping.\n"
+"Requires a visible OmniLight3D or SpotLight3D node with shadows enabled to "
+"have a visible effect."
+msgstr ""
+"Megjeleníti a helyzetalapú (omni/spot) árnyéktérképhez használt "
+"árnyékatlaszt.\n"
+"Látható és engedélyezett árnyékokkal rendelkező OmniLight3D vagy SpotLight3D "
+"node szükséges az érzékelhető eredményhez."
+
+msgid ""
+"Displays the shadow map used for directional shadow mapping.\n"
+"Requires a visible DirectionalLight3D node with shadows enabled to have a "
+"visible effect."
+msgstr ""
+"Megjeleníti az irányított árnyéktérképezéshez használt árnyéktérképet.\n"
+"Látható és engedélyezett árnyékokkal rendelkező DirectionalLight3D node "
+"szükséges az érzékelhető eredményhez."
+
+msgid "Decal Atlas"
+msgstr "Decal Atlasz"
+
+msgid ""
+"Requires a visible VoxelGI node that has been baked to have a visible effect."
+msgstr "Látható és beégetett VoxelGI node szükséges az érzékelhető eredményhez."
+
+msgid "VoxelGI Albedo"
+msgstr "VoxelGI Albedó"
+
+msgid "SDFGI Cascades"
+msgstr "SDFGI Kaszkádok"
+
+msgid "Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"A Környezetben engedélyezett SDFGI szükséges az érzékelhető eredményhez."
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Bal-klikk az SDFGI szondára a az okklúzió információ megjelenítéséhez (fehér "
+"= nincs okklúzió, piros = teljes okklúzió).\n"
+"A Környezetben engedélyezett SDFGI szükséges az érzékelhető eredményhez."
+
+msgid ""
+"Displays the scene luminance computed from the 3D buffer. This is used for "
+"Auto Exposure calculation.\n"
+"Requires Auto Exposure to be enabled in CameraAttributes to have a visible "
+"effect."
+msgstr ""
+"Megjeleníti a 3D buffer-ből számolt jelenet fényességet. Ez az Auto Expozíció "
+"kalkulációhoz használatos.\n"
+"A CameraAttributes beállításokban engedélyezett Auto Expozíció szükséges az "
+"érzékelhető eredményhez."
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid ""
+"Displays the screen-space ambient occlusion buffer. Requires SSAO to be "
+"enabled in Environment to have a visible effect."
+msgstr ""
+"Megjeleníti a screen-space környezeti sugárkövetés buffert. A Környezetben "
+"engedélyezett SSAO szükséges az érzékelhető eredményhez."
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid ""
+"Displays the screen-space indirect lighting buffer. Requires SSIL to be "
+"enabled in Environment to have a visible effect."
+msgstr ""
+"Megjeleníti a screen-space közvetett megvilágítás buffert. A Környezetben "
+"engedélyezett SSIL szükséges az érzékelhető eredményhez."
+
+msgid "VoxelGI/SDFGI Buffer"
+msgstr "VoxelGI/SDFGI Buffer"
+
+msgid "Requires SDFGI or VoxelGI to be enabled to have a visible effect."
+msgstr "Engedélyezett SDFGI vagy VoxelGI szükséges az érzékelhető eredményhez."
+
+msgid ""
+"Renders all meshes with their highest level of detail regardless of their "
+"distance from the camera."
+msgstr ""
+"Minden mesh-t a legmagasabb részletezettségi szinten renderel függetlenül a "
+"kamera távolságától."
+
+msgid "OmniLight3D Cluster"
+msgstr "OmniLight3D Csoport"
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one OmniLight3D."
+msgstr "Kiemeli a legalább egy OmniLight3D által érintett pixelcsempéket."
+
+msgid "SpotLight3D Cluster"
+msgstr "SpotLight3D Csoport"
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one SpotLight3D."
+msgstr "Kiemeli a legalább egy SpotLight3D által érintett pixelcsempéket."
+
+msgid "Decal Cluster"
+msgstr "Decal Csoport"
+
+msgid "Highlights tiles of pixels that are affected by at least one Decal."
+msgstr "Kiemeli a legalább egy Decal által érintett pixelcsempéket."
+
+msgid ""
+"Highlights tiles of pixels that are affected by at least one ReflectionProbe."
+msgstr "Kiemeli a legalább egy ReflectionProbe által érintett pixelcsempéket."
+
+msgid "Occlusion Culling Buffer"
+msgstr "Occlusion Culling Buffer"
+
+msgid ""
+"Represents occluders with black pixels. Requires occlusion culling to be "
+"enabled to have a visible effect."
+msgstr ""
+"Fekete pixeleket tartalmazó occluder-eket képvisel. Engedélyezett occlusion "
+"culling szükséges az érzékelhető eredményhez."
+
+msgid ""
+"Represents motion vectors with colored lines in the direction of motion. Gray "
+"dots represent areas with no per-pixel motion."
+msgstr ""
+"Mozgásvektorokat képvisel mozgásiránynak megfelelő színes vonalak képében. A "
+"szürke pontok pixelenkénti mozdulatlanságot képviselnek."
+
 msgid "Internal Buffer"
 msgstr "Belső Buffer"
+
+msgid ""
+"Shows the scene rendered in linear colorspace before any tonemapping or post-"
+"processing."
+msgstr ""
+"Megmutatja a renderelt jelenetet színleképezés és utófeldolgozás előtti "
+"lineáris színtérben."
+
+msgid "View Environment"
+msgstr "Környezet Megtekintése"
 
 msgid "View Grid"
 msgstr "Négyzethálós Nézet"

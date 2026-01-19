@@ -103,7 +103,7 @@
 # J_aphasiac <japhasiac@163.com>, 2025.
 # BuddhaGrape <3248882725@qq.com>, 2025.
 # ChenLei <falsecollector@outlook.com>, 2025.
-# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
 # Jianwen Xu <jianwen-xu@users.noreply.hosted.weblate.org>, 2025.
 # bocai-bca <c3204835842@icloud.com>, 2025.
 # Genius Embroider <aaronblack45@outlook.com>, 2025.
@@ -117,8 +117,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-01-01 14:54+0000\n"
-"Last-Translator: Zhen Luo <461652354@qq.com>\n"
+"PO-Revision-Date: 2026-01-15 02:10+0000\n"
+"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -126,7 +126,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "确定"
@@ -136,6 +136,9 @@ msgstr "已锁定"
 
 msgid "Help"
 msgstr "帮助"
+
+msgid "Printer on fire"
+msgstr "打印机起火"
 
 msgid "unset"
 msgstr "未设置"

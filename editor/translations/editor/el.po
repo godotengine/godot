@@ -33,13 +33,14 @@
 # Giannis Krommydas <john1052004@gmail.com>, 2025.
 # Dimitris Kapsacheilis <loljimycool@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Durondal <p16sias@ionio.gr>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-10-13 10:07+0000\n"
-"Last-Translator: \"A Thousand Ships (she/her)\" <over999ships@gmail.com>\n"
+"PO-Revision-Date: 2026-01-18 16:02+0000\n"
+"Last-Translator: Durondal <p16sias@ionio.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -47,13 +48,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Εντάξει"
 
+msgid "Failed"
+msgstr "Απέτυχε"
+
+msgid "Unavailable"
+msgstr "Μη διαθέσιμο"
+
+msgid "Unconfigured"
+msgstr "Μη διαμορφωμένο"
+
+msgid "Unauthorized"
+msgstr "Μη εξουσιοδοτημένο"
+
+msgid "Parameter out of range"
+msgstr "Παράμετρος εκτός εύρους"
+
+msgid "Out of memory"
+msgstr "Εξαντλημένη μνήμη"
+
+msgid "File not found"
+msgstr "Το αρχείο δεν βρέθηκε"
+
+msgid "File: Bad drive"
+msgstr "Αρχείο: Μη έγκυρη μονάδα δίσκου"
+
+msgid "File: Bad path"
+msgstr "Αρχείο: Μη έγκυρη διαδρομή"
+
+msgid "File: Permission denied"
+msgstr "Αρχείο: Δεν επιτρέπεται η πρόσβαση"
+
+msgid "File already in use"
+msgstr "Το αρχείο χρησιμοποιείται ήδη"
+
+msgid "Can't open file"
+msgstr "Δεν είναι δυνατό το άνοιγμα του αρχείου"
+
+msgid "Can't write file"
+msgstr "Δεν είναι δυνατή η εγγραφή στο αρχείο"
+
+msgid "Can't read file"
+msgstr "Δεν είναι δυνατή η ανάγνωση του αρχείου"
+
+msgid "File unrecognized"
+msgstr "Το αρχείο δεν αναγνωρίζεται"
+
+msgid "File corrupt"
+msgstr "Το αρχείο είναι κατεστραμμένο"
+
+msgid "Missing dependencies for file"
+msgstr "Λείπουν εξαρτήσεις για το αρχείο"
+
+msgid "End of file"
+msgstr "Τέλος αρχείου"
+
+msgid "Can't open"
+msgstr "Δεν είναι δυνατό το άνοιγμα"
+
+msgid "Can't create"
+msgstr "Δεν είναι δυνατή η δημιουργία"
+
+msgid "Query failed"
+msgstr "Το ερώτημα απέτυχε"
+
+msgid "Already in use"
+msgstr "Ήδη σε χρήση"
+
+msgid "Locked"
+msgstr "Κλειδωμένο"
+
+msgid "Timeout"
+msgstr "Λήξη χρονικού ορίου"
+
+msgid "Can't connect"
+msgstr "Δεν είναι δυνατή η σύνδεση"
+
+msgid "Can't resolve"
+msgstr "Δεν είναι δυνατή η επίλυση"
+
+msgid "Connection error"
+msgstr "Σφάλμα σύνδεσης"
+
+msgid "Can't acquire resource"
+msgstr "Δεν είναι δυνατή η απόκτηση πόρου"
+
+msgid "Can't fork"
+msgstr "Δεν είναι δυνατή η δημιουργία διεργασίας"
+
+msgid "Invalid data"
+msgstr "Μη έγκυρα δεδομένα"
+
+msgid "Invalid parameter"
+msgstr "Μη έγκυρη παράμετρος"
+
+msgid "Already exists"
+msgstr "Υπάρχει ήδη"
+
+msgid "Does not exist"
+msgstr "Δεν υπάρχει"
+
+msgid "Can't read database"
+msgstr "Δεν είναι δυνατή η ανάγνωση της βάσης δεδομένων"
+
+msgid "Can't write database"
+msgstr "Δεν είναι δυνατή η εγγραφή στη βάση δεδομένων"
+
+msgid "Compilation failed"
+msgstr "Αποτυχία μεταγλώττισης"
+
+msgid "Method not found"
+msgstr "Δεν βρέθηκε η μέθοδος"
+
+msgid "Link failed"
+msgstr "Αποτυχία σύνδεσης"
+
+msgid "Script failed"
+msgstr "Αποτυχία εκτέλεσης σεναρίου"
+
+msgid "Cyclic link detected"
+msgstr "Εντοπίστηκε κυκλική σύνδεση"
+
+msgid "Invalid declaration"
+msgstr "Μη έγκυρη δήλωση"
+
+msgid "Duplicate symbol"
+msgstr "Διπλό σύμβολο"
+
+msgid "Parse error"
+msgstr "Σφάλμα ανάλυσης"
+
+msgid "Busy"
+msgstr "Απασχολημένο"
+
+msgid "Skip"
+msgstr "Παράλειψη"
+
 msgid "Help"
 msgstr "Βοήθεια"
+
+msgid "Bug"
+msgstr "Σφάλμα"
+
+msgid "Printer on fire"
+msgstr "Ο εκτυπωτής έχει πάρει φωτιά"
 
 msgid "Physical"
 msgstr "Φυσικό"

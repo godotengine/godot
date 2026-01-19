@@ -40,13 +40,14 @@
 # EnderIce2 <enderice2@protonmail.com>, 2025.
 # Gape Gepeto <gapegepeto@gmail.com>, 2026.
 # Rareș Bozga <darwj10011@gmail.com>, 2026.
+# ADV <alex.devien@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-04 11:01+0000\n"
-"Last-Translator: Rareș Bozga <darwj10011@gmail.com>\n"
+"PO-Revision-Date: 2026-01-14 05:00+0000\n"
+"Last-Translator: ADV <alex.devien@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -55,10 +56,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2-dev\n"
 
 msgid "OK"
 msgstr "OK"
+
+msgid "Unauthorized"
+msgstr "Neautorizat"
+
+msgid "Out of memory"
+msgstr "Memorie epuizată"
+
+msgid "File: Permission denied"
+msgstr "Acces respins"
+
+msgid "File corrupt"
+msgstr "Fișier corupt"
+
+msgid "Can't write database"
+msgstr "Nu se poate scrie în baza de date"
+
+msgid "Cyclic link detected"
+msgstr "Legătură ciclică detectată"
 
 msgid "Help"
 msgstr "Ajutor"

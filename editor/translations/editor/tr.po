@@ -127,13 +127,14 @@
 # Aras Ege Gündüz <araszekeriya@hotmail.com>, 2025.
 # Volkan <vnyz2002@gmail.com>, 2026.
 # KiiVoZin <kiivozin@gmail.com>, 2026.
+# Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-12 20:12+0000\n"
-"Last-Translator: KiiVoZin <kiivozin@gmail.com>\n"
+"PO-Revision-Date: 2026-01-18 16:02+0000\n"
+"Last-Translator: ulk <ulk.info@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -141,16 +142,142 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Tamam"
 
+msgid "Failed"
+msgstr "Başarısız"
+
+msgid "Unavailable"
+msgstr "Erişilemez"
+
+msgid "Unconfigured"
+msgstr "Yapılandırılmamış"
+
+msgid "Unauthorized"
+msgstr "Yetkilendirilmemiş"
+
+msgid "Parameter out of range"
+msgstr "Parametre değer aralığı dışında"
+
+msgid "Out of memory"
+msgstr "Yetersiz bellek"
+
+msgid "File not found"
+msgstr "Dosya bulunamadı"
+
+msgid "File: Bad drive"
+msgstr "Dosya: Bozuk sürücü"
+
+msgid "File: Bad path"
+msgstr "Dosya: Geçersiz dizin"
+
+msgid "File: Permission denied"
+msgstr "Dosya: İzin reddedildi"
+
+msgid "File already in use"
+msgstr "Dosya zaten kullanımda"
+
+msgid "Can't open file"
+msgstr "Dosya açılamıyor"
+
+msgid "Can't write file"
+msgstr "Dosya yazılamıyor"
+
+msgid "Can't read file"
+msgstr "Dosya okunamyor"
+
+msgid "File unrecognized"
+msgstr "Dosya tanınamadı"
+
+msgid "File corrupt"
+msgstr "Dosya bozuk"
+
+msgid "Missing dependencies for file"
+msgstr "Dosya için eksik bağımlılıklar"
+
+msgid "End of file"
+msgstr "Dosya sonu"
+
+msgid "Can't open"
+msgstr "Açılamıyor"
+
+msgid "Can't create"
+msgstr "Oluşturulamıyor"
+
+msgid "Query failed"
+msgstr "İstek başarısız"
+
+msgid "Already in use"
+msgstr "Zaten kullanımda"
+
 msgid "Locked"
 msgstr "Kilitli"
 
+msgid "Timeout"
+msgstr "Zaman aşımı"
+
+msgid "Can't connect"
+msgstr "Bağlanamıyor"
+
+msgid "Can't resolve"
+msgstr "Çözümlenemedi"
+
+msgid "Can't acquire resource"
+msgstr "Kaynağa erişilemiyor"
+
+msgid "Invalid data"
+msgstr "Geçersiz veri"
+
+msgid "Invalid parameter"
+msgstr "Geçersiz parametre"
+
+msgid "Already exists"
+msgstr "Zaten var"
+
+msgid "Does not exist"
+msgstr "Mevcut değil"
+
+msgid "Can't read database"
+msgstr "Veritabanı okunamıyor"
+
+msgid "Can't write database"
+msgstr "veritabanına yazılamıyor"
+
+msgid "Compilation failed"
+msgstr "Derleme başarısız oldu"
+
+msgid "Link failed"
+msgstr "Bağlantı başarısız oldu"
+
+msgid "Script failed"
+msgstr "Betik başarısız oldu"
+
+msgid "Invalid declaration"
+msgstr "Hatalı tanımlama"
+
+msgid "Duplicate symbol"
+msgstr "Çakışan sembol"
+
+msgid "Parse error"
+msgstr "Söz dizimi hatası"
+
+msgid "Busy"
+msgstr "Meşgul"
+
+msgid "Skip"
+msgstr "Atla"
+
 msgid "Help"
 msgstr "Yardım"
+
+msgid "Bug"
+msgstr "Hata"
+
+msgid "Printer on fire"
+msgstr "Yazıcı alev aldı"
 
 msgid "unset"
 msgstr "ayarlamayı kaldır"
@@ -705,6 +832,9 @@ msgstr "Yakala"
 
 msgid "Create points."
 msgstr "Noktalar oluştur."
+
+msgid "Set the blending position within the space."
+msgstr "Alan içindeki harmanlama konumunu ayarla."
 
 msgid "Erase points."
 msgstr "Noktaları sil."
@@ -15634,6 +15764,9 @@ msgstr "Sabit Ayarla: %s"
 
 msgid "Invalid name for varying."
 msgstr "Değişen için geçersiz isim."
+
+msgid "Varying with that name already exists."
+msgstr "Bu isimle bir değişen zaten var."
 
 msgid "Boolean type cannot be used with `%s` varying mode."
 msgstr "Mantıksal tip `%s` değişen modu ile kullanılamaz."

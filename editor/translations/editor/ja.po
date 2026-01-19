@@ -82,7 +82,7 @@
 # Yu Tanaka <yrk00337@gmail.com>, 2024.
 # 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
 # UtanoSchell <utano.mayonaka@gmail.com>, 2025.
-# Myeongjin Lee <aranet100@gmail.com>, 2025.
+# Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
 # Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
 # RockHopperPenguin64 <ryo1108820@gmail.com>, 2025.
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2025.
@@ -97,8 +97,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-18 20:24+0000\n"
-"Last-Translator: Amir Sabbagh <amir420c@gmail.com>\n"
+"PO-Revision-Date: 2026-01-15 02:11+0000\n"
+"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -106,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "OK"
@@ -116,6 +116,9 @@ msgstr "ロック済み"
 
 msgid "Help"
 msgstr "ヘルプ"
+
+msgid "Printer on fire"
+msgstr "プリンター発火"
 
 msgid "Physical"
 msgstr "物理"

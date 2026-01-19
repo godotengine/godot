@@ -43,13 +43,16 @@
 # Rosas Francisco <rosasfran.97@gmail.com>, 2025.
 # agus <panmmnda@gmail.com>, 2025.
 # Nacho Roby <juanignacioroby@gmail.com>, 2026.
+# rus <mirandaesar@gmail.com>, 2026.
+# leandro jimenez saientz <leandro.jimenez@escuelaintegral.edu.ar>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-07 17:02+0000\n"
-"Last-Translator: Nacho Roby <juanignacioroby@gmail.com>\n"
+"PO-Revision-Date: 2026-01-18 16:01+0000\n"
+"Last-Translator: leandro jimenez saientz "
+"<leandro.jimenez@escuelaintegral.edu.ar>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -57,16 +60,115 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "Fallido:"
+
+msgid "Unavailable"
+msgstr "No disponible"
+
+msgid "Unconfigured"
+msgstr "Sin configurar"
+
+msgid "Unauthorized"
+msgstr "sin permiso"
+
+msgid "Parameter out of range"
+msgstr "Parámetro fuera de gama"
+
+msgid "Out of memory"
+msgstr "sin memoria"
+
+msgid "File not found"
+msgstr "archivo no encontrado"
+
+msgid "File: Bad drive"
+msgstr "archivo: mal manejo"
+
+msgid "File: Bad path"
+msgstr "archivo: ruta incorrecta"
+
+msgid "File: Permission denied"
+msgstr "archivo: permiso denegado"
+
+msgid "File already in use"
+msgstr "el archivo ya existe"
+
+msgid "Can't open file"
+msgstr "No se puede abrir el archivo"
+
+msgid "Can't write file"
+msgstr "no se puede escribir este archivo"
+
+msgid "Can't read file"
+msgstr "no se puede leer el archivo"
+
+msgid "File unrecognized"
+msgstr "Archivo no reconocido"
+
+msgid "File corrupt"
+msgstr "archivo corrompido"
+
+msgid "Missing dependencies for file"
+msgstr "Falta de dependencias para el archivo"
+
+msgid "End of file"
+msgstr "fin del archivo"
+
+msgid "Can't open"
+msgstr "No se ha podido abrir"
+
+msgid "Can't create"
+msgstr "No puedo crear"
+
+msgid "Query failed"
+msgstr "Solicitud fallida."
+
 msgid "Locked"
 msgstr "Bloqueado"
 
+msgid "Timeout"
+msgstr "Tiempo de espera agotado"
+
+msgid "Can't connect"
+msgstr "No se puede conectar."
+
+msgid "Can't resolve"
+msgstr "No se ha podido resolver."
+
+msgid "Does not exist"
+msgstr "no existe"
+
+msgid "Can't write database"
+msgstr "no se pude escribir la base de datos"
+
+msgid "Script failed"
+msgstr "script fallido"
+
+msgid "Cyclic link detected"
+msgstr "Enlace cíclico detectado"
+
+msgid "Duplicate symbol"
+msgstr "Duplicar simbolo"
+
+msgid "Busy"
+msgstr "Ocupado"
+
+msgid "Skip"
+msgstr "omitir"
+
 msgid "Help"
 msgstr "Ayuda"
+
+msgid "Bug"
+msgstr "error"
+
+msgid "unset"
+msgstr "Sin establecer"
 
 msgid "Physical"
 msgstr "Físico"
