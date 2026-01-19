@@ -942,7 +942,7 @@ public:
 		FunctionNode *source_function = nullptr; // TODO: Rename to disambiguate `function_source`.
 
 		int usages = 0; // Useful for binds/iterator variable.
-		int struct_member_index = -1; // For struct member access optimization (cached offset)
+		int struct_member_index = -1; // Cached struct member offset.
 
 		IdentifierNode() {
 			type = IDENTIFIER;
