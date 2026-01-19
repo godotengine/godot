@@ -164,6 +164,9 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case LAMBDA_IN_PROCESS_FUNCTION:
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(Creating lambdas or callables in "%s()" which is called every frame may cause performance issues. Consider caching the callable outside the function or using a direct loop instead.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -241,6 +244,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
+		PNAME("LAMBDA_IN_PROCESS_FUNCTION"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
