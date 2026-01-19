@@ -685,7 +685,7 @@ public:
 					case SIGNAL:
 						return signal->get_datatype();
 					case STRUCT:
-						return DataType(); // Structs are types themselves
+						return m_struct->get_datatype();
 					case GROUP:
 						return DataType();
 					case UNDEFINED:
