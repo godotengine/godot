@@ -53,6 +53,7 @@ public:
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
+		STRUCT,
 	};
 
 	Kind kind = VARIANT;

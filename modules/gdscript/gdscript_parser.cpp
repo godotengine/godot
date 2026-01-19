@@ -4691,7 +4691,7 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::STRUCT: {
 			// Structs are compile-time constructs, treated as dictionaries at runtime
-			return Dictionary::get_class_static();
+			return SNAME("Dictionary");
 		} break;
 		default: {
 			ERR_FAIL_V(StringName());

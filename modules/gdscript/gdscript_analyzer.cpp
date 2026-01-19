@@ -1223,15 +1223,15 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					GDScriptParser::StructNode::Member &struct_member = member.m_struct->members.write[j];
 					
 					if (struct_member.datatype_specifier) {
-						struct_member.datatype = resolve_datatype(struct_member.datatype_specifier);
-					} else {
-						struct_member.datatype.kind = GDScriptParser::DataType::VARIANT;
+						GDScriptParser::DataType member_type = resolve_datatype(struct_member.datatype_specifier);
+						// Store resolved type in the type specifier node
+						struct_member.datatype_specifier->set_datatype(member_type);
 					}
 					
-					if (struct_member.default_value) {
-						reduce_expression(struct_member.default_value);
-						if (!struct_member.default_value->is_constant) {
-							push_error(R"(Struct default values must be constant.)", struct_member.default_value);
+					if (struct_member.initializer) {
+						reduce_expression(struct_member.initializer);
+						if (!struct_member.initializer->is_constant) {
+							push_error(R"(Struct default values must be constant.)", struct_member.initializer);
 						}
 					}
 				}
@@ -3288,6 +3288,49 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			return;
 		}
 
+		// Check if it's a struct constructor
+		if (parser->current_class->has_member(function_name)) {
+			GDScriptParser::ClassNode::Member member = parser->current_class->get_member(function_name);
+			if (member.type == GDScriptParser::ClassNode::Member::STRUCT) {
+				// Struct instantiation
+				resolve_class_member(parser->current_class, function_name, p_call);
+				
+				call_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				call_type.kind = GDScriptParser::DataType::STRUCT;
+				call_type.builtin_type = Variant::DICTIONARY;
+				call_type.is_meta_type = false;
+				call_type.struct_type = member.get_datatype();
+				call_type.struct_definition = member.m_struct;
+				
+				// Validate argument count matches struct members
+				if (p_call->arguments.size() > member.m_struct->members.size()) {
+					push_error(vformat(R"(Too many arguments for struct "%s()" constructor. Expected %d, got %d.)", 
+						function_name, member.m_struct->members.size(), p_call->arguments.size()), p_call);
+				}
+				
+				// Type check each argument against struct member types
+				for (int i = 0; i < p_call->arguments.size(); i++) {
+					if (i < member.m_struct->members.size()) {
+						const GDScriptParser::StructNode::Member &struct_member = member.m_struct->members[i];
+						if (struct_member.datatype_specifier) {
+							GDScriptParser::DataType member_type = struct_member.datatype_specifier->get_datatype();
+							if (member_type.is_set() && !member_type.is_variant()) {
+								GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+								if (!is_type_compatible(member_type, arg_type, true)) {
+									push_error(vformat(R"(Invalid type for argument %d of "%s()". Expected "%s", got "%s".)", 
+										i + 1, Variant(function_name), member_type.to_string(), arg_type.to_string()), 
+										p_call->arguments[i]);
+								}
+							}
+						}
+					}
+				}
+				
+				p_call->set_datatype(call_type);
+				return;
+			}
+		}
+		
 		Variant::Type builtin_type = GDScriptParser::get_builtin_type(function_name);
 		if (builtin_type < Variant::VARIANT_MAX) {
 			// Is a builtin constructor.
