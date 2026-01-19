@@ -30,16 +30,15 @@
 
 #pragma once
 
-#include "core/io/image_loader.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 
-class ResourceImporterDds : public ResourceImporter {
-	GDCLASS(ResourceImporterDds, ResourceImporter);
-	static ResourceImporterDds *singleton;
+class ResourceImporterDDS : public ResourceImporter {
+	GDCLASS(ResourceImporterDDS, ResourceImporter);
+	static ResourceImporterDDS *singleton;
 
 public:
-	static ResourceImporterDds *get_singleton() { return singleton; }
+	static ResourceImporterDDS *get_singleton() { return singleton; }
 
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
@@ -53,8 +52,8 @@ public:
 
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	ResourceImporterDds(bool p_singleton = false);
-	virtual ~ResourceImporterDds() = default;
+	ResourceImporterDDS(bool p_singleton = false);
+	virtual ~ResourceImporterDDS() = default;
 };
 
 class ResourceLoaderDDS : public ResourceFormatLoader {

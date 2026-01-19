@@ -148,6 +148,9 @@ public:
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) = 0;
+
 	Array _texture_debug_usage_bind();
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;

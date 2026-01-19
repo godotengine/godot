@@ -30,15 +30,13 @@
 
 #include "texture_loader_dds.h"
 
-#include "core/io/dir_access.h"
 #include "dds_enums.h"
-#include "image_saver_dds.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
-#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
@@ -750,41 +748,41 @@ Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 	return images[0];
 }
 
-ResourceImporterDds *ResourceImporterDds::singleton = nullptr;
+ResourceImporterDDS *ResourceImporterDDS::singleton = nullptr;
 
-String ResourceImporterDds::get_importer_name() const {
+String ResourceImporterDDS::get_importer_name() const {
 	return "dds_texture";
 }
 
-String ResourceImporterDds::get_visible_name() const {
+String ResourceImporterDDS::get_visible_name() const {
 	return "Texture";
 }
 
-void ResourceImporterDds::get_recognized_extensions(List<String> *p_extensions) const {
+void ResourceImporterDDS::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("dds");
 }
 
-String ResourceImporterDds::get_save_extension() const {
+String ResourceImporterDDS::get_save_extension() const {
 	return "dds";
 }
 
-String ResourceImporterDds::get_resource_type() const {
+String ResourceImporterDDS::get_resource_type() const {
 	return "Texture";
 }
 
-void ResourceImporterDds::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+void ResourceImporterDDS::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
-bool ResourceImporterDds::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+bool ResourceImporterDDS::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	return true;
 }
 
-Error ResourceImporterDds::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterDDS::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	// Simply copy the file as-is.
 	return DirAccess::copy_absolute(p_source_file, p_save_path + ".dds");
 }
 
-ResourceImporterDds::ResourceImporterDds(bool p_singleton) {
+ResourceImporterDDS::ResourceImporterDDS(bool p_singleton) {
 	// This should only be set through the EditorNode.
 	if (p_singleton) {
 		singleton = this;

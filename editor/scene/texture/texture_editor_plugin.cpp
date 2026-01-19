@@ -47,6 +47,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -351,7 +352,8 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
 			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
 			Object::cast_to<DPITexture>(p_object) != nullptr ||
-			Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+			Object::cast_to<Texture2DRD>(p_object) != nullptr ||
+			Object::cast_to<StreamedTexture2D>(p_object) != nullptr) {
 		return true;
 	}
 
