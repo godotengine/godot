@@ -192,6 +192,11 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.kind = GDScriptDataType::BUILTIN;
 			result.builtin_type = p_datatype.builtin_type;
 			break;
+		case GDScriptParser::DataType::STRUCT:
+			// Structs are compile-time constructs, represented as dictionaries at runtime
+			result.kind = GDScriptDataType::STRUCT;
+			result.builtin_type = Variant::DICTIONARY;
+			break;
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED: {
 			_set_error("Parser bug (please report): converting unresolved type.", nullptr);
