@@ -3299,13 +3299,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				call_type.kind = GDScriptParser::DataType::STRUCT;
 				call_type.builtin_type = Variant::DICTIONARY;
 				call_type.is_meta_type = false;
-				call_type.struct_type = member.get_datatype();
+				call_type.struct_type = member.m_struct->identifier->name;
 				call_type.struct_definition = member.m_struct;
 				
 				// Validate argument count matches struct members
 				if (p_call->arguments.size() > member.m_struct->members.size()) {
-					push_error(vformat(R"(Too many arguments for struct "%s()" constructor. Expected %d, got %d.)", 
-						String(function_name), member.m_struct->members.size(), p_call->arguments.size()), p_call);
+					String err_msg = vformat("Too many arguments for struct \"%s()\" constructor. Expected %d, got %d.", 
+						String(function_name), member.m_struct->members.size(), p_call->arguments.size());
+					push_error(err_msg, p_call);
 				}
 				
 				// Type check each argument against struct member types
@@ -3317,9 +3318,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							if (member_type.is_set() && !member_type.is_variant()) {
 								GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 								if (!is_type_compatible(member_type, arg_type, true)) {
-									push_error(vformat(R"(Invalid type for argument %d of "%s()". Expected "%s", got "%s".)", 
-										i + 1, String(function_name), member_type.to_string(), arg_type.to_string()), 
-										p_call->arguments[i]);
+									String err_msg = vformat("Invalid type for argument %d of \"%s()\". Expected \"%s\" but got \"%s\".", 
+										i + 1, String(function_name), member_type.to_string(), arg_type.to_string());
+									push_error(err_msg, p_call->arguments[i]);
 								}
 							}
 						}
