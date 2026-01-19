@@ -1219,6 +1219,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				struct_type.builtin_type = Variant::DICTIONARY;
 				struct_type.is_constant = false;
 				struct_type.is_meta_type = true;
+				struct_type.struct_type = member.m_struct->identifier->name;
 				struct_type.struct_definition = member.m_struct;
 				
 				// Resolve member types
