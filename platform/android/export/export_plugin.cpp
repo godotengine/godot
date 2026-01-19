@@ -1037,8 +1037,11 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
 			const String contents = export_plugins[i]->get_android_manifest_element_contents(Ref<EditorExportPlatform>(this), p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_text += "<!-- Start of manifest element contents from " + export_plugin_name + " -->\n";
 				manifest_text += contents;
 				manifest_text += "\n";
+				manifest_text += "<!-- End of manifest element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
