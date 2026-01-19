@@ -1840,7 +1840,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_uniform_string = "material.";
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR;
 		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
-		actions.base_varying_index = 8;
+		actions.base_varying_index = 9;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
