@@ -567,6 +567,8 @@ class ScriptEditor : public PanelContainer {
 	static void _open_script_request(const String &p_path);
 	void _close_builtin_scripts_from_scene(const String &p_scene);
 
+	void _toggle_always_on_top(); // TODO: Saulo
+
 	static ScriptEditor *script_editor;
 
 protected:

@@ -90,6 +90,9 @@ public:
 
 	void set_override_close_request(bool p_enabled);
 
+	void set_always_on_top(bool p_enabled);
+	bool is_always_on_top() const;
+
 	WindowWrapper();
 	~WindowWrapper();
 };

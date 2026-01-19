@@ -1213,6 +1213,12 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 	return need_reload;
 }
 
+void ScriptEditor::_toggle_always_on_top() { // TODO: Saulo
+	print_line("saulo priscilla");
+	bool enabled = !window_wrapper->is_always_on_top();
+	window_wrapper->set_always_on_top(enabled);
+}
+
 void _import_text_editor_theme(const String &p_file) {
 	if (p_file.get_extension() != "tet") {
 		EditorToaster::get_singleton()->popup_str(TTR("Importing theme failed. File is not a text editor theme file (.tet)."), EditorToaster::SEVERITY_ERROR);
@@ -4472,6 +4478,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_button_right_spacer = memnew(Control);
 	script_name_button_right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	script_name_button_hbox->add_child(script_name_button_right_spacer);
+
+	// TODO: Saulo
+	Button *btn = memnew(Button);
+	btn->set_text("Always On Top");
+	btn->connect("button_down", callable_mp(this, &ScriptEditor::_toggle_always_on_top));
+	menu_hb->add_child(btn);
 
 	site_search = memnew(Button);
 	site_search->set_theme_type_variation(SceneStringName(FlatButton));
