@@ -406,7 +406,7 @@ public:
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
-	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false);
+	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false, const String &p_folder = "");
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);

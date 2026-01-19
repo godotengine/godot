@@ -1364,6 +1364,10 @@ void FindInFilesContainer::_files_modified() {
 	emit_signal(SNAME("files_modified"));
 }
 
+void FindInFilesDialog::set_folder(const String &folder) {
+	folder_line_edit->set_text(folder);
+}
+
 void FindInFilesContainer::_close_panel(FindInFilesPanel *p_panel) {
 	ERR_FAIL_COND_MSG(p_panel->get_parent() != tabs, "This panel is not a child!");
 	tabs->remove_child(p_panel);
@@ -1526,12 +1530,13 @@ void FindInFiles::_start_search(bool p_with_replace) {
 	container->make_visible();
 }
 
-void FindInFiles::open_dialog(const String &p_initial_text, bool p_replace) {
+void FindInFiles::open_dialog(const String &p_initial_text, bool p_replace, const String &p_folder) {
 	dialog->set_replace_mode(p_replace);
 	dialog->set_search_text(p_initial_text);
 	if (p_replace) {
 		dialog->set_replace_text(String());
 	}
+	dialog->set_folder(p_folder);
 	dialog->popup_centered();
 }
 
