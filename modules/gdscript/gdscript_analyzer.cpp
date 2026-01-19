@@ -870,7 +870,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 							break;
 						case GDScriptParser::ClassNode::Member::STRUCT: {
 							// Return the struct metatype for use in type annotations
-							result = member.get_datatype();
+							GDScriptParser::DataType struct_datatype = member.get_datatype();
+							// Ensure struct_type name is set for to_string()
+							if (struct_datatype.struct_type == StringName() && struct_datatype.struct_definition) {
+								struct_datatype.struct_type = struct_datatype.struct_definition->identifier->name;
+							}
+							result = struct_datatype;
 							result.is_meta_type = true;
 							found = true;
 							break;
