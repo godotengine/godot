@@ -868,10 +868,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 							result = member.get_datatype();
 							found = true;
 							break;
-						case GDScriptParser::ClassNode::Member::STRUCT:
+						case GDScriptParser::ClassNode::Member::STRUCT: {
+							// Return the struct metatype for use in type annotations
 							result = member.get_datatype();
+							result.is_meta_type = true;
 							found = true;
 							break;
+						}
 						case GDScriptParser::ClassNode::Member::CONSTANT:
 							if (member.get_datatype().is_meta_type) {
 								result = member.get_datatype();
