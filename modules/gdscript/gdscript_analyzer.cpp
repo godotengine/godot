@@ -868,6 +868,10 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 							result = member.get_datatype();
 							found = true;
 							break;
+						case GDScriptParser::ClassNode::Member::STRUCT:
+							result = member.get_datatype();
+							found = true;
+							break;
 						case GDScriptParser::ClassNode::Member::CONSTANT:
 							if (member.get_datatype().is_meta_type) {
 								result = member.get_datatype();
@@ -1199,6 +1203,40 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					resolve_annotation(E);
 					E->apply(parser, member.m_enum, p_class);
 				}
+			} break;
+			case GDScriptParser::ClassNode::Member::STRUCT: {
+				check_class_member_name_conflict(p_class, member.m_struct->identifier->name, member.m_struct);
+				
+				member.m_struct->set_datatype(resolving_datatype);
+				
+				// Create struct type
+				GDScriptParser::DataType struct_type;
+				struct_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+				struct_type.kind = GDScriptParser::DataType::STRUCT;
+				struct_type.builtin_type = Variant::DICTIONARY;
+				struct_type.is_constant = false;
+				struct_type.is_meta_type = true;
+				struct_type.struct_definition = member.m_struct;
+				
+				// Resolve member types
+				for (int j = 0; j < member.m_struct->members.size(); j++) {
+					GDScriptParser::StructNode::Member &struct_member = member.m_struct->members.write[j];
+					
+					if (struct_member.datatype_specifier) {
+						struct_member.datatype = resolve_datatype(struct_member.datatype_specifier);
+					} else {
+						struct_member.datatype.kind = GDScriptParser::DataType::VARIANT;
+					}
+					
+					if (struct_member.default_value) {
+						reduce_expression(struct_member.default_value);
+						if (!struct_member.default_value->is_constant) {
+							push_error(R"(Struct default values must be constant.)", struct_member.default_value);
+						}
+					}
+				}
+				
+				member.m_struct->set_datatype(struct_type);
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {

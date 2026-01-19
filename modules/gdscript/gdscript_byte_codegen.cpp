@@ -640,6 +640,13 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 
 void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {
 	switch (p_type.kind) {
+		case GDScriptDataType::STRUCT: {
+			// Structs are compile-time only, treated as dictionaries at runtime
+			append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_BUILTIN);
+			append(p_target);
+			append(p_source);
+			append(Variant::DICTIONARY);
+		} break;
 		case GDScriptDataType::BUILTIN: {
 			if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
 				const GDScriptDataType &element_type = p_type.get_container_element_type(0);
@@ -1039,6 +1046,11 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 	int index = 0;
 
 	switch (p_type.kind) {
+		case GDScriptDataType::STRUCT: {
+			// Structs are compile-time only, cast to dictionary at runtime
+			append_opcode(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
+			index = Variant::DICTIONARY;
+		} break;
 		case GDScriptDataType::BUILTIN: {
 			append_opcode(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
 			index = p_type.builtin_type;
