@@ -747,6 +747,10 @@ public:
 				type = ENUM_VALUE;
 				enum_value = p_enum_value;
 			}
+			Member(StructNode *p_struct) {
+				type = STRUCT;
+				m_struct = p_struct;
+			}
 			Member(AnnotationNode *p_annotation) {
 				type = GROUP;
 				annotation = p_annotation;
