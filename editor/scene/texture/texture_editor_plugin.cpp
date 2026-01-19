@@ -48,6 +48,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -371,7 +372,8 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
 			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
 			Object::cast_to<DPITexture>(p_object) != nullptr ||
-			Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+			Object::cast_to<Texture2DRD>(p_object) != nullptr ||
+			Object::cast_to<StreamedTexture2D>(p_object) != nullptr) {
 		return true;
 	}
 
@@ -385,7 +387,17 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 	Ref<Texture> texture(Object::cast_to<Texture>(p_object));
-	if (texture.is_null()) {
+	if (texture.is_valid()) {
+		// Load the full-resolution image for streamed textures.
+		const Ref<StreamedTexture2D> streamed_texture(texture);
+		if (streamed_texture.is_valid()) {
+			const Ref<Image> image = streamed_texture->get_image();
+			if (image.is_valid()) {
+				texture = ImageTexture::create_from_image(image);
+			}
+		}
+	} else {
+		// Not a texture, try to load as an image.
 		Ref<Image> image(Object::cast_to<Image>(p_object));
 		texture = ImageTexture::create_from_image(image);
 
