@@ -1053,6 +1053,22 @@
 				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
 			</description>
 		</method>
+		<method name="texture_create_from_existing_mipchain">
+			<return type="RID" />
+			<param index="0" name="existing_texture" type="RID" />
+			<param index="1" name="format" type="RDTextureFormat" />
+			<param index="2" name="view" type="RDTextureView" />
+			<param index="3" name="copy_mips_count" type="int" />
+			<param index="4" name="new_mip_data" type="PackedByteArray[]" default="[]" />
+			<description>
+				Creates a new texture by copying mipmap levels from an [param existing_texture] and optionally adding new higher-detail mip levels. This is useful for increasing texture quality by prepending new mip levels to an existing mip chain.
+				The [param copy_mips_count] parameter specifies how many mipmap levels to copy from [param existing_texture] (starting from its mip 0). The remaining mip levels specified in [param format] (i.e., [code]format.mipmaps - copy_mips_count[/code]) will be filled with the data provided in [param new_mip_data].
+				The new texture is created according to [param format] and [param view]. The [member RDTextureFormat.format] must match the format of [param existing_texture].
+				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
+				[b]Note:[/b] [param existing_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be set.
+				[b]Note:[/b] [param existing_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created.
+			</description>
+		</method>
 		<method name="texture_create_from_extension">
 			<return type="RID" />
 			<param index="0" name="type" type="int" enum="RenderingDevice.TextureType" />

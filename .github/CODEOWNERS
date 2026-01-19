@@ -148,6 +148,7 @@
 /modules/raycast/                             @godotengine/rendering
 /modules/vhacd/                               @godotengine/rendering
 /modules/xatlas_unwrap/                       @godotengine/rendering
+/modules/texture_streaming/                   @godotengine/rendering
 
 ## Scripting
 /modules/gdscript/                            @godotengine/gdscript

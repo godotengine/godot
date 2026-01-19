@@ -30,15 +30,13 @@
 
 #include "texture_loader_dds.h"
 
-#include "core/io/dir_access.h"
 #include "dds_enums.h"
-#include "image_saver_dds.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
-#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
