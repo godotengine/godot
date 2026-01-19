@@ -1664,8 +1664,16 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_DICTIONARY;
 					break;
 				case Variant::ARRAY:
-					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_ARRAY;
-					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_ARRAY;
+					// Check if this is a typed array for optimization
+					if (container.type.has_container_element_type(0)) {
+						// Typed array - use optimized iteration opcodes
+						begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_ARRAY;
+						iterate_opcode = GDScriptFunction::OPCODE_ITERATE_TYPED_ARRAY;
+					} else {
+						// Untyped array - use generic opcodes
+						begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_ARRAY;
+						iterate_opcode = GDScriptFunction::OPCODE_ITERATE_ARRAY;
+					}
 					break;
 				case Variant::PACKED_BYTE_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY;

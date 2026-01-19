@@ -312,6 +312,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_AWAIT_RESUME,                           \
 		&&OPCODE_CREATE_LAMBDA,                          \
 		&&OPCODE_CREATE_SELF_LAMBDA,                     \
+		&&OPCODE_ITERATE_TYPED_ARRAY,                    \
 		&&OPCODE_JUMP,                                   \
 		&&OPCODE_JUMP_IF,                                \
 		&&OPCODE_JUMP_IF_NOT,                            \
@@ -3015,6 +3016,41 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif // DEBUG_ENABLED
 				OPCODE_BREAK;
 			}
+
+			OPCODE(OPCODE_ITERATE_TYPED_ARRAY) {
+				// Optimized iteration for typed arrays (especially struct arrays)
+				CHECK_SPACE(8);
+
+				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(container, 1);
+
+				// Initialize counter on first iteration
+				if (counter->get_type() == Variant::NIL) {
+					VariantInternal::initialize(counter, Variant::INT);
+					*VariantInternal::get_int(counter) = 0;
+				}
+
+				const Array *array = VariantInternal::get_array(container);
+				int64_t idx = *VariantInternal::get_int(counter);
+				int64_t size = array->size();
+
+				if (idx < size) {
+					// Get element directly - skip Variant boxing for known types
+					GET_VARIANT_PTR(iterator, 2);
+					*iterator = array->get(idx);
+
+					// Increment counter for next iteration
+					(*VariantInternal::get_int(counter))++;
+
+					ip += 5; // Continue to loop body
+				} else {
+					// Done iterating - jump to end
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ITERATE_BEGIN) {
 				CHECK_SPACE(8); // Space for this and a regular iterate.

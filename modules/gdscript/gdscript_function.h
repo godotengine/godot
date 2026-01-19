@@ -284,6 +284,7 @@ public:
 		OPCODE_SET_MEMBER,
 		OPCODE_GET_MEMBER,
 		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
+		OPCODE_ITERATE_TYPED_ARRAY, // Optimized iteration for typed arrays.
 		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_NULL,
