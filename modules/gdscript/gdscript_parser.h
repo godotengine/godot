@@ -109,6 +109,7 @@ public:
 			SCRIPT,
 			CLASS, // GDScript.
 			ENUM, // Enumeration.
+			STRUCT, // Struct.
 			VARIANT, // Can be any type.
 			RESOLVING, // Currently resolving.
 			UNRESOLVED,
@@ -132,9 +133,11 @@ public:
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
 		StringName enum_type; // Enum name or the value name in an enum.
+		StringName struct_type; // Struct name.
 		Ref<Script> script_type;
 		String script_path;
 		ClassNode *class_type = nullptr;
+		StructNode *struct_definition = nullptr;
 
 		MethodInfo method_info; // For callable/signals.
 		HashMap<StringName, int64_t> enum_values; // For enums.

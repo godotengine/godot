@@ -5416,6 +5416,11 @@ String GDScriptParser::DataType::to_string() const {
 			// or the fully qualified class name of the script defining the enum
 			return String(native_type).get_file(); // Remove path, keep filename
 		}
+		case STRUCT:
+			if (struct_definition && struct_definition->identifier) {
+				return struct_definition->identifier->name.operator String();
+			}
+			return struct_type.operator String();
 		case RESOLVING:
 		case UNRESOLVED:
 			return "<unresolved type>";
