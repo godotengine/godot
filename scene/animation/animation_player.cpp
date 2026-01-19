@@ -590,6 +590,9 @@ bool AnimationPlayer::is_playing() const {
 }
 
 void AnimationPlayer::set_current_animation(const StringName &p_animation) {
+	ERR_FAIL_COND_MSG(updating, vformat("Trying to set animation recursively (\"%s\"). AnimationPlayer can't animate itself.", p_animation));
+
+	updating = true;
 	if (p_animation == SNAME("[stop]") || p_animation.is_empty()) {
 		stop();
 	} else if (!is_playing()) {
@@ -600,6 +603,7 @@ void AnimationPlayer::set_current_animation(const StringName &p_animation) {
 	} else {
 		// Same animation, do not replay from start.
 	}
+	updating = false;
 }
 
 StringName AnimationPlayer::get_current_animation() const {
