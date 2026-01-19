@@ -161,16 +161,16 @@ void Node::_notification(int p_notification) {
 			data.is_translation_domain_dirty = true;
 
 			if (data.input) {
-				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+				add_to_group(get_viewport()->get_input_group_name());
 			}
 			if (data.shortcut_input) {
-				add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+				add_to_group(get_viewport()->get_shortcut_input_group_name());
 			}
 			if (data.unhandled_input) {
-				add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
+				add_to_group(get_viewport()->get_unhandled_input_group_name());
 			}
 			if (data.unhandled_key_input) {
-				add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
+				add_to_group(get_viewport()->get_unhandled_key_input_group_name());
 			}
 
 			data.tree->nodes_in_tree_count++;
@@ -203,16 +203,16 @@ void Node::_notification(int p_notification) {
 			data.tree->nodes_in_tree_count--;
 
 			if (data.input) {
-				remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+				remove_from_group(get_viewport()->get_input_group_name());
 			}
 			if (data.shortcut_input) {
-				remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+				remove_from_group(get_viewport()->get_shortcut_input_group_name());
 			}
 			if (data.unhandled_input) {
-				remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
+				remove_from_group(get_viewport()->get_unhandled_input_group_name());
 			}
 			if (data.unhandled_key_input) {
-				remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
+				remove_from_group(get_viewport()->get_unhandled_key_input_group_name());
 			}
 
 			// Remove from processing first.
@@ -1255,9 +1255,9 @@ void Node::set_process_input(bool p_enable) {
 	}
 
 	if (p_enable) {
-		add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+		add_to_group(get_viewport()->get_shortcut_input_group_name());
 	} else {
-		remove_from_group("_vp_input" + itos(get_viewport()->get_instance_id()));
+		remove_from_group(get_viewport()->get_shortcut_input_group_name());
 	}
 }
 
@@ -1276,9 +1276,9 @@ void Node::set_process_shortcut_input(bool p_enable) {
 	}
 
 	if (p_enable) {
-		add_to_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+		add_to_group(get_viewport()->get_shortcut_input_group_name());
 	} else {
-		remove_from_group("_vp_shortcut_input" + itos(get_viewport()->get_instance_id()));
+		remove_from_group(get_viewport()->get_shortcut_input_group_name());
 	}
 }
 
@@ -1297,9 +1297,9 @@ void Node::set_process_unhandled_input(bool p_enable) {
 	}
 
 	if (p_enable) {
-		add_to_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
+		add_to_group(get_viewport()->get_unhandled_input_group_name());
 	} else {
-		remove_from_group("_vp_unhandled_input" + itos(get_viewport()->get_instance_id()));
+		remove_from_group(get_viewport()->get_unhandled_input_group_name());
 	}
 }
 
@@ -1318,9 +1318,9 @@ void Node::set_process_unhandled_key_input(bool p_enable) {
 	}
 
 	if (p_enable) {
-		add_to_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
+		add_to_group(get_viewport()->get_unhandled_key_input_group_name());
 	} else {
-		remove_from_group("_vp_unhandled_key_input" + itos(get_viewport()->get_instance_id()));
+		remove_from_group(get_viewport()->get_unhandled_key_input_group_name());
 	}
 }
 

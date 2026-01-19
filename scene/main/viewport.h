@@ -516,6 +516,20 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	static StringName get_viewports_group_name();
+	static StringName get_picking_viewports_group_name();
+
+	StringName get_input_group_name();
+	StringName get_shortcut_input_group_name();
+	StringName get_unhandled_input_group_name();
+	StringName get_unhandled_key_input_group_name();
+
+#ifndef _3D_DISABLED
+	StringName get_world_environment_group_name();
+	StringName get_world_camera_attributes_group_name();
+	StringName get_world_compositor_group_name();
+#endif // _3D_DISABLED
+
 	void canvas_parent_mark_dirty(Node *p_node);
 	void canvas_item_top_level_changed();
 

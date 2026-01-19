@@ -638,7 +638,7 @@ bool SceneTree::physics_process(double p_time) {
 	emit_signal(SNAME("physics_frame"));
 
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
-	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
+	call_group(Viewport::get_picking_viewports_group_name(), SNAME("_process_picking"));
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	_process(true);

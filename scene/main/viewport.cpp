@@ -591,7 +591,7 @@ void Viewport::_notification(int p_what) {
 			_update_audio_listener_3d();
 #endif // _3D_DISABLED
 
-			add_to_group("_viewports");
+			add_to_group(get_viewports_group_name());
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 			if (get_tree()->is_debugging_collisions_hint()) {
 #ifndef PHYSICS_2D_DISABLED
@@ -667,7 +667,7 @@ void Viewport::_notification(int p_what) {
 			}
 #endif // PHYSICS_3D_DISABLED
 
-			remove_from_group("_viewports");
+			remove_from_group(get_viewports_group_name());
 			set_physics_process_internal(false);
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
@@ -2706,7 +2706,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control, bool p_hide_focus) {
 		return;
 	}
 
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
+	get_tree()->call_group(get_viewports_group_name(), "_gui_remove_focus_for_window", get_base_window());
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		if (_can_hide_focus_state()) {
@@ -3610,11 +3610,11 @@ void Viewport::set_physics_object_picking(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	physics_object_picking = p_enable;
 	if (physics_object_picking) {
-		add_to_group("_picking_viewports");
+		add_to_group(get_picking_viewports_group_name());
 	} else {
 		physics_picking_events.clear();
-		if (is_in_group("_picking_viewports")) {
-			remove_from_group("_picking_viewports");
+		if (is_in_group(get_picking_viewports_group_name())) {
+			remove_from_group(get_picking_viewports_group_name());
 		}
 	}
 }
@@ -4951,6 +4951,43 @@ void Viewport::_propagate_world_2d_changed(Node *p_node) {
 		_propagate_world_2d_changed(p_node->get_child(i));
 	}
 }
+
+StringName Viewport::get_viewports_group_name() {
+	return SNAME("_viewports");
+}
+
+StringName Viewport::get_picking_viewports_group_name() {
+	return SNAME("_picking_viewports");
+}
+
+StringName Viewport::get_input_group_name() {
+	return input_group;
+}
+StringName Viewport::get_shortcut_input_group_name() {
+	return shortcut_input_group;
+}
+
+StringName Viewport::get_unhandled_input_group_name() {
+	return unhandled_input_group;
+}
+
+StringName Viewport::get_unhandled_key_input_group_name() {
+	return unhandled_key_input_group;
+}
+
+#ifndef _3D_DISABLED
+StringName Viewport::get_world_environment_group_name() {
+	return "_world_environment_" + itos(find_world_3d()->get_scenario().get_id());
+}
+
+StringName Viewport::get_world_camera_attributes_group_name() {
+	return "_world_camera_attributes_" + itos(find_world_3d()->get_scenario().get_id());
+}
+
+StringName Viewport::get_world_compositor_group_name() {
+	return "_world_compositor_" + itos(find_world_3d()->get_scenario().get_id());
+}
+#endif // _3D_DISABLED
 
 void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d"), &Viewport::set_world_2d);
