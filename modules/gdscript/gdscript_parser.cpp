@@ -1111,6 +1111,9 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::SIGNAL:
 				parse_class_member(&GDScriptParser::parse_signal, AnnotationInfo::SIGNAL, "signal");
 				break;
+			case GDScriptTokenizer::Token::STRUCT:
+				parse_class_member(&GDScriptParser::parse_struct, AnnotationInfo::NONE, "struct");
+				break;
 			case GDScriptTokenizer::Token::FUNC:
 				parse_class_member(&GDScriptParser::parse_function, AnnotationInfo::FUNCTION, "function", next_is_static);
 				break;
@@ -1558,6 +1561,85 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal(bool p_is_static) {
 	end_statement("signal declaration");
 
 	return signal;
+}
+
+GDScriptParser::StructNode *GDScriptParser::parse_struct(bool p_is_static) {
+	StructNode *struct_node = alloc_node<StructNode>();
+
+	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected struct name after "struct".)")) {
+		complete_extents(struct_node);
+		return nullptr;
+	}
+
+	struct_node->identifier = parse_identifier();
+
+	if (!consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after struct name.)")) {
+		complete_extents(struct_node);
+		return nullptr;
+	}
+
+	bool multiline = match(GDScriptTokenizer::Token::NEWLINE);
+
+	if (multiline && !consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block after struct declaration.)")) {
+		complete_extents(struct_node);
+		return nullptr;
+	}
+
+	// Parse struct members
+	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
+		if (match(GDScriptTokenizer::Token::VAR)) {
+			StructNode::Member member;
+			
+			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected member name after "var".)")) {
+				break;
+			}
+			
+			member.identifier = parse_identifier();
+			member.start_line = member.identifier->start_line;
+			member.start_column = member.identifier->start_column;
+
+			// Optional type annotation
+			if (match(GDScriptTokenizer::Token::COLON)) {
+				if (check(GDScriptTokenizer::Token::NEWLINE)) {
+					push_error(R"(Expected type after ":".)");
+				} else {
+					member.datatype_specifier = parse_type();
+				}
+			}
+
+			// Optional default value
+			if (match(GDScriptTokenizer::Token::EQUAL)) {
+				member.initializer = parse_expression(false);
+			}
+
+			member.end_line = previous.end_line;
+			member.end_column = previous.end_column;
+
+			// Check for duplicate members
+			if (struct_node->members_indices.has(member.identifier->name)) {
+				push_error(vformat(R"(Member "%s" was already declared in this struct.)", member.identifier->name));
+			} else {
+				struct_node->members_indices[member.identifier->name] = struct_node->members.size();
+				struct_node->members.push_back(member);
+			}
+
+			end_statement("struct member");
+		} else if (match(GDScriptTokenizer::Token::PASS)) {
+			end_statement(R"("pass")");
+		} else if (check(GDScriptTokenizer::Token::DEDENT)) {
+			break;
+		} else {
+			push_error(vformat(R"(Expected "var" declaration in struct body, found "%s" instead.)", current.get_name()));
+			advance();
+		}
+	}
+
+	if (multiline) {
+		consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the struct body.)");
+	}
+
+	complete_extents(struct_node);
+	return struct_node;
 }
 
 GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {

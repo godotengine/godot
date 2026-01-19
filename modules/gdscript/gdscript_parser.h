@@ -567,6 +567,7 @@ public:
 				VARIABLE,
 				ENUM,
 				ENUM_VALUE, // For unnamed enums.
+				STRUCT,
 				GROUP, // For member grouping.
 			};
 
@@ -579,6 +580,7 @@ public:
 				SignalNode *signal;
 				VariableNode *variable;
 				EnumNode *m_enum;
+				StructNode *m_struct;
 				AnnotationNode *annotation;
 			};
 			EnumNode::Value enum_value;
@@ -603,6 +605,8 @@ public:
 						return m_enum->identifier->name;
 					case ENUM_VALUE:
 						return enum_value.identifier->name;
+					case STRUCT:
+						return m_struct->identifier->name;
 					case GROUP:
 						return annotation->export_info.name;
 				}
@@ -627,6 +631,8 @@ public:
 						return "enum";
 					case ENUM_VALUE:
 						return "enum value";
+					case STRUCT:
+						return "struct";
 					case GROUP:
 						return "group";
 				}
@@ -649,6 +655,8 @@ public:
 						return m_enum->start_line;
 					case SIGNAL:
 						return signal->start_line;
+					case STRUCT:
+						return m_struct->start_line;
 					case GROUP:
 						return annotation->start_line;
 					case UNDEFINED:
@@ -673,6 +681,8 @@ public:
 						return enum_value.identifier->get_datatype();
 					case SIGNAL:
 						return signal->get_datatype();
+					case STRUCT:
+						return DataType(); // Structs are types themselves
 					case GROUP:
 						return DataType();
 					case UNDEFINED:
@@ -697,6 +707,8 @@ public:
 						return enum_value.identifier;
 					case SIGNAL:
 						return signal;
+					case STRUCT:
+						return m_struct;
 					case GROUP:
 						return annotation;
 					case UNDEFINED:
@@ -1573,6 +1585,7 @@ private:
 	template <typename T>
 	void parse_class_member(T *(GDScriptParser::*p_parse_function)(bool), AnnotationInfo::TargetKind p_target, const String &p_member_kind, bool p_is_static = false);
 	SignalNode *parse_signal(bool p_is_static);
+	StructNode *parse_struct(bool p_is_static);
 	EnumNode *parse_enum(bool p_is_static);
 	ParameterNode *parse_parameter();
 	FunctionNode *parse_function(bool p_is_static);
