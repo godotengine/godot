@@ -71,7 +71,8 @@ public:
 		SHADER_COLOR_PASS_FLAG_LIGHTMAP = 1 << 2,
 		SHADER_COLOR_PASS_FLAG_MULTIVIEW = 1 << 3,
 		SHADER_COLOR_PASS_FLAG_MOTION_VECTORS = 1 << 4,
-		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 5
+		SHADER_COLOR_PASS_FLAG_TRANSPARENT = 1 << 5,
+		SHADER_COLOR_PASS_FLAG_COUNT = 1 << 6
 	};
 
 	enum PipelineVersion {
@@ -128,6 +129,7 @@ public:
 				uint32_t multimesh_has_custom_data : 1;
 				uint32_t fog_use_legacy_blending : 1;
 				uint32_t cluster_has_area_light : 1;
+				uint32_t material_feedback : 1;
 			};
 		};
 
@@ -360,6 +362,7 @@ public:
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
+	RID default_material_feedback_buffer;
 
 	RID shadow_sampler;
 
