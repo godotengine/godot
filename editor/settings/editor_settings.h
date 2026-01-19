@@ -180,6 +180,7 @@ public:
 	void set_favorites(const Vector<String> &p_favorites, bool p_update_file_dialog = true);
 	void set_favorites_bind(const Vector<String> &p_favorites);
 	Vector<String> get_favorites() const;
+	Vector<String> get_favorite_folders() const;
 	void set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties);
 	HashMap<String, PackedStringArray> get_favorite_properties() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs, bool p_update_file_dialog = true);

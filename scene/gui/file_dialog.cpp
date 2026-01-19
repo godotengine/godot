@@ -110,6 +110,11 @@ void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
 	}
 }
 
+void FileDialog::_clear_changed_status() {
+	favorites_changed = false;
+	recents_changed = false;
+}
+
 void FileDialog::set_visible(bool p_visible) {
 	if (p_visible) {
 		_update_option_controls();
@@ -258,6 +263,8 @@ void FileDialog::_notification(int p_what) {
 				_update_favorite_list();
 				_update_recent_list();
 				invalidate(); // Put it here to preview in the editor.
+			} else {
+				callable_mp(this, &FileDialog::_clear_changed_status).call_deferred();
 			}
 		} break;
 
@@ -1680,6 +1687,7 @@ void FileDialog::_favorite_pressed() {
 	} else {
 		global_favorites.push_back(directory);
 	}
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1696,6 +1704,7 @@ void FileDialog::_favorite_move_up() {
 		return;
 	}
 	SWAP(global_favorites[a_idx], global_favorites[b_idx]);
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1712,6 +1721,7 @@ void FileDialog::_favorite_move_down() {
 		return;
 	}
 	SWAP(global_favorites[a_idx], global_favorites[b_idx]);
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1811,6 +1821,7 @@ void FileDialog::_save_to_recent() {
 		}
 	}
 	global_recents.insert(0, directory);
+	recents_changed = true;
 
 	_update_recent_list();
 }

@@ -126,9 +126,33 @@ void EditorFileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				// Synchronize back favorites and recent directories, in case they have changed.
-				EditorSettings::get_singleton()->set_favorites(get_favorite_list(), false);
-				EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				// Synchronize back favorites and recent directories if they have changed.
+				if (favorites_changed) {
+					Vector<String> settings_favorites = EditorSettings::get_singleton()->get_favorites();
+					Vector<String> current_favorites = get_favorite_list();
+					LocalVector<String> to_erase;
+
+					// The favorite list in EditorSettings may have files in between. They need to be handled properly to preserve order.
+					for (const String &fav : settings_favorites) {
+						if (!fav.ends_with("/")) {
+							continue;
+						}
+						int64_t idx = current_favorites.find(fav);
+						if (idx == -1) {
+							to_erase.push_back(fav);
+						} else {
+							current_favorites.remove_at(idx);
+						}
+					}
+					for (const String &fav : to_erase) {
+						settings_favorites.erase(fav);
+					}
+					settings_favorites.append_array(current_favorites);
+					EditorSettings::get_singleton()->set_favorites(settings_favorites, false);
+				}
+				if (recents_changed) {
+					EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				}
 			}
 		} break;
 
