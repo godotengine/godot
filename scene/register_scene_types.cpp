@@ -108,6 +108,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/accessibility_settings.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/audio_stream_polyphonic.h"
@@ -437,6 +438,8 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
 	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
+
+	GDREGISTER_CLASS(AccessibilitySettings);
 
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);

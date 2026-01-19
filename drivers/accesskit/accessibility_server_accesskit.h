@@ -164,6 +164,7 @@ public:
 	void update_set_error_message(const RID &p_id, const RID &p_other_id) override;
 	void update_set_live(const RID &p_id, AccessibilityServerEnums::AccessibilityLiveMode p_live) override;
 	void update_add_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action, const Callable &p_callable) override;
+	void update_remove_action(const RID &p_id, AccessibilityServerEnums::AccessibilityAction p_action) override;
 	void update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) override;
 	void update_set_table_row_count(const RID &p_id, int p_count) override;
 	void update_set_table_column_count(const RID &p_id, int p_count) override;
