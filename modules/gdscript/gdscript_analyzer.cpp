@@ -4142,13 +4142,13 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 	StringName name = p_identifier->name;
 
-	// OPTIMIZATION: Struct member offset caching
+	// Struct member access with cached offset for optimization
 	if (base.kind == GDScriptParser::DataType::STRUCT && !base.is_meta_type) {
 		if (base.struct_definition != nullptr && base.struct_definition->has_member(name)) {
-			// Cache the member index for fast runtime access
+			// Cache member index for potential runtime optimization
 			p_identifier->struct_member_index = base.struct_definition->members_indices[name];
 			
-			// Get the member's type
+			// Get member type
 			const GDScriptParser::StructNode::Member &member = base.struct_definition->get_member(name);
 			if (member.datatype_specifier != nullptr) {
 				GDScriptParser::DataType member_type = resolve_datatype(member.datatype_specifier);
@@ -4793,7 +4793,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 #ifdef DEBUG_ENABLED
-	// PERFORMANCE WARNING: Lambda in _process or _physics_process
+	// Warn if lambda is created in performance-critical functions
 	GDScriptParser::FunctionNode *current_function = p_lambda->parent_function;
 	if (current_function != nullptr) {
 		StringName func_name = current_function->identifier ? current_function->identifier->name : StringName();

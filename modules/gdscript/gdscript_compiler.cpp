@@ -2060,31 +2060,29 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
 				
-				// OPTIMIZATION: Dead code elimination for constant conditions
+				// Dead code elimination: skip branches with constant conditions
 				if (if_n->condition->is_constant) {
 					bool condition_value = bool(if_n->condition->reduced_value);
 					
 					if (condition_value) {
-						// Condition is always true - only compile true branch
+						// Condition always true: compile only true branch
 						err = _parse_block(codegen, if_n->true_block);
 						if (err) {
 							return err;
 						}
-						// Skip false branch entirely (dead code eliminated!)
 					} else {
-						// Condition is always false - only compile false branch if it exists
+						// Condition always false: compile only false branch if present
 						if (if_n->false_block) {
 							err = _parse_block(codegen, if_n->false_block);
 							if (err) {
 								return err;
 							}
 						}
-						// Skip true branch entirely (dead code eliminated!)
 					}
-					break; // Done with this IF statement
+					break;
 				}
 				
-				// Normal runtime condition (not constant)
+				// Runtime condition evaluation
 				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
 				if (err) {
 					return err;
