@@ -46,6 +46,7 @@ class SceneTree;
 class Tween;
 class Viewport;
 class Window;
+class AccessibilitySettings;
 struct SceneTreeGroup;
 
 SAFE_FLAG_TYPE_PUN_GUARANTEES
@@ -223,6 +224,7 @@ private:
 		Viewport *viewport = nullptr;
 
 		mutable RID accessibility_element;
+		Ref<AccessibilitySettings> accessibility_settings;
 
 		HashMap<StringName, GroupData> grouped;
 		List<Node *>::Element *OW = nullptr; // Owned element.
@@ -720,6 +722,10 @@ public:
 	virtual RID get_accessibility_element() const;
 	virtual RID get_focused_accessibility_element() const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+
+	bool has_accessibility_settings() const;
+	Ref<AccessibilitySettings> get_accessibility_settings() const;
+	void set_accessibility_settings(const Ref<AccessibilitySettings> &p_settings);
 
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 

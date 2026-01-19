@@ -961,9 +961,9 @@ void DisplayServer::accessibility_update_set_popup_type(const RID &p_id, Display
 	}
 }
 
-void DisplayServer::accessibility_update_set_checked(const RID &p_id, bool p_checekd) {
+void DisplayServer::accessibility_update_set_checked(const RID &p_id, bool p_checked) {
 	if (AccessibilityServer::get_singleton()) {
-		AccessibilityServer::get_singleton()->update_set_checked(p_id, p_checekd);
+		AccessibilityServer::get_singleton()->update_set_checked(p_id, p_checked);
 	}
 }
 

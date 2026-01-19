@@ -608,7 +608,7 @@ public:
 	virtual void accessibility_update_set_list_item_selected(const RID &p_id, bool p_selected);
 	virtual void accessibility_update_set_list_item_expanded(const RID &p_id, bool p_expanded);
 	virtual void accessibility_update_set_popup_type(const RID &p_id, DisplayServerEnums::AccessibilityPopupType p_popup);
-	virtual void accessibility_update_set_checked(const RID &p_id, bool p_checekd);
+	virtual void accessibility_update_set_checked(const RID &p_id, bool p_checked);
 	virtual void accessibility_update_set_num_value(const RID &p_id, double p_position);
 	virtual void accessibility_update_set_num_range(const RID &p_id, double p_min, double p_max);
 	virtual void accessibility_update_set_num_step(const RID &p_id, double p_step);

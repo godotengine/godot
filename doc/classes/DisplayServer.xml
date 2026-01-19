@@ -2955,7 +2955,7 @@
 			Element supports multiple item selection.
 		</constant>
 		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element require user input.
+			Element requires user input.
 		</constant>
 		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			Element is a visited link.
