@@ -2446,6 +2446,10 @@ Size2 LineEdit::get_minimum_size() const {
 
 	Size2 min_size;
 
+	if (font.is_null()) {
+		return Size2();
+	}
+
 	// Minimum size of text.
 	// W is wider than M in most fonts, Using M may result in hiding the last digit when using float values in SpinBox, ie. ColorPicker RAW values.
 	float em_space_size = font->get_char_size('W', font_size).x;
