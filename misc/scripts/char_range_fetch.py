@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/16.0.0/ucd/DerivedCoreProperties.txt"
+URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/DerivedCoreProperties.txt"
 
 
 xid_start: list[tuple[int, int]] = []
