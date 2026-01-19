@@ -3305,7 +3305,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				// Validate argument count matches struct members
 				if (p_call->arguments.size() > member.m_struct->members.size()) {
 					push_error(vformat(R"(Too many arguments for struct "%s()" constructor. Expected %d, got %d.)", 
-						function_name, member.m_struct->members.size(), p_call->arguments.size()), p_call);
+						String(function_name), member.m_struct->members.size(), p_call->arguments.size()), p_call);
 				}
 				
 				// Type check each argument against struct member types
@@ -3318,7 +3318,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 								GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 								if (!is_type_compatible(member_type, arg_type, true)) {
 									push_error(vformat(R"(Invalid type for argument %d of "%s()". Expected "%s", got "%s".)", 
-										i + 1, Variant(function_name), member_type.to_string(), arg_type.to_string()), 
+										i + 1, String(function_name), member_type.to_string(), arg_type.to_string()), 
 										p_call->arguments[i]);
 								}
 							}

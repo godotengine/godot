@@ -625,6 +625,55 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				arguments.push_back(arg);
 			}
 
+			// Check if this is a struct constructor call
+			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER) {
+				if (type.kind == GDScriptDataType::STRUCT) {
+					// Struct instantiation - create dictionary with member keys
+					GDScriptParser::DataType parser_type = call->get_datatype();
+					if (parser_type.struct_definition) {
+						// Create a new dictionary
+						Vector<GDScriptCodeGenerator::Address> dict_args;
+						gen->write_construct(result, Variant::DICTIONARY, dict_args);
+						
+						// Set each member with argument value or default
+						const GDScriptParser::StructNode *struct_def = parser_type.struct_definition;
+						for (int i = 0; i < struct_def->members.size(); i++) {
+							const GDScriptParser::StructNode::Member &member = struct_def->members[i];
+							GDScriptCodeGenerator::Address key = codegen.add_constant(String(member.identifier->name));
+							GDScriptCodeGenerator::Address value;
+							
+							if (i < arguments.size()) {
+								// Use provided argument
+								value = arguments[i];
+							} else if (member.initializer) {
+								// Use default value
+								value = _parse_expression(codegen, r_error, member.initializer);
+								if (r_error) {
+									return GDScriptCodeGenerator::Address();
+								}
+							} else {
+								// Use nil
+								value = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::NIL);
+							}
+							
+							gen->write_set(result, key, value);
+							
+							if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+								gen->pop_temporary();
+							}
+						}
+						
+						// Clean up arguments
+						for (int i = 0; i < arguments.size(); i++) {
+							if (arguments[i].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+								gen->pop_temporary();
+							}
+						}
+						return result;
+					}
+				}
+			}
+
 			if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
 				gen->write_construct(result, GDScriptParser::get_builtin_type(call->function_name), arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && Variant::has_utility_function(call->function_name)) {
