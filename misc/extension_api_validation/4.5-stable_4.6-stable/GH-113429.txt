@@ -1,0 +1,8 @@
+GH-113429
+---------
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_albedo': type changed value in new API, from "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture,-StreamedTexture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_normal': type changed value in new API, from "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture,-StreamedTexture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_orm': type changed value in new API, from "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture,-StreamedTexture2D".
+Validate extension JSON: Error: Field 'classes/Decal/properties/texture_emission': type changed value in new API, from "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture,-StreamedTexture2D".
+
+Add StreamedTexture2D to the disallowed list for decals.
