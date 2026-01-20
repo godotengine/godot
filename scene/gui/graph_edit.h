@@ -405,8 +405,6 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	PackedStringArray get_configuration_warnings() const override;
-
 	void key_input(const Ref<InputEvent> &p_ev);
 
 	// This method has to be public (for undo redo).
