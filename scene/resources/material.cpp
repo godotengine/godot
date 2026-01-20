@@ -724,7 +724,7 @@ void BaseMaterial3D::_update_shader() {
 	// race to create the shader. The winner, which is the one found in shader_map, will be
 	// used. The losers will free their shader.
 
-	String texfilter_str;
+	String texfilter_str, texfilter_ao_str;
 	// Force linear filtering for the heightmap texture, as the heightmap effect
 	// looks broken with nearest-neighbor filtering (with and without Deep Parallax).
 	String texfilter_height_str;
@@ -757,12 +757,37 @@ void BaseMaterial3D::_update_shader() {
 			break; // Internal value, skip.
 	}
 
+	switch (ao_texture_filter) {
+		case TEXTURE_FILTER_NEAREST:
+			texfilter_ao_str = "filter_nearest";
+			break;
+		case TEXTURE_FILTER_LINEAR:
+			texfilter_ao_str = "filter_linear";
+			break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+			texfilter_ao_str = "filter_nearest_mipmap";
+			break;
+		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+			texfilter_ao_str = "filter_linear_mipmap";
+			break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
+			texfilter_ao_str = "filter_nearest_mipmap_anisotropic";
+			break;
+		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
+			texfilter_ao_str = "filter_linear_mipmap_anisotropic";
+			break;
+		case TEXTURE_FILTER_MAX:
+			break; // Internal value, skip.
+	}
+
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {
 		texfilter_str += ", repeat_enable";
 		texfilter_height_str += ", repeat_enable";
+		texfilter_ao_str += ", repeat_enable";
 	} else {
 		texfilter_str += ", repeat_disable";
 		texfilter_height_str += ", repeat_disable";
+		texfilter_ao_str += ", repeat_disable";
 	}
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
@@ -1129,7 +1154,7 @@ uniform sampler2D texture_ambient_occlusion : hint_default_white, %s;
 uniform vec4 ao_texture_channel;
 uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
 )",
-				texfilter_str);
+				texfilter_ao_str);
 	}
 
 	if (features[FEATURE_DETAIL]) {
@@ -2561,8 +2586,17 @@ void BaseMaterial3D::set_texture_filter(TextureFilter p_filter) {
 	_queue_shader_change();
 }
 
+void BaseMaterial3D::set_ao_texture_filter(TextureFilter p_filter) {
+	ao_texture_filter = p_filter;
+	_queue_shader_change();
+}
+
 BaseMaterial3D::TextureFilter BaseMaterial3D::get_texture_filter() const {
 	return texture_filter;
+}
+
+BaseMaterial3D::TextureFilter BaseMaterial3D::get_ao_texture_filter() const {
+	return ao_texture_filter;
 }
 
 void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
@@ -3010,7 +3044,7 @@ float BaseMaterial3D::get_fov_override() const {
 	return fov_override;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, RID *r_shader_rid) {
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, TextureFilter p_ao_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, RID *r_shader_rid) {
 	uint64_t key = 0;
 	key |= ((int8_t)p_shaded & 0x01) << 0;
 	key |= ((int8_t)p_transparency & 0x07) << 1; // Bits 1-3.
@@ -3023,6 +3057,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	key |= ((int8_t)p_filter & 0x07) << 10; // Bits 10-12.
 	key |= ((int8_t)p_alpha_antialiasing_mode & 0x07) << 13; // Bits 13-15.
 	key |= ((int8_t)p_texture_repeat & 0x01) << 16;
+	key |= ((int8_t)p_ao_filter & 0x07) << 17; // Bits 17-19
 
 	if (materials_for_2d.has(key)) {
 		if (r_shader_rid) {
@@ -3045,6 +3080,7 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	material->set_flag(FLAG_USE_TEXTURE_REPEAT, p_texture_repeat);
 	material->set_alpha_antialiasing(p_alpha_antialiasing_mode);
 	material->set_texture_filter(p_filter);
+	material->set_ao_texture_filter(p_ao_filter);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
@@ -3447,6 +3483,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_filter", "mode"), &BaseMaterial3D::set_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_texture_filter"), &BaseMaterial3D::get_texture_filter);
 
+	ClassDB::bind_method(D_METHOD("set_ao_texture_filter", "mode"), &BaseMaterial3D::set_ao_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_ao_texture_filter"), &BaseMaterial3D::get_ao_texture_filter);
+
 	ClassDB::bind_method(D_METHOD("set_feature", "feature", "enable"), &BaseMaterial3D::set_feature);
 	ClassDB::bind_method(D_METHOD("get_feature", "feature"), &BaseMaterial3D::get_feature);
 
@@ -3660,6 +3699,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_ao_texture_filter", "get_ao_texture_filter");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
 
