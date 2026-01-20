@@ -2620,6 +2620,9 @@ void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const 
 		// Save the current script so the changes can be picked up by an external editor.
 		if (!scr.ptr()->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
+		} else {
+			ste->apply_code();
+			scr->reload(true);
 		}
 
 		break;
