@@ -58,14 +58,18 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 				// Built-in resource.
 				String base_path = path.get_slice("::", 0);
 				if (!resource_cache.cache.has(base_path)) {
-					resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					if (ResourceLoader::exists(path)) {
+						resource_cache.cache[base_path] = ResourceLoader::load(base_path);
+					}
 					resource_cache.misses++;
 				} else {
 					resource_cache.hits++;
 				}
 			}
 			if (!resource_cache.cache.has(path)) {
-				resource_cache.cache[path] = ResourceLoader::load(path);
+				if (ResourceLoader::exists(path)) {
+					resource_cache.cache[path] = ResourceLoader::load(path);
+				}
 				resource_cache.misses++;
 			} else {
 				resource_cache.hits++;
