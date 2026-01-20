@@ -1320,6 +1320,16 @@ public:
 	PASS1(environment_set_ssr_half_size, bool)
 	PASS1(environment_set_ssr_roughness_quality, RSE::EnvironmentSSRRoughnessQuality)
 
+	// SSCS
+	PASS9(environment_set_sscs, RID, bool, RSE::EnvironmentSSCSSampleCount, float, float, float, bool, float, float)
+
+	PASS1RC(bool, environment_get_sscs_enabled, RID)
+	PASS1RC(RSE::EnvironmentSSCSSampleCount, environment_get_sscs_sample_count, RID)
+	PASS1RC(float, environment_get_sscs_bilinear_threshold, RID)
+	PASS1RC(float, environment_get_sscs_shadow_contrast, RID)
+	PASS1RC(float, environment_get_sscs_surface_thickness, RID)
+	PASS1RC(bool, environment_get_sscs_ignore_edge_pixels, RID)
+
 	// SSAO
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 

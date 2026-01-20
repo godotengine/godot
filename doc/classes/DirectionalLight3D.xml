@@ -12,6 +12,9 @@
 		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 	</tutorials>
 	<members>
+		<member name="directional_shadow_allow_contact_shadows" type="bool" setter="set_allow_contact_shadows" getter="get_allow_contact_shadows" default="true">
+			Enables screen-space contact shadows for this light. Only used when [member Environment.sscs_enabled] is enabled.
+		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
 			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Enabling shadow blend splitting also has a moderate performance cost. This is ignored when [member directional_shadow_mode] is [constant SHADOW_ORTHOGONAL].
 		</member>

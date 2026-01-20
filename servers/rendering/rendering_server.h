@@ -327,6 +327,7 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, RSE::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) = 0;
+	virtual void light_directional_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;
 
 	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
 	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
@@ -667,6 +668,8 @@ public:
 	virtual void environment_set_ssr_half_size(bool p_half_size) = 0;
 
 	virtual void environment_set_ssr_roughness_quality(RSE::EnvironmentSSRRoughnessQuality p_quality) = 0;
+
+	virtual void environment_set_sscs(RID p_env, bool p_enable, RSE::EnvironmentSSCSSampleCount p_quality, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_ignore_edge_pixels, float p_depth_begin, float p_depth_end) = 0;
 
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) = 0;
 
