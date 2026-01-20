@@ -45,7 +45,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
-#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/check_button.h"
@@ -65,8 +64,13 @@ void EditorSettingsDialog::_settings_changed() {
 	timer->start();
 }
 
-void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
-	String full_name = inspector->get_full_item_path(p_name);
+void EditorSettingsDialog::_settings_property_edited() {
+	Vector<String> changed = EditorSettings::get_singleton()->get_changed_settings();
+	if (changed.is_empty()) {
+		return;
+	}
+
+	const String full_name = changed[changed.size() - 1];
 
 	// Set theme presets to Custom when controlled settings change.
 
@@ -963,7 +967,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->register_advanced_toggle(advanced_switch);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tab_general->add_child(inspector);
-	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));
 
 	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
@@ -996,6 +999,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorSettingsDialog::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 	restart_container->hide();
+
+	// Needs to be done via the signal instead of the notification, otherwise it happens too late.
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 
 	// Shortcuts Tab
 
