@@ -1426,6 +1426,16 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 		}
 	}
 
+	{
+		const String custom_description = object->get_property_description(property);
+		if (!custom_description.is_empty()) {
+			if (!prologue.is_empty()) {
+				prologue += '\n';
+			}
+			prologue += custom_description;
+		}
+	}
+
 	if (!symbol.is_empty() || !prologue.is_empty()) {
 		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
 	}
@@ -2432,25 +2442,34 @@ EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
 }
 
 Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
-	if (!checkable) {
-		return Container::make_custom_tooltip(p_text);
-	}
-
 	String symbol;
 	String prologue;
 
-	if (object->has_method("_get_property_warning")) {
-		const String custom_warning = object->call("_get_property_warning", related_enable_property);
-		if (!custom_warning.is_empty()) {
-			prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+	if (checkable) {
+		if (object->has_method("_get_property_warning")) {
+			const String custom_warning = object->call("_get_property_warning", related_enable_property);
+			if (!custom_warning.is_empty()) {
+				prologue = "[b][color=" + theme_cache.warning_color.to_html(false) + "]" + custom_warning + "[/color][/b]";
+			}
+		}
+
+		symbol = p_text;
+
+		const EditorInspector *inspector = _get_parent_inspector();
+		if (inspector) {
+			const String custom_description = inspector->get_custom_property_description(p_text);
+			if (!custom_description.is_empty()) {
+				if (!prologue.is_empty()) {
+					prologue += '\n';
+				}
+				prologue += custom_description;
+			}
 		}
 	}
 
-	symbol = p_text;
-
-	const EditorInspector *inspector = _get_parent_inspector();
-	if (inspector) {
-		const String custom_description = inspector->get_custom_property_description(p_text);
+	{
+		const String description_key = checkable ? related_enable_property : section;
+		const String custom_description = object->get_property_description(description_key);
 		if (!custom_description.is_empty()) {
 			if (!prologue.is_empty()) {
 				prologue += '\n';
@@ -2463,7 +2482,7 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorInspectorSection *>(this), symbol, prologue);
 	}
 
-	return nullptr;
+	return checkable ? nullptr : Container::make_custom_tooltip(p_text);
 }
 
 void EditorInspectorSection::setup(const String &p_inspector_path, const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth, int p_level) {

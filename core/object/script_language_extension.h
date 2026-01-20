@@ -786,6 +786,9 @@ public:
 		}
 		return false;
 	}
+	virtual String get_property_description(const StringName &p_name) const override {
+		return String();
+	}
 
 	virtual Object *get_owner() override {
 		if (native_info->get_owner_func) {

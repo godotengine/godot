@@ -224,6 +224,18 @@ protected: \
 		} \
 		return m_inherits::_property_get_revertv(p_name, r_ret); \
 	} \
+	_FORCE_INLINE_ String (Object::*_get_get_property_description() const)(const StringName &) const { \
+		return (String (Object::*)(const StringName &) const) & m_class::_get_property_description; \
+	} \
+	virtual String _get_property_descriptionv(const StringName &p_name) const override { \
+		if (m_class::_get_get_property_description() != m_inherits::_get_get_property_description()) { \
+			const String desc = _get_property_description(p_name); \
+			if (!desc.is_empty()) { \
+				return desc; \
+			} \
+		} \
+		return m_inherits::_get_property_descriptionv(p_name); \
+	} \
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) { \
 		return (void (Object::*)(int)) & m_class::_notification; \
 	} \
@@ -529,6 +541,7 @@ protected:
 	virtual void _validate_propertyv(PropertyInfo &p_property) const {}
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; }
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; }
+	virtual String _get_property_descriptionv(const StringName &p_name) const { return String(); }
 
 	void _notification_forward(int p_notification);
 	void _notification_backward(int p_notification);
@@ -544,6 +557,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const {}
 	bool _property_can_revert(const StringName &p_name) const { return false; }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
+	String _get_property_description(const StringName &p_name) const { return String(); }
 	void _notification(int p_notification) {}
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
@@ -569,6 +583,9 @@ protected:
 	}
 	_FORCE_INLINE_ bool (Object::*_get_property_get_revert() const)(const StringName &p_name, Variant &) const {
 		return &Object::_property_get_revert;
+	}
+	_FORCE_INLINE_ String (Object::*_get_get_property_description() const)(const StringName &) const {
+		return &Object::_get_property_description;
 	}
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {
 		return &Object::_notification;
@@ -690,6 +707,7 @@ public:
 	void validate_property(PropertyInfo &p_property) const;
 	bool property_can_revert(const StringName &p_name) const;
 	Variant property_get_revert(const StringName &p_name) const;
+	String get_property_description(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
 	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;

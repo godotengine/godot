@@ -1653,6 +1653,24 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	return true;
 }
 
+String CSharpInstance::get_property_description(const StringName &p_name) const {
+	ERR_FAIL_COND_V(script.is_null(), String());
+
+	Variant name_arg = p_name;
+	const Variant *args[1] = { &name_arg };
+
+	Variant ret;
+	Callable::CallError call_error;
+	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
+			gchandle.get_intptr(), &SNAME("_get_property_description"), args, 1, &call_error, &ret);
+
+	if (call_error.error != Callable::CallError::CALL_OK) {
+		return String();
+	}
+
+	return ret;
+}
+
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 	if (!script->is_valid() || !script->valid) {
 		return;

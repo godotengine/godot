@@ -1851,6 +1851,28 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 	return false;
 }
 
+String GDScriptInstance::get_property_description(const StringName &p_name) const {
+	Variant name = p_name;
+	const Variant *args[1] = { &name };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		if (likely(sptr->valid)) {
+			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_description);
+			if (E) {
+				Callable::CallError err;
+				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+				if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::STRING) {
+					return ret;
+				}
+			}
+		}
+		sptr = sptr->base.ptr();
+	}
+
+	return String();
+}
+
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
@@ -2818,6 +2840,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._validate_property = StringName("_validate_property");
 	strings._property_can_revert = StringName("_property_can_revert");
 	strings._property_get_revert = StringName("_property_get_revert");
+	strings._get_property_description = StringName("_get_property_description");
 	strings._script_source = StringName("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
