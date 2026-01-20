@@ -1918,8 +1918,10 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			_test_script_times_on_disk();
-			_update_modified_scripts_for_external_editor();
+			if (is_inside_tree()) {
+				_test_script_times_on_disk();
+				_update_modified_scripts_for_external_editor();
+			}
 		} break;
 	}
 }
