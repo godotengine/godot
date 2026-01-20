@@ -56,6 +56,9 @@ class CollisionShape3D : public Node3D {
 #endif
 	bool disabled = false;
 
+	bool _search_ancestors = false;
+	CollisionObject3D *_find_collision_object() const;
+
 protected:
 	void _update_in_shape_owner(bool p_xform_only = false);
 
@@ -83,6 +86,9 @@ public:
 
 	void set_debug_fill_enabled(bool p_enable);
 	bool get_debug_fill_enabled() const;
+
+	void set_search_ancestors(bool search);
+	bool get_search_ancestors() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

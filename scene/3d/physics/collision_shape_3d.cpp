@@ -80,7 +80,7 @@ void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 void CollisionShape3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
-			collision_object = Object::cast_to<CollisionObject3D>(get_parent());
+			collision_object = _find_collision_object();
 			if (collision_object) {
 				owner_id = collision_object->create_shape_owner(this);
 				if (shape.is_valid()) {
@@ -122,9 +122,13 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
-	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
+	CollisionObject3D *col_object = _find_collision_object();
 	if (col_object == nullptr) {
-		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		if (_search_ancestors) {
+			warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a descendant of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		} else {
+			warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
+		}
 	}
 
 	if (shape.is_null()) {
@@ -173,6 +177,10 @@ void CollisionShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
+	ClassDB::bind_method(D_METHOD("set_search_ancestors", "enable"), &CollisionShape3D::set_search_ancestors);
+	ClassDB::bind_method(D_METHOD("get_search_ancestors"), &CollisionShape3D::get_search_ancestors);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_ancestors"), "set_search_ancestors", "get_search_ancestors");
+
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape3D::get_debug_color);
 
@@ -184,6 +192,28 @@ void CollisionShape3D::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_fill"), "set_enable_debug_fill", "get_enable_debug_fill");
+}
+
+CollisionObject3D *CollisionShape3D::_find_collision_object() const {
+	if (_search_ancestors) {
+		const Node *node = Object::cast_to<Node>(this);
+		while (node) {
+			Node *parent = node->get_parent();
+			if (parent) {
+				CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(parent);
+				if (collision) {
+					return collision;
+				} else {
+					node = parent;
+				}
+			} else {
+				break;
+			}
+		}
+		return nullptr;
+	} else {
+		return Object::cast_to<CollisionObject3D>(get_parent());
+	}
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
@@ -279,6 +309,34 @@ void CollisionShape3D::set_debug_fill_enabled(bool p_enable) {
 
 bool CollisionShape3D::get_debug_fill_enabled() const {
 	return debug_fill;
+}
+
+void CollisionShape3D::set_search_ancestors(bool search) {
+	if (_search_ancestors != search) {
+		_search_ancestors = search;
+
+		// disconnect previous shape owner and reconnect to new ancestor
+		if (collision_object) {
+			collision_object->shape_owner_clear_shapes(owner_id);
+			collision_object->remove_shape_owner(owner_id);
+			collision_object = nullptr;
+		}
+
+		collision_object = _find_collision_object();
+		if (collision_object) {
+			owner_id = collision_object->create_shape_owner(this);
+			if (shape.is_valid()) {
+				collision_object->shape_owner_add_shape(owner_id, shape);
+			}
+			_update_in_shape_owner();
+		}
+
+		update_configuration_warnings();
+	}
+}
+
+bool CollisionShape3D::get_search_ancestors() const {
+	return _search_ancestors;
 }
 
 #ifdef DEBUG_ENABLED
