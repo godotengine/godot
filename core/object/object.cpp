@@ -2055,6 +2055,8 @@ void Object::_bind_methods() {
 		BIND_OBJ_CORE_METHOD(mi);
 	}
 
+	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::STRING, "_get_property_description", PropertyInfo(Variant::STRING_NAME, "property")));
+
 	// These are actually `Variant` methods, but that doesn't matter since scripts can't inherit built-in types.
 
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_iter_init", PropertyInfo(Variant::ARRAY, "iter")));

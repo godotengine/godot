@@ -1405,6 +1405,16 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 		}
 	}
 
+	if (object->has_method("_get_property_description")) {
+		const String custom_description = object->call("_get_property_description", property);
+		if (!custom_description.is_empty()) {
+			if (!prologue.is_empty()) {
+				prologue += '\n';
+			}
+			prologue += custom_description;
+		}
+	}
+
 	if (!symbol.is_empty() || !prologue.is_empty()) {
 		return EditorHelpBitTooltip::make_tooltip(const_cast<EditorProperty *>(this), symbol, prologue);
 	}
@@ -2296,6 +2306,16 @@ Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const
 	const EditorInspector *inspector = _get_parent_inspector();
 	if (inspector) {
 		const String custom_description = inspector->get_custom_property_description(p_text);
+		if (!custom_description.is_empty()) {
+			if (!prologue.is_empty()) {
+				prologue += '\n';
+			}
+			prologue += custom_description;
+		}
+	}
+
+	if (object->has_method("_get_property_description")) {
+		const String custom_description = object->call("_get_property_description", related_enable_property);
 		if (!custom_description.is_empty()) {
 			if (!prologue.is_empty()) {
 				prologue += '\n';
