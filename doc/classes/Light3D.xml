@@ -119,6 +119,15 @@
 		<member name="shadow_caster_mask" type="int" setter="set_shadow_caster_mask" getter="get_shadow_caster_mask" default="4294967295">
 			The light will only cast shadows using objects in the selected layers.
 		</member>
+		<member name="shadow_contact_shadows_allow" type="bool" setter="set_allow_contact_shadows" getter="get_allow_contact_shadows" default="true">
+			Enables screen-space contact shadows for this light. Only used when [member Environment.sscs_enabled] is enabled.
+		</member>
+		<member name="shadow_contact_shadows_blur" type="float" setter="set_param" getter="get_param" default="1.0">
+			Blurs this the contact shadows edge. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude. Only used when [member shadow_contact_shadows_allow] is enabled.
+		</member>
+		<member name="shadow_contact_shadows_opacity" type="float" setter="set_param" getter="get_param" default="1.0">
+			Changes the opacity of this light's screen-space contact shadows. A value of 1.0 uses the same opacity as [member shadow_opacity], a value of 0.5 would be 50% of the opacity of [member shadow_opacity]. Only used when [member shadow_contact_shadows_allow] is enabled.
+		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
 		</member>
@@ -198,7 +207,16 @@
 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_MAX" value="21" enum="Param">
+		<constant name="PARAM_CONTACT_SHADOW_ALLOW" value="21" enum="Param">
+			Constant for accessing [member shadow_contact_shadows_allow].
+		</constant>
+		<constant name="PARAM_CONTACT_SHADOW_OPACITY" value="22" enum="Param">
+			Constant for accessing [member shadow_contact_shadows_opacity].
+		</constant>
+		<constant name="PARAM_CONTACT_SHADOW_BLUR" value="23" enum="Param">
+			Constant for accessing [member shadow_contact_shadows_blur].
+		</constant>
+		<constant name="PARAM_MAX" value="24" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">

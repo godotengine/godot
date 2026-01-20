@@ -208,7 +208,8 @@ private:
 		float shadow_opacity;
 		float fade_from;
 		float fade_to;
-		uint32_t pad[2];
+		uint32_t sscs_index;
+		uint32_t pad;
 		uint32_t bake_mode;
 		float volumetric_fog_energy;
 		float shadow_bias[4];
