@@ -828,7 +828,8 @@ ImportDock::ImportDock() {
 	select_a_resource->set_focus_mode(FOCUS_ACCESSIBILITY);
 	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
-	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_resource->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
+	select_a_resource->set_custom_minimum_size(Size2(120, 80) * EDSCALE);
 	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_resource->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_resource->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
