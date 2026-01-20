@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
@@ -52,6 +53,7 @@
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
+#define RB_SCOPE_SSCS SNAME("rb_sscs")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
@@ -66,6 +68,8 @@
 #define RB_HIZ SNAME("hiz")
 #define RB_SSR SNAME("ssr")
 #define RB_MIP_LEVEL SNAME("mip_level")
+
+#define RB_SSCS SNAME("sscs")
 
 class RenderSceneBuffersRD;
 
@@ -158,6 +162,25 @@ public:
 	void sss_set_scale(float p_scale, float p_depth_scale);
 
 	void sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size);
+
+	/* Screen Space Shadows */
+	struct SSCSRenderBuffers {
+		Size2i size;
+		uint32_t light_count = 0;
+	};
+
+	struct SSCSSettings {
+		RSE::EnvironmentSSCSSampleCount quality = RSE::ENV_SSCS_SAMPLE_COUNT_127;
+		float bilinear_threshold = 0.02f;
+		float shadow_contrast = 2.0f;
+		float surface_thickness = 0.01f;
+		bool ignore_edge_pixels = false;
+		float depth_begin = 0.0f;
+		float depth_end = 1.0f;
+	};
+
+	void sscs_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const RD::DataFormat p_color_format, uint32_t p_contact_shadow_count);
+	void screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, RendererRD::CopyEffects &p_copy_effects);
 
 private:
 	/* Settings */
@@ -496,6 +519,35 @@ private:
 		RID resolve_shader_version;
 		PipelineDeferredRD resolve_pipeline;
 	} ssr;
+
+	/* Screen Space Shadows */
+
+	enum ScreenSpaceContactShadowsMode {
+		SCREEN_SPACE_CONTACT_SHADOWS_LOW_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_MEDIUM_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_HIGH_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_MAX
+	};
+
+	struct ScreenSpaceContactShadows {
+		ScreenSpaceContactShadowsShaderRD sscs_shader;
+		RID sscs_shader_version;
+		PipelineDeferredRD sscs_pipelines[SCREEN_SPACE_CONTACT_SHADOWS_MAX];
+		RID border_sampler;
+
+	} sscs;
+
+	struct ScreenSpaceContactShadowsPushConstant {
+		int32_t screen_size[2];
+		int32_t light_offset[2];
+		float light_coordinates[4];
+		float bilinear_threshold;
+		float shadow_contrast;
+		float surface_thickness;
+		uint32_t ignore_edge_pixels;
+		float depth_begin;
+		float depth_end;
+	};
 
 	/* Subsurface scattering */
 

@@ -283,6 +283,33 @@
 		<member name="ssao_sharpness" type="float" setter="set_ssao_sharpness" getter="get_ssao_sharpness" default="0.98">
 			The amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
+		<member name="sscs_bilinear_threshold" type="float" setter="set_sscs_bilinear_threshold" getter="get_sscs_bilinear_threshold" default="0.02">
+			Controls how aggressively bilinear filtering is disabled at depth edges. Lower values produce sharper shadow edges but may introduce aliasing; higher values allow more smoothing across edges, which can cause blurring at object silhouettes.
+		</member>
+		<member name="sscs_depth_begin" type="float" setter="set_sscs_depth_begin" getter="get_sscs_depth_begin" default="0.0">
+			The normalized linear depth at which contact shadows begin. Surfaces closer to the camera than this value will not receive or cast contact shadows. Expressed as a fraction of the camera's far plane distance. Should be less than [member sscs_depth_end].
+		</member>
+		<member name="sscs_depth_end" type="float" setter="set_sscs_depth_end" getter="get_sscs_depth_end" default="1.0">
+			The normalized linear depth at which contact shadows fade out completely. Surfaces farther from the camera than this value will not receive or cast contact shadows. Expressed as a fraction of the camera's far plane distance. Should be greater than [member sscs_depth_begin].
+		</member>
+		<member name="sscs_enabled" type="bool" setter="set_sscs_enabled" getter="is_sscs_enabled" default="false">
+			If [code]true[/code], screen-space contact shadows are enabled. These catch small-scale shadows that shadow maps miss, such as foliage, crevices, and the contact points where objects meet surfaces. Contact shadows are also cast by objects that have their [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_OFF], which can be useful for performance reasons.
+			[b]Note:[/b] Only objects visible on screen can cast screen-space contact shadows. Objects outside the viewport, occluded by other geometry, or using the [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY] will not contribute.
+			[b]Note:[/b] Screen-space contact shadows are only supported in the Forward+ rendering method, not Mobile or Compatibility.
+			[b]Note:[/b] Screen-space contact shadows only affect [DirectionalLight3D] nodes that have shadows enabled. The [DirectionalLight3D] node must also have [member DirectionalLight3D.directional_shadow_allow_contact_shadows] set to [code]true[/code].
+		</member>
+		<member name="sscs_ignore_edge_pixels" type="bool" setter="set_sscs_ignore_edge_pixels" getter="get_sscs_ignore_edge_pixels" default="false">
+			If [code]true[/code], pixels at depth discontinuities (object silhouettes and surface edges) are excluded from casting contact shadows. This can remove artifacts in certain cases at the cost of shadow edge quality.
+		</member>
+		<member name="sscs_sample_count" type="int" setter="set_sscs_sample_count" getter="get_sscs_sample_count" enum="Environment.SSCSSampleCount" default="1">
+			The number of depth samples used per shadow ray. More samples allow shadows to be cast over a greater distance from the caster, at the cost of performance.
+		</member>
+		<member name="sscs_shadow_contrast" type="float" setter="set_sscs_shadow_contrast" getter="get_sscs_shadow_contrast" default="2.0">
+			A contrast multiplier applied to the raw shadow value before writing. Higher values make the contact shadows darker and more defined; lower values produce softer, more subtle shadows. A value of [code]1.0[/code] applies no contrast boost.
+		</member>
+		<member name="sscs_surface_thickness" type="float" setter="set_sscs_surface_thickness" getter="get_sscs_surface_thickness" default="0.01">
+			The assumed depth thickness of surfaces, as a fraction of the depth range. A larger value widens the depth interval in which an occluder is considered to block light, which can fill in gaps in thin geometry but may also cause shadows to bleed through surfaces if set too high.
+		</member>
 		<member name="ssil_enabled" type="bool" setter="set_ssil_enabled" getter="is_ssil_enabled" default="false">
 			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like SDFGI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
 			[b]Note:[/b] SSIL is only supported in the Forward+ rendering method, not Mobile or Compatibility.
@@ -465,6 +492,15 @@
 		</constant>
 		<constant name="FOG_MODE_DEPTH" value="1" enum="FogMode">
 			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
+		</constant>
+		<constant name="SSCS_SAMPLE_COUNT_127" value="0" enum="SSCSSampleCount">
+			Use 127 samples per light ray. Shortest shadow reach, best performance.
+		</constant>
+		<constant name="SSCS_SAMPLE_COUNT_191" value="1" enum="SSCSSampleCount">
+			Use 191 samples per light ray. Balanced shadow reach and performance. This is the default.
+		</constant>
+		<constant name="SSCS_SAMPLE_COUNT_255" value="2" enum="SSCSSampleCount">
+			Use 255 samples per light ray. Highest quality, worst performance.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale">
 			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.

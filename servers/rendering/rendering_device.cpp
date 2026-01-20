@@ -4442,7 +4442,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform.");
+							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -4495,7 +4495,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform.");
+							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -4549,7 +4549,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture type as the uniform.");
+							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					if (likely(set_uniform.texture_format != RD::DATA_FORMAT_MAX) && unlikely(texture->format != set_uniform.texture_format)) {
 						print_verbose("Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture format as the uniform (expected: " + String(FORMAT_NAMES[set_uniform.texture_format]) + ", actual: " + String(FORMAT_NAMES[texture->format]) + ").");
