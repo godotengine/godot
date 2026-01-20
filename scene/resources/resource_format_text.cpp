@@ -164,9 +164,19 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		}
 #ifdef TOOLS_ENABLED
 		if (r_res.is_null()) {
-			// Hack to allow checking original path.
-			r_res.instantiate();
-			r_res->set_meta("__load_path__", ext_resources[id].path);
+			// When external resource file is missing, create a MissingResource placeholder
+			// so the resource can be preserved and saved later (same behavior as when scene is open)
+			if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+				Ref<MissingResource> missing_res;
+				missing_res.instantiate();
+				missing_res->set_original_class(type);
+				missing_res->set_meta("__load_path__", path);
+				r_res = missing_res;
+			} else {
+				// Hack to allow checking original path.
+				r_res.instantiate();
+				r_res->set_meta("__load_path__", ext_resources[id].path);
+			}
 		}
 #endif
 	}
