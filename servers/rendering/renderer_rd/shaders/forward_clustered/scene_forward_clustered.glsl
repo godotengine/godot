@@ -2325,11 +2325,18 @@ void fragment_shader(in SceneData scene_data) {
 			// Only process the first light's shadow for vertex lighting.
 			for (uint i = 0; i < 1; i++) {
 #else
+		uint sscs_slot = 0;
 		for (uint i = 0; i < 8; i++) {
 			if (i >= scene_data.directional_light_count) {
 				break;
 			}
 #endif
+
+				// Capture and advance SSCS slot before any continue.
+				uint current_sscs_slot = sscs_slot;
+				if (directional_lights.data[i].sscs_enabled != 0) {
+					sscs_slot++;
+				}
 
 				if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
@@ -2543,6 +2550,18 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #undef BIAS_FUNC
+
+					//process sscs
+					if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS) && directional_lights.data[i].sscs_enabled != 0u) {
+#ifdef USE_MULTIVIEW
+						float sscs_layer = float(current_sscs_slot * 2u + uint(ViewIndex));
+#else
+					float sscs_layer = float(current_sscs_slot);
+#endif // USE_MULTIVIEW
+						float sscs_shadow = textureLod(sampler2DArray(sscs_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, sscs_layer), 0.0).r;
+
+						shadow = min(shadow, sscs_shadow);
+					}
 				} // shadows
 
 				if (i < 4) {
