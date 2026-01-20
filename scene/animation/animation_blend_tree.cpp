@@ -590,7 +590,7 @@ AnimationNode::NodeTimeInfo AnimationNodeOneShot::_process(const AnimationMixer:
 	}
 
 	bool is_abort = cur_request == ONE_SHOT_REQUEST_ABORT;
-	if (is_reset && (is_fading_out || (abort_on_reset && cur_active))) {
+	if (is_reset && !do_start && (is_fading_out || (abort_on_reset && cur_active))) {
 		is_abort = true;
 	}
 
