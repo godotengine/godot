@@ -5573,6 +5573,11 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 
 		int new_node_id = connection_remap[item.id];
 		int new_frame_id = node->get_frame();
+
+		if (connection_remap.has(new_frame_id)) {
+			new_frame_id = connection_remap[new_frame_id];
+		}
+
 		undo_redo->add_do_method(visual_shader.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 		undo_redo->add_do_method(graph_plugin.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 	}
