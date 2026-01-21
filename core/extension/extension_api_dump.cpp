@@ -1182,6 +1182,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				List<MethodInfo> signal_list;
 				ClassDB::get_signal_list(class_name, &signal_list, true);
 				for (const MethodInfo &F : signal_list) {
+					if (F.name.begins_with("_")) {
+						continue; // Hidden signal.
+					}
+
 					StringName signal_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(signal_name);

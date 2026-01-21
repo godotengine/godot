@@ -4263,6 +4263,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			const MethodInfo &method_info = E.value;
 
+			if (method_info.name.begins_with("_")) {
+				// Signals starting with an underscore are internal and not meant to be exposed.
+				continue;
+			}
+
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
