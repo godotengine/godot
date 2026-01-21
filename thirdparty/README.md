@@ -299,19 +299,19 @@ Patches:
   * License: OFL-1.1
 - `NotoSansBengali*.woff2`:
   * Upstream: https://github.com/notofonts/bengali
-  * Version: 2.003 (020a5701f6fc6a363d5eccbae45e37714c0ad686, 2022)
+  * Version: 3.011 (85d80394cbbbb798ca0a41c983902e6cf77be3a3, 2026)
   * License: OFL-1.1
 - `NotoSansDevanagari*.woff2`:
   * Upstream: https://github.com/notofonts/devanagari
-  * Version: 2.004 (f8f27e49da0ec9e5e38ecf3628671f05b24dd955, 2023)
+  * Version: 2.006 (bb8d2566a1708ef2dcc6396ee2eb261a18967f76, 2024)
   * License: OFL-1.1
 - `NotoSansGeorgian*.woff2`:
   * Upstream: https://github.com/notofonts/georgian
-  * Version: 2.002 (243ec9aa1d4ec58cc42120d30faac1a102fbfeb9, 2022)
+  * Version: 2.005 (c02e5483c2dd63c5cf223845010ebd6e6dc56aec, 2024)
   * License: OFL-1.1
 - `NotoSansHebrew*.woff2`:
   * Upstream: https://github.com/notofonts/hebrew
-  * Version: 2.003 (caa7ab0614fb5b37cc003d9bf3d7d3e765331110, 2022)
+  * Version: 3.001 (caa7ab0614fb5b37cc003d9bf3d7d3e765331110, 2024)
   * License: OFL-1.1
 - `NotoSansMalayalam*.woff2`:
   * Upstream: https://github.com/notofonts/malayalam
@@ -319,11 +319,11 @@ Patches:
   * License: OFL-1.1
 - `NotoSansOriya*.woff2`:
   * Upstream: https://github.com/notofonts/oriya
-  * Version: 2.005 (9377f242b247df12d0bf4cecd93b9c4b18036fbd, 2023)
+  * Version: 2.006 (97abab82ec512f8a4a98c389352f194a03385ce2, 2024)
   * License: OFL-1.1
 - `NotoSansSinhala*.woff2`:
   * Upstream: https://github.com/notofonts/sinhala
-  * Version: 2.006 (66e5a2ed9797e575222d6e7c5b3710c7bf68be79, 2022)
+  * Version: 3.000 (032355e96de5bac83fd996535af3d13b1fbfeccf, 2025)
   * License: OFL-1.1
 - `NotoSansTamil*.woff2`:
   * Upstream: https://github.com/notofonts/tamil
@@ -331,11 +331,11 @@ Patches:
   * License: OFL-1.1
 - `NotoSansTelugu*.woff2`:
   * Upstream: https://github.com/notofonts/telugu
-  * Version: 2.004 (68a6a8170cba5b2e9b45029ef36994961e8f614c, 2023)
+  * Version: 2.005 (e97c3409a8347d68cccd06a82a68b418c315ee0c, 2023)
   * License: OFL-1.1
 - `NotoSansThai*.woff2`:
   * Upstream: https://github.com/notofonts/thai
-  * Version: 2.001 (09af528011390f35abf15cf86068dae208f512c4, 2022)
+  * Version: 2.002 (f8b482c158650260bba5d5edba9da3e8bb7185b4, 2023)
   * License: OFL-1.1
 - `OpenSans_SemiBold.woff2`:
   * Upstream: https://github.com/googlefonts/opensans
