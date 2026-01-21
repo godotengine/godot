@@ -299,6 +299,9 @@
 		<member name="docks/scene_tree/accessibility_warnings" type="bool" setter="" getter="">
 			If [code]true[/code], accessibility related warnings are displayed alongside other configuration warnings.
 		</member>
+		<member name="docks/scene_tree/auto_switch_workspace_on_node_selected" type="bool" setter="" getter="">
+			If [code]true[/code], when selecting a 2D or 3D node in the Scene Tree, automatically switches the workspace to the 2D or 3D workspace depending on the node's type.
+		</member>
 		<member name="docks/scene_tree/ask_before_deleting_related_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], when a node is deleted with animation tracks referencing it, a confirmation dialog appears before the tracks are deleted. The dialog will appear even when using the "Delete (No Confirm)" shortcut.
 		</member>
