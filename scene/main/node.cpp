@@ -1702,7 +1702,8 @@ void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, I
 	ERR_THREAD_GUARD
 	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
+	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); // Fail if node has a parent.
+	ERR_FAIL_COND_MSG(p_child->data.stash_parent, vformat("Can't add child '%s' to '%s', the node is stashed in node '%s'.", p_child->get_name(), get_name(), p_child->data.stash_parent->get_name())); // Fail if node was stashed.
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
@@ -1771,6 +1772,85 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 	}
 }
 
+void Node::stash_child(Node *p_node) {
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_COND_MSG(p_node->data.parent && p_node->data.parent != this, vformat("Can't stash: Node \"%s\" is not a child of this node.", p_node->get_name()));
+
+	if (p_node->data.parent) {
+		remove_child(p_node);
+	}
+	data.stashed_children.push_back(p_node);
+	p_node->data.stash_parent = this;
+}
+
+void Node::unstash_child(Node *p_node, int p_at_index) {
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL_MSG(p_node->data.stash_parent, vformat("Node \"%s\" is not stashed.", p_node->get_name()));
+	ERR_FAIL_COND_MSG(p_node->data.stash_parent != this, vformat("Node \"%s\" was not stashed by this node (%s).", p_node->get_name(), get_name()));
+
+	data.stashed_children.erase(p_node);
+	p_node->data.stash_parent = nullptr;
+
+	add_child(p_node);
+	if (p_at_index > -1) {
+		move_child(p_node, p_at_index);
+	}
+}
+
+Node *Node::unstash_child_by_name(const StringName &p_child_name, int p_at_index) {
+	Node *stashed_child = _find_stashed_child(p_child_name);
+	ERR_FAIL_NULL_V_MSG(stashed_child, nullptr, vformat("Stashed child \"%s\" not found.", p_child_name));
+
+	data.stashed_children.erase(stashed_child);
+	stashed_child->data.stash_parent = nullptr;
+
+	add_child(stashed_child);
+	if (p_at_index > -1) {
+		move_child(stashed_child, p_at_index);
+	}
+	return stashed_child;
+}
+
+TypedArray<Node> Node::get_stashed_children() const {
+	TypedArray<Node> ret;
+	if (data.stashed_children.is_empty()) {
+		return ret;
+	}
+	ret.resize(data.stashed_children.size());
+
+	int i = 0;
+	for (const Node *child : data.stashed_children) {
+		ret[i] = child;
+		i++;
+	}
+	return ret;
+}
+
+bool Node::has_stashed_child(const StringName &p_child_name) const {
+	return _find_stashed_child(p_child_name) != nullptr;
+}
+
+Node *Node::get_stashed_child(const StringName &p_child_name) const {
+	Node *stashed_child = _find_stashed_child(p_child_name);
+	ERR_FAIL_NULL_V_MSG(stashed_child, nullptr, vformat("Stashed child \"%s\" not found.", p_child_name));
+	return stashed_child;
+}
+
+void Node::stash_in_parent() {
+	ERR_FAIL_NULL_MSG(data.parent, "Can't stash: Node has no parent.");
+	data.parent->stash_child(this);
+}
+
+void Node::unstash_from_parent() {
+	ERR_FAIL_NULL_MSG(data.stash_parent, "Node is not stashed.");
+	data.stash_parent->unstash_child(this);
+}
+
+Node *Node::get_stash_parent() const {
+	ERR_FAIL_NULL_V_MSG(data.stash_parent, nullptr, "Node is not stashed.");
+	return data.stash_parent;
+}
+
 void Node::_update_children_cache_impl() const {
 	// Assign children
 	data.children_cache.resize(data.children.size());
@@ -1800,6 +1880,15 @@ void Node::_update_children_cache_impl() const {
 		}
 	}
 	data.children_cache_dirty = false;
+}
+
+Node *Node::_find_stashed_child(const StringName &p_name) const {
+	for (Node *child : data.stashed_children) {
+		if (child->get_name() == p_name) {
+			return child;
+		}
+	}
+	return nullptr;
 }
 
 template <bool p_include_internal>
@@ -3778,6 +3867,18 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
+	ClassDB::bind_method(D_METHOD("stash_child", "node"), &Node::stash_child);
+	ClassDB::bind_method(D_METHOD("unstash_child", "child", "at_index"), &Node::unstash_child, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("unstash_child_by_name", "child_name", "at_index"), &Node::unstash_child_by_name, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_stashed_children"), &Node::get_stashed_children);
+	ClassDB::bind_method(D_METHOD("has_stashed_child", "child_name"), &Node::has_stashed_child);
+	ClassDB::bind_method(D_METHOD("get_stashed_child", "child_name"), &Node::get_stashed_child);
+
+	ClassDB::bind_method(D_METHOD("stash_in_parent"), &Node::stash_in_parent);
+	ClassDB::bind_method(D_METHOD("unstash_from_parent"), &Node::unstash_from_parent);
+	ClassDB::bind_method(D_METHOD("is_stashed"), &Node::is_stashed);
+	ClassDB::bind_method(D_METHOD("get_stash_parent"), &Node::get_stash_parent);
+
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
 	ClassDB::bind_method(D_METHOD("is_part_of_edited_scene"), &Node::is_part_of_edited_scene);
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
@@ -4133,6 +4234,16 @@ Node::~Node() {
 	data.owned.clear();
 	data.children.clear();
 	data.children_cache.clear();
+
+	if (data.stash_parent) {
+		data.stash_parent->data.stashed_children.erase(this);
+		data.stash_parent = nullptr;
+	}
+
+	for (Node *child : data.stashed_children) {
+		memdelete(child);
+	}
+	data.stashed_children.clear();
 
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children_cache.size());

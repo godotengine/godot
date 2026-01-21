@@ -198,8 +198,10 @@ private:
 		Ref<SceneState> inherited_state;
 
 		Node *parent = nullptr;
+		Node *stash_parent = nullptr;
 		Node *owner = nullptr;
 		HashMap<StringName, Node *> children;
+		LocalVector<Node *> stashed_children;
 		mutable bool children_cache_dirty = false;
 		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
@@ -348,6 +350,7 @@ private:
 	}
 
 	void _update_children_cache_impl() const;
+	Node *_find_stashed_child(const StringName &p_name) const;
 
 	// Process group management
 	void _add_process_group();
@@ -515,6 +518,18 @@ public:
 	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name = false);
 	void remove_child(RequiredParam<Node> rp_child);
+
+	void stash_child(Node *p_node);
+	void unstash_child(Node *p_node, int p_at_index = -1);
+	Node *unstash_child_by_name(const StringName &p_child_name, int p_at_index = -1);
+	TypedArray<Node> get_stashed_children() const;
+	bool has_stashed_child(const StringName &p_child_name) const;
+	Node *get_stashed_child(const StringName &p_child_name) const;
+
+	void stash_in_parent();
+	void unstash_from_parent();
+	bool is_stashed() const { return data.stash_parent; }
+	Node *get_stash_parent() const;
 
 	/// Optimal way to iterate the children of this node.
 	/// The caller is responsible to ensure:

@@ -553,6 +553,25 @@
 				Returns [code]true[/code] if this node is an instance load placeholder. See [InstancePlaceholder] and [method set_scene_instance_load_placeholder].
 			</description>
 		</method>
+		<method name="get_stash_parent" qualifiers="const">
+			<return type="Node" />
+			<description>
+				Returns the parent in which this node is stashed. Prints an error and returns [code]null[/code] if the node is not stashed.
+			</description>
+		</method>
+		<method name="get_stashed_child" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="child_name" type="StringName" />
+			<description>
+				Returns the stashed child with name [param child_name]. Prints an error and returns [code]null[/code] if no such child is stashed in this node.
+			</description>
+		</method>
+		<method name="get_stashed_children" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns all nodes that were stashed in this node.
+			</description>
+		</method>
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
@@ -613,6 +632,13 @@
 			<param index="0" name="path" type="NodePath" />
 			<description>
 				Returns [code]true[/code] if [param path] points to a valid node and its subnames point to a valid [Resource], e.g. [code]Area2D/CollisionShape2D:shape[/code]. Properties that are not [Resource] types (such as nodes or other [Variant] types) are not considered. See also [method get_node_and_resource].
+			</description>
+		</method>
+		<method name="has_stashed_child" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="child_name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a child named [param child_name] was stashed in this node.
 			</description>
 		</method>
 		<method name="is_ancestor_of" qualifiers="const">
@@ -735,6 +761,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is processing unhandled key input (see [method set_process_unhandled_key_input]).
+			</description>
+		</method>
+		<method name="is_stashed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node is stashed (see [method stash_child]).
 			</description>
 		</method>
 		<method name="move_child">
@@ -1027,6 +1059,45 @@
 			<description>
 				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
+			</description>
+		</method>
+		<method name="stash_child">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Stashes the specified [param node] in this node. The [param node] has to either be a child of this [Node] or have no parent.
+				Stashed children are outside the scene tree and stashing/unstashing them behaves the same as removing/adding the node from the tree. When the stash owner is freed, all stashed children are freed automatically to avoid memory leaks.
+				[b]Note:[/b] Currently the stashed children are not stored when this node is packed in [PackedScene].
+			</description>
+		</method>
+		<method name="stash_in_parent">
+			<return type="void" />
+			<description>
+				Calls [method stash_child] in the parent node. Fails if this node has no parent.
+			</description>
+		</method>
+		<method name="unstash_child">
+			<return type="void" />
+			<param index="0" name="child" type="Node" />
+			<param index="1" name="at_index" type="int" default="-1" />
+			<description>
+				Unstashes the specified [param child] and adds it as a child of this node. If [param at_index] is greater than [code]-1[/code], the child will be moved to the specified index.
+				Prints an error if the [param child] was not stashed in this node.
+			</description>
+		</method>
+		<method name="unstash_child_by_name">
+			<return type="Node" />
+			<param index="0" name="child_name" type="StringName" />
+			<param index="1" name="at_index" type="int" default="-1" />
+			<description>
+				Unstashes the child with name [param child_name]. If [param at_index] is greater than [code]-1[/code], the child will be moved to the specified index. Returns a reference to the unstashed child.
+				Prints an error and returns [code]null[/code] if no child named [param child_name] was stashed in this node.
+			</description>
+		</method>
+		<method name="unstash_from_parent">
+			<return type="void" />
+			<description>
+				Calls [method unstash_child] in the stash parent node. Fails if this node is not stashed.
 			</description>
 		</method>
 		<method name="update_configuration_warnings">
