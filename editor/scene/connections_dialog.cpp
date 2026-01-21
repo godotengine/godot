@@ -1559,27 +1559,9 @@ void ConnectionsDock::update_tree() {
 				class_icon = get_editor_theme_icon(native_base);
 			}
 
-			script_base->get_script_signal_list(&class_signals);
+			script_base->get_script_signal_list(&class_signals, true);
 
-			// TODO: Core: Add optional parameter to ignore base classes (no_inheritance like in ClassDB).
-			Ref<Script> base = script_base->get_base_script();
-			if (base.is_valid()) {
-				List<MethodInfo> base_signals;
-				base->get_script_signal_list(&base_signals);
-				HashSet<String> base_signal_names;
-				for (const MethodInfo &signal : base_signals) {
-					base_signal_names.insert(signal.name);
-				}
-				for (List<MethodInfo>::Element *F = class_signals.front(); F;) {
-					List<MethodInfo>::Element *N = F->next();
-					if (base_signal_names.has(F->get().name)) {
-						class_signals.erase(F);
-					}
-					F = N;
-				}
-			}
-
-			script_base = base;
+			script_base = script_base->get_base_script();
 		} else {
 			class_name = native_base;
 			doc_class_name = native_base;
