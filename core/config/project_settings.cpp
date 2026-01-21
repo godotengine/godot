@@ -1414,6 +1414,15 @@ PackedStringArray ProjectSettings::get_changed_settings() const {
 	return arr;
 }
 
+String ProjectSettings::get_last_changed_setting() const {
+	String setting;
+	if (!changed_settings.is_empty()) {
+		setting = *changed_settings.last();
+	}
+
+	return setting;
+}
+
 bool ProjectSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
 	for (const StringName &setting : changed_settings) {
 		if (String(setting).begins_with(p_setting_prefix)) {
@@ -1632,8 +1641,9 @@ void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
-	// Change tracking methods
+	// Change tracking methods.
 	ClassDB::bind_method(D_METHOD("get_changed_settings"), &ProjectSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("get_last_changed_setting"), &ProjectSettings::get_last_changed_setting);
 	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &ProjectSettings::check_changed_settings_in_group);
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }

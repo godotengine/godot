@@ -1417,6 +1417,15 @@ PackedStringArray EditorSettings::get_changed_settings() const {
 	return arr;
 }
 
+String EditorSettings::get_last_changed_setting() const {
+	String setting;
+	if (!changed_settings.is_empty()) {
+		setting = *changed_settings.last();
+	}
+
+	return setting;
+}
+
 bool EditorSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
 	for (const String &setting : changed_settings) {
 		if (setting.begins_with(p_setting_prefix)) {
@@ -2290,6 +2299,7 @@ void EditorSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &EditorSettings::check_changed_settings_in_group);
 	ClassDB::bind_method(D_METHOD("get_changed_settings"), &EditorSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("get_last_changed_setting"), &EditorSettings::get_last_changed_setting);
 	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));

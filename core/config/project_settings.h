@@ -214,8 +214,9 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
-	// Change tracking methods
+	// Change tracking methods.
 	PackedStringArray get_changed_settings() const;
+	String get_last_changed_setting() const;
 	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
 
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;

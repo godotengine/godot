@@ -123,6 +123,12 @@
 				Returns the list of favorite files and directories for this project.
 			</description>
 		</method>
+		<method name="get_last_changed_setting" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the last setting that has been modified, or an empty string if there's none. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="get_project_metadata" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="section" type="String" />

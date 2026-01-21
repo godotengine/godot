@@ -86,6 +86,12 @@
 				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
 			</description>
 		</method>
+		<method name="get_last_changed_setting" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the last setting that has been modified, or an empty string if there's none. See also [method get_changed_settings].
+			</description>
+		</method>
 		<method name="get_order" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="String" />
