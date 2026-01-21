@@ -175,7 +175,7 @@ void JoypadSDL::process_events() {
 				Dictionary joypad_info;
 				// Skip Godot's mapping system if SDL already handles the joypad's mapping.
 				joypad_info["mapping_handled"] = SDL_IsGamepad(sdl_event.jdevice.which);
-				joypad_info["raw_name"] = String(SDL_GetJoystickName(joy));
+				joypad_info["raw_name"] = String::utf8(SDL_GetJoystickName(joy));
 				joypad_info["vendor_id"] = itos(SDL_GetJoystickVendor(joy));
 				joypad_info["product_id"] = itos(SDL_GetJoystickProduct(joy));
 
