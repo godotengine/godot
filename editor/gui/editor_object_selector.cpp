@@ -33,7 +33,6 @@
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
@@ -218,6 +217,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	current_object_icon = memnew(TextureRect);
 	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	current_object_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	current_object_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
