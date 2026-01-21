@@ -696,6 +696,7 @@
 				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
 				[b]Note:[/b] For Web, the amplitude cannot be changed.
 				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
+				[b]Note:[/b] Device settings such as vibration on/off, "do not disturb" mode or specific haptic feedback on/off may prevent [method vibrate_handheld] effects.
 			</description>
 		</method>
 		<method name="warp_mouse">
