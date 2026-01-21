@@ -50,10 +50,14 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_3d",
 	"disable_navigation_2d",
 	"disable_navigation_3d",
+	"accesskit",
+	"sdl",
 	"disable_xr",
 	"module_openxr_enabled",
 	"wayland",
 	"x11",
+	"pulseaudio",
+	"alsa",
 	"rendering_device", // FIXME: There's no scons option to disable rendering device.
 	"forward_plus_renderer",
 	"forward_mobile_renderer",
@@ -79,10 +83,14 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
+	false, // ACCESSKIT
+	false, // SDL
 	false, // XR
 	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
+	false, // PULSEAUDIO
+	false, // ALSA
 	false, // RENDERING_DEVICE
 	false, // FORWARD_RENDERER
 	false, // MOBILE_RENDERER
@@ -108,10 +116,14 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	true, // 3D
 	true, // NAVIGATION_2D
 	true, // NAVIGATION_3D
+	false, // ACCESSKIT
+	false, // SDL
 	true, // XR
 	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
+	false, // PULSEAUDIO
+	false, // ALSA
 	false, // RENDERING_DEVICE
 	false, // FORWARD_RENDERER
 	false, // MOBILE_RENDERER
@@ -137,10 +149,14 @@ const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
+	false, // ACCESSKIT
+	false, // SDL
 	false, // XR
 	false, // OPENXR
 	false, // WAYLAND
 	false, // X11
+	false, // PULSEAUDIO
+	false, // ALSA
 	false, // RENDERING_DEVICE
 	false, // FORWARD_RENDERER
 	false, // MOBILE_RENDERER
@@ -165,10 +181,14 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_GENERAL, // 3D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_2D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_3D
+	BUILD_OPTION_CATEGORY_GENERAL, // ACCESSKIT
+	BUILD_OPTION_CATEGORY_GENERAL, // SDL
 	BUILD_OPTION_CATEGORY_GENERAL, // XR
 	BUILD_OPTION_CATEGORY_GENERAL, // OPENXR
 	BUILD_OPTION_CATEGORY_GENERAL, // WAYLAND
 	BUILD_OPTION_CATEGORY_GENERAL, // X11
+	BUILD_OPTION_CATEGORY_GENERAL, // PULSEAUDIO
+	BUILD_OPTION_CATEGORY_GENERAL, // ALSA
 	BUILD_OPTION_CATEGORY_GRAPHICS, // RENDERING_DEVICE
 	BUILD_OPTION_CATEGORY_GRAPHICS, // FORWARD_RENDERER
 	BUILD_OPTION_CATEGORY_GRAPHICS, // MOBILE_RENDERER
@@ -385,10 +405,14 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("3D Engine"),
 		TTRC("Navigation (2D)"),
 		TTRC("Navigation (3D)"),
+		TTRC("Accessibility Support (AccessKit)"),
+		TTRC("Improved Gamepad Support (SDL)"),
 		TTRC("XR"),
 		TTRC("OpenXR"),
 		TTRC("Wayland"),
 		TTRC("X11"),
+		TTRC("PulseAudio"),
+		TTRC("ALSA"),
 		TTRC("RenderingDevice"),
 		TTRC("Forward+ Renderer"),
 		TTRC("Mobile Renderer"),
@@ -415,23 +439,27 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, String());
 
 	const char *build_option_descriptions[BUILD_OPTION_MAX] = {
-		TTRC("3D Nodes as well as RenderingServer access to 3D features."),
-		TTRC("Navigation Server and capabilities for 2D."),
-		TTRC("Navigation Server and capabilities for 3D."),
+		TTRC("3D Nodes as well as RenderingServer access to 3D features.\nNote that the Geometry3D singleton remains available even with this item disabled."),
+		TTRC("NavigationServer and capabilities for 2D."),
+		TTRC("NavigationServer and capabilities for 3D."),
+		TTRC("Support for screen readers using the AccessKit library."),
+		TTRC("Improved gamepad support on Windows, macOS, and Linux using the SDL library.\nIf disabled, built-in custom code is used for gamepad support instead, which may be less reliable for certain controller models."),
 		TTRC("XR (AR and VR)."),
 		TTRC("OpenXR standard implementation (requires XR to be enabled)."),
-		TTRC("Wayland display (Linux only)."),
-		TTRC("X11 display (Linux only)."),
-		TTRC("RenderingDevice based rendering (if disabled, the OpenGL backend is required)."),
+		TTRC("Wayland display server support (Linux only)."),
+		TTRC("X11 display server support (Linux only)."),
+		TTRC("PulseAudio audio driver (Linux only)."),
+		TTRC("ALSA audio driver (Linux only)."),
+		TTRC("RenderingDevice-based rendering (if disabled, the OpenGL backend is required)."),
 		TTRC("Forward+ renderer for advanced 3D graphics."),
 		TTRC("Mobile renderer for less advanced 3D graphics."),
 		TTRC("Vulkan backend of RenderingDevice."),
 		TTRC("Direct3D 12 backend of RenderingDevice."),
 		TTRC("Metal backend of RenderingDevice (Apple arm64 only)."),
 		TTRC("OpenGL backend (if disabled, the RenderingDevice backend is required)."),
-		TTRC("Physics Server and capabilities for 2D."),
+		TTRC("PhysicsServer and capabilities for 2D."),
 		TTRC("Godot Physics backend (2D)."),
-		TTRC("Physics Server and capabilities for 3D."),
+		TTRC("PhysicsServer and capabilities for 3D."),
 		TTRC("Godot Physics backend (3D)."),
 		TTRC("Jolt Physics backend (3D only)."),
 		TTRC("Fallback implementation of Text Server\nSupports basic text layouts."),
@@ -439,7 +467,7 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType library (if disabled, WOFF2 support is also disabled)."),
 		TTRC("WOFF2 font format support using FreeType and Brotli libraries."),
 		TTRC("SIL Graphite smart font technology support (supported by Advanced Text Server only)."),
-		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option disabled)."),
+		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option is disabled)."),
 	};
 
 	return TTRGET(build_option_descriptions[p_build_option]);
