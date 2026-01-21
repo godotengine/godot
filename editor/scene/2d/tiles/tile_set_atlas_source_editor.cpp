@@ -1492,7 +1492,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 			Rect2i region = Rect2i(start_base_tiles_coords, new_base_tiles_coords - start_base_tiles_coords).abs();
 			region.size += Vector2i(1, 1);
 
-			undo_redo->create_action(TTR("Select tiles"));
+			undo_redo->create_action(TTR("Select tiles"), UndoRedo::MERGE_DISABLE, nullptr, false, false);
 			undo_redo->add_undo_method(this, "_set_selection_from_array", _get_selection_as_array());
 
 			// Determine if we clear, then add or remove to the selection.
