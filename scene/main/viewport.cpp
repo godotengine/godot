@@ -2533,6 +2533,7 @@ void Viewport::_gui_hide_control(Control *p_control) {
 	ObjectID over_id = p_control ? p_control->get_instance_id() : ObjectID();
 	if (gui.mouse_over == over_id || gui.mouse_over_hierarchy.has(over_id)) {
 		_drop_mouse_over(p_control->get_parent_control());
+		_update_mouse_over(get_mouse_position());
 	}
 	if (gui.drag_mouse_over == p_control) {
 		gui.drag_mouse_over = nullptr;
