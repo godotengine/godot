@@ -465,11 +465,11 @@ struct OpenTypeFontFile
     Typ1Tag		= HB_TAG ('t','y','p','1')  /* Obsolete Apple Type1 font in SFNT container */
   };
 
-  hb_tag_t get_tag () const { return u.tag; }
+  hb_tag_t get_tag () const { return u.tag.v; }
 
   unsigned int get_face_count () const
   {
-    switch (u.tag) {
+    switch (u.tag.v) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
@@ -483,7 +483,7 @@ struct OpenTypeFontFile
   {
     if (base_offset)
       *base_offset = 0;
-    switch (u.tag) {
+    switch (u.tag.v) {
     /* Note: for non-collection SFNT data we ignore index.  This is because
      * Apple dfont container is a container of SFNT's.  So each SFNT is a
      * non-TTC, but the index is more than zero. */
@@ -512,9 +512,9 @@ struct OpenTypeFontFile
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.tag.sanitize (c))) return_trace (false);
+    if (unlikely (!u.tag.v.sanitize (c))) return_trace (false);
     hb_barrier ();
-    switch (u.tag) {
+    switch (u.tag.v) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
@@ -527,13 +527,13 @@ struct OpenTypeFontFile
 
   protected:
   union {
-  Tag			tag;		/* 4-byte identifier. */
+  struct { Tag v; }	tag;		/* 4-byte identifier. */
   OpenTypeFontFace	fontFace;
   TTCHeader		ttcHeader;
   ResourceForkHeader	rfHeader;
   } u;
   public:
-  DEFINE_SIZE_UNION (4, tag);
+  DEFINE_SIZE_UNION (4, tag.v);
 };
 
 

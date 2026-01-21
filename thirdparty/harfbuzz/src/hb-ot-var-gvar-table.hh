@@ -448,10 +448,18 @@ struct gvar_GVAR
     if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
       it++;
     unsigned int subset_data_size = 0;
+    unsigned padding_size = 0;
     for (auto &_ : it)
     {
       hb_codepoint_t old_gid = _.second;
-      subset_data_size += get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
+      unsigned glyph_data_size = get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
+      if (glyph_data_size % 2)
+      {
+        glyph_data_size++;
+        padding_size++;
+      }
+
+      subset_data_size += glyph_data_size;
     }
 
     /* According to the spec: If the short format (Offset16) is used for offsets,
@@ -480,6 +488,8 @@ struct gvar_GVAR
 
     /* This ordering relative to the shared tuples array, which puts the glyphVariationData
        last in the table, is required when HB_SUBSET_FLAGS_IFTB_REQUIREMENTS is set */
+    if (long_offset)
+      subset_data_size -= padding_size;
     char *subset_data = c->serializer->allocate_size<char> (subset_data_size, false);
     if (!subset_data) return_trace (false);
     out->dataZ = subset_data - (char *) out;
@@ -518,8 +528,16 @@ struct gvar_GVAR
 							    old_gid);
 
       hb_memcpy (subset_data, var_data_bytes.arrayZ, var_data_bytes.length);
-      subset_data += var_data_bytes.length;
-      glyph_offset += var_data_bytes.length;
+      unsigned glyph_data_size = var_data_bytes.length;
+      subset_data += glyph_data_size;
+      glyph_offset += glyph_data_size;
+
+      if (!long_offset && (glyph_data_size % 2))
+      {
+        *subset_data = 0;
+        subset_data++;
+        glyph_offset++;
+      }
 
       if (long_offset)
 	((HBUINT32 *) subset_offsets)[gid] = glyph_offset;

@@ -40,13 +40,22 @@ using rebase_tent_result_scratch_t = hb_pair_t<rebase_tent_result_t, rebase_tent
 struct TupleVariationHeader
 {
   friend struct tuple_delta_t;
-  unsigned get_size (unsigned axis_count) const
-  { return min_size + get_all_tuples (axis_count).get_size (); }
+  unsigned get_size (unsigned axis_count_times_2) const
+  {
+    // This function is super hot in mega-var-fonts with hundreds of masters.
+    unsigned ti = tupleIndex;
+    if (unlikely ((ti & (TupleIndex::EmbeddedPeakTuple | TupleIndex::IntermediateRegion))))
+    {
+      unsigned count = ((ti & TupleIndex::EmbeddedPeakTuple) != 0) + ((ti & TupleIndex::IntermediateRegion) != 0) * 2;
+      return min_size + count * axis_count_times_2;
+    }
+    return min_size;
+  }
 
   unsigned get_data_size () const { return varDataSize; }
 
-  const TupleVariationHeader &get_next (unsigned axis_count) const
-  { return StructAtOffset<TupleVariationHeader> (this, get_size (axis_count)); }
+  const TupleVariationHeader &get_next (unsigned axis_count_times_2) const
+  { return StructAtOffset<TupleVariationHeader> (this, get_size (axis_count_times_2)); }
 
   bool unpack_axis_tuples (unsigned axis_count,
                            const hb_array_t<const F2DOT14> shared_tuples,
@@ -109,23 +118,26 @@ struct TupleVariationHeader
 
     const F2DOT14 *peak_tuple;
 
-    bool has_interm = tuple_index & TuppleIndex::IntermediateRegion; // Inlined for performance
-    if (unlikely (has_interm))
-      shared_tuple_scalar_cache = nullptr;
+    bool has_interm = tuple_index & TupleIndex::IntermediateRegion; // Inlined for performance
 
-    if (unlikely (tuple_index & TuppleIndex::EmbeddedPeakTuple)) // Inlined for performance
+    if (unlikely (tuple_index & TupleIndex::EmbeddedPeakTuple)) // Inlined for performance
     {
       peak_tuple = get_peak_tuple (coord_count);
       shared_tuple_scalar_cache = nullptr;
     }
     else
     {
-      unsigned int index = tuple_index & TuppleIndex::TupleIndexMask; // Inlined for performance
+      unsigned int index = tuple_index & TupleIndex::TupleIndexMask; // Inlined for performance
 
       float scalar;
       if (shared_tuple_scalar_cache &&
 	  shared_tuple_scalar_cache->get (index, &scalar))
-	return (double) scalar;
+      {
+        if (has_interm && (scalar != 0 && scalar != 1.f))
+	  shared_tuple_scalar_cache = nullptr;
+	else
+	  return (double) scalar;
+      }
 
       if (unlikely ((index + 1) * coord_count > shared_tuples.length))
         return 0.0;
@@ -143,8 +155,27 @@ struct TupleVariationHeader
     }
 
     double scalar = 1.0;
+#ifndef HB_OPTIMIZE_SIZE
+#if HB_FAST_NUM_ACCESS
+    bool skip = coord_count >= 16;
+#endif
+#endif
     for (unsigned int i = 0; i < coord_count; i++)
     {
+#ifndef HB_OPTIMIZE_SIZE
+#if HB_FAST_NUM_ACCESS
+      if (skip)
+      {
+	while (i + 4 <= coord_count && * (HBUINT64LE *) &peak_tuple[i] == 0)
+	  i += 4;
+	while (i < coord_count && peak_tuple[i].to_int () == 0)
+	  i += 1;
+	if (i >= coord_count)
+	  break;
+      }
+#endif
+#endif
+
       int peak = peak_tuple[i].to_int ();
       if (!peak) continue;
 
@@ -154,6 +185,7 @@ struct TupleVariationHeader
 
       if (has_interm)
       {
+	shared_tuple_scalar_cache = nullptr;
         int start = start_tuple[i].to_int ();
         int end = end_tuple[i].to_int ();
         if (unlikely (start > peak || peak > end ||
@@ -173,13 +205,13 @@ struct TupleVariationHeader
     return scalar;
   }
 
-  bool           has_peak () const { return tupleIndex & TuppleIndex::EmbeddedPeakTuple; }
-  bool   has_intermediate () const { return tupleIndex & TuppleIndex::IntermediateRegion; }
-  bool has_private_points () const { return tupleIndex & TuppleIndex::PrivatePointNumbers; }
-  unsigned      get_index () const { return tupleIndex & TuppleIndex::TupleIndexMask; }
+  bool           has_peak () const { return tupleIndex & TupleIndex::EmbeddedPeakTuple; }
+  bool   has_intermediate () const { return tupleIndex & TupleIndex::IntermediateRegion; }
+  bool has_private_points () const { return tupleIndex & TupleIndex::PrivatePointNumbers; }
+  unsigned      get_index () const { return tupleIndex & TupleIndex::TupleIndexMask; }
 
   protected:
-  struct TuppleIndex : HBUINT16
+  struct TupleIndex : HBUINT16
   {
     enum Flags {
       EmbeddedPeakTuple   = 0x8000u,
@@ -188,7 +220,7 @@ struct TupleVariationHeader
       TupleIndexMask      = 0x0FFFu
     };
 
-    TuppleIndex& operator = (uint16_t i) { HBUINT16::operator= (i); return *this; }
+    TupleIndex& operator = (uint16_t i) { HBUINT16::operator= (i); return *this; }
     DEFINE_SIZE_STATIC (2);
   };
 
@@ -205,7 +237,7 @@ struct TupleVariationHeader
 
   HBUINT16      varDataSize;    /* The size in bytes of the serialized
                                  * data for this tuple variation table. */
-  TuppleIndex   tupleIndex;     /* A packed field. The high 4 bits are flags (see below).
+  TupleIndex    tupleIndex;     /* A packed field. The high 4 bits are flags (see below).
                                    The low 12 bits are an index into a shared tuple
                                    records array. */
   /* UnsizedArrayOf<F2DOT14> peakTuple - optional */
@@ -288,13 +320,13 @@ struct tuple_delta_t
   void copy_from (const tuple_delta_t& o, hb_alloc_pool_t *pool = nullptr)
   {
     axis_tuples = o.axis_tuples;
-    indices.allocate_from_pool (pool, o.indices);
-    deltas_x.allocate_from_pool (pool, o.deltas_x);
-    deltas_y.allocate_from_pool (pool, o.deltas_y);
-    compiled_tuple_header.allocate_from_pool (pool, o.compiled_tuple_header);
-    compiled_deltas.allocate_from_pool (pool, o.compiled_deltas);
-    compiled_peak_coords.allocate_from_pool (pool, o.compiled_peak_coords);
-    compiled_interm_coords.allocate_from_pool (pool, o.compiled_interm_coords);
+    indices.duplicate_vector_from_pool (pool, o.indices);
+    deltas_x.duplicate_vector_from_pool (pool, o.deltas_x);
+    deltas_y.duplicate_vector_from_pool (pool, o.deltas_y);
+    compiled_tuple_header.duplicate_vector_from_pool (pool, o.compiled_tuple_header);
+    compiled_deltas.duplicate_vector_from_pool (pool, o.compiled_deltas);
+    compiled_peak_coords.duplicate_vector_from_pool (pool, o.compiled_peak_coords);
+    compiled_interm_coords.duplicate_vector_from_pool (pool, o.compiled_interm_coords);
   }
 
   void remove_axis (hb_tag_t axis_tag)
@@ -515,7 +547,7 @@ struct tuple_delta_t
 
     /* pointdata length = 0 implies "use shared points" */
     if (points_data_length)
-      flag |= TupleVariationHeader::TuppleIndex::PrivatePointNumbers;
+      flag |= TupleVariationHeader::TupleIndex::PrivatePointNumbers;
 
     unsigned serialized_data_size = points_data_length + compiled_deltas.length;
     TupleVariationHeader *o = reinterpret_cast<TupleVariationHeader *> (compiled_tuple_header.begin ());
@@ -531,7 +563,7 @@ struct tuple_delta_t
                                unsigned& flag) const
   {
     hb_memcpy (&peak_coords[0], &compiled_peak_coords[0], compiled_peak_coords.length * sizeof (compiled_peak_coords[0]));
-    flag |= TupleVariationHeader::TuppleIndex::EmbeddedPeakTuple;
+    flag |= TupleVariationHeader::TupleIndex::EmbeddedPeakTuple;
     return compiled_peak_coords.length;
   }
 
@@ -542,7 +574,7 @@ struct tuple_delta_t
     if (compiled_interm_coords)
     {
       hb_memcpy (&coords[0], &compiled_interm_coords[0], compiled_interm_coords.length * sizeof (compiled_interm_coords[0]));
-      flag |= TupleVariationHeader::TuppleIndex::IntermediateRegion;
+      flag |= TupleVariationHeader::TupleIndex::IntermediateRegion;
     }
     return compiled_interm_coords.length;
   }
@@ -895,15 +927,15 @@ struct TupleVariationData
     return_trace (c->check_struct (this));
   }
 
-  unsigned get_size (unsigned axis_count) const
+  unsigned get_size (unsigned axis_count_times_2) const
   {
     unsigned total_size = min_size;
     unsigned count = tupleVarCount.get_count ();
     const TupleVariationHeader *tuple_var_header = &(get_tuple_var_header());
     for (unsigned i = 0; i < count; i++)
     {
-      total_size += tuple_var_header->get_size (axis_count) + tuple_var_header->get_data_size ();
-      tuple_var_header = &tuple_var_header->get_next (axis_count);
+      total_size += tuple_var_header->get_size (axis_count_times_2) + tuple_var_header->get_data_size ();
+      tuple_var_header = &tuple_var_header->get_next (axis_count_times_2);
     }
 
     return total_size;
@@ -1398,6 +1430,7 @@ struct TupleVariationData
       var_data = var_data_bytes_.as<TupleVariationData> ();
       tuples_left = var_data->tupleVarCount.get_count ();
       axis_count = axis_count_;
+      axis_count_times_2 = axis_count_ * 2;
       current_tuple = &var_data->get_tuple_var_header ();
       data_offset = 0;
       table_base = table_base_;
@@ -1421,11 +1454,11 @@ struct TupleVariationData
 	return false;
 
       current_tuple_size = TupleVariationHeader::min_size;
-      if (unlikely (!var_data_bytes.check_range (current_tuple, current_tuple_size)))
+      if (unlikely (!var_data_bytes.check_end ((const char *) current_tuple + current_tuple_size)))
 	return false;
 
-      current_tuple_size = current_tuple->get_size (axis_count);
-      if (unlikely (!var_data_bytes.check_range (current_tuple, current_tuple_size)))
+      current_tuple_size = current_tuple->get_size (axis_count_times_2);
+      if (unlikely (!var_data_bytes.check_end ((const char *) current_tuple + current_tuple_size)))
 	return false;
 
       return true;
@@ -1448,6 +1481,7 @@ struct TupleVariationData
     signed tuples_left;
     const TupleVariationData *var_data;
     unsigned int axis_count;
+    unsigned int axis_count_times_2;
     unsigned int data_offset;
     unsigned int current_tuple_size;
     const void *table_base;
@@ -1523,6 +1557,7 @@ struct TupleVariationData
   }
 
   template <typename T>
+  HB_ALWAYS_INLINE
   static bool decompile_deltas (const HBUINT8 *&p /* IN/OUT */,
 				hb_vector_t<T> &deltas /* IN/OUT */,
 				const HBUINT8 *end,

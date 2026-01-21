@@ -692,7 +692,7 @@ struct Lookup
 {
   const T* get_value (hb_codepoint_t glyph_id, unsigned int num_glyphs) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 0: hb_barrier (); return u.format0.get_value (glyph_id, num_glyphs);
     case 2: hb_barrier (); return u.format2.get_value (glyph_id);
     case 4: hb_barrier (); return u.format4.get_value (glyph_id);
@@ -704,7 +704,7 @@ struct Lookup
 
   const typename T::type get_value_or_null (hb_codepoint_t glyph_id, unsigned int num_glyphs) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
       /* Format 10 cannot return a pointer. */
       case 10: hb_barrier (); return u.format10.get_value_or_null (glyph_id);
       default:
@@ -716,7 +716,7 @@ struct Lookup
   template <typename set_t>
   void collect_glyphs (set_t &glyphs, unsigned int num_glyphs) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 0: hb_barrier (); u.format0.collect_glyphs (glyphs, num_glyphs); return;
     case 2: hb_barrier (); u.format2.collect_glyphs (glyphs); return;
     case 4: hb_barrier (); u.format4.collect_glyphs (glyphs); return;
@@ -729,7 +729,7 @@ struct Lookup
   template <typename set_t, typename filter_t>
   void collect_glyphs_filtered (set_t &glyphs, unsigned num_glyphs, const filter_t &filter) const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 0: hb_barrier (); u.format0.collect_glyphs_filtered (glyphs, num_glyphs, filter); return;
     case 2: hb_barrier (); u.format2.collect_glyphs_filtered (glyphs, filter); return;
     case 4: hb_barrier (); u.format4.collect_glyphs_filtered (glyphs, filter); return;
@@ -751,9 +751,9 @@ struct Lookup
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 0: hb_barrier (); return_trace (u.format0.sanitize (c));
     case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
     case 4: hb_barrier (); return_trace (u.format4.sanitize (c));
@@ -766,9 +766,9 @@ struct Lookup
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
+    switch (u.format.v) {
     case 0: hb_barrier (); return_trace (u.format0.sanitize (c, base));
     case 2: hb_barrier (); return_trace (u.format2.sanitize (c, base));
     case 4: hb_barrier (); return_trace (u.format4.sanitize (c, base));
@@ -781,7 +781,7 @@ struct Lookup
 
   protected:
   union {
-  HBUINT16		format;		/* Format identifier */
+  struct { HBUINT16 v; }	format;		/* Format identifier */
   LookupFormat0<T>	format0;
   LookupFormat2<T>	format2;
   LookupFormat4<T>	format4;
@@ -790,7 +790,7 @@ struct Lookup
   LookupFormat10<T>	format10;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 DECLARE_NULL_NAMESPACE_BYTES_TEMPLATE1 (AAT, Lookup, 2);
 
@@ -1216,11 +1216,24 @@ struct StateTableDriver
     int state = StateTableT::STATE_START_OF_TEXT;
     // If there's only one range, we already checked the flag.
     auto *last_range = ac->range_flags && (ac->range_flags->length > 1) ? &(*ac->range_flags)[0] : nullptr;
+    const bool start_state_safe_to_break_eot =
+      !c->table->is_actionable (machine.get_entry (StateTableT::STATE_START_OF_TEXT, CLASS_END_OF_TEXT));
     for (buffer->idx = 0; buffer->successful;)
     {
-      /* This block is copied in NoncontextualSubtable::apply. Keep in sync. */
-      if (last_range)
+      unsigned int klass = likely (buffer->idx < buffer->len) ?
+			   machine.get_class (buffer->cur().codepoint, num_glyphs, ac->machine_class_cache) :
+			   (unsigned) CLASS_END_OF_TEXT;
+    resume:
+      DEBUG_MSG (APPLY, nullptr, "c%u at %u", klass, buffer->idx);
+      const EntryT &entry = machine.get_entry (state, klass);
+      const int next_state = machine.new_state (entry.newState);
+
+      bool is_not_epsilon_transition = !(entry.flags & Flags::DontAdvance);
+      bool is_not_actionable = !c->table->is_actionable (entry);
+
+      if (unlikely (last_range))
       {
+	/* This block is copied in NoncontextualSubtable::apply. Keep in sync. */
 	auto *range = last_range;
 	if (buffer->idx < buffer->len)
 	{
@@ -1235,7 +1248,7 @@ struct StateTableDriver
 	}
 	if (!(range->flags & ac->subtable_flags))
 	{
-	  if (buffer->idx == buffer->len || unlikely (!buffer->successful))
+	  if (buffer->idx == buffer->len)
 	    break;
 
 	  state = StateTableT::STATE_START_OF_TEXT;
@@ -1243,13 +1256,42 @@ struct StateTableDriver
 	  continue;
 	}
       }
+      else
+      {
+	// Fast path for when transitioning from start-state to start-state with
+	// no action and advancing. Do so as long as the class remains the same.
+	// This is common with runs of non-actionable glyphs.
 
-      unsigned int klass = likely (buffer->idx < buffer->len) ?
-			   machine.get_class (buffer->cur().codepoint, num_glyphs, ac->machine_class_cache) :
-			   (unsigned) CLASS_END_OF_TEXT;
-      DEBUG_MSG (APPLY, nullptr, "c%u at %u", klass, buffer->idx);
-      const EntryT &entry = machine.get_entry (state, klass);
-      const int next_state = machine.new_state (entry.newState);
+	bool is_null_transition = state == StateTableT::STATE_START_OF_TEXT &&
+				  next_state == StateTableT::STATE_START_OF_TEXT &&
+				  start_state_safe_to_break_eot &&
+				  is_not_actionable &&
+				  is_not_epsilon_transition &&
+				  !last_range;
+
+	if (is_null_transition)
+	{
+	  unsigned old_klass = klass;
+	  do
+	  {
+	    c->transition (buffer, this, entry);
+
+	    if (buffer->idx == buffer->len || !buffer->successful)
+	      break;
+
+	    (void) buffer->next_glyph ();
+
+	    klass = likely (buffer->idx < buffer->len) ?
+		     machine.get_class (buffer->cur().codepoint, num_glyphs, ac->machine_class_cache) :
+		     (unsigned) CLASS_END_OF_TEXT;
+	  } while (klass == old_klass);
+
+	  if (buffer->idx == buffer->len || !buffer->successful)
+	    break;
+
+	  goto resume;
+	}
+      }
 
       /* Conditions under which it's guaranteed safe-to-break before current glyph:
        *
@@ -1316,10 +1358,10 @@ struct StateTableDriver
       state = next_state;
       DEBUG_MSG (APPLY, nullptr, "s%d", state);
 
-      if (buffer->idx == buffer->len || unlikely (!buffer->successful))
+      if (buffer->idx == buffer->len)
 	break;
 
-      if (!(entry.flags & Flags::DontAdvance) || buffer->max_ops-- <= 0)
+      if (is_not_epsilon_transition || buffer->max_ops-- <= 0)
 	(void) buffer->next_glyph ();
     }
 

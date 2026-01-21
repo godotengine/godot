@@ -1104,24 +1104,6 @@ struct graph_t
    *
    * Returns the index of the newly created duplicate.
    *
-   * If the child_idx only has incoming edges from parent_idx, this
-   * will do nothing and return the original child_idx.
-   */
-  unsigned duplicate_if_shared (unsigned parent_idx, unsigned child_idx)
-  {
-    unsigned new_idx = duplicate (parent_idx, child_idx);
-    if (new_idx == (unsigned) -1) return child_idx;
-    return new_idx;
-  }
-
-
-  /*
-   * Creates a copy of child and re-assigns the link from
-   * parent to the clone. The copy is a shallow copy, objects
-   * linked from child are not duplicated.
-   *
-   * Returns the index of the newly created duplicate.
-   *
    * If the child_idx only has incoming edges from parent_idx,
    * duplication isn't possible and this will return -1.
    */
@@ -1256,6 +1238,34 @@ struct graph_t
     clone->space = 0;
 
     return clone_idx;
+  }
+
+  /*
+   * Creates a new child node and remap the old child to it.
+   *
+   * Returns the index of the newly created child.
+   *
+   */
+  unsigned remap_child (unsigned parent_idx, unsigned old_child_idx)
+  {
+    unsigned new_child_idx = duplicate (old_child_idx);
+    if (new_child_idx == (unsigned) -1) return -1;
+
+    auto& parent = vertices_[parent_idx];
+    for (auto& l : parent.obj.real_links)
+    {
+      if (l.objidx != old_child_idx)
+        continue;
+      reassign_link (l, parent_idx, new_child_idx, false);
+    }
+
+    for (auto& l : parent.obj.virtual_links)
+    {
+      if (l.objidx != old_child_idx)
+        continue;
+      reassign_link (l, parent_idx, new_child_idx, true);
+    }
+    return new_child_idx;
   }
 
   /*
