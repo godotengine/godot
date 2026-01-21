@@ -43,6 +43,7 @@ class Line3D : public MeshInstance3D {
 
 protected:
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -134,6 +135,9 @@ public:
 		LIMIT_MODE_MAX
 	};
 
+	void set_limit_mode(LimitMode p_limit_mode);
+	LimitMode get_limit_mode() const;
+
 	void set_emitting(bool p_emitting);
 	bool get_emitting() const;
 
@@ -166,6 +170,9 @@ private:
 	Ref<ShaderMaterial> material;
 
 	bool _needs_rebuilding = false;
+	float _time;
+	PackedFloat64Array _times;
+	real_t _last_pinned_u = 0.0;
 
 	static inline Ref<Shader> billboard_additive_shader;
 	static inline Ref<Shader> billboard_shader;
@@ -184,6 +191,8 @@ private:
 	bool emitting = true;
 	real_t lifetime;
 	real_t max_length;
+	LimitMode limit_mode = LIMIT_MODE_LIFETIME;
+	bool pin_texture = true;
 
 	//Beam
 	Vector3 target;
@@ -193,7 +202,7 @@ private:
 	real_t _calc_current_length();
 	void _ensure_material();
 	void _process_beam();
-	void _process_trail();
+	void _process_trail(real_t p_delta);
 
 	Line3D();
 	~Line3D();

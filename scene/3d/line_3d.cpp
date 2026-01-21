@@ -136,7 +136,7 @@ void Line3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			switch (line_mode) {
 				case Line3D::LINE_MODE_TRAIL: {
-					_process_trail();
+					_process_trail(get_process_delta_time());
 				} break;
 			}
 			if (_needs_rebuilding) {
@@ -173,11 +173,9 @@ void Line3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &Line3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &Line3D::get_material);
 
-	ClassDB::bind_method(D_METHOD("set_mesh_alignment", "slignment"), &Line3D::set_mesh_alignment);
+	ClassDB::bind_method(D_METHOD("set_mesh_alignment", "alignment"), &Line3D::set_mesh_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &Line3D::get_alignment);
 
-	ClassDB::bind_method(D_METHOD("set_tiling_mode", "tiling_mode"), &Line3D::set_tiling_mode);
-	ClassDB::bind_method(D_METHOD("get_tiling_mode"), &Line3D::get_tiling_mode);
 	ClassDB::bind_method(D_METHOD("set_tiling_multiplier", "tiling_multiplier"), &Line3D::set_tiling_multiplier);
 	ClassDB::bind_method(D_METHOD("get_tiling_multiplier"), &Line3D::get_tiling_multiplier);
 	ClassDB::bind_method(D_METHOD("set_tiling_offset", "offset"), &Line3D::set_tiling_offset);
@@ -204,6 +202,10 @@ void Line3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_target"), &Line3D::get_target);
 
 	// Trail
+
+	ClassDB::bind_method(D_METHOD("set_limit_mode", "limit_mode"), &Line3D::set_limit_mode);
+	ClassDB::bind_method(D_METHOD("get_limit_mode"), &Line3D::get_limit_mode);
+
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Line3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("get_emitting"), &Line3D::get_emitting);
 
@@ -414,6 +416,8 @@ void Line3D::set_line_mode(Line3D::LineMode p_line_mode) {
 	}
 	set_process_internal(p_line_mode != Line3D::LineMode::LINE_MODE_MANUAL);
 	line_mode = p_line_mode;
+	points.clear();
+	normals.clear();
 	notify_property_list_changed();
 }
 
@@ -446,6 +450,15 @@ Vector3 Line3D::get_target() const {
 }
 
 // Trail3D
+
+void Line3D::set_limit_mode(Line3D::LimitMode p_limit_mode) {
+	limit_mode = p_limit_mode;
+	notify_property_list_changed();
+}
+Line3D::LimitMode Line3D::get_limit_mode() const {
+	return limit_mode;
+}
+
 void Line3D::set_emitting(bool p_emitting) {
 	emitting = p_emitting;
 }
@@ -689,7 +702,151 @@ void Line3D::_process_beam() {
 	_needs_rebuilding = true;
 }
 
-void Line3D::_process_trail() {
+void Line3D::_process_trail(real_t p_delta) {
+	if ((!is_inside_tree()) || (!is_ready())) {
+		return;
+	}
+
+	global_space = true;
+
+	Transform3D tf = get_global_transform();
+	Vector3 pos = tf.origin;
+	Vector3 up = tf.basis[1];
+	_time += p_delta;
+
+	if (points.size() < 2) {
+		while (points.size() < 2) {
+			points.insert(0, pos);
+			normals.insert(0, up);
+			_times.insert(0, _time);
+		}
+	} else {
+		points.write[0] = pos;
+		normals.write[0] = up;
+		_times.write[0] = _time;
+	}
+
+	Vector3 leading = points[1];
+	Vector3 from_leading = pos - leading;
+	real_t dist_from_leading = from_leading.length();
+
+	if (pin_texture) {
+		tiling_offset = _last_pinned_u - dist_from_leading;
+	} else {
+		_last_pinned_u = -tiling_offset - dist_from_leading;
+	}
+
+	if (dist_from_leading > max_section_length) {
+		points.insert(1, pos);
+		normals.insert(1, up);
+		_times.insert(1, _time);
+		_last_pinned_u += dist_from_leading;
+	}
+
+	if (limit_mode == Line3D::LimitMode::LIMIT_MODE_MAX_LENGTH) {
+		int last_index = points.size() - 1;
+		real_t total_length = 0.0;
+		for (int i = 0; i < last_index; i++) {
+			total_length += points[i].distance_to(points[i + 1]);
+		}
+
+		real_t extra_length = total_length - max_length;
+
+		while (extra_length > 0) {
+			Vector3 last_point = points[last_index];
+			Vector3 second_last_point = points[last_index - 1];
+			real_t last_section_length = last_point.distance_to(second_last_point);
+			if (last_section_length > extra_length) {
+				real_t shortened_section_length = last_section_length - extra_length;
+				points.write[last_index] = second_last_point + (last_point - second_last_point) * (shortened_section_length / last_section_length);
+			} else {
+				points.remove_at(last_index);
+				normals.remove_at(last_index);
+				_times.remove_at(last_index);
+				last_index -= 1;
+			}
+			extra_length -= last_section_length;
+		}
+
+	} else if (limit_mode == Line3D::LimitMode::LIMIT_MODE_LIFETIME) {
+		real_t last_index = _times.size() - 1;
+		real_t total_time = _times[0] - _times[last_index];
+		real_t extra_time = total_time - lifetime;
+
+		while (extra_time > 0) {
+			real_t last_time = _times[last_index];
+			real_t second_last_time = _times[last_index - 1];
+			real_t last_section_duration = second_last_time - last_time;
+			if (last_section_duration > extra_time) {
+				Vector3 last_point = points[last_index];
+				Vector3 second_last_point = points[last_index - 1];
+				real_t shortened_section_duration = last_section_duration - extra_time;
+				real_t shortened_ratio = shortened_section_duration / last_section_duration;
+				points.write[last_index] = second_last_point + (last_point - second_last_point) * shortened_ratio;
+				_times.write[last_index] = second_last_time + (last_time - second_last_time) * shortened_ratio;
+			} else {
+				points.remove_at(last_index);
+				normals.remove_at(last_index);
+				_times.remove_at(last_index);
+				last_index -= 1;
+			}
+			extra_time -= last_section_duration;
+		}
+	}
+	_needs_rebuilding = true;
+}
+
+void Line3D::_validate_property(PropertyInfo &p_property) const {
+	/*if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}*/
+	switch (line_mode) {
+		case Line3D::LineMode::LINE_MODE_MANUAL: {
+			if (p_property.name == "max_section_length") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "emitting") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "lifetime") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "max_length") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "limit_mode") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "pin_texture") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "target") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} break;
+		case Line3D::LineMode::LINE_MODE_BEAM: {
+			if (p_property.name == "points") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "normals") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "emitting") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "lifetime") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "max_length") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "limit_mode") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "pin_texture") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} break;
+		case Line3D::LineMode::LINE_MODE_TRAIL: {
+			if (p_property.name == "points") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "normals") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "target") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			} else if (p_property.name == "tile_offset") {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+		} break;
+	}
 }
 
 void Line3D::_ensure_material() {
@@ -727,6 +884,7 @@ Line3D::Line3D() {
 	tiling_offset = 0.0;
 	points = PackedVector3Array();
 	normals = PackedVector3Array();
+	_times = PackedFloat64Array();
 	_needs_rebuilding = false;
 	max_section_length = 0.2;
 	emitting = true;
