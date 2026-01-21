@@ -161,8 +161,8 @@ void JoypadSDL::process_events() {
 
 				const int MAX_GUID_SIZE = 64;
 				char guid[MAX_GUID_SIZE] = {};
-
-				SDL_GUIDToString(SDL_GetJoystickGUID(joy), guid, MAX_GUID_SIZE);
+				SDL_GUID joy_guid = SDL_GetJoystickGUID(joy);
+				SDL_GUIDToString(joy_guid, guid, MAX_GUID_SIZE);
 				SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
 
 				joypads[joy_id].attached = true;
@@ -184,11 +184,13 @@ void JoypadSDL::process_events() {
 					joypad_info["steam_input_index"] = itos(steam_handle);
 				}
 
+#ifdef WINDOWS_ENABLED
 				const int player_index = SDL_GetJoystickPlayerIndex(joy);
-				if (player_index >= 0) {
+				if (player_index >= 0 && joy_guid.data[14] == 'x') { // See also "SDL_IsJoystickXInput" in "thirdparty/sdl/joystick/SDL_joystick.c".
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
 				}
+#endif
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,
