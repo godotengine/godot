@@ -330,6 +330,7 @@ protected:
 public:
 	static Geometry2D *get_singleton();
 	Variant segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
+	bool segment_intersects_rect(const Vector2 &p_from, const Vector2 &p_to, const Rect2 &p_rect);
 	Variant line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
 	Vector<Vector2> get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
 	Vector2 get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
