@@ -32,26 +32,35 @@ namespace GodotSharp.SourceGenerators
             sb.AppendLine("\t{");
             foreach (char[] per in GetPermutations(d))
             {
+                bool produceSetter = IsSetterLegal(per);
                 string name = new string(per);
                 int retrLength = per.Length;
                 string components = string.Join(", ", per);
                 sb.AppendLine("\t\t/// <summary>");
-                sb.AppendLine($"\t\t/// Swizzle operator returning a <see cref=\"Vector{retrLength}{suffix}\"/> with components {components} from this vector");
+                sb.Append($"\t\t/// Swizzle operator, gets a <see cref=\"Vector{retrLength}{suffix}\"/> with components {components} from this vector");
+                if (produceSetter)
+                    sb.Append($" or sets the components in this vector in the order of {components} from the given vector");
+                sb.AppendLine(".");
                 sb.AppendLine("\t\t/// </summary>");
-                sb.AppendLine("\t\t[EditorBrowsable(EditorBrowsableState.Never)]");
-                sb.AppendLine("\t\t[DebuggerBrowsable(DebuggerBrowsableState.Never)]");
-                sb.Append($"\t\tpublic readonly Vector{retrLength}{suffix} {name} => new");
-                sb.Append("(");
-                for (int i = 0; i < retrLength; i++)
+                sb.AppendLine("\t\t[EditorBrowsable(EditorBrowsableState.Never), DebuggerBrowsable(DebuggerBrowsableState.Never)]");
+                if (produceSetter)
                 {
-                    sb.Append($"{per[i]}");
-                    if (i != retrLength - 1)
+                    sb.AppendLine($"\t\tpublic Vector{retrLength}{suffix} {name}");
+                    sb.AppendLine("\t\t{");
+                    sb.AppendLine($"\t\t\treadonly get => new({components});");
+                    sb.AppendLine("\t\t\tset");
+                    sb.AppendLine("\t\t\t{");
+                    for (int i = 0; i < retrLength; i++)
                     {
-                        sb.Append(", ");
+                        sb.AppendLine($"\t\t\t\t{per[i]} = value.{_members[i]};");
                     }
+                    sb.AppendLine("\t\t\t}");
+                    sb.AppendLine("\t\t}");
                 }
-                sb.AppendLine(");");
-                sb.AppendLine();
+                else
+                {
+                    sb.AppendLine($"\t\tpublic readonly Vector{retrLength}{suffix} {name} => new({components});");
+                }
             }
             sb.AppendLine("\t}");
             sb.AppendLine("}");
@@ -60,6 +69,13 @@ namespace GodotSharp.SourceGenerators
 
         public void Initialize(GeneratorInitializationContext context)
         {
+        }
+
+        private bool IsSetterLegal(char[] per)
+        {
+            // Swizzling is not allowed when we have duplicate members to avoid undefined behavior
+            HashSet<char> distinct = new(per);
+            return per.Length == distinct.Count;
         }
 
         private List<char[]> GetPermutations(int numMembers)
