@@ -2409,7 +2409,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	return OK;
 }
 
-Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+Error ResourceFormatSaverBinaryInstance::set_info(const String &p_path, ResourceUID::ID p_uid, const String &p_script_class) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
@@ -2490,13 +2490,26 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 	uint32_t flags = f->get_32();
 	flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_UIDS;
-	f->get_64(); // Skip previous UID
+
+	if (p_uid == ResourceUID::INVALID_ID) {
+		p_uid = ResourceUID::ID(f->get_64()); // Keep previous UID
+	} else {
+		f->get_64(); // Skip previous UID
+	}
+
+	if (!p_script_class.is_empty()) {
+		flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS;
+	}
 
 	fw->store_32(flags);
 	fw->store_64(uint64_t(p_uid));
 
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
-		save_ustring(fw, get_ustring(f));
+		String script_class = get_ustring(f);
+		if (!p_script_class.is_empty()) {
+			script_class = p_script_class;
+		}
+		save_ustring(fw, script_class);
 	}
 
 	//rest of file
@@ -2531,7 +2544,13 @@ Error ResourceFormatSaverBinary::save(const Ref<Resource> &p_resource, const Str
 Error ResourceFormatSaverBinary::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	ResourceFormatSaverBinaryInstance saver;
-	return saver.set_uid(local_path, p_uid);
+	return saver.set_info(local_path, p_uid, String());
+}
+
+Error ResourceFormatSaverBinary::set_script_class(const String &p_path, const String &p_script_class) {
+	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	ResourceFormatSaverBinaryInstance saver;
+	return saver.set_info(p_path, ResourceUID::INVALID_ID, p_script_class);
 }
 
 bool ResourceFormatSaverBinary::recognize(const Ref<Resource> &p_resource) const {
