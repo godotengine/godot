@@ -648,8 +648,11 @@ if env["build_profile"] != "":
             dbo = ft["disabled_build_options"]
             for c in dbo:
                 env[c] = dbo[c]
-    except json.JSONDecodeError:
-        print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
+    except json.JSONDecodeError as err:
+        print_error(f'Failed to open feature build profile due to JSON decoding error: "{env["build_profile"]}"\n{err}')
+        Exit(255)
+    except FileNotFoundError:
+        print_error(f'Feature build profile not found at: "{env["build_profile"]}"')
         Exit(255)
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
