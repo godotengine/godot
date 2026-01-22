@@ -129,7 +129,7 @@ private:
 public:
 	Ref<Resource> get_resource();
 	Error load();
-	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
+	Error set_info(Ref<FileAccess> p_f, ResourceUID::ID p_uid, const String &p_script_class);
 	int get_stage() const;
 	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
@@ -210,10 +210,13 @@ public:
 class ResourceFormatSaverText : public ResourceFormatSaver {
 	GDSOFTCLASS(ResourceFormatSaverText, ResourceFormatSaver);
 
+	Error _set_info(const String &p_path, ResourceUID::ID p_uid, const String &p_script_class);
+
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual Error set_script_class(const String &p_path, const String &p_script_class) override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 

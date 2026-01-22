@@ -55,6 +55,12 @@ Error ResourceFormatSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) 
 	return err;
 }
 
+Error ResourceFormatSaver::set_script_class(const String &p_path, const String &p_script_class) {
+	Error err = ERR_FILE_UNRECOGNIZED;
+	GDVIRTUAL_CALL(_set_script_class, p_path, p_script_class, err);
+	return err;
+}
+
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 	bool success = false;
 	GDVIRTUAL_CALL(_recognize, p_resource, success);
@@ -85,6 +91,7 @@ bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const 
 void ResourceFormatSaver::_bind_methods() {
 	GDVIRTUAL_BIND(_save, "resource", "path", "flags");
 	GDVIRTUAL_BIND(_set_uid, "path", "uid");
+	GDVIRTUAL_BIND(_set_script_class, "path", "script_class");
 	GDVIRTUAL_BIND(_recognize, "resource");
 	GDVIRTUAL_BIND(_get_recognized_extensions, "resource");
 	GDVIRTUAL_BIND(_recognize_path, "resource", "path");
@@ -154,6 +161,21 @@ Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 
 	for (int i = 0; i < saver_count; i++) {
 		err = saver[i]->set_uid(path, p_uid);
+		if (err == OK) {
+			break;
+		}
+	}
+
+	return err;
+}
+
+Error ResourceSaver::set_script_class(const String &p_path, const String &p_script_class) {
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Can't update UID to empty path. Provide non-empty path.");
+
+	Error err = ERR_FILE_UNRECOGNIZED;
+
+	for (int i = 0; i < saver_count; i++) {
+		err = saver[i]->set_script_class(p_path, p_script_class);
 		if (err == OK) {
 			break;
 		}
