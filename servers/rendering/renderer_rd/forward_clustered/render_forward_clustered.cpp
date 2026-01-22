@@ -693,21 +693,10 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
 	RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
 	RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
 
-	// May do this earlier in RenderSceneRenderRD::render_scene
-	uint32_t uniform_buffer_index = scene_state.used_uniform_buffer_count;
-	++scene_state.used_uniform_buffer_count;
-
-	if (uniform_buffer_index >= scene_state.uniform_buffers.size()) {
-		uint32_t from = scene_state.uniform_buffers.size();
-		scene_state.uniform_buffers.resize(uniform_buffer_index + 1);
-		for (uint32_t i = from; i < scene_state.uniform_buffers.size(); i++) {
-			scene_state.uniform_buffers[i] = p_render_data->scene_data->create_uniform_buffer();
-		}
-	}
-
 	float luminance_multiplier = rd.is_valid() ? rd->get_luminance_multiplier() : 1.0;
 
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers[uniform_buffer_index], get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_viewport_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, p_apply_alpha_multiplier);
+	uint32_t uniform_buffer_index = scene_state.uniform_buffers.get_next();
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers.get_at_index(uniform_buffer_index), get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_viewport_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, p_apply_alpha_multiplier);
 
 	// now do implementation UBO
 
@@ -772,15 +761,10 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
 		scene_state.ubo.ss_effects_flags = 0;
 	}
 
-	if (uniform_buffer_index >= scene_state.implementation_uniform_buffers.size()) {
-		uint32_t from = scene_state.implementation_uniform_buffers.size();
-		scene_state.implementation_uniform_buffers.resize(uniform_buffer_index + 1);
-		for (uint32_t i = from; i < scene_state.implementation_uniform_buffers.size(); i++) {
-			scene_state.implementation_uniform_buffers[i] = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
-		}
-	}
-
-	RD::get_singleton()->buffer_update(scene_state.implementation_uniform_buffers[uniform_buffer_index], 0, sizeof(SceneState::UBO), &scene_state.ubo);
+	uint32_t implementation_uniform_buffer_index = scene_state.implementation_uniform_buffers.get_next();
+	// Placeholder, will make the code return two RIDs later.
+	DEV_ASSERT(implementation_uniform_buffer_index == uniform_buffer_index);
+	RD::get_singleton()->buffer_update(scene_state.implementation_uniform_buffers.get_at_index(uniform_buffer_index), 0, sizeof(SceneState::UBO), &scene_state.ubo);
 
 	return uniform_buffer_index;
 }
@@ -1677,8 +1661,6 @@ void RenderForwardClustered::_process_sss(Ref<RenderSceneBuffersRD> p_render_buf
 }
 
 void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) {
-	scene_state.used_uniform_buffer_count = 0;
-
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	ERR_FAIL_NULL(p_render_data);
@@ -3300,14 +3282,14 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 0;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-		u.append_id(scene_state.uniform_buffers[p_uniform_buffer_index]);
+		u.append_id(scene_state.uniform_buffers.get_at_index(p_uniform_buffer_index));
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
 		u.binding = 1;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-		u.append_id(scene_state.implementation_uniform_buffers[p_uniform_buffer_index]);
+		u.append_id(scene_state.implementation_uniform_buffers.get_at_index(p_uniform_buffer_index));
 		uniforms.push_back(u);
 	}
 	{
@@ -3669,14 +3651,14 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		RD::Uniform u;
 		u.binding = 0;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-		u.append_id(scene_state.uniform_buffers[p_uniform_buffer_index]);
+		u.append_id(scene_state.uniform_buffers.get_at_index(p_uniform_buffer_index));
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
 		u.binding = 1;
 		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-		u.append_id(scene_state.implementation_uniform_buffers[p_uniform_buffer_index]);
+		u.append_id(scene_state.implementation_uniform_buffers.get_at_index(p_uniform_buffer_index));
 		uniforms.push_back(u);
 	}
 	{
@@ -5000,6 +4982,11 @@ RenderForwardClustered::RenderForwardClustered() {
 	/* SCENE SHADER */
 
 	{
+		scene_state.uniform_buffers.set_size_bytes(RenderSceneDataRD::get_uniform_buffer_size_bytes());
+		scene_state.implementation_uniform_buffers.set_size_bytes(sizeof(SceneState::UBO));
+	}
+
+	{
 		String defines;
 		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
 		if (is_using_radiance_octmap_array()) {
@@ -5179,12 +5166,8 @@ RenderForwardClustered::~RenderForwardClustered() {
 	dfg_lut.shader.version_free(dfg_lut.shader_version);
 
 	{
-		for (const RID &rid : scene_state.uniform_buffers) {
-			RD::get_singleton()->free_rid(rid);
-		}
-		for (const RID &rid : scene_state.implementation_uniform_buffers) {
-			RD::get_singleton()->free_rid(rid);
-		}
+		scene_state.uniform_buffers.clear();
+		scene_state.implementation_uniform_buffers.clear();
 		RD::get_singleton()->free_rid(scene_state.lightmap_buffer);
 		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		for (uint32_t i = 0; i < RENDER_LIST_MAX; i++) {

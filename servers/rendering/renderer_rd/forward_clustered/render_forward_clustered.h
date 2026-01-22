@@ -44,6 +44,7 @@
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
+#include "servers/rendering/update_once_per_frame_uniform_buffer_pool.h"
 
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
@@ -389,9 +390,8 @@ private:
 
 		UBO ubo;
 
-		LocalVector<RID> uniform_buffers;
-		LocalVector<RID> implementation_uniform_buffers;
-		uint32_t used_uniform_buffer_count = 0;
+		UpdateOncePerFrameUniformBufferPool uniform_buffers;
+		UpdateOncePerFrameUniformBufferPool implementation_uniform_buffers;
 
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];

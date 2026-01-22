@@ -171,16 +171,22 @@ private:
 	StagingBuffers download_staging_buffers;
 
 	struct Buffer {
-		RDD::BufferID driver_id;
+		TightLocalVector<RDD::BufferID> driver_ids;
 		uint32_t size = 0;
 		BitField<RDD::BufferUsageBits> usage = {};
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
+		bool update_once_per_frame = false;
+		uint64_t last_frame_updated = 0;
+
+		_FORCE_INLINE_ RDD::BufferID get_driver_id_safe(uint32_t p_frame) const {
+			return driver_ids[MIN(p_frame, driver_ids.size() - 1)];
+		}
 	};
 
 	Buffer *_get_buffer_from_owner(RID p_buffer);
-	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align = 32);
+	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_frame = 0, uint32_t p_required_align = 32);
 
 	void update_perf_report();
 	// Flag for batching descriptor sets.
@@ -841,6 +847,7 @@ public:
 		BUFFER_CREATION_DEVICE_ADDRESS_BIT = (1 << 0),
 		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
 		BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT = (1 << 2),
+		BUFFER_CREATION_UPDATE_ONCE_PER_FRAME_BIT = (1 << 3),
 	};
 
 	enum StorageBufferUsage {
@@ -1127,7 +1134,7 @@ private:
 		uint32_t format = 0;
 		RID shader_id;
 		uint32_t shader_set = 0;
-		RDD::UniformSetID driver_id;
+		TightLocalVector<RDD::UniformSetID> driver_ids;
 		struct AttachableTexture {
 			uint32_t bind = 0;
 			RID texture;
@@ -1146,6 +1153,13 @@ private:
 		LocalVector<RID> pending_clear_textures;
 		InvalidationCallback invalidated_callback = nullptr;
 		void *invalidated_callback_userdata = nullptr;
+#ifdef DEBUG_ENABLED
+		LocalVector<Buffer *> update_once_per_frame_uniform_buffers;
+#endif
+
+		_FORCE_INLINE_ RDD::UniformSetID get_driver_id_safe(uint32_t p_frame) const {
+			return driver_ids[MIN(p_frame, driver_ids.size() - 1)];
+		}
 	};
 
 	RID_Owner<UniformSet, true> uniform_set_owner;
