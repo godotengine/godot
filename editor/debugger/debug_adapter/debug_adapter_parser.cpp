@@ -109,6 +109,10 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 			error = "missing_device";
 			error_desc = "There's no connected device with specified id.";
 			break;
+		case DAP::ErrorType::MALFORMED_REQUEST:
+			error = "malformed_request";
+			error_desc = "The request is malformed ({details}).";
+			break;
 		case DAP::ErrorType::UNKNOWN:
 		default:
 			error = "unknown";
@@ -123,6 +127,12 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 	body["error"] = message.to_json();
 
 	return response;
+}
+
+Dictionary DebugAdapterParser::prepare_malformed_error_response(const Dictionary &p_params, const String &p_error) const {
+	Dictionary variables;
+	variables["details"] = p_error;
+	return prepare_error_response(p_params, DAP::ErrorType::MALFORMED_REQUEST, variables);
 }
 
 Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const {
