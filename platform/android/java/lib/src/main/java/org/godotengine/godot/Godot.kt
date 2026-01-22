@@ -790,10 +790,8 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			runOnRenderThread {
-				FilePicker.handleActivityResult(context, requestCode, resultCode, data)
-			}
+		runOnRenderThread {
+			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
 		}
 	}
 
@@ -1041,9 +1039,7 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
-		}
+		FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
 	}
 
 	/**
