@@ -2890,23 +2890,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		undo_redo->add_undo_method(scene_tree, "update_tree");
 		undo_redo->add_undo_reference(edited_scene);
 	} else {
-		if (delete_tracks_checkbox->is_pressed() || p_cut) {
-			remove_list.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
-			HashMap<Node *, NodePath> path_renames;
-
-			//delete from animation
-			for (Node *n : remove_list) {
-				if (!n->is_inside_tree() || !n->get_parent()) {
-					continue;
-				}
-
-				fill_path_renames(n, nullptr, &path_renames);
-			}
-
-			perform_node_renames(nullptr, &path_renames);
-		}
-
-		//delete for read
+		// Delete nodes.
 		for (Node *n : remove_list) {
 			if (!n->is_inside_tree() || !n->get_parent()) {
 				continue;
@@ -2931,6 +2915,24 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 			undo_redo->add_do_method(ed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
 			undo_redo->add_undo_method(ed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index(false));
+		}
+
+		if (delete_tracks_checkbox->is_pressed() || p_cut) {
+			remove_list.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
+			HashMap<Node *, NodePath> path_renames;
+
+			// Delete from animations.
+			for (Node *n : remove_list) {
+				if (!n->is_inside_tree() || !n->get_parent()) {
+					continue;
+				}
+
+				fill_path_renames(n, nullptr, &path_renames);
+			}
+
+			// This must be done after node deletion, otherwise properties that rely
+			// on paths will be set before the nodes are added when undoing the action.
+			perform_node_renames(nullptr, &path_renames);
 		}
 	}
 	undo_redo->commit_action();
