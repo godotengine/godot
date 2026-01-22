@@ -814,8 +814,19 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 	if (collider_shape_index.get_type() == Variant::INT) {
 		Dictionary collider_dict;
 		collider_dict["shape"] = collider_shape_index;
-		// Add physics material index if present.
+		// Add physics material index if present on this node or parent body node.
 		Variant material_index = p_gltf_node->get_additional_data(StringName("GLTFPhysicsMaterialIndex"));
+		if (material_index.get_type() != Variant::INT) {
+			// If not on this node, check the parent node (body nodes have the material).
+			GLTFNodeIndex parent_index = p_gltf_node->get_parent();
+			if (parent_index != -1) {
+				const Vector<Ref<GLTFNode>> &state_nodes = p_state->get_nodes();
+				if (parent_index < state_nodes.size()) {
+					const Ref<GLTFNode> &parent_node = state_nodes[parent_index];
+					material_index = parent_node->get_additional_data(StringName("GLTFPhysicsMaterialIndex"));
+				}
+			}
+		}
 		if (material_index.get_type() == Variant::INT) {
 			collider_dict["physicsMaterial"] = material_index;
 		}
