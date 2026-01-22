@@ -1658,7 +1658,7 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 		return true;
 	}
 
-	// Roughness layers are too low, skip processing
+	// Roughness layers are too few, skip processing.
 	int mipmap_count = (int)atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size();
 	if (rpi->processing_layer >= mipmap_count) {
 		rpi->rendering = false;
