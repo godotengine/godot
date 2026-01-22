@@ -82,6 +82,7 @@ public:
 	bool is_initialized() const;
 	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
 	bool is_property_valid(const String &p_property, int *r_index = nullptr) const;
+	void add_properties_for_index(int p_index, List<PropertyInfo> *p_list) const;
 
 	void get_property_list(List<PropertyInfo> *p_list) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;
