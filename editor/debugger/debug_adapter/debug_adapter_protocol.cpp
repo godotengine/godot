@@ -864,6 +864,15 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 		return true;
 	}
 
+	if (!params.has("command")) {
+		// Because the response must contain a command (by the specification),
+		// we set it to an empty string before preparing the error response.
+		params["command"] = "";
+		Dictionary response = parser->prepare_malformed_error_response(params, "Missing command");
+		_current_peer->res_queue.push_front(response);
+		return true;
+	}
+
 	// Append "req_" to any command received; prevents name clash with existing functions, and possibly exploiting
 	String command = "req_" + (String)params["command"];
 	if (parser->has_method(command)) {

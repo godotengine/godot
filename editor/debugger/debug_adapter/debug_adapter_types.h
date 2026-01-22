@@ -85,9 +85,9 @@ public:
 	}
 
 	_FORCE_INLINE_ void from_json(const Dictionary &p_params) {
-		name = p_params["name"];
-		path = p_params["path"];
-		_checksums = p_params["checksums"];
+		name = p_params.get("name", String());
+		path = p_params.get("path", String());
+		_checksums = p_params.get("checksums", Array());
 	}
 
 	_FORCE_INLINE_ Dictionary to_json() const {
@@ -213,7 +213,9 @@ struct SourceBreakpoint {
 	int line = 0;
 
 	_FORCE_INLINE_ void from_json(const Dictionary &p_params) {
-		line = p_params["line"];
+		// Even though line is required by the DAP specification, we validate this in the parser,
+		// in order to create a malformed request error response in such cases.
+		line = p_params.get("line", 0);
 	}
 };
 
