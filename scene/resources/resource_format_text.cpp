@@ -2146,23 +2146,31 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	return OK;
 }
 
-Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
+Error ResourceLoaderText::set_info(Ref<FileAccess> p_f, ResourceUID::ID p_uid, const String &p_script_class) {
 	open(p_f, true);
 	ERR_FAIL_COND_V(error != OK, error);
 	ignore_resource_parsing = true;
+
+	if (p_uid != ResourceUID::INVALID_ID) {
+		res_uid = p_uid;
+	}
+
+	if (!p_script_class.is_empty()) {
+		script_class = p_script_class;
+	}
 
 	Ref<FileAccess> fw;
 
 	fw = FileAccess::open(local_path + ".uidren", FileAccess::WRITE);
 	if (is_scene) {
-		fw->store_string("[gd_scene format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_scene format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"]");
 	} else {
 		String script_res_text;
 		if (!script_class.is_empty()) {
 			script_res_text = "script_class=\"" + script_class + "\" ";
 		}
 
-		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "format=" + itos(format_version) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(res_uid) + "\"]");
 	}
 
 	uint8_t c = f->get_8();
@@ -2189,12 +2197,7 @@ Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const Strin
 	return saver.save(p_path, p_resource, p_flags);
 }
 
-Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_uid) {
-	String lc = p_path.to_lower();
-	if (!lc.ends_with(".tscn") && !lc.ends_with(".tres")) {
-		return ERR_FILE_UNRECOGNIZED;
-	}
-
+Error ResourceFormatSaverText::_set_info(const String &p_path, ResourceUID::ID p_uid, const String &p_script_class) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	Error err = OK;
 	{
@@ -2206,7 +2209,7 @@ Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_u
 		ResourceLoaderText loader;
 		loader.local_path = local_path;
 		loader.res_path = loader.local_path;
-		err = loader.set_uid(file, p_uid);
+		err = loader.set_info(file, p_uid, p_script_class);
 	}
 
 	if (err == OK) {
@@ -2216,6 +2219,22 @@ Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_u
 	}
 
 	return err;
+}
+
+Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	String lc = p_path.to_lower();
+	if (!lc.ends_with(".tscn") && !lc.ends_with(".tres")) {
+		return ERR_FILE_UNRECOGNIZED;
+	}
+	return _set_info(p_path, p_uid, String());
+}
+
+Error ResourceFormatSaverText::set_script_class(const String &p_path, const String &p_script_class) {
+	String lc = p_path.to_lower();
+	if (!lc.ends_with(".tres")) {
+		return ERR_FILE_UNRECOGNIZED;
+	}
+	return _set_info(p_path, ResourceUID::INVALID_ID, p_script_class);
 }
 
 bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
