@@ -43,6 +43,7 @@
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 
@@ -408,6 +409,16 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
+bool helpers_has_property(const String &p_class_name, const String &p_name) {
+	const Vector<PropertyListHelper *> helpers = PropertyListHelper::get_helpers_for_class(p_class_name);
+	for (const PropertyListHelper *helper : helpers) {
+		if (helper->documentation_has_property(p_name)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void DocTools::generate(BitField<GenerateFlags> p_flags) {
 	// This may involve instantiating classes that are only usable from the main thread
 	// (which is in fact the case of the core API).
@@ -448,6 +459,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
+			Vector<PropertyListHelper *> helpers = PropertyListHelper::get_helpers_for_class(name);
 
 			// Special cases for editor/project settings, and ResourceImporter classes,
 			// we have to rely on Object's property list to get settings and import options.
@@ -492,6 +504,11 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				properties_from_instance = false;
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
+
+				for (const PropertyListHelper *helper : helpers) {
+					helper->documentation_get_property_list(&properties);
+					helper->documentation_get_property_list(&own_properties);
+				}
 			}
 
 			// Sort is still needed here to handle inherited properties, even though it is done below, do not remove.
@@ -517,14 +534,22 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					continue;
 				}
 
+				bool from_helper = E.name.contains("{index}");
+
 				DocData::PropertyDoc prop;
 				prop.name = E.name;
 				prop.overridden = inherited;
 
 				if (inherited) {
 					String parent = ClassDB::get_parent_class(c.name);
-					while (!ClassDB::has_property(parent, prop.name, true)) {
-						parent = ClassDB::get_parent_class(parent);
+					if (from_helper) {
+						while (!helpers_has_property(parent, prop.name)) {
+							parent = ClassDB::get_parent_class(parent);
+						}
+					} else {
+						while (!ClassDB::has_property(parent, prop.name, true)) {
+							parent = ClassDB::get_parent_class(parent);
+						}
 					}
 					prop.overrides = parent;
 				}
@@ -549,12 +574,22 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					default_value = import_options_default[E.name];
 					default_value_valid = true;
 				} else {
-					default_value = get_documentation_default_value(name, E.name, default_value_valid);
-					if (inherited) {
-						bool base_default_value_valid = false;
-						Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E.name, base_default_value_valid);
-						if (!default_value_valid || !base_default_value_valid || default_value == base_default_value) {
-							continue;
+					if (from_helper) {
+						for (const PropertyListHelper *helper : helpers) {
+							if (helper->documentation_has_property(E.name)) {
+								default_value = helper->documentation_get_default_value(E.name);
+								default_value_valid = true;
+								break;
+							}
+						}
+					} else {
+						default_value = get_documentation_default_value(name, E.name, default_value_valid);
+						if (inherited) {
+							bool base_default_value_valid = false;
+							Variant base_default_value = get_documentation_default_value(ClassDB::get_parent_class(name), E.name, base_default_value_valid);
+							if (!default_value_valid || !base_default_value_valid || default_value == base_default_value) {
+								continue;
+							}
 						}
 					}
 				}
