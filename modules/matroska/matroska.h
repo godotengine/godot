@@ -434,13 +434,9 @@ struct Cluster {
 	uint64_t target_track;
 
 	struct Block {
-		uint64_t position;
-		uint64_t size;
-		uint16_t cluster_time;
-		size_t present_order;
-		bool key;
-		bool invisible;
-		bool discardable;
+		uint64_t header_position;
+		uint64_t header_size;
+		uint64_t frame_size;
 	};
 
 	Vector<Block> blocks;

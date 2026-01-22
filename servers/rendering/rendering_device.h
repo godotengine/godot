@@ -257,6 +257,9 @@ public:
 	uint64_t buffer_get_device_address(RID p_buffer);
 	uint8_t *buffer_persistent_map_advance(RID p_buffer);
 	void buffer_flush(RID p_buffer);
+	// TODO: benchmark performance of doing this
+	uint8_t *buffer_map(RID p_buffer);
+	void buffer_unmap(RID p_buffer);
 
 private:
 	/******************/
@@ -1464,11 +1467,16 @@ private:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
+	// TODO: resize semaphores dynamically
+	static const size_t video_semaphore_count = 20;
+
 	// TODO: dispose of everything the video session creates
 	struct VideoSession {
 		VideoProfile video_profile;
 		RDD::VideoSessionID driver_id;
 		RDD::TextureID dpb_id;
+		Vector<RDD::VideoReferenceSlot> reference_slots;
+		uint32_t target_reference_slot;
 		// Clear
 		RDD::CommandPoolID decode_pool;
 		uint32_t last_cmd_buffer;
@@ -1488,21 +1496,12 @@ private:
 	RID_Owner<VideoSession, true> video_session_owner;
 
 public:
-	struct VideoSessionInfo {
-		VideoProfile profile;
-		uint32_t width;
-		uint32_t height;
-		uint32_t max_active_reference_pictures;
-		Vector<RID> dst_yuv_textures;
-	};
-
-	RID video_session_create(const VideoSessionInfo &p_session_info);
+	RID video_session_create(const VideoSessionProfile &p_session_info);
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);
 
-	void video_session_begin(RID p_video_session);
-	void video_session_decode(RID p_video_session, Span<uint8_t> p_video_data, RID p_dst_texture, void *p_video_header);
-	void video_session_end(RID p_video_session);
+	void video_session_decode(RID p_video_session, RID p_src_buffer, RID p_dst_texture, void *p_video_header, bool p_reset);
+	void video_session_submit(RID p_video_session);
 
 private:
 	/*************************/

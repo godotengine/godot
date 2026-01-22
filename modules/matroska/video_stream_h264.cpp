@@ -106,19 +106,20 @@ int64_t VideoStreamH264::read_se() {
 	}
 }
 
-VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size) {
+VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size, uint64_t *r_read) {
 	const uint8_t *nal_start = src;
 
 	read_bits(1); // forbidden_zero_bit
-	read_bits(2); // nal_ref_idc
+	uint8_t nal_ref_idc = read_bits(2);
 	VideoCodingH264NalUnitType nal_unit_type = (VideoCodingH264NalUnitType)read_bits(5);
 
 	switch (nal_unit_type) {
-		// Skip parsing slice headers from here
 		case VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE: {
+			parse_slice_header(p_size - 1, nal_ref_idc != 0, false);
 		} break;
 
 		case VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR: {
+			parse_slice_header(p_size - 1, nal_ref_idc != 0, true);
 		} break;
 
 		case VIDEO_CODING_H264_NAL_UNIT_TYPE_SUPPLEMENTAL_ENHACEMENT_INFORMATION: {
@@ -144,6 +145,13 @@ VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size) {
 
 		default: {
 			WARN_PRINT(vformat("Unknown NAL Unit (%d) [%d]", nal_unit_type, p_size));
+		}
+	}
+
+	if (r_read != nullptr) {
+		*r_read = src - nal_start;
+		if (shift != 0) {
+			*r_read += 1;
 		}
 	}
 
@@ -557,13 +565,13 @@ Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_
 	uint8_t sps_set_count = read_bits(8) & 0b11111;
 	for (uint8_t set = 0; set < sps_set_count; set++) {
 		uint16_t sps_size = read_bits(16);
-		parse_nal_unit(sps_size);
+		parse_nal_unit(sps_size, nullptr);
 	}
 
 	uint8_t pps_set_count = read_bits(8);
 	for (uint8_t set = 0; set < pps_set_count; set++) {
 		uint16_t pps_size = read_bits(16);
-		parse_nal_unit(pps_size);
+		parse_nal_unit(pps_size, nullptr);
 	}
 
 	if (target_profile_idc == VIDEO_CODING_H264_PROFILE_IDC_HIGH) {
@@ -584,38 +592,45 @@ Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_
 		uint8_t sps_ext_sets = read_bits(8);
 		for (uint8_t set = 0; set < sps_ext_sets; set++) {
 			uint16_t sps_ext_size = read_bits(16);
-			parse_nal_unit(sps_ext_size);
+			parse_nal_unit(sps_ext_size, nullptr);
 		}
 	}
 
 	return OK;
 }
 
-Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) {
+Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<ParsedFrame> *r_frames) {
 	src = p_stream;
 	shift = 0;
 
 	while (src < p_stream + p_size) {
+		ParsedFrame frame = {};
+		frame.header_offset = src - p_stream;
+
 		prevent_emulation = false;
 		uint64_t nal_size = read_bits(length_size * 8);
-		const uint8_t *nal_start = src;
 		prevent_emulation = true;
 
-		VideoCodingH264NalUnitType nal_unit_type = parse_nal_unit(nal_size);
+		frame.frame_size = nal_size + length_size;
+
+		uint64_t header_size;
+		VideoCodingH264NalUnitType nal_unit_type = parse_nal_unit(nal_size, &header_size);
+		frame.header_size = header_size + length_size;
+
 		if (nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE || nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR) {
-			r_offsets->push_back(nal_start - p_stream);
-			r_sizes->push_back(nal_size);
+			r_frames->push_back(frame);
 		}
 	}
 
 	return OK;
 }
 
-RID VideoStreamH264::_create_video_session(RD::VideoSessionInfo p_session_template) {
+RID VideoStreamH264::_create_video_session(RD::VideoSessionProfile p_session_template) {
 	p_session_template.profile = video_profile;
-	p_session_template.width += 0; // TODO: cropping
-	p_session_template.height += 0; // TODO: cropping / how do we know this?
-	p_session_template.max_active_reference_pictures = 16; // sps.max_num_ref_frames
+	p_session_template.max_width += 0; // TODO: cropping
+	p_session_template.max_height += 0; // TODO: cropping
+	p_session_template.max_dpb_slots = 17;
+	p_session_template.max_active_references = 16; // TODO: sps.max_num_ref_frames
 
 	RID rid = local_device->video_session_create(p_session_template);
 	local_device->video_session_add_h264_parameters(rid, sps_sets, pps_sets);
@@ -633,18 +648,28 @@ RID VideoStreamH264::_create_texture(RD::TextureFormat p_texture_template, RD::T
 	video_profiles.push_back(video_profile);
 
 	p_texture_template.video_profiles = video_profiles;
-	p_texture_template.width += 0;
-	p_texture_template.height += 0; // TODO: how do we know this?
+	p_texture_template.width += 0; // TODO: cropping
+	p_texture_template.height += 0; // TODO: cropping
 
 	return local_device->texture_create(p_texture_template, p_view_template);
 }
 
-void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
-	src = p_frame_data.ptr();
+uint8_t *VideoStreamH264::queue_decode(Span<uint8_t> p_frame_header, uint64_t p_frame_size) {
+	src = p_frame_header.ptr();
 	shift = 0;
 
-	RID dst_yuv = yuv_pool[decode_yuv_index];
-	RID dst_rgba = rgba_pool[decode_rgba_index];
+	DecodeFrame decode_frame = {};
+	decode_frame.src_buffer = local_device->storage_buffer_create(p_frame_size, {}, RD::STORAGE_BUFFER_USAGE_VIDEO_DECODE_SRC);
+
+	decode_frame.dst_texture_yuv = yuv_pool[decode_yuv_index];
+	decode_frame.dst_texture_rgba = rgba_pool[decode_rgba_index];
+
+	decode_yuv_index = (decode_yuv_index + 1) % yuv_pool.size();
+	decode_rgba_index = (decode_rgba_index + 1) % rgba_pool.size();
+
+	prevent_emulation = false;
+	uint32_t nal_size = read_bits(length_size * 8); // nal_size
+	prevent_emulation = true;
 
 	read_bits(1); // forbidden_zero_bit
 	uint8_t nal_ref_idc = read_bits(2);
@@ -652,47 +677,71 @@ void VideoStreamH264::decode_frame(Span<uint8_t> p_frame_data) {
 
 	bool is_reference = nal_ref_idc != 0;
 	bool is_idr = nal_unit_type == VIDEO_CODING_H264_NAL_UNIT_TYPE_CODED_SLICE_IDR;
-	VideoDecodeH264SliceHeader slice_header = parse_slice_header(p_frame_data.size(), is_reference, is_idr);
+	decode_frame.video_header = parse_slice_header(p_frame_header.size(), is_reference, is_idr);
 
-	if (slice_header.pic_order_cnt_top_field == 0) {
+	if (decode_frame.video_header.pic_order_cnt_top_field == 0) {
 		current_group_order_count += 1;
 	}
 
-	local_device->video_session_decode(video_session, p_frame_data, dst_yuv, &slice_header);
-	_yuv_to_rgba(dst_yuv, dst_rgba);
-	local_device->video_session_end(video_session);
-
-	decode_yuv_index = (decode_yuv_index + 1) % yuv_pool.size();
-	decode_rgba_index = (decode_rgba_index + 1) % rgba_pool.size();
-
-	Frame current_frame;
-	current_frame.texture = dst_rgba;
+	PresentFrame current_frame;
+	current_frame.texture = decode_frame.dst_texture_rgba;
 	current_frame.group_order_count = current_group_order_count;
-	current_frame.picture_order_count = slice_header.pic_order_cnt_top_field;
+	current_frame.picture_order_count = decode_frame.video_header.pic_order_cnt_top_field;
 	current_frame.presented = false;
 
-	if (frame_queue.is_empty()) {
-		frame_queue.push_back(current_frame);
-	} else if (decode_index + 1 == frame_queue.size() && !frame_queue[0].presented) {
-		frame_queue.push_back(current_frame);
+	if (present_queue.is_empty()) {
+		present_queue.push_back(current_frame);
+	} else if (decode_index + 1 == present_queue.size() && !present_queue[0].presented) {
+		present_queue.push_back(current_frame);
 	} else if (decode_index <= present_index) {
-		frame_queue.insert(decode_index, current_frame);
+		present_queue.insert(decode_index, current_frame);
 		present_index += 1;
 	} else {
-		frame_queue.set(decode_index, current_frame);
+		present_queue.set(decode_index, current_frame);
 	}
 
-	decode_index = (decode_index + 1) % frame_queue.size();
+	decode_index = (decode_index + 1) % present_queue.size();
+
+	decode_frame.buffer_ptr = local_device->buffer_map(decode_frame.src_buffer);
+	decode_queue.push_back(decode_frame);
+	return decode_frame.buffer_ptr;
+}
+
+void VideoStreamH264::submit_decode() {
+	for (int64_t i = 0; i < decode_queue.size(); i++) {
+		RID src_buffer = decode_queue[i].src_buffer;
+		RID dst_texture_yuv = decode_queue[i].dst_texture_yuv;
+		RID dst_texture_rgba = decode_queue[i].dst_texture_rgba;
+		VideoDecodeH264SliceHeader video_header = decode_queue[i].video_header;
+		uint8_t *buffer_ptr = decode_queue[i].buffer_ptr;
+
+		uint8_t start_code[4] = { 0, 0, 0, 1 };
+		memcpy(buffer_ptr, start_code, sizeof(start_code));
+		local_device->buffer_unmap(src_buffer);
+
+		local_device->video_session_decode(video_session, src_buffer, dst_texture_yuv, &video_header, video_header.is_intra);
+		_yuv_to_rgba(dst_texture_yuv, dst_texture_rgba);
+	}
+
+	local_device->video_session_submit(video_session);
+
+	for (int64_t i = 0; i < decode_queue.size(); i++) {
+		// TODO: use a pool of buffers instead
+		RID src_buffer = decode_queue[i].src_buffer;
+		local_device->free_rid(src_buffer);
+	}
+
+	decode_queue.clear();
 }
 
 Vector<uint8_t> VideoStreamH264::present_frame() {
-	Frame next_frame = {};
+	PresentFrame next_frame = present_queue[present_index];
 	int64_t next_offset = 0;
 
 	int64_t offset = 0;
-	while ((present_index + offset) % frame_queue.size() != decode_index) {
-		size_t target_index = (present_index + offset) % frame_queue.size();
-		Frame potential_frame = frame_queue[target_index];
+	while ((present_index + offset) % present_queue.size() != decode_index) {
+		size_t target_index = (present_index + offset) % present_queue.size();
+		PresentFrame potential_frame = present_queue[target_index];
 		if (potential_frame.presented) {
 			offset += 1;
 			continue;
@@ -709,17 +758,13 @@ Vector<uint8_t> VideoStreamH264::present_frame() {
 		offset += 1;
 	}
 
-	size_t target_index = (present_index + next_offset) % frame_queue.size();
+	size_t target_index = (present_index + next_offset) % present_queue.size();
 	next_frame.presented = true;
-	frame_queue.set(target_index, next_frame);
+	present_queue.set(target_index, next_frame);
 
-	while (frame_queue[present_index].presented) {
-		present_index = (present_index + 1) % frame_queue.size();
+	while (present_queue[present_index].presented) {
+		present_index = (present_index + 1) % present_queue.size();
 	}
 
 	return local_device->texture_get_data(next_frame.texture, 0);
-}
-
-VideoStreamH264::VideoStreamH264() {
-	local_device = RD::get_singleton();
 }

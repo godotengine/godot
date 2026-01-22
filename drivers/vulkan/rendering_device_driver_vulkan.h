@@ -732,27 +732,19 @@ public:
 	struct VideoSessionInfo {
 		VkVideoSessionKHR vk_session;
 		VkVideoSessionParametersKHR vk_session_parameters;
-		VkVideoSessionCreateInfoKHR vk_session_create_info;
-
-		VideoCodingOperation video_operation;
-
-		int64_t target_dpb_index;
-		Vector<TextureInfo *> dpb_views;
-		Vector<void *> std_reference_infos;
-		// TODO: move into AV1Stream
-		int8_t reference_name_slot_indices[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
+		VkVideoCodecOperationFlagBitsKHR vk_video_operation;
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
 	void _rd_to_vk_h264_params(VideoDecodeH264SliceHeader *p_slice_header, StdVideoDecodeH264PictureInfo *r_picture_info, StdVideoDecodeH264ReferenceInfo *r_reference_info);
 	void _rd_to_vk_av1_params(VideoDecodeAV1Frame *p_frame_header, StdVideoDecodeAV1PictureInfo *r_picture_info, StdVideoDecodeAV1ReferenceInfo *r_reference_info);
 
-	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
+	virtual VideoSessionID video_session_create(const VideoSessionProfile &p_session_info) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;
 	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
-	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) override final;
+	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header, VectorView<VideoReferenceSlot> p_active_references, VideoReferenceSlot *r_target_reference) override final;
 
 	/**************/
 	/**** MISC ****/

@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "video_stream_encoding.h"
-#include "modules/matroska/ycbcr_sampler.glsl.gen.h"
 #include "servers/rendering/rendering_device_binds.h"
+#include "servers/rendering/video/ycbcr_sampler.glsl.gen.h"
 
 void VideoStreamEncoding::_yuv_to_rgba(RID p_src_yuv, RID p_dst_rgba) {
 	Vector<RD::Uniform> uniforms;
@@ -61,18 +61,23 @@ void VideoStreamEncoding::_yuv_to_rgba(RID p_src_yuv, RID p_dst_rgba) {
 	local_device->free_rid(uniform_set);
 }
 
-void VideoStreamEncoding::initialize(RD::VideoSessionInfo p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template) {
+void VideoStreamEncoding::initialize(RD::VideoSessionProfile p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template) {
 	const size_t yuv_pool_size = 15;
 	const size_t rgba_pool_size = 15;
 
 	local_device = RD::get_singleton()->create_local_device();
 
+	// TODO: determine from device capabilities
+	//? like what's VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 for?
+	p_session_template.inout_format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+	p_session_template.dpb_format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+
 	yuv_sampler = _create_texture_sampler(p_sampler_template);
 
 	RD::TextureFormat yuv_format;
 	yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	yuv_format.width = p_session_template.width;
-	yuv_format.height = p_session_template.width;
+	yuv_format.width = p_session_template.max_width;
+	yuv_format.height = p_session_template.max_height;
 	yuv_format.depth = 1;
 	yuv_format.usage_bits = RD::TEXTURE_USAGE_VIDEO_DECODE_DST_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
@@ -89,7 +94,6 @@ void VideoStreamEncoding::initialize(RD::VideoSessionInfo p_session_template, RD
 		rgba_pool.push_back(rgba_texture);
 	}
 
-	p_session_template.dst_yuv_textures = yuv_pool;
 	video_session = _create_video_session(p_session_template);
 
 	Vector<RD::Uniform> uniforms;

@@ -6831,24 +6831,23 @@ void RenderingDeviceDriverVulkan::_rd_to_vk_av1_params(VideoDecodeAV1Frame *p_fr
 	}
 }
 
-RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
+RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoSessionProfile &p_session_info) {
 	VkVideoProfileInfoKHR video_profile = {};
-	vk_video_profile_from_state(p_profile, &video_profile);
+	vk_video_profile_from_state(p_session_info.profile, &video_profile);
 
-	Vector<TextureInfo *> dpb_textures;
-	dpb_textures.resize(p_dpb_views.size());
-	for (size_t i = 0; i < p_dpb_views.size(); i++) {
-		dpb_textures.set(i, (TextureInfo *)p_dpb_views[i].id);
-	}
-
+	// TODO: allow using decode queues
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
 
 	VkExtensionProperties *std_header_version;
 	if (video_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
 		std_header_version = &video_capabilities_h264.std_header_version;
-	} else {
+	} else if (video_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) {
 		std_header_version = &video_capabilities_av1.std_header_version;
+	} else {
+		// Unknown video operation
+		// TODO: should we fail explicitly here?
+		return VideoSessionID();
 	}
 
 	VkVideoSessionCreateInfoKHR session_info = {};
@@ -6857,25 +6856,21 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	session_info.queueFamilyIndex = command_queue_family_index;
 	session_info.flags = VK_VIDEO_SESSION_CREATE_INLINE_QUERIES_BIT_KHR;
 	session_info.pVideoProfile = &video_profile;
-	session_info.pictureFormat = dpb_textures[0]->vk_create_info.format;
-	session_info.maxCodedExtent.width = dpb_textures[0]->vk_create_info.extent.width;
-	session_info.maxCodedExtent.height = dpb_textures[0]->vk_create_info.extent.height;
-	session_info.referencePictureFormat = dpb_textures[0]->vk_create_info.format;
-	session_info.maxDpbSlots = p_dpb_views.size();
-	session_info.maxActiveReferencePictures = p_dpb_views.size() - 1;
+	session_info.pictureFormat = RD_TO_VK_FORMAT[p_session_info.inout_format];
+	session_info.maxCodedExtent.width = p_session_info.max_width;
+	session_info.maxCodedExtent.height = p_session_info.max_height;
+	session_info.referencePictureFormat = RD_TO_VK_FORMAT[p_session_info.dpb_format];
+	session_info.maxDpbSlots = p_session_info.max_dpb_slots;
+	session_info.maxActiveReferencePictures = p_session_info.max_active_references;
 	session_info.pStdHeaderVersion = std_header_version;
 
 	VkVideoSessionKHR video_session;
-	VkResult result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
-	}
+	VkResult err = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
+	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkCreateVideoSessionKHR failed with error " + itos(err) + ".");
 
 	uint32_t memory_requirements_count;
-	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, nullptr);
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
-	}
+	err = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, nullptr);
+	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkGetVideoSessionMemoryRequirementsKHR failed with error " + itos(err) + ".");
 
 	TightLocalVector<VkVideoSessionMemoryRequirementsKHR> memory_requirements;
 	memory_requirements.resize(memory_requirements_count);
@@ -6884,10 +6879,8 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		memory_requirements[i].pNext = nullptr;
 	}
 
-	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
-	}
+	err = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
+	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkGetVideoSessionMemoryRequirementsKHR failed with error " + itos(err) + ".");
 
 	LocalVector<VkBindVideoSessionMemoryInfoKHR> memory_infos;
 	for (VkVideoSessionMemoryRequirementsKHR memory_requirement : memory_requirements) {
@@ -6904,10 +6897,8 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		VmaAllocation allocation = nullptr;
 		VmaAllocationInfo allocation_info = {};
 
-		result = vmaAllocateMemory(allocator, &memory_requirement.memoryRequirements, &allocation_create_info, &allocation, &allocation_info);
-		if (result != VK_SUCCESS) {
-			ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
-		}
+		err = vmaAllocateMemory(allocator, &memory_requirement.memoryRequirements, &allocation_create_info, &allocation, &allocation_info);
+		ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkGetVideoSessionMemoryRequirementsKHR failed with error " + itos(err) + ".");
 
 		VkBindVideoSessionMemoryInfoKHR memory;
 		memory.sType = VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR;
@@ -6920,28 +6911,12 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 		memory_infos.push_back(memory);
 	}
 
-	result = vkBindVideoSessionMemoryKHR(vk_device, video_session, memory_infos.size(), memory_infos.ptr());
-	if (result != VK_SUCCESS) {
-		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
-	}
+	err = vkBindVideoSessionMemoryKHR(vk_device, video_session, memory_infos.size(), memory_infos.ptr());
+	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkBindVideoSessionMemoryKHR failed with error " + itos(err) + ".");
 
 	VideoSessionInfo *video_session_info = VersatileResource::allocate<VideoSessionInfo>(resources_allocator);
 	video_session_info->vk_session = video_session;
-	video_session_info->vk_session_create_info = session_info;
-
-	video_session_info->video_operation = p_profile.operation;
-
-	video_session_info->target_dpb_index = 0;
-	video_session_info->dpb_views = dpb_textures;
-
-	video_session_info->std_reference_infos.reserve(session_info.maxDpbSlots);
-	for (size_t i = 0; i < session_info.maxDpbSlots; i++) {
-		video_session_info->std_reference_infos.push_back(nullptr);
-	}
-
-	for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-		video_session_info->reference_name_slot_indices[i] = -1;
-	}
+	video_session_info->vk_video_operation = video_profile.videoCodecOperation;
 
 	return RDD::VideoSessionID(video_session_info);
 }
@@ -7293,19 +7268,20 @@ void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_sess
 	VersatileResource::free(resources_allocator, video_session_info);
 }
 
-// TODO: [1] manage DPB views from rendering device
 // TODO: [2] allow for decoding several frame slices in one vkCmdDecodeVideo
 // TODO: [3] allow for decoding several frames within one video session
-void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) {
+void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header, VectorView<VideoReferenceSlot> p_active_references, VideoReferenceSlot *r_target_reference) {
 	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	VideoSessionInfo *video_session_info = (VideoSessionInfo *)p_video_session.id;
 	BufferInfo *src_buffer_info = (BufferInfo *)p_src_buffer.id;
 	TextureInfo *dst_texture_info = (TextureInfo *)p_dst_texture.id;
 
 	// TODO: is offset ever not (0, 0)? (Maybe interlaced video?)
-	// TODO: is extend ever not maxExtent? (Maybe interlaced video?)
 	VkOffset2D frame_offset = { 0, 0 };
-	VkExtent2D frame_extent = video_session_info->vk_session_create_info.maxCodedExtent;
+	VkExtent2D frame_extent = {
+		dst_texture_info->vk_create_info.extent.width,
+		dst_texture_info->vk_create_info.extent.height,
+	};
 
 	bool is_key_frame = false;
 	bool is_reference_frame = false;
@@ -7319,7 +7295,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	VkVideoDecodeH264PictureInfoKHR h264_video_header = {};
 	VkVideoDecodeH264DpbSlotInfoKHR h264_slot_info = {};
 	StdVideoDecodeH264PictureInfo h264_picture_info = {};
-	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_H264) {
+	if (video_session_info->vk_video_operation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
 		VideoDecodeH264SliceHeader *rd_slice_header = (VideoDecodeH264SliceHeader *)p_video_header;
 
 		is_key_frame = rd_slice_header->is_intra;
@@ -7351,18 +7327,14 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		std_reference_info = h264_reference_info;
 	}
 
-	uint8_t refresh_frame_flags = 0;
-	int32_t active_ref_frames[VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR];
 	VkVideoDecodeAV1PictureInfoKHR av1_video_header = {};
 	VkVideoDecodeAV1DpbSlotInfoKHR av1_slot_info = {};
 	StdVideoDecodeAV1PictureInfo av1_picture_info = {};
-	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+	if (video_session_info->vk_video_operation == VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) {
 		VideoDecodeAV1Frame *rd_frame_header = (VideoDecodeAV1Frame *)p_video_header;
 
-		// TODO: are we sure this is enough?
 		is_key_frame = rd_frame_header->frame_type == VIDEO_CODING_AV1_FRAME_TYPE_KEY;
 		is_reference_frame = rd_frame_header->refresh_frame_flags != 0;
-		refresh_frame_flags = rd_frame_header->refresh_frame_flags;
 
 		StdVideoDecodeAV1ReferenceInfo *av1_reference_info;
 		if (is_reference_frame) {
@@ -7377,10 +7349,10 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		av1_video_header.pNext = nullptr;
 		av1_video_header.pStdPictureInfo = &av1_picture_info;
 
+		// TODO: unbreak AV1 decoding
 		for (uint32_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
 			size_t ref_frame = rd_frame_header->ref_frame_idx[i];
-			av1_video_header.referenceNameSlotIndices[i] = video_session_info->reference_name_slot_indices[ref_frame];
-			active_ref_frames[i] = video_session_info->reference_name_slot_indices[ref_frame];
+			av1_video_header.referenceNameSlotIndices[i] = -1;
 		}
 
 		av1_video_header.frameHeaderOffset = 0;
@@ -7397,18 +7369,10 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		std_reference_info = av1_reference_info;
 	}
 
-	// If the current frame is an IDR/key frame, previous references are cleared.
-	if (is_key_frame) {
-		video_session_info->target_dpb_index = 0;
-
-		for (uint32_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
-			if (video_session_info->std_reference_infos[i] != nullptr) {
-				// TODO: is there a more Godot-style API than malloc/free?
-				free(video_session_info->std_reference_infos[i]);
-			}
-
-			video_session_info->std_reference_infos.set(i, nullptr);
-		}
+	if (is_reference_frame) {
+		r_target_reference->reference_meta = std_reference_info;
+	} else {
+		r_target_reference->reference_meta = nullptr;
 	}
 
 	VkVideoPictureResourceInfoKHR setup_picture_resource_info = {};
@@ -7417,7 +7381,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	setup_picture_resource_info.codedOffset = frame_offset;
 	setup_picture_resource_info.codedExtent = frame_extent;
 	setup_picture_resource_info.baseArrayLayer = 0; // TODO: is this ever useful?
-	setup_picture_resource_info.imageViewBinding = video_session_info->dpb_views[video_session_info->target_dpb_index]->vk_view;
+	setup_picture_resource_info.imageViewBinding = ((TextureInfo *)r_target_reference->reference_texture.id)->vk_view;
 
 	VkVideoReferenceSlotInfoKHR setup_reference_slot = {};
 	setup_reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
@@ -7425,59 +7389,30 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	setup_reference_slot.slotIndex = -1;
 	setup_reference_slot.pPictureResource = &setup_picture_resource_info;
 
-	if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
-		for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
-			if (video_session_info->target_dpb_index == active_ref_frames[j]) {
-				CRASH_NOW_MSG("critical strike.");
-			}
-		}
-	}
-
 	// Rebuild previous references.
 	// The setup target slot will always be at [0].
 	Vector<VkVideoReferenceSlotInfoKHR> reference_slots;
 	reference_slots.push_back(setup_reference_slot);
 
-	for (int64_t i = 0; i < video_session_info->vk_session_create_info.maxDpbSlots; i++) {
-		if (video_session_info->std_reference_infos[i] == nullptr) {
-			break;
-		}
-
-		if (i == video_session_info->target_dpb_index) {
-			continue;
-		}
-
-		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
-			bool reference_present = false;
-			for (size_t j = 0; j < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; j++) {
-				if (i == active_ref_frames[j]) {
-					reference_present = true;
-				}
-			}
-
-			if (!reference_present) {
-				continue;
-			}
-		}
-
+	for (int64_t i = 0; i < p_active_references.size(); i++) {
 		void *next_dpb_info = nullptr;
 
 		VkVideoDecodeH264DpbSlotInfoKHR *h264_dpb_info = nullptr;
-		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_H264) {
+		if (video_session_info->vk_video_operation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
 			h264_dpb_info = ALLOCA_SINGLE(VkVideoDecodeH264DpbSlotInfoKHR);
 			h264_dpb_info->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR;
 			h264_dpb_info->pNext = nullptr;
-			h264_dpb_info->pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)video_session_info->std_reference_infos[i];
+			h264_dpb_info->pStdReferenceInfo = (StdVideoDecodeH264ReferenceInfo *)p_active_references[i].reference_meta;
 
 			next_dpb_info = h264_dpb_info;
 		}
 
 		VkVideoDecodeAV1DpbSlotInfoKHR *av1_dpb_info = nullptr;
-		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
+		if (video_session_info->vk_video_operation == VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) {
 			av1_dpb_info = ALLOCA_SINGLE(VkVideoDecodeAV1DpbSlotInfoKHR);
 			av1_dpb_info->sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR;
 			av1_dpb_info->pNext = nullptr;
-			av1_dpb_info->pStdReferenceInfo = (StdVideoDecodeAV1ReferenceInfo *)video_session_info->std_reference_infos[i];
+			av1_dpb_info->pStdReferenceInfo = (StdVideoDecodeAV1ReferenceInfo *)p_active_references[i].reference_meta;
 
 			next_dpb_info = av1_dpb_info;
 		}
@@ -7488,12 +7423,12 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 		picture_resource_info->codedOffset = frame_offset;
 		picture_resource_info->codedExtent = frame_extent;
 		picture_resource_info->baseArrayLayer = 0; // TODO: is this ever useful?
-		picture_resource_info->imageViewBinding = video_session_info->dpb_views[i]->vk_view;
+		picture_resource_info->imageViewBinding = ((TextureInfo *)p_active_references[i].reference_texture.id)->vk_view;
 
 		VkVideoReferenceSlotInfoKHR reference_slot = {};
 		reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 		reference_slot.pNext = next_dpb_info;
-		reference_slot.slotIndex = i;
+		reference_slot.slotIndex = p_active_references[i].reference_index;
 		reference_slot.pPictureResource = picture_resource_info;
 		reference_slots.push_back(reference_slot);
 	}
@@ -7531,7 +7466,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	VkVideoReferenceSlotInfoKHR target_reference_slot = {};
 	target_reference_slot.sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR;
 	target_reference_slot.pNext = video_slot_info;
-	target_reference_slot.slotIndex = video_session_info->target_dpb_index;
+	target_reference_slot.slotIndex = r_target_reference->reference_index;
 	target_reference_slot.pPictureResource = &setup_picture_resource_info;
 
 	VkVideoDecodeInfoKHR video_decode_info = {};
@@ -7547,48 +7482,6 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 	video_decode_info.pReferenceSlots = reference_slots.ptr() + 1;
 
 	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &video_decode_info);
-
-	if (is_reference_frame) {
-		if (video_session_info->std_reference_infos[video_session_info->target_dpb_index] != nullptr) {
-			// TODO: is there a more Godot-style API than malloc/free?
-			free(video_session_info->std_reference_infos[video_session_info->target_dpb_index]);
-		}
-
-		video_session_info->std_reference_infos.set(video_session_info->target_dpb_index, std_reference_info);
-
-		if (video_session_info->video_operation == VIDEO_OPERATION_DECODE_AV1) {
-			for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-				if ((refresh_frame_flags & 1 << i) > 0) {
-					video_session_info->reference_name_slot_indices[i] = video_session_info->target_dpb_index;
-				}
-			}
-
-			uint8_t counter = 0;
-			bool valid_slot = false;
-			while (!valid_slot) {
-				video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
-
-				valid_slot = true;
-				for (uint8_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-					if (active_ref_frames[i] == -1) {
-						continue;
-					}
-
-					if (video_session_info->target_dpb_index == active_ref_frames[i]) {
-						valid_slot = false;
-						break;
-					}
-				}
-
-				counter++;
-				if (counter == video_session_info->vk_session_create_info.maxDpbSlots) {
-					CRASH_NOW_MSG("Infinite loop looking for an available DPB slot");
-				}
-			}
-		} else {
-			video_session_info->target_dpb_index = (video_session_info->target_dpb_index + 1) % video_session_info->vk_session_create_info.maxDpbSlots;
-		}
-	}
 
 	VkVideoEndCodingInfoKHR video_end_info = {};
 	video_end_info.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;

@@ -53,18 +53,25 @@ protected:
 
 	void _yuv_to_rgba(RID p_src_yuv, RID p_dst_rgba);
 
-	virtual RID _create_video_session(RD::VideoSessionInfo p_session_template) = 0;
+	virtual RID _create_video_session(RD::VideoSessionProfile p_session_template) = 0;
 	virtual RID _create_texture_sampler(RD::SamplerState p_sampler_template) = 0;
 	virtual RID _create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) = 0;
 
 public:
-	void initialize(RD::VideoSessionInfo p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template);
+	struct ParsedFrame {
+		uint32_t header_offset;
+		uint32_t header_size;
+		uint32_t frame_size;
+	};
+
+	void initialize(RD::VideoSessionProfile p_session_template, RD::SamplerState p_sampler_template, RD::TextureFormat p_texture_template);
 
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) = 0;
-	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) = 0;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<ParsedFrame> *r_frames) = 0;
 
 	// TODO: allow seeking
-	virtual void decode_frame(Span<uint8_t> p_frame_data) = 0;
+	virtual uint8_t *queue_decode(Span<uint8_t> p_frame_header, uint64_t p_frame_size) = 0;
+	virtual void submit_decode() = 0;
 	virtual Vector<uint8_t> present_frame() = 0;
 
 	~VideoStreamEncoding();

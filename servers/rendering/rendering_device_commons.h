@@ -994,6 +994,16 @@ public:
 		SUBGROUP_QUAD_BIT = 128,
 	};
 
+	struct VideoSessionProfile {
+		VideoProfile profile;
+		DataFormat inout_format = DATA_FORMAT_MAX;
+		DataFormat dpb_format = DATA_FORMAT_MAX;
+		size_t max_width = 0;
+		size_t max_height = 0;
+		size_t max_dpb_slots = 0;
+		size_t max_active_references = 0;
+	};
+
 	////////////////////////////////////////////
 	// PROTECTED STUFF
 	// Not exposed by RenderingDevice, but shared

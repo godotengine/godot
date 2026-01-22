@@ -40,6 +40,7 @@
 #include "modules/matroska/video_stream_av1.h"
 #include "modules/matroska/video_stream_h264.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/video_stream_encoding.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -776,14 +777,14 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 			}
 
 			if (target_track == 1 && video_stream_encoding.is_valid()) {
-				Vector<size_t> frame_offsets;
-				Vector<size_t> frame_sizes;
-				video_stream_encoding->parse_container_block(src, block_size - 4, &frame_offsets, &frame_sizes);
-				for (uint32_t i = 0; i < frame_offsets.size(); i++) {
+				Vector<VideoStreamEncoding::ParsedFrame> frames;
+				video_stream_encoding->parse_container_block(src, block_size - 4, &frames);
+				for (int64_t i = 0; i < frames.size(); i++) {
 					Cluster::Block block = {};
 
-					block.position = (size_t)(src - origin) + frame_offsets[i];
-					block.size = frame_sizes[i];
+					block.header_position = (src - origin) + frames[i].header_offset;
+					block.header_size = frames[i].header_size;
+					block.frame_size = frames[i].frame_size;
 
 					r_cluster->blocks.append(block);
 				}
@@ -890,19 +891,18 @@ Error VideoStreamPlaybackMatroska::parse_tags() {
 }
 
 void VideoStreamPlaybackMatroska::decode_frame() {
-	// 1. get next cluster/block/frame data
 	Cluster cluster = segment.clusters[cluster_index];
 	Cluster::Block block = cluster.blocks[block_index];
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(path, FileAccess::READ, &err);
 
-	// TODO: read file directly into vulkan buffer ("zero" copy)
-	file->seek(block.position);
-	Vector<uint8_t> frame_data = file->get_buffer(block.size);
+	file->seek(block.header_position);
+	Vector<uint8_t> frame_data = file->get_buffer(block.header_size);
 
-	// 2. decode block into yuv frame
-	video_stream_encoding->decode_frame(frame_data);
+	uint8_t *src_buffer = video_stream_encoding->queue_decode(frame_data, block.frame_size);
+	file->seek(block.header_position);
+	file->get_buffer(src_buffer, block.frame_size);
 
 	block_index += 1;
 	if (block_index == cluster.blocks.size()) {
@@ -964,9 +964,9 @@ void VideoStreamPlaybackMatroska::play() {
 		return;
 	}
 
-	RD::VideoSessionInfo video_session_info = {};
-	video_session_info.width = width;
-	video_session_info.height = height;
+	RD::VideoSessionProfile video_session_info = {};
+	video_session_info.max_width = width;
+	video_session_info.max_height = height;
 
 	// Decode stage objects
 	//TODO: be more precise with ycbcr sampler
@@ -982,11 +982,11 @@ void VideoStreamPlaybackMatroska::play() {
 
 	video_stream_encoding->initialize(video_session_info, sampler_info, dst_rgba_format);
 
-	// When the video session is created it is implicitly begun
 	for (size_t i = 0; i < buffered_frames; i++) {
 		decode_frame();
 	}
 
+	video_stream_encoding->submit_decode();
 	present_frame();
 }
 
@@ -1034,6 +1034,7 @@ void VideoStreamPlaybackMatroska::update(double p_delta) {
 	// TODO: audio
 	present_frame();
 	decode_frame();
+	video_stream_encoding->submit_decode();
 }
 
 int VideoStreamPlaybackMatroska::get_channels() const {

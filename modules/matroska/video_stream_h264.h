@@ -39,7 +39,15 @@ class VideoStreamH264 : public VideoStreamEncoding {
 	GDCLASS(VideoStreamH264, VideoStreamEncoding);
 
 private:
-	struct Frame {
+	struct DecodeFrame {
+		RID src_buffer;
+		RID dst_texture_yuv;
+		RID dst_texture_rgba;
+		VideoDecodeH264SliceHeader video_header;
+		uint8_t *buffer_ptr;
+	};
+
+	struct PresentFrame {
 		RID texture;
 		size_t group_order_count;
 		size_t picture_order_count;
@@ -60,15 +68,18 @@ private:
 	Vector<VideoCodingH264SequenceParameterSet> sps_sets;
 	Vector<VideoCodingH264PictureParameterSet> pps_sets;
 
-	Vector<Frame> frame_queue;
-	int64_t decode_index = 0;
-	int64_t present_index = 0;
-
-	size_t current_group_order_count = 0;
+	// Decoding state.
 	uint64_t prev_pic_order_cnt_lsb;
 	uint64_t prev_pic_order_cnt_msb;
 	uint64_t prev_frame_num_offset;
 	uint64_t prev_frame_num;
+
+	size_t current_group_order_count = 0;
+	Vector<DecodeFrame> decode_queue;
+	Vector<PresentFrame> present_queue;
+
+	int64_t decode_index = 0;
+	int64_t present_index = 0;
 
 	VideoProfile video_profile = {};
 
@@ -76,22 +87,21 @@ private:
 	uint64_t read_ue();
 	int64_t read_se();
 
-	VideoCodingH264NalUnitType parse_nal_unit(uint64_t p_size);
+	VideoCodingH264NalUnitType parse_nal_unit(uint64_t p_size, uint64_t *r_size);
 	VideoCodingH264SequenceParameterSet parse_sequence_parameter_set(uint64_t p_size);
 	VideoCodingH264PictureParameterSet parse_picture_parameter_set(uint64_t p_size);
 	VideoDecodeH264SliceHeader parse_slice_header(uint64_t p_size, bool p_is_reference, bool p_is_idr);
 
 protected:
-	virtual RID _create_video_session(RD::VideoSessionInfo p_session_template) final override;
+	virtual RID _create_video_session(RD::VideoSessionProfile p_session_template) final override;
 	virtual RID _create_texture_sampler(RD::SamplerState p_sampler_template) final override;
 	virtual RID _create_texture(RD::TextureFormat p_texture_template, RD::TextureView p_view_template) final override;
 
 public:
 	virtual Error parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) final override;
-	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) final override;
+	virtual Error parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<ParsedFrame> *r_frames) final override;
 
-	virtual void decode_frame(Span<uint8_t> p_frame_data) final override;
+	virtual uint8_t *queue_decode(Span<uint8_t> p_frame_header, uint64_t p_frame_size) final override;
+	virtual void submit_decode() final override;
 	virtual Vector<uint8_t> present_frame() final override;
-
-	VideoStreamH264();
 };

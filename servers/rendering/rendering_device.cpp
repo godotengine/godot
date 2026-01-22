@@ -814,6 +814,22 @@ void RenderingDevice::buffer_flush(RID p_buffer) {
 	driver->buffer_flush(buffer->driver_id);
 }
 
+uint8_t *RenderingDevice::buffer_map(RID p_buffer) {
+	ERR_RENDER_THREAD_GUARD_V(0);
+
+	Buffer *buffer = _get_buffer_from_owner(p_buffer);
+	ERR_FAIL_NULL_V_MSG(buffer, nullptr, "Buffer argument is not a valid buffer of any type.");
+	return driver->buffer_map(buffer->driver_id);
+}
+
+void RenderingDevice::buffer_unmap(RID p_buffer) {
+	ERR_RENDER_THREAD_GUARD();
+
+	Buffer *buffer = _get_buffer_from_owner(p_buffer);
+	ERR_FAIL_NULL_MSG(buffer, "Buffer argument is not a valid buffer of any type.");
+	driver->buffer_unmap(buffer->driver_id);
+}
+
 RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
@@ -5845,17 +5861,20 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
-// TODO manage DPB directly from rendering device
-// TODO validate everything is alright
-RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info) {
+RID RenderingDevice::video_session_create(const VideoSessionProfile &p_session_info) {
+	VideoSession video_session;
+	video_session.video_profile = p_session_info.profile;
+	video_session.driver_id = driver->video_session_create(p_session_info);
+
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(p_session_info.profile);
 
 	RD::TextureFormat dpb_format;
-	dpb_format.width = p_session_info.width;
-	dpb_format.height = p_session_info.height;
+	dpb_format.format = p_session_info.dpb_format;
+	dpb_format.width = p_session_info.max_width;
+	dpb_format.height = p_session_info.max_height;
 	dpb_format.depth = 1;
-	dpb_format.array_layers = p_session_info.max_active_reference_pictures + 1; // TODO: for AV1 this is +2
+	dpb_format.array_layers = p_session_info.max_dpb_slots;
 	dpb_format.mipmaps = 1;
 	dpb_format.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 	dpb_format.samples = RD::TEXTURE_SAMPLES_1;
@@ -5865,9 +5884,6 @@ RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info
 	dpb_format.is_resolve_buffer = false;
 	dpb_format.is_discardable = false;
 
-	// TODO: Determine with driver capabilities
-	dpb_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-
 	RDD::TextureView dpb_view_format = {};
 	dpb_view_format.format = dpb_format.format;
 	dpb_view_format.swizzle_a = TEXTURE_SWIZZLE_IDENTITY;
@@ -5875,25 +5891,27 @@ RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info
 	dpb_view_format.swizzle_g = TEXTURE_SWIZZLE_IDENTITY;
 	dpb_view_format.swizzle_b = TEXTURE_SWIZZLE_IDENTITY;
 
-	VideoSession video_session;
-	video_session.video_profile = p_session_info.profile;
 	video_session.dpb_id = driver->texture_create(dpb_format, dpb_view_format);
 
-	Vector<RDD::TextureID> dpb_views;
-	dpb_views.push_back(video_session.dpb_id);
-	for (size_t i = 1; i < dpb_format.array_layers; i++) {
-		RDD::TextureID dpb_view = driver->texture_create_shared_from_slice(video_session.dpb_id, dpb_view_format, TEXTURE_SLICE_2D, i, 1, 0, 1);
-		dpb_views.push_back(dpb_view);
+	RDD::VideoReferenceSlot initial_slot;
+	initial_slot.reference_index = 0;
+	initial_slot.reference_texture = video_session.dpb_id;
+	initial_slot.reference_meta = nullptr;
+	video_session.reference_slots.push_back(initial_slot);
+
+	for (size_t i = 1; i < p_session_info.max_dpb_slots; i++) {
+		RDD::VideoReferenceSlot reference_slot;
+		reference_slot.reference_index = i;
+		reference_slot.reference_texture = driver->texture_create_shared_from_slice(video_session.dpb_id, dpb_view_format, TEXTURE_SLICE_2D, i, 1, 0, 1);
+		reference_slot.reference_meta = nullptr;
+		video_session.reference_slots.push_back(reference_slot);
 	}
 
-	video_session.driver_id = driver->video_session_create(p_session_info.profile, dpb_views);
+	video_session.target_reference_slot = 0;
 
-	video_session.last_cmd_buffer = 0;
 	video_session.decode_pool = driver->command_pool_create(decode_queue_family, RDD::COMMAND_BUFFER_TYPE_PRIMARY);
 
-	// Choose a reasonable number
-	// TODO: be smarter about this
-	for (uint32_t i = 0; i < 20; i++) {
+	for (uint32_t i = 0; i < video_semaphore_count; i++) {
 		RDD::CommandBufferID cmd_buffer = driver->command_buffer_create(video_session.decode_pool);
 		video_session.cmd_buffers.push_back(cmd_buffer);
 	}
@@ -5901,60 +5919,34 @@ RID RenderingDevice::video_session_create(const VideoSessionInfo &p_session_info
 	video_session.semaphore_index = 0;
 	video_session.decode_wait_semaphore = RDD::SemaphoreID(nullptr);
 	video_session.compute_wait_semaphore = RDD::SemaphoreID(nullptr);
-	for (uint32_t i = 0; i < 20; i++) {
+	for (uint32_t i = 0; i < video_semaphore_count; i++) {
 		video_session.decode_signal_semaphores.push_back(driver->semaphore_create());
 		video_session.compute_signal_semaphores.push_back(driver->semaphore_create());
 	}
 
-	// Transition all textures into the correct layout
-	// TODO: do all of this within the draw graph
-	Vector<RDD::TextureBarrier> texture_barriers;
-
-	RDD::TextureBarrier dpb_tb;
-	dpb_tb.texture = video_session.dpb_id;
-	dpb_tb.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-	dpb_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
-	dpb_tb.src_access = RDD::BARRIER_ACCESS_NONE;
-	dpb_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	dpb_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	dpb_tb.subresources.mipmap_count = 1;
-	dpb_tb.subresources.layer_count = p_session_info.max_active_reference_pictures + 1;
-	texture_barriers.push_back(dpb_tb);
-
-	for (RID dst_texture_rid : p_session_info.dst_yuv_textures) {
-		Texture *dst_texture = texture_owner.get_or_null(dst_texture_rid);
-		if (dst_texture == nullptr) {
-			// TODO: do a stronger error?
-			continue;
-		}
-
-		// The dst images are going to cycle very fast between decode dst and shader read
-		dst_texture->draw_tracker = RDG::resource_tracker_create();
-		dst_texture->draw_tracker->texture_driver_id = dst_texture->driver_id;
-		dst_texture->draw_tracker->texture_size = Size2i(dst_texture->width, dst_texture->height);
-		dst_texture->draw_tracker->texture_subresources = dst_texture->barrier_range();
-		dst_texture->draw_tracker->usage = RDG::RESOURCE_USAGE_VIDEO_DECODE_DST;
-		dst_texture->draw_tracker->texture_usage = dst_texture->usage_flags;
-		dst_texture->draw_tracker->is_discardable = dst_texture->is_discardable;
-		dst_texture->draw_tracker->reference_count = 1;
-
-		RDD::TextureBarrier dst_barrier;
-		dst_barrier.texture = dst_texture->driver_id;
-		dst_barrier.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
-		dst_barrier.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
-		dst_barrier.src_access = RDD::BARRIER_ACCESS_NONE;
-		dst_barrier.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-		dst_barrier.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-		dst_barrier.subresources.mipmap_count = 1;
-		dst_barrier.subresources.layer_count = 1;
-		texture_barriers.push_back(dst_barrier);
-	}
-
-	RDD::CommandBufferID cmd_buffer = video_session.cmd_buffers[video_session.last_cmd_buffer];
-
+	video_session.last_cmd_buffer = 0;
 	driver->command_pool_reset(video_session.decode_pool);
-	driver->command_buffer_begin(cmd_buffer);
-	driver->command_pipeline_barrier(cmd_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, texture_barriers);
+
+	RDD::TextureBarrier dpb_barrier;
+	dpb_barrier.texture = video_session.dpb_id;
+	dpb_barrier.src_access = RDD::BARRIER_ACCESS_NONE;
+	dpb_barrier.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
+	dpb_barrier.prev_layout = RDD::TEXTURE_LAYOUT_UNDEFINED;
+	dpb_barrier.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DPB;
+	dpb_barrier.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	dpb_barrier.subresources.mipmap_count = 1;
+	dpb_barrier.subresources.layer_count = p_session_info.max_dpb_slots;
+
+	RDD::FenceID fence = driver->fence_create();
+
+	driver->command_buffer_begin(video_session.cmd_buffers[0]);
+	driver->command_pipeline_barrier(video_session.cmd_buffers[0], RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, dpb_barrier);
+	driver->command_buffer_end(video_session.cmd_buffers[0]);
+	driver->command_queue_execute_and_present(decode_queue, {}, video_session.cmd_buffers[0], {}, fence, {});
+
+	driver->fence_wait(fence);
+	driver->fence_free(fence);
+	driver->command_pool_reset(video_session.decode_pool);
 
 	RID id = video_session_owner.make_rid(video_session);
 #ifdef DEV_ENABLED
@@ -5979,66 +5971,54 @@ void RenderingDevice::video_session_add_av1_parameters(RID p_video_session, Vide
 	driver->video_session_add_av1_parameters(video_session->driver_id, p_sequence_header);
 }
 
-void RenderingDevice::video_session_begin(RID p_video_session) {
+void RenderingDevice::video_session_decode(RID p_video_session, RID p_src_buffer, RID p_dst_texture, void *p_video_header, bool p_reset) {
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
-	video_session->last_cmd_buffer = 0;
-	driver->command_pool_reset(video_session->decode_pool);
-}
-
-void RenderingDevice::video_session_decode(RID p_video_session, Span<uint8_t> p_video_data, RID p_dst_texture, void *p_video_header) {
-	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
-	ERR_FAIL_NULL(video_session);
-
-	//TODO: manage running out of cmd buffers
-	RDD::CommandBufferID cmd_buffer = video_session->cmd_buffers[video_session->last_cmd_buffer];
-	if (video_session->decode_wait_semaphore) {
-		driver->command_buffer_begin(cmd_buffer);
-	}
-
-	// TODO: replace with externally created storage buffer
-	BitField<RDD::BufferUsageBits> buffer_usage = {};
-	buffer_usage.set_flag(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT);
-	buffer_usage.set_flag(RDD::BUFFER_USAGE_TRANSFER_FROM_BIT);
-
-	RDD::BufferID src_buffer = driver->buffer_create(p_video_data.size() + 4, buffer_usage, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
-	uint8_t *write_ptr = driver->buffer_map(src_buffer);
-
-	if (video_session->video_profile.operation == VIDEO_OPERATION_DECODE_H264) {
-		uint8_t start_code[4] = { 0, 0, 0, 1 };
-		memcpy(write_ptr, start_code, sizeof(start_code));
-		memcpy(write_ptr + sizeof(start_code), p_video_data.begin(), p_video_data.size());
-	} else {
-		memcpy(write_ptr, p_video_data.begin(), p_video_data.size());
-	}
-
-	driver->buffer_unmap(src_buffer);
+	Buffer *src_buffer = storage_buffer_owner.get_or_null(p_src_buffer);
+	ERR_FAIL_NULL(src_buffer);
 
 	Texture *dst_texture = texture_owner.get_or_null(p_dst_texture);
 	ERR_FAIL_NULL(dst_texture);
 
-	// TODO: manage implicitly in draw graph
-	// Vulkan validation doesn't complain about this, is there any performance reason to do this?
-	RDD::TextureBarrier dst_decode_tb = {};
-	dst_decode_tb.texture = dst_texture->driver_id;
-	dst_decode_tb.prev_layout = RDD::TEXTURE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	dst_decode_tb.next_layout = RDD::TEXTURE_LAYOUT_VIDEO_DECODE_DST;
-	dst_decode_tb.src_access = RDD::BARRIER_ACCESS_NONE;
-	dst_decode_tb.dst_access = RDD::BARRIER_ACCESS_VIDEO_DECODE_WRITE;
-	dst_decode_tb.subresources.aspect = RDD::TEXTURE_ASPECT_COLOR_BIT;
-	dst_decode_tb.subresources.mipmap_count = 1;
-	dst_decode_tb.subresources.layer_count = 1;
-	///driver->command_pipeline_barrier(cmd_buffer, RDD::PIPELINE_STAGE_NONE, RDD::PIPELINE_STAGE_VIDEO_DECODE_BIT, {}, {}, dst_decode_tb);
+	if (p_reset) {
+		video_session->target_reference_slot = 0;
+		for (RDD::VideoReferenceSlot &reference_slot : video_session->reference_slots) {
+			reference_slot.reference_meta = nullptr;
+		}
+	}
+
+	//TODO: resize dynamically
+	RDD::CommandBufferID cmd_buffer = video_session->cmd_buffers[video_session->last_cmd_buffer];
+	driver->command_buffer_begin(cmd_buffer);
+
+	RDD::VideoReferenceSlot target_reference_slot = video_session->reference_slots[video_session->target_reference_slot];
+	Vector<RDD::VideoReferenceSlot> active_reference_slots;
+
+	for (int64_t i = 0; i < video_session->reference_slots.size(); i++) {
+		if (video_session->target_reference_slot == i) {
+			continue;
+		} else if (video_session->reference_slots[i].reference_meta == nullptr) {
+			continue;
+		} else {
+			active_reference_slots.push_back(video_session->reference_slots[i]);
+		}
+	}
 
 	// TODO: validate the video header
 	// TODO: timeline queries
-	// TODO: status resuly queries
-	driver->command_video_session_decode(cmd_buffer, video_session->driver_id, src_buffer, dst_texture->driver_id, p_video_header);
+	// TODO: status result queries
+	// TODO: image format layout transitions
+	driver->command_video_session_decode(cmd_buffer, video_session->driver_id, src_buffer->driver_id, dst_texture->driver_id, p_video_header, active_reference_slots, &target_reference_slot);
 	driver->command_buffer_end(cmd_buffer);
 
+	if (target_reference_slot.reference_meta != nullptr) {
+		video_session->reference_slots.set(video_session->target_reference_slot, target_reference_slot);
+		video_session->target_reference_slot = (video_session->target_reference_slot + 1) % video_session->reference_slots.size();
+	}
+
+	//TODO: don't leak fences
 	if (video_session->final_fence) {
-		//TODO: don't leak fences
 		//driver->fence_free(video_session->final_fence);
 	}
 
@@ -6068,11 +6048,10 @@ void RenderingDevice::video_session_decode(RID p_video_session, Span<uint8_t> p_
 	video_session->semaphore_index = (video_session->semaphore_index + 1) % video_session->decode_signal_semaphores.size();
 }
 
-void RenderingDevice::video_session_end(RID p_video_session) {
+void RenderingDevice::video_session_submit(RID p_video_session) {
 	VideoSession *video_session = video_session_owner.get_or_null(p_video_session);
 	ERR_FAIL_NULL(video_session);
 
-	// TODO: use query pools to measure performance
 	driver->fence_wait(video_session->final_fence);
 
 	video_session->last_cmd_buffer = 0;
@@ -6683,6 +6662,12 @@ void RenderingDevice::_free_internal(RID p_id) {
 	} else if (video_session_owner.owns(p_id)) {
 		VideoSession *video_session = video_session_owner.get_or_null(p_id);
 		driver->video_session_free(video_session->driver_id);
+		driver->texture_free(video_session->dpb_id);
+		driver->command_pool_free(video_session->decode_pool);
+		for (size_t i = 0; i < video_semaphore_count; i++) {
+			driver->semaphore_free(video_session->decode_signal_semaphores[i]);
+			driver->semaphore_free(video_session->compute_signal_semaphores[i]);
+		}
 		video_session_owner.free(p_id);
 	} else {
 #ifdef DEV_ENABLED

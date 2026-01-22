@@ -1398,7 +1398,7 @@ Error VideoStreamAV1::parse_container_metadata(const uint8_t *p_stream, uint64_t
 	return OK;
 }
 
-Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<size_t> *r_offsets, Vector<size_t> *r_sizes) {
+Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<ParsedFrame> *r_frames) {
 	src = p_stream;
 	shift = 0;
 
@@ -1406,19 +1406,19 @@ Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_si
 		const uint8_t *obu_start = src;
 		bool is_frame = parse_open_bitstream_unit();
 		if (is_frame) {
-			r_offsets->push_back(obu_start - p_stream);
-			r_sizes->push_back(src - obu_start);
+			//TODO
 		}
 	}
 
 	return OK;
 }
 
-RID VideoStreamAV1::_create_video_session(RD::VideoSessionInfo p_session_template) {
+RID VideoStreamAV1::_create_video_session(RD::VideoSessionProfile p_session_template) {
 	p_session_template.profile = video_profile;
-	p_session_template.width = av1_sequence_header.max_frame_width_minus_1 + 1;
-	p_session_template.height = av1_sequence_header.max_frame_height_minus_1 + 1;
-	p_session_template.max_active_reference_pictures = VIDEO_CODING_AV1_NUM_REF_FRAMES - 1;
+	p_session_template.max_width = av1_sequence_header.max_frame_width_minus_1 + 1;
+	p_session_template.max_height = av1_sequence_header.max_frame_height_minus_1 + 1;
+	p_session_template.max_dpb_slots = VIDEO_CODING_AV1_NUM_REF_FRAMES + 1;
+	p_session_template.max_active_references = VIDEO_CODING_AV1_NUM_REF_FRAMES - 1;
 
 	RID rid = local_device->video_session_create(p_session_template);
 	local_device->video_session_add_av1_parameters(rid, av1_sequence_header);
@@ -1444,7 +1444,7 @@ RID VideoStreamAV1::_create_texture(RD::TextureFormat p_texture_template, RD::Te
 	return local_device->texture_create(p_texture_template, texture_view);
 }
 
-void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
+uint8_t *VideoStreamAV1::queue_decode(Span<uint8_t> p_frame_data, uint64_t p_frame_size) {
 	src = p_frame_data.begin();
 	shift = 0;
 
@@ -1465,10 +1465,11 @@ void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
 	if (obu_has_size_field) {
 		read_leb128(); // obu_size
 	} else {
-		ERR_FAIL_MSG("Unknown OBU size, refusing to decode");
+		ERR_FAIL_V_MSG(nullptr, "Unknown OBU size, refusing to decode");
 	}
 
 	if (obu_type == VIDEO_CODING_AV1_OBU_TYPE_FRAME) {
+		RID src_buffer = local_device->storage_buffer_create(67);
 		RID yuv_texture = yuv_pool[decode_yuv_index];
 		RID rgba_texture = rgba_pool[decode_rgba_index];
 
@@ -1476,9 +1477,8 @@ void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
 		frame_header.tile_start = src - p_frame_data.begin();
 		frame_header.tile_size = p_frame_data.size() - (src - p_frame_data.begin());
 
-		local_device->video_session_decode(video_session, p_frame_data, yuv_texture, &frame_header);
+		local_device->video_session_decode(video_session, src_buffer, yuv_texture, &frame_header, false);
 		_yuv_to_rgba(yuv_texture, rgba_texture);
-		local_device->video_session_end(video_session);
 
 		for (size_t i = 0; i < VIDEO_CODING_AV1_NUM_REF_FRAMES; i++) {
 			if ((frame_header.refresh_frame_flags & (1 << i)) > 0) {
@@ -1503,6 +1503,12 @@ void VideoStreamAV1::decode_frame(Span<uint8_t> p_frame_data) {
 		present_queue.push_back(previous_texture);
 		print_line(vformat("Show previous [%d]", frame_header.frame_to_show_map_idx));
 	}
+
+	// TODO
+	return nullptr;
+}
+
+void VideoStreamAV1::submit_decode() {
 }
 
 Vector<uint8_t> VideoStreamAV1::present_frame() {
