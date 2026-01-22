@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_document_extension_physics.h                                     */
+/*  gltf_physics_material.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,24 +30,55 @@
 
 #pragma once
 
-#include "../gltf_document_extension.h"
-#include "gltf_physics_body.h"
-#include "gltf_physics_material.h"
-#include "gltf_physics_shape.h"
+#include "scene/resources/physics_material.h"
 
-class GLTFDocumentExtensionPhysics : public GLTFDocumentExtension {
-	GDCLASS(GLTFDocumentExtensionPhysics, GLTFDocumentExtension);
+// GLTFPhysicsMaterial is an intermediary between Godot's PhysicsMaterial
+// and the OMI_physics_body extension's physicsMaterial property.
+// https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_body
+
+class GLTFPhysicsMaterial : public Resource {
+	GDCLASS(GLTFPhysicsMaterial, Resource)
 
 public:
-	// Import process.
-	Error import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) override;
-	Vector<String> get_supported_extensions() override;
-	Error parse_node_extensions(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, const Dictionary &p_extensions) override;
-	Ref<GLTFObjectModelProperty> import_object_model_property(Ref<GLTFState> p_state, const PackedStringArray &p_split_json_pointer, const TypedArray<NodePath> &p_partial_paths) override;
-	Node3D *generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) override;
-	// Export process.
-	void convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node) override;
-	Error export_preserialize(Ref<GLTFState> p_state) override;
-	Ref<GLTFObjectModelProperty> export_object_model_property(Ref<GLTFState> p_state, const NodePath &p_node_path, const Node *p_godot_node, GLTFNodeIndex p_gltf_node_index, const Object *p_target_object, int p_target_depth) override;
-	Error export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_node_json, Node *p_scene_node) override;
+	enum CombineMode {
+		COMBINE_AVERAGE,
+		COMBINE_MINIMUM,
+		COMBINE_MAXIMUM,
+		COMBINE_MULTIPLY,
+	};
+
+protected:
+	static void _bind_methods();
+
+private:
+	real_t static_friction = 0.6;
+	real_t dynamic_friction = 0.6;
+	real_t restitution = 0.0;
+	CombineMode friction_combine = COMBINE_AVERAGE;
+	CombineMode restitution_combine = COMBINE_AVERAGE;
+
+public:
+	real_t get_static_friction() const;
+	void set_static_friction(real_t p_static_friction);
+
+	real_t get_dynamic_friction() const;
+	void set_dynamic_friction(real_t p_dynamic_friction);
+
+	real_t get_restitution() const;
+	void set_restitution(real_t p_restitution);
+
+	CombineMode get_friction_combine() const;
+	void set_friction_combine(CombineMode p_friction_combine);
+
+	CombineMode get_restitution_combine() const;
+	void set_restitution_combine(CombineMode p_restitution_combine);
+
+	static Ref<GLTFPhysicsMaterial> from_resource(const Ref<PhysicsMaterial> &p_material);
+	Ref<PhysicsMaterial> to_resource() const;
+
+	static Ref<GLTFPhysicsMaterial> from_dictionary(const Dictionary &p_dictionary);
+	Dictionary to_dictionary() const;
+
+	bool operator==(const GLTFPhysicsMaterial &p_other) const;
+	bool operator!=(const GLTFPhysicsMaterial &p_other) const;
 };
