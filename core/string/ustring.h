@@ -590,12 +590,53 @@ public:
 		return string;
 	}
 
-	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
-	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
-	static uint32_t hash(const wchar_t *p_cstr, int p_len); /* hash the string */
-	static uint32_t hash(const wchar_t *p_cstr); /* hash the string */
-	static uint32_t hash(const char *p_cstr, int p_len); /* hash the string */
-	static uint32_t hash(const char *p_cstr); /* hash the string */
+	static constexpr uint32_t hash(const char32_t *p_cstr, int p_len) {
+		uint32_t hashv = 5381;
+		for (int i = 0; i < p_len; i++) {
+			hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+		}
+		return hashv;
+	}
+
+	static constexpr uint32_t hash(const char32_t *p_cstr) {
+		uint32_t hashv = 5381;
+		while (*p_cstr) {
+			hashv = ((hashv << 5) + hashv) + *p_cstr++; /* hash * 33 + c */
+		}
+		return hashv;
+	}
+
+	static constexpr uint32_t hash(const wchar_t *p_cstr, int p_len) {
+		uint32_t hashv = 5381;
+		for (int i = 0; i < p_len; i++) {
+			hashv = ((hashv << 5) + hashv) + static_cast<std::conditional_t<sizeof(wchar_t) == 2, uint16_t, uint32_t>>(p_cstr[i]); /* hash * 33 + c */
+		}
+		return hashv;
+	}
+
+	static constexpr uint32_t hash(const wchar_t *p_cstr) {
+		uint32_t hashv = 5381;
+		while (*p_cstr) {
+			hashv = ((hashv << 5) + hashv) + static_cast<std::conditional_t<sizeof(wchar_t) == 2, uint16_t, uint32_t>>(*p_cstr++); /* hash * 33 + c */
+		}
+		return hashv;
+	}
+
+	static constexpr uint32_t hash(const char *p_cstr, int p_len) {
+		uint32_t hashv = 5381;
+		for (int i = 0; i < p_len; i++) {
+			hashv = ((hashv << 5) + hashv) + static_cast<uint8_t>(p_cstr[i]); /* hash * 33 + c */
+		}
+		return hashv;
+	}
+
+	static constexpr uint32_t hash(const char *p_cstr) {
+		uint32_t hashv = 5381;
+		while (*p_cstr) {
+			hashv = ((hashv << 5) + hashv) + static_cast<uint8_t>(*p_cstr++); /* hash * 33 + c */
+		}
+		return hashv;
+	}
 	uint32_t hash() const; /* hash the string */
 	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;

@@ -164,6 +164,7 @@ public:
 		return *this;
 	}
 	StringName(const char *p_name, bool p_static = false);
+	StringName(const char *p_name, uint32_t p_hash, bool p_static = false);
 	StringName(const StringName &p_name);
 	StringName(StringName &&p_name) {
 		_data = p_name._data;
@@ -209,4 +210,4 @@ bool operator!=(const char *p_name, const StringName &p_string_name);
  * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
  */
 
-#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = StringName(m_arg, true); return sname; })()
+#define SNAME(m_arg) ([]() -> const StringName & { static const uint32_t hash = String::hash(m_arg); static StringName sname = StringName(m_arg, hash, true); return sname; })()
