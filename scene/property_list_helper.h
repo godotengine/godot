@@ -41,7 +41,7 @@ class PropertyListHelper {
 		MethodBind *getter = nullptr;
 	};
 
-	static Vector<PropertyListHelper *> base_helpers;
+	static HashMap<StringName, Vector<PropertyListHelper *>> base_helpers;
 
 	String prefix;
 	MethodBind *array_length_getter = nullptr;
@@ -58,7 +58,9 @@ class PropertyListHelper {
 
 public:
 	static void clear_base_helpers();
-	static void register_base_helper(PropertyListHelper *p_helper);
+	static void register_base_helper(const StringName &p_class_name, PropertyListHelper *p_helper);
+
+	static Vector<PropertyListHelper *> get_helpers_for_class(const StringName &p_class_name);
 
 	void set_prefix(const String &p_prefix);
 	template <typename G>
@@ -93,6 +95,12 @@ public:
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
+
+#ifdef TOOLS_ENABLED
+	void documentation_get_property_list(List<PropertyInfo> *r_list) const;
+	bool documentation_has_property(const String &p_property) const;
+	Variant documentation_get_default_value(const String &p_property) const;
+#endif
 
 	void enable_out_of_bounds_assign() { allow_oob_assign = true; }
 
