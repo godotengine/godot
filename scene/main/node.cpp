@@ -1701,6 +1701,8 @@ void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, I
 
 	ERR_THREAD_GUARD
 	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
+	ERR_FAIL_COND_MSG(Object::cast_to<PackedScene>((Object *)p_child), vformat("Can't add a PackedScene as a child. Did you forget instantiate()?"));
+	ERR_FAIL_COND_MSG(!Object::cast_to<Node>((Object *)p_child), vformat("Can't add a %s as a child.", p_child->get_class()));
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
 #ifdef DEBUG_ENABLED
