@@ -4820,7 +4820,7 @@ void EditorInspector::update_tree() {
 			bool found = false;
 
 			// Small hack for theme_overrides. They are listed under Control, but come from another class.
-			if (classname == "Control" && p.name.begins_with("theme_override_")) {
+			if ((classname == "Control" || classname == "Window") && p.name.begins_with("theme_override_")) {
 				classname = get_edited_object()->get_class();
 			}
 
