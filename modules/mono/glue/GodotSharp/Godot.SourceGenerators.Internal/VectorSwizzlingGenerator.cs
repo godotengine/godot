@@ -69,7 +69,7 @@ namespace Godot.SourceGenerators.Internal
             {
                 for (int j = 0; j < numMembers; j++)
                 {
-                    permutations.Add(new[]{ _members[i], _members[j] });
+                    permutations.Add(new[] { _members[i], _members[j] });
                 }
             }
             for (int i = 0; i < numMembers; i++)
