@@ -305,6 +305,9 @@ public:
 		// NOTE: The preferred buffer scale is currently only dynamically calculated.
 		// It can be accessed by calling `window_state_get_preferred_buffer_scale`.
 
+		// NOTE: Popups manually inherit the parent's scale on creation. Make sure to
+		// sync them up with any new fields.
+
 		// Override used by the fractional scale add-on object. If less or equal to 0
 		// (default) then the normal output-based scale is used instead.
 		double fractional_scale = 0;

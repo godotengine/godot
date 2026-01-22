@@ -1197,7 +1197,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.", (size_t)wl_output));
 
 	ws->wl_outputs.insert(wl_output);
 
@@ -3912,6 +3912,12 @@ void WaylandThread::window_create_popup(DisplayServer::WindowID p_window_id, Dis
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
+
+	// We manually scaled based on the parent. If we don't set the relevant fields,
+	// the resizing routines will get confused and scale once more.
+	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
+	ws.fractional_scale = parent.fractional_scale;
+	ws.buffer_scale = parent.buffer_scale;
 
 	ws.id = p_window_id;
 	ws.parent_id = p_parent_id;
