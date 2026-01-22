@@ -119,6 +119,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFObjectModelProperty);
 #ifndef PHYSICS_3D_DISABLED
 		GDREGISTER_CLASS(GLTFPhysicsBody);
+		GDREGISTER_CLASS(GLTFPhysicsMaterial);
 		GDREGISTER_CLASS(GLTFPhysicsShape);
 #endif // PHYSICS_3D_DISABLED
 		GDREGISTER_CLASS(GLTFSkeleton);

@@ -82,3 +82,5 @@ public:
 	bool operator==(const GLTFPhysicsMaterial &p_other) const;
 	bool operator!=(const GLTFPhysicsMaterial &p_other) const;
 };
+
+VARIANT_ENUM_CAST(GLTFPhysicsMaterial::CombineMode);
