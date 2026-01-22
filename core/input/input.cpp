@@ -316,24 +316,14 @@ bool Input::is_anything_pressed() const {
 	return false;
 }
 
-bool Input::is_anything_pressed_except_mouse() const {
+bool Input::is_any_key_pressed() const {
 	_THREAD_SAFE_METHOD_
 
 	if (disable_input) {
 		return false;
 	}
 
-	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
-		return true;
-	}
-
-	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
-		if (E.value.cache.pressed) {
-			return true;
-		}
-	}
-
-	return false;
+	return !keys_pressed.is_empty();
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
