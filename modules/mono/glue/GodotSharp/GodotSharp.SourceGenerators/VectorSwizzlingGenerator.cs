@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Godot.SourceGenerators.Internal
+namespace GodotSharp.SourceGenerators
 {
     [Generator]
     internal class VectorSwizzlingGenerator : ISourceGenerator
@@ -55,7 +55,7 @@ namespace Godot.SourceGenerators.Internal
             }
             sb.AppendLine("\t}");
             sb.AppendLine("}");
-            context.AddSource($"Vector{d}{suffix}.Swizzling.generator", SourceText.From(sb.ToString(), Encoding.UTF8));
+            context.AddSource($"Vector{d}{suffix}.Swizzling.generated", SourceText.From(sb.ToString(), Encoding.UTF8));
         }
 
         public void Initialize(GeneratorInitializationContext context)
