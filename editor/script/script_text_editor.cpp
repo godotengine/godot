@@ -2289,6 +2289,14 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 		}
 	}
 
+	if (!ClassDB::is_class_exposed(class_name)) {
+		if (ClassDB::is_parent_class(class_name, "Resource")) {
+			class_name = "Resource";
+		} else {
+			class_name = "Variant";
+		}
+	}
+
 	for (ObjectID obj_id : p_script_instance_obj_ids) {
 		pending_dragged_exports.push_back(DraggedExport{ obj_id, variable_name, p_resource, class_name });
 	}
