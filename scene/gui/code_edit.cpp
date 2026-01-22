@@ -3050,7 +3050,7 @@ void CodeEdit::_bind_methods() {
 
 	/* Code Completion */
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_completion_style, "completion");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_icon_separation, "h_separation", "ItemList");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_icon_separation, "h_separation");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_width, "completion_max_width");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, CodeEdit, code_completion_max_lines, "completion_lines");
@@ -3062,8 +3062,8 @@ void CodeEdit::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_completion_existing_color, "completion_existing_color");
 
 	/* Code hint */
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_hint_style, "panel", "TooltipPanel");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, CodeEdit, code_hint_color, "font_color", "TooltipLabel");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CodeEdit, code_hint_style, "hint");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, CodeEdit, code_hint_color, "hint_color");
 
 	/* Line length guideline */
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CodeEdit, line_length_guideline_color);

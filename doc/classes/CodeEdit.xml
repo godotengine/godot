@@ -710,6 +710,9 @@
 		<theme_item name="folded_code_region_color" data_type="color" type="Color" default="Color(0.68, 0.46, 0.77, 0.2)">
 			[Color] of background line highlight for folded code region.
 		</theme_item>
+		<theme_item name="hint_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
+			Sets font [Color] of the code hint popup.
+		</theme_item>
 		<theme_item name="line_length_guideline_color" data_type="color" type="Color" default="Color(0.3, 0.5, 0.8, 0.1)">
 			[Color] of the main line length guideline, secondary guidelines will have 50% alpha applied.
 		</theme_item>
@@ -724,6 +727,9 @@
 		</theme_item>
 		<theme_item name="completion_scroll_width" data_type="constant" type="int" default="6">
 			Width of the scrollbar in the code completion popup.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="4">
+			The horizontal spacing between icons and option items in the code completion popup.
 		</theme_item>
 		<theme_item name="bookmark" data_type="icon" type="Texture2D">
 			Sets a custom [Texture2D] to draw in the bookmark gutter for bookmarked lines.
@@ -754,6 +760,9 @@
 		</theme_item>
 		<theme_item name="completion" data_type="style" type="StyleBox">
 			[StyleBox] for the code completion popup.
+		</theme_item>
+		<theme_item name="hint" data_type="style" type="StyleBox">
+			[StyleBox] for the code hint popup.
 		</theme_item>
 	</theme_items>
 </class>

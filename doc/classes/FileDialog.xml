@@ -387,6 +387,18 @@
 		<theme_item name="folder_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the folder icon.
 		</theme_item>
+		<theme_item name="icon_focus_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon modulate [Color] used when the icon buttons are focused.
+		</theme_item>
+		<theme_item name="icon_hover_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon modulate [Color] used when the icon buttons are being hovered.
+		</theme_item>
+		<theme_item name="icon_normal_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Default icon modulate [Color] of the icon buttons.
+		</theme_item>
+		<theme_item name="icon_pressed_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Icon modulate [Color] used when the icon buttons are being pressed
+		</theme_item>
 		<theme_item name="thumbnail_size" data_type="constant" type="int" default="64">
 			The size of thumbnail icons when [constant DISPLAY_THUMBNAILS] is enabled.
 		</theme_item>
