@@ -128,6 +128,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	static Ref<AudioStreamWAV> _load_from_file_access(const Ref<FileAccess> &p_file, const Dictionary &p_options);
 
 public:
 	static Ref<AudioStreamWAV> load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
