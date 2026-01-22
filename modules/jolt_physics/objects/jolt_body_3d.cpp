@@ -180,23 +180,19 @@ void JoltBody3D::_integrate_forces(float p_step, JPH::Body &p_jolt_body) {
 	if (!custom_integrator) {
 		JPH::MotionProperties &motion_properties = *p_jolt_body.GetMotionPropertiesUnchecked();
 
-		JPH::Vec3 linear_velocity = motion_properties.GetLinearVelocity();
-		JPH::Vec3 angular_velocity = motion_properties.GetAngularVelocity();
-
 		// Jolt applies damping differently from Godot Physics, where Godot Physics applies damping before integrating
 		// forces whereas Jolt does it after integrating forces. The way Godot Physics does it seems to yield more
 		// consistent results across different update frequencies when using high (>1) damping values, so we apply the
 		// damping ourselves instead, before any force integration happens.
-
+		JPH::Vec3 linear_velocity = motion_properties.GetLinearVelocity();
 		linear_velocity *= MAX(1.0f - total_linear_damp * p_step, 0.0f);
+		motion_properties.SetLinearVelocity(linear_velocity);
+
+		JPH::Vec3 angular_velocity = motion_properties.GetAngularVelocity();
 		angular_velocity *= MAX(1.0f - total_angular_damp * p_step, 0.0f);
+		motion_properties.SetAngularVelocity(angular_velocity);
 
-		linear_velocity += to_jolt(gravity) * p_step;
-
-		motion_properties.SetLinearVelocityClamped(linear_velocity);
-		motion_properties.SetAngularVelocityClamped(angular_velocity);
-
-		p_jolt_body.AddForce(to_jolt(constant_force));
+		p_jolt_body.AddForce(to_jolt(gravity / motion_properties.GetInverseMass() + constant_force));
 		p_jolt_body.AddTorque(to_jolt(constant_torque));
 	}
 }
