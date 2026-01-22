@@ -2672,7 +2672,6 @@ double String::to_float() const {
 	return built_in_strtod<char32_t>(get_data());
 }
 
-
 uint32_t String::hash() const {
 	/* simple djb2 hashing */
 
