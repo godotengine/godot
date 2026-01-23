@@ -76,10 +76,10 @@ void EditorCanvasItemGizmo::clear() {
 }
 
 void EditorCanvasItemGizmo::redraw() {
+	ERR_FAIL_NULL(gizmo_plugin);
 	clear();
 
 	if (!GDVIRTUAL_CALL(_redraw)) {
-		ERR_FAIL_NULL(gizmo_plugin);
 		gizmo_plugin->redraw(this);
 	}
 
@@ -87,175 +87,208 @@ void EditorCanvasItemGizmo::redraw() {
 		CanvasItemEditor::get_singleton()->update_transform_gizmo();
 	}
 }
-bool EditorCanvasItemGizmo::has_boundary() const {
-	bool ret = false;
-	if (GDVIRTUAL_CALL(_has_boundary, ret)) {
-		return ret;
-	}
-
+bool EditorCanvasItemGizmo::_edit_use_rect() const {
 	ERR_FAIL_NULL_V(gizmo_plugin, false);
-	return gizmo_plugin->has_boundary(this);
-}
-
-Rect2 EditorCanvasItemGizmo::get_boundary() const {
-	Rect2 ret;
-	if (GDVIRTUAL_CALL(_get_boundary, ret)) {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_edit_use_rect, ret)) {
 		return ret;
 	}
 
-	return _get_boundary();
+	return gizmo_plugin->_edit_use_rect(this);
 }
 
-Rect2 EditorCanvasItemGizmo::_get_boundary() const {
+Rect2 EditorCanvasItemGizmo::_edit_get_rect() const {
 	ERR_FAIL_NULL_V(gizmo_plugin, Rect2());
-	return gizmo_plugin->get_boundary(this);
+	Rect2 ret;
+	if (GDVIRTUAL_CALL(_edit_get_rect, ret)) {
+		return ret;
+	}
+	return gizmo_plugin->_edit_get_rect(this);
 }
 
-void EditorCanvasItemGizmo::set_boundary(const Rect2 &p_rect) {
-	if (GDVIRTUAL_CALL(_set_boundary, p_rect)) {
+void EditorCanvasItemGizmo::_edit_set_rect(const Rect2 &p_rect) {
+	ERR_FAIL_NULL(gizmo_plugin);
+	if (GDVIRTUAL_CALL(_edit_set_rect, p_rect)) {
 		return;
 	}
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->set_boundary(this, p_rect);
+	gizmo_plugin->_edit_set_rect(this, p_rect);
 }
 
-bool EditorCanvasItemGizmo::has_pivot() const {
+bool EditorCanvasItemGizmo::_has_pivot() const {
+	ERR_FAIL_NULL_V(gizmo_plugin, false);
 	bool ret = false;
 	if (GDVIRTUAL_CALL(_has_pivot, ret)) {
 		return ret;
 	}
-	ERR_FAIL_NULL_V(gizmo_plugin, false);
-	return gizmo_plugin->has_pivot(this);
+	return gizmo_plugin->_has_pivot(this);
 }
 
-Vector2 EditorCanvasItemGizmo::get_pivot() const {
+Vector2 EditorCanvasItemGizmo::_get_pivot() const {
+	ERR_FAIL_NULL_V(gizmo_plugin, Vector2());
 	Vector2 ret;
 	if (GDVIRTUAL_CALL(_get_pivot, ret)) {
 		return ret;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, Vector2());
-	return gizmo_plugin->get_pivot(this);
+	return gizmo_plugin->_get_pivot(this);
 }
 
-void EditorCanvasItemGizmo::set_pivot(const Vector2 &p_point) {
+void EditorCanvasItemGizmo::_set_pivot(const Vector2 &p_point) {
+	ERR_FAIL_NULL(gizmo_plugin);
 	if (GDVIRTUAL_CALL(_set_pivot, p_point)) {
 		return;
 	}
 
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->set_pivot(this, p_point);
+	gizmo_plugin->_set_pivot(this, p_point);
 }
 
-String EditorCanvasItemGizmo::get_handle_name(int p_id, bool p_secondary) const {
+Dictionary EditorCanvasItemGizmo::_edit_get_state() const {
+	ERR_FAIL_NULL_V(gizmo_plugin, Dictionary());
+
+	// because the gdscript method has no way of calling super back into c++ code, we
+	// implicitly merge what the gdscript implementation has returned with the returns from
+	// the c++ implementation, letting the c++ implementation win in case of conflicts.
+	// TODO: GIZMOS: docs - this needs to be in the docs as its non-obvious behavior
+	Dictionary ret;
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_get_state)) {
+		GDVIRTUAL_CALL(_edit_get_state, ret);
+	}
+
+	Dictionary base = gizmo_plugin->_edit_get_state(this);
+	if (ret.is_empty()) {
+		// skip merge logic, no point in wasting the CPU cycles for that
+		return base;
+	}
+
+	// make a copy (otherwise gdscript code might be surprised if the dictionary is magically changed)
+	return ret.merged(base, true);
+}
+
+void EditorCanvasItemGizmo::_edit_set_state(const Dictionary &p_state) {
+	ERR_FAIL_NULL(gizmo_plugin);
+
+	// this is a bit different, because gdscript methods cannot call super into c++ code, so
+	// when the method is overridden, we still call the gizmo plugin afterward (which in turn calls the CanvasItem)
+	// to ensure the canvas item also gets its state restored.
+	// TODO: GIZMOS: docs - should probably state in the docs that the dictionary may contain additional items.
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_state)) {
+		GDVIRTUAL_CALL(_edit_set_state, p_state);
+	}
+
+	gizmo_plugin->_edit_set_state(this, p_state);
+}
+
+String EditorCanvasItemGizmo::_get_handle_name(int p_id, bool p_secondary) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, "");
 	String ret;
 	if (GDVIRTUAL_CALL(_get_handle_name, p_id, p_secondary, ret)) {
 		return ret;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, "");
-	return gizmo_plugin->get_handle_name(this, p_id, p_secondary);
+	return gizmo_plugin->_get_handle_name(this, p_id, p_secondary);
 }
 
-bool EditorCanvasItemGizmo::is_handle_highlighted(int p_id, bool p_secondary) const {
+bool EditorCanvasItemGizmo::_is_handle_highlighted(int p_id, bool p_secondary) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, false);
 	bool success = false;
 	if (GDVIRTUAL_CALL(_is_handle_highlighted, p_id, p_secondary, success)) {
 		return success;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, false);
-	return gizmo_plugin->is_handle_highlighted(this, p_id, p_secondary);
+	return gizmo_plugin->_is_handle_highlighted(this, p_id, p_secondary);
 }
 
-Variant EditorCanvasItemGizmo::get_handle_value(int p_id, bool p_secondary) const {
+Variant EditorCanvasItemGizmo::_get_handle_value(int p_id, bool p_secondary) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, Variant());
 	Variant value;
 	if (GDVIRTUAL_CALL(_get_handle_value, p_id, p_secondary, value)) {
 		return value;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, Variant());
-	return gizmo_plugin->get_handle_value(this, p_id, p_secondary);
+	return gizmo_plugin->_get_handle_value(this, p_id, p_secondary);
 }
 
-void EditorCanvasItemGizmo::begin_handle_action(int p_id, bool p_secondary) {
+void EditorCanvasItemGizmo::_begin_handle_action(int p_id, bool p_secondary) {
+	ERR_FAIL_NULL(gizmo_plugin);
 	if (GDVIRTUAL_CALL(_begin_handle_action, p_id, p_secondary)) {
 		return;
 	}
 
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->begin_handle_action(this, p_id, p_secondary);
+	gizmo_plugin->_begin_handle_action(this, p_id, p_secondary);
 }
 
-void EditorCanvasItemGizmo::set_handle(int p_id, bool p_secondary, const Point2 &p_point) {
+void EditorCanvasItemGizmo::_set_handle(int p_id, bool p_secondary, const Point2 &p_point) {
+	ERR_FAIL_NULL(gizmo_plugin);
 	if (GDVIRTUAL_CALL(_set_handle, p_id, p_secondary, p_point)) {
 		return;
 	}
 
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->set_handle(this, p_id, p_secondary, p_point);
+	gizmo_plugin->_set_handle(this, p_id, p_secondary, p_point);
 }
 
-void EditorCanvasItemGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+void EditorCanvasItemGizmo::_commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+	ERR_FAIL_NULL(gizmo_plugin);
 	if (GDVIRTUAL_CALL(_commit_handle, p_id, p_secondary, p_restore, p_cancel)) {
 		return;
 	}
 
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->commit_handle(this, p_id, p_secondary, p_restore, p_cancel);
+	gizmo_plugin->_commit_handle(this, p_id, p_secondary, p_restore, p_cancel);
 }
 
-int EditorCanvasItemGizmo::subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const {
+int EditorCanvasItemGizmo::_subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, -1);
 	int id = -1;
 	if (GDVIRTUAL_CALL(_subgizmos_intersect_point, p_point, p_max_distance, id)) {
 		return id;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, -1);
-	return gizmo_plugin->subgizmos_intersect_point(this, p_point, p_max_distance);
+	return gizmo_plugin->_subgizmos_intersect_point(this, p_point, p_max_distance);
 }
 
-Vector<int> EditorCanvasItemGizmo::subgizmos_intersect_rect(const Rect2 &p_rect) const {
+Vector<int> EditorCanvasItemGizmo::_subgizmos_intersect_rect(const Rect2 &p_rect) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, Vector<int>());
 	Vector<int> ret;
 	if (GDVIRTUAL_CALL(_subgizmos_intersect_rect, p_rect, ret)) {
 		return ret;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, Vector<int>());
-	return gizmo_plugin->subgizmos_intersect_rect(this, p_rect);
+	return gizmo_plugin->_subgizmos_intersect_rect(this, p_rect);
 }
 
-Transform2D EditorCanvasItemGizmo::get_subgizmo_transform(int p_id) const {
+Transform2D EditorCanvasItemGizmo::_get_subgizmo_transform(int p_id) const {
+	ERR_FAIL_NULL_V(gizmo_plugin, Transform2D());
 	Transform2D ret;
 	if (GDVIRTUAL_CALL(_get_subgizmo_transform, p_id, ret)) {
 		return ret;
 	}
 
-	ERR_FAIL_NULL_V(gizmo_plugin, Transform2D());
-	return gizmo_plugin->get_subgizmo_transform(this, p_id);
+	return gizmo_plugin->_get_subgizmo_transform(this, p_id);
 }
 
-void EditorCanvasItemGizmo::set_subgizmo_transform(int p_id, const Transform2D &p_transform) {
+void EditorCanvasItemGizmo::_set_subgizmo_transform(int p_id, const Transform2D &p_transform) {
+	ERR_FAIL_NULL(gizmo_plugin);
 	if (GDVIRTUAL_CALL(_set_subgizmo_transform, p_id, p_transform)) {
 		return;
 	}
 
-	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->set_subgizmo_transform(this, p_id, p_transform);
+	gizmo_plugin->_set_subgizmo_transform(this, p_id, p_transform);
 }
 
-void EditorCanvasItemGizmo::commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_restore, bool p_cancel) {
-	TypedArray<Transform2D> restore;
-	restore.resize(p_restore.size());
-	for (int i = 0; i < p_restore.size(); i++) {
-		restore[i] = p_restore[i];
-	}
-
-	if (GDVIRTUAL_CALL(_commit_subgizmos, p_ids, restore, p_cancel)) {
-		return;
-	}
-
+void EditorCanvasItemGizmo::_commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_restore, bool p_cancel) {
 	ERR_FAIL_NULL(gizmo_plugin);
-	gizmo_plugin->commit_subgizmos(this, p_ids, p_restore, p_cancel);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_commit_subgizmos)) {
+		TypedArray<Transform2D> restore;
+		restore.resize(p_restore.size());
+		for (int i = 0; i < p_restore.size(); i++) {
+			restore[i] = p_restore[i];
+		}
+
+		if (GDVIRTUAL_CALL(_commit_subgizmos, p_ids, restore, p_cancel)) {
+			return;
+		}
+	}
+
+	gizmo_plugin->_commit_subgizmos(this, p_ids, p_restore, p_cancel);
 }
 
 void EditorCanvasItemGizmo::set_canvas_item(CanvasItem *p_canvas_item) {
@@ -263,12 +296,12 @@ void EditorCanvasItemGizmo::set_canvas_item(CanvasItem *p_canvas_item) {
 	canvas_item = p_canvas_item;
 }
 
-void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p_hidden) {
+void EditorCanvasItemGizmo::Instance::create_instance(CanvasItem *p_base, bool p_visible) {
 	ERR_FAIL_NULL(p_base);
 
 	instance = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->canvas_item_set_parent(instance, p_base->get_canvas_item());
-	int layer = p_hidden ? 0 : (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER);
+	int layer = p_visible ? (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER) : 0;
 	RS::get_singleton()->canvas_item_set_visibility_layer(instance, layer);
 }
 
@@ -276,7 +309,7 @@ void EditorCanvasItemGizmo::add_circle(const Vector2 &p_pos, float p_radius, con
 	ERR_FAIL_NULL(canvas_item);
 
 	Instance ins;
-	ins.create_instance(canvas_item, hidden);
+	ins.create_instance(canvas_item, visible);
 	RS::get_singleton()->canvas_item_add_circle(ins.instance, p_pos, p_radius, p_color);
 	instances.push_back(ins);
 }
@@ -291,7 +324,7 @@ void EditorCanvasItemGizmo::add_polygon(const Vector<Vector2> &p_polygon, const 
 	}
 
 	Instance ins;
-	ins.create_instance(canvas_item, hidden);
+	ins.create_instance(canvas_item, visible);
 	RS::get_singleton()->canvas_item_add_polygon(ins.instance, p_polygon, colors);
 	instances.push_back(ins);
 }
@@ -306,7 +339,7 @@ void EditorCanvasItemGizmo::add_polyline(const Vector<Vector2> &p_points, const 
 	}
 
 	Instance ins;
-	ins.create_instance(canvas_item, hidden);
+	ins.create_instance(canvas_item, visible);
 	RS::get_singleton()->canvas_item_add_polyline(ins.instance, p_points, colors);
 	instances.push_back(ins);
 }
@@ -315,7 +348,7 @@ void EditorCanvasItemGizmo::add_rect(const Rect2 &p_rect, const Color &p_color) 
 	ERR_FAIL_NULL(canvas_item);
 
 	Instance ins;
-	ins.create_instance(canvas_item, hidden);
+	ins.create_instance(canvas_item, visible);
 	RS::get_singleton()->canvas_item_add_rect(ins.instance, p_rect, p_color);
 	instances.push_back(ins);
 }
@@ -338,7 +371,7 @@ void EditorCanvasItemGizmo::add_collision_polygon(const Vector<Vector2> &p_polyg
 }
 
 void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Texture2D> p_texture, const Vector<int> &p_ids, bool p_secondary) {
-	if (!is_selected() || !is_editable()) {
+	if (!_is_selected() || !is_editable()) {
 		return;
 	}
 
@@ -377,11 +410,11 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 		int id = p_ids.is_empty() ? i : p_ids[i];
 
 		Instance ins;
-		ins.create_instance(viewport, hidden);
+		ins.create_instance(viewport, visible);
 		instances.push_back(ins);
 
 		Color modulate = Color(1, 1, 1, 1.0);
-		if (is_handle_highlighted(id, p_secondary)) {
+		if (_is_handle_highlighted(id, p_secondary)) {
 			modulate = Color(0, 0, 1, 0.9);
 		}
 
@@ -409,7 +442,7 @@ bool EditorCanvasItemGizmo::intersect_rect(const Rect2 &p_rect) const {
 	ERR_FAIL_NULL_V(canvas_item, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
+	if (!visible && !gizmo_plugin->is_selectable_when_hidden()) {
 		return false;
 	}
 
@@ -452,7 +485,7 @@ void EditorCanvasItemGizmo::handles_intersect_point(const Point2 &p_point, real_
 	ERR_FAIL_NULL(canvas_item);
 	ERR_FAIL_COND(!valid);
 
-	if (hidden) {
+	if (!visible) {
 		return;
 	}
 
@@ -493,7 +526,7 @@ bool EditorCanvasItemGizmo::intersect_point(const Point2 &p_point, const real_t 
 	ERR_FAIL_NULL_V(canvas_item, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
+	if (!visible && !gizmo_plugin->is_selectable_when_hidden()) {
 		return false;
 	}
 
@@ -546,7 +579,7 @@ void EditorCanvasItemGizmo::create() {
 	valid = true;
 
 	for (Instance &instance : instances) {
-		instance.create_instance(canvas_item, hidden);
+		instance.create_instance(canvas_item, visible);
 	}
 
 	transform();
@@ -565,15 +598,15 @@ void EditorCanvasItemGizmo::free() {
 	ERR_FAIL_NULL(canvas_item);
 	ERR_FAIL_COND(!valid);
 
-	// TODO: i'm not sure why the 3D variant doesn't just call clear
+	// TODO: GIZMOS - i'm not sure why the 3D variant doesn't just call clear
 	//  and repeats the freeing loop.
 	clear();
 	valid = false;
 }
 
-void EditorCanvasItemGizmo::set_hidden(bool p_hidden) {
-	hidden = p_hidden;
-	int layer = p_hidden ? 0 : (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER);
+void EditorCanvasItemGizmo::set_visible(bool p_visible) {
+	visible = p_visible;
+	int layer = p_visible ? (1 << CanvasItemEditorViewport::GIZMO_EDIT_LAYER) : 0;
 	for (const Instance &instance : instances) {
 		RS::get_singleton()->canvas_item_set_visibility_layer(instance.instance, layer);
 	}
@@ -596,26 +629,32 @@ void EditorCanvasItemGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &EditorCanvasItemGizmo::get_canvas_item);
 	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorCanvasItemGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorCanvasItemGizmo::clear);
-	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorCanvasItemGizmo::set_hidden);
+	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &EditorCanvasItemGizmo::set_visible);
 	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorCanvasItemGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorCanvasItemGizmo::get_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &EditorCanvasItemGizmo::_edit_set_state);
 
 	GDVIRTUAL_BIND(_redraw);
 	GDVIRTUAL_BIND(_get_handle_name, "id", "secondary");
 	GDVIRTUAL_BIND(_is_handle_highlighted, "id", "secondary");
 
-	GDVIRTUAL_BIND(_get_boundary);
-	GDVIRTUAL_BIND(_set_boundary, "boundary");
+	GDVIRTUAL_BIND(_edit_use_rect);
+	GDVIRTUAL_BIND(_edit_get_rect);
+	GDVIRTUAL_BIND(_edit_set_rect, "boundary");
 
+	GDVIRTUAL_BIND(_has_pivot);
 	GDVIRTUAL_BIND(_get_pivot);
 	GDVIRTUAL_BIND(_set_pivot, "pivot");
+
+	GDVIRTUAL_BIND(_edit_get_state);
+	GDVIRTUAL_BIND(_edit_set_state, "state");
 
 	GDVIRTUAL_BIND(_get_handle_value, "id", "secondary");
 	GDVIRTUAL_BIND(_begin_handle_action, "id", "secondary");
 	GDVIRTUAL_BIND(_set_handle, "id", "secondary", "point");
 	GDVIRTUAL_BIND(_commit_handle, "id", "secondary", "restore", "cancel");
 
-	GDVIRTUAL_BIND(_subgizmos_intersect_point, "point");
+	GDVIRTUAL_BIND(_subgizmos_intersect_point, "point", "distance");
 	GDVIRTUAL_BIND(_subgizmos_intersect_rect, "rect");
 	GDVIRTUAL_BIND(_get_subgizmo_transform, "id");
 	GDVIRTUAL_BIND(_set_subgizmo_transform, "id", "transform");
@@ -624,7 +663,7 @@ void EditorCanvasItemGizmo::_bind_methods() {
 
 EditorCanvasItemGizmo::EditorCanvasItemGizmo() {
 	valid = false;
-	hidden = false;
+	visible = false;
 	selected = false;
 	canvas_item = nullptr;
 	gizmo_plugin = nullptr;
@@ -696,7 +735,7 @@ Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_
 
 	ref->set_plugin(this);
 	ref->set_canvas_item(p_canvas_item);
-	ref->set_hidden(current_state == HIDDEN);
+	ref->set_visible(gizmos_visible);
 
 	current_gizmos.insert(ref.ptr());
 	return ref;
@@ -704,8 +743,6 @@ Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_
 
 void EditorCanvasItemGizmoPlugin::_bind_methods() {
 	ClassDB::bind_static_method("EditorCanvasItemGizmoPlugin", D_METHOD("boundary_change_to_transform", "canvas_item", "before", "after"), &EditorCanvasItemGizmoPlugin::boundary_change_to_transform);
-
-	ClassDB::bind_method(D_METHOD("_set_boundary", "gizmo", "boundary"), &EditorCanvasItemGizmoPlugin::_set_boundary);
 
 	GDVIRTUAL_BIND(_has_gizmo, "for_canvas_item");
 	GDVIRTUAL_BIND(_create_gizmo, "for_canvas_item");
@@ -717,13 +754,16 @@ void EditorCanvasItemGizmoPlugin::_bind_methods() {
 
 	GDVIRTUAL_BIND(_redraw, "gizmo");
 
-	GDVIRTUAL_BIND(_has_boundary, "gizmo");
-	GDVIRTUAL_BIND(_set_boundary, "gizmo", "boundary");
-	GDVIRTUAL_BIND(_get_boundary, "gizmo");
+	GDVIRTUAL_BIND(_edit_use_rect, "gizmo");
+	GDVIRTUAL_BIND(_edit_set_rect, "gizmo", "boundary");
+	GDVIRTUAL_BIND(_edit_get_rect, "gizmo");
 
 	GDVIRTUAL_BIND(_has_pivot, "gizmo");
 	GDVIRTUAL_BIND(_set_pivot, "gizmo", "pivot");
 	GDVIRTUAL_BIND(_get_pivot, "gizmo");
+
+	GDVIRTUAL_BIND(_edit_get_state, "gizmo");
+	GDVIRTUAL_BIND(_edit_set_state, "gizmo", "state");
 
 	GDVIRTUAL_BIND(_get_handle_name, "gizmo", "handle_id", "secondary");
 	GDVIRTUAL_BIND(_is_handle_highlighted, "gizmo", "handle_id", "secondary");
@@ -732,7 +772,7 @@ void EditorCanvasItemGizmoPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_set_handle, "gizmo", "handle_id", "secondary", "position");
 	GDVIRTUAL_BIND(_commit_handle, "gizmo", "handle_id", "secondary", "restore", "cancel");
 
-	GDVIRTUAL_BIND(_subgizmos_intersect_point, "gizmo", "point");
+	GDVIRTUAL_BIND(_subgizmos_intersect_point, "gizmo", "point", "distance");
 	GDVIRTUAL_BIND(_subgizmos_intersect_rect, "gizmo", "rect");
 	GDVIRTUAL_BIND(_get_subgizmo_transform, "gizmo", "subgizmo_id");
 	GDVIRTUAL_BIND(_set_subgizmo_transform, "gizmo", "subgizmo_id", "transform");
@@ -779,158 +819,165 @@ void EditorCanvasItemGizmoPlugin::redraw(EditorCanvasItemGizmo *p_gizmo) {
 	GDVIRTUAL_CALL(_redraw, p_gizmo);
 }
 
-bool EditorCanvasItemGizmoPlugin::has_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
+bool EditorCanvasItemGizmoPlugin::_edit_use_rect(const EditorCanvasItemGizmo *p_gizmo) const {
 	ERR_FAIL_NULL_V(p_gizmo, false);
 	bool ret = false;
-	if (GDVIRTUAL_CALL(_has_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), ret)) {
+	if (GDVIRTUAL_CALL(_edit_use_rect, Ref<EditorCanvasItemGizmo>(p_gizmo), ret)) {
 		return ret;
 	}
-	return _has_boundary(p_gizmo);
-}
-
-bool EditorCanvasItemGizmoPlugin::_has_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
-	ERR_FAIL_NULL_V(p_gizmo, false);
 	CanvasItem *canvas_item = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL_V(canvas_item, false);
 	return canvas_item->_edit_use_rect();
 }
 
-void EditorCanvasItemGizmoPlugin::set_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_boundary) {
+void EditorCanvasItemGizmoPlugin::_edit_set_rect(const EditorCanvasItemGizmo *p_gizmo, Rect2 p_boundary) {
 	ERR_FAIL_NULL(p_gizmo);
-	if (GDVIRTUAL_IS_OVERRIDDEN(_set_boundary)) {
-		GDVIRTUAL_CALL(_set_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), p_boundary);
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_rect)) {
+		GDVIRTUAL_CALL(_edit_set_rect, Ref<EditorCanvasItemGizmo>(p_gizmo), p_boundary);
 		return;
 	}
-	_set_boundary(p_gizmo, p_boundary);
-}
-
-void EditorCanvasItemGizmoPlugin::_set_boundary(const EditorCanvasItemGizmo *p_gizmo, Rect2 p_boundary) {
-	ERR_FAIL_NULL(p_gizmo);
 	CanvasItem *ci = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL(ci);
 	ci->_edit_set_rect(p_boundary);
 }
 
-Rect2 EditorCanvasItemGizmoPlugin::get_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
+Rect2 EditorCanvasItemGizmoPlugin::_edit_get_rect(const EditorCanvasItemGizmo *p_gizmo) const {
 	ERR_FAIL_NULL_V(p_gizmo, Rect2());
-	if (GDVIRTUAL_IS_OVERRIDDEN(_get_boundary)) {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_get_rect)) {
 		Rect2 ret;
-		GDVIRTUAL_CALL(_get_boundary, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
+		GDVIRTUAL_CALL(_edit_get_rect, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
 		return ret;
 	}
-	return _get_boundary(p_gizmo);
-}
-
-Rect2 EditorCanvasItemGizmoPlugin::_get_boundary(const EditorCanvasItemGizmo *p_gizmo) const {
-	ERR_FAIL_NULL_V(p_gizmo, Rect2());
 	CanvasItem *ci = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL_V(ci, Rect2());
 	return ci->_edit_get_rect();
 }
 
-bool EditorCanvasItemGizmoPlugin::has_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
+bool EditorCanvasItemGizmoPlugin::_has_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
 	ERR_FAIL_NULL_V(p_gizmo, false);
 	if (GDVIRTUAL_IS_OVERRIDDEN(_has_pivot)) {
 		bool ret = false;
 		GDVIRTUAL_CALL(_has_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
 		return ret;
 	}
-	return _has_pivot(p_gizmo);
-}
 
-bool EditorCanvasItemGizmoPlugin::_has_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
-	ERR_FAIL_NULL_V(p_gizmo, false);
 	CanvasItem *canvas_item = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL_V(canvas_item, false);
 	return canvas_item->_edit_use_pivot();
 }
 
-void EditorCanvasItemGizmoPlugin::set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Point2 &p_pivot) {
+void EditorCanvasItemGizmoPlugin::_set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_pivot) {
 	ERR_FAIL_NULL(p_gizmo);
 	if (GDVIRTUAL_IS_OVERRIDDEN(_set_pivot)) {
 		GDVIRTUAL_CALL(_set_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), p_pivot);
 		return;
 	}
-	_set_pivot(p_gizmo, p_pivot);
-}
-
-void EditorCanvasItemGizmoPlugin::_set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_pivot) {
-	ERR_FAIL_NULL(p_gizmo);
 	CanvasItem *ci = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL(ci);
 	ci->_edit_set_pivot(p_pivot);
 }
 
-Point2 EditorCanvasItemGizmoPlugin::get_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
+Point2 EditorCanvasItemGizmoPlugin::_get_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
 	ERR_FAIL_NULL_V(p_gizmo, Point2());
 	if (GDVIRTUAL_IS_OVERRIDDEN(_get_pivot)) {
 		Point2 ret;
 		GDVIRTUAL_CALL(_get_pivot, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
 		return ret;
 	}
-	return _get_pivot(p_gizmo);
-}
-
-Point2 EditorCanvasItemGizmoPlugin::_get_pivot(const EditorCanvasItemGizmo *p_gizmo) const {
-	ERR_FAIL_NULL_V(p_gizmo, Point2());
 	CanvasItem *ci = p_gizmo->get_canvas_item();
 	ERR_FAIL_NULL_V(ci, Point2());
 	return ci->_edit_get_pivot();
 }
 
-bool EditorCanvasItemGizmoPlugin::is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
+Dictionary EditorCanvasItemGizmoPlugin::_edit_get_state(const EditorCanvasItemGizmo *p_gizmo) const {
+	ERR_FAIL_NULL_V(p_gizmo, Dictionary());
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL_V(ci, Dictionary());
+
+	Dictionary ret;
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_get_state)) {
+		GDVIRTUAL_CALL(_edit_get_state, Ref<EditorCanvasItemGizmo>(p_gizmo), ret);
+	}
+
+	// similar to EditorCanvasItemGizmo::_edit_get_state, we merge the results
+	// TODO: GIZMOS: docs - be sure to mention this in the docs
+	Dictionary base = ci->_edit_get_state();
+
+	if (ret.is_empty()) {
+		return base;
+	}
+
+	return ret.merged(base, true);
+}
+
+void EditorCanvasItemGizmoPlugin::_edit_set_state(const EditorCanvasItemGizmo *p_gizmo, const Dictionary &p_state) {
+	ERR_FAIL_NULL(p_gizmo);
+
+	// first restore underlying canvas item state
+	CanvasItem *ci = p_gizmo->get_canvas_item();
+	ERR_FAIL_NULL(ci);
+	ci->_edit_set_state(p_state);
+
+	// then allow GDScript code to do their own restores on a known good state
+	// TODO: GIZMOS: docs - mention that the dictionary may contain extra elements
+	if (GDVIRTUAL_IS_OVERRIDDEN(_edit_set_state)) {
+		GDVIRTUAL_CALL(_edit_set_state, Ref<EditorCanvasItemGizmo>(p_gizmo), p_state);
+	}
+}
+
+bool EditorCanvasItemGizmoPlugin::_is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_is_handle_highlighted, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, ret);
 	return ret;
 }
 
-String EditorCanvasItemGizmoPlugin::get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
+String EditorCanvasItemGizmoPlugin::_get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	String ret;
 	GDVIRTUAL_CALL(_get_handle_name, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, ret);
 	return ret;
 }
 
-Variant EditorCanvasItemGizmoPlugin::get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
+Variant EditorCanvasItemGizmoPlugin::_get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	Variant ret;
 	GDVIRTUAL_CALL(_get_handle_value, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, ret);
 	return ret;
 }
 
-void EditorCanvasItemGizmoPlugin::begin_handle_action(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) {
+void EditorCanvasItemGizmoPlugin::_begin_handle_action(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) {
 	GDVIRTUAL_CALL(_begin_handle_action, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary);
 }
 
-void EditorCanvasItemGizmoPlugin::set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point) {
+void EditorCanvasItemGizmoPlugin::_set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point) {
 	GDVIRTUAL_CALL(_set_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_point);
 }
 
-void EditorCanvasItemGizmoPlugin::commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+void EditorCanvasItemGizmoPlugin::_commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	GDVIRTUAL_CALL(_commit_handle, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_secondary, p_restore, p_cancel);
 }
 
-int EditorCanvasItemGizmoPlugin::subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const {
+int EditorCanvasItemGizmoPlugin::_subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const {
 	int ret = -1;
 	GDVIRTUAL_CALL(_subgizmos_intersect_point, Ref<EditorCanvasItemGizmo>(p_gizmo), p_point, p_max_distance, ret);
 	return ret;
 }
 
-Vector<int> EditorCanvasItemGizmoPlugin::subgizmos_intersect_rect(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect) const {
+Vector<int> EditorCanvasItemGizmoPlugin::_subgizmos_intersect_rect(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect) const {
 	Vector<int> ret;
 	GDVIRTUAL_CALL(_subgizmos_intersect_rect, Ref<EditorCanvasItemGizmo>(p_gizmo), p_rect, ret);
 	return ret;
 }
 
-Transform2D EditorCanvasItemGizmoPlugin::get_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id) const {
+Transform2D EditorCanvasItemGizmoPlugin::_get_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id) const {
 	Transform2D ret;
 	GDVIRTUAL_CALL(_get_subgizmo_transform, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, ret);
 	return ret;
 }
 
-void EditorCanvasItemGizmoPlugin::set_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id, const Transform2D &p_xform) {
+void EditorCanvasItemGizmoPlugin::_set_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id, const Transform2D &p_xform) {
 	GDVIRTUAL_CALL(_set_subgizmo_transform, Ref<EditorCanvasItemGizmo>(p_gizmo), p_id, p_xform);
 }
 
-void EditorCanvasItemGizmoPlugin::commit_subgizmos(const EditorCanvasItemGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel) {
+void EditorCanvasItemGizmoPlugin::_commit_subgizmos(const EditorCanvasItemGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel) {
 	TypedArray<Transform2D> transforms;
 	transforms.reserve(p_transforms.size());
 	for (int i = 0; i < p_transforms.size(); i++) {
@@ -940,15 +987,15 @@ void EditorCanvasItemGizmoPlugin::commit_subgizmos(const EditorCanvasItemGizmo *
 	GDVIRTUAL_CALL(_commit_subgizmos, Ref<EditorCanvasItemGizmo>(p_gizmo), p_ids, transforms, p_cancel);
 }
 
-void EditorCanvasItemGizmoPlugin::set_state(int p_state) {
-	current_state = p_state;
+void EditorCanvasItemGizmoPlugin::set_gizmos_visible(bool p_visible) {
+	gizmos_visible = p_visible;
 	for (EditorCanvasItemGizmo *gizmo : current_gizmos) {
-		gizmo->set_hidden(p_state == HIDDEN);
+		gizmo->set_visible(p_visible);
 	}
 }
 
-int EditorCanvasItemGizmoPlugin::get_state() const {
-	return current_state;
+bool EditorCanvasItemGizmoPlugin::is_gizmos_visible() const {
+	return gizmos_visible;
 }
 
 void EditorCanvasItemGizmoPlugin::unregister_gizmo(EditorCanvasItemGizmo *p_gizmo) {
@@ -956,7 +1003,7 @@ void EditorCanvasItemGizmoPlugin::unregister_gizmo(EditorCanvasItemGizmo *p_gizm
 }
 
 EditorCanvasItemGizmoPlugin::EditorCanvasItemGizmoPlugin() {
-	current_state = VISIBLE;
+	gizmos_visible = true;
 }
 
 EditorCanvasItemGizmoPlugin::~EditorCanvasItemGizmoPlugin() {

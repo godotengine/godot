@@ -41,7 +41,7 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 		RID instance;
 		Transform2D xform;
 
-		void create_instance(CanvasItem *p_base, bool p_hidden = false);
+		void create_instance(CanvasItem *p_base, bool p_visible = false);
 	};
 
 	bool selected;
@@ -61,7 +61,7 @@ class EditorCanvasItemGizmo : public CanvasItemGizmo {
 	bool use_pivot_handle;
 
 	bool valid;
-	bool hidden;
+	bool visible;
 	Vector<Instance> instances;
 	CanvasItem *canvas_item = nullptr;
 
@@ -74,13 +74,16 @@ protected:
 
 	GDVIRTUAL0(_redraw)
 
-	GDVIRTUAL0RC(bool, _has_boundary)
-	GDVIRTUAL0RC(Rect2, _get_boundary)
-	GDVIRTUAL1(_set_boundary, Rect2)
+	GDVIRTUAL0RC(bool, _edit_use_rect)
+	GDVIRTUAL0RC(Rect2, _edit_get_rect)
+	GDVIRTUAL1(_edit_set_rect, Rect2)
 
 	GDVIRTUAL0RC(bool, _has_pivot)
 	GDVIRTUAL0RC(Vector2, _get_pivot)
 	GDVIRTUAL1(_set_pivot, Vector2)
+
+	GDVIRTUAL0RC(Dictionary, _edit_get_state)
+	GDVIRTUAL1(_edit_set_state, Dictionary)
 
 	GDVIRTUAL2RC(String, _get_handle_name, int, bool)
 	GDVIRTUAL2RC(bool, _is_handle_highlighted, int, bool)
@@ -107,30 +110,32 @@ public:
 
 	void add_handles(const Vector<Vector2> &p_handles, Ref<Texture2D> p_texture, const Vector<int> &p_ids = Vector<int>(), bool p_secondary = false);
 
-	virtual bool has_boundary() const;
-	virtual Rect2 get_boundary() const;
-	virtual Rect2 _get_boundary() const;
-	virtual void set_boundary(const Rect2 &p_rect);
+	virtual bool _edit_use_rect() const;
+	virtual Rect2 _edit_get_rect() const;
+	virtual void _edit_set_rect(const Rect2 &p_rect);
 
-	virtual bool has_pivot() const;
-	virtual Vector2 get_pivot() const;
-	virtual void set_pivot(const Vector2 &p_pivot);
+	virtual bool _has_pivot() const;
+	virtual Vector2 _get_pivot() const;
+	virtual void _set_pivot(const Vector2 &p_pivot);
 
-	virtual bool is_handle_highlighted(int p_id, bool p_secondary) const;
-	virtual String get_handle_name(int p_id, bool p_secondary) const;
-	virtual Variant get_handle_value(int p_id, bool p_secondary) const;
-	virtual void begin_handle_action(int p_id, bool p_secondary);
-	virtual void set_handle(int p_id, bool p_secondary, const Point2 &p_point);
-	virtual void commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
+	virtual Dictionary _edit_get_state() const;
+	virtual void _edit_set_state(const Dictionary &p_state);
 
-	virtual int subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const; // TODO: GIZMOS: docs -> this position is in local space.
-	virtual Vector<int> subgizmos_intersect_rect(const Rect2 &p_rect) const; // TODO: GIZMOS: docs -> this rect is in canvas space
-	virtual Transform2D get_subgizmo_transform(int p_id) const;
-	virtual void set_subgizmo_transform(int p_id, const Transform2D &p_xform);
-	virtual void commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
+	virtual bool _is_handle_highlighted(int p_id, bool p_secondary) const;
+	virtual String _get_handle_name(int p_id, bool p_secondary) const;
+	virtual Variant _get_handle_value(int p_id, bool p_secondary) const;
+	virtual void _begin_handle_action(int p_id, bool p_secondary);
+	virtual void _set_handle(int p_id, bool p_secondary, const Point2 &p_point);
+	virtual void _commit_handle(int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
 
-	void set_selected(bool p_selected) { selected = p_selected; }
-	bool is_selected() const { return selected; }
+	virtual int _subgizmos_intersect_point(const Point2 &p_point, real_t p_max_distance) const; // TODO: GIZMOS: docs -> this position is in local space.
+	virtual Vector<int> _subgizmos_intersect_rect(const Rect2 &p_rect) const; // TODO: GIZMOS: docs -> this rect is in canvas space
+	virtual Transform2D _get_subgizmo_transform(int p_id) const;
+	virtual void _set_subgizmo_transform(int p_id, const Transform2D &p_xform);
+	virtual void _commit_subgizmos(const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
+
+	void _set_selected(bool p_selected) { selected = p_selected; }
+	bool _is_selected() const { return selected; }
 
 	void set_canvas_item(CanvasItem *p_canvas_item);
 	CanvasItem *get_canvas_item() const { return canvas_item; }
@@ -151,7 +156,7 @@ public:
 
 	virtual bool is_editable() const;
 
-	void set_hidden(bool p_hidden);
+	void set_visible(bool p_visible);
 	void set_plugin(EditorCanvasItemGizmoPlugin *p_plugin);
 
 	EditorCanvasItemGizmo();
@@ -161,12 +166,8 @@ public:
 class EditorCanvasItemGizmoPlugin : public Resource {
 	GDCLASS(EditorCanvasItemGizmoPlugin, Resource);
 
-public:
-	static const int VISIBLE = 0;
-	static const int HIDDEN = 1;
-
 protected:
-	int current_state;
+	bool gizmos_visible = true;
 	HashSet<EditorCanvasItemGizmo *> current_gizmos;
 
 	static void _bind_methods();
@@ -183,13 +184,16 @@ protected:
 
 	GDVIRTUAL1(_redraw, Ref<EditorCanvasItemGizmo>)
 
-	GDVIRTUAL1RC(bool, _has_boundary, Ref<EditorCanvasItemGizmo>)
-	GDVIRTUAL2(_set_boundary, Ref<EditorCanvasItemGizmo>, Rect2)
-	GDVIRTUAL1RC(Rect2, _get_boundary, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL1RC(bool, _edit_use_rect, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL2(_edit_set_rect, Ref<EditorCanvasItemGizmo>, Rect2)
+	GDVIRTUAL1RC(Rect2, _edit_get_rect, Ref<EditorCanvasItemGizmo>)
 
 	GDVIRTUAL1RC(bool, _has_pivot, Ref<EditorCanvasItemGizmo>)
 	GDVIRTUAL2(_set_pivot, Ref<EditorCanvasItemGizmo>, Vector2)
 	GDVIRTUAL1RC(Vector2, _get_pivot, Ref<EditorCanvasItemGizmo>)
+
+	GDVIRTUAL1RC(Dictionary, _edit_get_state, Ref<EditorCanvasItemGizmo>)
+	GDVIRTUAL2C(_edit_set_state, Ref<EditorCanvasItemGizmo>, Dictionary)
 
 	GDVIRTUAL3RC(String, _get_handle_name, Ref<EditorCanvasItemGizmo>, int, bool)
 	GDVIRTUAL3RC(bool, _is_handle_highlighted, Ref<EditorCanvasItemGizmo>, int, bool)
@@ -214,46 +218,37 @@ public:
 	virtual bool can_commit_handle_on_click() const;
 
 	virtual void redraw(EditorCanvasItemGizmo *p_gizmo);
-	// boundary handle
-	virtual bool has_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void set_boundary(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect);
-	virtual Rect2 get_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
-
-private:
-	virtual bool _has_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void _set_boundary(const EditorCanvasItemGizmo *p_gizmo, Rect2 p_rect);
-	virtual Rect2 _get_boundary(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual bool _edit_use_rect(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void _edit_set_rect(const EditorCanvasItemGizmo *p_gizmo, Rect2 p_rect);
+	virtual Rect2 _edit_get_rect(const EditorCanvasItemGizmo *p_gizmo) const;
 
 	// pivot handle
-public:
-	virtual bool has_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual Vector2 get_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
-	virtual void set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
-
-private:
 	virtual bool _has_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
 	virtual Vector2 _get_pivot(const EditorCanvasItemGizmo *p_gizmo) const;
 	virtual void _set_pivot(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point);
 
+	// edit state
+	virtual Dictionary _edit_get_state(const EditorCanvasItemGizmo *p_gizmo) const;
+	virtual void _edit_set_state(const EditorCanvasItemGizmo *p_gizmo, const Dictionary &p_state);
+
 	// extra handles
-public:
-	virtual bool is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
-	virtual String get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
-	virtual Variant get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
-	virtual void begin_handle_action(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary);
-	virtual void set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point);
-	virtual void commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
+	virtual bool _is_handle_highlighted(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
+	virtual String _get_handle_name(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
+	virtual Variant _get_handle_value(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary) const;
+	virtual void _begin_handle_action(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary);
+	virtual void _set_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Point2 &p_point);
+	virtual void _commit_handle(const EditorCanvasItemGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false);
 
 	// subgizmos
-	virtual int subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const;
-	virtual Vector<int> subgizmos_intersect_rect(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect) const;
-	virtual Transform2D get_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id) const;
-	virtual void set_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id, const Transform2D &p_xform);
-	virtual void commit_subgizmos(const EditorCanvasItemGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
+	virtual int _subgizmos_intersect_point(const EditorCanvasItemGizmo *p_gizmo, const Vector2 &p_point, real_t p_max_distance) const;
+	virtual Vector<int> _subgizmos_intersect_rect(const EditorCanvasItemGizmo *p_gizmo, const Rect2 &p_rect) const;
+	virtual Transform2D _get_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id) const;
+	virtual void _set_subgizmo_transform(const EditorCanvasItemGizmo *p_gizmo, int p_id, const Transform2D &p_xform);
+	virtual void _commit_subgizmos(const EditorCanvasItemGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform2D> &p_transforms, bool p_cancel = false);
 
 	Ref<EditorCanvasItemGizmo> get_gizmo(CanvasItem *p_canvas_item);
-	void set_state(int p_state);
-	int get_state() const;
+	void set_gizmos_visible(bool p_visible);
+	bool is_gizmos_visible() const;
 	void unregister_gizmo(EditorCanvasItemGizmo *p_gizmo);
 
 	EditorCanvasItemGizmoPlugin();

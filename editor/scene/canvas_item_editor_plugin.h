@@ -429,6 +429,7 @@ private:
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	bool _select_subgizmos(Point2 p_click_pos, bool p_append);
 	bool _select_click_on_item(CanvasItem *item, bool p_append);
+	CanvasItemEditorSelectedItem *_get_selected_subgizmo() const;
 
 	ConfirmationDialog *snap_dialog = nullptr;
 
