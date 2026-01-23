@@ -1637,6 +1637,21 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 	}
 }
 
+struct ScriptFirst {
+	int _priority(const PropertyInfo &p_a) const {
+		if (p_a.name == "metadata/_custom_type_script") {
+			return 0;
+		}
+		if (p_a.name == "script") {
+			return 1;
+		}
+		return 255;
+	}
+	bool operator()(const PropertyInfo &p_a, const PropertyInfo &p_b) const {
+		return _priority(p_a) < _priority(p_b);
+	}
+};
+
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
@@ -1668,13 +1683,12 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			List<PropertyInfo> property_list;
 
 			res->get_property_list(&property_list);
-			property_list.sort();
+			property_list.sort_custom<ScriptFirst>();
 
 			List<PropertyInfo>::Element *I = property_list.front();
 
 			while (I) {
 				PropertyInfo pi = I->get();
-
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
 					Variant v = res->get(I->get().name);
 
