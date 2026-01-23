@@ -5001,6 +5001,9 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			is_mouse_hovering = false;
+			if (enable_drag_unfolding && drop_mode_over) {
+				_reset_drop_mode_over();
+			}
 			// Clear hovered item cache.
 			if (cache.hover_header_row || cache.hover_item != nullptr) {
 				cache.hover_header_row = false;
