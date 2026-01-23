@@ -2210,6 +2210,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 			camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 		} else {
+			// Is this branch ever actually invoked?? Perspective matrix on a directional light...
 			real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
 			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 		}
@@ -2251,6 +2252,8 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			light_culler->prepare_directional_light_cascade(p_shadow_index, i, receiver_frustum_planes, frustum_corners_world);
 		}
 
+		constexpr bool USE_TIGHTER_DRAW_RECT = true;
+
 		// Compute bounding box of frustum as seen from within the shadowmap
 		Vector3 light_view_frustum_rect_min = light_transform.basis.xform_inv(frustum_corners_local[0]);
 		Vector3 light_view_frustum_rect_max = light_transform.basis.xform_inv(frustum_corners_local[0]);
@@ -2265,6 +2268,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		//z_vec points against the camera, like in default opengl
 		real_t z_min_cam = light_basis_z.dot(frustum_centroid_world) - frustum_circumscribing_radius;
 
+		// Expansion for soft shadow is needed regardless of tighter or normal rect, so make it a standalone block.
 		{
 			real_t soft_shadow_expand = 0;
 			float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
@@ -2324,9 +2328,25 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			ortho_transform.basis = light_transform.basis;
 			Vector2 light_view_fullrect_size = Vector2(frustum_circumscribing_radius, frustum_circumscribing_radius) * 2;
 
-			Vector2 bound_half = light_view_fullrect_size * 0.5;
-			ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
-			ortho_transform.origin = light_basis_x * texel_snapped_frustum_centroid.x + light_basis_y * texel_snapped_frustum_centroid.y + light_basis_z * light_view_frustum_rect_max.z;
+			Vector2 view_space_draw_size = light_view_fullrect_size;
+			
+			if (USE_TIGHTER_DRAW_RECT) {
+				Vector2 texel_snapped_frustum_size = Vector2(
+					Math::snapped(light_view_frustum_rect_max.x - light_view_frustum_rect_min.x + unit, unit),
+					Math::snapped(light_view_frustum_rect_max.y - light_view_frustum_rect_min.y + unit, unit)
+				);
+				view_space_draw_size = texel_snapped_frustum_size;
+				Vector2 draw_half = texel_snapped_frustum_size * 0.5;
+				ortho_camera.set_orthogonal(-draw_half.x, draw_half.x, -draw_half.y, draw_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
+				ortho_transform.origin =
+					light_basis_x * Math::snapped((light_view_frustum_rect_min.x + light_view_frustum_rect_max.x) / 2, unit) +
+					light_basis_y * Math::snapped((light_view_frustum_rect_min.y + light_view_frustum_rect_max.y) / 2, unit) +
+					light_basis_z * light_view_frustum_rect_max.z;
+			} else {
+				Vector2 bound_half = light_view_fullrect_size * 0.5;
+				ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
+				ortho_transform.origin = light_basis_x * texel_snapped_frustum_centroid.x + light_basis_y * texel_snapped_frustum_centroid.y + light_basis_z * light_view_frustum_rect_max.z;
+			}
 
 			Vector2 light_view_fullrect_min = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) - light_view_fullrect_size / 2;
 			Vector2 light_view_fullrect_max = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) + light_view_fullrect_size / 2;
@@ -2340,6 +2360,13 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			cull.shadows[p_shadow_index].cascades[i].shadow_texel_size = frustum_circumscribing_radius * 2.0 / texture_size;
 			cull.shadows[p_shadow_index].cascades[i].bias_scale = (light_view_frustum_rect_max.z - z_min_cam);
 			cull.shadows[p_shadow_index].cascades[i].range_begin = light_view_frustum_rect_max.z - light_basis_z.dot(p_cam_transform.origin);
+			if (USE_TIGHTER_DRAW_RECT) {
+				Vector2 draw_ratio = view_space_draw_size / light_view_fullrect_size;
+				//cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2(Vector2(0.25f, 0.25f), Vector2(0.5f, 0.5f));
+				cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2((Vector2(1, 1) - draw_ratio) / 2, draw_ratio);
+			} else {
+				cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2(Vector2(0, 0), Vector2(1, 1));
+			}
 			cull.shadows[p_shadow_index].cascades[i].uv_scale = uv_scale;
 		}
 	}
@@ -3467,7 +3494,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			for (uint32_t j = 0; j < cull.shadows[i].cascade_count; j++) {
 				const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
 				//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
-				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale);
+				// in here?
+				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale, c.normalized_render_bounds);
 				if (max_shadows_used == MAX_UPDATE_SHADOWS) {
 					continue;
 				}
