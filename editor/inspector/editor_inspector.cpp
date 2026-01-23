@@ -1117,7 +1117,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 							callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, current_frame + 1, "", false);
 						}
 					}
-				} else if (object->is_class("Sprite2D") || object->is_class("Sprite3D")) {
+				} else if (property == "frame" && object->is_class("Sprite2D") || object->is_class("Sprite3D")) {
 					if (int64_t(object->get(property)) + 1 < (int64_t(object->get("hframes")) * int64_t(object->get("vframes")))) {
 						callable_mp(this, &EditorProperty::emit_changed).call_deferred(property, object->get(property).operator int64_t() + 1, "", false);
 					}
