@@ -86,6 +86,7 @@ void EditorSettingsDialog::_settings_property_edited() {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_navigation_preset();
+		_update_shortcuts();
 	}
 }
 
