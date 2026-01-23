@@ -52,7 +52,7 @@ private:
 	Segment segment;
 
 	String path;
-	const uint8_t *origin = nullptr;
+	size_t read_ptr = 0;
 	const uint8_t *src = nullptr;
 
 	Ref<VideoStreamEncoding> video_stream_encoding = nullptr;
