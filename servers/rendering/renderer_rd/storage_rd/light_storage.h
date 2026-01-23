@@ -98,7 +98,9 @@ private:
 			float bias_scale = 0.0;
 			float shadow_texel_size = 0.0;
 			float range_begin = 0.0;
+			Rect2 allocated_atlas_rect;
 			Rect2 atlas_rect;
+			Rect2 norm_draw_rect;
 			Vector2 uv_scale;
 		};
 
@@ -604,7 +606,7 @@ public:
 	virtual void light_instance_free(RID p_light) override;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2(), const Rect2& p_norm_draw_rect = Rect2(Vector2(0, 0), Vector2(1, 1))) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
 	virtual bool light_instance_is_shadow_visible_at_position(RID p_light_instance, const Vector3 &p_position) const override {
@@ -738,8 +740,18 @@ public:
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].uv_scale;
 	}
+	
+	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_allocated_rect(RID p_light_instance, int p_index, const Rect2& p_allocated_atlas_rect) {
+		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
+		li->shadow_transform[p_index].allocated_atlas_rect = p_allocated_atlas_rect;
+	}
+	
+	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_allocated_rect(RID p_light_instance, int p_index) {
+		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
+		return li->shadow_transform[p_index].allocated_atlas_rect;
+	}
 
-	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2 p_atlas_rect) {
+	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2& p_atlas_rect) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		li->shadow_transform[p_index].atlas_rect = p_atlas_rect;
 	}
@@ -757,6 +769,11 @@ public:
 	_FORCE_INLINE_ float light_instance_get_directional_shadow_texel_size(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
 		return li->shadow_transform[p_index].shadow_texel_size;
+	}
+	
+	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_draw_norm_rect(RID p_light_instance, int p_index) {
+		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
+		return li->shadow_transform[p_index].norm_draw_rect;
 	}
 
 	_FORCE_INLINE_ void light_instance_set_render_pass(RID p_light_instance, uint64_t p_pass) {

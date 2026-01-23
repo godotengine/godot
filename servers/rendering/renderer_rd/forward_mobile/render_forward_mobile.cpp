@@ -1400,6 +1400,27 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 		render_fb = light_storage->direction_shadow_get_fb();
 		render_texture = RID();
 		flip_y = true;
+		
+		Rect2 norm_draw_rect = light_storage->light_instance_get_directional_shadow_draw_norm_rect(p_light, p_pass);
+		Rect2 draw_rect_norm;
+		draw_rect_norm.position = atlas_rect_norm.position + atlas_rect_norm.size * norm_draw_rect.position;
+		draw_rect_norm.size = atlas_rect_norm.size * norm_draw_rect.size;
+		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, draw_rect_norm);
+		
+		Rect2 draw_rect = draw_rect_norm;
+		draw_rect.position *= directional_shadow_size;
+		draw_rect.size *= directional_shadow_size;
+		
+		// This MUST be rounding and not, say, floor or ceil.
+		// Using anything other than round will lead to flickering in directional shadows when the tightened draw area is resized by camera rotations.
+		atlas_rect = Rect2i(
+			Vector2i(
+				(int32_t)Math::round(draw_rect.position.x), (int32_t)Math::round(draw_rect.position.y)
+			),
+			Vector2i(
+				(int32_t)Math::round(draw_rect.size.x), (int32_t)Math::round(draw_rect.size.y)
+			)
+		);
 
 	} else {
 		//set from shadow atlas
