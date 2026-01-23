@@ -102,6 +102,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 	Ref<InputEventKey> pan_mod_key_2;
 	Ref<InputEventKey> zoom_mod_key_1;
 	Ref<InputEventKey> zoom_mod_key_2;
+	Ref<InputEventKey> orbit_snap_mod_key_1;
+	Ref<InputEventKey> orbit_snap_mod_key_2;
 	bool set_preset = false;
 
 	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
@@ -116,6 +118,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
 		set_preset = true;
 		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
@@ -128,6 +132,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
 		set_preset = true;
 		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
@@ -140,6 +146,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
 		set_preset = true;
 		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
@@ -152,6 +160,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	}
 	// Set settings to the desired preset values.
 	if (set_preset) {
@@ -165,6 +175,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
 	}
 }
 
