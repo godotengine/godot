@@ -98,7 +98,8 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 	VALIDATE_KEY(p_params, "seq", Variant::INT); // "seq" is transformed to int when the request arrives
 	VALIDATE_KEY(p_params, "command", Variant::STRING);
 
-	Dictionary response, body;
+	Dictionary response;
+	Dictionary body;
 	response["type"] = "response";
 	response["request_seq"] = p_params["seq"];
 	response["command"] = p_params["command"];
@@ -345,7 +346,8 @@ Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	DAP::Thread thread;
@@ -363,7 +365,8 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 		return Dictionary();
 	}
 
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	bool lines_at_one = DebugAdapterProtocol::get_singleton()->get_current_peer()->linesStartAt1;
@@ -390,7 +393,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
 	VALIDATE_KEY(p_params["arguments"], "source", Variant::DICTIONARY);
 
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	Dictionary args = p_params["arguments"];
@@ -413,7 +417,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
 	}
 
-	Array breakpoints = args.get("breakpoints", Array()), lines;
+	Array breakpoints = args.get("breakpoints", Array());
+	Array lines;
 	for (int i = 0; i < breakpoints.size(); i++) {
 		DAP::SourceBreakpoint breakpoint;
 		VALIDATE_KEY(breakpoints[i], "line", Variant::FLOAT);
@@ -431,7 +436,8 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 }
 
 Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	if (!p_params.has("arguments")) {
@@ -454,7 +460,8 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
 	VALIDATE_KEY(p_params["arguments"], "frameId", Variant::FLOAT);
 
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	Dictionary args = p_params["arguments"];
@@ -596,7 +603,8 @@ Dictionary DebugAdapterParser::ev_initialized() const {
 }
 
 Dictionary DebugAdapterParser::ev_process(const String &p_command) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "process";
 	event["body"] = body;
 
@@ -614,7 +622,8 @@ Dictionary DebugAdapterParser::ev_terminated() const {
 }
 
 Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "exited";
 	event["body"] = body;
 
@@ -624,7 +633,8 @@ Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
 }
 
 Dictionary DebugAdapterParser::ev_stopped() const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "stopped";
 	event["body"] = body;
 
@@ -678,7 +688,8 @@ Dictionary DebugAdapterParser::ev_stopped_step() const {
 }
 
 Dictionary DebugAdapterParser::ev_continued() const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "continued";
 	event["body"] = body;
 
@@ -688,7 +699,8 @@ Dictionary DebugAdapterParser::ev_continued() const {
 }
 
 Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "output";
 	event["body"] = body;
 
@@ -699,7 +711,8 @@ Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger
 }
 
 Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "breakpoint";
 	event["body"] = body;
 
@@ -710,7 +723,8 @@ Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint
 }
 
 Dictionary DebugAdapterParser::ev_custom_data(const String &p_msg, const Array &p_data) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "godot/custom_data";
 	event["body"] = body;
 
