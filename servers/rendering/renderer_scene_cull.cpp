@@ -2149,9 +2149,6 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	Transform3D light_transform = p_instance->transform;
-	light_transform.orthonormalize(); //scale does not count on lights
-
 	real_t max_distance = p_cam_projection.get_z_far();
 	real_t shadow_max = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
@@ -2195,6 +2192,12 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	cull.shadows[p_shadow_index].light_instance = light->instance;
 	cull.shadows[p_shadow_index].caster_mask = RSG::light_storage->light_get_shadow_caster_mask(p_instance->base);
 
+	// Discard scale
+	const Transform3D light_transform = p_instance->transform.orthonormalized();
+	const Vector3 cam_basis_x = light_transform.basis.get_column(Vector3::AXIS_X); // Already normalized
+	const Vector3 cam_basis_y = light_transform.basis.get_column(Vector3::AXIS_Y);
+	const Vector3 cam_basis_z = light_transform.basis.get_column(Vector3::AXIS_Z);
+
 	for (int i = 0; i < splits; i++) {
 		RENDER_TIMESTAMP("Cull DirectionalLight3D, Split " + itos(i));
 
@@ -2212,153 +2215,126 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 		}
 
-		//obtain the frustum endpoints
+		Vector3 frustum_corners_local[8]; // Local space: camera offset is set to zero, but the world basis is used.
+		Vector3 frustum_centroid_local(0, 0, 0);
+		real_t frustum_circumscribing_radius = 0;
+		{
+			// Operate in the camera's view space where possible for maximum numerical stability, as it is 100% independent from rotation/position/scale.
+			Vector3 frustum_corners_cam_view[8];
+			bool res = camera_matrix.get_endpoints(Transform3D(), frustum_corners_cam_view); // Retrieve endpoints in identity transform.
+			ERR_CONTINUE(!res);
 
-		Vector3 endpoints[8]; // frustum plane endpoints
-		bool res = camera_matrix.get_endpoints(p_cam_transform, endpoints);
-		ERR_CONTINUE(!res);
-
-		// obtain the light frustum ranges (given endpoints)
-
-		Transform3D transform = light_transform; //discard scale and stabilize light
-
-		Vector3 x_vec = transform.basis.get_column(Vector3::AXIS_X).normalized();
-		Vector3 y_vec = transform.basis.get_column(Vector3::AXIS_Y).normalized();
-		Vector3 z_vec = transform.basis.get_column(Vector3::AXIS_Z).normalized();
-		//z_vec points against the camera, like in default opengl
-
-		real_t x_min = 0.f, x_max = 0.f;
-		real_t y_min = 0.f, y_max = 0.f;
-		real_t z_min = 0.f, z_max = 0.f;
-
-		// FIXME: z_max_cam is defined, computed, but not used below when setting up
-		// ortho_camera. Commented out for now to fix warnings but should be investigated.
-		real_t x_min_cam = 0.f, x_max_cam = 0.f;
-		real_t y_min_cam = 0.f, y_max_cam = 0.f;
-		real_t z_min_cam = 0.f;
-		//real_t z_max_cam = 0.f;
-
-		//real_t bias_scale = 1.0;
-		//real_t aspect_bias_scale = 1.0;
-
-		//used for culling
-
-		for (int j = 0; j < 8; j++) {
-			real_t d_x = x_vec.dot(endpoints[j]);
-			real_t d_y = y_vec.dot(endpoints[j]);
-			real_t d_z = z_vec.dot(endpoints[j]);
-
-			if (j == 0 || d_x < x_min) {
-				x_min = d_x;
-			}
-			if (j == 0 || d_x > x_max) {
-				x_max = d_x;
+			// Again, everything in cam view space for maximum numerical stability (yes it matters, see #72015 discussion)
+			Vector3 frustum_centroid_cam_view(0, 0, 0);
+			for (int j = 0; j < 8; j++) {
+				frustum_centroid_cam_view += frustum_corners_cam_view[j] / 8.0; // Dividing then adding hopefully has better numerical precision
 			}
 
-			if (j == 0 || d_y < y_min) {
-				y_min = d_y;
-			}
-			if (j == 0 || d_y > y_max) {
-				y_max = d_y;
+			for (int j = 0; j < 8; j++) {
+				frustum_circumscribing_radius = MAX(frustum_circumscribing_radius, frustum_centroid_cam_view.distance_to(frustum_corners_cam_view[j]));
 			}
 
-			if (j == 0 || d_z < z_min) {
-				z_min = d_z;
-			}
-			if (j == 0 || d_z > z_max) {
-				z_max = d_z;
+			// Turn things in local space now since we're done with view space stuff here.
+			frustum_centroid_local = p_cam_transform.basis.xform(frustum_centroid_cam_view);
+			for (int j = 0; j < 8; j++) {
+				frustum_corners_local[j] = p_cam_transform.basis.xform(frustum_corners_cam_view[j]);
 			}
 		}
+		Vector3 frustum_centroid_world = p_cam_transform.origin + frustum_centroid_local;
 
-		real_t radius = 0;
-		real_t soft_shadow_expand = 0;
-		Vector3 center;
+		// Compute bounding box of frustum as seen from within the shadowmap
+		Vector3 light_view_frustum_rect_min = light_transform.basis.xform_inv(frustum_corners_local[0]);
+		Vector3 light_view_frustum_rect_max = light_transform.basis.xform_inv(frustum_corners_local[0]);
+		for (int j = 1; j < 8; j++) {
+			Vector3 cam_space_corner = light_transform.basis.xform_inv(frustum_corners_local[j]);
+			light_view_frustum_rect_min.x = MIN(light_view_frustum_rect_min.x, cam_space_corner.x);
+			light_view_frustum_rect_min.y = MIN(light_view_frustum_rect_min.y, cam_space_corner.y);
+			light_view_frustum_rect_min.z = MIN(light_view_frustum_rect_min.z, cam_space_corner.z);
+			light_view_frustum_rect_max.x = MAX(light_view_frustum_rect_max.x, cam_space_corner.x);
+			light_view_frustum_rect_max.y = MAX(light_view_frustum_rect_max.y, cam_space_corner.y);
+			light_view_frustum_rect_max.z = MAX(light_view_frustum_rect_max.z, cam_space_corner.z);
+		}
+		light_view_frustum_rect_min += light_transform.basis.xform_inv(p_cam_transform.origin);
+		light_view_frustum_rect_max += light_transform.basis.xform_inv(p_cam_transform.origin);
+
+		//z_vec points against the camera, like in default opengl
+		real_t z_min_cam = cam_basis_z.dot(frustum_centroid_world) - frustum_circumscribing_radius;
 
 		{
-			//camera viewport stuff
+			real_t soft_shadow_expand = 0;
+			float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
 
-			for (int j = 0; j < 8; j++) {
-				center += endpoints[j];
-			}
-			center /= 8.0;
-
-			//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
-
-			for (int j = 0; j < 8; j++) {
-				real_t d = center.distance_to(endpoints[j]);
-				if (d > radius) {
-					radius = d;
-				}
+			if (soft_shadow_angle > 0.0) {
+				float z_range = (cam_basis_z.dot(frustum_centroid_local) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
+				soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
 			}
 
-			radius *= texture_size / (texture_size - 2.0); //add a texel by each side
+			// Gotta leave extra margin around the frustum for distance-based shadow blurring.
+			light_view_frustum_rect_max.x += soft_shadow_expand;
+			light_view_frustum_rect_max.y += soft_shadow_expand;
+			light_view_frustum_rect_min.x -= soft_shadow_expand;
+			light_view_frustum_rect_min.y -= soft_shadow_expand;
 
-			z_min_cam = z_vec.dot(center) - radius;
-
-			{
-				float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
-
-				if (soft_shadow_angle > 0.0) {
-					float z_range = (z_vec.dot(center) + radius + pancake_size) - z_min_cam;
-					soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
-
-					x_max += soft_shadow_expand;
-					y_max += soft_shadow_expand;
-
-					x_min -= soft_shadow_expand;
-					y_min -= soft_shadow_expand;
-				}
-			}
-
-			// This trick here is what stabilizes the shadow (make potential jaggies to not move)
-			// at the cost of some wasted resolution. Still, the quality increase is very well worth it.
-			const real_t unit = (radius + soft_shadow_expand) * 4.0 / texture_size;
-			x_max_cam = Math::snapped(x_vec.dot(center) + radius + soft_shadow_expand, unit);
-			x_min_cam = Math::snapped(x_vec.dot(center) - radius - soft_shadow_expand, unit);
-			y_max_cam = Math::snapped(y_vec.dot(center) + radius + soft_shadow_expand, unit);
-			y_min_cam = Math::snapped(y_vec.dot(center) - radius - soft_shadow_expand, unit);
+			// ...But as the frustum has now basically been made larger, the draw bounds must be made larger too to fit it.
+			frustum_circumscribing_radius += soft_shadow_expand;
 		}
 
 		//now that we know all ranges, we can proceed to make the light frustum planes, for culling octree
-
 		Vector<Plane> light_frustum_planes;
 		light_frustum_planes.resize(6);
 
 		//right/left
-		light_frustum_planes.write[0] = Plane(x_vec, x_max);
-		light_frustum_planes.write[1] = Plane(-x_vec, -x_min);
+		light_frustum_planes.write[0] = Plane(cam_basis_x, light_view_frustum_rect_max.x);
+		light_frustum_planes.write[1] = Plane(-cam_basis_x, -light_view_frustum_rect_min.x);
 		//top/bottom
-		light_frustum_planes.write[2] = Plane(y_vec, y_max);
-		light_frustum_planes.write[3] = Plane(-y_vec, -y_min);
+		light_frustum_planes.write[2] = Plane(cam_basis_y, light_view_frustum_rect_max.y);
+		light_frustum_planes.write[3] = Plane(-cam_basis_y, -light_view_frustum_rect_min.y);
 		//near/far
-		light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
-		light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
+		light_frustum_planes.write[4] = Plane(cam_basis_z, light_view_frustum_rect_max.z + 1e6);
+		light_frustum_planes.write[5] = Plane(-cam_basis_z, -light_view_frustum_rect_min.z); // z_min is ok, since casters further than far-light plane are not needed
+
+		// Add two texels each side as margin to compensate for under-rounding of pixel positions
+		frustum_circumscribing_radius += frustum_circumscribing_radius * 2.0 / texture_size;
+		real_t unit = frustum_circumscribing_radius * 4.0 / texture_size;
+
+		Vector3 texel_snapped_frustum_centroid;
+		{
+			// Position of camera frustum centroid in the view space of the light.
+			Vector3 light_view_frustum_centroid = light_transform.basis.xform_inv(frustum_centroid_world);
+			texel_snapped_frustum_centroid = Vector3(
+					Math::snapped(light_view_frustum_centroid.x, unit),
+					Math::snapped(light_view_frustum_centroid.y, unit),
+					light_view_frustum_centroid.z // Don't mind z.
+			);
+		}
 
 		// a pre pass will need to be needed to determine the actual z-near to be used
 
-		z_max = z_vec.dot(center) + radius + pancake_size;
+		// Snap z to very coarse steps to prevent flickering caused by z changing despite x and y being correctly pinned to a grid point.
+		light_view_frustum_rect_max.z = Math::snapped(cam_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius * 2, frustum_circumscribing_radius) + pancake_size;
 
 		{
 			Projection ortho_camera;
-			real_t half_x = (x_max_cam - x_min_cam) * 0.5;
-			real_t half_y = (y_max_cam - y_min_cam) * 0.5;
-
-			ortho_camera.set_orthogonal(-half_x, half_x, -half_y, half_y, 0, (z_max - z_min_cam));
-
-			Vector2 uv_scale(1.0 / (x_max_cam - x_min_cam), 1.0 / (y_max_cam - y_min_cam));
-
 			Transform3D ortho_transform;
-			ortho_transform.basis = transform.basis;
-			ortho_transform.origin = x_vec * (x_min_cam + half_x) + y_vec * (y_min_cam + half_y) + z_vec * z_max;
+			ortho_transform.basis = light_transform.basis;
+			Vector2 light_view_fullrect_size = Vector2(frustum_circumscribing_radius, frustum_circumscribing_radius) * 2;
+
+			Vector2 bound_half = light_view_fullrect_size * 0.5;
+			ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
+			ortho_transform.origin = cam_basis_x * texel_snapped_frustum_centroid.x + cam_basis_y * texel_snapped_frustum_centroid.y + cam_basis_z * light_view_frustum_rect_max.z;
+
+			Vector2 light_view_fullrect_min = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) - light_view_fullrect_size / 2;
+			Vector2 light_view_fullrect_max = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) + light_view_fullrect_size / 2;
+			Vector2 uv_scale = Vector2(1.0 / (light_view_fullrect_max.x - light_view_fullrect_min.x), 1.0 / (light_view_fullrect_max.y - light_view_fullrect_min.y));
 
 			cull.shadows[p_shadow_index].cascades[i].frustum = Frustum(light_frustum_planes);
 			cull.shadows[p_shadow_index].cascades[i].projection = ortho_camera;
 			cull.shadows[p_shadow_index].cascades[i].transform = ortho_transform;
-			cull.shadows[p_shadow_index].cascades[i].zfar = z_max - z_min_cam;
+			cull.shadows[p_shadow_index].cascades[i].zfar = light_view_frustum_rect_max.z - z_min_cam;
 			cull.shadows[p_shadow_index].cascades[i].split = distances[i + 1];
-			cull.shadows[p_shadow_index].cascades[i].shadow_texel_size = radius * 2.0 / texture_size;
-			cull.shadows[p_shadow_index].cascades[i].bias_scale = (z_max - z_min_cam);
-			cull.shadows[p_shadow_index].cascades[i].range_begin = z_max;
+			cull.shadows[p_shadow_index].cascades[i].shadow_texel_size = frustum_circumscribing_radius * 2.0 / texture_size;
+			cull.shadows[p_shadow_index].cascades[i].bias_scale = (light_view_frustum_rect_max.z - z_min_cam);
+			cull.shadows[p_shadow_index].cascades[i].range_begin = light_view_frustum_rect_max.z;
 			cull.shadows[p_shadow_index].cascades[i].uv_scale = uv_scale;
 		}
 	}
