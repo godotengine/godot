@@ -956,7 +956,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				// Restore another script with the same global class name if it exists.
 				if (!class_name.is_empty()) {
-					EditorFileSystemDirectory::FileInfo *old_fi = nullptr;
+					EditorFileInfo *old_fi = nullptr;
 					String old_file = _get_file_by_class_name(filesystem, class_name, old_fi);
 					if (!old_file.is_empty() && old_fi) {
 						_queue_update_script_class(old_file, ScriptClassInfoUpdate::from_file_info(old_fi));
@@ -1225,7 +1225,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 
 		String path = p_scan_dir->full_path.path_join(scan_file);
 
-		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
+		EditorFileInfo *fi = memnew(EditorFileInfo);
 		fi->file = scan_file;
 		p_dir->files.push_back(fi);
 
@@ -1499,7 +1499,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 
 				if (idx == -1) {
 					//never seen this file, add actition to add it
-					EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
+					EditorFileInfo *fi = memnew(EditorFileInfo);
 					fi->file = f;
 
 					String path = cd.path_join(fi->file);
@@ -1629,7 +1629,7 @@ void EditorFileSystem::_delete_internal_files(const String &p_file) {
 
 int EditorFileSystem::_insert_actions_delete_files_directory(EditorFileSystemDirectory *p_dir) {
 	int nb_files = 0;
-	for (EditorFileSystemDirectory::FileInfo *fi : p_dir->files) {
+	for (EditorFileInfo *fi : p_dir->files) {
 		ItemAction ia;
 		ia.action = ItemAction::ACTION_FILE_REMOVE;
 		ia.dir = p_dir;
@@ -1670,8 +1670,8 @@ bool EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> 
 	return must_save;
 }
 
-String EditorFileSystem::_get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info) {
-	for (EditorFileSystemDirectory::FileInfo *fi : p_dir->files) {
+String EditorFileSystem::_get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileInfo *&r_file_info) {
+	for (EditorFileInfo *fi : p_dir->files) {
 		if (fi->class_info.name == p_class_name) {
 			r_file_info = fi;
 			return p_dir->get_path().path_join(fi->file);
@@ -1835,7 +1835,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	p_file->store_line("::" + p_dir->get_path() + "::" + String::num_int64(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
-		const EditorFileSystemDirectory::FileInfo *file_info = p_dir->files[i];
+		const EditorFileInfo *file_info = p_dir->files[i];
 		if (!file_info->import_group_file.is_empty()) {
 			group_file_cache.insert(file_info->import_group_file);
 		}
@@ -2093,7 +2093,7 @@ EditorFileSystem::ScriptClassInfo EditorFileSystem::_get_global_script_class(con
 	return info;
 }
 
-void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info) {
+void EditorFileSystem::_update_file_icon_path(EditorFileInfo *file_info) {
 	String icon_path;
 	if (file_info->resource_script_class != StringName()) {
 		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(file_info->resource_script_class);
@@ -2135,7 +2135,7 @@ void EditorFileSystem::_update_files_icon_path(EditorFileSystemDirectory *edp) {
 	for (EditorFileSystemDirectory *sub_dir : edp->subdirs) {
 		_update_files_icon_path(sub_dir);
 	}
-	for (EditorFileSystemDirectory::FileInfo *fi : edp->files) {
+	for (EditorFileInfo *fi : edp->files) {
 		_update_file_icon_path(fi);
 	}
 }
@@ -2383,7 +2383,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 	bool updated = false;
 	bool update_files_icon_cache = false;
-	Vector<EditorFileSystemDirectory::FileInfo *> files_to_update_icon_path;
+	Vector<EditorFileInfo *> files_to_update_icon_path;
 	for (const String &file : p_script_paths) {
 		ERR_CONTINUE(file.is_empty());
 		EditorFileSystemDirectory *fs = nullptr;
@@ -2445,7 +2445,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 					idx++;
 				}
 
-				EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
+				EditorFileInfo *fi = memnew(EditorFileInfo);
 				fi->file = file_name;
 				fi->import_modified_time = 0;
 				fi->import_valid = (type == "TextFile" || type == "OtherFile") ? true : ResourceLoader::is_import_valid(file);
@@ -2465,7 +2465,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				_save_late_updated_files(); //files need to be updated in the re-scan
 			}
 
-			EditorFileSystemDirectory::FileInfo *fi = fs->files[cpos];
+			EditorFileInfo *fi = fs->files[cpos];
 			const String old_script_class_icon_path = fi->class_info.icon_path;
 			const String old_class_name = fi->class_info.name;
 			fi->type = type;
@@ -2515,7 +2515,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 
 			// Restore another script as the global class name if multiple scripts had the same old class name.
 			if (!old_class_name.is_empty() && fi->class_info.name != old_class_name && ClassDB::is_parent_class(type, SNAME("Script"))) {
-				EditorFileSystemDirectory::FileInfo *old_fi = nullptr;
+				EditorFileInfo *old_fi = nullptr;
 				String old_file = _get_file_by_class_name(filesystem, old_class_name, old_fi);
 				if (!old_file.is_empty() && old_fi) {
 					_queue_update_script_class(old_file, ScriptClassInfoUpdate::from_file_info(old_fi));
@@ -2529,7 +2529,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 		if (update_files_icon_cache) {
 			_update_files_icon_path();
 		} else {
-			for (EditorFileSystemDirectory::FileInfo *fi : files_to_update_icon_path) {
+			for (EditorFileInfo *fi : files_to_update_icon_path) {
 				_update_file_icon_path(fi);
 			}
 		}
@@ -2579,7 +2579,7 @@ void EditorFileSystem::register_global_class_script(const String &p_search_path,
 	int index_file;
 	EditorFileSystemDirectory *efsd = find_file(p_search_path, &index_file);
 	if (efsd) {
-		const EditorFileSystemDirectory::FileInfo *fi = efsd->files[index_file];
+		const EditorFileInfo *fi = efsd->files[index_file];
 		EditorFileSystem::get_singleton()->_register_global_class_script(p_search_path, p_target_path, ScriptClassInfoUpdate::from_file_info(fi));
 	} else {
 		ScriptServer::remove_global_class_by_path(p_search_path);
@@ -3068,7 +3068,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport) {
 	int fc = efd->files.size();
-	const EditorFileSystemDirectory::FileInfo *const *files = efd->files.ptr();
+	const EditorFileInfo *const *files = efd->files.ptr();
 	for (int i = 0; i < fc; i++) {
 		if (groups_to_reimport.has(files[i]->import_group_file)) {
 			if (!group_files.has(files[i]->import_group_file)) {
@@ -3485,7 +3485,7 @@ bool EditorFileSystem::is_group_file(const String &p_path) const {
 
 void EditorFileSystem::_move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location) {
 	int fc = efd->files.size();
-	EditorFileSystemDirectory::FileInfo *const *files = efd->files.ptrw();
+	EditorFileInfo *const *files = efd->files.ptrw();
 	for (int i = 0; i < fc; i++) {
 		if (files[i]->import_group_file == p_group_file) {
 			files[i]->import_group_file = p_new_location;

@@ -150,6 +150,9 @@ class EditorFileSystem : public Node {
 
 	_THREAD_SAFE_CLASS_
 
+	using EditorFileInfo = EditorFileSystemDirectory::FileInfo;
+	using ScriptClassInfo = EditorFileInfo::ScriptClassInfo;
+
 	struct ItemAction {
 		enum Action {
 			ACTION_NONE,
@@ -165,7 +168,7 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory *dir = nullptr;
 		String file;
 		EditorFileSystemDirectory *new_dir = nullptr;
-		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
+		EditorFileInfo *new_file = nullptr;
 	};
 
 	struct ScannedDirectory {
@@ -210,8 +213,6 @@ class EditorFileSystem : public Node {
 	EditorFileSystemDirectory *filesystem = nullptr;
 
 	static EditorFileSystem *singleton;
-
-	using ScriptClassInfo = EditorFileSystemDirectory::FileInfo::ScriptClassInfo;
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
@@ -301,7 +302,7 @@ class EditorFileSystem : public Node {
 		ScriptClassInfoUpdate() = default;
 		explicit ScriptClassInfoUpdate(const ScriptClassInfo &p_info) :
 				ScriptClassInfo(p_info) {}
-		static ScriptClassInfoUpdate from_file_info(const EditorFileSystemDirectory::FileInfo *p_fi) {
+		static ScriptClassInfoUpdate from_file_info(const EditorFileInfo *p_fi) {
 			ScriptClassInfoUpdate update;
 			update.type = p_fi->type;
 			update.name = p_fi->class_info.name;
@@ -367,10 +368,10 @@ class EditorFileSystem : public Node {
 
 	Vector<Ref<EditorFileSystemImportFormatSupportQuery>> import_support_queries;
 
-	void _update_file_icon_path(EditorFileSystemDirectory::FileInfo *file_info);
+	void _update_file_icon_path(EditorFileInfo *file_info);
 	void _update_files_icon_path(EditorFileSystemDirectory *edp = nullptr);
 	bool _remove_invalid_global_class_names(const HashSet<String> &p_existing_class_names);
-	String _get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileSystemDirectory::FileInfo *&r_file_info);
+	String _get_file_by_class_name(EditorFileSystemDirectory *p_dir, const String &p_class_name, EditorFileInfo *&r_file_info);
 
 	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update);
 
