@@ -1,0 +1,25 @@
+GH-115312
+---------
+
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/anisotropy_flowmap': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/ao_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/backlight_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/clearcoat_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/detail_albedo': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/detail_mask': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/detail_normal': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/emission_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/heightmap_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/metallic_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/normal_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/orm_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/refraction_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/rim_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/roughness_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/subsurf_scatter_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/BaseMaterial3D/properties/subsurf_scatter_transmittance_texture': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/PanoramaSkyMaterial/properties/panorama': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/PhysicalSkyMaterial/properties/night_sky': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+Validate extension JSON: Error: Field 'classes/ProceduralSkyMaterial/properties/sky_cover': type changed value in new API, from "Texture2D" to "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture".
+
+Property hints modified to disallow resource types that don't work. The types allowed are now more restricted, but this change only impacts the editor and not the actual exposed API. No adjustments should be necessary.
