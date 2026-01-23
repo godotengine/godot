@@ -9,5 +9,6 @@
 		[b]Note:[/b] When the target is close to the root, it tends to produce zig-zag patterns, resulting in unnatural visual movement.
 	</description>
 	<tutorials>
+		<link title="Inverse Kinematics Returns to Godot 4.6 - IKModifier3D">https://godotengine.org/article/inverse-kinematics-returns-to-godot-4-6/#ikmodifier3d-and-7-child-classes</link>
 	</tutorials>
 </class>
