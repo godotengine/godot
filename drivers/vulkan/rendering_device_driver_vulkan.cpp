@@ -6882,6 +6882,9 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 	err = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
 	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkGetVideoSessionMemoryRequirementsKHR failed with error " + itos(err) + ".");
 
+	VideoSessionInfo *video_session_info = VersatileResource::allocate<VideoSessionInfo>(resources_allocator);
+	video_session_info->vk_video_operation = video_profile.videoCodecOperation;
+
 	LocalVector<VkBindVideoSessionMemoryInfoKHR> memory_infos;
 	for (VkVideoSessionMemoryRequirementsKHR memory_requirement : memory_requirements) {
 		VmaAllocationCreateInfo allocation_create_info = {};
@@ -6899,6 +6902,7 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 
 		err = vmaAllocateMemory(allocator, &memory_requirement.memoryRequirements, &allocation_create_info, &allocation, &allocation_info);
 		ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkGetVideoSessionMemoryRequirementsKHR failed with error " + itos(err) + ".");
+		video_session_info->allocation_handles.push_back(allocation);
 
 		VkBindVideoSessionMemoryInfoKHR memory;
 		memory.sType = VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR;
@@ -6913,10 +6917,7 @@ RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const Vide
 
 	err = vkBindVideoSessionMemoryKHR(vk_device, video_session, memory_infos.size(), memory_infos.ptr());
 	ERR_FAIL_COND_V_MSG(err, VideoSessionID(), "vkBindVideoSessionMemoryKHR failed with error " + itos(err) + ".");
-
-	VideoSessionInfo *video_session_info = VersatileResource::allocate<VideoSessionInfo>(resources_allocator);
 	video_session_info->vk_session = video_session;
-	video_session_info->vk_video_operation = video_profile.videoCodecOperation;
 
 	return RDD::VideoSessionID(video_session_info);
 }
@@ -7263,6 +7264,9 @@ void RenderingDeviceDriverVulkan::video_session_free(VideoSessionID p_video_sess
 
 	if (video_session_info->vk_session != VK_NULL_HANDLE) {
 		vkDestroyVideoSessionKHR(vk_device, video_session_info->vk_session, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR));
+		for (VmaAllocation allocation_handle : video_session_info->allocation_handles) {
+			vmaFreeMemory(allocator, allocation_handle);
+		}
 	}
 
 	VersatileResource::free(resources_allocator, video_session_info);

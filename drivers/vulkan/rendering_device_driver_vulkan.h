@@ -733,6 +733,7 @@ public:
 		VkVideoSessionKHR vk_session;
 		VkVideoSessionParametersKHR vk_session_parameters;
 		VkVideoCodecOperationFlagBitsKHR vk_video_operation;
+		Vector<VmaAllocation> allocation_handles;
 	};
 
 	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);

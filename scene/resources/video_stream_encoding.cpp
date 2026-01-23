@@ -143,7 +143,6 @@ VideoStreamEncoding::~VideoStreamEncoding() {
 			local_device->free_rid(video_session);
 		}
 
-		// TODO: why can we not delete this?
-		//memdelete(local_device);
+		memdelete(local_device);
 	}
 }
