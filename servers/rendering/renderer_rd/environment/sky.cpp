@@ -1172,7 +1172,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		Projection view_inv_projection = (correction * p_render_data->scene_data->view_projection[i]).inverse();
 		if (p_render_data->scene_data->view_count > 1) {
 			// Reprojection is used when we need to have things in combined space.
-			RendererRD::MaterialStorage::store_camera(p_render_data->scene_data->cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
+			RendererRD::MaterialStorage::store_camera(sky_scene_state.cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
 		} else {
 			// This is unused so just reset to identity.
 			Projection ident;
