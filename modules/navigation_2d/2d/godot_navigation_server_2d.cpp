@@ -82,7 +82,7 @@ void GodotNavigationServer2D::init() {
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
 	ERR_FAIL_NULL_MSG(navmesh_generator_2d, "Failed to init NavMeshGenerator2D.");
 	RWLockRead read_lock(geometry_parser_rwlock);
-	navmesh_generator_2d->set_generator_parsers(generator_parsers);
+	navmesh_generator_2d->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif // CLIPPER2_ENABLED
 	// TODO
 }
@@ -251,7 +251,7 @@ TypedArray<RID> GodotNavigationServer2D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap2D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle2D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle2D *> obstacles(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
