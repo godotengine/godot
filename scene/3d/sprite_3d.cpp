@@ -1009,7 +1009,10 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hframes", "hframes"), &Sprite3D::set_hframes);
 	ClassDB::bind_method(D_METHOD("get_hframes"), &Sprite3D::get_hframes);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
+	// Disallow types that are only supported in 2D contexts.
+	const String allowed_texture_types = "Texture2D,-AtlasTexture,-CanvasTexture,-MeshTexture";
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, allowed_texture_types), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
