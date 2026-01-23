@@ -106,13 +106,15 @@
 # Ihab Shoully <shoully@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # ahmad aaaz <aaazahmad8@gmail.com>, 2025.
+# kyan <heiorun.eks@gmail.com>, 2026.
+# Khaled Aboud <khaledaboud700@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-31 16:58+0000\n"
-"Last-Translator: ahmad aaaz <aaazahmad8@gmail.com>\n"
+"PO-Revision-Date: 2026-01-23 01:57+0000\n"
+"Last-Translator: Khaled Aboud <khaledaboud700@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -121,13 +123,103 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "حسنا"
 
+msgid "Failed"
+msgstr "فشل"
+
+msgid "Unavailable"
+msgstr "غير متاح"
+
+msgid "Unconfigured"
+msgstr "غير مهيأ"
+
+msgid "Unauthorized"
+msgstr "غير مصرح به"
+
+msgid "Parameter out of range"
+msgstr "المعامل خارج النطاق:%s"
+
+msgid "Out of memory"
+msgstr "الذاكره غير كافيه"
+
+msgid "File not found"
+msgstr "الملف غير موجود"
+
+msgid "File: Bad drive"
+msgstr "الملف: محرك أقراص تالف"
+
+msgid "File: Bad path"
+msgstr "الملف: مسار غير صالح"
+
+msgid "File: Permission denied"
+msgstr "الملف: تم رفض الإذن"
+
+msgid "File already in use"
+msgstr "الملف قيد الاستخدام بالفعل"
+
+msgid "Can't open file"
+msgstr "تعذر فتح الملف"
+
+msgid "Can't write file"
+msgstr "لا يمكن كتابة الملف"
+
+msgid "Can't read file"
+msgstr "لا يمكن قراءة الملف"
+
+msgid "File unrecognized"
+msgstr "الملف غير معروف"
+
+msgid "File corrupt"
+msgstr "ملف تالف"
+
+msgid "Missing dependencies for file"
+msgstr "التبعيات المفقودة للملف"
+
+msgid "End of file"
+msgstr "نهاية الملف"
+
+msgid "Can't open"
+msgstr "لا يمكن الفتح"
+
+msgid "Can't create"
+msgstr "لا يمكن الإنشاء"
+
+msgid "Query failed"
+msgstr "فشل الطلب"
+
+msgid "Already in use"
+msgstr "قيد الاستخدام بالفعل"
+
 msgid "Locked"
 msgstr "مُقفل"
+
+msgid "Timeout"
+msgstr "انتهت المهلة"
+
+msgid "Can't connect"
+msgstr "لا يمكن الاتصال"
+
+msgid "Can't resolve"
+msgstr "لا يمكن الحل"
+
+msgid "Connection error"
+msgstr "خطأ في الاتصال"
+
+msgid "Can't acquire resource"
+msgstr "لا يمكن الحل"
+
+msgid "Can't fork"
+msgstr "لا يمكن الحل"
+
+msgid "Invalid data"
+msgstr "بيانات غير صالح"
+
+msgid "Invalid parameter"
+msgstr "مسار غير صالح"
 
 msgid "Help"
 msgstr "المساعدة"
@@ -1250,6 +1342,9 @@ msgstr "تحريك العُقدة"
 
 msgid "Transition exists!"
 msgstr "الانتقال موجود سلفاً!"
+
+msgid "Cannot transition to self!"
+msgstr "لا يمكن الانتقال(transition ) إلى الذات!"
 
 msgid "Play/Travel to %s"
 msgstr "تشغيل/انتقل إلى %s"
@@ -15909,14 +16004,6 @@ msgstr ""
 "لن يتم عرض أداة التلميح أثناء تعيين عامل تصفية الفأره الخاص بعنصر التحكم, تم "
 "وضعه على \"تجاهل\". لحل هذه المشكلة ، اضبط تصفية الفأره على \"إيقاف\" أو "
 "\"تمرير\"."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"يرجى العلم أن GraphEdit وGraphNode سيخضعان لعملية إعادة بناء واسعة النطاق في "
-"إصدار 4.x مستقبلي يتضمن تغييرات في واجهة برمجة التطبيقات (API) تنتهك التوافق."
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"

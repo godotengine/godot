@@ -96,7 +96,7 @@
 # atahanacar <atahanacar@gmx.com>, 2023.
 # efella <furkanefe911@gmail.com>, 2023.
 # Black <ebubekir23atalay@gmail.com>, 2023.
-# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023, 2024, 2025.
+# Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023, 2024, 2025, 2026.
 # ErcanPasha <dayanomerercan@gmail.com>, 2023.
 # Yoldaş Ulaş <yutalas@gmail.com>, 2023.
 # Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
@@ -133,8 +133,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-18 16:02+0000\n"
-"Last-Translator: ulk <ulk.info@gmail.com>\n"
+"PO-Revision-Date: 2026-01-23 01:57+0000\n"
+"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -142,7 +142,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.2\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "Tamam"
@@ -830,6 +830,15 @@ msgstr "Ayrık"
 msgid "Capture"
 msgstr "Yakala"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space."
+msgstr ""
+"Noktaları seç ve taşı.\n"
+"Sağ Fare Düğmesi: Tıklanan konuma nokta ekle.\n"
+"Shift + Sol Fare Düğmesi + Sürükle: Boşluk içinde harmanlama noktası ayarla."
+
 msgid "Create points."
 msgstr "Noktalar oluştur."
 
@@ -1412,7 +1421,7 @@ msgid "Transition exists!"
 msgstr "Geçiş zaten var!"
 
 msgid "Cannot transition to self!"
-msgstr "Kendisine dönüşemez!"
+msgstr "Kendine geçiş yapılamaz!"
 
 msgid "Cannot transition to \"Start\"!"
 msgstr "'Start' durumuna geçiş yapılamıyor!"
@@ -1960,6 +1969,12 @@ msgstr ""
 "Canlandırmaları oluşturmak ve düzenlemek için bir CanlandırmaOynatıcı "
 "(AnimationPlayer) düğümü seç."
 
+msgid "Add AnimationPlayer"
+msgstr "AnimationPlayer (Canlandırma Oynatıcısı) Ekle"
+
+msgid "Imported Animation"
+msgstr "İçe Aktarılan Animasyon"
+
 msgid "Warning: Editing imported animation"
 msgstr "Uyarı: İçe aktarılan canlandırma düzenleniyor"
 
@@ -2212,6 +2227,14 @@ msgstr "Yaylanan"
 msgid "Ease Type:"
 msgstr "Yumuşatma Tipi:"
 
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "İçe-Dışa Yumuşatma"
+
+msgctxt "Ease Type"
+msgid "Ease Out-In"
+msgstr "Dışa-İçe Yumuşatma"
+
 msgid "FPS:"
 msgstr "FPS:"
 
@@ -2235,6 +2258,12 @@ msgstr "Tümünü Seç / Seçimleri Kaldır"
 
 msgid "Copy Selection"
 msgstr "Seçimi Kopyala"
+
+msgid "Key Insertion Error"
+msgstr "Anahtar Ekleme Hatası"
+
+msgid "Imported Animation cannot be edited!"
+msgstr "İçe Aktarılan Animasyon düzenlenemez!"
 
 msgid "Animation Change Keyframe Time"
 msgstr "Canlandırma Anahtar Kare Zamanını Değiştir"
@@ -2316,6 +2345,9 @@ msgstr "Kök"
 
 msgid "AnimationTree"
 msgstr "CanlandırmaAğacı (AnimationTree)"
+
+msgid "Toggle AnimationTree Dock"
+msgstr "AnimationTree (Canlandırma Ağacı) Yuvasını Aç/Kapat"
 
 msgid "Path:"
 msgstr "Yol:"
@@ -2743,6 +2775,9 @@ msgstr "Ses Veri Yolu Yerleşim Düzenini Aç"
 msgid "Error saving file: %s"
 msgstr "Dosya kaydedilirken hata: %s"
 
+msgid "Toggle Audio Dock"
+msgstr "Ses Yuvasını Aç/Kapat"
+
 msgid "Layout:"
 msgstr "Yerleşim Düzeni:"
 
@@ -2778,6 +2813,9 @@ msgstr "İçine Gir"
 
 msgid "Step Over"
 msgstr "Üstünden Geç"
+
+msgid "Step Out"
+msgstr "Dışına Çık"
 
 msgid "Break"
 msgstr "Duraklat"
@@ -2933,6 +2971,9 @@ msgstr "Uzak %s (%d Seçildi)"
 
 msgid "Debugger"
 msgstr "Hata Ayıklayıcı"
+
+msgid "Toggle Debugger Dock"
+msgstr "Hata Ayıklayıcı Yuvasını Aç/Kapat"
 
 msgid "Session %d"
 msgstr "Oturum %d"
@@ -3713,6 +3754,12 @@ msgstr "Bu yuvayı bir sekme sola taşı."
 
 msgid "Close this dock."
 msgstr "Bu yuvayı kapat."
+
+msgid "This dock can't be closed."
+msgstr "Bu yuva kapatılamaz."
+
+msgid "This dock does not support floating."
+msgstr "Bu yuva serbest pencere olmayı desteklemez."
 
 msgid "Make this dock floating."
 msgstr "Bu yuvayı serbest pencere yap."
@@ -6402,6 +6449,9 @@ msgstr ""
 "Dosyaları/Klasörleri projenin dışında tutmak için filtreler\n"
 "(virgülle-ayrılmış, örnek: *.json, *.txt, docs/*)"
 
+msgid "Enable Delta Encoding"
+msgstr "Artışlı Sıkıştırmayı etkinleştir"
+
 msgid "Base Packs:"
 msgstr "Temel Paketler:"
 
@@ -7820,6 +7870,9 @@ msgstr "Çeviri Ekle"
 
 msgid "Lock/Unlock Component Ratio"
 msgstr "Bileşen Oranını Kilitle/Kilidi Aç"
+
+msgid "Left-click to make it unique."
+msgstr "Benzersiz hale getirmek için Sol-tıklayın."
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -19892,15 +19945,6 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s buraya bırakılamaz. İptal etmek için %s tuşunu kullanın."
-
-msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Lütfen unutmayın; Grafik Düzenleme (GraphEdit) ve Grafik Düğümü (GraphNode), "
-"gelecekteki 4.x sürümünde, uyumluluğu-bozacak API değişikliklerini içeren "
-"kapsamlı bir yeniden düzenleme işleminden geçecekler."
 
 msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
