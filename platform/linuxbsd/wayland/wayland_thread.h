@@ -247,15 +247,25 @@ public:
 
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
-		bool suspended = false;
+
+		// Toplevel states.
+		bool maximized = false; // MUST obey configure size.
+		bool fullscreen = false; // Can be smaller than configure size.
+		bool resizing = false; // Configure size is a max.
+		// No need for `activated` (yet)
+		bool tiled_left = false;
+		bool tiled_right = false;
+		bool tiled_top = false;
+		bool tiled_bottom = false;
+		bool suspended = false; // We can stop drawing.
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
 		// receive a wm_capabilities event these will get reset and updated with
 		// whatever the compositor says.
-		bool can_minimize = false;
-		bool can_maximize = false;
-		bool can_fullscreen = false;
+		bool can_minimize = true;
+		bool can_maximize = true;
+		bool can_fullscreen = true;
 
 		HashSet<struct wl_output *> wl_outputs;
 
@@ -1101,6 +1111,7 @@ public:
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 	WindowState *window_get_state(DisplayServer::WindowID p_window_id);
 	const WindowState *window_get_state(DisplayServer::WindowID p_window_id) const;
+	Size2i window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 
 	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
