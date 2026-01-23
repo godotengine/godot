@@ -119,6 +119,8 @@ protected:
 	void _notification(int p_what);
 	void _draw();
 
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	static void _bind_methods();
 
 private:

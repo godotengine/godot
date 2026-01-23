@@ -264,6 +264,7 @@ int Line2D::get_round_precision() const {
 void Line2D::set_antialiased(bool p_antialiased) {
 	_antialiased = p_antialiased;
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 bool Line2D::get_antialiased() const {
@@ -337,7 +338,16 @@ void Line2D::_curve_changed() {
 	queue_redraw();
 }
 
-// static
+PackedStringArray Line2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	if (_antialiased) {
+		warnings.push_back(RTR("The Antialiased property is currently unimplemented and has no effect when enabled.\nOn the Forward+ and Mobile renderers, you can use 2D MSAA instead (ProjectSettings > Rendering > Anti Aliasing > Quality > MSAA 2D)."));
+	}
+
+	return warnings;
+}
+
 void Line2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
