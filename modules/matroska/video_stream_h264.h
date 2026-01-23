@@ -40,18 +40,18 @@ class VideoStreamH264 : public VideoStreamEncoding {
 
 private:
 	struct DecodeFrame {
-		RID src_buffer;
-		RID dst_texture_yuv;
-		RID dst_texture_rgba;
-		VideoDecodeH264SliceHeader video_header;
-		uint8_t *buffer_ptr;
+		RID src_buffer = RID();
+		RID dst_texture_yuv = RID();
+		RID dst_texture_rgba = RID();
+		VideoDecodeH264SliceHeader video_header = {};
+		uint8_t *buffer_ptr = nullptr;
 	};
 
 	struct PresentFrame {
-		RID texture;
-		size_t group_order_count;
-		size_t picture_order_count;
-		bool presented;
+		RID texture = RID();
+		size_t group_order_count = 0;
+		size_t picture_order_count = 0;
+		bool presented = false;
 	};
 
 	const uint8_t *src = nullptr;
@@ -105,4 +105,6 @@ public:
 	virtual uint8_t *queue_decode(Span<uint8_t> p_frame_header, uint64_t p_frame_size) final override;
 	virtual void submit_decode() final override;
 	virtual Vector<uint8_t> present_frame() final override;
+
+	~VideoStreamH264();
 };

@@ -672,7 +672,7 @@ uint8_t *VideoStreamH264::queue_decode(Span<uint8_t> p_frame_header, uint64_t p_
 	decode_rgba_index = (decode_rgba_index + 1) % rgba_pool.size();
 
 	prevent_emulation = false;
-	uint32_t nal_size = read_bits(length_size * 8); // nal_size
+	read_bits(length_size * 8); // nal_size
 	prevent_emulation = true;
 
 	read_bits(1); // forbidden_zero_bit
@@ -771,4 +771,11 @@ Vector<uint8_t> VideoStreamH264::present_frame() {
 	}
 
 	return local_device->texture_get_data(next_frame.texture, 0);
+}
+
+VideoStreamH264::~VideoStreamH264() {
+	for (int64_t i = 0; i < decode_queue.size(); i++) {
+		RID src_buffer = decode_queue[i].src_buffer;
+		local_device->free_rid(src_buffer);
+	}
 }
