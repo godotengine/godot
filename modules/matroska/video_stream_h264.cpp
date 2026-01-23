@@ -44,33 +44,34 @@ uint64_t VideoStreamH264::read_bits(uint8_t p_amount) {
 
 	uint64_t encoded = 0;
 	for (uint8_t i = 0; i < bytes; i++) {
-		encoded = (encoded << 8) | src[i];
+		encoded = (encoded << 8) | src[read_ptr + i];
 
+		// TODO: better emulation mask
 		if ((encoded & emulation_prevention_mask) == 3) {
 			if (prevent_emulation) {
 				encoded = encoded >> 8;
-				src += 1;
+				read_ptr += 1;
 				i--;
 			}
 		}
 	}
 
-	src += bytes;
+	read_ptr += bytes;
 
 	uint8_t partial_byte = shift + bits;
 	if (partial_byte > 8) {
-		encoded = (encoded << 8) | src[0];
-		encoded = (encoded << 8) | src[1];
+		encoded = (encoded << 8) | src[read_ptr];
+		encoded = (encoded << 8) | src[read_ptr + 1];
 
-		src += 1;
+		read_ptr += 1;
 		bytes += 2;
 	} else if (partial_byte == 8) {
-		encoded = (encoded << 8) | src[0];
+		encoded = (encoded << 8) | src[read_ptr];
 
-		src += 1;
+		read_ptr += 1;
 		bytes += 1;
 	} else if (partial_byte > 0) {
-		encoded = (encoded << 8) | src[0];
+		encoded = (encoded << 8) | src[read_ptr];
 		bytes += 1;
 	}
 
@@ -107,7 +108,7 @@ int64_t VideoStreamH264::read_se() {
 }
 
 VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size, uint64_t *r_read) {
-	const uint8_t *nal_start = src;
+	size_t nal_start = read_ptr;
 
 	read_bits(1); // forbidden_zero_bit
 	uint8_t nal_ref_idc = read_bits(2);
@@ -149,13 +150,13 @@ VideoCodingH264NalUnitType VideoStreamH264::parse_nal_unit(uint64_t p_size, uint
 	}
 
 	if (r_read != nullptr) {
-		*r_read = src - nal_start;
+		*r_read = read_ptr - nal_start;
 		if (shift != 0) {
 			*r_read += 1;
 		}
 	}
 
-	src = nal_start + p_size;
+	read_ptr = nal_start + p_size;
 	shift = 0;
 
 	return nal_unit_type;
@@ -336,7 +337,7 @@ VideoCodingH264SequenceParameterSet VideoStreamH264::parse_sequence_parameter_se
 }
 
 VideoCodingH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(uint64_t p_size) {
-	const uint8_t *pps_start = src;
+	size_t pps_start = read_ptr;
 	VideoCodingH264PictureParameterSet picture_parameter_set = {};
 
 	picture_parameter_set.pic_parameter_set_id = read_ue();
@@ -365,7 +366,7 @@ VideoCodingH264PictureParameterSet VideoStreamH264::parse_picture_parameter_set(
 	picture_parameter_set.constrained_intra_pred_flag = read_bits(1) > 0;
 	picture_parameter_set.redundant_pic_cnt_present_flag = read_bits(1) > 0;
 
-	if (src < pps_start + p_size) {
+	if (read_ptr < pps_start + p_size) {
 		picture_parameter_set.transform_8x8_mode_flag = read_bits(1) > 0;
 
 		picture_parameter_set.pic_scaling_matrix_present_flag = read_bits(1) > 0;
@@ -546,6 +547,7 @@ VideoDecodeH264SliceHeader VideoStreamH264::parse_slice_header(uint64_t p_size, 
 // The Matroska "codec private" data for H264 is an AVCDecoderConfigurationRecord
 Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_t p_size) {
 	src = p_stream;
+	read_ptr = 0;
 	shift = 0;
 
 	uint8_t configuration_version = read_bits(8);
@@ -601,11 +603,12 @@ Error VideoStreamH264::parse_container_metadata(const uint8_t *p_stream, uint64_
 
 Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_size, Vector<ParsedFrame> *r_frames) {
 	src = p_stream;
+	read_ptr = 0;
 	shift = 0;
 
-	while (src < p_stream + p_size) {
+	while (read_ptr < p_size) {
 		ParsedFrame frame = {};
-		frame.header_offset = src - p_stream;
+		frame.header_offset = read_ptr;
 
 		prevent_emulation = false;
 		uint64_t nal_size = read_bits(length_size * 8);
@@ -656,6 +659,7 @@ RID VideoStreamH264::_create_texture(RD::TextureFormat p_texture_template, RD::T
 
 uint8_t *VideoStreamH264::queue_decode(Span<uint8_t> p_frame_header, uint64_t p_frame_size) {
 	src = p_frame_header.ptr();
+	read_ptr = 0;
 	shift = 0;
 
 	DecodeFrame decode_frame = {};

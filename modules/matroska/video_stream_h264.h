@@ -55,6 +55,7 @@ private:
 	};
 
 	const uint8_t *src = nullptr;
+	size_t read_ptr = 0;
 	uint8_t shift = 0;
 
 	uint8_t length_size = 4;
