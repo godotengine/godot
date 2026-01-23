@@ -61,6 +61,15 @@ TEST_CASE("[StringName] Benchmark SNAME vs runtime StringName") {
 	}
 	end = OS::get_singleton()->get_ticks_usec();
 	print_line(vformat("SNAME construction: %d usec", end - start));
+
+	// Benchmark 3: String::hash literal
+	start = OS::get_singleton()->get_ticks_usec();
+	uint32_t h = 0;
+	for (int i = 0; i < iterations; i++) {
+		h += String::hash("static_string");
+	}
+	end = OS::get_singleton()->get_ticks_usec();
+	print_line(vformat("String::hash literal: %d usec (hash: %d)", end - start, (int)h));
 }
 
 } // namespace BenchStringName
