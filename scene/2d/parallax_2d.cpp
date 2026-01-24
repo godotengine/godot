@@ -121,14 +121,14 @@ void Parallax2D::_update_scroll() {
 
 	if (repeat_size.x) {
 		real_t mod = Math::fposmod(scroll_ofs.x - scroll_offset.x, repeat_size.x * get_scale().x);
-		scroll_ofs.x = screen_offset.x - mod;
+		scroll_ofs.x = screen_offset.x - mod * (scroll_scale.x < 0 ? -1 : 1);
 	} else {
 		scroll_ofs.x = screen_offset.x + scroll_offset.x - scroll_ofs.x;
 	}
 
 	if (repeat_size.y) {
 		real_t mod = Math::fposmod(scroll_ofs.y - scroll_offset.y, repeat_size.y * get_scale().y);
-		scroll_ofs.y = screen_offset.y - mod;
+		scroll_ofs.y = screen_offset.y - mod * (scroll_scale.y < 0 ? -1 : 1);
 	} else {
 		scroll_ofs.y = screen_offset.y + scroll_offset.y - scroll_ofs.y;
 	}
