@@ -85,7 +85,7 @@ Color EditorFileDialog::_get_folder_color(const String &p_path) const {
 }
 
 Vector2i EditorFileDialog::_get_list_mode_icon_size() const {
-	return Vector2i(1, 1) * Math::round(get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)) * EDSCALE);
+	return Vector2i();
 }
 
 void EditorFileDialog::_bind_methods() {
