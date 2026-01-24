@@ -213,6 +213,7 @@ public:
 
 	bool select_previous_available();
 	bool select_next_available();
+	void cycle_available(bool p_forward);
 
 	void set_deselect_enabled(bool p_enabled);
 	bool get_deselect_enabled() const;

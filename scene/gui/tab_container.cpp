@@ -764,6 +764,22 @@ bool TabContainer::select_next_available() {
 	return tab_bar->select_next_available();
 }
 
+void TabContainer::cycle_available(bool p_forward) {
+	if (p_forward) {
+		if (get_current_tab() < get_tab_count() - 1) {
+			select_next_available();
+		} else {
+			set_current_tab(0);
+		}
+	} else {
+		if (get_current_tab() > 0) {
+			select_previous_available();
+		} else {
+			set_current_tab(get_tab_count() - 1);
+		}
+	}
+}
+
 void TabContainer::set_deselect_enabled(bool p_enabled) {
 	tab_bar->set_deselect_enabled(p_enabled);
 }
