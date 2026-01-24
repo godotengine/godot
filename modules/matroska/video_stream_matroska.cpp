@@ -765,6 +765,7 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 
 			uint64_t target_track = read_size();
 
+			//skip timestamp
 			read_ptr += 2;
 
 			uint8_t flags = src[read_ptr];
@@ -772,22 +773,89 @@ Error VideoStreamPlaybackMatroska::parse_cluster(Cluster *r_cluster) {
 			// ...other flags
 			read_ptr += 1;
 
-			if (lacing != 0) {
-				ERR_PRINT("Cannot parse Matrsoka block with lacing");
+			Vector<size_t> lace_sizes;
+			if (lacing == 0) {
+				// No lacing: there is only 1 block
+				lace_sizes.push_back(block_size - (read_ptr - block_start));
+			} else if (lacing == 1) {
+				// Xiph lacing
+				size_t total_size = 0;
+
+				// First byte: lace count -1
+				size_t lace_count = src[read_ptr];
+				read_ptr += 1;
+
+				for (size_t i = 0; i < lace_count; i++) {
+					size_t lace_size = 0;
+					while (src[read_ptr] == 255) {
+						total_size += 255;
+						lace_size += 255;
+						read_ptr += 1;
+					}
+
+					total_size += src[read_ptr];
+					lace_size += src[read_ptr];
+					read_ptr += 1;
+
+					lace_sizes.push_back(lace_size);
+				}
+
+				// Final lace's size is derived from total block size
+				lace_sizes.push_back(block_size - total_size - (read_ptr - block_start));
+			} else if (lacing == 2) {
+				// Fixed size lacing
+
+				// First byte: lace count -1
+				size_t lace_count = src[read_ptr] + 1;
+				read_ptr += 1;
+
+				// All laces have the same size
+				size_t lace_size = (block_size - (read_ptr - block_start)) / lace_count;
+				for (size_t i = 0; i < lace_count; i++) {
+					lace_sizes.push_back(lace_size);
+				}
+			} else if (lacing == 3) {
+				// EBML lacing
+				size_t total_size = 0;
+
+				// First byte: lace count -1
+				size_t lace_count = src[read_ptr];
+				read_ptr += 1;
+
+				// First size is read normally
+				size_t previous_size = read_size();
+				lace_sizes.push_back(previous_size);
+
+				for (size_t i = 1; i < lace_count; i++) {
+					// Subsequent sizes are used as a delta from the previous
+					int64_t lace_start = read_ptr;
+					int64_t lace_vint = read_size();
+					int64_t lace_delta = lace_vint + 1 - (1 << (7 * (read_ptr - lace_start) - 1));
+
+					previous_size += lace_delta;
+					lace_sizes.push_back(previous_size);
+				}
+
+				// Final lace's size is derived from total block size
+				lace_sizes.push_back(block_size - total_size - (read_ptr - block_start));
 			}
 
-			if (target_track == 1 && video_stream_encoding.is_valid()) {
-				Vector<VideoStreamEncoding::ParsedFrame> frames;
-				video_stream_encoding->parse_container_block(src + read_ptr, block_size - 4, &frames);
-				for (int64_t i = 0; i < frames.size(); i++) {
-					Cluster::Block block = {};
+			for (size_t lace_size : lace_sizes) {
+				if (target_track == 1 && video_stream_encoding.is_valid()) {
+					Vector<VideoStreamEncoding::ParsedFrame> frames;
+					video_stream_encoding->parse_container_block(src + read_ptr, lace_size, &frames);
+					for (int64_t i = 0; i < frames.size(); i++) {
+						Cluster::Block block = {};
 
-					block.header_position = read_ptr + frames[i].header_offset;
-					block.header_size = frames[i].header_size;
-					block.frame_size = frames[i].frame_size;
+						block.header_position = read_ptr + frames[i].header_offset;
+						block.header_size = frames[i].header_size;
+						block.frame_size = frames[i].frame_size;
 
-					r_cluster->blocks.append(block);
+						r_cluster->blocks.append(block);
+					}
 				}
+
+				read_ptr += lace_size;
 			}
 
 			read_ptr = block_start + block_size;
