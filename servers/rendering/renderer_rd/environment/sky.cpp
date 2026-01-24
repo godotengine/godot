@@ -340,7 +340,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	tf.format = p_texture_format;
 	tf.width = p_low_quality ? 160 : p_size >> 1; // Always 160x160 when using REALTIME.
 	tf.height = p_low_quality ? 160 : p_size >> 1;
-	tf.mipmaps = p_low_quality ? 5 : MAX(mipmaps - 1, 1);
+	tf.mipmaps = p_low_quality ? 5 : mipmaps - 1;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	if (!use_raster_effect) {
 		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -693,7 +693,7 @@ RendererRD::MaterialStorage::MaterialData *SkyRD::_create_sky_material_funcs(Ren
 }
 
 SkyRD::SkyRD() {
-	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
+	roughness_layers = MAX(2, (int)GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers"));
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_octmap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
 }
