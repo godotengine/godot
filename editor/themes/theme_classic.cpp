@@ -2439,9 +2439,24 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		// StateMachine graph.
 		{
-			p_theme->set_stylebox(SceneStringName(panel), "GraphStateMachine", p_config.tree_panel_style);
-			p_theme->set_stylebox("error_panel", "GraphStateMachine", p_config.tree_panel_style);
-			p_theme->set_color("error_color", "GraphStateMachine", p_config.error_color);
+			p_theme->set_stylebox("panel_style", "AnimationNodeStateMachineEditor", p_config.tree_panel_style);
+			p_theme->set_stylebox("error_panel", "AnimationNodeStateMachineEditor", p_config.tree_panel_style);
+			p_theme->set_color("error_color", "AnimationNodeStateMachineEditor", p_config.error_color);
+
+			p_theme->set_icon("tool_icon_select", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("ToolSelect"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("tool_icon_create", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("ToolAddNode"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("tool_icon_connect", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("ToolConnect"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("tool_icon_erase", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
+
+			p_theme->set_icon("transition_icon_immediate", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionImmediate"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_icon_sync", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionSync"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_icon_end", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionEnd"), EditorStringName(EditorIcons)));
+
+			p_theme->set_icon("play_icon_start", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("play_icon_travel", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("PlayTravel"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("play_icon_auto", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("AutoPlay"), EditorStringName(EditorIcons)));
+
+			p_theme->set_icon("animation_icon", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("Animation"), EditorStringName(EditorIcons)));
 
 			const int sm_margin_side = 10 * EDSCALE;
 			const int sm_margin_bottom = 2;
@@ -2462,35 +2477,42 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			sm_node_playing_style->set_shadow_color(p_config.warning_color * Color(1, 1, 1, 0.2));
 			sm_node_playing_style->set_draw_center(false);
 
-			p_theme->set_stylebox("node_frame", "GraphStateMachine", sm_node_style);
-			p_theme->set_stylebox("node_frame_selected", "GraphStateMachine", sm_node_selected_style);
-			p_theme->set_stylebox("node_frame_playing", "GraphStateMachine", sm_node_playing_style);
+			p_theme->set_stylebox("node_frame", "AnimationNodeStateMachineEditor", sm_node_style);
+			p_theme->set_stylebox("node_frame_selected", "AnimationNodeStateMachineEditor", sm_node_selected_style);
+			p_theme->set_stylebox("node_frame_playing", "AnimationNodeStateMachineEditor", sm_node_playing_style);
 
 			Ref<StyleBoxFlat> sm_node_start_style = sm_node_style->duplicate();
 			sm_node_start_style->set_border_width_all(1 * EDSCALE);
 			sm_node_start_style->set_border_color(p_config.success_color.lightened(0.24));
-			p_theme->set_stylebox("node_frame_start", "GraphStateMachine", sm_node_start_style);
+			p_theme->set_stylebox("node_frame_start", "AnimationNodeStateMachineEditor", sm_node_start_style);
 
 			Ref<StyleBoxFlat> sm_node_end_style = sm_node_style->duplicate();
 			sm_node_end_style->set_border_width_all(1 * EDSCALE);
 			sm_node_end_style->set_border_color(p_config.error_color);
-			p_theme->set_stylebox("node_frame_end", "GraphStateMachine", sm_node_end_style);
+			p_theme->set_stylebox("node_frame_end", "AnimationNodeStateMachineEditor", sm_node_end_style);
 
-			p_theme->set_font("node_title_font", "GraphStateMachine", p_theme->get_font(SceneStringName(font), SNAME("Label")));
-			p_theme->set_font_size("node_title_font_size", "GraphStateMachine", p_theme->get_font_size(SceneStringName(font_size), SNAME("Label")));
-			p_theme->set_color("node_title_font_color", "GraphStateMachine", p_config.font_color);
+			p_theme->set_font("node_title_font", "AnimationNodeStateMachineEditor", p_theme->get_font(SceneStringName(font), SNAME("Label")));
+			p_theme->set_font_size("node_title_font_size", "AnimationNodeStateMachineEditor", p_theme->get_font_size(SceneStringName(font_size), SNAME("Label")));
+			p_theme->set_color("node_title_font_color", "AnimationNodeStateMachineEditor", p_config.font_color);
 
-			p_theme->set_color("transition_color", "GraphStateMachine", p_config.font_color);
-			p_theme->set_color("transition_disabled_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.2));
-			p_theme->set_color("transition_icon_color", "GraphStateMachine", Color(1, 1, 1));
-			p_theme->set_color("transition_icon_disabled_color", "GraphStateMachine", Color(1, 1, 1, 0.2));
-			p_theme->set_color("highlight_color", "GraphStateMachine", p_config.accent_color);
-			p_theme->set_color("highlight_disabled_color", "GraphStateMachine", p_config.accent_color * Color(1, 1, 1, 0.6));
-			p_theme->set_color("focus_color", "GraphStateMachine", p_config.accent_color);
-			p_theme->set_color("guideline_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
+			p_theme->set_color("transition_color", "AnimationNodeStateMachineEditor", p_config.font_color);
+			p_theme->set_color("transition_disabled_color", "AnimationNodeStateMachineEditor", p_config.font_color * Color(1, 1, 1, 0.2));
+			p_theme->set_color("transition_icon_color", "AnimationNodeStateMachineEditor", Color(1, 1, 1));
+			p_theme->set_color("transition_icon_disabled_color", "AnimationNodeStateMachineEditor", Color(1, 1, 1, 0.2));
+			p_theme->set_color("highlight_color", "AnimationNodeStateMachineEditor", p_config.accent_color);
+			p_theme->set_color("highlight_disabled_color", "AnimationNodeStateMachineEditor", p_config.accent_color * Color(1, 1, 1, 0.6));
+			p_theme->set_color("focus_color", "AnimationNodeStateMachineEditor", p_config.accent_color);
+			p_theme->set_color("guideline_color", "AnimationNodeStateMachineEditor", p_config.font_color * Color(1, 1, 1, 0.3));
 
-			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
-			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
+			p_theme->set_icon("transition_immediate_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionImmediateBig"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_sync_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionSyncBig"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_end_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionEndBig"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_immediate_auto_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionImmediateAutoBig"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_sync_auto_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionSyncAutoBig"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("transition_end_auto_big", "AnimationNodeStateMachineEditor", p_theme->get_icon(SNAME("TransitionEndAutoBig"), EditorStringName(EditorIcons)));
+
+			p_theme->set_color("playback_color", "AnimationNodeStateMachineEditor", p_config.font_color);
+			p_theme->set_color("playback_background_color", "AnimationNodeStateMachineEditor", p_config.font_color * Color(1, 1, 1, 0.3));
 		}
 	}
 

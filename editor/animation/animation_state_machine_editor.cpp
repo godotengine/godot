@@ -2007,56 +2007,56 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_update_graph", &AnimationNodeStateMachineEditor::_update_graph);
 	ClassDB::bind_method("_select_transition", &AnimationNodeStateMachineEditor::_select_transition);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, panel_style, "panel", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, error_panel_style, "error_panel", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, error_color, "error_color", "GraphStateMachine");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, panel_style);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, error_panel_style);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, error_color);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_select, "ToolSelect", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_create, "ToolAddNode", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_connect, "ToolConnect", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_erase, "Remove", "EditorIcons");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_select);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_create);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_connect);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, tool_icon_erase);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_immediate, "TransitionImmediate", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_sync, "TransitionSync", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_end, "TransitionEnd", "EditorIcons");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_immediate);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_sync);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icon_end);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_start, "Play", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_travel, "PlayTravel", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_auto, "AutoPlay", "EditorIcons");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_start);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_travel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_icon_auto);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, animation_icon, "Animation", "EditorIcons");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, animation_icon);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame, "node_frame", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_selected, "node_frame_selected", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_playing, "node_frame_playing", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_start, "node_frame_start", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_end, "node_frame_end", "GraphStateMachine");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_playing);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_start);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, AnimationNodeStateMachineEditor, node_frame_end);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT, AnimationNodeStateMachineEditor, node_title_font, "node_title_font", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT_SIZE, AnimationNodeStateMachineEditor, node_title_font_size, "node_title_font_size", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, node_title_font_color, "node_title_font_color", "GraphStateMachine");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, AnimationNodeStateMachineEditor, node_title_font);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, AnimationNodeStateMachineEditor, node_title_font_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, node_title_font_color);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_node, "Play", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, edit_node, "Edit", "EditorIcons");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, play_node);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, edit_node);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_color, "transition_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_disabled_color, "transition_disabled_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_color, "transition_icon_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_disabled_color, "transition_icon_disabled_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_color, "highlight_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_disabled_color, "highlight_disabled_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, focus_color, "focus_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, guideline_color, "guideline_color", "GraphStateMachine");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, transition_icon_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, highlight_disabled_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, focus_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, guideline_color);
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[0], "TransitionImmediateBig", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[1], "TransitionSyncBig", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[2], "TransitionEndBig", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[3], "TransitionImmediateAutoBig", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[4], "TransitionSyncAutoBig", "EditorIcons");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[5], "TransitionEndAutoBig", "EditorIcons");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[0], "transition_immediate_big");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[1], "transition_sync_big");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[2], "transition_end_big");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[3], "transition_immediate_auto_big");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[4], "transition_sync_auto_big");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, AnimationNodeStateMachineEditor, transition_icons[5], "transition_end_auto_big");
 
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_color, "playback_color", "GraphStateMachine");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_background_color, "playback_background_color", "GraphStateMachine");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, AnimationNodeStateMachineEditor, playback_background_color);
 }
 
 AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
