@@ -2621,6 +2621,37 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		return;
 	}
 
+	static thread_local int call_depth = 0;
+
+	++call_depth;
+#ifdef SANITIZERS_ENABLED
+	{
+#else
+	if (unlikely(call_depth > 64)) { // Do not check stack size if call depth is small.
+#endif
+		void *bottom = nullptr;
+		void *top = nullptr;
+		void *frame = nullptr;
+		bool has_overflow = false;
+		if (Thread::get_stack_limits(&bottom, &top, &frame)) {
+#ifdef SANITIZERS_ENABLED
+			uint64_t alloc_size = 40 * 1024;
+#else
+			uint64_t alloc_size = 4 * 1024;
+#endif
+			has_overflow = ((uint64_t)frame - (uint64_t)top < alloc_size);
+		} else if (unlikely(call_depth > 2048)) { // Unable to get stack size, use hardcoded call depth limit instead.
+			bottom = nullptr;
+			top = nullptr;
+			frame = nullptr;
+			has_overflow = true;
+		}
+		if (has_overflow) {
+			call_depth--;
+			ERR_FAIL_MSG(vformat("Stack overflow. Check for infinite recursion in your script. Call depth: %d.", call_depth));
+		}
+	}
+
 	p_expression->reduced = true;
 
 	switch (p_expression->type) {
@@ -2699,6 +2730,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::TYPE:
 		case GDScriptParser::Node::VARIABLE:
 		case GDScriptParser::Node::WHILE:
+			call_depth--;
 			ERR_FAIL_MSG("Reaching unreachable case");
 	}
 
@@ -2709,6 +2741,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		dummy.kind = GDScriptParser::DataType::VARIANT;
 		p_expression->set_datatype(dummy);
 	}
+	call_depth--;
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
