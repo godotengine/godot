@@ -895,12 +895,12 @@ public:
 	/**********************/
 	virtual Vector<DataFormat> video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) override final;
 
-	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
+	virtual VideoSessionID video_session_create(const VideoSessionProfile &p_session_info) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;
 	virtual void video_session_free(VideoSessionID p_video_session) override final;
 
-	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) override final;
+	virtual void command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header, VectorView<VideoReferenceSlot> p_active_references, VideoReferenceSlot *r_target_reference) override final;
 
 	/**************/
 	/**** MISC ****/

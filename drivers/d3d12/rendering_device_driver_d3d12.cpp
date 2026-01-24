@@ -5592,7 +5592,7 @@ Vector<RDD::DataFormat> RenderingDeviceDriverD3D12::video_profile_get_compatible
 	return Vector<RDD::DataFormat>();
 }
 
-RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
+RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const VideoSessionProfile &p_session_info) {
 	return RDD::VideoSessionID();
 }
 
@@ -5605,7 +5605,7 @@ void RenderingDeviceDriverD3D12::video_session_add_av1_parameters(VideoSessionID
 void RenderingDeviceDriverD3D12::video_session_free(VideoSessionID p_video_session) {
 }
 
-void RenderingDeviceDriverD3D12::command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header) {
+void RenderingDeviceDriverD3D12::command_video_session_decode(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, BufferID p_src_buffer, TextureID p_dst_texture, void *p_video_header, VectorView<VideoReferenceSlot> p_active_references, VideoReferenceSlot *r_target_reference) {
 }
 
 /**************/
