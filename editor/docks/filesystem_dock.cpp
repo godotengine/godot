@@ -1523,7 +1523,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".uid\n");
 			}
 		}
-		
+
 		// Update scene if it is open.
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			String new_item_path = p_item.is_file ? new_path : file_changed_paths[i].replace_first(old_path, new_path);
@@ -1539,16 +1539,14 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
-		
 		// Refresh the tree and file list.
-		
-        main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+
+		main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 		callable_mp(this, &FileSystemDock::_update_tree).call_deferred(get_uncollapsed_paths(), false, true);
 		callable_mp(this, &FileSystemDock::_update_file_list).call_deferred(true);
 
 		// Only treat as a changed dependency if it was successfully moved.
 
-		
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
 			print_verbose("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
