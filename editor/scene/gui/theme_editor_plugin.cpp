@@ -3072,7 +3072,7 @@ void ThemeTypeEditor::_item_add_lineedit_cbk(String p_value, int p_data_type, Co
 
 void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 	// Avoid errors if the action is triggered multiple times.
-	if (edited_theme->has_theme_item((Theme::DataType)p_data_type, p_item_name, edited_type)) {
+	if (edited_theme->has_theme_item_nocheck((Theme::DataType)p_data_type, p_item_name, edited_type)) {
 		return;
 	}
 
@@ -3116,7 +3116,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 
 void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 	// Avoid errors if the action is triggered multiple times.
-	if (!edited_theme->has_theme_item((Theme::DataType)p_data_type, p_item_name, edited_type)) {
+	if (!edited_theme->has_theme_item_nocheck((Theme::DataType)p_data_type, p_item_name, edited_type)) {
 		return;
 	}
 
