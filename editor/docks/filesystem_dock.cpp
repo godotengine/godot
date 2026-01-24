@@ -1539,12 +1539,6 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 			}
 		}
 
-		// Refresh the tree and file list.
-
-		main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-		callable_mp(this, &FileSystemDock::_update_tree).call_deferred(get_uncollapsed_paths(), false, true);
-		callable_mp(this, &FileSystemDock::_update_file_list).call_deferred(true);
-
 		// Only treat as a changed dependency if it was successfully moved.
 
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
@@ -4079,11 +4073,11 @@ void FileSystemDock::_feature_profile_changed() {
 
 void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
-
-	const String &current_main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-	if (main_scene_path != current_main_scene_path) {
-		main_scene_path = current_main_scene_path;
-		update_all();
+	const String new_main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+	if (new_main_scene_path != main_scene_path) {
+		main_scene_path = new_main_scene_path;
+		_update_tree(get_uncollapsed_paths(), false, false);
+		_update_file_list(true);
 	}
 }
 
