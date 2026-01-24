@@ -85,6 +85,7 @@ public:
 
 	struct PlatformFunctions {
 		Error (*set_name)(const String &) = nullptr;
+		bool (*get_stack_limits)(void **r_bottom, void **r_top, void **r_frame) = nullptr;
 		void (*set_priority)(Thread::Priority) = nullptr;
 		void (*init)() = nullptr;
 		void (*wrapper)(Thread::Callback, void *) = nullptr;
@@ -132,6 +133,7 @@ public:
 	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; } // Gain a tiny bit of perf here because there is no need to validate caller_id here, because only main thread will be set as 1.
 
 	static Error set_name(const String &p_name);
+	static bool get_stack_limits(void **r_bottom, void **r_top, void **r_frame);
 
 	ID start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
 	bool is_started() const;
@@ -171,6 +173,7 @@ public:
 
 	struct PlatformFunctions {
 		Error (*set_name)(const String &) = nullptr;
+		bool (*get_stack_limits)(void **r_bottom, void **r_top, void **r_frame) = nullptr;
 		void (*set_priority)(Thread::Priority) = nullptr;
 		void (*init)() = nullptr;
 		void (*wrapper)(Thread::Callback, void *) = nullptr;
@@ -195,6 +198,7 @@ public:
 	_FORCE_INLINE_ static bool is_main_thread() { return true; }
 
 	static Error set_name(const String &p_name) { return ERR_UNAVAILABLE; }
+	static bool get_stack_limits(void **r_bottom, void **r_top, void **r_frame) { return false; }
 
 	void start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings()) {}
 	bool is_started() const { return false; }

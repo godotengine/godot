@@ -507,28 +507,59 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	r_err.error = Callable::CallError::CALL_OK;
 
 	static thread_local int call_depth = 0;
-	if (unlikely(++call_depth > MAX_CALL_DEPTH)) {
-		call_depth--;
-#ifdef DEBUG_ENABLED
-		String err_file;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
-			err_file = p_instance->script->path;
-		} else if (_script) {
-			err_file = _script->path;
-		}
-		if (err_file.is_empty()) {
-			err_file = "<built-in>";
-		}
-		String err_func = name;
-		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && p_instance->script->local_name != StringName()) {
-			err_func = p_instance->script->local_name.operator String() + "." + err_func;
-		}
-		int err_line = _initial_line;
-		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
-		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
-		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+
+	++call_depth;
+#if defined(SANITIZERS_ENABLED)
+	{
+#else
+	if (unlikely(call_depth > 64)) { // Do not check stack size if call depth is small.
 #endif
-		return _get_default_variant_for_data_type(return_type);
+		void *bottom = nullptr;
+		void *top = nullptr;
+		void *frame = nullptr;
+		bool has_overflow = false;
+		if (Thread::get_stack_limits(&bottom, &top, &frame)) {
+			uint64_t alloc_size = sizeof(Variant *) * FIXED_ADDRESSES_MAX + sizeof(Variant *) * _instruction_args_size + sizeof(Variant) * _stack_size;
+#if defined(SANITIZERS_ENABLED)
+			alloc_size += 300 * 1024;
+#else
+			alloc_size += 32 * 1024;
+#endif
+			has_overflow = ((uint64_t)frame - (uint64_t)top < alloc_size);
+		} else if (unlikely(call_depth > 2048)) { // Unable to get stack size, use hardcoded call depth limit instead.
+			bottom = nullptr;
+			top = nullptr;
+			frame = nullptr;
+			has_overflow = true;
+		}
+		if (has_overflow) {
+			call_depth--;
+#ifdef DEBUG_ENABLED
+			String err_file;
+			if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
+				err_file = p_instance->script->path;
+			} else if (_script) {
+				err_file = _script->path;
+			}
+			if (err_file.is_empty()) {
+				err_file = "<built-in>";
+			}
+			String err_func = name;
+			if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && p_instance->script->local_name != StringName()) {
+				err_func = p_instance->script->local_name.operator String() + "." + err_func;
+			}
+			int err_line = _initial_line;
+			String err_text;
+			if (frame && top && bottom) {
+				err_text = vformat("Stack overflow. Check for infinite recursion in your script. Free stack: %d, used stack: %d, call depth: %d.", (uint64_t)frame - (uint64_t)top, (uint64_t)bottom - (uint64_t)frame, call_depth);
+			} else {
+				err_text = vformat("Stack overflow. Check for infinite recursion in your script. Call depth: %d.", call_depth);
+			}
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			GDScriptLanguage::get_singleton()->debug_break(err_text, false);
+#endif
+			return _get_default_variant_for_data_type(return_type);
+		}
 	}
 
 	Variant retvalue;

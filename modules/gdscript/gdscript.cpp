@@ -2818,7 +2818,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time = 0;
 #endif // DEBUG_ENABLED
 
-	_debug_max_call_stack = GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512," + itos(GDScriptFunction::MAX_CALL_DEPTH - 1) + ",1"), 1024);
+	_debug_max_call_stack = GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "512,4096,1"), 1024);
 	track_call_stack = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_call_stacks", false);
 	track_locals = GLOBAL_DEF_RST("debug/settings/gdscript/always_track_local_variables", false);
 

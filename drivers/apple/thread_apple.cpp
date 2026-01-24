@@ -67,6 +67,27 @@ Error Thread::set_name(const String &p_name) {
 	return err == 0 ? OK : ERR_INVALID_PARAMETER;
 }
 
+bool Thread::get_stack_limits(void **r_bottom, void **r_top, void **r_frame) {
+	pthread_t pth_self = pthread_self();
+	uint8_t *stack_addr = (uint8_t *)pthread_get_stackaddr_np(pth_self);
+	size_t stack_size = pthread_get_stacksize_np(pth_self);
+
+	if (stack_addr && stack_size) {
+		if (r_bottom) {
+			*r_bottom = stack_addr;
+		}
+		if (r_top) {
+			*r_top = stack_addr - stack_size + 16 * 1024; // Add guard page size.
+		}
+		if (r_frame) {
+			*r_frame = __builtin_frame_address(0);
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
 Thread::ID Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
 	ERR_FAIL_COND_V_MSG(id != UNASSIGNED_ID, UNASSIGNED_ID, "A Thread object has been re-started without wait_to_finish() having been called on it.");
 	id = id_counter.increment();

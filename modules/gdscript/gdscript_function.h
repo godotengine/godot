@@ -568,8 +568,6 @@ private:
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
-	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
-
 	struct CallState {
 		Signal completed;
 		GDScript *script = nullptr;
