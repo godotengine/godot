@@ -1,0 +1,9 @@
+GH-115349
+--------------
+
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TabBar/methods/select_previous_available': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TabBar/methods/select_next_available': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TabContainer/methods/select_previous_available': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TabContainer/methods/select_next_available': arguments
+
+TabBar and TabContainer now have an optional wrap argument.

@@ -149,14 +149,16 @@
 		</method>
 		<method name="select_next_available">
 			<return type="bool" />
+			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Selects the first available tab with greater index than the currently selected. Returns [code]true[/code] if tab selection changed.
+				Selects the first available tab with greater index than the currently selected. If none is available and [param wrap] is set to [code]true[/code], it wraps around to the first available tab. Returns [code]true[/code] if tab selection changed.
 			</description>
 		</method>
 		<method name="select_previous_available">
 			<return type="bool" />
+			<param index="0" name="wrap" type="bool" default="false" />
 			<description>
-				Selects the first available tab with lower index than the currently selected. Returns [code]true[/code] if tab selection changed.
+				Selects the first available tab with lower index than the currently selected. If none is available and [param wrap] is set to [code]true[/code], it wraps around to the last available tab. Returns [code]true[/code] if tab selection changed.
 			</description>
 		</method>
 		<method name="set_tab_button_icon">
