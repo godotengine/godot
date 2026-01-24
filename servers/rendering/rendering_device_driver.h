@@ -787,6 +787,8 @@ public:
 		void *reference_meta = nullptr;
 	};
 
+	virtual Vector<DataFormat> video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) = 0;
+
 	virtual VideoSessionID video_session_create(const VideoSessionProfile &p_session_info) = 0;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) = 0;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) = 0;
@@ -836,6 +838,31 @@ public:
 		bool offset_supported = false;
 	};
 
+	// TODO: better types
+	struct VideoCapabilities {
+		uint32_t video_capability_flags = 0;
+		uint32_t min_bitstream_buffer_offset_alignment = 4096;
+		uint32_t min_bitstream_buffer_size_alignment = 4096;
+		Size2i picture_access_granularity;
+		Size2i min_coded_extent;
+		Size2i max_coded_extent;
+		uint32_t max_dpb_slots = 0;
+		uint32_t max_active_reference_pictures = 0;
+	};
+
+	struct VideoDecodeCapabilities {
+		uint32_t video_decode_capability_flags = 0;
+	};
+
+	struct VideoDecodeH264Capabilities {
+		uint32_t max_level_idc = 0;
+		Size2i field_offset_granularity;
+	};
+
+	struct VideoDecodeAV1Capabilities {
+		uint32_t max_level = 0;
+	};
+
 	enum ApiTrait {
 		API_TRAIT_HONORS_PIPELINE_BARRIERS,
 		API_TRAIT_SHADER_CHANGE_INVALIDATION,
@@ -880,6 +907,7 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() = 0;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() = 0;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() = 0;
+	virtual const VideoCapabilities get_video_capabilities(const VideoProfile &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) = 0;
 	virtual String get_api_name() const = 0;
 	virtual String get_api_version() const = 0;
 	virtual String get_pipeline_cache_uuid() const = 0;

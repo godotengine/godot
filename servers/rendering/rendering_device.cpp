@@ -5861,7 +5861,36 @@ void RenderingDevice::compute_list_end() {
 	compute_list = ComputeList();
 }
 
+RD::DataFormat RenderingDevice::video_profile_get_format(const VideoProfile &p_video_profile) {
+	Vector<DataFormat> compatible_formats = driver->video_profile_get_compatible_formats(p_video_profile, TEXTURE_USAGE_VIDEO_DECODE_DST_BIT);
+	// TODO: prefer formats with bit-depth which match the profile
+	// (e.g. 8-bit = G8_B8R8_2PLANE, 10-bit = G10X6_R10X6B10X6_2PLANE)
+	return compatible_formats[0];
+}
+
+// TODO: need queue family capabilities (timestamp queue, status result queue)
 RID RenderingDevice::video_session_create(const VideoSessionProfile &p_session_info) {
+	RDD::VideoCapabilities video_capabilities;
+
+	//TODO: encode capabilities
+	RDD::VideoDecodeCapabilities decode_capabilities;
+	RDD::VideoDecodeH264Capabilities h264_decode_capabilities;
+	RDD::VideoDecodeAV1Capabilities av1_decode_capabilites;
+
+	if (p_session_info.profile.operation == VIDEO_OPERATION_DECODE_H264) {
+		video_capabilities = driver->get_video_capabilities(p_session_info.profile, &decode_capabilities, &h264_decode_capabilities);
+	} else if (p_session_info.profile.operation == VIDEO_OPERATION_DECODE_AV1) {
+		video_capabilities = driver->get_video_capabilities(p_session_info.profile, &decode_capabilities, &av1_decode_capabilites);
+		ERR_FAIL_V_MSG(RID(), "I broke AV1 video");
+	} else {
+		ERR_FAIL_V_MSG(RID(), "Unsupported video operation");
+	}
+
+	// TODO validate capabilities
+	if ((decode_capabilities.video_decode_capability_flags & VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT) == 0) {
+		ERR_FAIL_V_MSG(RID(), "DPB and output distinct is required");
+	}
+
 	VideoSession video_session;
 	video_session.video_profile = p_session_info.profile;
 	video_session.driver_id = driver->video_session_create(p_session_info);
@@ -5922,6 +5951,16 @@ RID RenderingDevice::video_session_create(const VideoSessionProfile &p_session_i
 	for (uint32_t i = 0; i < video_semaphore_count; i++) {
 		video_session.decode_signal_semaphores.push_back(driver->semaphore_create());
 		video_session.compute_signal_semaphores.push_back(driver->semaphore_create());
+	}
+
+	// TODO: queue family supports timestamp pools
+	if (false) {
+		video_session.timestamp_pool = driver->timestamp_query_pool_create(video_semaphore_count);
+	}
+
+	// TODO: queue family supports status result pools
+	if (false) {
+		video_session.status_query_pool = driver->video_query_pool_create(video_semaphore_count, p_session_info.profile);
 	}
 
 	video_session.last_cmd_buffer = 0;
@@ -6005,11 +6044,26 @@ void RenderingDevice::video_session_decode(RID p_video_session, RID p_src_buffer
 		}
 	}
 
+	if (video_session->timestamp_pool) {
+		driver->command_timestamp_query_pool_reset(cmd_buffer, video_session->timestamp_pool, video_session->cmd_buffers.size());
+	}
+
+	if (video_session->status_query_pool) {
+		// TODO: do something
+	}
+
 	// TODO: validate the video header
-	// TODO: timeline queries
-	// TODO: status result queries
 	// TODO: image format layout transitions
 	driver->command_video_session_decode(cmd_buffer, video_session->driver_id, src_buffer->driver_id, dst_texture->driver_id, p_video_header, active_reference_slots, &target_reference_slot);
+
+	if (video_session->status_query_pool) {
+		// TODO: end something
+	}
+
+	if (video_session->timestamp_pool) {
+		driver->command_timestamp_write(cmd_buffer, video_session->timestamp_pool, video_session->last_cmd_buffer);
+	}
+
 	driver->command_buffer_end(cmd_buffer);
 
 	if (target_reference_slot.reference_meta != nullptr) {

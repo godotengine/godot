@@ -92,25 +92,6 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 		bool storage_input_output_16 = false;
 	};
 
-	// TODO: allow other formats/operations than decode H.264
-	struct VideoCapabilities {
-		// Video properties.
-		VkVideoCapabilityFlagsKHR video_capability_flags = 0;
-		uint32_t min_bitstream_buffer_offset_alignment = 4096;
-		uint32_t min_bitstream_buffer_size_alignment = 4096;
-		VkExtent2D picture_access_granularity = { 64, 64 };
-		VkExtent2D min_coded_extent = { 0, 0 };
-		VkExtent2D max_coded_extent = { 0, 0 };
-		uint32_t max_dpb_slots = 0;
-		uint32_t max_active_reference_pictures = 0;
-		VkExtensionProperties std_header_version = {};
-		// Video Decode properties.
-		VkVideoDecodeFlagsKHR video_decode_capability_flags = 0;
-		// H.264 Decode properties.
-		StdVideoH264LevelIdc max_level_idc = STD_VIDEO_H264_LEVEL_IDC_1_0;
-		VkOffset2D field_offset_granularity = { 0, 0 };
-	};
-
 	struct DeviceFunctions {
 		PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
 		PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
@@ -151,8 +132,21 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
-	VideoCapabilities video_capabilities_h264;
-	VideoCapabilities video_capabilities_av1;
+
+	struct {
+		VkExtensionProperties std_header_version = {};
+		VideoCapabilities video_capabilities;
+		VideoDecodeCapabilities video_decode_capabilities;
+		VideoDecodeH264Capabilities video_decode_h264_capabilities;
+	} video_decode_h264_capabilities;
+
+	struct {
+		VkExtensionProperties std_header_version = {};
+		VideoCapabilities video_capabilities;
+		VideoDecodeCapabilities video_decode_capabilities;
+		VideoDecodeAV1Capabilities video_decode_av1_capabilities;
+	} video_decode_av1_capabilities;
+
 	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
 	bool vulkan_memory_model_support = false;
@@ -736,9 +730,12 @@ public:
 		Vector<VmaAllocation> allocation_handles;
 	};
 
-	Error vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
+	Error _rd_to_vk_video_profile(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile);
 	void _rd_to_vk_h264_params(VideoDecodeH264SliceHeader *p_slice_header, StdVideoDecodeH264PictureInfo *r_picture_info, StdVideoDecodeH264ReferenceInfo *r_reference_info);
 	void _rd_to_vk_av1_params(VideoDecodeAV1Frame *p_frame_header, StdVideoDecodeAV1PictureInfo *r_picture_info, StdVideoDecodeAV1ReferenceInfo *r_reference_info);
+
+	virtual Vector<DataFormat> video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) override final;
+	VideoCapabilities _video_profile_get_video_capabilities(VkVideoProfileInfoKHR &p_profile, void *r_operation_capabilities, void *r_codec_capabilites);
 
 	virtual VideoSessionID video_session_create(const VideoSessionProfile &p_session_info) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
@@ -761,6 +758,7 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
+	virtual const VideoCapabilities get_video_capabilities(const VideoProfile &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;

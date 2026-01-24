@@ -67,15 +67,9 @@ void VideoStreamEncoding::initialize(RD::VideoSessionProfile p_session_template,
 
 	local_device = RD::get_singleton()->create_local_device();
 
-	// TODO: determine from device capabilities
-	//? like what's VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 for?
-	p_session_template.inout_format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-	p_session_template.dpb_format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-
 	yuv_sampler = _create_texture_sampler(p_sampler_template);
 
 	RD::TextureFormat yuv_format;
-	yuv_format.format = RD::DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 	yuv_format.width = p_session_template.max_width;
 	yuv_format.height = p_session_template.max_height;
 	yuv_format.depth = 1;

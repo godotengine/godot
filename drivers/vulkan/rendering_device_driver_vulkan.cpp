@@ -1127,36 +1127,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		h264_profile.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR;
 		standard_profile.pNext = &h264_profile;
 
-		VkVideoCapabilitiesKHR vk_video_capabilities = {};
-		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
-
-		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
-		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		vk_video_capabilities.pNext = &vk_decode_capabilities;
-
-		VkVideoDecodeH264CapabilitiesKHR vk_h264_capabilities = {};
-		vk_h264_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
-		vk_decode_capabilities.pNext = &vk_h264_capabilities;
-
-		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
-
-		// Video capabilities.
-		video_capabilities_h264.video_capability_flags = vk_video_capabilities.flags;
-		video_capabilities_h264.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
-		video_capabilities_h264.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
-		video_capabilities_h264.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
-		video_capabilities_h264.min_coded_extent = vk_video_capabilities.minCodedExtent;
-		video_capabilities_h264.max_coded_extent = vk_video_capabilities.maxCodedExtent;
-		video_capabilities_h264.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
-		video_capabilities_h264.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
-		video_capabilities_h264.std_header_version = vk_video_capabilities.stdHeaderVersion;
-
-		// Video Decode capabilities.
-		video_capabilities_h264.video_decode_capability_flags = vk_decode_capabilities.flags;
-
-		// H.264 Decode capabilities.
-		video_capabilities_h264.max_level_idc = vk_h264_capabilities.maxLevelIdc;
-		video_capabilities_h264.field_offset_granularity = vk_h264_capabilities.fieldOffsetGranularity;
+		video_decode_h264_capabilities.video_capabilities = _video_profile_get_video_capabilities(standard_profile, &video_decode_h264_capabilities.video_decode_capabilities, &video_decode_h264_capabilities.video_decode_h264_capabilities);
 	}
 
 	if (enabled_device_extension_names.has(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME)) {
@@ -1175,35 +1146,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		av1_profile.filmGrainSupport = false;
 		standard_profile.pNext = &av1_profile;
 
-		VkVideoCapabilitiesKHR vk_video_capabilities = {};
-		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
-
-		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
-		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
-		vk_video_capabilities.pNext = &vk_decode_capabilities;
-
-		VkVideoDecodeAV1CapabilitiesKHR vk_av1_capabilities = {};
-		vk_av1_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR;
-		vk_decode_capabilities.pNext = &vk_av1_capabilities;
-
-		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &standard_profile, &vk_video_capabilities);
-
-		// Video capabilities.
-		video_capabilities_av1.video_capability_flags = vk_video_capabilities.flags;
-		video_capabilities_av1.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
-		video_capabilities_av1.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
-		video_capabilities_av1.picture_access_granularity = vk_video_capabilities.pictureAccessGranularity;
-		video_capabilities_av1.min_coded_extent = vk_video_capabilities.minCodedExtent;
-		video_capabilities_av1.max_coded_extent = vk_video_capabilities.maxCodedExtent;
-		video_capabilities_av1.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
-		video_capabilities_av1.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
-		video_capabilities_av1.std_header_version = vk_video_capabilities.stdHeaderVersion;
-
-		// Video Decode capabilities.
-		video_capabilities_av1.video_decode_capability_flags = vk_decode_capabilities.flags;
-
-		// AV1 Decode capabilities.
-		// TODO
+		video_decode_av1_capabilities.video_capabilities = _video_profile_get_video_capabilities(standard_profile, &video_decode_av1_capabilities.video_decode_capabilities, &video_decode_av1_capabilities.video_decode_av1_capabilities);
 	}
 
 	return OK;
@@ -1873,7 +1816,7 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 	}
 	if (p_usage.has_flag(BUFFER_USAGE_VIDEO_DECODE_SRC_BIT)) {
 		// Video alignments are typically quite large (128 bytes).
-		alignment = MAX(alignment, video_capabilities_h264.min_bitstream_buffer_size_alignment);
+		alignment = MAX(alignment, video_decode_h264_capabilities.video_capabilities.min_bitstream_buffer_size_alignment);
 	}
 	// Align the size. This is specially important for BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT buffers.
 	// For the rest, it should work thanks to VMA taking care of the details. But still align just in case.
@@ -2196,7 +2139,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	if (p_format.video_profiles.size()) {
 		VkVideoProfileInfoKHR *vk_video_profiles = ALLOCA_ARRAY(VkVideoProfileInfoKHR, p_format.video_profiles.size());
 		for (int64_t i = 0; i < p_format.video_profiles.size(); i++) {
-			vk_video_profile_from_state(p_format.video_profiles[i], &vk_video_profiles[i]);
+			_rd_to_vk_video_profile(p_format.video_profiles[i], &vk_video_profiles[i]);
 		}
 
 		VkVideoProfileListInfoKHR *video_profile_list = ALLOCA_SINGLE(VkVideoProfileListInfoKHR);
@@ -2587,11 +2530,7 @@ void RenderingDeviceDriverVulkan::texture_get_copyable_layout(TextureID p_textur
 
 	uint32_t sbw = 0, sbh = 0;
 	*r_layout = {};
-	if (tex_info->vk_create_info.format == VK_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
-		r_layout->size = get_image_format_required_size(DATA_FORMAT_R8_UNORM, w, h, d, 1, &sbw, &sbh);
-	} else {
-		r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
-	}
+	r_layout->size = get_image_format_required_size(tex_info->rd_format, w, h, d, 1, &sbw, &sbh);
 	r_layout->row_pitch = r_layout->size / ((sbh / bh) * d);
 }
 
@@ -6230,7 +6169,7 @@ void RenderingDeviceDriverVulkan::command_timestamp_write(CommandBufferID p_cmd_
 
 RDD::QueryPoolID RenderingDeviceDriverVulkan::video_query_pool_create(uint32_t p_query_count, const VideoProfile &p_video_profile) {
 	VkVideoProfileInfoKHR vk_profile;
-	vk_video_profile_from_state(p_video_profile, &vk_profile);
+	_rd_to_vk_video_profile(p_video_profile, &vk_profile);
 
 	VkQueryPoolCreateInfo query_pool_create_info = {};
 	query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
@@ -6582,7 +6521,7 @@ void RenderingDeviceDriverVulkan::end_segment() {
 	// Per-frame segments are not required in Vulkan.
 }
 
-Error RenderingDeviceDriverVulkan::vk_video_profile_from_state(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile) {
+Error RenderingDeviceDriverVulkan::_rd_to_vk_video_profile(const VideoProfile &p_profile, VkVideoProfileInfoKHR *r_profile) {
 	r_profile->sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR;
 
 	r_profile->chromaSubsampling = p_profile.chroma_subsampling;
@@ -6831,23 +6770,161 @@ void RenderingDeviceDriverVulkan::_rd_to_vk_av1_params(VideoDecodeAV1Frame *p_fr
 	}
 }
 
+Vector<RDD::DataFormat> RenderingDeviceDriverVulkan::video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) {
+	VkResult err;
+
+	VkVideoProfileInfoKHR vk_profile;
+	_rd_to_vk_video_profile(p_profile, &vk_profile);
+
+	VkVideoProfileListInfoKHR profile_list;
+	profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+	profile_list.pNext = nullptr;
+	profile_list.profileCount = 1;
+	profile_list.pProfiles = &vk_profile;
+
+	VkPhysicalDeviceVideoFormatInfoKHR format_info;
+	format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
+	format_info.pNext = &profile_list;
+	format_info.imageUsage = 0;
+
+	if ((p_texture_usage & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
+		format_info.imageUsage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+	}
+	if ((p_texture_usage & TEXTURE_USAGE_VIDEO_DECODE_DPB_BIT)) {
+		format_info.imageUsage |= VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+	}
+
+	uint32_t format_count;
+	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &format_info, &format_count, nullptr);
+	ERR_FAIL_COND_V_MSG(err, Vector<DataFormat>(), "Unsupported profile");
+
+	TightLocalVector<VkVideoFormatPropertiesKHR> formats;
+	formats.reserve(format_count);
+	for (uint32_t i = 0; i < format_count; i++) {
+		VkVideoFormatPropertiesKHR format_properties = {};
+		format_properties.sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+		format_properties.pNext = nullptr;
+		formats.push_back(format_properties);
+	}
+
+	err = vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &format_info, &format_count, formats.ptr());
+	ERR_FAIL_COND_V_MSG(err, Vector<DataFormat>(), "Unsupported profile");
+
+	Vector<DataFormat> rd_formats;
+	rd_formats.reserve(format_count);
+	for (VkVideoFormatPropertiesKHR format_properties : formats) {
+		// TODO: support more (all?) formats
+		// TODO: expose more information?
+		if (format_properties.format == VK_FORMAT_G8_B8R8_2PLANE_420_UNORM) {
+			rd_formats.push_back(DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM);
+		} else if (format_properties.format == VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16) {
+			rd_formats.push_back(DATA_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16);
+		} else {
+			WARN_PRINT(vformat("Unsupported image format %d", format_properties.format));
+		}
+	}
+
+	return rd_formats;
+}
+
+RDD::VideoCapabilities RenderingDeviceDriverVulkan::_video_profile_get_video_capabilities(VkVideoProfileInfoKHR &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) {
+	RDD::VideoCapabilities video_capabilities;
+	if (p_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
+		RDD::VideoDecodeCapabilities *decode_capabilities = (RDD::VideoDecodeCapabilities *)r_operation_capabilities;
+		RDD::VideoDecodeH264Capabilities *h264_capabilities = (RDD::VideoDecodeH264Capabilities *)r_codec_capabilites;
+
+		VkVideoCapabilitiesKHR vk_video_capabilities = {};
+		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
+		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		vk_video_capabilities.pNext = &vk_decode_capabilities;
+
+		VkVideoDecodeH264CapabilitiesKHR vk_h264_capabilities = {};
+		vk_h264_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+		vk_decode_capabilities.pNext = &vk_h264_capabilities;
+
+		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &p_profile, &vk_video_capabilities);
+		video_decode_h264_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+
+		// Video capabilities.
+		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities.picture_access_granularity.x = vk_video_capabilities.pictureAccessGranularity.width;
+		video_capabilities.picture_access_granularity.y = vk_video_capabilities.pictureAccessGranularity.height;
+		video_capabilities.min_coded_extent.x = vk_video_capabilities.minCodedExtent.width;
+		video_capabilities.min_coded_extent.y = vk_video_capabilities.minCodedExtent.height;
+		video_capabilities.max_coded_extent.x = vk_video_capabilities.maxCodedExtent.width;
+		video_capabilities.max_coded_extent.y = vk_video_capabilities.maxCodedExtent.height;
+		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+
+		// Video Decode capabilities.
+		decode_capabilities->video_decode_capability_flags = vk_decode_capabilities.flags;
+
+		// H.264 Decode capabilities.
+		h264_capabilities->max_level_idc = vk_h264_capabilities.maxLevelIdc;
+		h264_capabilities->field_offset_granularity.x = vk_h264_capabilities.fieldOffsetGranularity.x;
+		h264_capabilities->field_offset_granularity.y = vk_h264_capabilities.fieldOffsetGranularity.y;
+	} else if (p_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) {
+		RDD::VideoDecodeCapabilities *decode_capabilities = (RDD::VideoDecodeCapabilities *)r_operation_capabilities;
+		RDD::VideoDecodeAV1Capabilities *av1_capabilities = (RDD::VideoDecodeAV1Capabilities *)r_codec_capabilites;
+
+		VkVideoCapabilitiesKHR vk_video_capabilities = {};
+		vk_video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+
+		VkVideoDecodeCapabilitiesKHR vk_decode_capabilities = {};
+		vk_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+		vk_video_capabilities.pNext = &vk_decode_capabilities;
+
+		VkVideoDecodeAV1CapabilitiesKHR vk_av1_capabilities = {};
+		vk_av1_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR;
+		vk_decode_capabilities.pNext = &vk_av1_capabilities;
+
+		vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &p_profile, &vk_video_capabilities);
+		video_decode_av1_capabilities.std_header_version = vk_video_capabilities.stdHeaderVersion;
+
+		// Video capabilities.
+		video_capabilities.video_capability_flags = vk_video_capabilities.flags;
+		video_capabilities.min_bitstream_buffer_offset_alignment = vk_video_capabilities.minBitstreamBufferOffsetAlignment;
+		video_capabilities.min_bitstream_buffer_size_alignment = vk_video_capabilities.minBitstreamBufferSizeAlignment;
+		video_capabilities.picture_access_granularity.x = vk_video_capabilities.pictureAccessGranularity.width;
+		video_capabilities.picture_access_granularity.y = vk_video_capabilities.pictureAccessGranularity.height;
+		video_capabilities.min_coded_extent.x = vk_video_capabilities.minCodedExtent.width;
+		video_capabilities.min_coded_extent.y = vk_video_capabilities.minCodedExtent.height;
+		video_capabilities.max_coded_extent.x = vk_video_capabilities.maxCodedExtent.width;
+		video_capabilities.max_coded_extent.y = vk_video_capabilities.maxCodedExtent.height;
+		video_capabilities.max_dpb_slots = vk_video_capabilities.maxDpbSlots;
+		video_capabilities.max_active_reference_pictures = vk_video_capabilities.maxActiveReferencePictures;
+
+		// Video Decode capabilities.
+		decode_capabilities->video_decode_capability_flags = vk_decode_capabilities.flags;
+
+		// AV1 Decode capabilities.
+		av1_capabilities->max_level = vk_av1_capabilities.maxLevel;
+	} else {
+		ERR_PRINT("Bad video operation");
+	}
+
+	return video_capabilities;
+}
+
 RDD::VideoSessionID RenderingDeviceDriverVulkan::video_session_create(const VideoSessionProfile &p_session_info) {
 	VkVideoProfileInfoKHR video_profile = {};
-	vk_video_profile_from_state(p_session_info.profile, &video_profile);
+	_rd_to_vk_video_profile(p_session_info.profile, &video_profile);
 
-	// TODO: allow using decode queues
+	// TODO: allow using encode queues
 	CommandQueueFamilyID command_queue_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
 	uint32_t command_queue_family_index = command_queue_family.id - 1;
 
 	VkExtensionProperties *std_header_version;
 	if (video_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR) {
-		std_header_version = &video_capabilities_h264.std_header_version;
+		std_header_version = &video_decode_h264_capabilities.std_header_version;
 	} else if (video_profile.videoCodecOperation == VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR) {
-		std_header_version = &video_capabilities_av1.std_header_version;
+		std_header_version = &video_decode_av1_capabilities.std_header_version;
 	} else {
-		// Unknown video operation
-		// TODO: should we fail explicitly here?
-		return VideoSessionID();
+		ERR_FAIL_V_MSG(VideoSessionID(), "Unsupported video operation");
 	}
 
 	VkVideoSessionCreateInfoKHR session_info = {};
@@ -7355,7 +7432,7 @@ void RenderingDeviceDriverVulkan::command_video_session_decode(CommandBufferID p
 
 		// TODO: unbreak AV1 decoding
 		for (uint32_t i = 0; i < VK_MAX_VIDEO_AV1_REFERENCES_PER_FRAME_KHR; i++) {
-			size_t ref_frame = rd_frame_header->ref_frame_idx[i];
+			//size_t ref_frame = rd_frame_header->ref_frame_idx[i];
 			av1_video_header.referenceNameSlotIndices[i] = -1;
 		}
 
@@ -7749,6 +7826,14 @@ const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverVulkan::get_fra
 
 const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverVulkan::get_fragment_density_map_capabilities() {
 	return fdm_capabilities;
+}
+
+// TODO: cache based on VideoProfile?
+const RDD::VideoCapabilities RenderingDeviceDriverVulkan::get_video_capabilities(const VideoProfile &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) {
+	VkVideoProfileInfoKHR vk_profile;
+	_rd_to_vk_video_profile(p_profile, &vk_profile);
+
+	return _video_profile_get_video_capabilities(vk_profile, r_operation_capabilities, r_codec_capabilites);
 }
 
 String RenderingDeviceDriverVulkan::get_api_name() const {

@@ -893,6 +893,8 @@ public:
 	/**********************/
 	/**** VIDEO CODING ****/
 	/**********************/
+	virtual Vector<DataFormat> video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) override final;
+
 	virtual VideoSessionID video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) override final;
 	virtual void video_session_add_h264_parameters(VideoSessionID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets) override final;
 	virtual void video_session_add_av1_parameters(VideoSessionID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header) override final;
@@ -914,6 +916,7 @@ public:
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
 	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
 	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
+	virtual const VideoCapabilities get_video_capabilities(const VideoProfile &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) override final;
 	virtual String get_api_name() const override final;
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;

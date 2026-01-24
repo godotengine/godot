@@ -5588,6 +5588,9 @@ void RenderingDeviceDriverD3D12::end_segment() {
 /**********************/
 /**** VIDEO CODING ****/
 /**********************/
+Vector<RDD::DataFormat> RenderingDeviceDriverD3D12::video_profile_get_compatible_formats(const VideoProfile &p_profile, TextureUsageBits p_texture_usage) {
+	return Vector<RDD::DataFormat>();
+}
 
 RDD::VideoSessionID RenderingDeviceDriverD3D12::video_session_create(const VideoProfile &p_profile, VectorView<TextureID> p_dpb_views) {
 	return RDD::VideoSessionID();
@@ -5819,6 +5822,10 @@ const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverD3D12::get_frag
 
 const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverD3D12::get_fragment_density_map_capabilities() {
 	return fdm_capabilities;
+}
+
+const RDD::VideoCapabilities RenderingDeviceDriverD3D12::get_video_capabilities(const VideoProfile &p_profile, void *r_operation_capabilities, void *r_codec_capabilites) {
+	return RDD::VideoCapabilities();
 }
 
 String RenderingDeviceDriverD3D12::get_api_name() const {

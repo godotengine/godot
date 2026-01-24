@@ -994,6 +994,11 @@ public:
 		SUBGROUP_QUAD_BIT = 128,
 	};
 
+	enum VideoDecodeFlags {
+		VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_COINCIDE_BIT = (1 << 0),
+		VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT = (1 << 1),
+	};
+
 	struct VideoSessionProfile {
 		VideoProfile profile;
 		DataFormat inout_format = DATA_FORMAT_MAX;

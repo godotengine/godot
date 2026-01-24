@@ -630,6 +630,8 @@ Error VideoStreamH264::parse_container_block(const uint8_t *p_stream, size_t p_s
 
 RID VideoStreamH264::_create_video_session(RD::VideoSessionProfile p_session_template) {
 	p_session_template.profile = video_profile;
+	p_session_template.inout_format = local_device->video_profile_get_format(video_profile);
+	p_session_template.dpb_format = local_device->video_profile_get_format(video_profile);
 	p_session_template.max_width += 0; // TODO: cropping
 	p_session_template.max_height += 0; // TODO: cropping
 	p_session_template.max_dpb_slots = 17;
@@ -650,6 +652,7 @@ RID VideoStreamH264::_create_texture(RD::TextureFormat p_texture_template, RD::T
 	Vector<VideoProfile> video_profiles;
 	video_profiles.push_back(video_profile);
 
+	p_texture_template.format = local_device->video_profile_get_format(video_profile);
 	p_texture_template.video_profiles = video_profiles;
 	p_texture_template.width += 0; // TODO: cropping
 	p_texture_template.height += 0; // TODO: cropping

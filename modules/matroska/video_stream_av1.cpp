@@ -1403,7 +1403,7 @@ Error VideoStreamAV1::parse_container_block(const uint8_t *p_stream, size_t p_si
 	shift = 0;
 
 	while (src < p_stream + p_size) {
-		const uint8_t *obu_start = src;
+		//const uint8_t *obu_start = src;
 		bool is_frame = parse_open_bitstream_unit();
 		if (is_frame) {
 			//TODO

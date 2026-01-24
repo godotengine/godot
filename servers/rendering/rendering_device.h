@@ -1470,7 +1470,6 @@ private:
 	// TODO: resize semaphores dynamically
 	static const size_t video_semaphore_count = 20;
 
-	// TODO: dispose of everything the video session creates
 	struct VideoSession {
 		VideoProfile video_profile;
 		RDD::VideoSessionID driver_id;
@@ -1491,11 +1490,16 @@ private:
 		RDD::SemaphoreID compute_wait_semaphore;
 		// CPU
 		RDD::FenceID final_fence;
+		// Queries
+		RDD::QueryPoolID timestamp_pool;
+		RDD::QueryPoolID status_query_pool;
 	};
 
 	RID_Owner<VideoSession, true> video_session_owner;
 
 public:
+	DataFormat video_profile_get_format(const VideoProfile &p_video_profile);
+
 	RID video_session_create(const VideoSessionProfile &p_session_info);
 	void video_session_add_h264_parameters(RID p_video_session, Vector<VideoCodingH264SequenceParameterSet> p_sps_sets, Vector<VideoCodingH264PictureParameterSet> p_pps_sets);
 	void video_session_add_av1_parameters(RID p_video_session, VideoCodingAV1SequenceHeader &p_sequence_header);
