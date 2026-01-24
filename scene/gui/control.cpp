@@ -4212,6 +4212,23 @@ String Control::get_tooltip_text() const {
 	return data.tooltip;
 }
 
+void Control::set_translation_context(const StringName &p_context) {
+	ERR_MAIN_THREAD_GUARD;
+	data.translation_context = p_context;
+}
+
+StringName Control::get_translation_context() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+	return data.translation_context;
+}
+
+StringName Control::_get_translation_context_with_override(const StringName &p_context) const {
+	if (p_context.is_empty()) {
+		return data.translation_context;
+	}
+	return p_context;
+}
+
 String Control::get_tooltip(const Point2 &p_pos) const {
 	ERR_READ_THREAD_GUARD_V(String());
 	String ret;
@@ -4694,6 +4711,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &Control::get_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
 
+	ClassDB::bind_method(D_METHOD("set_translation_context", "context"), &Control::set_translation_context);
+	ClassDB::bind_method(D_METHOD("get_translation_context"), &Control::get_translation_context);
+
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_cursor_shape", "at_position"), &Control::get_cursor_shape, DEFVAL(Point2()));
@@ -4854,6 +4874,7 @@ void Control::_bind_methods() {
 	ADD_GROUP("Localization", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize_numeral_system"), "set_localize_numeral_system", "is_localizing_numeral_system");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), "set_layout_direction", "get_layout_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "translation_context"), "set_translation_context", "get_translation_context");
 
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
