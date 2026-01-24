@@ -4490,7 +4490,7 @@ void fragment() {
 
 	{
 		// Initialize Sky stuff
-		sky_globals.roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
+		sky_globals.roughness_layers = MAX(2, (int)GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers"));
 
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
