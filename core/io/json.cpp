@@ -566,6 +566,10 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 }
 
 void JSON::set_data(const Variant &p_data) {
+	const String path = get_path();
+	if (path.has_extension("json")) {
+		return;
+	}
 	data = p_data;
 	text.clear();
 }
@@ -629,6 +633,16 @@ Variant JSON::parse_string(const String &p_json_string) {
 	Error error = json->parse(p_json_string);
 	ERR_FAIL_COND_V_MSG(error != Error::OK, Variant(), vformat("Parse JSON failed. Error at line %d: %s", json->get_error_line(), json->get_error_message()));
 	return json->get_data();
+}
+
+void JSON::_validate_property(PropertyInfo &p_property) const {
+	const String path = get_path();
+	if (!path.has_extension("json")) {
+		return;
+	}
+	if (p_property.name == "data") {
+		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	}
 }
 
 void JSON::_bind_methods() {
@@ -1611,7 +1625,15 @@ Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const Strin
 	Ref<JSON> json = p_resource;
 	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
 
-	String source = json->get_parsed_text().is_empty() ? JSON::stringify(json->get_data(), "\t", false, true) : json->get_parsed_text();
+	String source = json->text;
+	if (source.is_empty()) {
+		source = JSON::stringify(json->get_data(), "\t", false, true);
+		json->text = source;
+		Ref<JSON> cached_json = ResourceCache::get_ref(p_path);
+		if (cached_json.is_valid()) {
+			cached_json->text = source;
+		}
+	}
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);

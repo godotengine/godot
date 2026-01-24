@@ -64,6 +64,8 @@ class JSON : public Resource {
 		Variant value;
 	};
 
+	friend class ResourceFormatSaverJSON;
+
 	String text;
 	Variant data;
 	String err_str;
@@ -83,6 +85,7 @@ class JSON : public Resource {
 	static Variant _to_native(const Variant &p_json, bool p_allow_objects, int p_depth);
 
 protected:
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
