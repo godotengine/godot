@@ -84,7 +84,7 @@
 # nitenook <admin@alterbaum.net>, 2021.
 # jker <cxgmfy@163.com>, 2021.
 # Ankar <1511276198@qq.com>, 2022.
-# 风青山 <idleman@yeah.net>, 2022, 2023, 2025.
+# 风青山 <idleman@yeah.net>, 2022, 2023, 2025, 2026.
 # 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
 # ChairC <974833488@qq.com>, 2022.
 # 赵不一 <279631638@qq.com>, 2023.
@@ -118,8 +118,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-01-20 15:19+0000\n"
-"Last-Translator: Owen Wang <owenwangwyx@gmail.com>\n"
+"PO-Revision-Date: 2026-01-24 01:46+0000\n"
+"Last-Translator: 风青山 <idleman@yeah.net>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -144,6 +144,9 @@ msgstr "未配置"
 msgid "Unauthorized"
 msgstr "未授权"
 
+msgid "Parameter out of range"
+msgstr "形参数量越界"
+
 msgid "Out of memory"
 msgstr "内存不足"
 
@@ -158,6 +161,9 @@ msgstr "文件：无效路径"
 
 msgid "File: Permission denied"
 msgstr "文件：权限不足"
+
+msgid "File already in use"
+msgstr "文件已在使用"
 
 msgid "Can't open file"
 msgstr "无法打开文件"
@@ -176,6 +182,9 @@ msgstr "文件损坏"
 
 msgid "Missing dependencies for file"
 msgstr "文件缺少依赖"
+
+msgid "End of file"
+msgstr "文件结束"
 
 msgid "Can't open"
 msgstr "无法打开"
@@ -207,6 +216,9 @@ msgstr "连接出错"
 msgid "Can't acquire resource"
 msgstr "无法获取资源"
 
+msgid "Can't fork"
+msgstr "无法分叉"
+
 msgid "Invalid data"
 msgstr "无效数据"
 
@@ -234,8 +246,17 @@ msgstr "方法未找到"
 msgid "Link failed"
 msgstr "链接失败"
 
+msgid "Script failed"
+msgstr "脚本失败"
+
+msgid "Cyclic link detected"
+msgstr "检测到循环链接"
+
 msgid "Invalid declaration"
 msgstr "无效声明"
+
+msgid "Duplicate symbol"
+msgstr "符号重复"
 
 msgid "Parse error"
 msgstr "解析错误"
@@ -18244,6 +18265,9 @@ msgstr "ObjectDB 引用 + 本地引用"
 
 msgid "Cycles detected in the ObjectDB"
 msgstr "ObjectDB 中检测出的循环引用"
+
+msgid "Native References: %d"
+msgstr "原生引用： %d"
 
 msgid "ObjectDB References: %d"
 msgstr "ObjectDB 引用： %d"
