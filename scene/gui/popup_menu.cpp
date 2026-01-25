@@ -2631,6 +2631,39 @@ void PopupMenu::set_item_shortcut_disabled(int p_idx, bool p_disabled) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_index(int p_idx, int p_target_idx) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (p_target_idx < 0) {
+		p_target_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_target_idx, items.size());
+
+	if (p_idx == p_target_idx) {
+		return;
+	}
+
+	Item item = items[p_idx];
+	items.remove_at(p_idx);
+	items.insert(p_target_idx, item);
+
+	if (global_menu.is_valid()) {
+		NativeMenu *nmenu = NativeMenu::get_singleton();
+		nmenu->set_item_index(global_menu, p_idx, p_target_idx);
+		// Update tags of all affected items to their new index.
+		for (int i = MIN(p_idx, p_target_idx); i <= MAX(p_idx, p_target_idx); i++) {
+			nmenu->set_item_tag(global_menu, i, i);
+		}
+	}
+
+	queue_accessibility_update();
+	control->queue_redraw();
+	_menu_changed();
+}
+
 void PopupMenu::toggle_item_multistate(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	if (0 >= items[p_idx].max_states) {
@@ -3187,6 +3220,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "index", "state"), &PopupMenu::set_item_multistate);
 	ClassDB::bind_method(D_METHOD("set_item_multistate_max", "index", "max_states"), &PopupMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut_disabled", "index", "disabled"), &PopupMenu::set_item_shortcut_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_index", "index", "target_index"), &PopupMenu::set_item_index);
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "index"), &PopupMenu::toggle_item_checked);
 	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "index"), &PopupMenu::toggle_item_multistate);
