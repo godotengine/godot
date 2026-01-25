@@ -458,7 +458,7 @@ void SpringBoneSimulator3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->root_bone <= -1 || settings[p_index]->root_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->root_bone = -1;
 		} else {
 			settings[p_index]->root_bone_name = sk->get_bone_name(settings[p_index]->root_bone);
@@ -495,7 +495,7 @@ void SpringBoneSimulator3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->end_bone <= -1 || settings[p_index]->end_bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->end_bone = -1;
 		} else {
 			settings[p_index]->end_bone_name = sk->get_bone_name(settings[p_index]->end_bone);
@@ -591,6 +591,9 @@ SpringBoneSimulator3D::CenterFrom SpringBoneSimulator3D::get_center_from(int p_i
 void SpringBoneSimulator3D::set_center_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	bool center_changed = settings[p_index]->center_node != p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Center node '" + String(p_node_path) + "' not found.");
+	}
 	settings[p_index]->center_node = p_node_path;
 	if (center_changed) {
 		reset();
@@ -623,7 +626,7 @@ void SpringBoneSimulator3D::set_center_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->center_bone <= -1 || settings[p_index]->center_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Center bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Center bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->center_bone = -1;
 		} else {
 			settings[p_index]->center_bone_name = sk->get_bone_name(settings[p_index]->center_bone);
@@ -894,7 +897,7 @@ void SpringBoneSimulator3D::_set_joint_bone(int p_index, int p_joint, int p_bone
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (joints[p_joint]->bone <= -1 || joints[p_joint]->bone >= sk->get_bone_count()) {
-			WARN_PRINT("Joint bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + " : Joint: " + itos(p_joint) + ": bone index '" + itos(p_bone) + "' is out of range!");
 			joints[p_joint]->bone = -1;
 		} else {
 			joints[p_joint]->bone_name = sk->get_bone_name(joints[p_joint]->bone);

@@ -289,6 +289,9 @@
 		<member name="animation/warnings/check_angle_interpolation_type_conflicting" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of interpolation being forced to choose the shortest rotation path due to multiple angle interpolation types being mixed in the [AnimationMixer] cache.
 		</member>
+		<member name="animation/warnings/check_invalid_skeleton_modifier_node_paths" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [SkeletonModifier3D] prints a warning if there's no matching object for the track path in the scene when assigning.
+		</member>
 		<member name="animation/warnings/check_invalid_track_paths" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], [AnimationMixer] prints the warning of no matching object of the track path in the scene.
 		</member>

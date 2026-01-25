@@ -114,6 +114,8 @@ protected:
 	GDVIRTUAL0(_process_modification);
 #endif
 
+	bool should_check_node_path();
+
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 	virtual bool has_process() const { return false; } // Return true if modifier needs to modify bone pose without external animation such as physics, jiggle and etc.
