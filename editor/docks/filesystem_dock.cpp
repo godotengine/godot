@@ -2052,10 +2052,8 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
 
-			const String resolved_main = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-			if (main_scene_path != resolved_main) {
-				main_scene_path = resolved_main;
-			}
+			// Update main scene path in case the file was moved.
+			main_scene_path  = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
