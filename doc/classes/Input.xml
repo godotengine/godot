@@ -18,8 +18,8 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="strength" type="float" default="1.0" />
 			<description>
-				This will simulate pressing the specified action.
-				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
+				Simulates pressing the specified input action.
+				The [param strength] can be used for non-boolean actions, it's ranged between [code]0.0[/code] and [code]1.0[/code] representing the intensity of the given action.
 				[b]Note:[/b] This method will not cause any [method Node._input] calls. It is intended to be used with [method is_action_pressed] and [method is_action_just_pressed]. If you want to simulate [code]_input[/code], use [method parse_input_event] instead.
 			</description>
 		</method>
@@ -27,7 +27,7 @@
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
 			<description>
-				If the specified action is already pressed, this will release it.
+				Releases the specified input action, if the action is currently pressed.
 			</description>
 		</method>
 		<method name="add_joy_mapping">
@@ -35,7 +35,8 @@
 			<param index="0" name="mapping" type="String" />
 			<param index="1" name="update_existing" type="bool" default="false" />
 			<description>
-				Adds a new mapping entry (in SDL2 format) to the mapping database. Optionally update already connected devices.
+				Adds a new joypad mapping entry (in SDL format) to the mapping database, and optionally updates the already connected devices.
+				[b]Note:[/b] Read the [url=https://wiki.libsdl.org/SDL3/SDL_AddGamepadMapping#remarks]SDL documentation[/url] for more information about the SDL controller mapping format.
 			</description>
 		</method>
 		<method name="clear_joy_motion_sensors_calibration" experimental="">
@@ -50,7 +51,7 @@
 		<method name="flush_buffered_events">
 			<return type="void" />
 			<description>
-				Sends all input events which are in the current buffer to the game loop. These events may have been buffered as a result of accumulated input ([member use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
+				Sends all buffered input events to the game loop. These events may have been buffered as a result of accumulated input ([member use_accumulated_input]) or agile input flushing ([member ProjectSettings.input_devices/buffering/agile_event_flushing]).
 				The engine will already do this itself at key execution points (at least once per frame). However, this can be useful in advanced cases where you want precise control over the timing of event handling.
 			</description>
 		</method>
@@ -68,7 +69,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
-				Returns a value between 0 and 1 representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
+				Returns a value between [code]0.0[/code] and [code]1.0[/code] representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
@@ -77,7 +78,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
 			<description>
-				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be 0 or 1.
+				Returns a value between [code]0.0[/code] and [code]1.0[/code] representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to [code]1.0[/code]. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be [code]0.0[/code] or [code]1.0[/code].
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
@@ -86,7 +87,7 @@
 			<param index="0" name="negative_action" type="StringName" />
 			<param index="1" name="positive_action" type="StringName" />
 			<description>
-				Get axis input by specifying two actions, one negative and one positive.
+				Returns axis input value by specifying two actions, one negative and one positive.
 				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
 			</description>
 		</method>
@@ -157,7 +158,6 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns an SDL-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty string if it cannot be found. Godot uses SDL's internal mappings, supplemented by community-contributed mappings, to determine gamepad names and mappings based on this GUID.
-				On Windows, all XInput joypad GUIDs will be overridden by Godot to [code]__XINPUT_DEVICE__[/code], because their mappings are the same.
 			</description>
 		</method>
 		<method name="get_joy_gyroscope" qualifiers="const" experimental="">
@@ -213,7 +213,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names.
+				Returns the name of the joypad at the specified device index, e.g. [code]PS4 Controller[/code]. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL game controller database[/url] to determine gamepad names.
 			</description>
 		</method>
 		<method name="get_joy_vibration_duration">
@@ -264,9 +264,9 @@
 			<param index="3" name="positive_y" type="StringName" />
 			<param index="4" name="deadzone" type="float" default="-1.0" />
 			<description>
-				Gets an input vector by specifying four actions for the positive and negative X and Y axes.
-				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to 1 and has a circular deadzone, which is useful for using vector input as movement.
-				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of 0 to 1).
+				Returns an input vector by specifying four actions for the positive and negative X and Y axes.
+				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to [code]1.0[/code] and has a circular deadzone, which is useful for using vector input as movement.
+				By default, the deadzone is automatically calculated from the average of the action deadzones. However, you can override the deadzone to be whatever you want (on the range of [code]0.0[/code] to [code]1.0[/code]).
 			</description>
 		</method>
 		<method name="has_joy_light" qualifiers="const">
@@ -545,7 +545,7 @@
 			<param index="0" name="vendor_id" type="int" />
 			<param index="1" name="product_id" type="int" />
 			<description>
-				Queries whether an input device should be ignored or not. Devices can be ignored by setting the environment variable [code]SDL_GAMECONTROLLER_IGNORE_DEVICES[/code]. Read the [url=https://wiki.libsdl.org/SDL2]SDL documentation[/url] for more information.
+				Queries whether an input device should be ignored or not. Devices can be ignored by setting the environment variable [code]SDL_GAMECONTROLLER_IGNORE_DEVICES[/code]. Read the [url=https://wiki.libsdl.org/SDL3/SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES]SDL documentation[/url] for more information.
 				[b]Note:[/b] Some 3rd party tools can contribute to the list of ignored devices. For example, [i]SteamInput[/i] creates virtual devices from physical devices for remapping purposes. To avoid handling the same input device twice, the original device is added to the ignore list.
 			</description>
 		</method>
@@ -690,7 +690,7 @@
 			<param index="0" name="duration_ms" type="int" default="500" />
 			<param index="1" name="amplitude" type="float" default="-1.0" />
 			<description>
-				Vibrate the handheld device for the specified duration in milliseconds.
+				Starts to vibrate the handheld device for the specified duration in milliseconds.
 				[param amplitude] is the strength of the vibration, as a value between [code]0.0[/code] and [code]1.0[/code]. If set to [code]-1.0[/code], the default vibration strength of the device is used.
 				[b]Note:[/b] This method is implemented on Android, iOS, and Web. It has no effect on other platforms.
 				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
