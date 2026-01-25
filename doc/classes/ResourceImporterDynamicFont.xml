@@ -38,11 +38,13 @@
 			If [code]true[/code], this font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
 			Enabling [member generate_mipmaps] increases font generation time and memory usage. Only enable this setting if you actually need it.
 		</member>
-		<member name="hinting" type="int" setter="" getter="" default="1">
+		<member name="hinting" type="int" setter="" getter="" default="3">
 			The hinting mode to use. This controls how aggressively glyph edges should be snapped to pixels when rasterizing the font. Depending on personal preference, you may prefer using one hinting mode over the other. Hinting modes other than [b]None[/b] are only effective if the font contains hinting data (see [member force_autohinter]).
 			[b]None:[/b] Smoothest appearance, which can make the font look blurry at small sizes.
 			[b]Light:[/b] Sharp result by snapping glyph edges to pixels on the Y axis only.
 			[b]Normal:[/b] Sharpest by snapping glyph edges to pixels on both X and Y axes.
+			[b]Light (Except Pixel Fonts):[/b] [b]Disabled[/b] for pixel style fonts (each glyph's contours contain only straight horizontal and vertical lines), [b]Light[/b] for other fonts.
+			[b]Normal (Except Pixel Fonts):[/b] [b]Disabled[/b] for pixel style fonts (each glyph's contours contain only straight horizontal and vertical lines), [b]Normal[/b] for other fonts.
 		</member>
 		<member name="keep_rounding_remainders" type="bool" setter="" getter="" default="true">
 			If set to [code]true[/code], when aligning glyphs to the pixel boundaries rounding remainders are accumulated to ensure more uniform glyph distribution. This setting has no effect if subpixel positioning is enabled.
@@ -81,7 +83,7 @@
 			[b]Auto:[/b] Use subpixel positioning at small font sizes (the chosen quality varies depending on font size). Large fonts will not use subpixel positioning. This is a good tradeoff between performance and quality.
 			[b]One Half of a Pixel:[/b] Always perform intermediate subpixel positioning regardless of font size. High quality, slow rendering.
 			[b]One Quarter of a Pixel:[/b] Always perform precise subpixel positioning regardless of font size. Highest quality, slowest rendering.
-			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for the pixel style fonts (each glyph contours contain only straight horizontal and vertical lines), [b]Auto[/b] for the other fonts.
+			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for pixel style fonts (each glyph's contours contain only straight horizontal and vertical lines), [b]Auto[/b] for other fonts.
 		</member>
 	</members>
 </class>
