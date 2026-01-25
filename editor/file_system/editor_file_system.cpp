@@ -1870,7 +1870,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	String f = ProjectSettings::get_singleton()->localize_path(p_file);
 
 	// Note: Only checks if base directory is case sensitive.
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	bool fs_case_sensitive = dir->is_case_sensitive("res://");
 
 	if (!f.begins_with("res://")) {
