@@ -499,19 +499,36 @@ void SkeletonIK3D::stop() {
 
 Transform3D SkeletonIK3D::_get_target_transform() {
 	if (!target_node_override_ref && !target_node_path_override.is_empty()) {
-		target_node_override_ref = Object::cast_to<Node3D>(get_node(target_node_path_override));
+		Node *node = get_node_or_null(target_node_path_override);
+
+		if (!node) {
+			WARN_PRINT_ONCE(vformat(
+				"SkeletonIK3D: target_node path '%s' does not exist.",
+				target_node_path_override
+			));
+			return target;
+		}
+
+		Node3D *node_3d = Object::cast_to<Node3D>(node);
+		if (!node_3d) {
+			WARN_PRINT_ONCE(vformat(
+				"SkeletonIK3D: target_node '%s' is not a Node3D.",
+				target_node_path_override
+			));
+			return target;
+		}
+
+		target_node_override_ref = node_3d;
 	}
 
-	Node3D *target_node_override = cast_to<Node3D>(target_node_override_ref.get_validated_object());
+	Node3D *target_node_override =
+		cast_to<Node3D>(target_node_override_ref.get_validated_object());
+
 	if (target_node_override && target_node_override->is_inside_tree()) {
-		// Make sure to use the interpolated transform as target.
-		// When physics interpolation is off this will pass through to get_global_transform().
-		// When using interpolation, ensure that the target matches the interpolated visual position
-		// of the target when updating the IK each frame.
 		return target_node_override->get_global_transform_interpolated();
-	} else {
-		return target;
 	}
+
+	return target;
 }
 
 void SkeletonIK3D::reload_chain() {
