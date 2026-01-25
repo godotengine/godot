@@ -4194,8 +4194,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (rtl) {
 						pressing_pos.x = get_size().width - pressing_pos.x;
 					}
-				} else if (mb->is_double_click() && get_item_at_position(mb->get_position()) != nullptr) {
-					emit_signal(SNAME("item_icon_double_clicked"));
+				} else if (mb->is_double_click()) {
+					Point2 mpos = mb->get_position();
+					TreeItem *item = get_item_at_position(mpos);
+					if (item != nullptr) {
+						Rect2 rect = _get_item_focus_rect(item);
+						// Emit signal if and only if double clicked on icon or text (i.e. focus box).
+						if (rect.has_point(mpos)) {
+							emit_signal(SNAME("item_icon_double_clicked"));
+						}
+					}
 				}
 
 				if (mb->get_button_index() == MouseButton::RIGHT) {
