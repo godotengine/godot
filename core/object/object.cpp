@@ -82,7 +82,6 @@ struct _ObjectSignalLock {
 
 #define OBJ_SIGNAL_LOCK _ObjectSignalLock _signal_lock(this);
 
-
 Object::Connection::operator Variant() const {
 	Dictionary d;
 	d["signal"] = signal;

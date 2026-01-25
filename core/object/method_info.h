@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METHOD_INFO_H
-#define METHOD_INFO_H
+#pragma once
 
-#include "core/object/property_info.h"
 #include "core/variant/variant.h"
+#include "property_info.h"
 
 enum MethodFlags {
 	METHOD_FLAG_NORMAL = 1,
@@ -122,5 +121,3 @@ struct MethodInfo {
 		arguments = Vector<PropertyInfo>{ p_params... };
 	}
 };
-
-#endif // METHOD_INFO_H
