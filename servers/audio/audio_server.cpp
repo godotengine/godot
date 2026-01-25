@@ -1516,7 +1516,7 @@ void AudioServer::notify_listener_changed() {
 void AudioServer::init_channels_and_buffers() {
 	channel_count = get_channel_count();
 
-	print_verbose(vformat("AudioServer: Speaker mode set to %s, initializing %d stereo channel(s)", _get_speaker_mode_name(), channel_count));
+	print_verbose(vformat("AudioServer: Speaker mode set to %s, initializing %d stereo channel%s", _get_speaker_mode_name(), channel_count, channel_count == 1 ? "" : "s"));
 
 	temp_buffer.resize(channel_count);
 	mix_buffer.resize(buffer_size + LOOKAHEAD_BUFFER_SIZE);
@@ -1538,7 +1538,7 @@ void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
 
-	speaker_mode_config = GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/speaker_mode", PROPERTY_HINT_ENUM, "Default:0,Stereo:1,Surround 3.1:2,Surround 5.1:3,Surround 7.1:4"), 0);
+	speaker_mode_config = GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/speaker_mode_override", PROPERTY_HINT_ENUM, "Disabled:0,Force Stereo:1,Force Surround 3.1:2,Force Surround 5.1:3,Force Surround 7.1:4"), 0);
 
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
@@ -1574,7 +1574,7 @@ void AudioServer::set_speaker_mode_config(int p_speaker_mode) {
 
 void AudioServer::_project_settings_changed_cb() {
 	lock();
-	set_speaker_mode_config(GLOBAL_GET("audio/general/speaker_mode"));
+	set_speaker_mode_config(GLOBAL_GET("audio/general/speaker_mode_override"));
 	unlock();
 }
 
