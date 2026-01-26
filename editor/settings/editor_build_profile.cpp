@@ -900,7 +900,20 @@ void EditorBuildProfileManager::_detect_from_project() {
 
 	// Add classes that are either necessary for the engine to work properly, or there isn't a way to infer their use.
 
-	const LocalVector<String> hardcoded_classes = { "InputEvent", "MainLoop", "StyleBox" };
+	// HACK: Some classes are included due to creating clashes with unrelated when disabled.
+	// Until that is fixed, they need to always be enabled.
+	const LocalVector<String> hardcoded_classes = {
+		"Font",
+		"InputEvent",
+		"MainLoop",
+		"Mutex",
+		"ShaderInclude",
+		"ShaderIncludeDB",
+		"StyleBox",
+		"Time",
+		"Window",
+	};
+
 	for (const String &hc_class : hardcoded_classes) {
 		used_classes.insert(hc_class);
 
