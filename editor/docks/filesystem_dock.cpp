@@ -1540,7 +1540,6 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		}
 
 		// Only treat as a changed dependency if it was successfully moved.
-
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
 			print_verbose("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
@@ -2051,9 +2050,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 			int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
 			_update_resource_paths_after_move(file_renames, uids);
-
 			main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
