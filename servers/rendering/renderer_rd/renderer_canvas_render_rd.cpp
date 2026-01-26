@@ -1782,6 +1782,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.renames["TAU"] = String::num(Math::TAU);
 		actions.renames["E"] = String::num(Math::E);
 		actions.renames["AT_LIGHT_PASS"] = "false";
+		actions.renames["INSTANCE_MATRIX"] = "instance_matrix";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 
 		actions.renames["COLOR"] = "color";
