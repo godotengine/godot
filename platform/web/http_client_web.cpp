@@ -160,6 +160,11 @@ int64_t HTTPClientWeb::get_response_body_length() const {
 	return -1;
 }
 
+int64_t HTTPClientWeb::get_request_bytes_sent() const {
+	// Upload progress tracking is not available on the web platform.
+	return -1;
+}
+
 PackedByteArray HTTPClientWeb::read_response_body_chunk() {
 	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 

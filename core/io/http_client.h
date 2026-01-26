@@ -183,6 +183,8 @@ public:
 	virtual Error get_response_headers(List<String> *r_response) = 0;
 	virtual int64_t get_response_body_length() const = 0;
 
+	virtual int64_t get_request_bytes_sent() const = 0;
+
 	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.
 
 	virtual void set_blocking_mode(bool p_enable) = 0; // Useful mostly if running in a thread

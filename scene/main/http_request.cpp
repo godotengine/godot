@@ -600,6 +600,10 @@ int HTTPRequest::get_downloaded_bytes() const {
 	return downloaded.get();
 }
 
+int HTTPRequest::get_uploaded_bytes() const {
+	return client->get_request_bytes_sent();
+}
+
 int HTTPRequest::get_body_size() const {
 	return body_len;
 }
@@ -655,6 +659,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_download_file"), &HTTPRequest::get_download_file);
 
 	ClassDB::bind_method(D_METHOD("get_downloaded_bytes"), &HTTPRequest::get_downloaded_bytes);
+	ClassDB::bind_method(D_METHOD("get_uploaded_bytes"), &HTTPRequest::get_uploaded_bytes);
 	ClassDB::bind_method(D_METHOD("get_body_size"), &HTTPRequest::get_body_size);
 
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
