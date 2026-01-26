@@ -35,7 +35,8 @@ jobs:
             build-mono: true
             doc-test: true
             proj-conv: true
-            api-compat: true
+            # FIXME: New versioning of godot-cpp breaks the logic for this test.
+            #api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
