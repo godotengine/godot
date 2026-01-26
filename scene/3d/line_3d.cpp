@@ -414,10 +414,11 @@ void Line3D::set_line_mode(Line3D::LineMode p_line_mode) {
 	if (p_line_mode == line_mode) {
 		return;
 	}
-	set_process_internal(p_line_mode != Line3D::LineMode::LINE_MODE_MANUAL);
-	line_mode = p_line_mode;
 	points.clear();
 	normals.clear();
+	_times.clear();
+	set_process_internal(p_line_mode != Line3D::LineMode::LINE_MODE_MANUAL);
+	line_mode = p_line_mode;
 	notify_property_list_changed();
 }
 
@@ -433,6 +434,7 @@ void Line3D::rebuild() {
 void Line3D::clear() {
 	points = PackedVector3Array();
 	normals = PackedVector3Array();
+	_times = PackedFloat64Array();
 	rebuild();
 }
 
@@ -460,6 +462,9 @@ Line3D::LimitMode Line3D::get_limit_mode() const {
 }
 
 void Line3D::set_emitting(bool p_emitting) {
+	if (emitting != p_emitting && !emitting) {
+		clear();
+	}
 	emitting = p_emitting;
 }
 bool Line3D::get_emitting() const {
@@ -797,9 +802,9 @@ void Line3D::_process_trail(real_t p_delta) {
 }
 
 void Line3D::_validate_property(PropertyInfo &p_property) const {
-	/*if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
+	if (p_property.name == "mesh") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	}*/
+	}
 	switch (line_mode) {
 		case Line3D::LineMode::LINE_MODE_MANUAL: {
 			if (p_property.name == "max_section_length") {
@@ -842,7 +847,7 @@ void Line3D::_validate_property(PropertyInfo &p_property) const {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			} else if (p_property.name == "target") {
 				p_property.usage = PROPERTY_USAGE_NONE;
-			} else if (p_property.name == "tile_offset") {
+			} else if (p_property.name == "tiling_offset") {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		} break;
