@@ -209,7 +209,7 @@ protected:
 	GDVIRTUAL4(_commit_subgizmos, Ref<EditorCanvasItemGizmo>, Vector<int>, TypedArray<Transform2D>, bool)
 
 public:
-	static Transform2D boundary_change_to_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after);
+	static Transform2D boundary_change_to_transform(const Rect2 &p_before, const Rect2 &p_after);
 
 	virtual String get_gizmo_name() const;
 	virtual int get_priority() const;
