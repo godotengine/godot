@@ -366,6 +366,9 @@ private:
 protected:
 	Ref<DirAccess> dir_access;
 
+	bool favorites_changed = false;
+	bool recents_changed = false;
+
 	bool _can_use_native_popup() const;
 	virtual void _item_menu_id_pressed(int p_option);
 	virtual void _dir_contents_changed() {}
@@ -373,8 +376,10 @@ protected:
 	virtual bool _should_use_native_popup() const;
 	virtual bool _should_hide_file(const String &p_file) const { return false; }
 	virtual Color _get_folder_color(const String &p_path) const { return theme_cache.folder_icon_color; }
+	virtual Vector2i _get_list_mode_icon_size() const;
 
 	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i()) override;
+	void _clear_changed_status();
 
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);

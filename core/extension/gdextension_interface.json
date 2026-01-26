@@ -501,9 +501,6 @@
         {
             "name": "GDExtensionVariantFromTypeConstructorFunc",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "type": "GDExtensionUninitializedVariantPtr"
@@ -516,9 +513,6 @@
         {
             "name": "GDExtensionTypeFromVariantConstructorFunc",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "type": "GDExtensionUninitializedTypePtr"
@@ -543,9 +537,6 @@
         {
             "name": "GDExtensionPtrOperatorEvaluator",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_left",
@@ -564,9 +555,6 @@
         {
             "name": "GDExtensionPtrBuiltInMethod",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -589,9 +577,6 @@
         {
             "name": "GDExtensionPtrConstructor",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -606,9 +591,6 @@
         {
             "name": "GDExtensionPtrDestructor",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -619,9 +601,6 @@
         {
             "name": "GDExtensionPtrSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -636,9 +615,6 @@
         {
             "name": "GDExtensionPtrGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -653,9 +629,6 @@
         {
             "name": "GDExtensionPtrIndexedSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -674,9 +647,6 @@
         {
             "name": "GDExtensionPtrIndexedGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -695,9 +665,6 @@
         {
             "name": "GDExtensionPtrKeyedSetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -716,9 +683,6 @@
         {
             "name": "GDExtensionPtrKeyedGetter",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_base",
@@ -754,9 +718,6 @@
         {
             "name": "GDExtensionPtrUtilityFunction",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_return",
@@ -800,9 +761,6 @@
         {
             "name": "GDExtensionInstanceBindingFreeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_token",
@@ -1019,9 +977,6 @@
         {
             "name": "GDExtensionClassFreePropertyList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1036,9 +991,6 @@
         {
             "name": "GDExtensionClassFreePropertyList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1112,9 +1064,6 @@
         {
             "name": "GDExtensionClassNotification",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1133,9 +1082,6 @@
         {
             "name": "GDExtensionClassNotification2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1154,9 +1100,6 @@
         {
             "name": "GDExtensionClassToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1175,9 +1118,6 @@
         {
             "name": "GDExtensionClassReference",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1188,9 +1128,6 @@
         {
             "name": "GDExtensionClassUnreference",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1201,9 +1138,6 @@
         {
             "name": "GDExtensionClassCallVirtual",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1252,9 +1186,6 @@
         {
             "name": "GDExtensionClassFreeInstance",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_userdata",
@@ -1362,9 +1293,6 @@
         {
             "name": "GDExtensionClassCallVirtualWithData",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -1857,9 +1785,6 @@
         {
             "name": "GDExtensionEditorGetClassesUsedCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_packed_string_array",
@@ -1974,9 +1899,6 @@
         {
             "name": "GDExtensionClassMethodCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2007,9 +1929,6 @@
         {
             "name": "GDExtensionClassMethodValidatedCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2032,9 +1951,6 @@
         {
             "name": "GDExtensionClassMethodPtrCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "method_userdata",
@@ -2169,9 +2085,6 @@
         {
             "name": "GDExtensionCallableCustomCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2211,9 +2124,6 @@
         {
             "name": "GDExtensionCallableCustomFree",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2271,9 +2181,6 @@
         {
             "name": "GDExtensionCallableCustomToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "callable_userdata",
@@ -2505,9 +2412,6 @@
         {
             "name": "GDExtensionScriptInstanceFreePropertyList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2526,9 +2430,6 @@
         {
             "name": "GDExtensionScriptInstanceFreePropertyList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2653,9 +2554,6 @@
         {
             "name": "GDExtensionScriptInstancePropertyStateAdd",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_name",
@@ -2674,9 +2572,6 @@
         {
             "name": "GDExtensionScriptInstanceGetPropertyState",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2712,9 +2607,6 @@
         {
             "name": "GDExtensionScriptInstanceFreeMethodList",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2733,9 +2625,6 @@
         {
             "name": "GDExtensionScriptInstanceFreeMethodList2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2792,9 +2681,6 @@
         {
             "name": "GDExtensionScriptInstanceCall",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -2825,9 +2711,6 @@
         {
             "name": "GDExtensionScriptInstanceNotification",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2846,9 +2729,6 @@
         {
             "name": "GDExtensionScriptInstanceNotification2",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2867,9 +2747,6 @@
         {
             "name": "GDExtensionScriptInstanceToString",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2888,9 +2765,6 @@
         {
             "name": "GDExtensionScriptInstanceRefCountIncremented",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -2957,9 +2831,6 @@
         {
             "name": "GDExtensionScriptInstanceFree",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -3305,9 +3176,6 @@
         {
             "name": "GDExtensionWorkerThreadPoolGroupTask",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "",
@@ -3321,9 +3189,6 @@
         {
             "name": "GDExtensionWorkerThreadPoolTask",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "",
@@ -3360,9 +3225,6 @@
         {
             "name": "GDExtensionInitializeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_userdata",
@@ -3377,9 +3239,6 @@
         {
             "name": "GDExtensionDeinitializeCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_userdata",
@@ -3426,9 +3285,6 @@
         {
             "name": "GDExtensionInterfaceFunctionPtr",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": []
         },
         {
@@ -3584,9 +3440,6 @@
         {
             "name": "GDExtensionMainLoopStartupCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called when starting the main loop."
@@ -3595,9 +3448,6 @@
         {
             "name": "GDExtensionMainLoopShutdownCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called when shutting down the main loop."
@@ -3606,9 +3456,6 @@
         {
             "name": "GDExtensionMainLoopFrameCallback",
             "kind": "function",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [],
             "description": [
                 "Called for every frame iteration of the main loop."
@@ -3646,9 +3493,6 @@
     "interface": [
         {
             "name": "get_godot_version",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_godot_version",
@@ -3669,9 +3513,6 @@
         },
         {
             "name": "get_godot_version2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_godot_version",
@@ -3749,9 +3590,6 @@
         },
         {
             "name": "mem_free",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ptr",
@@ -3838,9 +3676,6 @@
         },
         {
             "name": "mem_free2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ptr",
@@ -3864,9 +3699,6 @@
         },
         {
             "name": "print_error",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -3911,9 +3743,6 @@
         },
         {
             "name": "print_error_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -3965,9 +3794,6 @@
         },
         {
             "name": "print_warning",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4012,9 +3838,6 @@
         },
         {
             "name": "print_warning_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4066,9 +3889,6 @@
         },
         {
             "name": "print_script_error",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4113,9 +3933,6 @@
         },
         {
             "name": "print_script_error_with_message",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_description",
@@ -4189,9 +4006,6 @@
         },
         {
             "name": "variant_new_copy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -4215,9 +4029,6 @@
         },
         {
             "name": "variant_new_nil",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -4234,9 +4045,6 @@
         },
         {
             "name": "variant_destroy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4253,9 +4061,6 @@
         },
         {
             "name": "variant_call",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4310,9 +4115,6 @@
         },
         {
             "name": "variant_call_static",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -4367,9 +4169,6 @@
         },
         {
             "name": "variant_evaluate",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_op",
@@ -4417,9 +4216,6 @@
         },
         {
             "name": "variant_set",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4460,9 +4256,6 @@
         },
         {
             "name": "variant_set_named",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4503,9 +4296,6 @@
         },
         {
             "name": "variant_set_keyed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4546,9 +4336,6 @@
         },
         {
             "name": "variant_set_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4593,9 +4380,6 @@
         },
         {
             "name": "variant_get",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4633,9 +4417,6 @@
         },
         {
             "name": "variant_get_named",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4673,9 +4454,6 @@
         },
         {
             "name": "variant_get_keyed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4713,9 +4491,6 @@
         },
         {
             "name": "variant_get_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4838,9 +4613,6 @@
         },
         {
             "name": "variant_iter_get",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -4992,9 +4764,6 @@
         },
         {
             "name": "variant_duplicate",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -5025,9 +4794,6 @@
         },
         {
             "name": "variant_stringify",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -5191,9 +4957,6 @@
         },
         {
             "name": "variant_get_type_name",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5470,9 +5233,6 @@
         },
         {
             "name": "variant_construct",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5685,9 +5445,6 @@
         },
         {
             "name": "variant_get_constant_value",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_type",
@@ -5747,9 +5504,6 @@
         },
         {
             "name": "string_new_with_latin1_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5773,9 +5527,6 @@
         },
         {
             "name": "string_new_with_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5799,9 +5550,6 @@
         },
         {
             "name": "string_new_with_utf16_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5825,9 +5573,6 @@
         },
         {
             "name": "string_new_with_utf32_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5851,9 +5596,6 @@
         },
         {
             "name": "string_new_with_wide_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5877,9 +5619,6 @@
         },
         {
             "name": "string_new_with_latin1_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5910,9 +5649,6 @@
         },
         {
             "name": "string_new_with_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -5983,9 +5719,6 @@
         },
         {
             "name": "string_new_with_utf16_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6063,9 +5796,6 @@
         },
         {
             "name": "string_new_with_utf32_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6096,9 +5826,6 @@
         },
         {
             "name": "string_new_with_wide_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6372,9 +6099,6 @@
         },
         {
             "name": "string_operator_plus_eq_string",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6398,9 +6122,6 @@
         },
         {
             "name": "string_operator_plus_eq_char",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6424,9 +6145,6 @@
         },
         {
             "name": "string_operator_plus_eq_cstr",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6450,9 +6168,6 @@
         },
         {
             "name": "string_operator_plus_eq_wcstr",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6476,9 +6191,6 @@
         },
         {
             "name": "string_operator_plus_eq_c32str",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -6536,9 +6248,6 @@
         },
         {
             "name": "string_name_new_with_latin1_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6575,9 +6284,6 @@
         },
         {
             "name": "string_name_new_with_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6601,9 +6307,6 @@
         },
         {
             "name": "string_name_new_with_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_dest",
@@ -6673,9 +6376,6 @@
         },
         {
             "name": "file_access_store_buffer",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_instance",
@@ -7550,9 +7250,6 @@
         },
         {
             "name": "array_ref",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7580,9 +7277,6 @@
         },
         {
             "name": "array_set_typed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7678,9 +7372,6 @@
         },
         {
             "name": "dictionary_set_typed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_self",
@@ -7739,9 +7430,6 @@
         },
         {
             "name": "object_method_bind_call",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_method_bind",
@@ -7793,9 +7481,6 @@
         },
         {
             "name": "object_method_bind_ptrcall",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_method_bind",
@@ -7833,9 +7518,6 @@
         },
         {
             "name": "object_destroy",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7910,9 +7592,6 @@
         },
         {
             "name": "object_set_instance_binding",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7950,9 +7629,6 @@
         },
         {
             "name": "object_free_instance_binding",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -7976,9 +7652,6 @@
         },
         {
             "name": "object_set_instance",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_o",
@@ -8150,9 +7823,6 @@
         },
         {
             "name": "object_call_script_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_object",
@@ -8226,9 +7896,6 @@
         },
         {
             "name": "ref_set_object",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_ref",
@@ -8385,9 +8052,6 @@
         },
         {
             "name": "placeholder_script_instance_update",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_placeholder",
@@ -8450,9 +8114,6 @@
         },
         {
             "name": "object_set_script_instance",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_object",
@@ -8476,9 +8137,6 @@
         },
         {
             "name": "callable_custom_create",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_callable",
@@ -8507,9 +8165,6 @@
         },
         {
             "name": "callable_custom_create2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "r_callable",
@@ -8675,9 +8330,6 @@
         },
         {
             "name": "classdb_register_extension_class",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8720,9 +8372,6 @@
         },
         {
             "name": "classdb_register_extension_class2",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8765,9 +8414,6 @@
         },
         {
             "name": "classdb_register_extension_class3",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8810,9 +8456,6 @@
         },
         {
             "name": "classdb_register_extension_class4",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8855,9 +8498,6 @@
         },
         {
             "name": "classdb_register_extension_class5",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8896,9 +8536,6 @@
         },
         {
             "name": "classdb_register_extension_class_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8930,9 +8567,6 @@
         },
         {
             "name": "classdb_register_extension_class_virtual_method",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -8964,9 +8598,6 @@
         },
         {
             "name": "classdb_register_extension_class_integer_constant",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9021,9 +8652,6 @@
         },
         {
             "name": "classdb_register_extension_class_property",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9069,9 +8697,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_indexed",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9124,9 +8749,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_group",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9164,9 +8786,6 @@
         },
         {
             "name": "classdb_register_extension_class_property_subgroup",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9204,9 +8823,6 @@
         },
         {
             "name": "classdb_register_extension_class_signal",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9252,9 +8868,6 @@
         },
         {
             "name": "classdb_unregister_extension_class",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9279,9 +8892,6 @@
         },
         {
             "name": "get_library_path",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9305,9 +8915,6 @@
         },
         {
             "name": "editor_add_plugin",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_name",
@@ -9325,9 +8932,6 @@
         },
         {
             "name": "editor_remove_plugin",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_class_name",
@@ -9344,9 +8948,6 @@
         },
         {
             "name": "editor_help_load_xml_from_utf8_chars",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_data",
@@ -9365,9 +8966,6 @@
         },
         {
             "name": "editor_help_load_xml_from_utf8_chars_and_len",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_data",
@@ -9393,9 +8991,6 @@
         },
         {
             "name": "editor_register_get_classes_used_callback",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",
@@ -9423,9 +9018,6 @@
         },
         {
             "name": "register_main_loop_callbacks",
-            "return_value": {
-                "type": "void"
-            },
             "arguments": [
                 {
                     "name": "p_library",

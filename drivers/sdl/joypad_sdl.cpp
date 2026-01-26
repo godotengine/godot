@@ -56,19 +56,6 @@ JoypadSDL::JoypadSDL() {
 	singleton = this;
 }
 
-#ifdef WINDOWS_ENABLED
-extern "C" {
-HWND SDL_HelperWindow;
-}
-
-// Required for DInput joypads to work
-// TODO: remove this workaround when we update to newer version of SDL
-JoypadSDL::JoypadSDL(HWND p_helper_window) :
-		JoypadSDL() {
-	SDL_HelperWindow = p_helper_window;
-}
-#endif
-
 JoypadSDL::~JoypadSDL() {
 	// Process any remaining input events
 	process_events();
@@ -174,8 +161,8 @@ void JoypadSDL::process_events() {
 
 				const int MAX_GUID_SIZE = 64;
 				char guid[MAX_GUID_SIZE] = {};
-
-				SDL_GUIDToString(SDL_GetJoystickGUID(joy), guid, MAX_GUID_SIZE);
+				SDL_GUID joy_guid = SDL_GetJoystickGUID(joy);
+				SDL_GUIDToString(joy_guid, guid, MAX_GUID_SIZE);
 				SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
 
 				joypads[joy_id].attached = true;
@@ -197,11 +184,13 @@ void JoypadSDL::process_events() {
 					joypad_info["steam_input_index"] = itos(steam_handle);
 				}
 
+#ifdef WINDOWS_ENABLED
 				const int player_index = SDL_GetJoystickPlayerIndex(joy);
-				if (player_index >= 0) {
+				if (player_index >= 0 && joy_guid.data[14] == 'x') { // See also "SDL_IsJoystickXInput" in "thirdparty/sdl/joystick/SDL_joystick.c".
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
 				}
+#endif
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,
@@ -310,9 +299,8 @@ bool JoypadSDL::Joypad::has_joy_light() const {
 	return SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(properties_id, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
 }
 
-bool JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
-	Color linear = p_color.srgb_to_linear();
-	return SDL_SetJoystickLED(get_sdl_joystick(), linear.get_r8(), linear.get_g8(), linear.get_b8());
+void JoypadSDL::Joypad::set_joy_light(const Color &p_color) {
+	SDL_SetJoystickLED(get_sdl_joystick(), p_color.get_r8(), p_color.get_g8(), p_color.get_b8());
 }
 
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {

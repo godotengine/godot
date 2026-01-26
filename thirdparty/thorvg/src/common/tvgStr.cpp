@@ -230,11 +230,12 @@ char* strAppend(char* lhs, const char* rhs, size_t n)
 
 char* strDirname(const char* path)
 {
-    const char *ptr = strrchr(path, '/');
+    auto ptr = strrchr(path, '/');
 #ifdef _WIN32
-    if (ptr) ptr = strrchr(ptr + 1, '\\');
+    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
+    if (ptr2) ptr = ptr2;
 #endif
-    int len = int(ptr + 1 - path);  // +1 to include '/'
+    auto len = ptr ? size_t(ptr - path + 1) : SIZE_MAX;
     return strDuplicate(path, len);
 }
 

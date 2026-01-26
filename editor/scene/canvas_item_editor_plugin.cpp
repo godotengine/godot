@@ -65,6 +65,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
@@ -824,8 +825,8 @@ bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_po
 
 List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool p_retrieve_locked, bool p_remove_canvas_item_if_parent_in_selection, bool *r_has_locked_items) const {
 	List<CanvasItem *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (ci) {
 			if (ci->is_visible_in_tree() && (p_retrieve_locked || !_is_node_locked(ci))) {
 				Viewport *vp = ci->get_viewport();
@@ -4351,6 +4352,9 @@ void CanvasItemEditor::_update_editor_settings() {
 	ruler_width_scaled = MAX(ruler_width_unscaled * EDSCALE, ruler_font_size * 2.0);
 
 	grab_distance = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+
+	resample_delay = EDITOR_GET("editors/2d/auto_resample_delay");
+	resample_timer->set_wait_time(resample_delay);
 }
 
 void CanvasItemEditor::_project_settings_changed() {
@@ -4613,10 +4617,17 @@ void CanvasItemEditor::_zoom_on_position(real_t p_zoom, Point2 p_position) {
 
 	zoom_widget->set_zoom(zoom);
 	update_viewport();
+	if (auto_resampling_enabled) {
+		resample_timer->start();
+	}
 }
 
 void CanvasItemEditor::_update_zoom(real_t p_zoom) {
 	_zoom_on_position(p_zoom, viewport_scrollable->get_size() / 2.0);
+}
+
+void CanvasItemEditor::_update_oversampling() {
+	EditorNode::get_singleton()->get_scene_root()->set_oversampling_override(auto_resampling_enabled ? zoom : 0.0);
 }
 
 void CanvasItemEditor::_shortcut_zoom_set(real_t p_zoom) {
@@ -4667,7 +4678,7 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	ERR_FAIL_COND_MSG(te->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
@@ -4678,8 +4689,8 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 		return;
 	}
 	te->make_insert_queue();
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (!ci || !ci->is_visible_in_tree()) {
 			continue;
 		}
@@ -4981,10 +4992,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case ANIM_COPY_POSE: {
 			pose_clipboard.clear();
 
-			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 				if (!ci || !ci->is_visible_in_tree()) {
 					continue;
 				}
@@ -5023,10 +5034,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case ANIM_CLEAR_POSE: {
-			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 				if (!ci || !ci->is_visible_in_tree()) {
 					continue;
 				}
@@ -5089,7 +5100,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 		} break;
 		case SKELETON_MAKE_BONES: {
-			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = get_tree()->get_edited_scene_root();
 
 			if (!editor_root || selection.is_empty()) {
@@ -5097,8 +5108,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				Node2D *n2d = Object::cast_to<Node2D>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				Node2D *n2d = ObjectDB::get_instance<Node2D>(E.key);
 				if (!n2d) {
 					continue;
 				}
@@ -5130,6 +5141,16 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->commit_action();
 
 		} break;
+		case AUTO_RESAMPLE_CANVAS_ITEMS: {
+			auto_resampling_enabled = !auto_resampling_enabled;
+			int idx = view_menu->get_popup()->get_item_index(AUTO_RESAMPLE_CANVAS_ITEMS);
+			view_menu->get_popup()->set_item_checked(idx, auto_resampling_enabled);
+			if (!resample_timer->is_stopped()) {
+				resample_timer->stop();
+			}
+			_update_oversampling();
+			EditorSettings::get_singleton()->set_project_metadata("2d_editor", "auto_resampling_enabled", auto_resampling_enabled);
+		} break;
 	}
 }
 
@@ -5144,9 +5165,9 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	Rect2 rect;
 	int count = 0;
 
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (!ci) {
 			continue;
 		}
@@ -5184,6 +5205,9 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		zoom_widget->set_zoom(zoom);
 		viewport->queue_redraw(); // Redraw to update the global canvas transform after zoom changes.
 		callable_mp(this, &CanvasItemEditor::center_at).call_deferred(rect.get_center()); // Defer because the updated transform is needed.
+		if (auto_resampling_enabled) {
+			resample_timer->start();
+		}
 	} else {
 		center_at(rect.get_center());
 	}
@@ -5252,6 +5276,9 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		// and the zoom level will still be the same (relative to the editor scale).
 		zoom = real_t(p_state["zoom"]) * MAX(1, EDSCALE);
 		zoom_widget->set_zoom(zoom);
+		if (auto_resampling_enabled) {
+			resample_timer->start();
+		}
 	}
 
 	if (state.has("ofs")) {
@@ -5445,6 +5472,14 @@ void CanvasItemEditor::clear() {
 	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
 	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
 	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+
+	if (auto_resampling_enabled) {
+		if (resample_timer->is_inside_tree()) {
+			resample_timer->start();
+		} else {
+			_update_oversampling();
+		}
+	}
 }
 
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
@@ -5906,7 +5941,11 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTRC("Center Selection"), Key::F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTRC("Frame Selection"), KeyModifierMask::SHIFT | Key::F), VIEW_FRAME_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/clear_guides", TTRC("Clear Guides")), CLEAR_GUIDES);
+
 	p->add_separator();
+	auto_resampling_enabled = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "auto_resampling_enabled", true);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/auto_resample_canvas_items", TTRC("Auto Resample CanvasItems")), AUTO_RESAMPLE_CANVAS_ITEMS);
+	p->set_item_checked(p->get_item_index(AUTO_RESAMPLE_CANVAS_ITEMS), auto_resampling_enabled);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTRC("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
 
 	theme_menu = memnew(PopupMenu);
@@ -6015,6 +6054,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	add_node_menu = memnew(PopupMenu);
 	add_child(add_node_menu);
 	add_node_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_add_node_pressed));
+
+	resample_timer = memnew(Timer);
+	resample_timer->set_wait_time(resample_delay);
+	resample_timer->set_one_shot(true);
+	add_child(resample_timer);
+	resample_timer->connect("timeout", callable_mp(this, &CanvasItemEditor::_update_oversampling));
 
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTRC("Multiply grid step by 2"), Key::KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTRC("Divide grid step by 2"), Key::KP_DIVIDE);

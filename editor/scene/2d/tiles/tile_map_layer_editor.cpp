@@ -158,14 +158,14 @@ Vector<TileMapLayerSubEditorPlugin::TabData> TileMapLayerEditorTilesPlugin::get_
 	toolbar_controls.push_back(tools_settings);
 	toolbar_controls.push_back(tools_settings_vsep);
 	tabs.push_back({ toolbar_controls, wide_toolbar, tiles_bottom_panel });
-	tabs.push_back({ toolbar_controls, wide_toolbar, patterns_bottom_panel });
+	tabs.push_back({ toolbar_controls, wide_toolbar, patterns_mc });
 	return tabs;
 }
 
 void TileMapLayerEditorTilesPlugin::_tab_changed() {
 	if (tiles_bottom_panel->is_visible_in_tree()) {
 		_update_selection_pattern_from_tileset_tiles_selection();
-	} else if (patterns_bottom_panel->is_visible_in_tree()) {
+	} else if (patterns_mc->is_visible_in_tree()) {
 		_update_selection_pattern_from_tileset_pattern_selection();
 	}
 }
@@ -290,14 +290,14 @@ void TileMapLayerEditorTilesPlugin::_update_source_display() {
 		TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
 
 		if (atlas_source) {
-			tile_atlas_view->show();
 			scene_tiles_list->hide();
 			invalid_source_label->hide();
+			tile_atlas_view->show();
 			_update_atlas_view();
 		} else if (scenes_collection_source) {
 			tile_atlas_view->hide();
-			scene_tiles_list->show();
 			invalid_source_label->hide();
+			scene_tiles_list->show();
 			_update_scenes_collection_view();
 		} else {
 			tile_atlas_view->hide();
@@ -386,7 +386,7 @@ void TileMapLayerEditorTilesPlugin::_update_patterns_list() {
 	// Added a new pattern, thus select the last one.
 	if (select_last_pattern) {
 		patterns_item_list->select(tile_set->get_patterns_count() - 1);
-		patterns_item_list->grab_focus();
+		patterns_item_list->grab_focus(true);
 		_update_selection_pattern_from_tileset_pattern_selection();
 	}
 	select_last_pattern = false;
@@ -538,7 +538,7 @@ void TileMapLayerEditorTilesPlugin::_update_theme() {
 }
 
 bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-	if (!(tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree())) {
+	if (!(tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree())) {
 		// If the bottom editor is not visible, we ignore inputs.
 		return false;
 	}
@@ -808,7 +808,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	bool drawing_rect = false;
 
 	// Draw the selection.
-	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
+	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
 		// In select mode, we only draw the current selection if we are modifying it (pressing control or shift).
 		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			// Do nothing.
@@ -820,7 +820,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	}
 
 	// Handle the preview of the tiles to be placed.
-	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemEditor::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
+	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemEditor::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
 		HashMap<Vector2i, TileMapCell> preview;
 		Rect2i drawn_grid_rect;
 
@@ -2125,7 +2125,7 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 		}
 	}
 
-	TileMapLayer *new_tile_map_layer = ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
+	TileMapLayer *new_tile_map_layer = ObjectDB::get_instance<TileMapLayer>(p_tile_map_layer_id);
 	Ref<TileSet> new_tile_set;
 	if (new_tile_map_layer) {
 		new_tile_set = new_tile_map_layer->get_tile_set();
@@ -2153,6 +2153,19 @@ void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layou
 	tools_settings->set_vertical(is_vertical);
 	tools_settings_vsep->set_vertical(is_vertical);
 	transform_separator->set_vertical(is_vertical);
+
+	wide_toolbar->set_visible(is_vertical);
+	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
+	scatter_controls_container->reparent(is_vertical ? wide_toolbar : tools_settings);
+
+	if (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_FLOATING) {
+		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	} else {
+		patterns_mc->set_theme_type_variation(is_vertical ? "" : "NoBorderBottomPanel");
+		patterns_item_list->set_scroll_hint_mode(is_vertical ? ItemList::SCROLL_HINT_MODE_DISABLED : ItemList::SCROLL_HINT_MODE_BOTH);
+	}
+	patterns_item_list->set_theme_type_variation(is_vertical ? "ItemListSecondary" : "");
 }
 
 TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
@@ -2299,7 +2312,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	bucket_contiguous_checkbox->hide();
-	wide_toolbar->add_child(bucket_contiguous_checkbox);
+	tools_settings->add_child(bucket_contiguous_checkbox);
 
 	// Random tile checkbox.
 	random_tile_toggle = memnew(Button);
@@ -2327,7 +2340,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	scatter_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed));
 	scatter_spinbox->set_accessibility_name(TTRC("Scattering:"));
 	scatter_controls_container->add_child(scatter_spinbox);
-	wide_toolbar->add_child(scatter_controls_container);
+	tools_settings->add_child(scatter_controls_container);
 
 	_on_random_tile_checkbox_toggled(false);
 
@@ -2438,9 +2451,9 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	atlas_sources_split_container->add_child(invalid_source_label);
 
 	// --- Bottom panel patterns ---
-	patterns_bottom_panel = memnew(VBoxContainer);
-	patterns_bottom_panel->set_name(TTR("Patterns"));
-	patterns_bottom_panel->connect(SceneStringName(visibility_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_tab_changed));
+	patterns_mc = memnew(MarginContainer);
+	patterns_mc->set_name(TTR("Patterns"));
+	patterns_mc->connect(SceneStringName(visibility_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_tab_changed));
 
 	int thumbnail_size = 64;
 	patterns_item_list = memnew(ItemList);
@@ -2450,12 +2463,12 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
-	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input));
 	patterns_item_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
 	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
 	patterns_item_list->connect("empty_clicked", callable_mp(this, &TileMapLayerEditorTilesPlugin::patterns_item_list_empty_clicked));
-	patterns_bottom_panel->add_child(patterns_item_list);
+	patterns_mc->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -3474,6 +3487,9 @@ void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_la
 	tilemap_tiles_tools_buttons->set_vertical(is_vertical);
 	tools_settings->set_vertical(is_vertical);
 	tools_settings_vsep->set_vertical(is_vertical);
+
+	wide_toolbar->set_visible(is_vertical);
+	bucket_contiguous_checkbox->reparent(is_vertical ? wide_toolbar : tools_settings);
 }
 
 TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
@@ -3499,7 +3515,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tree->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	terrains_tree->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	terrains_tree->set_hide_root(true);
-	terrains_tree->set_theme_type_variation("ItemListSecondary");
+	terrains_tree->set_theme_type_variation("TreeSecondary");
 	terrains_tree->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTerrainsPlugin::_update_tiles_list));
 	tilemap_tab_terrains->add_child(terrains_tree);
 
@@ -3511,6 +3527,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tile_list->set_same_column_width(true);
 	terrains_tile_list->set_fixed_icon_size(Size2(32, 32) * EDSCALE);
 	terrains_tile_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	terrains_tile_list->set_theme_type_variation("ItemListSecondary");
 	tilemap_tab_terrains->add_child(terrains_tile_list);
 
 	// --- Toolbar ---
@@ -3591,7 +3608,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	bucket_contiguous_checkbox->hide();
-	wide_toolbar->add_child(bucket_contiguous_checkbox);
+	tools_settings->add_child(bucket_contiguous_checkbox);
 }
 
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {
@@ -3796,6 +3813,8 @@ void TileMapLayerEditor::_update_layers_selector() {
 		select_next_layer->set_disabled(true);
 		select_previous_layer->set_disabled(true);
 	}
+
+	_update_layer_selector_layout(get_current_layout() == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 }
 
 void TileMapLayerEditor::_clear_all_layers_highlighting() {
@@ -4411,32 +4430,41 @@ void TileMapLayerEditor::set_show_layer_selector(bool p_show_layer_selector) {
 	_update_layers_selector();
 }
 
+void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
+	if (p_is_vertical && show_layers_selector) {
+		layer_selection_hbox->reparent(tile_map_wide_toolbar);
+		tile_map_wide_toolbar->move_child(layer_selection_hbox, 1);
+		layer_selection_hbox->set_vertical(false);
+	} else {
+		layer_selection_hbox->reparent(tile_map_toolbar);
+		tile_map_toolbar->move_child(layer_selection_hbox, -5);
+		layer_selection_hbox->set_vertical(p_is_vertical);
+	}
+}
+
 void TileMapLayerEditor::update_layout(DockLayout p_layout) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
-	tabs_bar->get_parent()->remove_child(tabs_bar);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);
-	layer_selection_hbox->set_vertical(is_vertical);
 	tile_map_toolbar->set_h_size_flags(is_vertical ? SIZE_SHRINK_BEGIN : SIZE_EXPAND_FILL);
 	tile_map_toolbar->set_v_size_flags(is_vertical ? SIZE_EXPAND_FILL : SIZE_SHRINK_BEGIN);
 
-	main_box_container->move_child(padding_control, is_vertical ? 0 : 3);
+	main_box_container->move_child(padding_control, is_vertical ? 0 : 2);
+	if (is_vertical) {
+		main_box_container->remove_theme_constant_override(SNAME("h_separation"));
+	} else {
+		main_box_container->add_theme_constant_override(SNAME("h_separation"), 0);
+	}
 
 	if (is_vertical) {
-		tile_map_wide_toolbar->add_child(tabs_bar);
+		tabs_panel->reparent(tile_map_wide_toolbar);
+		tile_map_wide_toolbar->move_child(tabs_panel, 0);
 	} else {
-		tile_map_toolbar->add_child(tabs_bar);
-		tile_map_toolbar->move_child(tabs_bar, 0);
+		tabs_panel->reparent(tile_map_toolbar);
+		tile_map_toolbar->move_child(tabs_panel, 0);
 	}
 
-	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {
-		tab_data.wide_toolbar->get_parent()->remove_child(tab_data.wide_toolbar);
-		if (is_vertical) {
-			tile_map_wide_toolbar->add_child(tab_data.wide_toolbar);
-		} else {
-			tile_map_toolbar->add_child(tab_data.wide_toolbar);
-		}
-	}
+	_update_layer_selector_layout(is_vertical);
 
 	// Propagate layout change to sub plugins
 	for (TileMapLayerSubEditorPlugin *tab_plugin : tabs_plugins) {
@@ -4449,7 +4477,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	set_name(TTRC("TileMap"));
 	set_icon_name("TileMapDock");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_tile_map_bottom_panel", TTRC("Open TileMap Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_ALL);
 	set_global(false);
 	set_transient(true);
@@ -4468,6 +4496,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 	// TabBar.
 	tabs_bar = memnew(TabBar);
+	tabs_bar->set_theme_type_variation("TabBarInner");
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
 		Vector<TileMapLayerSubEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();
@@ -4491,7 +4520,10 @@ TileMapLayerEditor::TileMapLayerEditor() {
 	main_box_container->add_child(padding_control);
 
 	// Tabs.
-	tile_map_toolbar->add_child(tabs_bar);
+	tabs_panel = memnew(PanelContainer);
+	tabs_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	tabs_panel->add_child(tabs_bar);
+	tile_map_toolbar->add_child(tabs_panel);
 
 	// Tabs toolbars.
 	for (TileMapLayerSubEditorPlugin::TabData &tab_data : tabs_data) {
@@ -4504,7 +4536,7 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 		tab_data.wide_toolbar->hide();
 		if (!tab_data.wide_toolbar->get_parent()) {
-			tile_map_toolbar->add_child(tab_data.wide_toolbar);
+			tile_map_wide_toolbar->add_child(tab_data.wide_toolbar);
 		}
 	}
 

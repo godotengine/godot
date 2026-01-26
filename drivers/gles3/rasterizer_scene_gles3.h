@@ -79,6 +79,8 @@ enum SceneUniformLocation {
 	SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION,
 	SCENE_EMPTY2, // Unused, put here to avoid conflicts with SKY_MULTIVIEW_UNIFORM_LOCATION.
+	SCENE_PREV_DATA_UNIFORM_LOCATION,
+	SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 enum SkyUniformLocation {
@@ -94,6 +96,8 @@ enum SkyUniformLocation {
 	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
+	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
+	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
 };
 
 struct RenderDataGLES3 {
@@ -463,12 +467,14 @@ private:
 		UBO data;
 		UBO prev_data;
 		GLuint ubo_buffer = 0;
+		GLuint prev_ubo_buffer = 0;
 		MultiviewUBO multiview_data;
 		MultiviewUBO prev_multiview_data;
 		GLuint multiview_buffer = 0;
+		GLuint prev_multiview_buffer = 0;
 		GLuint tonemap_buffer = 0;
 
-		bool is_prev_data_stored = false;
+		int prev_data_state = 0; // 0 = Motion vectors not used, 1 = use data (first frame only), 2 = use previous data
 
 		bool used_depth_prepass = false;
 
@@ -716,6 +722,8 @@ private:
 	};
 
 	RenderList render_list[RENDER_LIST_MAX];
+
+	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
 
 	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_directional_shadow_count);
 	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias = 0.0);

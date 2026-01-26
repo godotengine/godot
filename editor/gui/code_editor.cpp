@@ -1702,9 +1702,9 @@ void CodeTextEditor::_notification(int p_what) {
 			update_toggle_files_button();
 
 			zoom_button->set_tooltip_text(
-					TTR("Zoom factor") + "\n" +
+					TTR("Zoom Factor") + "\n" +
 					// TRANSLATORS: The placeholders are keyboard shortcuts. The first one is in the form of "Ctrl+"/"Cmd+".
-					vformat(TTR("%s+Mouse wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
+					vformat(TTR("%s+Mouse Wheel, %s/%s: Finetune\n%s: Reset"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), ED_GET_SHORTCUT("script_editor/zoom_in")->get_as_text(), ED_GET_SHORTCUT("script_editor/zoom_out")->get_as_text(), ED_GET_SHORTCUT("script_editor/reset_zoom")->get_as_text()));
 
 			[[fallthrough]];
 		}
@@ -2015,6 +2015,4 @@ CodeTextEditor::CodeTextEditor() {
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));
-
-	add_theme_constant_override("separation", 4 * EDSCALE);
 }

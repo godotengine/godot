@@ -70,7 +70,9 @@ void AnimationPlayerEditor::_find_player() {
 	TypedArray<Node> players = edited_scene->find_children("", "AnimationPlayer");
 
 	if (players.size() == 1) {
+		// Replicating EditorNode::_plugin_over_edit to ensure an identical setup as when selecting manually.
 		plugin->edit(players.front());
+		plugin->make_visible(true);
 	}
 }
 
@@ -196,9 +198,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			onion_skinning->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			pin->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
-
-			tool_anim->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
-			track_editor->get_edit_menu()->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("Button")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
 
@@ -2057,7 +2056,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	set_name(TTRC("Animation"));
 	set_icon_name("Animation");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Dock"), KeyModifierMask::ALT | Key::N));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	set_focus_mode(FOCUS_ALL);
@@ -2439,6 +2438,13 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 		}
 	}
 	memdelete(default_node);
+
+	// Library list is dynamically added to property list, should be copied explicitly.
+	List<StringName> libraries;
+	p_mixer->get_animation_library_list(&libraries);
+	for (const StringName &K : libraries) {
+		dummy_player->add_animation_library(K, p_mixer->get_animation_library(K));
+	}
 
 	if (anim_editor) {
 		anim_editor->_update_player();

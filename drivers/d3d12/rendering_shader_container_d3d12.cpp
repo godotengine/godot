@@ -66,11 +66,105 @@ GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'boo
 #include <spirv_to_dxil.h>
 extern "C" {
 #include <dxil_spirv_nir.h>
+
+void dxil_reassign_driver_locations(nir_shader *s, nir_variable_mode modes,
+		uint64_t other_stage_mask, const BITSET_WORD *other_stage_frac_mask);
 }
 
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
 GODOT_MSVC_WARNING_POP
+
+// SPIR-V to DXIL does way too many allocations, which causes worker threads
+// to bottleneck each other due to sharing the same global process heap.
+// This can be solved by making each thread allocate from its own heap.
+#define SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
+
+#ifdef SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
+
+namespace {
+struct Win32Heap {
+	HANDLE handle;
+	SafeRefCount ref_count;
+
+	Win32Heap() {
+		handle = HeapCreate(0, 0, 0);
+		ref_count.init();
+	}
+
+	~Win32Heap() {
+		HeapDestroy(handle);
+	}
+};
+
+constexpr size_t ALLOC_HEADER_SIZE = sizeof(Win32Heap *) * 2;
+} //namespace
+
+extern "C" {
+void *godot_nir_malloc(size_t p_size) {
+	// This RAII helper is for allowing the heap to be destroyed when the thread quits.
+	struct Win32HeapHolder {
+		Win32Heap *win32_heap = nullptr;
+
+		Win32HeapHolder() {
+			win32_heap = memnew(Win32Heap);
+		}
+
+		~Win32HeapHolder() {
+			if (win32_heap->ref_count.unref()) {
+				memdelete(win32_heap);
+			}
+		}
+	};
+
+	thread_local Win32HeapHolder holder;
+
+	void *block = HeapAlloc(holder.win32_heap->handle, 0, p_size + ALLOC_HEADER_SIZE);
+
+	// Store the heap in the allocation for the realloc/free operations.
+	*(Win32Heap **)block = holder.win32_heap;
+	holder.win32_heap->ref_count.ref();
+
+	return (uint8_t *)block + ALLOC_HEADER_SIZE;
+}
+
+void *godot_nir_realloc(void *p_block, size_t p_size) {
+	uint8_t *actual_block = (uint8_t *)p_block - ALLOC_HEADER_SIZE;
+	Win32Heap *win32_heap = *(Win32Heap **)actual_block;
+	return (uint8_t *)HeapReAlloc(win32_heap->handle, 0, actual_block, p_size + ALLOC_HEADER_SIZE) + ALLOC_HEADER_SIZE;
+}
+
+void godot_nir_free(void *p_block) {
+	if (p_block != nullptr) {
+		uint8_t *actual_block = (uint8_t *)p_block - ALLOC_HEADER_SIZE;
+		Win32Heap *win32_heap = *(Win32Heap **)actual_block;
+		HeapFree(win32_heap->handle, 0, actual_block);
+
+		// Allocations can outlive the threads they were created in if they were stored globally.
+		if (win32_heap->ref_count.unref()) {
+			memdelete(win32_heap);
+		}
+	}
+}
+}
+
+#else
+
+extern "C" {
+void *godot_nir_malloc(size_t p_size) {
+	return malloc(p_size);
+}
+
+void *godot_nir_realloc(void *p_block, size_t p_size) {
+	return realloc(p_block, p_size);
+}
+
+void godot_nir_free(void *p_block) {
+	return free(p_block);
+}
+}
+
+#endif
 
 static D3D12_SHADER_VISIBILITY stages_to_d3d12_visibility(uint32_t p_stages_mask) {
 	switch (p_stages_mask) {
@@ -274,8 +368,8 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 	dxil_spirv_runtime_conf dxil_runtime_conf = {};
 	dxil_runtime_conf.runtime_data_cbv.base_shader_register = RUNTIME_DATA_REGISTER;
 	dxil_runtime_conf.push_constant_cbv.base_shader_register = ROOT_CONSTANT_REGISTER;
-	dxil_runtime_conf.zero_based_vertex_instance_id = true;
-	dxil_runtime_conf.zero_based_compute_workgroup_id = true;
+	dxil_runtime_conf.first_vertex_and_base_instance_mode = DXIL_SPIRV_SYSVAL_TYPE_ZERO;
+	dxil_runtime_conf.workgroup_id_mode = DXIL_SPIRV_SYSVAL_TYPE_ZERO;
 
 	// Explicitly keeping these false because converting UAV descriptors to SRVs do not seem to have real performance benefits on desktop GPUs.
 	// It also makes it easier to implement descriptor heaps and enhanced barriers.
@@ -290,7 +384,7 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 		r_stages_processed.set_flag(stage_flag);
 
 		const char *entry_point = "main";
-		static const gl_shader_stage SPIRV_TO_MESA_STAGES[RenderingDeviceCommons::SHADER_STAGE_MAX] = {
+		static const mesa_shader_stage SPIRV_TO_MESA_STAGES[RenderingDeviceCommons::SHADER_STAGE_MAX] = {
 			MESA_SHADER_VERTEX, // SHADER_STAGE_VERTEX
 			MESA_SHADER_FRAGMENT, // SHADER_STAGE_FRAGMENT
 			MESA_SHADER_TESS_CTRL, // SHADER_STAGE_TESSELATION_CONTROL
@@ -320,8 +414,8 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 		}
 
 		dxil_spirv_nir_prep(shader);
-		bool requires_runtime_data = false;
-		dxil_spirv_nir_passes(shader, &dxil_runtime_conf, &requires_runtime_data);
+		dxil_spirv_metadata dxil_metadata = {};
+		dxil_spirv_nir_passes(shader, &dxil_runtime_conf, &dxil_metadata);
 
 		r_stages_nir_shaders[stage] = shader;
 	}
@@ -338,6 +432,10 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				prev_shader = r_stages_nir_shaders[j];
 				break;
 			}
+		}
+		if (prev_shader) {
+			dxil_spirv_metadata dxil_metadata = {};
+			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &dxil_metadata);
 		}
 		// There is a bug in the Direct3D runtime during creation of a PSO with view instancing. If a fragment
 		// shader uses front/back face detection (SV_IsFrontFace), its signature must include the pixel position
@@ -357,11 +455,12 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStag
 				nir_variable *const pos = nir_variable_create(shader, nir_var_shader_in, glsl_vec4_type(), "gl_FragCoord");
 				pos->data.location = VARYING_SLOT_POS;
 				shader->info.inputs_read |= VARYING_BIT_POS;
+
+				if (prev_shader) {
+					dxil_reassign_driver_locations(shader, nir_var_shader_in, prev_shader->info.outputs_written, NULL);
+					dxil_reassign_driver_locations(prev_shader, nir_var_shader_out, shader->info.inputs_read, NULL);
+				}
 			}
-		}
-		if (prev_shader) {
-			bool requires_runtime_data = {};
-			dxil_spirv_nir_link(shader, prev_shader, &dxil_runtime_conf, &requires_runtime_data);
 		}
 	}
 
@@ -434,7 +533,9 @@ bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectShaderSta
 	};
 
 	// This structure must live as long as the shaders are alive.
-	nir_shader_compiler_options compiler_options = *dxil_get_nir_compiler_options();
+	nir_shader_compiler_options compiler_options = {};
+	const unsigned supported_bit_sizes = 16 | 32 | 64;
+	dxil_get_nir_compiler_options(&compiler_options, shader_model_d3d_to_dxil(D3D_SHADER_MODEL(REQUIRED_SHADER_MODEL)), supported_bit_sizes, supported_bit_sizes);
 	compiler_options.lower_base_vertex = false;
 
 	// This is based on spirv2dxil.c. May need updates when it changes.
@@ -664,9 +765,7 @@ bool RenderingShaderContainerD3D12::_generate_root_signature(BitField<RenderingD
 	D3D12_ROOT_SIGNATURE_FLAGS root_sig_flags =
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
 	if (!p_stages_processed.has_flag(RenderingDeviceCommons::SHADER_STAGE_VERTEX_BIT)) {
 		root_sig_flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;

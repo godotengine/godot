@@ -224,7 +224,7 @@ Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
 License: Expat
 
-Files: thirdparty/certs/ca-certificates.crt
+Files: thirdparty/certs/ca-bundle.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
@@ -372,7 +372,7 @@ License: BSD-3-clause
 
 Files: thirdparty/libjpeg-turbo/*
 Comment: libjpeg-turbo
-Copyright: 2009-2024, D. R. Commander
+Copyright: 2009-2025, D. R. Commander
  2015, Viktor Szathmáry.
  1991-2020, Thomas G. Lane, Guido Vollbeding
 License: BSD-3-clause and IJG
@@ -663,7 +663,7 @@ License: Expat
 
 Files: thirdparty/zlib/*
 Comment: zlib
-Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2025, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: thirdparty/zstd/*

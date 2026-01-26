@@ -346,7 +346,7 @@ void ViewportRotationControl::_draw() {
 
 void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	const bool focused = focused_axis == p_axis.axis;
-	const bool positive = p_axis.axis < 3;
+	const bool positive = p_axis.is_positive;
 	const int direction = p_axis.axis % 3;
 
 	const Color axis_color = axis_colors[direction];
@@ -404,24 +404,28 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2 axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) <= 1.0) {
+		if (Math::abs(axis_3d.z) < 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
 			pos_axis.z_axis = axis_3d.z;
+			pos_axis.is_positive = true;
 			r_axis.push_back(pos_axis);
 
 			Axis2D neg_axis;
 			neg_axis.axis = i + 3;
 			neg_axis.screen_point = center - axis_vector;
 			neg_axis.z_axis = -axis_3d.z;
+			neg_axis.is_positive = false;
 			r_axis.push_back(neg_axis);
 		} else {
-			// Special case when the camera is aligned with one axis
+			// Special case when the camera is aligned with one axis.
 			Axis2D axis;
 			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
+			// Invert display style to fix aligned axis rendering.
+			axis.is_positive = (axis_3d.z > 0);
 			r_axis.push_back(axis);
 		}
 	}
@@ -673,12 +677,12 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -1810,8 +1814,18 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
+		const Key code = k->get_physical_keycode();
+		if (code >= Key::KEY_0 && code <= Key::KEY_9) {
+			k->set_keycode(code - Key::KEY_0 + Key::KP_0);
+		}
+	}
+
 	if (previewing || get_viewport()->gui_get_drag_data()) {
-		return; //do NONE
+		// Disable all input actions when previewing a camera or during drag-and-drop.
+		return;
 	}
 
 	if (_redirect_freelook_input(p_event, this)) {
@@ -2194,8 +2208,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						if (_edit.original_mouse_pos != _edit.mouse_pos || _edit.gizmo->get_plugin()->can_commit_handle_on_click()) {
 							_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
 						}
-
-						spatial_editor->get_single_selected_node()->update_gizmos();
+						Node3D *selected_node = spatial_editor->get_single_selected_node();
+						if (selected_node) {
+							selected_node->update_gizmos();
+						}
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;
 					}
@@ -2463,8 +2479,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
-
-	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
 		if (!k->is_pressed()) {
@@ -3341,13 +3355,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_update_camera(delta);
 			}
 
-			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
 
-			for (const KeyValue<Node *, Object *> &E : selection) {
-				Node3D *sp = Object::cast_to<Node3D>(E.key);
+			for (const KeyValue<ObjectID, Object *> &E : selection) {
+				Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 				if (!sp) {
 					continue;
 				}
@@ -3429,18 +3443,18 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (show_info) {
 				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x * viewport->get_scaling_3d_scale(), viewport->get_size().y * viewport->get_scaling_3d_scale());
 				String text;
-				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
-				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
-				text += vformat(TTR("Z: %s\n"), rtos(current_camera->get_position().z).pad_decimals(1));
+				text += vformat(TTR("X: %s"), rtos(current_camera->get_position().x).pad_decimals(1)) + "\n";
+				text += vformat(TTR("Y: %s"), rtos(current_camera->get_position().y).pad_decimals(1)) + "\n";
+				text += vformat(TTR("Z: %s"), rtos(current_camera->get_position().z).pad_decimals(1)) + "\n";
 				text += "\n";
 				text += vformat(
-						TTR("Size: %s (%.1fMP)\n"),
+						TTR("Size: %s (%.1fMP)") + "\n",
 						viewport_size,
 						viewport->get_size().x * viewport->get_size().y * Math::pow(viewport->get_scaling_3d_scale(), 2) * 0.000001);
 
 				text += "\n";
-				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
-				text += vformat(TTR("Primitives: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME));
+				text += vformat(TTR("Objects: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
+				text += vformat(TTR("Primitives: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME)) + "\n";
 				text += vformat(TTR("Draw Calls: %d"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
 
 				info_label->set_text(text);
@@ -4592,9 +4606,34 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	bool hide_during_rotation = _is_rotation_arc_visible();
+	bool local_coords = spatial_editor->are_local_coords_enabled();
+	bool arc_visible = _is_rotation_arc_visible();
+	int show_gizmo_flags = EDITOR_GET("editors/3d/show_gizmo_during_rotation");
 
-	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_during_rotation;
+	bool keep_gizmo_visible = arc_visible && ((local_coords && (show_gizmo_flags & Node3DEditor::TRANSFORM_MODE_LOCAL)) || (!local_coords && (show_gizmo_flags & Node3DEditor::TRANSFORM_MODE_GLOBAL)));
+	bool hide_gizmo_during_rotation = arc_visible && !keep_gizmo_visible;
+
+	int arc_replaces_ring = -1;
+	if (keep_gizmo_visible) {
+		switch (_edit.plane) {
+			case TRANSFORM_X_AXIS:
+				arc_replaces_ring = 0;
+				break;
+			case TRANSFORM_Y_AXIS:
+				arc_replaces_ring = 1;
+				break;
+			case TRANSFORM_Z_AXIS:
+				arc_replaces_ring = 2;
+				break;
+			case TRANSFORM_VIEW:
+				arc_replaces_ring = 3;
+				break;
+			default:
+				break;
+		}
+	}
+
+	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_gizmo_during_rotation;
 	bool show_rotate_gizmo = show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE);
 
 	for (int i = 0; i < 3; i++) {
@@ -4609,7 +4648,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo);
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
@@ -4619,9 +4658,11 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	Transform3D view_rotation_xform = xform;
 	view_rotation_xform.orthonormalize();
-	view_rotation_xform.basis.scale(scale);
+	bool shrink_view_ring = arc_replaces_ring >= 0 && arc_replaces_ring < 3;
+	Vector3 view_ring_scale = shrink_view_ring ? scale * (GIZMO_CIRCLE_SIZE / GIZMO_VIEW_ROTATION_SIZE) : scale;
+	view_rotation_xform.basis.scale(view_ring_scale);
 	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], view_rotation_xform);
-	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo);
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], show_rotate_gizmo && arc_replaces_ring != 3);
 
 	bool show_axes = spatial_editor->is_gizmo_visible() && _edit.mode != TRANSFORM_NONE;
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -4947,7 +4988,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
 
 		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
-		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_transform().origin);
+		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_global_transform().origin);
 		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
 		// The x-axis's alignment with the surface normal also makes it trivial to get the distance from `p_node`'s origin at (0, 0, 0) to the correct AABB face.
 		const float offset_distance = -p_node_bb.position.x;
@@ -5869,7 +5910,13 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			Vector3 current_rotation_vector = (intersection - _edit.center).normalized();
 
 			if (_edit.initial_click_vector == Vector3()) {
-				_edit.initial_click_vector = (click - _edit.center).normalized();
+				Plane rotation_plane(global_axis, _edit.center);
+				Vector3 click_on_rotation_plane;
+				if (rotation_plane.intersects_ray(_edit.click_ray_pos, _edit.click_ray, &click_on_rotation_plane)) {
+					_edit.initial_click_vector = (click_on_rotation_plane - _edit.center).normalized();
+				} else {
+					_edit.initial_click_vector = (click - _edit.center).normalized();
+				}
 				_edit.previous_rotation_vector = current_rotation_vector;
 				_edit.accumulated_rotation_angle = 0.0;
 				_edit.display_rotation_angle = 0.0;
@@ -6148,7 +6195,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
+			TTRC("Left-click a SDFGI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires SDFGI to be enabled in Environment to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
@@ -8489,10 +8536,10 @@ void Node3DEditor::update_grid() {
 void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
 
-	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-	for (const KeyValue<Node *, Object *> &E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : selection) {
+		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}

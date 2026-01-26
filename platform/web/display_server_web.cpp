@@ -796,7 +796,7 @@ void DisplayServerWeb::_vk_input_text_callback(const String &p_text, int p_curso
 		return;
 	}
 	// Call input_text
-	ds->input_text_callback.call(p_text);
+	ds->input_text_callback.call(p_text, true);
 	// Insert key right to reach position.
 	Input *input = Input::get_singleton();
 	Ref<InputEventKey> k;
@@ -1004,7 +1004,7 @@ Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
 
 // Clipboard
 void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
-	String text = p_text;
+	String text = String::utf8(p_text);
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {

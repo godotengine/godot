@@ -268,6 +268,8 @@ DependencyEditor::DependencyEditor() {
 
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tree->set_theme_type_variation("TreeTable");
+	tree->set_hide_folding(true);
 	tree->set_columns(2);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
@@ -403,9 +405,21 @@ void DependencyEditorOwners::show(const String &p_path) {
 	editing = p_path;
 	owners->clear();
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
-	popup_centered_ratio(0.3);
 
-	set_title(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), owners->get_item_count()));
+	int count = owners->get_item_count();
+	if (count > 0) {
+		empty->hide();
+		owners_count->set_text(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), count));
+		owners_count->show();
+		owners_mc->show();
+	} else {
+		owners_count->hide();
+		owners_mc->hide();
+		empty->set_text(vformat(TTR("No owners found for: %s"), p_path.get_file()));
+		empty->show();
+	}
+
+	popup_centered_ratio(0.3);
 }
 
 DependencyEditorOwners::DependencyEditorOwners() {
@@ -413,19 +427,41 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	add_child(file_options);
 	file_options->connect(SceneStringName(id_pressed), callable_mp(this, &DependencyEditorOwners::_file_option));
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalWindow");
-	add_child(mc);
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	add_child(vbox);
+
+	owners_count = memnew(Label);
+	owners_count->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	owners_count->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	owners_count->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	vbox->add_child(owners_count);
+
+	empty = memnew(Label);
+	empty->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	empty->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	empty->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	empty->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	empty->hide();
+	vbox->add_child(empty);
+
+	owners_mc = memnew(MarginContainer);
+	owners_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	owners_mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	vbox->add_child(owners_mc);
 
 	owners = memnew(ItemList);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	owners->set_select_mode(ItemList::SELECT_MULTI);
-	owners->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTTOM);
+	owners->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->connect("empty_clicked", callable_mp(this, &DependencyEditorOwners::_empty_clicked));
 	owners->set_allow_rmb_select(true);
-	mc->add_child(owners);
+	owners_mc->add_child(owners);
+
+	set_title(TTRC("Owners List"));
 }
 
 ///////////////////////
@@ -1045,6 +1081,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 
 	files = memnew(Tree);
 	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	files->set_theme_type_variation("TreeTable");
 	files->set_columns(2);
 	files->set_column_titles_visible(true);
 	files->set_column_custom_minimum_width(1, 100 * EDSCALE);

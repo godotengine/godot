@@ -1037,8 +1037,11 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
 			const String contents = export_plugins[i]->get_android_manifest_element_contents(Ref<EditorExportPlatform>(this), p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_text += "<!-- Start of manifest element contents from " + export_plugin_name + " -->\n";
 				manifest_text += contents;
 				manifest_text += "\n";
+				manifest_text += "<!-- End of manifest element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -3116,8 +3119,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 
 List<String> EditorExportPlatformAndroid::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back("apk");
-	list.push_back("aab");
+	int export_format = int(p_preset->get("gradle_build/export_format"));
+	if (export_format == EXPORT_FORMAT_AAB) {
+		list.push_back("aab");
+	} else {
+		list.push_back("apk");
+	}
 	return list;
 }
 
@@ -3958,6 +3965,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				project_path,
 				build_path.substr(project_path.length()),
 				export_path.path_join(export_filename),
+				export_format_arg,
 				cmdline,
 				copy_args);
 #else

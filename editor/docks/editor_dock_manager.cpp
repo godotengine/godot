@@ -298,7 +298,7 @@ void EditorDockManager::_dock_container_popup(int p_tab_idx, TabContainer *p_doc
 
 	// Right click context menu.
 	dock_context_popup->set_dock(hovered_dock);
-	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_local_mouse_position());
+	dock_context_popup->set_position(p_dock_container->get_tab_bar()->get_screen_position() + p_dock_container->get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();
 }
 
@@ -350,9 +350,9 @@ void EditorDockManager::update_docks_menu() {
 		docks_menu->set_item_icon(id, icon.is_valid() ? icon : default_icon);
 		if (!dock->is_open) {
 			docks_menu->set_item_icon_modulate(id, closed_icon_color_mod);
-			docks_menu->set_item_tooltip(id, vformat(TTR("Open the %s dock."), dock->get_display_title()));
+			docks_menu->set_item_tooltip(id, vformat(TTR("Open the %s dock."), TTR(dock->get_display_title())));
 		} else {
-			docks_menu->set_item_tooltip(id, vformat(TTR("Focus on the %s dock."), dock->get_display_title()));
+			docks_menu->set_item_tooltip(id, vformat(TTR("Focus on the %s dock."), TTR(dock->get_display_title())));
 		}
 		docks_menu_docks.push_back(dock);
 		id++;
@@ -413,6 +413,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 
 	_move_dock(p_dock, nullptr);
 	p_dock->update_layout(EditorDock::DOCK_LAYOUT_FLOATING);
+	p_dock->current_layout = EditorDock::DOCK_LAYOUT_FLOATING;
 	wrapper->set_wrapped_control(p_dock);
 
 	p_dock->dock_window = wrapper;
@@ -499,7 +500,11 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 
 	if (p_target != closed_dock_parent) {
-		p_dock->update_layout(p_target->get_meta("dock_layout"));
+		EditorDock::DockLayout layout = p_target->get_meta("dock_layout");
+		if (layout != p_dock->current_layout) {
+			p_dock->update_layout(layout);
+			p_dock->current_layout = layout;
+		}
 		p_dock->dock_slot_index = p_target->get_meta("dock_slot");
 	}
 
@@ -520,6 +525,26 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 }
 
+void EditorDockManager::_queue_update_tab_style(EditorDock *p_dock) {
+	if (dirty_docks.is_empty()) {
+		callable_mp(this, &EditorDockManager::_update_dirty_dock_tabs).call_deferred();
+	}
+	dirty_docks.insert(p_dock);
+}
+
+void EditorDockManager::_update_dirty_dock_tabs() {
+	bool update_menu = false;
+	for (EditorDock *dock : dirty_docks) {
+		update_menu = update_menu || dock->global;
+		_update_tab_style(dock);
+	}
+	dirty_docks.clear();
+
+	if (update_menu) {
+		update_docks_menu();
+	}
+}
+
 void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 	if (!p_dock->enabled || !p_dock->is_open) {
 		return; // Disabled by feature profile or manually closed by user.
@@ -533,10 +558,6 @@ void EditorDockManager::_update_tab_style(EditorDock *p_dock) {
 
 	int index = tab_container->get_tab_idx_from_control(p_dock);
 	ERR_FAIL_COND(index == -1);
-
-	if (p_dock->global) {
-		update_docks_menu();
-	}
 
 	tab_container->get_tab_bar()->set_font_color_override_all(index, p_dock->title_color);
 
@@ -828,6 +849,10 @@ void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot open unknown dock '%s'.", p_dock->get_display_title()));
 
 	if (p_dock->is_open) {
+		// Show the dock if it is already open.
+		if (p_set_current) {
+			_make_dock_visible(p_dock, false);
+		}
 		return;
 	}
 
@@ -862,20 +887,11 @@ TabContainer *EditorDockManager::get_dock_tab_container(Control *p_dock) const {
 	return Object::cast_to<TabContainer>(p_dock->get_parent());
 }
 
-void EditorDockManager::focus_dock(EditorDock *p_dock) {
-	ERR_FAIL_NULL(p_dock);
-	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot focus unknown dock '%s'.", p_dock->get_display_title()));
-
-	if (!p_dock->enabled) {
-		return;
-	}
-
-	if (!p_dock->is_open) {
-		open_dock(p_dock, false);
-	}
-
+void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus) {
 	if (p_dock->dock_window) {
-		p_dock->get_window()->grab_focus();
+		if (p_grab_focus) {
+			p_dock->get_window()->grab_focus();
+		}
 		return;
 	}
 
@@ -888,12 +904,29 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	TabContainer *tab_container = get_dock_tab_container(p_dock);
-	if (!tab_container) {
+	if (tab_container) {
+		if (p_grab_focus) {
+			tab_container->get_tab_bar()->grab_focus();
+		}
+
+		int tab_index = tab_container->get_tab_idx_from_control(p_dock);
+		tab_container->set_current_tab(tab_index);
+	}
+}
+
+void EditorDockManager::focus_dock(EditorDock *p_dock) {
+	ERR_FAIL_NULL(p_dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot focus unknown dock '%s'.", p_dock->get_display_title()));
+
+	if (!p_dock->enabled) {
 		return;
 	}
-	int tab_index = tab_container->get_tab_idx_from_control(p_dock);
-	tab_container->get_tab_bar()->grab_focus();
-	tab_container->set_current_tab(tab_index);
+
+	if (!p_dock->is_open) {
+		open_dock(p_dock, false);
+	}
+
+	_make_dock_visible(p_dock, true);
 }
 
 void EditorDockManager::add_dock(EditorDock *p_dock) {
@@ -902,10 +935,10 @@ void EditorDockManager::add_dock(EditorDock *p_dock) {
 
 	p_dock->dock_slot_index = p_dock->default_slot;
 	all_docks.push_back(p_dock);
-	p_dock->connect("tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
-	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style).bind(p_dock));
+	p_dock->connect("_tab_style_changed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
+	p_dock->connect("renamed", callable_mp(this, &EditorDockManager::_queue_update_tab_style).bind(p_dock));
 
-	if (p_dock->default_slot != DockConstants::DOCK_SLOT_NONE) {
+	if (p_dock->default_slot != EditorDock::DOCK_SLOT_NONE) {
 		open_dock(p_dock, false);
 	} else {
 		closed_dock_parent->add_child(p_dock);
@@ -921,8 +954,8 @@ void EditorDockManager::remove_dock(EditorDock *p_dock) {
 	_move_dock(p_dock, nullptr);
 
 	all_docks.erase(p_dock);
-	p_dock->disconnect("tab_style_changed", callable_mp(this, &EditorDockManager::_update_tab_style));
-	p_dock->disconnect("renamed", callable_mp(this, &EditorDockManager::_update_tab_style));
+	p_dock->disconnect("_tab_style_changed", callable_mp(this, &EditorDockManager::_queue_update_tab_style));
+	p_dock->disconnect("renamed", callable_mp(this, &EditorDockManager::_queue_update_tab_style));
 	_update_layout();
 }
 

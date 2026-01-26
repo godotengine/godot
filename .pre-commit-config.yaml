@@ -10,8 +10,15 @@ exclude: |
   )$
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: (SConstruct|SCsub)$ # SCons files use shebangs for syntax highlighting only.
+
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.0
+    rev: v21.1.7
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
@@ -29,7 +36,7 @@ repos:
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         args: [--fix, --quiet, --use-color]
         types_or: [text]
-        additional_dependencies: [clang-tidy==20.1.0]
+        additional_dependencies: [clang-tidy==21.1.6]
         require_serial: true
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
 

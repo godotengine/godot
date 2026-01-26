@@ -437,13 +437,64 @@ String OS_AppleEmbedded::get_unique_id() const {
 	return String::utf8([uuid UTF8String]);
 }
 
+struct _ModelInfo {
+	Vector<String> model;
+	String soc;
+};
+
+static const _ModelInfo _models[] = {
+	{ { "iPhone1,1", "iPhone1,2", "iPod1,1" }, "Samsung S5L8900" },
+	{ { "iPod2,1" }, "Samsung S5L8720" },
+	{ { "iPhone2,1" }, "Samsung S5L8920" },
+	{ { "iPod3,1" }, "Samsung S5L8922" },
+	{ { "iPhone3,1", "iPhone3,2", "iPhone3,3", "iPad1,1", "iPad1,2", "iPod4,1", "AppleTV2,1" }, "Apple A4" },
+	{ { "iPhone4,1", "iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4", "iPad2,5", "iPad2,6", "iPad2,7", "iPod5,1", "AppleTV3,1", "AppleTV3,2" }, "Apple A5" },
+	{ { "iPad3,1", "iPad3,2", "iPad3,3" }, "Apple A5X" },
+	{ { "iPhone5,1", "iPhone5,2", "iPhone5,3", "iPhone5,4" }, "Apple A6" },
+	{ { "iPad3,4", "iPad3,5", "iPad3,6" }, "Apple A6X" },
+	{ { "iPhone6,1", "iPhone6,2", "iPad4,1", "iPad4,2", "iPad4,3", "iPad4,4", "iPad4,5", "iPad4,6", "iPad4,7", "iPad4,8", "iPad4,9" }, "Apple A7" },
+	{ { "iPhone7,1", "iPhone7,2", "iPad5,1", "iPad5,2", "iPod7,1", "AppleTV5,3" }, "Apple A8" },
+	{ { "iPad5,3", "iPad5,4" }, "Apple A8X" },
+	{ { "iPhone8,1", "iPhone8,2", "iPhone8,4", "iPad6,11", "iPad6,12" }, "Apple A9" },
+	{ { "iPad6,3", "iPad6,4", "iPad6,7", "iPad6,8" }, "Apple A9X" },
+	{ { "iPhone9,1", "iPhone9,2", "iPhone9,3", "iPhone9,4", "iPad7,5", "iPad7,6", "iPad7,11", "iPad7,12", "iPod9,1" }, "Apple A10 Fusion" },
+	{ { "iPad7,1", "iPad7,2", "iPad7,3", "iPad7,4", "AppleTV6,2" }, "Apple A10X Fusion" },
+	{ { "iPhone10,1", "iPhone10,2", "iPhone10,3", "iPhone10,4", "iPhone10,5", "iPhone10,6" }, "Apple A11 Bionic" },
+	{ { "iPhone11,2", "iPhone11,4", "iPhone11,6", "iPhone11,8", "iPad11,1", "iPad11,2", "iPad11,3", "iPad11,4", "iPad11,6", "iPad11,7", "AppleTV11,1" }, "Apple A12 Bionic" },
+	{ { "iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4", "iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8" }, "Apple A12X Bionic" },
+	{ { "iPad8,9", "iPad8,10", "iPad8,11", "iPad8,12" }, "Apple A12Z Bionic" },
+	{ { "iPhone12,1", "iPhone12,3", "iPhone12,5", "iPhone12,8", "iPad12,1", "iPad12,2" }, "Apple A13 Bionic" },
+	{ { "iPhone13,1", "iPhone13,2", "iPhone13,3", "iPhone13,4", "iPad13,1", "iPad13,2", "iPad13,18", "iPad13,19" }, "Apple A14 Bionic" },
+	{ { "iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7", "iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11", "iPad13,16", "iPad13,17" }, "Apple M1" },
+	{ { "iPhone14,2", "iPhone14,3", "iPhone14,4", "iPhone14,5", "iPhone14,6", "iPhone14,7", "iPhone14,8", "iPad14,1", "iPad14,2", "AppleTV14,1" }, "Apple A15 Bionic" },
+	{ { "iPhone15,2", "iPhone15,3", "iPhone15,4", "iPhone15,5", "iPad15,7", "iPad15,8" }, "Apple A16 Bionic" },
+	{ { "iPad14,3", "iPad14,4", "iPad14,5", "iPad14,6", "iPad14,8", "iPad14,9", "iPad14,10", "iPad14,11", "RealityDevice14,1" }, "Apple M2" },
+	{ { "iPhone16,1", "iPhone16,2", "iPad16,1", "iPad16,2" }, "Apple A17 Pro" },
+	{ { "iPad15,3", "iPad15,4", "iPad15,5", "iPad15,6" }, "Apple M3" },
+	{ { "iPad16,3", "iPad16,4", "iPad16,5", "iPad16,6" }, "Apple M4" },
+	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
+	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
+	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
+	{ { "iPhone18,3" }, "Apple A19" },
+	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
+};
+
 String OS_AppleEmbedded::get_processor_name() const {
-	char buffer[256];
-	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
-		return String::utf8(buffer, buffer_len);
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
+	return "Simulator";
+#else
+	if (apple_embedded) {
+		String model = apple_embedded->get_model();
+		for (unsigned int i = 0; i < std::size(_models); i++) {
+			for (const String &m : _models[i].model) {
+				if (model.contains(m)) {
+					return _models[i].soc;
+				}
+			}
+		}
 	}
-	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+#endif
+	return OS::get_processor_name();
 }
 
 Vector<String> OS_AppleEmbedded::get_system_fonts() const {

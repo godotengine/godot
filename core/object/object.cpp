@@ -1340,6 +1340,9 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	Error err = OK;
 
+	Vector<const Variant *> append_source_mem;
+	Variant source = this;
+
 	for (uint32_t i = 0; i < slot_count; ++i) {
 		const Callable &callable = slot_callables[i];
 		const uint32_t &flags = slot_flags[i];
@@ -1352,6 +1355,31 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		const Variant **args = p_args;
 		int argc = p_argcount;
 
+		if (flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			// Source is being appended regardless of unbinds.
+			// Implemented by inserting before the first to-be-unbinded arg.
+			int source_index = p_argcount - callable.get_unbound_arguments_count();
+			if (source_index >= 0) {
+				append_source_mem.resize(p_argcount + 1);
+				const Variant **args_mem = append_source_mem.ptrw();
+
+				for (int j = 0; j < source_index; j++) {
+					args_mem[j] = p_args[j];
+				}
+				args_mem[source_index] = &source;
+				for (int j = source_index; j < p_argcount; j++) {
+					args_mem[j + 1] = p_args[j];
+				}
+
+				args = args_mem;
+				argc = p_argcount + 1;
+			} else {
+				// More args unbound than provided, call will fail.
+				// Since appended source is non-unbindable, the error
+				// about too many unbinds should be correct as is.
+			}
+		}
+
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
 		} else {
@@ -1362,14 +1390,18 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			_emitting = false;
 
 			if (ce.error != Callable::CallError::CALL_OK) {
+				Object *target = callable.get_object();
 #ifdef DEBUG_ENABLED
-				if (flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (!script_instance || !script_instance->get_script()->is_tool())) {
-					continue;
+				if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
+					Ref<Script> other_scr = target->get_script();
+					if (other_scr.is_valid() && !other_scr->is_tool()) {
+						// Trying to call not-tool method in editor, just ignore it.
+						continue;
+					}
 				}
 #endif
-				Object *target = callable.get_object();
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
-					//most likely object is not initialized yet, do not throw error.
+					// Most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT(vformat("Error calling from signal '%s' to callable: %s.", String(p_name), Variant::get_callable_error_text(callable, args, argc, ce)));
 					err = ERR_METHOD_NOT_FOUND;
@@ -2379,8 +2411,10 @@ void Object::assign_type_static(GDType **type_ptr, const char *p_name, const GDT
 		// Assigned while we were waiting.
 		return;
 	}
-	type = memnew(GDType(super_type, StringName(p_name, true)));
+	type = memnew(GDType(super_type, StringName(p_name)));
 	*type_ptr = type;
+
+	ClassDB::gdtype_autorelease_pool.push_back(type_ptr);
 }
 
 Object::~Object() {

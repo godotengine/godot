@@ -399,8 +399,6 @@ protected:
 
 public:
 	/* ---- Data lists ---- */
-	Dictionary *get_animation_libraries();
-
 	void get_animation_library_list(List<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;

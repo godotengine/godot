@@ -702,6 +702,15 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)) {
+		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
+
+		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
+		Size2i adjusted_pos = Size2i(position.x / win_scale, position.y / win_scale);
+
+		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
+	}
+
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -814,6 +823,17 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			focused_window = this;
 			_propagate_window_notification(this, NOTIFICATION_WM_WINDOW_FOCUS_IN);
 			emit_signal(SceneStringName(focus_entered));
+			if (get_tree() && get_tree()->is_accessibility_enabled()) {
+				Window *w = exclusive_child;
+				while (w) {
+					if (w->exclusive_child) {
+						w = w->exclusive_child;
+					} else {
+						w->grab_focus();
+						break;
+					}
+				}
+			}
 		} break;
 		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			focused = false;
@@ -1795,7 +1815,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		}
 	}
 
-	return max * content_scale_factor;
+	return max;
 }
 
 void Window::child_controls_changed() {
@@ -1851,8 +1871,8 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void Window::_window_input_text(const String &p_text) {
-	push_text_input(p_text);
+void Window::_window_input_text(const String &p_text, bool p_emit_signal) {
+	_push_text_input(p_text, p_emit_signal);
 }
 
 void Window::_window_drop_files(const Vector<String> &p_files) {

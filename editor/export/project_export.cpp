@@ -756,6 +756,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
+	preset->set_customized_files(current->get_customized_files());
+	preset->set_selected_files(current->get_selected_files());
 	preset->set_patches(current->get_patches());
 	preset->set_patch_delta_encoding_enabled(current->is_patch_delta_encoding_enabled());
 	preset->set_patch_delta_zstd_level(current->get_patch_delta_zstd_level());
@@ -1106,7 +1108,14 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 		String path = p_dir->get_file_path(i);
 
-		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
+		Ref<Texture2D> icon;
+		if (!type.is_empty()) {
+			icon = EditorNode::get_singleton()->get_class_icon(type);
+		}
+		if (icon.is_null()) {
+			icon = get_editor_theme_icon(SNAME("File"));
+		}
+		file->set_icon(0, icon);
 		file->set_editable(0, true);
 		file->set_metadata(0, path);
 
@@ -1416,8 +1425,12 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension, vformat(TTR("%s Export"), platform->get_name()));
 	}
 
-	if (!current->get_export_path().is_empty()) {
-		export_project->set_current_path(current->get_export_path());
+	String path = current->get_export_path();
+	if (!path.is_empty()) {
+		if (extension_list.find(path.get_extension()) == nullptr && extension_list.size() >= 1) {
+			path = path.get_basename() + "." + extension_list.front()->get();
+		}
+		export_project->set_current_path(path);
 	} else {
 		if (extension_list.size() >= 1) {
 			export_project->set_current_file(default_filename + "." + extension_list.front()->get());

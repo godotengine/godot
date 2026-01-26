@@ -2265,6 +2265,93 @@ TEST_CASE("[SceneTree][SplitContainer] More children") {
 		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
 	}
 
+	SUBCASE("[SplitContainer] Showing child with not enough space shrinks the largest child first") {
+		set_size_flags(split_container, { -1, -1, -1 }); // None expanded.
+
+		// Second child is largest.
+		child_a->set_visible(false);
+		Vector<int> pos = { 360 };
+		split_container->set_split_offsets(pos);
+
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_size(Vector2(100, 100));
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_visible(true);
+		pos = { 100, 360 };
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		// Last child is largest.
+		child_a->set_visible(false);
+		pos = { 60 };
+		split_container->set_split_offsets(pos);
+
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_size(Vector2(100, 100));
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_visible(true);
+		pos = { 100, 160 + sep.x };
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		// Both visible children are the same size.
+		child_a->set_visible(false);
+		pos = { (int)split_container->get_size().x / 2 - sep.x / 2 };
+		split_container->set_split_offsets(pos);
+
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+		CHECK(child_b->get_size().x == child_c->get_size().x);
+
+		child_a->set_size(Vector2(100, 100));
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_visible(true);
+		pos = { 100, (int)split_container->get_size().x / 2 + 50 };
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+		CHECK(child_b->get_size().x == child_c->get_size().x);
+
+		// Second child is slightly larger than the last child.
+		child_a->set_visible(false);
+		pos = { (int)split_container->get_size().x / 2 - sep.x / 2 + 20 };
+		split_container->set_split_offsets(pos);
+
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_size(Vector2(100, 100));
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+
+		child_a->set_visible(true);
+		pos = { 100, (int)split_container->get_size().x / 2 + 50 };
+		MessageQueue::get_singleton()->flush();
+		CHECK(split_container->get_split_offsets() == pos);
+		CHECK_RECTS(get_rects_multi(split_container, pos, sep.x), get_child_rects(split_container));
+		CHECK(child_b->get_size().x == child_c->get_size().x);
+	}
+
 	memdelete(split_container);
 }
 

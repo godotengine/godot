@@ -115,6 +115,8 @@ private:
 	static Error _msg_runtime_node_select_set_type(const Array &p_args);
 	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
 	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
+	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
 	static Error _msg_rq_screenshot(const Array &p_args);
 
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
@@ -280,6 +282,9 @@ private:
 	bool selection_visible = true;
 	bool selection_update_queued = false;
 
+	bool avoid_locked_nodes = false;
+	bool prefer_group_selection = false;
+
 	bool multi_shortcut_pressed = false;
 	bool list_shortcut_pressed = false;
 	RID draw_canvas;
@@ -299,6 +304,7 @@ private:
 
 	LocalVector<ObjectID> selected_ci_nodes;
 	real_t sel_2d_grab_dist = 0;
+	int sel_2d_scale = 1;
 
 	RID sbox_2d_ci;
 
@@ -396,6 +402,8 @@ private:
 	void _clear_selection();
 	void _update_selection_drag(const Point2 &p_end_pos = Point2());
 	void _set_selection_visible(bool p_visible);
+	void _set_avoid_locked(bool p_enabled);
+	void _set_prefer_group(bool p_enabled);
 
 	void _open_selection_list(const Vector<SelectResult> &p_items, const Point2 &p_pos);
 	void _close_selection_list();

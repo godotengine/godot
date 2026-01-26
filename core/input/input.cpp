@@ -1004,12 +1004,13 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	_update_joypad_features(p_device);
 }
 
-bool Input::set_joy_light(int p_device, const Color &p_color) {
+void Input::set_joy_light(int p_device, const Color &p_color) {
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || joypad->features == nullptr) {
-		return false;
+	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
+		return;
 	}
-	return joypad->features->set_joy_light(p_color);
+	Color linear = p_color.srgb_to_linear();
+	joypad->features->set_joy_light(linear);
 }
 
 bool Input::has_joy_light(int p_device) const {
@@ -1415,10 +1416,12 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
+#ifndef ANDROID_ENABLED // Android trigger values are already between 0.0f and 1.0f.
 		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
+#endif
 		_axis_event(p_device, axis, value);
 		return;
 	}

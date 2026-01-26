@@ -317,6 +317,9 @@
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
+		<member name="editors/2d/auto_resample_delay" type="float" setter="" getter="">
+			Delay time for automatic resampling in the 2D editor (in seconds).
+		</member>
 		<member name="editors/2d/bone_color1" type="Color" setter="" getter="">
 			The "start" stop of the color gradient to use for bones in the 2D skeleton editor.
 		</member>
@@ -499,6 +502,9 @@
 		</member>
 		<member name="editors/3d/selection_box_color" type="Color" setter="" getter="">
 			The color to use for the selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
+		</member>
+		<member name="editors/3d/show_gizmo_during_rotation" type="int" setter="" getter="">
+			If checked, the transform gizmo remains visible during rotation in that transform mode.
 		</member>
 		<member name="editors/3d_gizmos/gizmo_colors/aabb" type="Color" setter="" getter="">
 			The color to use for the AABB gizmo that displays the [GeometryInstance3D]'s custom [AABB].
@@ -1277,7 +1283,7 @@
 			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
-			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
+			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
 			If [code]true[/code], enable TLSv1.3 negotiation.
@@ -1287,7 +1293,7 @@
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>
 		<member name="project_manager/directory_naming_convention" type="int" setter="" getter="">
-			Directory naming convention for the project manager. Options are "No convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
+			Directory naming convention for the project manager. Options are "No Convention" (project name is directory name), "kebab-case" (default), "snake_case", "camelCase", "PascalCase", or "Title Case".
 		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.

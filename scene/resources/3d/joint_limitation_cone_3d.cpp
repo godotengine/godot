@@ -30,20 +30,32 @@
 
 #include "joint_limitation_cone_3d.h"
 
-void JointLimitationCone3D::set_radius_range(real_t p_radius_range) {
-	radius_range = p_radius_range;
+#ifndef DISABLE_DEPRECATED
+bool JointLimitationCone3D::_set(const StringName &p_path, const Variant &p_value) {
+	// To keep compatibility between 4.6.beta2 and beta3.
+	if (p_path == SNAME("radius_range")) {
+		set_angle((float)p_value * Math::TAU);
+	} else {
+		return false;
+	}
+	return true;
+}
+#endif // DISABLE_DEPRECATED
+
+void JointLimitationCone3D::set_angle(real_t p_angle) {
+	angle = p_angle;
 	emit_changed();
 }
 
-real_t JointLimitationCone3D::get_radius_range() const {
-	return radius_range;
+real_t JointLimitationCone3D::get_angle() const {
+	return angle;
 }
 
 void JointLimitationCone3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius_range", "radius_range"), &JointLimitationCone3D::set_radius_range);
-	ClassDB::bind_method(D_METHOD("get_radius_range"), &JointLimitationCone3D::get_radius_range);
+	ClassDB::bind_method(D_METHOD("set_angle", "angle"), &JointLimitationCone3D::set_angle);
+	ClassDB::bind_method(D_METHOD("get_angle"), &JointLimitationCone3D::get_angle);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_range", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_radius_range", "get_radius_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_angle", "get_angle");
 }
 
 Vector3 JointLimitationCone3D::_solve(const Vector3 &p_direction) const {
@@ -52,10 +64,10 @@ Vector3 JointLimitationCone3D::_solve(const Vector3 &p_direction) const {
 	Vector3 center_axis = Vector3(0, 1, 0);
 
 	// Apply the limitation if the angle exceeds radius_range * PI.
-	real_t angle = p_direction.angle_to(center_axis);
-	real_t max_angle = radius_range * Math::PI;
+	real_t current_angle = p_direction.angle_to(center_axis);
+	real_t max_angle = angle * 0.5;
 
-	if (angle <= max_angle) {
+	if (current_angle <= max_angle) {
 		// If within the limitation range, return the new direction as is.
 		return p_direction;
 	}
@@ -65,7 +77,7 @@ Vector3 JointLimitationCone3D::_solve(const Vector3 &p_direction) const {
 	Vector3 plane_normal;
 
 	// Special handling for when the new direction vector is completely opposite to the central axis.
-	if (Math::is_equal_approx((double)angle, Math::PI)) {
+	if (Math::is_equal_approx((double)current_angle, Math::PI)) {
 		// Select an arbitrary perpendicular axis
 		plane_normal = center_axis.get_any_perpendicular();
 	} else {
@@ -97,7 +109,7 @@ void JointLimitationCone3D::draw_shape(Ref<SurfaceTool> &p_surface_tool, const T
 	if (sphere_r <= CMP_EPSILON) {
 		return;
 	}
-	real_t alpha = CLAMP((real_t)radius_range, (real_t)0.0, (real_t)1.0) * Math::PI;
+	real_t alpha = CLAMP((real_t)angle, (real_t)0.0, (real_t)Math::TAU) * 0.5;
 	real_t y_cap = sphere_r * Math::cos(alpha);
 	real_t r_cap = sphere_r * Math::sin(alpha);
 

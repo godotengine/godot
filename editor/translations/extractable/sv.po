@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Alla Erkända"
-
 msgid "Save"
 msgstr "Spara"
 
@@ -48,6 +45,9 @@ msgstr "Välj Nuvarande Mapp"
 
 msgid "Select This Folder"
 msgstr "Välj denna mapp"
+
+msgid "All Recognized"
+msgstr "Alla Erkända"
 
 msgid "Open a File"
 msgstr "Öppna en Fil"

@@ -205,6 +205,10 @@ class FontFile : public Font {
 	bool keep_rounding_remainders = true;
 	double oversampling_override = 0.0;
 
+	HashMap<String, bool> language_support_overrides;
+	HashMap<String, bool> script_support_overrides;
+	Dictionary feature_overrides;
+
 #ifndef DISABLE_DEPRECATED
 	real_t bmp_height = 0.0;
 	real_t bmp_ascent = 0.0;

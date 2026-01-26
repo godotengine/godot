@@ -719,6 +719,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 		if (this_submenu_index != -1) { // Is a submenu.
 			PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+			ERR_FAIL_NULL(parent_popup);
 			Point2 areas_mouse_pos = get_mouse_position() - parent_popup->panel_offset_start;
 			for (const Rect2 &E : autohide_areas) {
 				if (!scroll_container->get_global_rect().has_point(m->get_position()) && E.has_point(areas_mouse_pos)) {
@@ -1058,6 +1059,7 @@ void PopupMenu::_close_pressed() {
 void PopupMenu::_close_or_suspend() {
 	if (this_submenu_index != -1) { // Is a submenu.
 		PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+		ERR_FAIL_NULL(parent_popup);
 		Point2 mouse_pos = is_embedded() ? parent_popup->get_mouse_position() : Point2(DisplayServer::get_singleton()->mouse_get_position() - parent_popup->get_position());
 		if (parent_popup->_get_mouse_over(mouse_pos) == this_submenu_index) {
 			parent_popup->submenu_mouse_exited_ticks_msec = -1;
@@ -1467,6 +1469,7 @@ void PopupMenu::_notification(int p_what) {
 			// Only used when using operating system windows, and only on submenus.
 			if (!activated_by_keyboard && !is_embedded() && autohide_areas.size() && this_submenu_index != -1) {
 				PopupMenu *parent_popup = Object::cast_to<PopupMenu>(get_parent());
+				ERR_FAIL_NULL(parent_popup);
 				const float win_scale = get_content_scale_factor();
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position() - get_position();
 				Point2 areas_mouse_pos = mouse_pos - parent_popup->panel_offset_start;
@@ -1481,6 +1484,8 @@ void PopupMenu::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
+				this_submenu_index = -1;
+
 				if (mouse_over >= 0) {
 					prev_mouse_over = mouse_over;
 					mouse_over = -1;
@@ -2103,9 +2108,7 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 
 	items.write[p_idx].id = p_id;
 
-	if (global_menu.is_valid()) {
-		NativeMenu::get_singleton()->set_item_tag(global_menu, p_idx, p_id);
-	}
+	// `global_menu` does not know about IDs so there is no need to update it.
 
 	control->queue_redraw();
 	child_controls_changed();
@@ -3245,6 +3248,12 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_system_menu", "system_menu_id"), &PopupMenu::set_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu"), &PopupMenu::get_system_menu);
 
+	ClassDB::bind_method(D_METHOD("set_shrink_height", "shrink"), &PopupMenu::set_shrink_height);
+	ClassDB::bind_method(D_METHOD("get_shrink_height"), &PopupMenu::get_shrink_height);
+
+	ClassDB::bind_method(D_METHOD("set_shrink_width", "shrink"), &PopupMenu::set_shrink_width);
+	ClassDB::bind_method(D_METHOD("get_shrink_width"), &PopupMenu::get_shrink_width);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
@@ -3252,6 +3261,8 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "system_menu_id", PROPERTY_HINT_ENUM, "None:0,Application Menu:2,Window Menu:3,Help Menu:4,Dock:5"), "set_system_menu", "get_system_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "prefer_native_menu"), "set_prefer_native_menu", "is_prefer_native_menu");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_height"), "set_shrink_height", "get_shrink_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shrink_width"), "set_shrink_width", "get_shrink_width");
 
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 
@@ -3371,6 +3382,21 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 		Popup::_popup_base(p_bounds);
 	}
 }
+void PopupMenu::set_shrink_height(bool p_shrink) {
+	shrink_height = p_shrink;
+}
+
+bool PopupMenu::get_shrink_height() const {
+	return shrink_height;
+}
+
+void PopupMenu::set_shrink_width(bool p_shrink) {
+	shrink_width = p_shrink;
+}
+
+bool PopupMenu::get_shrink_width() const {
+	return shrink_width;
+}
 
 void PopupMenu::_pre_popup() {
 	real_t popup_scale = 1.0;
@@ -3387,8 +3413,9 @@ void PopupMenu::_pre_popup() {
 		p = p->get_parent();
 	}
 
-	if (scale_with_parent) {
-		Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
+	Viewport *vp = get_parent_viewport();
+	if (scale_with_parent && vp) {
+		Size2 scale = is_embedded() ? vp->get_popup_base_transform().get_scale() : vp->get_popup_base_transform_native().get_scale();
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
 		if (c) {
 			scale *= c->get_global_transform_with_canvas().get_scale();
@@ -3408,7 +3435,8 @@ void PopupMenu::_pre_popup() {
 		}
 		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
 		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		reset_size(); // Shrinkwraps to min size.
+		Size2i sz = get_size(); // Shrinkwraps to min size.
+		set_size(Vector2i(shrink_width ? 0 : sz.x, shrink_height ? 0 : sz.y));
 	}
 }
 

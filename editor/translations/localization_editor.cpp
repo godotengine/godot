@@ -732,6 +732,7 @@ LocalizationEditor::LocalizationEditor() {
 	localization_changed = "localization_changed";
 
 	TabContainer *translations = memnew(TabContainer);
+	translations->set_theme_type_variation("TabContainerInner");
 	translations->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(translations);
 
@@ -752,7 +753,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -790,7 +791,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_theme_type_variation("NoBorderHorizontalWide");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -817,8 +818,15 @@ LocalizationEditor::LocalizationEditor() {
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
 
+		mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		tvb->add_child(mc);
+
 		translation_remap_options = memnew(Tree);
 		translation_remap_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		translation_remap_options->set_theme_type_variation("TreeTable");
+		translation_remap_options->set_hide_folding(true);
 		translation_remap_options->set_columns(2);
 		translation_remap_options->set_column_title(0, TTRC("Path"));
 		translation_remap_options->set_column_title(1, TTRC("Locale"));
@@ -860,7 +868,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(template_generate_button);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontal");
+		mc->set_theme_type_variation("NoBorderHorizontalWide");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 

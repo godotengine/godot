@@ -344,11 +344,12 @@ void SceneImportSettingsDialog::_fill_animation(Tree *p_tree, const Ref<Animatio
 		ad.animation = p_anim;
 
 		_load_default_subresource_settings(ad.settings, "animations", p_name, ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION);
-		if (!ad.settings.has("settings/loop_mode")) {
+		Animation::LoopMode loop_mode = p_anim->get_loop_mode();
+		if (!ad.settings.has("settings/loop_mode") && loop_mode != Animation::LoopMode::LOOP_NONE) {
 			// Update the loop mode to match detected mode (from import hints).
 			// This is necessary on the first import of a scene, otherwise the
 			// default (0/NONE) is set when filling out defaults.
-			ad.settings["settings/loop_mode"] = p_anim->get_loop_mode();
+			ad.settings["settings/loop_mode"] = loop_mode;
 		}
 
 		animation_map[p_name] = ad;
@@ -1374,12 +1375,6 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			action_menu->begin_bulk_theme_override();
-			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
-			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
-			action_menu->end_bulk_theme_override();
-
 			if (animation_player != nullptr && animation_player->is_playing()) {
 				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {

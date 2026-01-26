@@ -483,6 +483,14 @@ private:
 		uint32_t vertex_buffer_count = 0;
 	};
 
+	struct DynParams {
+		D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
+		Color blend_constant;
+		float depth_bounds_min = 0.0f;
+		float depth_bounds_max = 1.0f;
+		uint32_t stencil_reference = 0;
+	};
+
 	// Leveraging knowledge of actual usage and D3D12 specifics (namely, command lists from the same allocator
 	// can't be freely begun and ended), an allocator per list works better.
 	struct CommandBufferInfo {
@@ -491,9 +499,15 @@ private:
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> cmd_list_1;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
 
 		ID3D12PipelineState *graphics_pso = nullptr;
 		ID3D12PipelineState *compute_pso = nullptr;
+
+		DynParams dyn_params;
+		bool pending_dyn_params = true;
 
 		uint32_t graphics_root_signature_crc = 0;
 		uint32_t compute_root_signature_crc = 0;
@@ -508,6 +522,7 @@ private:
 
 		CPUDescriptorHeapPool::Allocation uav_alloc;
 		CPUDescriptorHeapPool::Allocation rtv_alloc;
+		CPUDescriptorHeapPool::Allocation dsv_alloc;
 	};
 
 public:
@@ -564,7 +579,7 @@ private:
 
 	D3D12_RENDER_TARGET_VIEW_DESC _make_rtv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 	D3D12_UNORDERED_ACCESS_VIEW_DESC _make_ranged_uav_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
-	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info);
+	D3D12_DEPTH_STENCIL_VIEW_DESC _make_dsv_for_texture(const TextureInfo *p_texture_info, uint32_t p_mipmap_offset, uint32_t p_layer_offset, uint32_t p_layers, bool p_add_bases = true);
 
 	FramebufferID _framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height, bool p_is_screen);
 
@@ -697,6 +712,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 public:
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
@@ -708,14 +724,7 @@ public:
 
 	struct RenderPipelineInfo {
 		const VertexFormatInfo *vf_info = nullptr;
-
-		struct {
-			D3D12_PRIMITIVE_TOPOLOGY primitive_topology = {};
-			Color blend_constant;
-			float depth_bounds_min = 0.0f;
-			float depth_bounds_max = 0.0f;
-			uint32_t stencil_reference = 0;
-		} dyn_params;
+		DynParams dyn_params;
 	};
 
 	struct PipelineInfo {

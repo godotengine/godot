@@ -71,6 +71,7 @@ class ViewportRotationControl : public Control {
 		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
+		bool is_positive = true;
 	};
 
 	struct Axis2DCompare {
@@ -677,7 +678,11 @@ public:
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_MAX
+	};
 
+	enum TransformMode {
+		TRANSFORM_MODE_GLOBAL = 1,
+		TRANSFORM_MODE_LOCAL = 2,
 	};
 
 private:

@@ -204,6 +204,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("parent")) {
 				NodePath np = next_tag.fields["parent"];
+				np.prepend_period();
 				PackedInt32Array np_id;
 				if (next_tag.fields.has("parent_id_path")) {
 					np_id = next_tag.fields["parent_id_path"];
@@ -419,18 +420,17 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 }
 
 void ResourceLoaderText::_count_resources() {
+	Ref<FileAccess> scan_f = FileAccess::open(f->get_path(), FileAccess::READ);
+	if (scan_f.is_null()) {
+		return;
+	}
+
 	resources_total = 0;
 	resource_current = 0;
 
-	// Save current file position to restore after counting.
-	uint64_t original_pos = f->get_position();
-
-	// Seek to beginning to count all resources.
-	f->seek(0);
-
 	bool has_main_resource = false;
-	while (!f->eof_reached()) {
-		String line = f->get_line().strip_edges();
+	while (!scan_f->eof_reached()) {
+		String line = scan_f->get_line().strip_edges();
 
 		// Only count resources that contribute to progress
 		// (ext_resources are loaded asynchronously and don't count).
@@ -446,9 +446,6 @@ void ResourceLoaderText::_count_resources() {
 			}
 		}
 	}
-
-	// Restore original file position.
-	f->seek(original_pos);
 }
 
 Error ResourceLoaderText::load() {

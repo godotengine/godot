@@ -318,7 +318,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			float preset_icon_saturation = config.default_icon_saturation;
 
 			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-			const float light_contrast = config.style == "Modern" ? -0.4 : -0.06;
+			const float light_contrast = -0.06;
 
 			// Please use alphabetical order if you're adding a new color preset here.
 			if (config.preset == "Black (OLED)") {
@@ -356,7 +356,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_contrast = light_contrast;
 			} else { // Default
 				preset_accent_color = Color(0.337, 0.62, 1.0);
-				preset_base_color = Color(0.153, 0.153, 0.153);
+				preset_base_color = Color(0.161, 0.161, 0.161);
 			}
 
 			config.accent_color = preset_accent_color;
@@ -509,8 +509,8 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/string_placeholder_color"] = p_config.dark_icon_and_font ? Color(1, 0.75, 0.4) : Color(0.93, 0.6, 0.33);
 
 			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
-			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_icon_and_font ? p_config.dark_color_2 : p_config.dark_color_3;
-			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
+			colors["text_editor/theme/highlighting/background_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * (p_config.dark_icon_and_font ? 1.2 : 1.8)).clamp();
+			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * 0.3).clamp();
 			colors["text_editor/theme/highlighting/completion_selected_color"] = alpha1;
 			colors["text_editor/theme/highlighting/completion_existing_color"] = alpha2;
 			// Same opacity as the scroll grabber editor icon.

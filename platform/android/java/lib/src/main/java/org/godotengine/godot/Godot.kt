@@ -108,6 +108,8 @@ class Godot private constructor(val context: Context) {
 			}
 		}
 
+		private const val EXIT_RENDERER_TIMEOUT_IN_MS = 1500L
+
 		// Supported build flavors
 		private const val EDITOR_FLAVOR = "editor"
 		private const val TEMPLATE_FLAVOR = "template"
@@ -134,6 +136,8 @@ class Godot private constructor(val context: Context) {
 
 	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
+
+	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
 
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
@@ -748,7 +752,12 @@ class Godot private constructor(val context: Context) {
 			plugin.onMainDestroy()
 		}
 
-		renderView?.onActivityDestroyed()
+		if (renderView?.blockingExitRenderer(EXIT_RENDERER_TIMEOUT_IN_MS) != true) {
+			Log.w(TAG, "Unable to exit the renderer within $EXIT_RENDERER_TIMEOUT_IN_MS ms... Force quitting the process.")
+			onGodotTerminating()
+			forceQuit(0)
+		}
+
 		this.primaryHost = null
 	}
 
@@ -761,7 +770,9 @@ class Godot private constructor(val context: Context) {
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
-			GodotLib.onNightModeChanged()
+			runOnRenderThread {
+				GodotLib.onNightModeChanged()
+			}
 		}
 
 		if (currentConfig.orientation != newConfig.orientation) {
@@ -779,7 +790,7 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainActivityResult(requestCode, resultCode, data)
 		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+		runOnRenderThread {
 			FilePicker.handleActivityResult(context, requestCode, resultCode, data)
 		}
 	}
@@ -795,11 +806,13 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainRequestPermissionsResult(requestCode, permissions, grantResults)
 		}
-		for (i in permissions.indices) {
-			GodotLib.requestPermissionResult(
-				permissions[i],
-				grantResults[i] == PackageManager.PERMISSION_GRANTED
-			)
+		runOnRenderThread {
+			for (i in permissions.indices) {
+				GodotLib.requestPermissionResult(
+					permissions[i],
+					grantResults[i] == PackageManager.PERMISSION_GRANTED
+				)
+			}
 		}
 	}
 
@@ -1026,9 +1039,7 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	private fun showFilePicker(currentDirectory: String, filename: String, fileMode: Int, filters: Array<String>) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
-		}
+		FilePicker.showFilePicker(context, getActivity(), currentDirectory, filename, fileMode, filters)
 	}
 
 	/**
@@ -1108,7 +1119,7 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainBackPressed()
 		}
-		renderView?.queueOnRenderThread { GodotLib.back() }
+		runOnRenderThread { GodotLib.back() }
 	}
 
 	/**

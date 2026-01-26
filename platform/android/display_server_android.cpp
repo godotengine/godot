@@ -437,26 +437,27 @@ void DisplayServerAndroid::window_set_drop_files_callback(const Callable &p_call
 	// Not supported on Android.
 }
 
-void DisplayServerAndroid::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
+template <typename... Args>
+void DisplayServerAndroid::_window_callback(const Callable &p_callable, bool p_deferred, const Args &...p_rest_args) const {
 	if (p_callable.is_valid()) {
 		if (p_deferred) {
-			p_callable.call_deferred(p_arg);
+			p_callable.call_deferred(p_rest_args...);
 		} else {
-			p_callable.call(p_arg);
+			p_callable.call(p_rest_args...);
 		}
 	}
 }
 
 void DisplayServerAndroid::send_window_event(DisplayServer::WindowEvent p_event, bool p_deferred) const {
-	_window_callback(window_event_callback, int(p_event), p_deferred);
+	_window_callback(window_event_callback, p_deferred, int(p_event));
 }
 
 void DisplayServerAndroid::send_input_event(const Ref<InputEvent> &p_event) const {
-	_window_callback(input_event_callback, p_event);
+	_window_callback(input_event_callback, false, p_event);
 }
 
 void DisplayServerAndroid::send_input_text(const String &p_text) const {
-	_window_callback(input_text_callback, p_text);
+	_window_callback(input_text_callback, false, p_text, false);
 }
 
 void DisplayServerAndroid::_dispatch_input_events(const Ref<InputEvent> &p_event) {
@@ -715,6 +716,14 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	if (rect_changed_callback.is_valid()) {
 		rect_changed_callback.call(Rect2i(0, 0, p_width, p_height));
 	}
+}
+
+void DisplayServerAndroid::notify_application_paused() {
+#if defined(RD_ENABLED)
+	if (rendering_device) {
+		rendering_device->update_pipeline_cache();
+	}
+#endif // defined(RD_ENABLED)
 }
 
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {

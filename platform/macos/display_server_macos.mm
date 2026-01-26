@@ -42,8 +42,11 @@
 #import "godot_window.h"
 #import "godot_window_delegate.h"
 #import "key_mapping_macos.h"
-#import "macos_quartz_core_spi.h"
 #import "os_macos.h"
+
+#ifdef TOOLS_ENABLED
+#import "macos_quartz_core_spi.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -864,91 +867,6 @@ Callable DisplayServerMacOS::_help_get_search_callback() const {
 
 Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
-}
-
-bool DisplayServerMacOS::is_dark_mode_supported() const {
-	if (@available(macOS 10.14, *)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool DisplayServerMacOS::is_dark_mode() const {
-	if (@available(macOS 10.14, *)) {
-		if (![[NSUserDefaults standardUserDefaults] objectForKey:@"AppleInterfaceStyle"]) {
-			return false;
-		} else {
-			return ([[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqual:@"Dark"]);
-		}
-	} else {
-		return false;
-	}
-}
-
-Color DisplayServerMacOS::get_accent_color() const {
-	if (@available(macOS 10.14, *)) {
-		__block NSColor *color = nullptr;
-		if (@available(macOS 11.0, *)) {
-			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}];
-		} else {
-			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
-			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
-			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			[NSAppearance setCurrentAppearance:saved_appearance];
-		}
-		if (color) {
-			CGFloat components[4];
-			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
-			return Color(components[0], components[1], components[2], components[3]);
-		} else {
-			return Color(0, 0, 0, 0);
-		}
-	} else {
-		return Color(0, 0, 0, 0);
-	}
-}
-
-Color DisplayServerMacOS::get_base_color() const {
-	if (@available(macOS 10.14, *)) {
-		__block NSColor *color = nullptr;
-		if (@available(macOS 11.0, *)) {
-			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}];
-		} else {
-			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
-			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
-			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			[NSAppearance setCurrentAppearance:saved_appearance];
-		}
-		if (color) {
-			CGFloat components[4];
-			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
-			return Color(components[0], components[1], components[2], components[3]);
-		} else {
-			return Color(0, 0, 0, 0);
-		}
-	} else {
-		return Color(0, 0, 0, 0);
-	}
-}
-
-void DisplayServerMacOS::set_system_theme_change_callback(const Callable &p_callable) {
-	system_theme_changed = p_callable;
-}
-
-void DisplayServerMacOS::emit_system_theme_changed() {
-	if (system_theme_changed.is_valid()) {
-		Variant ret;
-		Callable::CallError ce;
-		system_theme_changed.callp(nullptr, 0, ret, ce);
-		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
-		}
-	}
 }
 
 Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
@@ -1870,7 +1788,14 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	if ([wd.window_object isMiniaturized]) {
 		return;
 	} else if (wd.no_focus) {
-		[wd.window_object orderFront:nil];
+		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+		} else if (p_id != MAIN_WINDOW_ID) {
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+		} else {
+			[wd.window_object orderFront:nil];
+		}
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
@@ -2062,7 +1987,14 @@ void DisplayServerMacOS::reparent_check(WindowID p_window) {
 			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
 				[wd_parent.window_object removeChildWindow:wd.window_object];
 				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-				[wd.window_object orderFront:nil];
+				if (wd.transient_parent != INVALID_WINDOW_ID) {
+					WindowData &wd_parent = windows[wd.transient_parent];
+					[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+				} else if (p_window != MAIN_WINDOW_ID) {
+					[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+				} else {
+					[wd.window_object orderFront:nil];
+				}
 			}
 		}
 	}
@@ -2659,7 +2591,14 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				if ([wd.window_object isMiniaturized]) {
 					return;
 				} else if (wd.no_focus) {
-					[wd.window_object orderFront:nil];
+					if (wd.transient_parent != INVALID_WINDOW_ID) {
+						WindowData &wd_parent = windows[wd.transient_parent];
+						[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+					} else if (p_window != MAIN_WINDOW_ID) {
+						[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+					} else {
+						[wd.window_object orderFront:nil];
+					}
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
 				}
@@ -2782,7 +2721,14 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 
 	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 	if (wd.no_focus || wd.is_popup) {
-		[wd.window_object orderFront:nil];
+		if (wd.transient_parent != INVALID_WINDOW_ID) {
+			WindowData &wd_parent = windows[wd.transient_parent];
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[wd_parent.window_object windowNumber]];
+		} else if (p_window != MAIN_WINDOW_ID) {
+			[wd.window_object orderWindow:NSWindowAbove relativeTo:[windows[MAIN_WINDOW_ID].window_object windowNumber]];
+		} else {
+			[wd.window_object orderFront:nil];
+		}
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
@@ -3226,8 +3172,6 @@ Error DisplayServerMacOS::embed_process_update(WindowID p_window, EmbeddedProces
 	return OK;
 }
 
-#endif
-
 Error DisplayServerMacOS::request_close_embedded_process(OS::ProcessID p_pid) {
 	return OK;
 }
@@ -3242,6 +3186,8 @@ Error DisplayServerMacOS::remove_embedded_process(OS::ProcessID p_pid) {
 
 	return OK;
 }
+
+#endif
 
 void DisplayServerMacOS::process_events() {
 	_process_events(true);

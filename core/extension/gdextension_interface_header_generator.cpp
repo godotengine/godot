@@ -163,8 +163,14 @@ void GDExtensionInterfaceHeaderGenerator::write_enum_type(const Ref<FileAccess> 
 void GDExtensionInterfaceHeaderGenerator::write_function_type(const Ref<FileAccess> &p_fa, const Dictionary &p_func) {
 	String args_text = p_func.has("arguments") ? make_args_text(p_func["arguments"]) : "";
 	String name_and_args = vformat("(*%s)(%s)", p_func["name"], args_text);
-	Dictionary ret = p_func["return_value"];
-	p_fa->store_string(vformat("typedef %s;%s\n", format_type_and_name(ret["type"], name_and_args), make_deprecated_comment_for_type(p_func)));
+	String return_type;
+	if (p_func.has("return_value")) {
+		Dictionary ret = p_func["return_value"];
+		return_type = ret["type"];
+	} else {
+		return_type = "void";
+	}
+	p_fa->store_string(vformat("typedef %s;%s\n", format_type_and_name(return_type, name_and_args), make_deprecated_comment_for_type(p_func)));
 }
 
 void GDExtensionInterfaceHeaderGenerator::write_struct_type(const Ref<FileAccess> &p_fa, const Dictionary &p_struct) {
@@ -261,17 +267,15 @@ void GDExtensionInterfaceHeaderGenerator::write_interface(const Ref<FileAccess> 
 
 	if (p_interface.has("return_value")) {
 		Dictionary ret = p_interface["return_value"];
-		if (ret["type"] != "void") {
-			String ret_string = String("@return");
-			if (ret.has("description")) {
-				Array arg_doc = ret["description"];
-				for (const Variant &d : arg_doc) {
-					ret_string += String(" ") + (String)d;
-				}
+		String ret_string = String("@return");
+		if (ret.has("description")) {
+			Array arg_doc = ret["description"];
+			for (const Variant &d : arg_doc) {
+				ret_string += String(" ") + (String)d;
 			}
-			doc.push_back("");
-			doc.push_back(ret_string);
 		}
+		doc.push_back("");
+		doc.push_back(ret_string);
 	}
 
 	if (p_interface.has("see")) {

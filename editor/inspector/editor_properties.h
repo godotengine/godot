@@ -764,6 +764,7 @@ protected:
 public:
 	virtual void update_property() override;
 	void setup(Object *p_object, const String &p_path, const String &p_base_type);
+	EditorResourcePicker *get_resource_picker() const { return resource_picker; }
 
 	void collapse_all_folding() override;
 	void expand_all_folding() override;

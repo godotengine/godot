@@ -1115,11 +1115,13 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 				}
 
 				if (new_interface == nullptr) {
+#ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
 					if (last_str_len > 0) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Unknown interface %s, marking packet as invalid.", (char *)(body + last_str_buf_idx + 1)));
 					} else {
 						DEBUG_LOG_WAYLAND_EMBED("Unknown interface, marking packet as invalid.");
 					}
+#endif
 					valid = false;
 					break;
 				}

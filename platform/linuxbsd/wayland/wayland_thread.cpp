@@ -824,7 +824,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_viewporter_name) {
 		for (KeyValue<DisplayServer::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState ws = pair.value;
+			WindowState &ws = pair.value;
 			if (registry->wp_viewporter) {
 				wp_viewporter_destroy(registry->wp_viewporter);
 				registry->wp_viewporter = nullptr;
@@ -862,7 +862,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	if (name == registry->wp_fractional_scale_manager_name) {
 		for (KeyValue<DisplayServer::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState ws = pair.value;
+			WindowState &ws = pair.value;
 
 			if (registry->wp_fractional_scale_manager) {
 				wp_fractional_scale_manager_v1_destroy(registry->wp_fractional_scale_manager);
@@ -1197,7 +1197,7 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.\n", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Window entered output %x.", (size_t)wl_output));
 
 	ws->wl_outputs.insert(wl_output);
 
@@ -1348,6 +1348,13 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	uint32_t *state = nullptr;
@@ -1355,10 +1362,32 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		switch (*state) {
 			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
 				ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+				ws->maximized = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
 				ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+				ws->fullscreen = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_RESIZING: {
+				ws->resizing = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_LEFT: {
+				ws->tiled_left = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_RIGHT: {
+				ws->tiled_right = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_TOP: {
+				ws->tiled_top = true;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_TILED_BOTTOM: {
+				ws->tiled_bottom = true;
 			} break;
 
 			case XDG_TOPLEVEL_STATE_SUSPENDED: {
@@ -1537,15 +1566,42 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 	// Expect the window to be in a plain state. It will get properly set if the
 	// compositor reports otherwise below.
 	ws->mode = DisplayServer::WINDOW_MODE_WINDOWED;
+	ws->maximized = false;
+	ws->fullscreen = false;
+	ws->resizing = false;
+	ws->tiled_left = false;
+	ws->tiled_right = false;
+	ws->tiled_top = false;
+	ws->tiled_bottom = false;
 	ws->suspended = false;
 
 	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
 		if (window_state & LIBDECOR_WINDOW_STATE_MAXIMIZED) {
 			ws->mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+			ws->maximized = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) {
 			ws->mode = DisplayServer::WINDOW_MODE_FULLSCREEN;
+			ws->fullscreen = true;
+		}
+
+		// libdecor doesn't have the resizing state for whatever reason.
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_LEFT) {
+			ws->tiled_left = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_RIGHT) {
+			ws->tiled_right = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_TOP) {
+			ws->tiled_top = true;
+		}
+
+		if (window_state & LIBDECOR_WINDOW_STATE_TILED_BOTTOM) {
+			ws->tiled_bottom = true;
 		}
 
 		if (window_state & LIBDECOR_WINDOW_STATE_SUSPENDED) {
@@ -1678,6 +1734,16 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 		if (ss->xkb_compose_state) {
 			xkb_compose_state_unref(ss->xkb_compose_state);
 			ss->xkb_compose_state = nullptr;
+		}
+
+		if (ss->xkb_keymap) {
+			xkb_keymap_unref(ss->xkb_keymap);
+			ss->xkb_keymap = nullptr;
+		}
+
+		if (ss->xkb_state) {
+			xkb_state_unref(ss->xkb_state);
+			ss->xkb_state = nullptr;
 		}
 
 		if (ss->wl_keyboard) {
@@ -2309,7 +2375,7 @@ void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->repeat_key_delay_msec = 1000 / rate;
+	ss->repeat_key_delay_msec = rate ? 1000 / rate : 0;
 	ss->repeat_start_delay_msec = delay;
 }
 
@@ -3034,9 +3100,14 @@ void WaylandThread::_wp_text_input_on_enter(void *data, struct zwp_text_input_v3
 	ss->ime_enabled = true;
 }
 
+// NOTE: From now on, we must ignore all further events until an enter event.
 void WaylandThread::_wp_text_input_on_leave(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -3058,6 +3129,10 @@ void WaylandThread::_wp_text_input_on_leave(void *data, struct zwp_text_input_v3
 void WaylandThread::_wp_text_input_on_preedit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text, int32_t cursor_begin, int32_t cursor_end) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -3109,6 +3184,10 @@ void WaylandThread::_wp_text_input_on_commit_string(void *data, struct zwp_text_
 		return;
 	}
 
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+
 	ss->ime_text_commit = String::utf8(text);
 }
 
@@ -3119,6 +3198,10 @@ void WaylandThread::_wp_text_input_on_delete_surrounding_text(void *data, struct
 void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial) {
 	SeatState *ss = (SeatState *)data;
 	if (!ss) {
+		return;
+	}
+
+	if (ss->ime_window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
 	}
 
@@ -3425,7 +3508,7 @@ int WaylandThread::window_state_get_preferred_buffer_scale(WindowState *p_ws) {
 	return max_size;
 }
 
-double WaylandThread::window_state_get_scale_factor(WindowState *p_ws) {
+double WaylandThread::window_state_get_scale_factor(const WindowState *p_ws) {
 	ERR_FAIL_NULL_V(p_ws, 1);
 
 	if (p_ws->fractional_scale > 0) {
@@ -3830,6 +3913,12 @@ void WaylandThread::window_create_popup(DisplayServer::WindowID p_window_id, Dis
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
 
+	// We manually scaled based on the parent. If we don't set the relevant fields,
+	// the resizing routines will get confused and scale once more.
+	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
+	ws.fractional_scale = parent.fractional_scale;
+	ws.buffer_scale = parent.buffer_scale;
+
 	ws.id = p_window_id;
 	ws.parent_id = p_parent_id;
 	ws.registry = &registry;
@@ -3950,14 +4039,72 @@ void WaylandThread::window_destroy(DisplayServer::WindowID p_window_id) {
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID p_window_id) const {
-	ERR_FAIL_COND_V(!windows.has(p_window_id), nullptr);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState *ws = windows.getptr(p_window_id);
+	if (ws) {
+		return ws->wl_surface;
+	}
 
-	return ws.wl_surface;
+	return nullptr;
 }
 
 WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) {
 	return windows.getptr(p_window_id);
+}
+
+const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServer::WindowID p_window_id) const {
+	return windows.getptr(p_window_id);
+}
+
+Size2i WaylandThread::window_set_size(DisplayServer::WindowID p_window_id, const Size2i &p_size) {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), p_size);
+	WindowState &ws = windows[p_window_id];
+
+	double window_scale = window_state_get_scale_factor(&ws);
+
+	if (ws.maximized) {
+		// Can't do anything.
+		return scale_vector2i(ws.rect.size, window_scale);
+	}
+
+	Size2i new_size = scale_vector2i(p_size, 1 / window_scale);
+
+	if (ws.tiled_left && ws.tiled_right) {
+		// Tiled left and right, we shouldn't change from our current width or else
+		// it'll look wonky.
+		new_size.width = ws.rect.size.width;
+	}
+
+	if (ws.tiled_top && ws.tiled_bottom) {
+		// Tiled top and bottom. Same as above, but for the height.
+		new_size.height = ws.rect.size.height;
+	}
+
+	if (ws.resizing && ws.rect.size.width > 0 && ws.rect.size.height > 0) {
+		// The spec says that we shall not resize further than the config size. We can
+		// resize less than that though.
+		new_size = new_size.min(ws.rect.size);
+	}
+
+	// NOTE: Older versions of libdecor (~2022) do not have a way to get the max
+	// content size. Let's also check for its pointer so that we can preserve
+	// compatibility with older distros.
+	if (ws.libdecor_frame && libdecor_frame_get_max_content_size) {
+		int max_width = new_size.width;
+		int max_height = new_size.height;
+
+		// NOTE: Max content size is dynamic on libdecor, as plugins can override it
+		// to accommodate their decorations.
+		libdecor_frame_get_max_content_size(ws.libdecor_frame, &max_width, &max_height);
+
+		if (max_width > 0 && max_height > 0) {
+			new_size.width = MIN(new_size.width, max_width);
+			new_size.height = MIN(new_size.height, max_height);
+		}
+	}
+
+	window_state_update_size(&ws, new_size.width, new_size.height);
+
+	return scale_vector2i(new_size, window_scale);
 }
 
 void WaylandThread::beep() const {
@@ -4140,8 +4287,12 @@ bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id, Dis
 		};
 
 		case DisplayServer::WINDOW_MODE_MAXIMIZED: {
-			// NOTE: libdecor doesn't seem to have a maximize capability query?
-			// The fact that there's a fullscreen one makes me suspicious.
+			if (ws.libdecor_frame) {
+				// NOTE: libdecor doesn't seem to have a maximize capability query?
+				// The fact that there's a fullscreen one makes me suspicious. Anyways,
+				// let's act as if we always can.
+				return true;
+			}
 			return ws.can_maximize;
 		};
 
@@ -4651,12 +4802,6 @@ Error WaylandThread::init() {
 		ERR_FAIL_COND_V_MSG(embedder_socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
 
 		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", embedder_socket_path);
-
-		// Debug
-		if (OS::get_singleton()->get_environment("GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE") == "1") {
-			print_line("Pausing as per GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE.");
-			pause();
-		}
 	}
 #endif // TOOLS_ENABLED
 
@@ -4733,16 +4878,22 @@ Error WaylandThread::init() {
 #ifdef LIBDECOR_ENABLED
 	bool libdecor_found = true;
 
+	bool skip_libdecor = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_LIBDECOR") == "1";
+
 #ifdef SOWRAP_ENABLED
-	if (initialize_libdecor(dylibloader_verbose) != 0) {
+	if (!skip_libdecor && initialize_libdecor(dylibloader_verbose) != 0) {
 		libdecor_found = false;
 	}
 #endif // SOWRAP_ENABLED
 
-	if (libdecor_found) {
-		libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+	if (skip_libdecor) {
+		print_verbose("Skipping libdecor check because GODOT_WAYLAND_DISABLE_LIBDECOR is set to 1.");
 	} else {
-		print_verbose("libdecor not found. Client-side decorations disabled.");
+		if (libdecor_found) {
+			libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
+		} else {
+			print_verbose("libdecor not found. Client-side decorations disabled.");
+		}
 	}
 #endif // LIBDECOR_ENABLED
 
@@ -4932,11 +5083,35 @@ Key WaylandThread::keyboard_get_key_from_physical(Key p_key) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->xkb_state) {
-		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_key);
-		return KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode));
+		Key modifiers = p_key & KeyModifierMask::MODIFIER_MASK;
+		Key keycode_no_mod = p_key & KeyModifierMask::CODE_MASK;
+
+		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(keycode_no_mod);
+		Key key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode));
+		return (Key)(key | modifiers);
 	}
 
-	return Key::NONE;
+	return p_key;
+}
+
+Key WaylandThread::keyboard_get_label_from_physical(Key p_key) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->xkb_state) {
+		Key modifiers = p_key & KeyModifierMask::MODIFIER_MASK;
+		Key keycode_no_mod = p_key & KeyModifierMask::CODE_MASK;
+
+		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(keycode_no_mod);
+		xkb_keycode_t xkb_keysym = xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode);
+		char32_t chr = xkb_keysym_to_utf32(xkb_keysym_to_upper(xkb_keysym));
+		if (chr != 0) {
+			String keysym = String::chr(chr);
+			Key key = fix_key_label(keysym[0], KeyMappingXKB::get_keycode(xkb_keysym));
+			return (Key)(key | modifiers);
+		}
+	}
+
+	return p_key;
 }
 
 void WaylandThread::keyboard_echo_keys() {
@@ -5375,7 +5550,19 @@ void WaylandThread::destroy() {
 			zwp_tablet_tool_v2_destroy(tool);
 		}
 
+		if (ss->wp_text_input) {
+			zwp_text_input_v3_destroy(ss->wp_text_input);
+		}
+
 		memdelete(ss);
+	}
+
+	if (registry.wp_tablet_manager) {
+		zwp_tablet_manager_v2_destroy(registry.wp_tablet_manager);
+	}
+
+	if (registry.wp_text_input_manager) {
+		zwp_text_input_manager_v3_destroy(registry.wp_text_input_manager);
 	}
 
 	for (struct wl_output *wl_output : registry.wl_outputs) {

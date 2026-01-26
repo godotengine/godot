@@ -710,6 +710,20 @@ private:
 
 	bool _is_project_data_missing();
 
+	enum MenuType {
+		MENU_TYPE_NONE,
+		MENU_TYPE_GLOBAL,
+		MENU_TYPE_COMPACT,
+		MENU_TYPE_FULL,
+	};
+	MenuType menu_type = MENU_TYPE_NONE;
+	Vector<PopupMenu *> main_menu_items;
+
+	void _build_file_menu();
+	void _build_project_menu();
+	void _build_settings_menu();
+	void _build_help_menu();
+
 	void _update_main_menu_type();
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
 
@@ -753,6 +767,7 @@ public:
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
 	static void add_io_warning(const String &p_warning);
+	static bool find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found);
 
 	static void progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	static bool progress_task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_refresh = true);

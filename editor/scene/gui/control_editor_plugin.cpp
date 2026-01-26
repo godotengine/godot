@@ -439,6 +439,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_expand = memnew(CheckBox);
 	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_clip_text(true);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
@@ -926,8 +927,8 @@ bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
 
 List<Control *> ControlEditorToolbar::_get_edited_controls() {
 	List<Control *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !_is_node_locked(control)) {
 			selection.push_back(control);
 		}
@@ -958,8 +959,8 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_EXPAND,
 	};
 
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (!control) {
 			continue;
 		}

@@ -259,6 +259,14 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 	return files;
 }
 
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return selected_files;
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
+}
+
 Dictionary EditorExportPreset::get_customized_files() const {
 	Dictionary files;
 	for (const KeyValue<String, FileExportMode> &E : customized_files) {

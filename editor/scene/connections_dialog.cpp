@@ -1668,11 +1668,12 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_ONE_SHOT) {
 					path += " (one-shot)";
 				}
-				if (cd.flags & CONNECT_APPEND_SOURCE_OBJECT) {
-					path += " (source)";
-				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
+				}
+				// CONNECT_APPEND_SOURCE_OBJECT is not affected by unbinds, list it between unbinds/binds to better indicate the final order.
+				if (cd.flags & CONNECT_APPEND_SOURCE_OBJECT) {
+					path += " (source)";
 				}
 				if (!cd.binds.is_empty()) {
 					path += " binds(";

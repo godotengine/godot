@@ -724,6 +724,7 @@
 			<description>
 				Sets a custom mouse cursor image for the given [param shape]. This means the user's operating system and mouse cursor theme will no longer influence the mouse cursor's appearance.
 				[param cursor] can be either a [Texture2D] or an [Image], and it should not be larger than 256×256 to display correctly. Optionally, [param hotspot] can be set to offset the image's position relative to the click point. By default, [param hotspot] is set to the top-left corner of the image. See also [method cursor_set_shape].
+				[b]Note:[/b] On Web, calling this method every frame can cause the cursor to flicker.
 			</description>
 		</method>
 		<method name="cursor_set_shape">
@@ -784,7 +785,7 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] Embedded file dialogs and Windows file dialogs support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
@@ -1789,11 +1790,11 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 			</description>
 		</method>
-		<method name="screen_get_refresh_rate" qualifiers="const">
+		<method name="screen_get_refresh_rate" qualifiers="const" keywords="vsync">
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
+				Returns the current refresh rate of the specified screen. When V-Sync is enabled, this returns the maximum framerate the project can effectively reach. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
@@ -2573,7 +2574,8 @@
 			Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
 		</constant>
 		<constant name="FEATURE_ICON" value="13" enum="Feature">
-			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11)[/b]
+			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			[b]Note:[/b] Use on Wayland requires the compositor to implement the [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#xdg_toplevel_icon_v1]xdg_toplevel_icon_v1[/url] protocol, which not all compositors do. See [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#compositor-support]xdg_toplevel_icon_v1#compositor-support[/url] for more information on individual compositor support.
 		</constant>
 		<constant name="FEATURE_NATIVE_ICON" value="14" enum="Feature">
 			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS[/b]
