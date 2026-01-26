@@ -847,7 +847,28 @@ def show_progress(env):
             self.count += 1
             if self.display:
                 percent = int(min(self.count * 100 / self.max, 100))
-                sys.stdout.write(f"\r[{percent:3d}%] ")
+                percent_unrounded = min(self.count * 100 / self.max, 100)
+
+                # Color progress text according to a gradient.
+                if percent <= 50:
+                    t = percent / 50.0
+                    r0, g0, b0 = (200, 60, 60)  # Slightly more saturated red.
+                    r1, g1, b1 = (215, 175, 60)  # Slightly more saturated yellow.
+                else:
+                    t = (percent - 50.0) / 50.0
+                    r0, g0, b0 = (215, 175, 60)  # Slightly more saturated yellow.
+                    r1, g1, b1 = (85, 195, 85)  # Slightly more saturated green.
+
+                r = int(r0 + (r1 - r0) * t)
+                g = int(g0 + (g1 - g0) * t)
+                b = int(b0 + (b1 - b0) * t)
+
+                if percent_unrounded == 100:
+                    # Only show "done" text for the very last item.
+                    sys.stdout.write(f"\x1b[1;38;2;{r};{g};{b}m\r[ DONE ]\x1b[0m ")
+                else:
+                    sys.stdout.write(f"\x1b[38;2;{r};{g};{b}m\r[{percent:4d}% ]\x1b[0m ")
+
                 sys.stdout.flush()
 
     from SCons.Script import Progress
