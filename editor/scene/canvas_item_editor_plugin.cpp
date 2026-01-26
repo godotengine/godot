@@ -289,7 +289,6 @@ bool _use_edit_rect(const CanvasItem *p_canvas_item) {
 
 void _set_edit_rect(CanvasItem *p_canvas_item, const Rect2 &p_rect) {
 	ERR_FAIL_NULL(p_canvas_item);
-	print_line("SET_EDIT_RECT ", p_rect);
 	for (Ref<EditorCanvasItemGizmo> gizmo : p_canvas_item->get_gizmos()) {
 		if (gizmo.is_valid()) {
 			gizmo->_edit_set_rect(p_rect);

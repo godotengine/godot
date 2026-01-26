@@ -697,9 +697,7 @@ int EditorCanvasItemGizmoPlugin::get_priority() const {
 	return 0;
 }
 
-Transform2D EditorCanvasItemGizmoPlugin::boundary_change_to_transform(const CanvasItem *p_canvas_item, const Rect2 &p_before, const Rect2 &p_after) {
-	ERR_FAIL_NULL_V(p_canvas_item, Transform2D());
-
+Transform2D EditorCanvasItemGizmoPlugin::boundary_change_to_transform(const Rect2 &p_before, const Rect2 &p_after) {
 	Vector2 zero_offset;
 	Size2 new_scale(1, 1);
 
@@ -714,12 +712,6 @@ Transform2D EditorCanvasItemGizmoPlugin::boundary_change_to_transform(const Canv
 	}
 
 	Point2 new_pos = p_after.position + p_after.size * zero_offset;
-
-	Transform2D local_xf = p_canvas_item->get_transform();
-	Transform2D postxf;
-	postxf.set_rotation_scale_and_skew(local_xf.get_rotation(), local_xf.get_scale(), local_xf.get_skew());
-	new_pos = postxf.xform(new_pos);
-
 	return Transform2D().scaled(new_scale).translated(new_pos);
 }
 
@@ -742,7 +734,7 @@ Ref<EditorCanvasItemGizmo> EditorCanvasItemGizmoPlugin::get_gizmo(CanvasItem *p_
 }
 
 void EditorCanvasItemGizmoPlugin::_bind_methods() {
-	ClassDB::bind_static_method("EditorCanvasItemGizmoPlugin", D_METHOD("boundary_change_to_transform", "canvas_item", "before", "after"), &EditorCanvasItemGizmoPlugin::boundary_change_to_transform);
+	ClassDB::bind_static_method("EditorCanvasItemGizmoPlugin", D_METHOD("boundary_change_to_transform", "before", "after"), &EditorCanvasItemGizmoPlugin::boundary_change_to_transform);
 
 	GDVIRTUAL_BIND(_has_gizmo, "for_canvas_item");
 	GDVIRTUAL_BIND(_create_gizmo, "for_canvas_item");
