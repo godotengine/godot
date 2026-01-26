@@ -4073,6 +4073,12 @@ void FileSystemDock::_feature_profile_changed() {
 
 void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
+	const String &current_main_scene_path =
+			ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+	if (main_scene_path != current_main_scene_path) {
+		main_scene_path = current_main_scene_path;
+		update_all();
+	}
 }
 
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
