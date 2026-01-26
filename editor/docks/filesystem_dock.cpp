@@ -2054,7 +2054,6 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 
 			main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
-			
 			_update_dependencies_after_move(file_renames, file_owners);
 			_update_project_settings_after_move(file_renames, folder_renames);
 			_update_favorites_after_move(file_renames, folder_renames);
@@ -4075,19 +4074,10 @@ void FileSystemDock::_feature_profile_changed() {
 	_update_display_mode(true);
 }
 
-<<<<<<< HEAD
 void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
-
-	const String &current_main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
-	if (main_scene_path != current_main_scene_path) {
-		main_scene_path = current_main_scene_path;
-		update_all();
-	}
 }
 
-=======
->>>>>>> 98db196c9d ( Update main scene highlight on settings change)
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	for (int i = 0; i != (int)FileSortOption::FILE_SORT_MAX; i++) {
 		tree_button_sort->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
