@@ -6181,6 +6181,12 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 				valid = p_target.get_container_element_type(0) == p_source.get_container_element_type(0);
 			}
 		}
+		if (valid && p_target.builtin_type == Variant::ARRAY && Variant::is_packed_array_type(p_source.builtin_type)) {
+			// Check the element type.
+			if (p_target.has_container_element_type(0)) {
+				valid = Variant::can_convert_strict(Variant::get_packed_array_element_type(p_source.builtin_type), p_target.get_container_element_type(0).builtin_type);
+			}
+		}
 		if (valid && p_target.builtin_type == Variant::DICTIONARY && p_source.builtin_type == Variant::DICTIONARY) {
 			// Check the element types.
 			if (p_target.has_container_element_type(0) && p_source.has_container_element_type(0)) {

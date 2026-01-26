@@ -2840,15 +2840,32 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
 
+				Variant temp_variant;
+				Array *array = nullptr;
 				if (r->get_type() != Variant::ARRAY) {
-#ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "Array[%s]".)",
-							Variant::get_type_name(r->get_type()), Variant::get_type_name(builtin_type));
-#endif
-					OPCODE_BREAK;
-				}
+					bool valid = false;
+					if (r->is_packed_array()) {
+						valid = Variant::can_convert_strict(Variant::get_packed_array_element_type(r->get_type()), builtin_type);
+					}
 
-				Array *array = VariantInternal::get_array(r);
+					if (valid) {
+						Array temp_array;
+						temp_array.set_typed(builtin_type, native_type, *script_type);
+						temp_array.assign(*r);
+
+						temp_variant = temp_array;
+
+						array = VariantInternal::get_array(&temp_variant);
+					} else {
+#ifdef DEBUG_ENABLED
+						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "Array[%s]".)",
+								Variant::get_type_name(r->get_type()), _get_element_type(builtin_type, native_type, *script_type));
+#endif
+						OPCODE_BREAK;
+					}
+				} else {
+					array = VariantInternal::get_array(r);
+				}
 
 				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED

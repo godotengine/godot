@@ -1,0 +1,3 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/return_incompatible_packed_array.gd:3 on get_string_array(): Trying to return value of type "PackedInt32Array" from a function whose return type is "Array[String]".
+Array[String]([])

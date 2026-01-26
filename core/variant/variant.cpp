@@ -3426,6 +3426,30 @@ bool StringLikeVariantOrder::compare(const Variant &p_lhs, const Variant &p_rhs)
 	return p_lhs < p_rhs;
 }
 
+Variant::Type Variant::get_packed_array_element_type(Variant::Type p_type) {
+	switch (p_type) {
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+			return INT;
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+			return FLOAT;
+		case PACKED_STRING_ARRAY:
+			return STRING;
+		case PACKED_VECTOR2_ARRAY:
+			return VECTOR2;
+		case PACKED_VECTOR3_ARRAY:
+			return VECTOR3;
+		case PACKED_COLOR_ARRAY:
+			return COLOR;
+		case PACKED_VECTOR4_ARRAY:
+			return VECTOR4;
+		default:
+			ERR_FAIL_V_MSG(NIL, vformat(R"("%s" is not a packed array type.)", get_type_name(p_type)));
+	}
+}
+
 bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
@@ -3441,10 +3465,6 @@ bool Variant::is_type_shared(Variant::Type p_type) {
 	}
 
 	return false;
-}
-
-bool Variant::is_shared() const {
-	return is_type_shared(type);
 }
 
 bool Variant::is_read_only() const {

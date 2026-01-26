@@ -411,21 +411,31 @@ public:
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 	static bool is_type_shared(Variant::Type p_type);
 
-	bool is_ref_counted() const;
-	_FORCE_INLINE_ bool is_num() const {
-		return type == INT || type == FLOAT;
+	_FORCE_INLINE_ static bool is_numeric_type(Variant::Type p_type) {
+		return p_type == INT || p_type == FLOAT;
 	}
-	_FORCE_INLINE_ bool is_string() const {
-		return type == STRING || type == STRING_NAME;
+	_FORCE_INLINE_ static bool is_string_type(Variant::Type p_type) {
+		return p_type == STRING || p_type == STRING_NAME;
 	}
-	_FORCE_INLINE_ bool is_array() const {
-		return type >= ARRAY;
+	_FORCE_INLINE_ static bool is_array_type(Variant::Type p_type) {
+		return p_type >= ARRAY;
 	}
-	bool is_shared() const;
+	_FORCE_INLINE_ static bool is_packed_array_type(Variant::Type p_type) {
+		return p_type >= PACKED_BYTE_ARRAY;
+	}
+	static Variant::Type get_packed_array_element_type(Variant::Type p_type);
+
+	_ALWAYS_INLINE_ bool is_shared() const { return is_type_shared(type); }
+	_ALWAYS_INLINE_ bool is_num() const { return is_numeric_type(type); }
+	_ALWAYS_INLINE_ bool is_string() const { return is_string_type(type); }
+	_ALWAYS_INLINE_ bool is_array() const { return is_array_type(type); }
+	_ALWAYS_INLINE_ bool is_packed_array() const { return is_packed_array_type(type); }
+
 	bool is_zero() const;
 	bool is_one() const;
 	bool is_null() const;
 	bool is_read_only() const;
+	bool is_ref_counted() const;
 
 	// Make sure Variant is not implicitly cast when accessing it with bracket notation (GH-49469).
 	Variant &operator[](const Variant &p_key) = delete;
