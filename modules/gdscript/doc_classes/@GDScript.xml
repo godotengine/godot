@@ -784,6 +784,15 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@read_only">
+			<return type="void" />
+			<description>
+				Mark the following property as read-only. Read-only properties can only be assigned a value once, either at declaration or in the constructor ([method Object._init]). Any further assignment will result in an error.
+				[codeblock]
+				@read_only var size = 10
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
