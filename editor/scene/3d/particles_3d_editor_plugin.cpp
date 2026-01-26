@@ -192,72 +192,54 @@ bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector
 			}
 		}
 	} else {
-		int gcount = geometry.size();
+		// Pick a random point inside bounding box and a point outside bounding box.
+		// If a ray between these two point goes through an odd number of faces, then
+		// the inside bounding box point should be inside the mesh volume (assuming
+		// no holes or duplicate faces).
 
-		if (gcount == 0) {
+		int face_count = geometry.size();
+		if (face_count == 0) {
 			EditorNode::get_singleton()->show_warning(TTR("The geometry doesn't contain any faces."));
 			return false;
 		}
 
-		const Face3 *r = geometry.ptr();
+		const Face3 *faces = geometry.ptr();
 
+		// Build a bounding box for this set of faces
 		AABB aabb;
-
-		for (int i = 0; i < gcount; i++) {
-			for (int j = 0; j < 3; j++) {
-				if (i == 0 && j == 0) {
-					aabb.position = r[i].vertex[j];
-				} else {
-					aabb.expand_to(r[i].vertex[j]);
-				}
-			}
+		aabb.position = faces[0].vertex[0];
+		for (int i = 0; i < face_count; i++) {
+			aabb.expand_to(faces[i].vertex[0]);
+			aabb.expand_to(faces[i].vertex[1]);
+			aabb.expand_to(faces[i].vertex[2]);
 		}
 
 		int emissor_count = emission_amount->get_value();
+		int max_attempts = emissor_count * 5; // Overall attempts and avoid infinite loop if volume is zero
+		int attempts = 0;
 
-		for (int i = 0; i < emissor_count; i++) {
-			int attempts = 5;
+		float extension = aabb.size.length() * 0.1;
+		Vector3 x_direction = Vector3(1, 0, 0);
 
-			for (int j = 0; j < attempts; j++) {
-				Vector3 dir;
-				dir[Math::rand() % 3] = 1.0;
-				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
+		while (r_points.size() < emissor_count && attempts < max_attempts) {
+			attempts++;
 
-				Vector3 ofsv = ofs + aabb.size * dir;
+			// Random point inside bounding box
+			Vector3 candidate_point = Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
+			// Pick an outside point away from candidate_point along x direction
+			float distance_to_bbox_min = candidate_point.x - aabb.position.x;
+			Vector3 outside_bb = candidate_point - x_direction * (distance_to_bbox_min + extension);
 
-				//space it a little
-				ofs -= dir;
-				ofsv += dir;
-
-				float max = -1e7, min = 1e7;
-
-				for (int k = 0; k < gcount; k++) {
-					const Face3 &f3 = r[k];
-
-					Vector3 res;
-					if (f3.intersects_segment(ofs, ofsv, &res)) {
-						res -= ofs;
-						float d = dir.dot(res);
-
-						if (d < min) {
-							min = d;
-						}
-						if (d > max) {
-							max = d;
-						}
-					}
+			int intersection_count = 0;
+			for (int k = 0; k < face_count; k++) {
+				const Face3 &face = faces[k];
+				if (face.intersects_segment(candidate_point, outside_bb)) {
+					intersection_count++;
 				}
+			}
 
-				if (max < min) {
-					continue; //lost attempt
-				}
-
-				float val = min + (max - min) * Math::randf();
-
-				Vector3 point = ofs + dir * val;
-
-				r_points.push_back(point);
-				break;
+			if ((intersection_count % 2) == 1) {
+				r_points.push_back(candidate_point);
 			}
 		}
 	}
