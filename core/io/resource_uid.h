@@ -57,7 +57,7 @@ private:
 	HashMap<ID, Cache> unique_ids; // Unique IDs and utf8 paths (less memory used).
 	bool use_reverse_cache = false;
 	HashMap<CharString, ID> reverse_cache; // Used at runtime.
-	static ResourceUID *singleton;
+	static inline ResourceUID *singleton = nullptr;
 
 	uint32_t cache_entries = 0;
 	bool changed = false;

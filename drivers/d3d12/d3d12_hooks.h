@@ -34,11 +34,21 @@
 
 class D3D12Hooks {
 private:
-	static D3D12Hooks *singleton;
+	static inline D3D12Hooks *singleton = nullptr;
 
 public:
-	D3D12Hooks();
-	virtual ~D3D12Hooks();
+	D3D12Hooks() {
+		if (singleton == nullptr) {
+			singleton = this;
+		}
+	}
+
+	virtual ~D3D12Hooks() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
+
 	virtual D3D_FEATURE_LEVEL get_feature_level() const = 0;
 	virtual LUID get_adapter_luid() const = 0;
 	virtual void set_device(ID3D12Device *p_device) = 0;

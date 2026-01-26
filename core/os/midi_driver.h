@@ -38,8 +38,8 @@
  */
 
 class MIDIDriver {
-	static MIDIDriver *singleton;
-	static uint8_t last_received_message;
+	static inline MIDIDriver *singleton = nullptr;
+	static inline uint8_t last_received_message = 0x00;
 
 protected:
 	// Categories of message for parser logic.

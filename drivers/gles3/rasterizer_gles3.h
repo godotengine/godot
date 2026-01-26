@@ -58,10 +58,10 @@ private:
 	double time_total = 0.0;
 
 #ifdef WINDOWS_ENABLED
-	static bool screen_flipped_y;
+	static inline bool screen_flipped_y = false;
 #endif
 
-	static bool gles_over_gl;
+	static inline bool gles_over_gl = true;
 
 protected:
 	GLES3::Config *config = nullptr;
@@ -80,7 +80,7 @@ protected:
 	GLES3::FeedEffects *feed_effects = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
-	static RasterizerGLES3 *singleton;
+	static inline RasterizerGLES3 *singleton = nullptr;
 
 	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first = true);
 

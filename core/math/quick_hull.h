@@ -83,6 +83,6 @@ private:
 	};
 
 public:
-	static uint32_t debug_stop_after;
+	static inline uint32_t debug_stop_after = 0xFFFFFFFF;
 	static Error build(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh);
 };

@@ -38,8 +38,6 @@
 
 #include "servers/text/text_server.h"
 
-AccessibilityDriverAccessKit *AccessibilityDriverAccessKit::singleton = nullptr;
-
 _FORCE_INLINE_ accesskit_role AccessibilityDriverAccessKit::_accessibility_role(DisplayServer::AccessibilityRole p_role) const {
 	if (role_map.has(p_role)) {
 		return role_map[p_role];

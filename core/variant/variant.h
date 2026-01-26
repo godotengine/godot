@@ -170,9 +170,9 @@ private:
 			Projection _projection;
 		};
 
-		static PagedAllocator<BucketSmall, true> _bucket_small;
-		static PagedAllocator<BucketMedium, true> _bucket_medium;
-		static PagedAllocator<BucketLarge, true> _bucket_large;
+		static inline PagedAllocator<BucketSmall, true> _bucket_small;
+		static inline PagedAllocator<BucketMedium, true> _bucket_medium;
+		static inline PagedAllocator<BucketLarge, true> _bucket_large;
 	};
 
 	friend struct _VariantCall;

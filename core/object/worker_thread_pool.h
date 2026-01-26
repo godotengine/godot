@@ -110,7 +110,7 @@ private:
 	BinaryMutex task_mutex;
 
 	struct ThreadData {
-		static Task *const YIELDING; // Too bad constexpr doesn't work here.
+		static inline Task *const YIELDING = (Task *)1; // Too bad constexpr doesn't work here.
 
 		uint32_t index = 0;
 		Thread thread;
@@ -172,7 +172,7 @@ private:
 	uint64_t last_task = 1;
 	int pump_task_count = 0;
 
-	static HashMap<StringName, WorkerThreadPool *> named_pools;
+	static inline HashMap<StringName, WorkerThreadPool *> named_pools;
 
 	static void _thread_function(void *p_user);
 
@@ -183,7 +183,7 @@ private:
 
 	bool _try_promote_low_priority_task();
 
-	static WorkerThreadPool *singleton;
+	static inline WorkerThreadPool *singleton = nullptr;
 
 #ifdef THREADS_ENABLED
 	static const uint32_t MAX_UNLOCKABLE_LOCKS = 2;

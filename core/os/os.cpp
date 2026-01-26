@@ -48,9 +48,6 @@
 #define THREADING_NAMESPACE std
 #endif
 
-OS *OS::singleton = nullptr;
-uint64_t OS::target_ticks = 0;
-
 OS *OS::get_singleton() {
 	return singleton;
 }

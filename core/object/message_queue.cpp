@@ -486,9 +486,6 @@ CallQueue::~CallQueue() {
 
 //////////////////////
 
-CallQueue *MessageQueue::main_singleton = nullptr;
-thread_local CallQueue *MessageQueue::thread_singleton = nullptr;
-
 void MessageQueue::set_thread_singleton_override(CallQueue *p_thread_singleton) {
 #ifdef DEV_ENABLED
 	if (thread_singleton) {

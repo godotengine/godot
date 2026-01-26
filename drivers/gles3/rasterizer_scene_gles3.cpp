@@ -48,8 +48,6 @@
 
 #ifdef GLES3_ENABLED
 
-RasterizerSceneGLES3 *RasterizerSceneGLES3::singleton = nullptr;
-
 RenderGeometryInstance *RasterizerSceneGLES3::geometry_instance_create(RID p_base) {
 	RS::InstanceType type = RSG::utilities->get_base_type(p_base);
 	ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
