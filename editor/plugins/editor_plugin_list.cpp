@@ -42,6 +42,7 @@ bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) const {
 	return discard;
 }
 
+#ifndef _3D_DISABLED
 EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool p_serve_when_force_input_enabled) const {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 
@@ -62,18 +63,6 @@ EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_c
 	return after;
 }
 
-void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) const {
-	for (EditorPlugin *plugin : plugins_list) {
-		plugin->forward_canvas_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) const {
-	for (EditorPlugin *plugin : plugins_list) {
-		plugin->forward_canvas_force_draw_over_viewport(p_overlay);
-	}
-}
-
 void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) const {
 	for (EditorPlugin *plugin : plugins_list) {
 		plugin->forward_3d_draw_over_viewport(p_overlay);
@@ -83,6 +72,19 @@ void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) const {
 void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) const {
 	for (EditorPlugin *plugin : plugins_list) {
 		plugin->forward_3d_force_draw_over_viewport(p_overlay);
+	}
+}
+#endif // _3D_DISABLED
+
+void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) const {
+	for (EditorPlugin *plugin : plugins_list) {
+		plugin->forward_canvas_draw_over_viewport(p_overlay);
+	}
+}
+
+void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) const {
+	for (EditorPlugin *plugin : plugins_list) {
+		plugin->forward_canvas_force_draw_over_viewport(p_overlay);
 	}
 }
 

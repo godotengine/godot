@@ -665,6 +665,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
+#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_VIRTUAL_CLASS(JointLimitation3D);
 	GDREGISTER_CLASS(JointLimitationCone3D);
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
@@ -673,6 +674,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
 	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 	GDREGISTER_VIRTUAL_CLASS(BoneConstraint3D);
+#endif // PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(CopyTransformModifier3D);
 	GDREGISTER_CLASS(ConvertTransformModifier3D);
 	GDREGISTER_CLASS(AimModifier3D);

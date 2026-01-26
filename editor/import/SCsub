@@ -4,4 +4,5 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
-env.add_source_files(env.editor_sources, "3d/*.cpp")
+if not env["disable_3d"]:
+    env.add_source_files(env.editor_sources, "3d/*.cpp")

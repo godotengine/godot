@@ -30,6 +30,7 @@
 
 #include "create_dialog.h"
 
+#include "core/core_bind.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"

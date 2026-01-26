@@ -160,7 +160,9 @@ public:
 		SCENE_CLOSE_ALL,
 		SCENE_QUIT,
 
+#ifndef _3D_DISABLED
 		FILE_EXPORT_MESH_LIBRARY,
+#endif // _3D_DISABLED
 
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
@@ -990,7 +992,9 @@ public:
 	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
+#ifndef _3D_DISABLED
 	void save_default_environment();
+#endif // _3D_DISABLED
 
 	void open_export_template_manager();
 

@@ -45,6 +45,10 @@
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
+#ifdef _3D_DISABLED
+#include "core/object/script_language.h"
+#endif
+
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 

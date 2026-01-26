@@ -121,7 +121,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_res
 #ifdef TOOLS_ENABLED
 	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+#ifndef _3D_DISABLED
 		game_view_plugin->get_debugger()->reset_camera_3d_position();
+#endif // _3D_DISABLED
 	}
 #endif
 }

@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/resources/material.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 
@@ -209,7 +210,9 @@ class VisualShaderEditor : public ShaderEditor {
 	MaterialEditor *material_editor = nullptr;
 	Ref<VisualShader> visual_shader;
 	Ref<ShaderMaterial> preview_material;
+#ifndef _3D_DISABLED
 	Ref<Environment> env;
+#endif // _3D_DISABLED
 	String param_filter_name;
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;

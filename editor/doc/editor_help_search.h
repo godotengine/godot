@@ -30,6 +30,9 @@
 
 #pragma once
 
+#ifdef _3D_DISABLED
+#include "core/doc_data.h"
+#endif
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
