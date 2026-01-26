@@ -729,3 +729,4 @@ extern template class AHashMap<String, int>;
 extern template class AHashMap<StringName, StringName>;
 extern template class AHashMap<StringName, Variant>;
 extern template class AHashMap<StringName, int>;
+extern template class AHashMap<int, bool>;

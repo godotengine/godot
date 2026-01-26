@@ -251,6 +251,7 @@ Ref<InputEventKey> WaylandThread::_seat_state_get_key_event(SeatState *p_ss, xkb
 
 	event->set_pressed(p_pressed);
 	event->set_keycode(keycode);
+	event->set_device_index(p_ss->wl_seat_name);
 	event->set_physical_keycode(physical_keycode);
 	event->set_location(key_location);
 
@@ -739,6 +740,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 }
 
 void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
+	InputEventKey::remove_device_index(name);
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
 

@@ -104,6 +104,60 @@ bool InputEvent::is_action_type() const {
 	return false;
 }
 
+bool InputEvent::assign_device_index(int p_device) {
+	if (device_index.end() != device_index.find(p_device)) {
+		return false;
+	}
+	device_index.insert(p_device, true);
+	for (const auto &[old_device, active] : device_index) {
+		if (!active) {
+			device_index.erase(old_device);
+			break;
+		}
+	}
+	return true;
+}
+
+bool InputEvent::remove_device_index(int p_device) {
+	if (device_index.end() == device_index.find(p_device)) {
+		return false;
+	}
+	device_index[p_device] = false;
+	return true;
+}
+
+void InputEvent::filter_active_devices(Vector<int> p_active_devices) {
+	for (const auto &[current_dev, active] : device_index) {
+		if (!active) {
+			continue;
+		}
+		bool found = false;
+		for (const auto &new_dev : p_active_devices) {
+			found = (new_dev == current_dev);
+			if (found) {
+				break;
+			}
+		}
+		if (!found) {
+			InputEvent::remove_device_index(current_dev);
+		}
+	}
+}
+
+int InputEvent::get_device_index(int p_device) {
+	return device_index.get_index(p_device);
+}
+
+bool InputEvent::set_device_index(int p_device) {
+	InputEvent::assign_device_index(p_device);
+	int index = InputEvent::get_device_index(p_device);
+	if (-1 == index) {
+		return false;
+	}
+	this->set_device(index);
+	return true;
+}
+
 void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);

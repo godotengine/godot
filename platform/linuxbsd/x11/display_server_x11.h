@@ -306,7 +306,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	Point2i center;
 
-	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
+	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, int p_device_id, bool p_echo = false);
 
 	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;

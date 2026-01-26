@@ -35,6 +35,7 @@
 #include "core/math/transform_2d.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
+#include "core/templates/a_hash_map.h"
 #include "core/typedefs.h"
 
 /**
@@ -52,11 +53,12 @@ class Shortcut;
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
-	int device = 0;
+	int device = -1; // ALL_DEVICES
 
 protected:
 	bool canceled = false;
 	bool pressed = false;
+	static inline AHashMap<int, bool> device_index; // bool is to mark a device ID as inactive, available for overwriting
 
 	static void _bind_methods();
 
@@ -90,6 +92,12 @@ public:
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 
 	virtual InputEventType get_type() const { return InputEventType::INVALID; }
+
+	static bool assign_device_index(int p_device);
+	static bool remove_device_index(int p_device);
+	static void filter_active_devices(Vector<int> p_active_devices);
+	static int get_device_index(int p_device);
+	bool set_device_index(int p_device);
 };
 
 class InputEventFromWindow : public InputEvent {
