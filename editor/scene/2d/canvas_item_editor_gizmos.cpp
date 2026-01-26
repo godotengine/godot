@@ -386,7 +386,6 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 		ERR_FAIL_COND_MSG(p_handles.size() != p_ids.size(), "The number of IDs should be the same as the number of handles.");
 	}
 
-	// TODO: GIZMOS - implement hover support
 	bool is_current_hover_gizmo = CanvasItemEditor::get_singleton()->get_current_hover_gizmo() == this;
 	bool current_hover_handle_secondary;
 	int current_hover_handle = CanvasItemEditor::get_singleton()->get_current_hover_gizmo_handle(current_hover_handle_secondary);
@@ -416,6 +415,10 @@ void EditorCanvasItemGizmo::add_handles(const Vector<Vector2> &p_handles, Ref<Te
 		Color modulate = Color(1, 1, 1, 1.0);
 		if (_is_handle_highlighted(id, p_secondary)) {
 			modulate = Color(0, 0, 1, 0.9);
+		}
+
+		if (!is_current_hover_gizmo || current_hover_handle != id || p_secondary != current_hover_handle_secondary) {
+			modulate.a = 0.8;
 		}
 
 		// TODO: GIZMOS - the handles currently draw over the rulers when panning, we probably don't want this.

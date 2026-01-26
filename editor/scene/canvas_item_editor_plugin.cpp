@@ -2001,8 +2001,8 @@ bool CanvasItemEditor::_gui_input_gizmos(const Ref<InputEvent> &p_event) {
 		// mouse clicks
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			Point2 click = transform.affine_inverse().xform(b->get_position());
-			for (Ref<EditorCanvasItemGizmo> editor_gizmo : gizmos) {
-				if (editor_gizmo.is_null()) {
+			for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+				if (gizmo.is_null()) {
 					continue;
 				}
 				int index;
@@ -2010,19 +2010,53 @@ bool CanvasItemEditor::_gui_input_gizmos(const Ref<InputEvent> &p_event) {
 				Transform2D xform = selected_canvas_item->get_global_transform().affine_inverse();
 				const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 				const Point2 local_pos = xform.xform(click);
-				editor_gizmo->handles_intersect_point(local_pos, local_grab_distance, b->is_shift_pressed(), index, secondary);
+				gizmo->handles_intersect_point(local_pos, local_grab_distance, b->is_shift_pressed(), index, secondary);
 				if (index > -1) {
 					drag_selection = List<CanvasItem *>();
 					drag_selection.push_back(selected_canvas_item);
 					drag_type = DRAG_GIZMO_HANDLE;
-					current_gizmo = editor_gizmo;
+					current_gizmo = gizmo;
 					current_gizmo_handle = index;
 					current_gizmo_handle_secondary = secondary;
-					current_gizmo_initial_value = editor_gizmo->_get_handle_value(index, secondary);
-					editor_gizmo->_begin_handle_action(index, secondary);
+					current_gizmo_initial_value = gizmo->_get_handle_value(index, secondary);
+					gizmo->_begin_handle_action(index, secondary);
 					return true;
 				}
 			}
+		}
+
+		// hover support
+		if (m.is_valid()) {
+			Point2 mouse_pos = transform.affine_inverse().xform(m->get_position());
+
+			for (Ref<EditorCanvasItemGizmo> gizmo : gizmos) {
+				int index;
+				bool secondary;
+				Transform2D xform = selected_canvas_item->get_global_transform().affine_inverse();
+				const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
+				const Point2 local_pos = xform.xform(mouse_pos);
+				gizmo->handles_intersect_point(local_pos, local_grab_distance, false, index, secondary);
+				if (index > -1) {
+					bool changed = current_hover_gizmo != gizmo || current_hover_gizmo_handle != index || current_hover_gizmo_handle_secondary != secondary;
+					if (changed) {
+						current_hover_gizmo = gizmo;
+						current_hover_gizmo_handle = index;
+						current_hover_gizmo_handle_secondary = secondary;
+						viewport->queue_redraw();
+					}
+					return false; // don't consume the mouse motion, might be important for others
+				}
+			}
+
+			// no gizmo found, reset.
+			bool changed = current_hover_gizmo != nullptr || current_hover_gizmo_handle != -1 || current_hover_gizmo_handle_secondary != false;
+			if (changed) {
+				current_hover_gizmo = nullptr;
+				current_hover_gizmo_handle = -1;
+				current_hover_gizmo_handle_secondary = false;
+				viewport->queue_redraw();
+			}
+			return false;
 		}
 	}
 
