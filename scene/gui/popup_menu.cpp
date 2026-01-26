@@ -2108,9 +2108,7 @@ void PopupMenu::set_item_id(int p_idx, int p_id) {
 
 	items.write[p_idx].id = p_id;
 
-	if (global_menu.is_valid()) {
-		NativeMenu::get_singleton()->set_item_tag(global_menu, p_idx, p_id);
-	}
+	// `global_menu` does not know about IDs so there is no need to update it.
 
 	control->queue_redraw();
 	child_controls_changed();
