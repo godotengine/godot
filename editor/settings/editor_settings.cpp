@@ -71,7 +71,14 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
-		changed_settings.insert(p_name);
+		const String sname = p_name;
+		changed_settings.insert(sname);
+
+		if (sname.begins_with("interface/theme/")) {
+			emit_signal(SNAME("_editor_theme_changed"));
+			return true;
+		}
+
 		if (p_name == SNAME("text_editor/external/exec_path")) {
 			const StringName exec_args_name = "text_editor/external/exec_flags";
 			const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
@@ -2293,6 +2300,7 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mark_setting_changed", "setting"), &EditorSettings::mark_setting_changed);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
+	ADD_SIGNAL(MethodInfo("_editor_theme_changed"));
 	ADD_SIGNAL(MethodInfo("_favorites_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
