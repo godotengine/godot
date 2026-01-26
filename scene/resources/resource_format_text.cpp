@@ -399,6 +399,27 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> &p_c
 				error = OK;
 				return p_current_scene;
 			}
+		} else if (next_tag.name == "exposed") {
+			if (!next_tag.fields.has("path")) {
+				error = ERR_FILE_CORRUPT;
+				error_text = "missing 'path' field from exposed tag";
+				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
+			}
+
+			NodePath path = next_tag.fields["path"];
+
+			packed_scene->get_state()->add_exposed_node(path.simplified());
+
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &p_parser);
+
+			if (error) {
+				if (error != ERR_FILE_EOF) {
+					ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
+				} else {
+					error = OK;
+					return p_current_scene;
+				}
+			}
 			// If it's a nested packed scene, and there's a resource after, we return without errors.
 		} else if (p_current_scene != packed_scene && (next_tag.name == "sub_resource" || next_tag.name == "resource")) {
 			return p_current_scene;
@@ -1864,6 +1885,14 @@ void ResourceFormatSaverTextInstance::_parse_nodes(const Ref<PackedScene> &curr_
 			p_file->store_line("");
 		}
 		p_file->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
+	}
+
+	Vector<NodePath> exposed_nodes = state->get_exposed_nodes();
+	for (int i = 0; i < exposed_nodes.size(); i++) {
+		if (i == 0) {
+			p_file->store_line("");
+		}
+		p_file->store_line("[exposed path=\"" + exposed_nodes[i].operator String().c_escape() + "\"]");
 	}
 }
 
