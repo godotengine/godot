@@ -2898,13 +2898,22 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 /*************** RESOURCE ***************/
 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	String target_path;
+	const String original_extension = p_original_path.get_extension().to_lower();
+	if (original_extension == "gd" || original_extension == "gdc") {
+		target_path = p_original_path;
+	} else {
+		// GH-105299. Someone is trying to use a custom importer or format loader.
+		target_path = p_path;
+	}
+
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
-	Ref<GDScript> scr = GDScriptCache::get_full_script(p_original_path, err, "", ignoring);
+	Ref<GDScript> scr = GDScriptCache::get_full_script(target_path, err, "", ignoring);
 
 	if (err && scr.is_valid()) {
 		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
-		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_original_path, error_names[err]));
+		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", target_path, error_names[err]));
 	}
 
 	if (r_error) {
@@ -2925,8 +2934,8 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gd" || el == "gdc") {
+	const String extension = p_path.get_extension().to_lower();
+	if (extension == "gd" || extension == "gdc") {
 		return "GDScript";
 	}
 	return "";
