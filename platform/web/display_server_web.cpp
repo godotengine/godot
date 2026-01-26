@@ -991,6 +991,8 @@ void DisplayServerWeb::process_joypads() {
 		for (int a = 0; a < s_axes_num; a++) {
 			input->joy_axis(idx, (JoyAxis)a, s_axes[a]);
 		}
+		Vector2 vibration_strength = input->get_joy_vibration_strength(idx);
+		godot_js_input_gamepad_process_vibration(idx, input->get_joy_vibration_timestamp(idx), vibration_strength.x, vibration_strength.y, input->get_joy_vibration_duration(idx));
 	}
 }
 

@@ -76,6 +76,7 @@ extern void godot_js_input_gamepad_cb(void (*p_on_change)(int p_index, int p_con
 extern int godot_js_input_gamepad_sample();
 extern int godot_js_input_gamepad_sample_count();
 extern int godot_js_input_gamepad_sample_get(int p_idx, float r_btns[16], int32_t *r_btns_num, float r_axes[10], int32_t *r_axes_num, int32_t *r_standard);
+extern void godot_js_input_gamepad_process_vibration(int p_index, double p_timestamp, float p_weak_magnitude, float p_strong_magnitude, float p_duration);
 extern void godot_js_input_paste_cb(void (*p_callback)(const char *p_text));
 extern void godot_js_input_drop_files_cb(void (*p_callback)(const char **p_filev, int p_filec));
 
