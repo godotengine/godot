@@ -270,6 +270,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			erase_btn->set_button_icon(get_editor_theme_icon("Remove"));
 			erase_missing_btn->set_button_icon(get_editor_theme_icon("Clear"));
 			create_tag_btn->set_button_icon(get_editor_theme_icon("Add"));
+			show_in_file_manager_btn->set_button_icon(get_editor_theme_icon("Load"));
 			donate_btn->set_button_icon(get_editor_theme_icon("Heart"));
 
 			tag_error->add_theme_color_override(SceneStringName(font_color), get_theme_color("error_color", EditorStringName(Editor)));
@@ -284,6 +285,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			rename_btn->add_theme_constant_override("h_separation", h_separation);
 			duplicate_btn->add_theme_constant_override("h_separation", h_separation);
 			manage_tags_btn->add_theme_constant_override("h_separation", h_separation);
+			show_in_file_manager_btn->add_theme_constant_override("h_separation", h_separation);
 			erase_btn->add_theme_constant_override("h_separation", h_separation);
 			erase_missing_btn->add_theme_constant_override("h_separation", h_separation);
 
@@ -850,6 +852,7 @@ void ProjectManager::_update_project_buttons() {
 		}
 	}
 
+	show_in_file_manager_btn->set_disabled(empty_selection || is_missing_project_selected);
 	erase_btn->set_disabled(empty_selection);
 	open_btn->set_disabled(empty_selection || is_missing_project_selected);
 	open_options_btn->set_disabled(empty_selection || is_missing_project_selected);
@@ -1314,6 +1317,14 @@ void ProjectManager::_open_donate_page() {
 	OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=project_manager");
 }
 
+void ProjectManager::_show_selected_projects_in_file_manager() {
+	// const Vector<Item> &selected_list = project_list->get_selected_projects();
+	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
+	for (const String &path : selected_list) {
+		OS::get_singleton()->shell_show_in_file_manager(path.ptr(), true);
+	}
+}
+
 // Object methods.
 
 ProjectManager::ProjectManager() {
@@ -1701,6 +1712,12 @@ ProjectManager::ProjectManager() {
 			manage_tags_btn->set_text(TTRC("Manage Tags"));
 			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTRC("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
 			sidebar_buttons_containter->add_child(manage_tags_btn);
+
+			show_in_file_manager_btn = memnew(Button);
+			show_in_file_manager_btn->set_text(TTRC("File Manager"));
+			show_in_file_manager_btn->set_shortcut(ED_SHORTCUT("project_manager/show_in_file_manager", TTRC("Show in File Manager"), Key::E));
+			show_in_file_manager_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_selected_projects_in_file_manager));
+			sidebar_buttons_containter->add_child(show_in_file_manager_btn);
 
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTRC("Remove"));

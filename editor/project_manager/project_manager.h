@@ -163,6 +163,7 @@ class ProjectManager : public Control {
 	Button *manage_tags_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
+	Button *show_in_file_manager_btn = nullptr;
 	Button *donate_btn = nullptr;
 
 	HBoxContainer *open_btn_container = nullptr;
@@ -205,6 +206,7 @@ class ProjectManager : public Control {
 	void _open_options_popup();
 	void _open_recovery_mode_ask(bool manual = false);
 	void _open_donate_page();
+	void _show_selected_projects_in_file_manager();
 
 	void _on_project_created(const String &dir, bool edit);
 	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);
