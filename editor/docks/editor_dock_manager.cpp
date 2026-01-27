@@ -333,6 +333,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	}
 
 	if (!p_target) {
+		p_dock->is_open = false;
 		return;
 	}
 
@@ -659,6 +660,7 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	if (!p_dock->is_open) {
+		p_dock->emit_signal("opened");
 		open_dock(p_dock, false);
 	}
 

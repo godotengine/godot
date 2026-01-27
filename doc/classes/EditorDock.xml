@@ -126,6 +126,11 @@
 				Emitted when the dock is closed with the Close button in the context popup, before it's removed from its parent. See [member closable].
 			</description>
 		</signal>
+		<signal name="opened">
+			<description>
+				Emitted when the dock is opened via the Editor &gt; Editor Docks menu, before it's made visible.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
