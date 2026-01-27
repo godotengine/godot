@@ -216,7 +216,7 @@ Transform2D Camera2D::get_camera_transform() {
 			bool hit_limit = false;
 			int hit_sides = 0;
 			
-			Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
+			Point2 bottom_right_corner = screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position);
 			
 			// Apply horizontal limiting.
 			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
