@@ -887,6 +887,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
 		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
+		actions.render_mode_defines["multi_bounce_occlusion_disabled"] = "#define MULTI_BOUNCE_OCCLUSION_DISABLED\n";
 
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
