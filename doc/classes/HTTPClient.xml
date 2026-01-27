@@ -36,6 +36,38 @@
 				If no [param port] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS. You can pass the optional [param tls_options] parameter to customize the trusted certification authorities, or the common name verification when using HTTPS. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
+		<method name="get_request_bytes_sent" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of bytes sent so far in the current request, including both headers and body. Can be used to track upload progress.
+				[b]Note:[/b] On the Web platform, this function always returns [code]-1[/code] due to browser limitations.
+				[b]Note:[/b] Once the buffer is sent, and while waiting for the response from the server, this function will return [code]0[/code].
+				[codeblocks]
+				[gdscript]
+				while http.get_status() == HTTPClient.STATUS_REQUESTING:
+					http.poll()
+					var sent := http.get_request_bytes_sent()
+					if sent &gt; 0:
+						var percent := (sent * 100.0) / total_bytes
+						print("Uploading: %.1f%%" % percent)
+					await get_tree().process_frame
+				[/gdscript]
+				[csharp]
+				while (http.GetStatus() == HttpClient.Status.Requesting)
+				{
+					http.Poll();
+					long sent = http.GetRequestBytesSent();
+					if (sent &gt; 0)
+					{
+						double percent = (sent * 100.0) / totalBytes;
+						GD.Print($"Uploading: {percent:0.0}%");
+					}
+					await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_response_body_length" qualifiers="const">
 			<return type="int" />
 			<description>
