@@ -78,7 +78,7 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &RenderSceneBuffersRD::get_use_debanding);
 }
 
-void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) const {
+void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 	ERR_FAIL_COND(p_named_texture.texture.is_null());
 
 	p_named_texture.sizes.resize(p_named_texture.format.mipmaps);

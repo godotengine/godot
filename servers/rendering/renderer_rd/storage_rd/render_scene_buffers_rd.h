@@ -172,7 +172,7 @@ private:
 	};
 
 	mutable HashMap<NTKey, NamedTexture, NTKey> named_textures;
-	void update_sizes(NamedTexture &p_named_texture) const;
+	void update_sizes(NamedTexture &p_named_texture);
 	void free_named_texture(NamedTexture &p_named_texture);
 
 	// Data buffers

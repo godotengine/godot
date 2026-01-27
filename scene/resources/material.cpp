@@ -623,6 +623,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->grow = "grow";
 
 	shader_names->ao_light_affect = "ao_light_affect";
+	shader_names->micro_shadows = "micro_shadows";
+	shader_names->mesh_blend = "mesh_blend";
 
 	shader_names->proximity_fade_distance = "proximity_fade_distance";
 	shader_names->distance_fade_min = "distance_fade_min";
@@ -1017,6 +1019,7 @@ uniform float msdf_outline_size : hint_range(0.0, 250.0, 1.0);
 
 	code += "uniform ivec2 albedo_texture_size;\n";
 	code += "uniform float point_size : hint_range(0.1, 128.0, 0.1);\n";
+	code += "uniform float mesh_blend : hint_range(-1.0, 1.0);\n";
 
 	if (!orm) {
 		code += vformat(R"(
@@ -1128,6 +1131,7 @@ uniform sampler2D texture_flowmap : hint_anisotropy, %s;
 uniform sampler2D texture_ambient_occlusion : hint_default_white, %s;
 uniform vec4 ao_texture_channel;
 uniform float ao_light_affect : hint_range(0.0, 1.0, 0.01);
+uniform float micro_shadows : hint_range(0.0, 1.0, 0.01);
 )",
 				texfilter_str);
 	}
@@ -1949,6 +1953,7 @@ void fragment() {)";
 		}
 
 		code += "	AO_LIGHT_AFFECT = ao_light_affect;\n";
+		code += "	MICRO_SHADOWS = micro_shadows;\n";
 	}
 
 	if (features[FEATURE_SUBSURFACE_SCATTERING]) {
@@ -2056,6 +2061,7 @@ void fragment() {)";
 )";
 	}
 
+	code += "	MESH_BLEND = mesh_blend;\n";
 	code += "}\n";
 
 	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
@@ -2243,6 +2249,15 @@ void BaseMaterial3D::set_ao_light_affect(float p_ao_light_affect) {
 
 float BaseMaterial3D::get_ao_light_affect() const {
 	return ao_light_affect;
+}
+
+void BaseMaterial3D::set_micro_shadows(float p_micro_shadows) {
+	micro_shadows = p_micro_shadows;
+	_material_set_param(shader_names->micro_shadows, p_micro_shadows);
+}
+
+float BaseMaterial3D::get_micro_shadows() const {
+	return micro_shadows;
 }
 
 void BaseMaterial3D::set_clearcoat(float p_clearcoat) {
@@ -3130,6 +3145,15 @@ float BaseMaterial3D::get_distance_fade_min_distance() const {
 	return distance_fade_min_distance;
 }
 
+void BaseMaterial3D::set_mesh_blend(float p_value) {
+	mesh_blend = CLAMP(p_value, -1.0f, 1.0f);
+	_material_set_param(shader_names->mesh_blend, mesh_blend);
+}
+
+float BaseMaterial3D::get_mesh_blend() const {
+	return mesh_blend;
+}
+
 void BaseMaterial3D::set_emission_operator(EmissionOperator p_op) {
 	if (emission_op == p_op) {
 		return;
@@ -3510,6 +3534,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ao_light_affect", "amount"), &BaseMaterial3D::set_ao_light_affect);
 	ClassDB::bind_method(D_METHOD("get_ao_light_affect"), &BaseMaterial3D::get_ao_light_affect);
 
+	ClassDB::bind_method(D_METHOD("set_micro_shadows", "amount"), &BaseMaterial3D::set_micro_shadows);
+	ClassDB::bind_method(D_METHOD("get_micro_shadows"), &BaseMaterial3D::get_micro_shadows);
+
 	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &BaseMaterial3D::set_alpha_scissor_threshold);
 	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &BaseMaterial3D::get_alpha_scissor_threshold);
 
@@ -3551,6 +3578,8 @@ void BaseMaterial3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_distance_fade_min_distance", "distance"), &BaseMaterial3D::set_distance_fade_min_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_min_distance"), &BaseMaterial3D::get_distance_fade_min_distance);
+	ClassDB::bind_method(D_METHOD("set_mesh_blend", "mesh_blend"), &BaseMaterial3D::set_mesh_blend);
+	ClassDB::bind_method(D_METHOD("get_mesh_blend"), &BaseMaterial3D::get_mesh_blend);
 
 	ClassDB::bind_method(D_METHOD("set_z_clip_scale", "scale"), &BaseMaterial3D::set_z_clip_scale);
 	ClassDB::bind_method(D_METHOD("get_z_clip_scale"), &BaseMaterial3D::get_z_clip_scale);
@@ -3659,6 +3688,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Ambient Occlusion", "ao_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_light_affect", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ao_light_affect", "get_ao_light_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ao_micro_shadows", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_micro_shadows", "get_micro_shadows");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "ao_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_AMBIENT_OCCLUSION);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "ao_on_uv2"), "set_flag", "get_flag", FLAG_AO_ON_UV2);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ao_texture_channel", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Gray"), "set_ao_texture_channel", "get_ao_texture_channel");
@@ -3762,6 +3792,8 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_blend", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_mesh_blend", "get_mesh_blend");
 
 	ADD_GROUP("Stencil", "stencil_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stencil_mode", PROPERTY_HINT_ENUM, "Disabled,Outline,X-Ray,Custom"), "set_stencil_mode", "get_stencil_mode");
@@ -3973,6 +4005,9 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_distance_fade_max_distance(10);
 
 	set_ao_light_affect(0.0);
+	set_micro_shadows(0.85);
+
+	set_mesh_blend(0.0f);
 
 	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
 	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);

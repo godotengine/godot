@@ -773,6 +773,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor, bool p_focus)
 	shader_tabs->show();
 	p_editor->use_menu_bar(file_menu);
 	file_menu->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
 	if (p_focus) {
 		TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(p_editor);
 		if (text_shader_editor) {

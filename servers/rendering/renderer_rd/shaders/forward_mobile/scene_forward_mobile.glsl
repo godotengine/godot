@@ -19,12 +19,6 @@
 #define IN_SHADOW_PASS false
 #endif
 
-#ifdef USE_MULTIVIEW
-#define OUTPUT_IS_MULTIVIEW true
-#else
-#define OUTPUT_IS_MULTIVIEW false
-#endif
-
 /* INPUT ATTRIBS */
 
 // Always contains vertex position in XYZ, can contain tangent angle in W.
@@ -832,12 +826,6 @@ void main() {
 #define IN_SHADOW_PASS false
 #endif
 
-#ifdef USE_MULTIVIEW
-#define OUTPUT_IS_MULTIVIEW true
-#else
-#define OUTPUT_IS_MULTIVIEW false
-#endif
-
 /* Include half precision types. */
 #include "../half_inc.glsl"
 
@@ -1156,7 +1144,9 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	float premul_alpha_highp = 1.0;
 #endif
+#ifndef FOG_DISABLED
 	vec4 fog_highp = vec4(0.0);
+#endif // !FOG_DISABLED
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance_highp = vec4(0.0);
 #endif
