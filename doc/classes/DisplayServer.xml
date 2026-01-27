@@ -2533,6 +2533,16 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="orientation_changed">
+			<param index="0" name="orientation" type="int" />
+			<description>
+				Emitted when the device orientation changes. [param orientation] is the new orientation.
+				Returns [code]1[/code] for portrait, [code]2[/code] for landscape, and [code]0[/code] if the orientation is undefined.
+				[b]Note:[/b] This method is implemented on Android and iOS.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
 			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]

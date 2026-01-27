@@ -175,7 +175,6 @@ class Godot private constructor(val context: Context) {
 	 */
 	private var renderViewInitialized = false
 	private var primaryHost: GodotHost? = null
-	private var currentConfig = context.resources.configuration
 
 	/**
 	 * Tracks whether we're in the RESUMED lifecycle state.
@@ -197,6 +196,7 @@ class Godot private constructor(val context: Context) {
 	private var useDebugOpengl = false
 	private var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
+	private var orientation = Configuration.ORIENTATION_UNDEFINED
 
 	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -234,7 +234,9 @@ class Godot private constructor(val context: Context) {
 
 		Log.v(TAG, "InitEngine with params: $commandLineParams")
 
-		darkMode = context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		val config = context.resources.configuration
+		darkMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+		orientation = config.orientation
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
@@ -770,12 +772,12 @@ class Godot private constructor(val context: Context) {
 			}
 		}
 
-		if (currentConfig.orientation != newConfig.orientation) {
+		if (orientation != newConfig.orientation) {
+			orientation = newConfig.orientation
 			runOnRenderThread {
-				GodotLib.onScreenRotationChange(newConfig.orientation)
+				GodotLib.onOrientationChange(orientation)
 			}
 		}
-		currentConfig = newConfig
 	}
 
 	/**
