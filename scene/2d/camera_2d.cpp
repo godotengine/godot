@@ -249,7 +249,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	if (!ignore_rotation) {
 		if (rotation_smoothing_enabled && !is_part_of_edited_scene()) {
-			real_t delta = (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			real_t delta = (process_callback == CAMERA2D_PROCESS_PHYSICS) ? get_physics_process_delta_time() : get_process_delta_time();
 			delta = MIN(delta, smoothing_delta_limit);
 			real_t step;
 			if (position_smoothing_delta_independent) {
