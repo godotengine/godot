@@ -45,6 +45,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
@@ -61,8 +62,6 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/animation.h"
 #include "servers/display/display_server.h"
-
-#include "modules/regex/regex.h"
 
 // PRIVATE METHODS
 

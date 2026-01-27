@@ -61,6 +61,53 @@ if env["brotli"] and env["builtin_brotli"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)
 
+# PCRE2
+if env["builtin_pcre2"]:
+    thirdparty_pcre2_dir = "#thirdparty/pcre2/src/"
+    thirdparty_pcre2_sources = [
+        "pcre2_auto_possess.c",
+        "pcre2_chartables.c",
+        "pcre2_chkdint.c",
+        "pcre2_compile.c",
+        "pcre2_compile_cgroup.c",
+        "pcre2_compile_class.c",
+        "pcre2_config.c",
+        "pcre2_context.c",
+        "pcre2_convert.c",
+        "pcre2_dfa_match.c",
+        "pcre2_error.c",
+        "pcre2_extuni.c",
+        "pcre2_find_bracket.c",
+        "pcre2_jit_compile.c",
+        "pcre2_maketables.c",
+        "pcre2_match.c",
+        "pcre2_match_data.c",
+        "pcre2_match_next.c",
+        "pcre2_newline.c",
+        "pcre2_ord2utf.c",
+        "pcre2_pattern_info.c",
+        "pcre2_script_run.c",
+        "pcre2_serialize.c",
+        "pcre2_string_utils.c",
+        "pcre2_study.c",
+        "pcre2_substitute.c",
+        "pcre2_substring.c",
+        "pcre2_tables.c",
+        "pcre2_ucd.c",
+        "pcre2_valid_utf.c",
+        "pcre2_xclass.c",
+    ]
+
+    thirdparty_pcre2_sources = [thirdparty_pcre2_dir + file for file in thirdparty_pcre2_sources]
+
+    thirdparty_pcre2_flags = ["PCRE2_STATIC", "HAVE_CONFIG_H", "SUPPORT_UNICODE", ("PCRE2_CODE_UNIT_WIDTH", 32)]
+    if env["builtin_pcre2_with_jit"]:
+        thirdparty_pcre2_flags.append("SUPPORT_JIT")
+    env_thirdparty.Append(CPPDEFINES=thirdparty_pcre2_flags)
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_pcre2_dir])
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_pcre2_sources)
+
 # Clipper2 Thirdparty source files used for polygon and polyline boolean operations.
 if env["builtin_clipper2"]:
     thirdparty_clipper_dir = "#thirdparty/clipper2/"
