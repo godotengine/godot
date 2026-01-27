@@ -31,14 +31,12 @@
 #include "os_web.h"
 
 #include "api/javascript_bridge_singleton.h"
-#include "display_server_web.h"
-#include "godot_js.h"
-#include "ip_web.h"
-#include "net_socket_web.h"
-
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/config_file.h"
 #include "core/io/file_access.h"
+#include "core/io/file_access_pack.h"
+#include "core/io/json.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -46,6 +44,11 @@
 #include "main/main.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
+
+#include "display_server_web.h"
+#include "godot_js.h"
+#include "ip_web.h"
+#include "net_socket_web.h"
 
 #include <dlfcn.h>
 #include <emscripten.h>
@@ -161,6 +164,70 @@ int OS_Web::get_default_thread_pool_size() const {
 #endif
 }
 
+Error OS_Web::async_pck_install_file(const String &p_path) const {
+	String path = ResourceUID::ensure_path(p_path);
+	ERR_FAIL_COND_V_MSG(!path.begins_with("res://"), ERR_FILE_BAD_PATH, vformat(R"*(Not able to install "%s" from a ".asyncpck".)*", path));
+
+	if (FileAccess::exists(path)) {
+		return OK;
+	}
+
+	Error err;
+	String pck_path = async_pck_get_async_pck_path(path, &err);
+	if (err != OK) {
+		return err;
+	}
+
+	String pck_base_dir = pck_path.get_base_dir();
+	err = static_cast<Error>(godot_js_os_asyncpck_install_file(pck_base_dir.utf8().get_data(), path.utf8().get_data()));
+	return err;
+}
+
+Dictionary OS_Web::async_pck_install_file_get_status(const String &p_path) const {
+	String path = ResourceUID::ensure_path(p_path);
+
+	if (FileAccess::exists(path)) {
+		Dictionary status;
+		status["files"] = Dictionary();
+		status["size"] = 0;
+		status["progress"] = 0;
+		status["progress_ratio"] = 1;
+		status["status"] = "STATUS_INSTALLED";
+		return status;
+		return Dictionary();
+	}
+
+	Error err;
+	String pck_path = async_pck_get_async_pck_path(path, &err);
+	if (err != OK) {
+		Dictionary status;
+		status["files"] = Dictionary();
+		status["size"] = 0;
+		status["progress"] = 0;
+		status["progress_ratio"] = 1;
+		status["status"] = "STATUS_ERROR";
+		status["errors"] = Dictionary();
+		return status;
+	}
+
+	String pck_base_dir = pck_path.get_base_dir();
+
+	int32_t status_text_length = 0;
+	char *status_text_ptr = godot_js_os_asyncpck_install_file_get_status(pck_base_dir.utf8().get_data(), path.utf8().get_data(), &status_text_length);
+	if (status_text_ptr == nullptr || status_text_length <= 0) {
+		Dictionary status;
+		status["files"] = Dictionary();
+		status["size"] = 0;
+		status["progress"] = 0;
+		status["progress_ratio"] = 1;
+		status["status"] = "STATUS_ERROR";
+		status["errors"] = Dictionary();
+		return status;
+	}
+	Dictionary status = JSON::parse_string(String::utf8(status_text_ptr, status_text_length));
+	return status;
+}
+
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
@@ -264,6 +331,35 @@ void OS_Web::update_pwa_state_callback() {
 	}
 }
 
+char *OS_Web::get_config_as_json_callback(const char *p_config_file_data_ptr) {
+	ERR_FAIL_NULL_V(p_config_file_data_ptr, nullptr);
+	String config_file_data_as_string = String::utf8(p_config_file_data_ptr);
+	ERR_FAIL_COND_V(config_file_data_as_string.is_empty(), nullptr);
+
+	Ref<ConfigFile> config_file;
+	config_file.instantiate();
+	config_file->parse(config_file_data_as_string);
+
+	Dictionary json_config_file_data;
+	for (const String &section : config_file->get_sections()) {
+		Dictionary sectionData;
+		for (const String &key : config_file->get_section_keys(section)) {
+			sectionData[key] = config_file->get_value(section, key);
+		}
+		json_config_file_data[section] = sectionData;
+	}
+	String json_config_file_data_as_string = JSON::stringify(json_config_file_data, String(" ").repeat(2));
+	size_t json_config_file_data_len = json_config_file_data_as_string.utf8().size();
+	char *returned_json_config_file_data_ptr = (char *)memalloc(sizeof(char) * json_config_file_data_len);
+	ERR_FAIL_NULL_V(returned_json_config_file_data_ptr, nullptr);
+	memcpy(returned_json_config_file_data_ptr, json_config_file_data_as_string.utf8().ptr(), json_config_file_data_len);
+	godot_js_string *js_string = (godot_js_string *)memalloc(sizeof(godot_js_string));
+	js_string->length = json_config_file_data_len;
+	js_string->data = returned_json_config_file_data_ptr;
+	ERR_FAIL_COND_V(js_string->data != returned_json_config_file_data_ptr, nullptr);
+	return returned_json_config_file_data_ptr;
+}
+
 void OS_Web::force_fs_sync() {
 	if (is_userfs_persistent()) {
 		idb_needs_sync = true;
@@ -303,6 +399,7 @@ OS_Web::OS_Web() {
 	setenv("LANG", locale_ptr, true);
 
 	godot_js_pwa_cb(&OS_Web::update_pwa_state_callback);
+	godot_js_runtime_set_get_config_file_as_json_cb(&OS_Web::get_config_as_json_callback);
 
 	if (AudioDriverWeb::is_available()) {
 		audio_drivers.push_back(memnew(AudioDriverWorklet));

@@ -30,13 +30,10 @@
 
 #pragma once
 
+#include "core/io/file_access.h"
+#include "editor/export/editor_export_preset.h"
 #include "editor_http_server.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
-#include "core/io/stream_peer_tls.h"
-#include "core/io/tcp_server.h"
-#include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_platform.h"
@@ -47,10 +44,96 @@ class ImageTexture;
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);
 
+	static inline const String PREFIX_RES = "res://";
+	static inline const String SUFFIX_IMPORT = ".import";
+	static inline const String SUFFIX_REMAP = ".remap";
+
+	static inline const String PATH_PROJECT_BINARY = "res://project.binary";
+	static inline const String PATH_ASSETS_SPARSEPCK = "res://assets.sparsepck";
+	static inline const String PATH_GODOT_UID_CACHE = "res://.godot/uid_cache.bin";
+	static inline const String PATH_GODOT_GLOBAL_SCRIPT_CLASS_CACHE = "res://.godot/global_script_class_cache.cfg";
+
 	enum RemoteDebugState {
 		REMOTE_DEBUG_STATE_UNAVAILABLE,
 		REMOTE_DEBUG_STATE_AVAILABLE,
 		REMOTE_DEBUG_STATE_SERVING,
+	};
+
+	enum AsyncLoadSetting {
+		ASYNC_LOAD_SETTING_LOAD_EVERYTHING = 0,
+		ASYNC_LOAD_SETTING_MINIMUM_INITIAL_RESOURCES = 1,
+	};
+
+	struct ExportData {
+		struct File {
+			bool exists = false;
+			String resource_path;
+			String absolute_path;
+			uint32_t size = 0;
+			String md5;
+			String sha256;
+
+			Dictionary get_as_dictionary() const {
+				Dictionary data;
+				data["size"] = size;
+				// data["md5"] = md5;
+				// data["sha256"] = sha256;
+				return data;
+			}
+		};
+
+		struct ResourceData {
+			struct SizeComparator {
+				_ALWAYS_INLINE_ bool operator()(const ExportData::ResourceData *p_a, const ExportData::ResourceData *p_b) const {
+					return p_a->get_size() < p_b->get_size();
+				}
+			};
+			struct FileNoCaseComparator {
+				_ALWAYS_INLINE_ bool operator()(const ExportData::ResourceData *p_a, const ExportData::ResourceData *p_b) const {
+					return ::FileNoCaseComparator()(p_a->path, p_b->path);
+				}
+			};
+
+			String path;
+			File native_file;
+			File remap_file;
+			File remapped_file;
+			LocalVector<const ResourceData *> dependencies;
+
+			uint32_t get_size() const;
+			Dictionary get_as_resource_dictionary() const;
+			String get_resource_path() const;
+			void flatten_dependencies(LocalVector<const ResourceData *> *p_deps) const;
+		};
+
+		List<ResourceData> dependencies;
+		HashMap<String, ResourceData *> dependencies_map;
+		EditorExportPlatformData::PackData pack_data;
+		String assets_directory;
+		String libraries_directory;
+		bool debug;
+		LocalVector<String> libraries;
+		Ref<EditorExportPreset> preset;
+
+		HashSet<String> exported_files;
+
+		HashSet<String> get_features_set() const;
+		String res_to_global(const String &p_res_path) const {
+			ERR_FAIL_COND_V_MSG(!p_res_path.begins_with(PREFIX_RES), String(), vformat(R"*(Cannot convert non-resource path ("%s") to global.)*", p_res_path));
+			String res_path = simplify_path(p_res_path);
+			return assets_directory.path_join(res_path.trim_prefix(PREFIX_RES));
+		}
+		String global_to_res(const String &p_global_path) const {
+			return "res://" + p_global_path.trim_prefix(assets_directory.trim_suffix("/") + "/");
+		}
+		String global_to_local(const String &p_global_path) const {
+			return p_global_path.trim_prefix(assets_directory.get_base_dir());
+		}
+
+		ResourceData *add_dependency(const String &p_path, const HashSet<String> &p_features_set, Ref<FileAccess> p_uid_cache, /* bool p_encrypt = false, */ Error *r_error = nullptr);
+		void update_file(File *p_file, const String &p_resource_path);
+		Dictionary get_deps_json_dictionary(const ResourceData *p_dependency);
+		Error save_deps_json(const ResourceData *p_dependency);
 	};
 
 	Ref<ImageTexture> logo;
@@ -107,15 +190,21 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
 	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes, const Dictionary &p_async_pck_data_jsondeps_json);
+
 	Error _add_manifest_icon(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
 
-	Error _export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
+	Error _run_export_project(const Ref<EditorExportPreset> &p_preset, int p_debug_flags);
 	Error _launch_browser(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
 	Error _start_server(const String &p_bind_host, uint16_t p_bind_port, bool p_use_tls);
 	Error _stop_server();
+
+	void _add_resource_data_tree_message(LocalVector<const ExportData::ResourceData *> &p_resource_data_entries, const String &p_context, bool p_sort_with_file_no_case_comparator = false, bool p_sort_with_size_comparator = false);
+
+	static HashSet<String> _get_mandatory_initial_load_files(const Ref<EditorExportPreset> &p_preset);
+	static Error _rename_and_store_file_in_async_pck(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const PackedByteArray &p_key, uint64_t p_seed, bool p_delta);
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -151,5 +240,4 @@ public:
 	String get_debug_protocol() const override { return "ws://"; }
 
 	virtual void initialize() override;
-	~EditorExportPlatformWeb();
 };

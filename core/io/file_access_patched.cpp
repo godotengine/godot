@@ -44,7 +44,7 @@ Error FileAccessPatched::_apply_patch() const {
 
 	for (int i = 0; i < delta_patches.size(); ++i) {
 		const PackedData::PackedFile &delta_patch = delta_patches[i];
-		ERR_FAIL_COND_V(delta_patch.bundle, FAILED);
+		ERR_FAIL_COND_V(delta_patch.properties.has_flag(PackedData::PackedFile::PackedFileProperty::PACKED_FILE_PROPERTY_BUNDLED), FAILED);
 
 		Error err = OK;
 

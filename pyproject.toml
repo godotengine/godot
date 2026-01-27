@@ -68,6 +68,13 @@ skip = [
 	"platform/android/java/lib/src/main/java/com/*",
 	"platform/web/package-lock.json",
 ]
+ignore-regex = [
+	# => `\\b([lpr][A-Z]+?.*?)\\b`
+	#    JavaScript variables (pEvent, pResolve) that gets matched as misspellings
+	#    (i.e. pEvent ==> prevent, pReject ==> project, prefect).
+
+	"\\b([lpr][A-Z]+?.*?)\\b"
+]
 ignore-words-list = [
 	"breaked",
 	"cancelled",

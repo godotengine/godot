@@ -46,7 +46,7 @@
 Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
 		return ERR_CANT_CREATE;
 	}
 
@@ -68,7 +68,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	if (!template_path.is_empty()) {
 		String exe_arch = _get_exe_arch(template_path);
 		if (arch != exe_arch) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
 			return ERR_CANT_CREATE;
 		}
 	}
@@ -96,7 +96,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
 			return ERR_CANT_CREATE;
 		}
 		if (DirAccess::exists(tmp_dir_path)) {
@@ -122,7 +122,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
 		FileAccess::set_unix_permissions(scr_path, 0755);
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
 		}
 	}
 
@@ -297,7 +297,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -305,7 +305,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	{
 		uint32_t magic = f->get_32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -315,7 +315,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	int bits = f->get_8() * 32;
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
 	}
 
 	// Get info about the section header table.
@@ -393,7 +393,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	memfree(strings);
 
 	if (!found) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -530,7 +530,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 		}
 	}
 
-	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
+	const bool use_remote = p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_DUMB_CLIENT);
 	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");

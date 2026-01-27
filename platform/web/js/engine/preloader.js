@@ -1,47 +1,70 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+	const DOWNLOAD_ATTEMPTS_MAX = 4;
+	const loadingFiles = {};
+	const lastProgress = { loaded: 0, total: 0 };
+	let progressFunc = null;
+	let concurrencyQueueManager = null;
+	let filesSizeTotal = 0;
+
+	this.preloadedFiles = [];
+
 	function getTrackedResponse(response, load_status) {
-		function onloadprogress(reader, controller) {
-			return reader.read().then(function (result) {
-				if (load_status.done) {
-					return Promise.resolve();
-				}
-				if (result.value) {
-					controller.enqueue(result.value);
-					load_status.loaded += result.value.length;
-				}
-				if (!result.done) {
-					return onloadprogress(reader, controller);
-				}
+		async function onLoadProgress(reader, controller) {
+			const { done, value } = await reader.read();
+			if (load_status.done) {
+				return Promise.resolve();
+			}
+			if (done) {
 				load_status.done = true;
 				return Promise.resolve();
-			});
+			}
+			controller.enqueue(value);
+			load_status.loaded += value.byteLength;
+			return onLoadProgress(reader, controller);
 		}
+
 		const reader = response.body.getReader();
 		return new Response(new ReadableStream({
-			start: function (controller) {
-				onloadprogress(reader, controller).then(function () {
+			start: async function (controller) {
+				try {
+					await onLoadProgress(reader, controller);
+				} finally {
 					controller.close();
-				});
+				}
 			},
 		}), { headers: response.headers });
 	}
 
-	function loadFetch(file, tracker, fileSize, raw) {
-		tracker[file] = {
-			total: fileSize || 0,
-			loaded: 0,
-			done: false,
-		};
-		return fetch(file).then(function (response) {
+	async function loadFetch(file, fileSize, raw) {
+		if (file in loadingFiles) {
+			loadingFiles[file].requested = true;
+		} else {
+			loadingFiles[file] = {
+				file,
+				total: fileSize || 0,
+				loaded: 0,
+				requested: true,
+				done: false,
+			};
+		}
+
+		try {
+			const response = await fetch(file);
+
 			if (!response.ok) {
-				return Promise.reject(new Error(`Failed loading file '${file}'`));
+				throw new Error(`Got response ${response.status}: ${response.statusText}`);
 			}
-			const tr = getTrackedResponse(response, tracker[file]);
+			const tr = getTrackedResponse(response, loadingFiles[file]);
 			if (raw) {
 				return Promise.resolve(tr);
 			}
+
 			return tr.arrayBuffer();
-		});
+		} catch (error) {
+			const newError = new Error(`loadFetch for "${file}" failed:`);
+			newError.cause = error;
+			throw newError;
+		}
 	}
 
 	function retry(func, attempts = 1) {
@@ -58,64 +81,79 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		return func().catch(onerror);
 	}
 
-	const DOWNLOAD_ATTEMPTS_MAX = 4;
-	const loadingFiles = {};
-	const lastProgress = { loaded: 0, total: 0 };
-	let progressFunc = null;
-
-	const animateProgress = function () {
+	this.animateProgress = () => {
 		let loaded = 0;
 		let total = 0;
-		let totalIsValid = true;
-		let progressIsFinal = true;
+		const requestedFiles = Object.values(loadingFiles)
+			.filter((pLoadingFile) => pLoadingFile.requested);
+		let progressIsFinal = false;
+		if (requestedFiles.length > 0 && requestedFiles.every((pRequestedFile) => pRequestedFile.done)) {
+			progressIsFinal = true;
+		}
 
-		Object.keys(loadingFiles).forEach(function (file) {
-			const stat = loadingFiles[file];
-			if (!stat.done) {
+		// eslint-disable-next-line no-unused-vars
+		for (const [_file, status] of Object.entries(loadingFiles)) {
+			if (!status.requested) {
+				continue;
+			}
+
+			if (!status.done) {
 				progressIsFinal = false;
 			}
-			if (!totalIsValid || stat.total === 0) {
-				totalIsValid = false;
-				total = 0;
-			} else {
-				total += stat.total;
-			}
-			loaded += stat.loaded;
-		});
-		if (loaded !== lastProgress.loaded || total !== lastProgress.total) {
+
+			total += status.total;
+			loaded += status.loaded;
+		}
+
+		if (loaded !== lastProgress.loaded || (!filesSizeTotal && total !== lastProgress.total)) {
 			lastProgress.loaded = loaded;
 			lastProgress.total = total;
+
 			if (typeof progressFunc === 'function') {
 				progressFunc(loaded, total);
 			}
 		}
 		if (!progressIsFinal) {
-			requestAnimationFrame(animateProgress);
+			window.requestAnimationFrame(() => this.animateProgress());
 		}
 	};
-
-	this.animateProgress = animateProgress;
 
 	this.setProgressFunc = function (callback) {
 		progressFunc = callback;
 	};
 
-	this.loadPromise = function (file, fileSize, raw = false) {
-		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw), DOWNLOAD_ATTEMPTS_MAX);
+	this.loadPromise = async function (file, fileSize, raw = false) {
+		if (concurrencyQueueManager == null) {
+			const { ConcurrencyQueueManager } = await import('@godotengine/utils/concurrencyQueueManager');
+			// Another `loadPromise()` could have ended while awaiting.
+			if (concurrencyQueueManager == null) {
+				concurrencyQueueManager = new ConcurrencyQueueManager();
+			}
+		}
+
+		try {
+			return await concurrencyQueueManager.queue(() => retry(
+				loadFetch.bind(null, file, fileSize, raw),
+				DOWNLOAD_ATTEMPTS_MAX
+			));
+		} catch (error) {
+			const newError = new Error(`An error occurred while running \`Preloader.loadPromise("${file}", ${fileSize}, raw = ${raw})\``);
+			newError.cause = error;
+			throw error;
+		}
 	};
 
-	this.preloadedFiles = [];
-	this.preload = function (pathOrBuffer, destPath, fileSize) {
+	this.preload = async (pathOrBuffer, destPath, fileSize) => {
 		let buffer = null;
 		if (typeof pathOrBuffer === 'string') {
 			const me = this;
-			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
-				me.preloadedFiles.push({
-					path: destPath || pathOrBuffer,
-					buffer: buf,
-				});
-				return Promise.resolve();
+			const buf = await this.loadPromise(pathOrBuffer, fileSize);
+			me.preloadedFiles.push({
+				path: destPath || pathOrBuffer,
+				buffer: buf,
+				fileSize,
 			});
+			return;
 		} else if (pathOrBuffer instanceof ArrayBuffer) {
 			buffer = new Uint8Array(pathOrBuffer);
 		} else if (ArrayBuffer.isView(pathOrBuffer)) {
@@ -125,9 +163,28 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			this.preloadedFiles.push({
 				path: destPath,
 				buffer: pathOrBuffer,
+				fileSize,
 			});
-			return Promise.resolve();
+			return;
 		}
-		return Promise.reject(new Error('Invalid object for preloading'));
+		throw new Error('Invalid object for preloading');
+	};
+
+	this.init = (pOptions = {}) => {
+		const {
+			fileSizes: loadingFileSizes = {},
+		} = pOptions;
+
+		for (const [file, fileSize] of Object.entries(loadingFileSizes)) {
+			loadingFiles[file] = {
+				file,
+				total: fileSize || 0,
+				loaded: 0,
+				requested: false,
+				done: false,
+			};
+			filesSizeTotal += fileSize;
+		}
+		filesSizeTotal = Object.values(loadingFileSizes).reduce((pAccumulator, pFileSize) => pAccumulator + pFileSize, 0);
 	};
 };

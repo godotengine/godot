@@ -821,6 +821,39 @@ void OS::benchmark_dump() {
 #endif
 }
 
+String OS::async_pck_get_async_pck_path(const String &p_path, Error *r_error) const {
+	Error err = OK;
+	String async_path;
+	String pck_path;
+
+#define RETURN_ERROR          \
+	if (r_error != nullptr) { \
+		*r_error = err;       \
+	}                         \
+	return pck_path
+
+#define _ERR_FAIL_COND(m_cond, m_err) \
+	if (unlikely(m_cond)) {           \
+		err = m_err;                  \
+		RETURN_ERROR;                 \
+	}                                 \
+	(void)0
+
+	_ERR_FAIL_COND(p_path.is_empty(), ERR_INVALID_PARAMETER);
+	_ERR_FAIL_COND(FileAccess::exists(p_path), ERR_INVALID_PARAMETER);
+
+	async_path = PackedData::get_singleton()->get_async_path(p_path);
+	_ERR_FAIL_COND(async_path.is_empty(), ERR_CANT_RESOLVE);
+
+	pck_path = PackedData::get_singleton()->get_file_async_pack_path(async_path);
+	_ERR_FAIL_COND(pck_path.is_empty(), ERR_CANT_RESOLVE);
+
+	RETURN_ERROR;
+
+#undef _ERR_COND
+#undef RETURN_ERROR
+}
+
 OS::OS() {
 	singleton = this;
 

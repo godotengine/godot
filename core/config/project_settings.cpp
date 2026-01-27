@@ -582,9 +582,15 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 	}
 
-	if (p_pack == "res://") {
+	String pack = p_pack.trim_suffix("/");
+
+	if (pack == "res://") {
 		// Loading the resource directory as a pack source is reserved for internal use only.
 		return false;
+	}
+
+	if (pack.ends_with(".asyncpck")) {
+		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceAsyncPCK));
 	}
 
 	if (!p_main_pack && !using_datapack && !OS::get_singleton()->get_resource_dir().is_empty()) {
@@ -596,7 +602,7 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		using_datapack = true;
 	}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	bool ok = PackedData::get_singleton()->add_pack(pack, p_replace_files, p_offset) == OK;
 	if (!ok) {
 		return false;
 	}
@@ -755,7 +761,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 	}
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 	// Attempt to load sparse PCK assets.
 	_load_resource_pack("res://assets.sparsepck", false, 0, true);
 #endif

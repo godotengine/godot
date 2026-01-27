@@ -78,36 +78,38 @@ const Engine = (function () {
 				if (initPromise) {
 					return initPromise;
 				}
+
+				preloader.init({
+					fileSizes: this.config.fileSizes,
+				});
+
 				if (loadPromise == null) {
 					if (!basePath) {
-						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
+						const initPromiseError = new Error('A base path must be provided when calling `init` and the engine is not loaded.');
+						initPromise = Promise.reject(initPromiseError);
 						return initPromise;
 					}
+
 					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
 				}
-				const me = this;
-				function doInit(promise) {
-					// Care! Promise chaining is bogus with old emscripten versions.
-					// This caused a regression with the Mono build (which uses an older emscripten version).
-					// Make sure to test that when refactoring.
-					return new Promise(function (resolve, reject) {
-						promise.then(function (response) {
-							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
-								const paths = me.config.persistentPaths;
-								module['initFS'](paths).then(function (err) {
-									me.rtenv = module;
-									if (me.config.unloadAfterInit) {
-										Engine.unload();
-									}
-									resolve();
-								});
-							});
-						});
-					});
-				}
+
+				const doInit = async () => {
+					const loadResponse = await loadPromise;
+					const clonedResponse = new Response(loadResponse.clone().body, { 'headers': [['content-type', 'application/wasm']] });
+					const module = await Godot(this.config.getModuleConfig(loadPath, clonedResponse));
+					const paths = this.config.persistentPaths;
+					const err = await module['initFS'](paths);
+					if (err != null) {
+						window['console'].error('Error while initializing Godot:', err);
+					}
+					this.rtenv = module;
+					if (this.config.unloadAfterInit) {
+						Engine.unload();
+					}
+				};
+
 				preloader.setProgressFunc(this.config.onProgress);
-				initPromise = doInit(loadPromise);
+				initPromise = doInit();
 				return initPromise;
 			},
 
@@ -140,44 +142,55 @@ const Engine = (function () {
 			 *
 			 * Fails if a canvas cannot be found on the page, or not specified in the configuration.
 			 *
+			 * @async
 			 * @param {EngineConfig} override An optional configuration override.
-			 * @return {Promise} Promise that resolves once the engine started.
+			 * @return {void}
 			 */
-			start: function (override) {
+			start: async function (override) {
 				this.config.update(override);
 				const me = this;
-				return me.init().then(function () {
-					if (!me.rtenv) {
-						return Promise.reject(new Error('The engine must be initialized before it can be started'));
-					}
+				await me.init();
 
-					let config = {};
-					try {
-						config = me.config.getGodotConfig(function () {
-							me.rtenv = null;
-						});
-					} catch (e) {
-						return Promise.reject(e);
-					}
-					// Godot configuration.
-					me.rtenv['initConfig'](config);
+				if (!me.rtenv) {
+					throw new Error('The engine must be initialized before it can be started');
+				}
 
-					// Preload GDExtension libraries.
-					if (me.config.gdextensionLibs.length > 0 && !me.rtenv['loadDynamicLibrary']) {
-						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
-							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
-					}
-					return new Promise(function (resolve, reject) {
-						for (const file of preloader.preloadedFiles) {
-							me.rtenv['copyToFS'](file.path, file.buffer);
-						}
-						preloader.preloadedFiles.length = 0; // Clear memory
-						me.rtenv['callMain'](me.config.args);
-						initPromise = null;
-						me.installServiceWorker();
-						resolve();
+				let config = {};
+				try {
+					config = me.config.getGodotConfig(function () {
+						me.rtenv = null;
 					});
-				});
+				} catch (err) {
+					const newErr = new Error('Error geeting Godot config.');
+					newErr.cause = err;
+					throw newErr;
+				}
+
+				// Godot configuration.
+				me.rtenv['initConfig'](config);
+				await me.rtenv['initOS']();
+
+				// Preload GDExtension libraries.
+				if (me.config.gdextensionLibs.length > 0 && !me.rtenv['loadDynamicLibrary']) {
+					throw new Error(
+						'GDExtension libraries are not supported by this engine version. '
+						+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'
+					);
+				}
+
+				try {
+					for (const file of preloader.preloadedFiles) {
+						me.rtenv['copyToFS'](file.path, file.buffer);
+					}
+					preloader.preloadedFiles.length = 0; // Clear memory
+					me.rtenv['callMain'](me.config.args);
+					initPromise = null;
+					me.installServiceWorker();
+				} catch (err) {
+					const newErr = new Error('Error while initializing.');
+					newErr.cause = err;
+					throw newErr;
+				}
 			},
 
 			/**
@@ -193,20 +206,60 @@ const Engine = (function () {
 			 * @param {EngineConfig} override An optional configuration override.
 			 * @return {Promise} Promise that resolves once the game started.
 			 */
-			startGame: function (override) {
+			startGame: async function (override) {
 				this.config.update(override);
+				this.insertImportMap();
+
 				// Add main-pack argument.
 				const exe = this.config.executable;
-				const pack = this.config.mainPack || `${exe}.pck`;
+				let pack = this.config.mainPack || `${exe}.pck`;
+				if (pack.endsWith('/')) {
+					pack = pack.substring(0, pack.length - 1);
+				}
+
 				this.config.args = ['--main-pack', pack].concat(this.config.args);
 				// Start and init with execName as loadPath if not inited.
 				const me = this;
-				return Promise.all([
-					this.init(exe),
-					this.preloadFile(pack, pack),
-				]).then(function () {
-					return me.start.apply(me);
-				});
+				const filesToPreload = [];
+
+				if (pack.endsWith('.asyncpck')) {
+					if (this.config.asyncPckData == null) {
+						throw new Error('No Main Scene dependencies found.');
+					}
+
+					const asyncPckData = this.config['asyncPckData'];
+					const asyncPckAssetsDir = asyncPckData['directories']['assets'];
+
+					const asyncPckInitialLoadFilesSet = new Set();
+					const asyncPckDataInitialLoad = asyncPckData['initialLoad'];
+					for (const value of Object.values(asyncPckDataInitialLoad)) {
+						for (const resourcePath of Object.values(value['files'])) {
+							asyncPckInitialLoadFilesSet.add(resourcePath);
+						}
+					}
+
+					const asyncPckInitialLoadFiles = Array.from(asyncPckInitialLoadFilesSet);
+
+					const resToLocal = (pPath) => {
+						const PREFIX_RES = 'res://';
+						let path = pPath;
+						if (path.startsWith(PREFIX_RES)) {
+							path = path.substring('res://'.length);
+						}
+						return `${asyncPckAssetsDir}/${path}`;
+					};
+
+					for (const resourcePath of asyncPckInitialLoadFiles) {
+						const pathToPreload = resToLocal(resourcePath);
+						filesToPreload.push(this.preloadFile(pathToPreload, pathToPreload));
+					}
+				} else {
+					filesToPreload.push(this.preloadFile(pack, pack));
+				}
+
+				await Promise.all([this.init(exe), ...filesToPreload]);
+
+				return me.start.apply(me);
 			},
 
 			/**
@@ -248,6 +301,27 @@ const Engine = (function () {
 					}
 				}
 				return Promise.resolve();
+			},
+
+			/**
+			 * Install the JavaScript module import map.
+			 */
+			insertImportMap() {
+				const IMPORTMAP_ID = 'godotengine-importmap-engine';
+				if (document.getElementById(IMPORTMAP_ID)) {
+					return;
+				}
+				const scriptElement = document.createElement('script');
+				scriptElement.id = IMPORTMAP_ID;
+				scriptElement.type = 'importmap';
+				const scriptElementContent = {
+					imports: {
+						'@godotengine/utils/concurrencyQueueManager': `./${this.config.executable}.utils.concurrency.js`,
+						'@godotengine/utils/wait': `./${this.config.executable}.utils.wait.js`,
+					},
+				};
+				scriptElement.textContent = JSON.stringify(scriptElementContent, null, 2);
+				document.head.insertAdjacentElement('beforeend', scriptElement);
 			},
 		};
 

@@ -140,6 +140,16 @@ module.exports = [
 		},
 	},
 
+	// module files (browser)
+	{
+		files: ['js/modules/**/*.js', 'platform/web/js/modules/**/*.js'],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+			},
+		},
+	},
+
 	// libraries and modules (browser)
 	{
 		files: [

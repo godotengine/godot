@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/config/engine.h"
+#include "core/io/file_access_pack.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
@@ -135,6 +136,8 @@ protected:
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args);
 
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
+
+	virtual String async_pck_get_async_pck_path(const String &p_path, Error *r_error) const;
 
 public:
 	typedef int64_t ProcessID;
@@ -387,6 +390,23 @@ public:
 	};
 
 	virtual PreferredTextureFormat get_preferred_texture_format() const;
+
+	virtual bool async_pck_is_supported() const { return false; }
+	virtual bool async_pck_is_file_installable(const String &p_path) const {
+		return PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_async_path(p_path);
+	}
+	virtual Error async_pck_install_file(const String &p_path) const {
+		return FAILED;
+	}
+	virtual Dictionary async_pck_install_file_get_status(const String &p_path) const {
+		Dictionary status;
+		status["files"] = Dictionary();
+		status["size"] = 0;
+		status["progress"] = 0;
+		status["progress_ratio"] = 0;
+		status["status"] = "STATUS_IDLE";
+		return status;
+	}
 
 	// Load GDExtensions specific to this platform.
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.

@@ -138,7 +138,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 			valid_icon_count++;
 		} else {
 			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Icon size \"%d\" is missing."), size));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Icon size \"%d\" is missing."), size));
 		}
 	}
 	ERR_FAIL_COND_V(valid_icon_count == 0, ERR_CANT_OPEN);
@@ -212,7 +212,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	} else {
 		String exe_arch = _get_exe_arch(template_path);
 		if (arch != exe_arch) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Mismatching custom export template executable architecture: found \"%s\", expected \"%s\"."), exe_arch, arch));
 			return ERR_CANT_CREATE;
 		}
 	}
@@ -235,7 +235,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
 		if (tmp_app_dir.is_null()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not create and open the directory: \"%s\""), tmp_dir_path));
 			return ERR_CANT_CREATE;
 		}
 		if (DirAccess::exists(tmp_dir_path)) {
@@ -321,7 +321,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(path.get_base_dir());
 		err = tmp_dir->rename(pck_path, path);
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
 		}
 	}
 
@@ -526,7 +526,7 @@ Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_pr
 	String tmp_icon_path = EditorPaths::get_singleton()->get_temp_dir().path_join("_tmp.ico");
 	if (!icon_path.is_empty()) {
 		if (_process_icon(p_preset, icon_path, tmp_icon_path) != OK) {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
 			icon_path = String();
 		}
 	}
@@ -546,7 +546,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #ifdef WINDOWS_ENABLED
 	String signtool_path = EDITOR_GET("export/windows/signtool");
 	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find signtool executable at \"%s\"."), signtool_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find signtool executable at \"%s\"."), signtool_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path.is_empty()) {
@@ -555,7 +555,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #else
 	String signtool_path = EDITOR_GET("export/windows/osslsigncode");
 	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find osslsigncode executable at \"%s\"."), signtool_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find osslsigncode executable at \"%s\"."), signtool_path));
 		return ERR_FILE_NOT_FOUND;
 	}
 	if (signtool_path.is_empty()) {
@@ -575,7 +575,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 			args.push_back("/f");
 			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
 		}
 	} else if (id_type == 2) { //Windows certificate store
@@ -583,11 +583,11 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 			args.push_back("/sha1");
 			args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 		} else {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 			return FAILED;
 		}
 	} else {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid identity type."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid identity type."));
 		return FAILED;
 	}
 #else
@@ -596,7 +596,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 		args.push_back("-pkcs12");
 		args.push_back(p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID));
 	} else {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 		return FAILED;
 	}
 #endif
@@ -628,7 +628,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 			args.push_back(p_preset->get("codesign/timestamp_server_url"));
 #endif
 		} else {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid timestamp server."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid timestamp server."));
 			return FAILED;
 		}
 	}
@@ -677,9 +677,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	Error err = OS::get_singleton()->execute(signtool_path, args, &str, nullptr, true);
 	if (err != OK || str.contains("not found") || str.contains("not recognized")) {
 #ifdef WINDOWS_ENABLED
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > signtool), or disable \"Codesign\" in the export preset."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > signtool), or disable \"Codesign\" in the export preset."));
 #else
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start osslsigncode executable. Configure signtool path in the Editor Settings (Export > Windows > osslsigncode), or disable \"Codesign\" in the export preset."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start osslsigncode executable. Configure signtool path in the Editor Settings (Export > Windows > osslsigncode), or disable \"Codesign\" in the export preset."));
 #endif
 		return err;
 	}
@@ -690,7 +690,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 #else
 	if (str.contains("Failed")) {
 #endif
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Signtool failed to sign executable: %s."), str));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Signtool failed to sign executable: %s."), str));
 		return FAILED;
 	}
 
@@ -699,13 +699,13 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 
 	err = tmp_dir->remove(p_path);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Failed to remove temporary file \"%s\"."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Failed to remove temporary file \"%s\"."), p_path));
 		return err;
 	}
 
 	err = tmp_dir->rename(p_path + "_signed", p_path);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Failed to rename temporary file \"%s\"."), p_path + "_signed"));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Failed to rename temporary file \"%s\"."), p_path + "_signed"));
 		return err;
 	}
 #endif
@@ -807,13 +807,13 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data.
 
 	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size.
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
 		return ERR_INVALID_DATA;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -825,7 +825,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
 		if (magic != 0x00004550) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -910,7 +910,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	f->close();
 
 	if (pck_old_pos == -1) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -1047,7 +1047,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 		}
 	}
 
-	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
+	const bool use_remote = p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_DUMB_CLIENT);
 	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");

@@ -224,6 +224,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _tab_changed(int);
 
+	void _on_result_dialog_custom_action(const StringName &p_action);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

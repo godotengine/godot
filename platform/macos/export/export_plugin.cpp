@@ -961,13 +961,13 @@ Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExpor
 
 	Error err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not start 'actool' executable."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not start 'actool' executable."));
 		return err;
 	}
 	PList info_plist;
 	if (!info_plist.load_string(str, err_str)) {
 		print_verbose(str);
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not read 'actool' version."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not read 'actool' version."));
 		return err;
 	}
 	if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("com.apple.actool.version")) {
@@ -975,7 +975,7 @@ Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExpor
 		if (dict->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && dict->data_dict.has("short-bundle-version")) {
 			float version = String::utf8(dict->data_dict["short-bundle-version"]->data_string.get_data()).to_float();
 			if (version < 26.0) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), vformat(TTR("At least version 26.0 of 'actool' is required (version %f found)."), version));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), vformat(TTR("At least version 26.0 of 'actool' is required (version %f found)."), version));
 				return ERR_UNAVAILABLE;
 			}
 		}
@@ -1010,7 +1010,7 @@ Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExpor
 	err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
 	if (err != OK || str.contains("error:") || !FileAccess::exists(p_app_path + "/Contents/Resources/Assets.car") || !FileAccess::exists(plist)) {
 		print_verbose(str);
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not export liquid glass icon:") + "\n" + str);
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not export liquid glass icon:") + "\n" + str);
 		return err;
 	}
 
@@ -1032,7 +1032,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("rcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("rcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
 				return Error::FAILED;
 			}
 
@@ -1041,11 +1041,11 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back("notary-submit");
 
 			if (p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect issuer ID name not specified."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect issuer ID name not specified."));
 				return Error::FAILED;
 			}
 			if (p_preset->get_or_env("notarization/api_key", ENV_MAC_NOTARIZATION_KEY) == "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
 				return Error::FAILED;
 			}
 
@@ -1067,25 +1067,25 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			Error err = OS::get_singleton()->execute(rcodesign, args, &str, &exitcode, true);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start rcodesign executable."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start rcodesign executable."));
 				return err;
 			}
 
 			int rq_offset = str.find("created submission ID:");
 			if (exitcode != 0 || rq_offset == -1) {
 				print_line("rcodesign (" + p_path + "):\n" + str);
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
 				return Error::FAILED;
 			} else {
 				print_verbose("rcodesign (" + p_path + "):\n" + str);
 				int next_nl = str.find_char('\n', rq_offset);
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 23) : str.substr(rq_offset + 23, next_nl - rq_offset - 23);
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <API UUID> --api-key <API key> <request UUID>\"");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign staple <app path>\"");
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign notary-log --api-issuer <API UUID> --api-key <API key> <request UUID>\"");
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"rcodesign staple <app path>\"");
 			}
 		} break;
 #ifdef MACOS_ENABLED
@@ -1093,7 +1093,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			print_verbose("using notarytool notarization...");
 
 			if (!FileAccess::exists("/usr/bin/xcrun") && !FileAccess::exists("/bin/xcrun")) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Xcode command line tools are not installed."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Xcode command line tools are not installed."));
 				return Error::FAILED;
 			}
 
@@ -1105,17 +1105,17 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back(p_path);
 
 			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) == "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) == "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Neither Apple ID name nor App Store Connect issuer ID name not specified."));
 				return Error::FAILED;
 			}
 			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "" && p_preset->get_or_env("notarization/api_uuid", ENV_MAC_NOTARIZATION_UUID) != "") {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Both Apple ID name and App Store Connect issuer ID name are specified, only one should be set at the same time."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Both Apple ID name and App Store Connect issuer ID name are specified, only one should be set at the same time."));
 				return Error::FAILED;
 			}
 
 			if (p_preset->get_or_env("notarization/apple_id_name", ENV_MAC_NOTARIZATION_APPLE_ID) != "") {
 				if (p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS) == "") {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Apple ID password not specified."));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("Apple ID password not specified."));
 					return Error::FAILED;
 				}
 				args.push_back("--apple-id");
@@ -1125,7 +1125,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				args.push_back(p_preset->get_or_env("notarization/apple_id_password", ENV_MAC_NOTARIZATION_APPLE_PASS));
 			} else {
 				if (p_preset->get_or_env("notarization/api_key_id", ENV_MAC_NOTARIZATION_KEY_ID) == "") {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Notarization"), TTR("App Store Connect API key ID not specified."));
 					return Error::FAILED;
 				}
 				args.push_back("--issuer");
@@ -1151,27 +1151,27 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			int exitcode = 0;
 			Error err = OS::get_singleton()->execute("xcrun", args, &str, &exitcode, true);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Could not start xcrun executable."));
 				return err;
 			}
 
 			int rq_offset = str.find("id:");
 			if (exitcode != 0 || rq_offset == -1) {
 				print_line("notarytool (" + p_path + "):\n" + str);
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Notarization"), TTR("Notarization failed, see editor log for details."));
 				return Error::FAILED;
 			} else {
 				print_verbose("notarytool (" + p_path + "):\n" + str);
 				int next_nl = str.find_char('\n', rq_offset);
 				String request_uuid = (next_nl == -1) ? str.substr(rq_offset + 4) : str.substr(rq_offset + 4, next_nl - rq_offset - 4);
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("See instructions on finding your team ID: https://developer.apple.com/help/glossary/team-id"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --issuer <API UUID> --key-id <API key ID> --key <API key path>\" or");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --team-id <team ID> --apple-id <your email> --password <app-specific password>\"");
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), vformat(TTR("Notarization request UUID: \"%s\""), request_uuid));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("The notarization process generally takes less than an hour."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("See instructions on finding your team ID: https://developer.apple.com/help/glossary/team-id"));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("You can check the progress manually by opening a Terminal and running the following command:"));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --issuer <API UUID> --key-id <API key ID> --key <API key path>\" or");
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun notarytool log <request UUID> --team-id <team ID> --apple-id <your email> --password <app-specific password>\"");
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t" + TTR("Run the following command to staple the notarization ticket to the exported application (optional):"));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 			}
 		} break;
 #endif
@@ -1189,7 +1189,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			String error_msg;
 			Error err = CodeSign::codesign(false, true, p_path, p_ent_path, error_msg);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Built-in CodeSign failed with error \"%s\"."), error_msg));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Built-in CodeSign failed with error \"%s\"."), error_msg));
 				return;
 			}
 		} break;
@@ -1198,7 +1198,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 
 			String rcodesign = EDITOR_GET("export/macos/rcodesign").operator String();
 			if (rcodesign.is_empty()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xrcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xrcodesign path is not set. Configure rcodesign path in the Editor Settings (Export > macOS > rcodesign)."));
 				return;
 			}
 
@@ -1236,13 +1236,13 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 
 			Error err = OS::get_singleton()->execute(rcodesign, args, &str, &exitcode, true);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start rcodesign executable."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start rcodesign executable."));
 				return;
 			}
 
 			if (exitcode != 0) {
 				print_line("rcodesign (" + p_path + "):\n" + str);
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
 				return;
 			} else {
 				print_verbose("rcodesign (" + p_path + "):\n" + str);
@@ -1253,7 +1253,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			print_verbose("using xcode codesign...");
 
 			if (!FileAccess::exists("/usr/bin/codesign") && !FileAccess::exists("/bin/codesign")) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xcode command line tools are not installed."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Xcode command line tools are not installed."));
 				return;
 			}
 
@@ -1302,13 +1302,13 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 
 			Error err = OS::get_singleton()->execute("codesign", args, &str, &exitcode, true);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start codesign executable, make sure Xcode command line tools are installed."));
 				return;
 			}
 
 			if (exitcode != 0) {
 				print_line("codesign (" + p_path + "):\n" + str);
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
 				return;
 			} else {
 				print_verbose("codesign (" + p_path + "):\n" + str);
@@ -1335,7 +1335,7 @@ void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPrese
 	Ref<DirAccess> dir_access{ DirAccess::open(p_path, &dir_access_error) };
 
 	if (dir_access_error != OK) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign directory %s."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign directory %s."), p_path));
 		return;
 	}
 
@@ -1367,7 +1367,7 @@ void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPrese
 		} else if (dir_access->current_is_dir()) {
 			_code_sign_directory(p_preset, current_file_path, p_ent_path, p_helper_ent_path, p_should_error_on_non_code);
 		} else if (p_should_error_on_non_code) {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign file %s."), current_file));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Cannot sign file %s."), current_file));
 		}
 
 		current_file = dir_access->get_next();
@@ -1390,7 +1390,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 	Error err{ OK };
 	if (dir_access->dir_exists(p_src_path)) {
 #ifndef UNIX_ENABLED
-		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Relative symlinks are not supported, exported \"%s\" might be broken!"), p_src_path.get_file()));
 #endif
 		print_verbose("export framework: " + p_src_path + " -> " + p_in_app_path);
 
@@ -1414,7 +1414,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
 		}
 		if (err == OK && plist_missing) {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
 			// Generate Info.plist
 			String lib_name = p_src_path.get_basename().get_file();
 			String lib_id = p_preset->get("application/bundle_identifier");
@@ -1530,13 +1530,13 @@ Error EditorExportPlatformMacOS::_create_pkg(const Ref<EditorExportPreset> &p_pr
 	String str;
 	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("Could not start productbuild executable."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("Could not start productbuild executable."));
 		return err;
 	}
 
 	print_verbose("productbuild returned: " + str);
 	if (str.contains("productbuild: error:")) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("`productbuild` failed."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("`productbuild` failed."));
 		return FAILED;
 	}
 
@@ -1562,16 +1562,16 @@ Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const Str
 	String str;
 	Error err = OS::get_singleton()->execute("hdiutil", args, &str, nullptr, true);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("Could not start hdiutil executable."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("Could not start hdiutil executable."));
 		return err;
 	}
 
 	print_verbose("hdiutil returned: " + str);
 	if (str.contains("create failed")) {
 		if (str.contains("File exists")) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed - file exists."));
 		} else {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("DMG Creation"), TTR("`hdiutil create` failed."));
 		}
 		return FAILED;
 	}
@@ -1593,7 +1593,7 @@ bool EditorExportPlatformMacOS::is_executable(const String &p_path) const {
 Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), vformat(TTR("Could not open file \"%s\"."), p_path));
 		return ERR_CANT_CREATE;
 	}
 
@@ -1623,7 +1623,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	const String base_dir = p_path.get_base_dir();
 
 	if (!DirAccess::exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
 		return ERR_FILE_BAD_PATH;
 	}
 
@@ -1640,7 +1640,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		String err;
 		src_pkg_name = find_export_template("macos.zip", &err);
 		if (src_pkg_name.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + err);
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Export template not found.") + "\n" + err);
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -1654,7 +1654,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not find template app to export: \"%s\"."), src_pkg_name));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not find template app to export: \"%s\"."), src_pkg_name));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -1683,7 +1683,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		export_format = "pkg";
 #endif
 	} else {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid export format."));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid export format."));
 		return ERR_CANT_CREATE;
 	}
 
@@ -1708,7 +1708,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_base_path_name);
 	if (tmp_app_dir.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory: \"%s\"."), tmp_base_path_name));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory: \"%s\"."), tmp_base_path_name));
 		err = ERR_CANT_CREATE;
 	}
 
@@ -1730,7 +1730,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/MacOS");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/MacOS");
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/MacOS"));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/MacOS"));
 		}
 	}
 
@@ -1738,7 +1738,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Frameworks"));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Frameworks"));
 		}
 	}
 
@@ -1746,7 +1746,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		print_line("Creating " + tmp_app_path_name + "/Contents/Helpers");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Helpers");
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Helpers"));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Helpers"));
 		}
 	}
 
@@ -1754,7 +1754,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		print_verbose("Creating " + tmp_app_path_name + "/Contents/Resources");
 		err = tmp_app_dir->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Resources"));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), tmp_app_path_name + "/Contents/Resources"));
 		}
 	}
 
@@ -1919,21 +1919,21 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		if (((info.external_fa >> 16L) & 0120000) == 0120000) {
 #ifndef UNIX_ENABLED
-			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Relative symlinks are not supported on this OS, the exported project might be broken!"));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Relative symlinks are not supported on this OS, the exported project might be broken!"));
 #endif
 			// Handle symlinks in the archive.
 			file = tmp_app_path_name.path_join(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
 				}
 			}
 			if (err == OK) {
 				String lnk_data = String::utf8((const char *)data.ptr(), data.size());
 				err = tmp_app_dir->create_link(lnk_data, file);
 				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not created symlink \"%s\" -> \"%s\"."), lnk_data, file));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not created symlink \"%s\" -> \"%s\"."), lnk_data, file));
 				}
 				print_verbose(vformat("ADDING SYMLINK %s => %s\n", file, lnk_data));
 			}
@@ -2017,7 +2017,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 				if (err != OK) {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
 				}
 			}
 			if (err == OK) {
@@ -2030,12 +2030,12 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 						FileAccess::set_unix_permissions(file, 0755);
 #ifndef UNIX_ENABLED
 						if (export_format == "app") {
-							add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + file.get_file()));
+							add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + file.get_file()));
 						}
 #endif
 					}
 				} else {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
 					err = ERR_CANT_CREATE;
 				}
 			}
@@ -2048,7 +2048,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template binary \"%s\" not found. It might be missing from your template archive."), binary_to_use));
+		add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template binary \"%s\" not found. It might be missing from your template archive."), binary_to_use));
 		err = ERR_FILE_NOT_FOUND;
 	}
 
@@ -2060,11 +2060,11 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			FileAccess::set_unix_permissions(scr_path, 0755);
 #ifndef UNIX_ENABLED
 			if (export_format == "app") {
-				add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), scr_path.get_file()));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), scr_path.get_file()));
 			}
 #endif
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console wrapper."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console wrapper."));
 			}
 		}
 	}
@@ -2100,12 +2100,12 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
 		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
-			add_message(EXPORT_MESSAGE_INFO, TTR("Entitlements Modified"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Entitlements Modified"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
 			lib_validation = true;
 		}
 
 		if (!shared_objects.is_empty() && sign_enabled && codesign_tool == 2) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries."));
+			add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("'rcodesign' doesn't support signing applications with embedded dynamic libraries."));
 		}
 
 		bool sandbox = p_preset->get("codesign/entitlements/app_sandbox/enabled");
@@ -2263,7 +2263,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				ent_f->store_line("</dict>");
 				ent_f->store_line("</plist>");
 			} else {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create entitlements file."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create entitlements file."));
 				err = ERR_CANT_CREATE;
 			}
 
@@ -2281,7 +2281,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					ent_f->store_line("</dict>");
 					ent_f->store_line("</plist>");
 				} else {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create helper entitlements file."));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not create helper entitlements file."));
 					err = ERR_CANT_CREATE;
 				}
 			}
@@ -2298,7 +2298,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				FileAccess::set_unix_permissions(tmp_app_path_name + "/Contents/Helpers/" + hlp_path.get_file(), 0755);
 #ifndef UNIX_ENABLED
 				if (export_format == "app") {
-					add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/Helpers/" + hlp_path.get_file()));
+					add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/Helpers/" + hlp_path.get_file()));
 				}
 #endif
 			}
@@ -2413,7 +2413,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		if (err == OK && noto_enabled) {
 			if (export_format == "pkg") {
-				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
+				add_message(EditorExportPlatformData::EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
 					return ERR_SKIP;
@@ -2744,7 +2744,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 		}
 	}
 
-	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
+	const bool use_remote = p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(EditorExportPlatformData::DEBUG_FLAG_DUMB_CLIENT);
 	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");

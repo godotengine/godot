@@ -11,6 +11,7 @@ from emscripten_helpers import (
     create_engine_file,
     create_template_zip,
     get_template_zip_path,
+    package_js_module_generator,
     run_closure_compiler,
 )
 from SCons.Util import WhereIs
@@ -227,6 +228,13 @@ def configure(env: "SConsEnvironment"):
 
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
+
+    # Add method for bundling JS modules.
+    env.Append(
+        BUILDERS={
+            "PackageJSModule": env.Builder(generator=package_js_module_generator),
+        }
+    )
 
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.

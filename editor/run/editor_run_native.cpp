@@ -148,23 +148,23 @@ Error EditorRunNative::start_run_native(int p_id) {
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 
 	if (deploy_debug_remote) {
-		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG);
+		flags.set_flag(EditorExportPlatformData::DEBUG_FLAG_REMOTE_DEBUG);
 	}
 	if (deploy_dumb) {
-		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_DUMB_CLIENT);
+		flags.set_flag(EditorExportPlatformData::DEBUG_FLAG_DUMB_CLIENT);
 	}
 	if (debug_collisions) {
-		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_VIEW_COLLISIONS);
+		flags.set_flag(EditorExportPlatformData::DEBUG_FLAG_VIEW_COLLISIONS);
 	}
 	if (debug_navigation) {
-		flags.set_flag(EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION);
+		flags.set_flag(EditorExportPlatformData::DEBUG_FLAG_VIEW_NAVIGATION);
 	}
 
 	eep->clear_messages();
 	Error err = eep->run(preset, idx, flags);
 	result_dialog_log->clear();
 	if (eep->fill_log_messages(result_dialog_log, err)) {
-		if (eep->get_worst_message_type() >= EditorExportPlatform::EXPORT_MESSAGE_ERROR) {
+		if (eep->get_worst_message_type() >= EditorExportPlatformData::EXPORT_MESSAGE_ERROR) {
 			result_dialog->popup_centered_ratio(0.5);
 		}
 	}
