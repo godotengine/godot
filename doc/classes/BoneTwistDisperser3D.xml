@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoneTwistDisperser3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that propagates and disperses the child bone's twist to the parent bones.
+	</brief_description>
+	<description>
+		This [BoneTwistDisperser3D] allows for smooth twist interpolation between multiple bones by dispersing the end bone's twist to the parents. This only changes the twist without changing the global position of each joint.
+		This is useful for smoothly twisting bones in combination with [CopyTransformModifier3D] and IK.
+		[b]Note:[/b] If an extracted twist is greater than 180 degrees, flipping occurs. This is similar to [ConvertTransformModifier3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_settings">
+			<return type="void" />
+			<description>
+				Clears all settings.
+			</description>
+		</method>
+		<method name="get_damping_curve" qualifiers="const">
+			<return type="Curve" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the damping curve when [method get_disperse_mode] is [constant DISPERSE_MODE_CUSTOM].
+			</description>
+		</method>
+		<method name="get_disperse_mode" qualifiers="const">
+			<return type="int" enum="BoneTwistDisperser3D.DisperseMode" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns whether to use automatic amount assignment or to allow manual assignment.
+			</description>
+		</method>
+		<method name="get_end_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone index of the bone chain.
+			</description>
+		</method>
+		<method name="get_end_bone_direction" qualifiers="const">
+			<return type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the tail direction of the end bone of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="get_end_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the end bone name of the bone chain.
+			</description>
+		</method>
+		<method name="get_joint_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the bone index at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the bone name at [param joint] in the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the joint count of the bone chain's joint list.
+			</description>
+		</method>
+		<method name="get_joint_twist_amount" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns the twist amount at [param joint] in the bone chain's joint list when [method get_disperse_mode] is [constant DISPERSE_MODE_CUSTOM].
+			</description>
+		</method>
+		<method name="get_reference_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the reference bone to extract twist of the setting at [param index].
+				This bone is either the end of the chain or its parent, depending on [method is_end_bone_extended].
+			</description>
+		</method>
+		<method name="get_reference_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the reference bone name to extract twist of the setting at [param index].
+				This bone is either the end of the chain or its parent, depending on [method is_end_bone_extended].
+			</description>
+		</method>
+		<method name="get_root_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone index of the bone chain.
+			</description>
+		</method>
+		<method name="get_root_bone_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the root bone name of the bone chain.
+			</description>
+		</method>
+		<method name="get_twist_from" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the rotation to an arbitrary state before twisting for the current bone pose to extract the twist when [method is_twist_from_rest] is [code]false[/code].
+			</description>
+		</method>
+		<method name="get_weight_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the position at which to divide the segment between joints for weight assignment when [method get_disperse_mode] is [constant DISPERSE_MODE_WEIGHTED].
+			</description>
+		</method>
+		<method name="is_end_bone_extended" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the end bone is extended to have a tail.
+			</description>
+		</method>
+		<method name="is_twist_from_rest" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if extracting the twist amount from the difference between the bone rest and the current bone pose.
+			</description>
+		</method>
+		<method name="set_damping_curve">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="curve" type="Curve" />
+			<description>
+				Sets the damping curve when [method get_disperse_mode] is [constant DISPERSE_MODE_CUSTOM].
+			</description>
+		</method>
+		<method name="set_disperse_mode">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="disperse_mode" type="int" enum="BoneTwistDisperser3D.DisperseMode" />
+			<description>
+				Sets whether to use automatic amount assignment or to allow manual assignment.
+			</description>
+		</method>
+		<method name="set_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the end bone index of the bone chain.
+			</description>
+		</method>
+		<method name="set_end_bone_direction">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_direction" type="int" enum="SkeletonModifier3D.BoneDirection" />
+			<description>
+				Sets the end bone tail direction of the bone chain when [method is_end_bone_extended] is [code]true[/code].
+			</description>
+		</method>
+		<method name="set_end_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the end bone name of the bone chain.
+				[b]Note:[/b] The end bone must be a child of the root bone.
+			</description>
+		</method>
+		<method name="set_extend_end_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the end bone is extended to have a tail.
+				If [param enabled] is [code]false[/code], [method get_reference_bone] becomes a parent of the end bone and it uses the vector to the end bone as a twist axis.
+			</description>
+		</method>
+		<method name="set_joint_twist_amount">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="twist_amount" type="float" />
+			<description>
+				Sets the twist amount at [param joint] in the bone chain's joint list when [method get_disperse_mode] is [constant DISPERSE_MODE_CUSTOM].
+			</description>
+		</method>
+		<method name="set_root_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the root bone index of the bone chain.
+			</description>
+		</method>
+		<method name="set_root_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="String" />
+			<description>
+				Sets the root bone name of the bone chain.
+			</description>
+		</method>
+		<method name="set_twist_from">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="from" type="Quaternion" />
+			<description>
+				Sets the rotation to an arbitrary state before twisting for the current bone pose to extract the twist when [method is_twist_from_rest] is [code]false[/code].
+				In other words, by calling [method set_twist_from] by [signal SkeletonModifier3D.modification_processed] of a specific [SkeletonModifier3D], you can extract only the twists generated by modifiers processed after that but before this [BoneTwistDisperser3D].
+			</description>
+		</method>
+		<method name="set_twist_from_rest">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], it extracts the twist amount from the difference between the bone rest and the current bone pose.
+				If [param enabled] is [code]false[/code], it extracts the twist amount from the difference between [method get_twist_from] and the current bone pose. See also [method set_twist_from].
+			</description>
+		</method>
+		<method name="set_weight_position">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="weight_position" type="float" />
+			<description>
+				Sets the position at which to divide the segment between joints for weight assignment when [method get_disperse_mode] is [constant DISPERSE_MODE_WEIGHTED].
+				For example, when [param weight_position] is [code]0.5[/code], if two bone segments with a length of [code]1.0[/code] exist between three joints, weights are assigned to each joint from root to end at ratios of [code]0.5[/code], [code]1.0[/code], and [code]0.5[/code]. Then amounts become [code]0.25[/code], [code]0.75[/code], and [code]1.0[/code] respectively.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="mutable_bone_axes" type="bool" setter="set_mutable_bone_axes" getter="are_bone_axes_mutable" default="true">
+			If [code]true[/code], the solver retrieves the bone axis from the bone pose every frame.
+			If [code]false[/code], the solver retrieves the bone axis from the bone rest and caches it.
+		</member>
+		<member name="setting_count" type="int" setter="set_setting_count" getter="get_setting_count" default="0">
+			The number of settings.
+		</member>
+	</members>
+	<constants>
+		<constant name="DISPERSE_MODE_EVEN" value="0" enum="DisperseMode">
+			Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], ensuring all weights are equal. For example, with five joints, the amounts would be [code]0.2[/code], [code]0.4[/code], [code]0.6[/code], [code]0.8[/code], and [code]1.0[/code] starting from the root bone.
+		</constant>
+		<constant name="DISPERSE_MODE_WEIGHTED" value="1" enum="DisperseMode">
+			Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], based on the length of the bones between joint segments. See also [method set_weight_position].
+		</constant>
+		<constant name="DISPERSE_MODE_CUSTOM" value="2" enum="DisperseMode">
+			You can assign arbitrary amounts to the joint list. See also [method set_joint_twist_amount].
+			When [method is_end_bone_extended] is [code]false[/code], a child of the reference bone exists solely to determine the twist axis, so its custom amount has absolutely no effect at all.
+		</constant>
+	</constants>
+</class>

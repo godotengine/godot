@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MOTION_VECTORS_STORE_RD_H
-#define MOTION_VECTORS_STORE_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/motion_vectors_store.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 namespace RendererRD {
 class MotionVectorsStore {
@@ -58,5 +57,3 @@ public:
 			const Projection &p_previous_projection, const Transform3D &p_previous_transform);
 };
 } //namespace RendererRD
-
-#endif // MOTION_VECTORS_STORE_RD_H

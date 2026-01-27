@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VOXELIZER_H
-#define VOXELIZER_H
+#pragma once
 
 #include "scene/resources/multimesh.h"
 
@@ -53,7 +52,6 @@ private:
 		float albedo[3] = {}; //albedo in RGB24
 		float emission[3] = {}; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float normal[3] = {};
-		uint32_t used_sides = 0;
 		float alpha = 0.0; //used for upsampling
 		uint16_t x = 0;
 		uint16_t y = 0;
@@ -138,5 +136,3 @@ public:
 	Transform3D get_to_cell_space_xform() const;
 	Voxelizer();
 };
-
-#endif // VOXELIZER_H

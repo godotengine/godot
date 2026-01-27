@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_IMAGE_H
-#define TEST_IMAGE_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/os/os.h"
@@ -123,6 +122,20 @@ TEST_CASE("[Image] Saving and loading") {
 			"The BMP image should load successfully.");
 #endif // MODULE_BMP_ENABLED
 
+#ifdef MODULE_EXR_ENABLED
+	// Load EXR
+	Ref<Image> image_exr;
+	image_exr.instantiate();
+	Ref<FileAccess> f_exr = FileAccess::open(TestUtils::get_data_path("images/icon.exr"), FileAccess::READ, &err);
+	REQUIRE(f_exr.is_valid());
+	PackedByteArray data_exr;
+	data_exr.resize(f_exr->get_length() + 1);
+	f_exr->get_buffer(data_exr.ptrw(), f_exr->get_length());
+	CHECK_MESSAGE(
+			image_exr->load_exr_from_buffer(data_exr) == OK,
+			"The EXR image should load successfully.");
+#endif // MODULE_EXR_ENABLED
+
 #ifdef MODULE_JPG_ENABLED
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
@@ -134,6 +147,34 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_jpg->load_jpg_from_buffer(data_jpg) == OK,
 			"The JPG image should load successfully.");
+
+	Ref<Image> image_grayscale_jpg = memnew(Image());
+	Ref<FileAccess> f_grayscale_jpg = FileAccess::open(TestUtils::get_data_path("images/grayscale.jpg"), FileAccess::READ, &err);
+	REQUIRE(f_grayscale_jpg.is_valid());
+	PackedByteArray data_grayscale_jpg;
+	data_grayscale_jpg.resize(f_grayscale_jpg->get_length() + 1);
+	f_grayscale_jpg->get_buffer(data_grayscale_jpg.ptrw(), f_grayscale_jpg->get_length());
+	CHECK_MESSAGE(
+			image_jpg->load_jpg_from_buffer(data_grayscale_jpg) == OK,
+			"The grayscale JPG image should load successfully.");
+
+	// Save JPG
+	const String save_path_jpg = TestUtils::get_temp_path("image.jpg");
+	CHECK_MESSAGE(image->save_jpg(save_path_jpg) == OK,
+			"The image should be saved successfully as a .jpg file.");
+
+#ifdef MODULE_SVG_ENABLED
+	// Load SVG with embedded jpg image
+	Ref<Image> image_svg = memnew(Image());
+	Ref<FileAccess> f_svg = FileAccess::open(TestUtils::get_data_path("images/embedded_jpg.svg"), FileAccess::READ, &err);
+	REQUIRE(f_svg.is_valid());
+	PackedByteArray data_svg;
+	data_svg.resize(f_svg->get_length() + 1);
+	f_svg->get_buffer(data_svg.ptrw(), f_svg->get_length());
+	CHECK_MESSAGE(
+			image_svg->load_svg_from_buffer(data_svg) == OK,
+			"The SVG image should load successfully.");
+#endif // MODULE_SVG_ENABLED
 #endif // MODULE_JPG_ENABLED
 
 #ifdef MODULE_WEBP_ENABLED
@@ -240,11 +281,15 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 
 	// Fill image with color
 	image2->fill(Color(0.5, 0.5, 0.5, 0.5));
-	for (int y = 0; y < image2->get_height(); y++) {
-		for (int x = 0; x < image2->get_width(); x++) {
-			CHECK_MESSAGE(
-					image2->get_pixel(x, y).r > 0.49,
-					"fill() should colorize all pixels of the image.");
+	for (int m = 0; m < image2->get_mipmap_count(); m++) {
+		Ref<Image> mip_image = image2->get_image_from_mipmap(m);
+
+		for (int y = 0; y < mip_image->get_height(); y++) {
+			for (int x = 0; x < mip_image->get_width(); x++) {
+				CHECK_MESSAGE(
+						mip_image->get_pixel(x, y).r > 0.49,
+						"fill() should colorize all pixels of the image.");
+			}
 		}
 	}
 
@@ -444,5 +489,3 @@ TEST_CASE("[Image] Convert image") {
 }
 
 } // namespace TestImage
-
-#endif // TEST_IMAGE_H

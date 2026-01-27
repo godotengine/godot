@@ -52,7 +52,7 @@ Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, const Strin
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_multi_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		Error err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		Error err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
 		_sock->set_broadcasting_enabled(broadcast);
@@ -68,7 +68,7 @@ Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, const Stri
 }
 
 String PacketPeerUDP::_get_packet_ip() const {
-	return get_packet_address();
+	return String(get_packet_address());
 }
 
 Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
@@ -105,18 +105,16 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		return ERR_UNAVAILABLE;
 	}
 
-/* Bogus GCC warning here:
- * In member function 'int RingBuffer<T>::read(T*, int, bool) [with T = unsigned char]',
- *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:112:9,
- *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:99:7:
- * Error: ./core/ring_buffer.h:68:46: error: writing 1 byte into a region of size 0 [-Werror=stringop-overflow=]
- *   68 |                                 p_buf[dst++] = read[pos + i];
- *      |                                 ~~~~~~~~~~~~~^~~~~~~
- */
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wstringop-overflow=0"
-#endif
+	/* Bogus GCC warning here:
+	 * In member function 'int RingBuffer<T>::read(T*, int, bool) [with T = unsigned char]',
+	 *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:112:9,
+	 *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:99:7:
+	 * Error: ./core/ring_buffer.h:68:46: error: writing 1 byte into a region of size 0 [-Werror=stringop-overflow=]
+	 *   68 |                                 p_buf[dst++] = read[pos + i];
+	 *      |                                 ~~~~~~~~~~~~~^~~~~~~
+	 */
+	GODOT_GCC_WARNING_PUSH
+	GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignore" this for some reason.
 
 	uint32_t size = 0;
 	uint8_t ipv6[16] = {};
@@ -129,9 +127,7 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	*r_buffer = packet_buffer;
 	r_buffer_size = size;
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 
 	return OK;
 }
@@ -145,7 +141,7 @@ Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, err);
 		_sock->set_blocking_enabled(false);
 		_sock->set_broadcasting_enabled(broadcast);
@@ -190,7 +186,7 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -198,13 +194,14 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_broadcasting_enabled(broadcast);
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		_sock->close();
 		return err;
 	}
-	rb.resize(nearest_shift(p_recv_buffer_size));
+	rb.resize(nearest_shift((uint32_t)p_recv_buffer_size));
 	return OK;
 }
 
@@ -235,12 +232,13 @@ Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, int p_port) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 		_sock->set_blocking_enabled(false);
 	}
 
-	err = _sock->connect_to_host(p_host, p_port);
+	NetSocket::Address addr(p_host, p_port);
+	err = _sock->connect_to_host(addr);
 
 	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
 	// This is UDP, so connect is only used to tell the OS to which socket
@@ -349,9 +347,9 @@ int PacketPeerUDP::get_packet_port() const {
 }
 
 int PacketPeerUDP::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
 void PacketPeerUDP::set_dest_address(const IPAddress &p_address, int p_port) {

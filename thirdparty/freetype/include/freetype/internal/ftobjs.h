@@ -4,7 +4,7 @@
  *
  *   The FreeType private base classes (specification).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -275,6 +275,28 @@ FT_BEGIN_HEADER
                   FT_GlyphSlot    slot,
                   FT_Render_Mode  mode );
 
+
+  /**************************************************************************
+   *
+   * @Function:
+   *   find_unicode_charmap
+   *
+   * @Description:
+   *   This function finds a Unicode charmap, if there is one.  And if there
+   *   is more than one, it tries to favour the more extensive one, i.e., one
+   *   that supports UCS-4 against those which are limited to the BMP (UCS-2
+   *   encoding.)
+   *
+   *   If a unicode charmap is found, `face->charmap` is set to it.
+   *
+   *   This function is called from `open_face`, from `FT_Select_Charmap(...,
+   *   FT_ENCODING_UNICODE)`, and also from `afadjust.c` in the 'autofit'
+   *   module.
+   */
+  FT_BASE( FT_Error )
+  find_unicode_charmap( FT_Face  face );
+
+
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
   typedef void  (*FT_Bitmap_LcdFilterFunc)( FT_Bitmap*      bitmap,
@@ -498,9 +520,9 @@ FT_BEGIN_HEADER
    */
   typedef struct  FT_ModuleRec_
   {
-    FT_Module_Class*  clazz;
-    FT_Library        library;
-    FT_Memory         memory;
+    const FT_Module_Class*  clazz;
+    FT_Library              library;
+    FT_Memory               memory;
 
   } FT_ModuleRec;
 
@@ -603,12 +625,6 @@ FT_BEGIN_HEADER
 #define FT_FACE_LIBRARY( x )  FT_FACE_DRIVER( x )->root.library
 #define FT_FACE_MEMORY( x )   FT_FACE( x )->memory
 #define FT_FACE_STREAM( x )   FT_FACE( x )->stream
-
-#define FT_SIZE_FACE( x )     FT_SIZE( x )->face
-#define FT_SLOT_FACE( x )     FT_SLOT( x )->face
-
-#define FT_FACE_SLOT( x )     FT_FACE( x )->glyph
-#define FT_FACE_SIZE( x )     FT_FACE( x )->size
 
 
   /**************************************************************************

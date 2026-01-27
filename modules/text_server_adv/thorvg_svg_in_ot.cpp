@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "thorvg_svg_in_ot.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -55,13 +57,10 @@ using namespace godot;
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
 
-#include "thorvg_svg_in_ot.h"
-
 #include <freetype/otsvg.h>
 #include <ft2build.h>
 
-#include <math.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 FT_Error tvg_svg_in_ot_init(FT_Pointer *p_state) {
 	*p_state = memnew(TVG_State);
@@ -171,8 +170,14 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			String *p_xml = &xml_body_temp;
 			int64_t tag_count = -1;
 
+			bool is_in_defs = false;
 			while (parser->read() == OK) {
-				if (parser->has_attribute("id")) {
+				if (parser->get_node_type() == XMLParser::NODE_ELEMENT && parser->get_node_name().to_lower() == "defs") {
+					is_in_defs = true;
+				} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name().to_lower() == "defs") {
+					is_in_defs = false;
+				}
+				if (!is_in_defs && parser->has_attribute("id")) {
 					const String &gl_name = parser->get_named_attribute_value("id");
 					if (gl_name.begins_with("glyph")) {
 #ifdef GDEXTENSION
@@ -227,27 +232,31 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 
 		float svg_width, svg_height;
 		picture->size(&svg_width, &svg_height);
-		double aspect = svg_width / svg_height;
+		double aspect_x = (svg_width > svg_height) ? svg_width / svg_height : 1.0;
+		double aspect_y = (svg_width < svg_height) ? svg_height / svg_width : 1.0;
 
-		result = picture->size(embox_x * aspect, embox_y);
+		result = picture->size(embox_x * aspect_x, embox_y * aspect_y);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to resize SVG document.");
 		}
 
-		double x_svg_to_out = (double)metrics.x_ppem / embox_x;
-		double y_svg_to_out = (double)metrics.y_ppem / embox_y;
+		double scale = double(embox_x * aspect_x) / double(svg_width);
+		double yoff = double(document->metrics.ascender + document->metrics.descender) / double(document->metrics.ascender);
+
+		double x_svg_to_out = (double)metrics.x_ppem / embox_x / scale;
+		double y_svg_to_out = (double)metrics.y_ppem / embox_y / scale;
 
 		gl_state.m.e11 = (double)document->transform.xx / (1 << 16);
 		gl_state.m.e12 = -(double)document->transform.xy / (1 << 16);
 		gl_state.m.e21 = -(double)document->transform.yx / (1 << 16);
 		gl_state.m.e22 = (double)document->transform.yy / (1 << 16);
-		gl_state.m.e13 = (double)document->delta.x / 64 * embox_x / metrics.x_ppem;
-		gl_state.m.e23 = -(double)document->delta.y / 64 * embox_y / metrics.y_ppem;
+		gl_state.m.e13 = (double)document->delta.x / 64 * embox_x / metrics.x_ppem * scale;
+		gl_state.m.e23 = -(double)document->delta.y / 64 * embox_y / metrics.y_ppem * scale;
 		gl_state.m.e31 = 0;
 		gl_state.m.e32 = 0;
 		gl_state.m.e33 = 1;
 
-		result = picture->size(embox_x * aspect * x_svg_to_out, embox_y * y_svg_to_out);
+		result = picture->size(embox_x * aspect_x * x_svg_to_out, embox_y * aspect_y * y_svg_to_out);
 		if (result != tvg::Result::Success) {
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to resize SVG document.");
 		}
@@ -258,8 +267,9 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 		}
 
 		picture->size(&gl_state.w, &gl_state.h);
-		gl_state.x = (gl_state.h - gl_state.w) / 2.0;
-		gl_state.y = -gl_state.h;
+
+		gl_state.x = (double(p_slot->metrics.horiAdvance) / 64.0 - gl_state.w) / 2.0;
+		gl_state.y = -Math::ceil(gl_state.h * yoff);
 
 		gl_state.ready = true;
 	}

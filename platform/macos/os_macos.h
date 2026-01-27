@@ -28,21 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_MACOS_H
-#define OS_MACOS_H
+#pragma once
 
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
-#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
+
+class JoypadSDL;
 
 class OS_MacOS : public OS_Unix {
-	JoypadApple *joypad_apple = nullptr;
-
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
 #endif
@@ -52,10 +50,6 @@ class OS_MacOS : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	CFRunLoopObserverRef pre_wait_observer;
-
-	MainLoop *main_loop = nullptr;
-
 	List<String> launch_service_args;
 
 	CGFloat _weight_to_ct(int p_weight) const;
@@ -63,9 +57,18 @@ class OS_MacOS : public OS_Unix {
 	String _get_default_fontname(const String &p_font_name) const;
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
-	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
 
 protected:
+	const char *execpath = nullptr;
+	int argc = 0;
+	char **argv = nullptr;
+
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
+	MainLoop *main_loop = nullptr;
+	CFRunLoopTimerRef wait_timer = nil;
+
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 	virtual void finalize() override;
@@ -76,8 +79,29 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	static inline const char *headless_args[] = {
+		"--headless",
+		"-h",
+		"--help",
+		"/?",
+		"--version",
+		"--dump-gdextension-interface",
+		"--dump-extension-api",
+		"--dump-gdextension-interface-json",
+		"--dump-extension-api-with-docs",
+		"--validate-extension-api",
+		"--convert-3to4",
+		"--validate-conversion-3to4",
+		"--doctool",
+		"--test",
+	};
+
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
+
+	virtual void load_shell_environment() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -96,6 +120,7 @@ public:
 	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
+	virtual String get_bundle_icon_name() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
@@ -111,6 +136,7 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
@@ -119,8 +145,14 @@ public:
 	virtual String get_model_name() const override;
 
 	virtual bool is_sandboxed() const override;
+	virtual bool request_permission(const String &p_name) override;
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
+
+#ifdef TOOLS_ENABLED
+	static bool is_debugger_attached();
+	void wait_for_debugger(uint32_t p_msec);
+#endif
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
@@ -132,10 +164,45 @@ public:
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
-	void run();
+	virtual void run() = 0;
 
-	OS_MacOS();
-	~OS_MacOS();
+	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#endif // OS_MACOS_H
+class OS_MacOS_NSApp : public OS_MacOS {
+	id delegate = nullptr;
+	bool should_terminate = false;
+	bool main_started = false;
+
+	CFRunLoopObserverRef pre_wait_observer = nil;
+
+	void terminate();
+
+public:
+	void start_main(); // Initializes and runs Godot main loop.
+	void cleanup();
+	bool os_should_terminate() const { return should_terminate; }
+	int get_cmd_argc() const { return argc; }
+
+	virtual void run() override;
+
+	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+class OS_MacOS_Headless : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+#ifdef TOOLS_ENABLED
+
+class OS_MacOS_Embedded : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+#endif

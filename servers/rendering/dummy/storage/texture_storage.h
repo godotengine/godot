@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_STORAGE_DUMMY_H
-#define TEXTURE_STORAGE_DUMMY_H
+#pragma once
 
 #include "servers/rendering/storage/texture_storage.h"
 
@@ -37,7 +36,7 @@ namespace RendererDummy {
 
 class TextureStorage : public RendererTextureStorage {
 private:
-	static TextureStorage *singleton;
+	static inline TextureStorage *singleton = nullptr;
 
 	struct DummyTexture {
 		Ref<Image> image;
@@ -47,8 +46,8 @@ private:
 public:
 	static TextureStorage *get_singleton() { return singleton; }
 
-	TextureStorage();
-	~TextureStorage();
+	TextureStorage() { singleton = this; }
+	~TextureStorage() { singleton = nullptr; }
 
 	/* Canvas Texture API */
 
@@ -181,6 +180,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override {}
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override { return false; }
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }
@@ -215,5 +216,3 @@ public:
 };
 
 } // namespace RendererDummy
-
-#endif // TEXTURE_STORAGE_DUMMY_H

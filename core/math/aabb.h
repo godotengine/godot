@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AABB_H
-#define AABB_H
+#pragma once
 
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
+#include "core/templates/hashfuncs.h"
 
 /**
  * AABB (Axis Aligned Bounding Box)
@@ -59,10 +59,15 @@ struct [[nodiscard]] AABB {
 	const Vector3 &get_size() const { return size; }
 	void set_size(const Vector3 &p_size) { size = p_size; }
 
-	bool operator==(const AABB &p_rval) const;
-	bool operator!=(const AABB &p_rval) const;
+	constexpr bool operator==(const AABB &p_rval) const {
+		return position == p_rval.position && size == p_rval.size;
+	}
+	constexpr bool operator!=(const AABB &p_rval) const {
+		return position != p_rval.position || size != p_rval.size;
+	}
 
 	bool is_equal_approx(const AABB &p_aabb) const;
+	bool is_same(const AABB &p_aabb) const;
 	bool is_finite() const;
 	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
 	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
@@ -127,10 +132,20 @@ struct [[nodiscard]] AABB {
 		return position + (size * 0.5f);
 	}
 
-	operator String() const;
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(position.x);
+		h = hash_murmur3_one_real(position.y, h);
+		h = hash_murmur3_one_real(position.z, h);
+		h = hash_murmur3_one_real(size.x, h);
+		h = hash_murmur3_one_real(size.y, h);
+		h = hash_murmur3_one_real(size.z, h);
+		return hash_fmix32(h);
+	}
 
-	_FORCE_INLINE_ AABB() {}
-	inline AABB(const Vector3 &p_pos, const Vector3 &p_size) :
+	explicit operator String() const;
+
+	AABB() = default;
+	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
@@ -496,4 +511,5 @@ AABB AABB::quantized(real_t p_unit) const {
 	return ret;
 }
 
-#endif // AABB_H
+template <>
+struct is_zero_constructible<AABB> : std::true_type {};

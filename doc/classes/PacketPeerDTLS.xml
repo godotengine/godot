@@ -29,7 +29,7 @@
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="PacketPeerDTLS.Status" />
 			<description>
-				Returns the status of the connection. See [enum Status] for values.
+				Returns the status of the connection.
 			</description>
 		</method>
 		<method name="poll">

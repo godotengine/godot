@@ -30,25 +30,18 @@
 
 #include "editor_scene_importer_blend.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
-
-#ifdef MINGW_ENABLED
-#define near
-#define far
-#endif
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -153,6 +146,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	parameters_map["export_keep_originals"] = unpack_original_images;
 	parameters_map["export_format"] = "GLTF_SEPARATE";
 	parameters_map["export_yup"] = true;
+	parameters_map["export_import_convert_lighting_mode"] = "COMPAT";
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
 		parameters_map["export_extras"] = true;
@@ -175,10 +169,17 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
-		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
-			parameters_map["export_materials"] = "PLACEHOLDER";
-		} else if (exports == BLEND_MATERIAL_EXPORT_EXPORT) {
-			parameters_map["export_materials"] = "EXPORT";
+		switch (exports) {
+			case BLEND_MATERIAL_EXPORT_PLACEHOLDER: {
+				parameters_map["export_materials"] = "PLACEHOLDER";
+			} break;
+			case BLEND_MATERIAL_EXPORT_EXPORT: {
+				parameters_map["export_materials"] = "EXPORT";
+			} break;
+			case BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER: {
+				parameters_map["export_materials"] = "EXPORT";
+				parameters_map["export_image_format"] = "NONE";
+			} break;
 		}
 	} else {
 		parameters_map["export_materials"] = "PLACEHOLDER";
@@ -246,6 +247,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 			parameters_map["export_gn_mesh"] = false;
 		}
 	}
+	if (blender_major_version >= 4) {
+		if (p_options.has(SNAME("blender/meshes/gpu_instances")) && p_options[SNAME("blender/meshes/gpu_instances")]) {
+			parameters_map["export_gpu_instances"] = true;
+		} else {
+			parameters_map["export_gpu_instances"] = false;
+		}
+	}
+
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -306,6 +315,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	Ref<GLTFState> state;
 	state.instantiate();
 
+	if (p_options.has("gltf/naming_version")) {
+		int naming_version = p_options["gltf/naming_version"];
+		gltf->set_naming_version(naming_version);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
@@ -331,7 +344,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.has_extension("blend")) {
 		return true;
 	}
 
@@ -345,7 +358,7 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	// Returns all the options when path is empty because that means it's for the Project Settings.
-	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.is_empty() && !p_path.has_extension("blend")) {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -363,14 +376,17 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
 	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
+	ADD_OPTION_BOOL("blender/meshes/gpu_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
 	ADD_OPTION_BOOL("blender/materials/unpack_enabled", true);
-	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export", BLEND_MATERIAL_EXPORT_EXPORT);
+	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export,Named Placeholder", BLEND_MATERIAL_EXPORT_EXPORT);
 	ADD_OPTION_BOOL("blender/animation/limit_playback", true);
 	ADD_OPTION_BOOL("blender/animation/always_sample", true);
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
+
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 }
 
 ///////////////////////////
@@ -381,7 +397,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	bool blend_enabled = GLOBAL_GET_CACHED(bool, "filesystem/import/blender/enabled");
 
 	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
@@ -500,6 +516,8 @@ void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender path is invalid or not set, check your Editor Settings. Cannot configure blender path in headless mode.");
+
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
@@ -517,6 +535,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		blender_path->set_accessibility_name(TTRC("Path"));
 		hb->add_child(blender_path);
 
 		blender_path_browse = memnew(Button);
@@ -530,6 +549,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		vb->add_child(hb);
 
 		path_status = memnew(Label);
+		path_status->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		vb->add_child(path_status);
 
 		configure_blender_dialog->add_child(vb);
@@ -595,8 +615,3 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 	return false;
 }
-
-EditorFileSystemImportFormatSupportQueryBlend::EditorFileSystemImportFormatSupportQueryBlend() {
-}
-
-#endif // TOOLS_ENABLED

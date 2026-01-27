@@ -49,18 +49,17 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 		String l = f->get_line().strip_edges();
 
 		if (l.begins_with("newmtl ")) {
-			//vertex
-
+			// Start of a new material.
 			current_name = l.replace("newmtl", "").strip_edges();
 			current.instantiate();
 			current->set_name(current_name);
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
-			//uv
+			// Ambient color.
 			WARN_PRINT("OBJ: Ambient light for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("Kd ")) {
-			//normal
+			// Diffuse color.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_INVALID_DATA);
@@ -70,7 +69,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			c.b = v[3].to_float();
 			current->set_albedo(c);
 		} else if (l.begins_with("Ks ")) {
-			//normal
+			// Specular color.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_INVALID_DATA);
@@ -80,14 +79,14 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			float metalness = MAX(r, MAX(g, b));
 			current->set_metallic(metalness);
 		} else if (l.begins_with("Ns ")) {
-			//normal
+			// Specular exponent.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
 			float s = v[1].to_float();
 			current->set_metallic((1000.0 - s) / 1000.0);
 		} else if (l.begins_with("d ")) {
-			//normal
+			// Dissolve (1.0 is fully opaque, 0.0 is completely transparent).
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
@@ -99,7 +98,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 				current->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			}
 		} else if (l.begins_with("Tr ")) {
-			//normal
+			// Transparency (1.0 is completely transparent, 0.0 is fully opaque).
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
@@ -112,14 +111,14 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			}
 
 		} else if (l.begins_with("map_Ka ")) {
-			//uv
+			// Ambient texture map.
 			WARN_PRINT("OBJ: Ambient light texture for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("map_Kd ")) {
-			//normal
+			// Diffuse texture map.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Kd", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -136,10 +135,10 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			}
 
 		} else if (l.begins_with("map_Ks ")) {
-			//normal
+			// Specular color texture map.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ks", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -156,10 +155,10 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			}
 
 		} else if (l.begins_with("map_Ns ")) {
-			//normal
+			// Specular exponent texture map.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ns", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -174,18 +173,39 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
-		} else if (l.begins_with("map_bump ")) {
-			//normal
+		} else if (l.begins_with("map_bump ") || l.begins_with("map_Bump ")) {
+			// Bump texture map.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
-			String path = base_path.path_join(p);
+			l = l.begins_with("map_bump ") ? l.trim_prefix("map_bump ") : l.trim_prefix("map_Bump ");
+			l = l.strip_edges();
+
+			// Read path and optional bump multiplier.
+			String p;
+			float bm = 1.0;
+			int bm_pos = l.find("-bm ");
+			if (bm_pos >= 0) {
+				int bm_start = bm_pos + 4;
+				int bm_end = l.find_char(' ', bm_start);
+				if (bm_end >= 0) {
+					bm = l.substr(bm_start, bm_end - bm_start).to_float();
+					p = l.substr(bm_end + 1);
+				} else { // Bump multiplier ends at end of line.
+					bm = l.substr(bm_start).to_float();
+					p = l.substr(0, bm_pos);
+				}
+			} else {
+				p = l;
+			}
+
+			String path = base_path.path_join(p.replace_char('\\', '/').strip_edges());
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
 				current->set_feature(StandardMaterial3D::FEATURE_NORMAL_MAPPING, true);
 				current->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
+				current->set_normal_scale(bm);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -365,7 +385,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				face[1] = face[2];
 			}
 		} else if (l.begins_with("s ")) { //smoothing
-			String what = l.substr(2, l.length()).strip_edges();
+			String what = l.substr(2).strip_edges();
 			bool do_smooth;
 			if (what == "off") {
 				do_smooth = false;
@@ -402,7 +422,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
-				if (normals.size() == 0) {
+				if (normals.is_empty()) {
 					surf_tool->generate_normals();
 				}
 
@@ -432,7 +452,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					ERR_FAIL_COND_V(tangents.is_empty(), ERR_FILE_CORRUPT);
 					for (int vert = 0; vert < norms.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (abs(tan.dot(norms[vert])) > 0.0001) {
+						if (std::abs(tan.dot(norms[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
 							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
@@ -476,7 +496,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("o ")) {
-				name = l.substr(2, l.length()).strip_edges();
+				name = l.substr(2).strip_edges();
 			}
 
 			if (l.begins_with("usemtl ")) {
@@ -484,7 +504,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("g ")) {
-				current_group = l.substr(2, l.length()).strip_edges();
+				current_group = l.substr(2).strip_edges();
 			}
 
 		} else if (l.begins_with("mtllib ")) { //parse material
@@ -584,9 +604,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
 
-EditorOBJImporter::EditorOBJImporter() {
-}
-
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
@@ -681,7 +698,4 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	r_gen_files->push_back(save_path);
 
 	return OK;
-}
-
-ResourceImporterOBJ::ResourceImporterOBJ() {
 }

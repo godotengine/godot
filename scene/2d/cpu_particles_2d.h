@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_2D_H
-#define CPU_PARTICLES_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/gradient.h"
 
 class RandomNumberGenerator;
 
@@ -75,7 +75,8 @@ public:
 		EMISSION_SHAPE_RECTANGLE,
 		EMISSION_SHAPE_POINTS,
 		EMISSION_SHAPE_DIRECTED_POINTS,
-		EMISSION_SHAPE_MAX
+		EMISSION_SHAPE_RING,
+		EMISSION_SHAPE_MAX,
 	};
 
 private:
@@ -121,14 +122,6 @@ private:
 		}
 	};
 
-	struct SortAxis {
-		const Particle *particles = nullptr;
-		Vector2 axis;
-		bool operator()(int p_a, int p_b) const {
-			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
-		}
-	};
-
 	//
 
 	bool one_shot = false;
@@ -147,6 +140,10 @@ private:
 	bool use_fixed_seed = false;
 
 	Transform2D inv_emission_transform;
+
+#ifdef TOOLS_ENABLED
+	bool show_gizmos = false;
+#endif
 
 	DrawOrder draw_order = DRAW_ORDER_INDEX;
 
@@ -173,7 +170,8 @@ private:
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
+	real_t emission_ring_inner_radius = 0.8;
+	real_t emission_ring_radius = 1.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;
@@ -186,6 +184,7 @@ private:
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 
@@ -211,6 +210,9 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+#ifdef TOOLS_ENABLED
+	void _draw_emission_gizmo();
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 #ifndef DISABLE_DEPRECATED
@@ -257,6 +259,9 @@ public:
 	bool get_use_fixed_seed() const;
 
 	void set_seed(uint32_t p_seed);
+#ifdef TOOLS_ENABLED
+	void set_show_gizmos(bool p_show_gizmos);
+#endif
 	uint32_t get_seed() const;
 
 	void request_particles_process(real_t p_requested_process_time);
@@ -296,6 +301,8 @@ public:
 	void set_emission_points(const Vector<Vector2> &p_points);
 	void set_emission_normals(const Vector<Vector2> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
+	void set_emission_ring_inner_radius(real_t p_inner_radius);
+	void set_emission_ring_radius(real_t p_ring_radius);
 	void set_scale_curve_x(Ref<Curve> p_scale_curve);
 	void set_scale_curve_y(Ref<Curve> p_scale_curve);
 	void set_split_scale(bool p_split_scale);
@@ -306,6 +313,8 @@ public:
 	Vector<Vector2> get_emission_points() const;
 	Vector<Vector2> get_emission_normals() const;
 	Vector<Color> get_emission_colors() const;
+	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_radius() const;
 	Ref<Curve> get_scale_curve_x() const;
 	Ref<Curve> get_scale_curve_y() const;
 	bool get_split_scale();
@@ -327,5 +336,3 @@ VARIANT_ENUM_CAST(CPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles2D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles2D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles2D::EmissionShape)
-
-#endif // CPU_PARTICLES_2D_H

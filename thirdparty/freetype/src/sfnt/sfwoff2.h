@@ -4,7 +4,7 @@
  *
  *   WOFFF2 format management (specification).
  *
- * Copyright (C) 2019-2023 by
+ * Copyright (C) 2019-2025 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

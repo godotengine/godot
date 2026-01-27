@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_WEB_H
-#define AUDIO_DRIVER_WEB_H
+#pragma once
 
 #include "godot_audio.h"
 #include "godot_js.h"
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class AudioDriverWeb : public AudioDriver {
 private:
@@ -191,5 +190,3 @@ public:
 
 	AudioDriverScriptProcessor() { singleton = this; }
 };
-
-#endif // AUDIO_DRIVER_WEB_H

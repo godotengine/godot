@@ -66,7 +66,7 @@ DebugEffects::DebugEffects() {
 void DebugEffects::_create_frustum_arrays() {
 	if (frustum.vertex_buffer.is_null()) {
 		// Create vertex buffer, but don't put data in it yet
-		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, Vector<uint8_t>(), false);
+		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, Vector<uint8_t>());
 
 		Vector<RD::VertexAttribute> attributes;
 		Vector<RID> buffers;
@@ -102,7 +102,7 @@ void DebugEffects::_create_frustum_arrays() {
 			2, 6, 4, // FRT, NRT, NLT
 			// Bottom
 			5, 7, 1, // NLB, NRB, FLB,
-			7, 3, 1, // NRB, FRB, FLB
+			7, 3, 1 // NRB, FRB, FLB
 		};
 
 		// Create our index_array
@@ -136,7 +136,7 @@ void DebugEffects::_create_frustum_arrays() {
 			0, 4, // FLT - NLT
 			1, 5, // FLB - NLB
 			2, 6, // FRT - NRT
-			3, 7, // FRB - NRB
+			3, 7 // FRB - NRB
 		};
 
 		// Create our lines_array
@@ -161,17 +161,17 @@ DebugEffects::~DebugEffects() {
 
 	// Destroy vertex buffer and array.
 	if (frustum.vertex_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.vertex_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.vertex_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy index buffer and array,
 	if (frustum.index_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.index_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.index_buffer); // Array gets freed as dependency.
 	}
 
 	// Destroy lines buffer and array.
 	if (frustum.lines_buffer.is_valid()) {
-		RD::get_singleton()->free(frustum.lines_buffer); // Array gets freed as dependency.
+		RD::get_singleton()->free_rid(frustum.lines_buffer); // Array gets freed as dependency.
 	}
 
 	motion_vectors.shader.version_free(motion_vectors.shader_version);

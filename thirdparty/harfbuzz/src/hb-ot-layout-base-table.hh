@@ -182,7 +182,7 @@ struct BaseCoord
   void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
   {
     switch (u.format) {
-    case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set);
+    case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set); return;
     default:return;
     }
   }
@@ -460,7 +460,7 @@ struct BaseScript
   { return (this+baseValues).get_base_coord (baseline_tag_index); }
 
   bool has_values () const { return baseValues; }
-  bool has_min_max () const { return defaultMinMax; /* TODO What if only per-language is present? */ }
+  bool has_min_max () const { return defaultMinMax || baseLangSysRecords; }
 
   void collect_variation_indices (const hb_subset_plan_t* plan,
                                   hb_set_t& varidx_set /* OUT */) const

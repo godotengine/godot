@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKET_PEER_H
-#define PACKET_PEER_H
+#pragma once
 
 #include "core/io/stream_peer.h"
 #include "core/object/class_db.h"
@@ -72,9 +71,6 @@ public:
 
 	void set_encode_buffer_max_size(int p_max_size);
 	int get_encode_buffer_max_size() const;
-
-	PacketPeer() {}
-	~PacketPeer() {}
 };
 
 class PacketPeerExtension : public PacketPeer {
@@ -124,5 +120,3 @@ public:
 	int get_output_buffer_max_size() const;
 	PacketPeerStream();
 };
-
-#endif // PACKET_PEER_H

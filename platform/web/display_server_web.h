@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_WEB_H
-#define DISPLAY_SERVER_WEB_H
+#pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #include "godot_js.h"
 
@@ -39,7 +38,7 @@
 #include <emscripten/html5.h>
 
 class DisplayServerWeb : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWeb, DisplayServer);
 
 private:
 	struct JSTouchEvent {
@@ -59,7 +58,7 @@ private:
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE webgl_ctx = 0;
 #endif
 
-	HashMap<int, CharString> utterance_ids;
+	HashMap<int64_t, CharString> utterance_ids;
 
 	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
@@ -103,8 +102,14 @@ private:
 	int key_event_pos = 0;
 
 	bool swap_cancel_ok = false;
-	bool tts = false;
 	NativeMenu *native_menu = nullptr;
+
+	int gamepad_count = 0;
+
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);
@@ -115,10 +120,10 @@ private:
 	static void _fullscreen_change_callback(int p_fullscreen);
 	WASM_EXPORT static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static int _mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
-	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	WASM_EXPORT static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
-	static int _mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	WASM_EXPORT static int mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
+	static int _mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
 	WASM_EXPORT static void touch_callback(int p_type, int p_count);
 	static void _touch_callback(int p_type, int p_count);
 	WASM_EXPORT static void key_callback(int p_pressed, int p_repeat, int p_modifiers);
@@ -127,8 +132,8 @@ private:
 	static void _vk_input_text_callback(const String &p_text, int p_cursor);
 	WASM_EXPORT static void gamepad_callback(int p_index, int p_connected, const char *p_id, const char *p_guid);
 	static void _gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid);
-	WASM_EXPORT static void js_utterance_callback(int p_event, int p_id, int p_pos);
-	static void _js_utterance_callback(int p_event, int p_id, int p_pos);
+	WASM_EXPORT static void js_utterance_callback(int p_event, int64_t p_id, int p_pos);
+	static void _js_utterance_callback(int p_event, int64_t p_id, int p_pos);
 	WASM_EXPORT static void ime_callback(int p_type, const char *p_text);
 	static void _ime_callback(int p_type, const String &p_text);
 	WASM_EXPORT static void request_quit_callback();
@@ -171,7 +176,7 @@ public:
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
 
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int64_t p_utterance_id = 0, bool p_interrupt = false) override;
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
@@ -184,6 +189,11 @@ public:
 	// mouse
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
+
 	virtual Point2i mouse_get_position() const override;
 
 	// ime
@@ -283,5 +293,3 @@ public:
 	DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerWeb();
 };
-
-#endif // DISPLAY_SERVER_WEB_H

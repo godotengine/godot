@@ -30,7 +30,7 @@ bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outE
 {
 	// This algorithm can generate infinite values, see comment below
 	FPExceptionDisableInvalid disable_invalid;
-	(void)disable_invalid;
+	JPH_UNUSED(disable_invalid);
 
 	// Maximum number of sweeps to make
 	const int cMaxSweeps = 50;

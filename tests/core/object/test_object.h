@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_OBJECT_H
-#define TEST_OBJECT_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/object/object.h"
@@ -144,15 +143,6 @@ TEST_CASE("[Object] Core getters") {
 	CHECK_MESSAGE(
 			object.get_save_class() == "Object",
 			"The returned save class should match the expected value.");
-
-	List<String> inheritance_list;
-	object.get_inheritance_list_static(&inheritance_list);
-	CHECK_MESSAGE(
-			inheritance_list.size() == 1,
-			"The inheritance list should consist of Object only");
-	CHECK_MESSAGE(
-			inheritance_list.front()->get() == "Object",
-			"The inheritance list should consist of Object only");
 }
 
 TEST_CASE("[Object] Metadata") {
@@ -225,12 +215,12 @@ TEST_CASE("[Object] Construction") {
 }
 
 TEST_CASE("[Object] Script instance property setter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	object.set("some_name", 100, &valid);
+	object->set("some_name", 100, &valid);
 	CHECK(valid);
 	Variant actual_value;
 	CHECK_MESSAGE(
@@ -239,20 +229,22 @@ TEST_CASE("[Object] Script instance property setter") {
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the object.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Script instance property getter") {
-	Object object;
+	Object *object = memnew(Object);
 	_MockScriptInstance *script_instance = memnew(_MockScriptInstance);
 	script_instance->set("some_name", 100); // Make sure script instance has the property
-	object.set_script_instance(script_instance);
+	object->set_script_instance(script_instance);
 
 	bool valid = false;
-	const Variant &actual_value = object.get("some_name", &valid);
+	const Variant &actual_value = object->get("some_name", &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
 			actual_value == Variant(100),
 			"The returned value should equal the one which was set by the script instance.");
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Built-in property setter") {
@@ -323,6 +315,29 @@ TEST_CASE("[Object] Absent name getter") {
 			actual_value == Variant(),
 			"The returned value should equal nil variant.");
 }
+
+class SignalReceiver : public Object {
+	GDCLASS(SignalReceiver, Object);
+
+public:
+	Vector<Variant> received_args;
+
+	void callback0() {
+		received_args = Vector<Variant>{};
+	}
+
+	void callback1(Variant p_arg1) {
+		received_args = Vector<Variant>{ p_arg1 };
+	}
+
+	void callback2(Variant p_arg1, Variant p_arg2) {
+		received_args = Vector<Variant>{ p_arg1, p_arg2 };
+	}
+
+	void callback3(Variant p_arg1, Variant p_arg2, Variant p_arg3) {
+		received_args = Vector<Variant>{ p_arg1, p_arg2, p_arg3 };
+	}
+};
 
 TEST_CASE("[Object] Signals") {
 	Object object;
@@ -429,8 +444,7 @@ TEST_CASE("[Object] Signals") {
 	}
 
 	SUBCASE("Emitting an existing signal should call the connected method") {
-		Array empty_signal_args;
-		empty_signal_args.push_back(Array());
+		Array empty_signal_args = { {} };
 
 		SIGNAL_WATCH(&object, "my_custom_signal");
 		SIGNAL_CHECK_FALSE("my_custom_signal");
@@ -464,74 +478,122 @@ TEST_CASE("[Object] Signals") {
 		object.get_all_signal_connections(&signal_connections);
 		CHECK(signal_connections.size() == 0);
 	}
+
+	SUBCASE("Connecting with CONNECT_APPEND_SOURCE_OBJECT flag") {
+		SignalReceiver target;
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3).bind(&object), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", &object);
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, &object, &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback3));
+
+		// Source should be appended regardless of unbinding.
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1).unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback1));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).bind("bind_arg").unbind(1), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ &object, "bind_arg" });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+
+		object.connect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2).unbind(1).bind("bind_arg"), Object::CONNECT_APPEND_SOURCE_OBJECT);
+		object.emit_signal("my_custom_signal", "emit_arg");
+		CHECK_EQ(target.received_args, Vector<Variant>{ "emit_arg", &object });
+		object.disconnect("my_custom_signal", callable_mp(&target, &SignalReceiver::callback2));
+	}
 }
 
-class NotificationObject1 : public Object {
-	GDCLASS(NotificationObject1, Object);
+class NotificationObjectSuperclass : public Object {
+	GDCLASS(NotificationObjectSuperclass, Object);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal1 = order_global++;
-			} break;
-		}
+		order_superclass = ++order_global;
 	}
 
 public:
-	static int order_global;
-	int order_internal1 = -1;
-
-	void reset_order() {
-		order_internal1 = -1;
-		order_global = 1;
-	}
+	static inline int order_global = 0;
+	int order_superclass = -1;
 };
 
-int NotificationObject1::order_global = 1;
-
-class NotificationObject2 : public NotificationObject1 {
-	GDCLASS(NotificationObject2, NotificationObject1);
+class NotificationObjectSubclass : public NotificationObjectSuperclass {
+	GDCLASS(NotificationObjectSubclass, NotificationObjectSuperclass);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal2 = order_global++;
-			} break;
-		}
+		order_subclass = ++order_global;
 	}
 
 public:
-	int order_internal2 = -1;
-	void reset_order() {
-		NotificationObject1::reset_order();
-		order_internal2 = -1;
+	int order_subclass = -1;
+};
+
+class NotificationScriptInstance : public _MockScriptInstance {
+	void notification(int p_notification, bool p_reversed) override {
+		order_script = ++NotificationObjectSuperclass::order_global;
 	}
+
+public:
+	int order_script = -1;
 };
 
 TEST_CASE("[Object] Notification order") { // GH-52325
-	NotificationObject2 *test_notification_object = memnew(NotificationObject2);
+	NotificationObjectSubclass *object = memnew(NotificationObjectSubclass);
+
+	NotificationScriptInstance *script = memnew(NotificationScriptInstance);
+	object->set_script_instance(script);
 
 	SUBCASE("regular order") {
-		test_notification_object->notification(12345, false);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, false);
 
-		CHECK_EQ(test_notification_object->order_internal1, 1);
-		CHECK_EQ(test_notification_object->order_internal2, 2);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(object->order_superclass, 1);
+		CHECK_EQ(object->order_subclass, 2);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(script->order_script, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
 	SUBCASE("reverse order") {
-		test_notification_object->notification(12345, true);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, true);
 
-		CHECK_EQ(test_notification_object->order_internal1, 2);
-		CHECK_EQ(test_notification_object->order_internal2, 1);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(script->order_script, 1);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(object->order_subclass, 2);
+		CHECK_EQ(object->order_superclass, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
-	memdelete(test_notification_object);
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
@@ -602,6 +664,42 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			"Object was tail-deleted without crashes.");
 }
 
-} // namespace TestObject
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
+	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
+	return p_ref->get_reference_count();
+}
 
-#endif // TEST_OBJECT_H
+TEST_CASE("[Object] RequiredParam Ref<T>") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+	const Ref<RefCounted> &ref_ref = ref;
+
+	RequiredParam<RefCounted> required = ref;
+	EXTRACT_PARAM_OR_FAIL(extract, required);
+
+	static_assert(std::is_same_v<decltype(ref_ref), decltype(extract)>);
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+
+	const int count = required_param_compare(ref, ref);
+	CHECK_NE(count, -1);
+	CHECK_EQ(count, ref->get_reference_count());
+
+	CHECK_EQ(ref->get_reference_count(), extract->get_reference_count());
+}
+
+TEST_CASE("[Object] RequiredResult") {
+	Ref<RefCounted> ref;
+	ref.instantiate();
+
+	RequiredResult<RefCounted> required = ref;
+
+	Ref<RefCounted> unpacked = required;
+	Variant var = Ref<RefCounted>(required);
+
+	CHECK_EQ(ref, unpacked);
+	CHECK_EQ(ref, var);
+}
+
+} // namespace TestObject

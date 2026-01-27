@@ -6,8 +6,7 @@ dithered = "#define BC1_DITHER";
 #[compute]
 #version 450
 
-#include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
+#VERSION_DEFINES
 
 #define FLT_MAX 340282346638528859811704183484516925440.0f
 
@@ -15,8 +14,8 @@ layout(binding = 0) uniform sampler2D srcTex;
 layout(binding = 1, rg32ui) uniform restrict writeonly uimage2D dstTexture;
 
 layout(std430, binding = 2) readonly restrict buffer globalBuffer {
-	float2 c_oMatch5[256];
-	float2 c_oMatch6[256];
+	vec2 c_oMatch5[256];
+	vec2 c_oMatch6[256];
 };
 
 layout(push_constant, std430) uniform Params {
@@ -29,14 +28,14 @@ layout(local_size_x = 8, //
 		local_size_y = 8, //
 		local_size_z = 1) in;
 
-float3 rgb565to888(float rgb565) {
-	float3 retVal;
+vec3 rgb565to888(float rgb565) {
+	vec3 retVal;
 	retVal.x = floor(rgb565 / 2048.0f);
 	retVal.y = floor(mod(rgb565, 2048.0f) / 32.0f);
 	retVal.z = floor(mod(rgb565, 32.0f));
 
 	// This is the correct 565 to 888 conversion:
-	//		rgb = floor( rgb * ( 255.0f / float3( 31.0f, 63.0f, 31.0f ) ) + 0.5f )
+	//		rgb = floor( rgb * ( 255.0f / vec3( 31.0f, 63.0f, 31.0f ) ) + 0.5f )
 	//
 	// However stb_dxt follows a different one:
 	//		rb = floor( rb * ( 256 / 32 + 8 / 32 ) );
@@ -53,10 +52,10 @@ float3 rgb565to888(float rgb565) {
 	// Perhaps when we make 888 -> 565 -> 888 it doesn't matter
 	// because they end up mapping to the original number
 
-	return floor(retVal * float3(8.25f, 4.0625f, 8.25f));
+	return floor(retVal * vec3(8.25f, 4.0625f, 8.25f));
 }
 
-float rgb888to565(float3 rgbValue) {
+float rgb888to565(vec3 rgbValue) {
 	rgbValue.rb = floor(rgbValue.rb * 31.0f / 255.0f + 0.5f);
 	rgbValue.g = floor(rgbValue.g * 63.0f / 255.0f + 0.5f);
 
@@ -64,7 +63,7 @@ float rgb888to565(float3 rgbValue) {
 }
 
 // linear interpolation at 1/3 point between a and b, using desired rounding type
-float3 lerp13(float3 a, float3 b) {
+vec3 lerp13(vec3 a, vec3 b) {
 #ifdef STB_DXT_USE_ROUNDING_BIAS
 	// with rounding bias
 	return a + floor((b - a) * (1.0f / 3.0f) + 0.5f);
@@ -75,7 +74,7 @@ float3 lerp13(float3 a, float3 b) {
 }
 
 /// Unpacks a block of 4 colors from two 16-bit endpoints
-void EvalColors(out float3 colors[4], float c0, float c1) {
+void EvalColors(out vec3 colors[4], float c0, float c1) {
 	colors[0] = rgb565to888(c0);
 	colors[1] = rgb565to888(c1);
 	colors[2] = lerp13(colors[0], colors[1]);
@@ -90,13 +89,13 @@ void EvalColors(out float3 colors[4], float c0, float c1) {
 */
 void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, out float outMaxEndp16) {
 	// determine color distribution
-	float3 avgColor;
-	float3 minColor;
-	float3 maxColor;
+	vec3 avgColor;
+	vec3 minColor;
+	vec3 maxColor;
 
 	avgColor = minColor = maxColor = unpackUnorm4x8(srcPixelsBlock[0]).xyz;
 	for (int i = 1; i < 16; ++i) {
-		const float3 currColorUnorm = unpackUnorm4x8(srcPixelsBlock[i]).xyz;
+		const vec3 currColorUnorm = unpackUnorm4x8(srcPixelsBlock[i]).xyz;
 		avgColor += currColorUnorm;
 		minColor = min(minColor, currColorUnorm);
 		maxColor = max(maxColor, currColorUnorm);
@@ -113,8 +112,8 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 	}
 
 	for (int i = 0; i < 16; ++i) {
-		const float3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
-		float3 rgbDiff = currColor - avgColor;
+		const vec3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
+		vec3 rgbDiff = currColor - avgColor;
 
 		cov[0] += rgbDiff.r * rgbDiff.r;
 		cov[1] += rgbDiff.r * rgbDiff.g;
@@ -129,7 +128,7 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 		cov[i] /= 255.0f;
 	}
 
-	float3 vF = maxColor - minColor;
+	vec3 vF = maxColor - minColor;
 
 	const int nIterPower = 4;
 	for (int iter = 0; iter < nIterPower; ++iter) {
@@ -142,8 +141,8 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 		vF.b = b;
 	}
 
-	float magn = max3(abs(vF.r), abs(vF.g), abs(vF.b));
-	float3 v;
+	float magn = max(abs(vF.r), max(abs(vF.g), abs(vF.b)));
+	vec3 v;
 
 	if (magn < 4.0f) { // too small, default to luminance
 		v.r = 299.0f; // JPEG YCbCr luma coefs, scaled by 1000.
@@ -154,11 +153,11 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 	}
 
 	// Pick colors at extreme points
-	float3 minEndpoint, maxEndpoint;
+	vec3 minEndpoint, maxEndpoint;
 	float minDot = FLT_MAX;
 	float maxDot = -FLT_MAX;
 	for (int i = 0; i < 16; ++i) {
-		const float3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
+		const vec3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
 		const float dotValue = dot(currColor, v);
 
 		if (dotValue < minDot) {
@@ -177,9 +176,9 @@ void OptimizeColorsBlock(const uint srcPixelsBlock[16], out float outMinEndp16, 
 }
 
 // The color matching function
-uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
+uint MatchColorsBlock(const uint srcPixelsBlock[16], vec3 color[4]) {
 	uint mask = 0u;
-	float3 dir = color[0] - color[1];
+	vec3 dir = color[0] - color[1];
 	float stops[4];
 
 	for (int i = 0; i < 4; ++i) {
@@ -201,7 +200,7 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 #ifndef BC1_DITHER
 	// the version without dithering is straightforward
 	for (uint i = 16u; i-- > 0u;) {
-		const float3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
+		const vec3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
 
 		const float dotValue = dot(currColor, dir);
 		mask <<= 2u;
@@ -214,8 +213,8 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 	}
 #else
 	// with floyd-steinberg dithering
-	float4 ep1 = float4(0, 0, 0, 0);
-	float4 ep2 = float4(0, 0, 0, 0);
+	vec4 ep1 = vec4(0, 0, 0, 0);
+	vec4 ep2 = vec4(0, 0, 0, 0);
 
 	c0Point *= 16.0f;
 	halfPoint *= 16.0f;
@@ -225,7 +224,7 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 		float ditherDot;
 		uint lmask, step;
 
-		float3 currColor;
+		vec3 currColor;
 		float dotValue;
 
 		currColor = unpackUnorm4x8(srcPixelsBlock[y * 4 + 0]).xyz * 255.0f;
@@ -278,7 +277,7 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], float3 color[4]) {
 
 		mask |= lmask << (y * 8u);
 		{
-			float4 tmp = ep1;
+			vec4 tmp = ep1;
 			ep1 = ep2;
 			ep2 = tmp;
 		} // swap
@@ -301,7 +300,7 @@ bool RefineBlock(const uint srcPixelsBlock[16], uint mask, inout float inOutMinE
 	{
 		// yes, linear system would be singular; solve using optimal
 		// single-color match on average color
-		float3 rgbVal = float3(8.0f / 255.0f, 8.0f / 255.0f, 8.0f / 255.0f);
+		vec3 rgbVal = vec3(8.0f / 255.0f, 8.0f / 255.0f, 8.0f / 255.0f);
 		for (int i = 0; i < 16; ++i) {
 			rgbVal += unpackUnorm4x8(srcPixelsBlock[i]).xyz;
 		}
@@ -323,10 +322,10 @@ bool RefineBlock(const uint srcPixelsBlock[16], uint mask, inout float inOutMinE
 
 		float akku = 0.0f;
 		uint cm = mask;
-		float3 at1 = float3(0, 0, 0);
-		float3 at2 = float3(0, 0, 0);
+		vec3 at1 = vec3(0, 0, 0);
+		vec3 at2 = vec3(0, 0, 0);
 		for (int i = 0; i < 16; ++i, cm >>= 2u) {
-			const float3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
+			const vec3 currColor = unpackUnorm4x8(srcPixelsBlock[i]).xyz * 255.0f;
 
 			const uint step = cm & 3u;
 			const float w1 = w1Tab[step];
@@ -342,17 +341,17 @@ bool RefineBlock(const uint srcPixelsBlock[16], uint mask, inout float inOutMinE
 		const float yy = floor(mod(akku, 65535.0f) / 256.0f);
 		const float xy = mod(akku, 256.0f);
 
-		float2 f_rb_g;
+		vec2 f_rb_g;
 		f_rb_g.x = 3.0f * 31.0f / 255.0f / (xx * yy - xy * xy);
 		f_rb_g.y = f_rb_g.x * 63.0f / 31.0f;
 
 		// solve.
-		const float3 newMaxVal = clamp(floor((at1 * yy - at2 * xy) * f_rb_g.xyx + 0.5f),
-				float3(0.0f, 0.0f, 0.0f), float3(31, 63, 31));
+		const vec3 newMaxVal = clamp(floor((at1 * yy - at2 * xy) * f_rb_g.xyx + 0.5f),
+				vec3(0.0f, 0.0f, 0.0f), vec3(31, 63, 31));
 		newMax16 = newMaxVal.x * 2048.0f + newMaxVal.y * 32.0f + newMaxVal.z;
 
-		const float3 newMinVal = clamp(floor((at2 * xx - at1 * xy) * f_rb_g.xyx + 0.5f),
-				float3(0.0f, 0.0f, 0.0f), float3(31, 63, 31));
+		const vec3 newMinVal = clamp(floor((at2 * xx - at1 * xy) * f_rb_g.xyx + 0.5f),
+				vec3(0.0f, 0.0f, 0.0f), vec3(31, 63, 31));
 		newMin16 = newMinVal.x * 2048.0f + newMinVal.y * 32.0f + newMinVal.z;
 	}
 
@@ -365,48 +364,48 @@ bool RefineBlock(const uint srcPixelsBlock[16], uint mask, inout float inOutMinE
 #ifdef BC1_DITHER
 /// Quantizes 'srcValue' which is originally in 888 (full range),
 /// converting it to 565 and then back to 888 (quantized)
-float3 quant(float3 srcValue) {
+vec3 quant(vec3 srcValue) {
 	srcValue = clamp(srcValue, 0.0f, 255.0f);
 	// Convert 888 -> 565
-	srcValue = floor(srcValue * float3(31.0f / 255.0f, 63.0f / 255.0f, 31.0f / 255.0f) + 0.5f);
+	srcValue = floor(srcValue * vec3(31.0f / 255.0f, 63.0f / 255.0f, 31.0f / 255.0f) + 0.5f);
 	// Convert 565 -> 888 back
-	srcValue = floor(srcValue * float3(8.25f, 4.0625f, 8.25f));
+	srcValue = floor(srcValue * vec3(8.25f, 4.0625f, 8.25f));
 
 	return srcValue;
 }
 
 void DitherBlock(const uint srcPixBlck[16], out uint dthPixBlck[16]) {
-	float3 ep1[4] = { float3(0, 0, 0), float3(0, 0, 0), float3(0, 0, 0), float3(0, 0, 0) };
-	float3 ep2[4] = { float3(0, 0, 0), float3(0, 0, 0), float3(0, 0, 0), float3(0, 0, 0) };
+	vec3 ep1[4] = { vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0) };
+	vec3 ep2[4] = { vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0) };
 
 	for (uint y = 0u; y < 16u; y += 4u) {
-		float3 srcPixel, dithPixel;
+		vec3 srcPixel, dithPixel;
 
 		srcPixel = unpackUnorm4x8(srcPixBlck[y + 0u]).xyz * 255.0f;
 		dithPixel = quant(srcPixel + trunc((3 * ep2[1] + 5 * ep2[0]) * (1.0f / 16.0f)));
 		ep1[0] = srcPixel - dithPixel;
-		dthPixBlck[y + 0u] = packUnorm4x8(float4(dithPixel * (1.0f / 255.0f), 1.0f));
+		dthPixBlck[y + 0u] = packUnorm4x8(vec4(dithPixel * (1.0f / 255.0f), 1.0f));
 
 		srcPixel = unpackUnorm4x8(srcPixBlck[y + 1u]).xyz * 255.0f;
 		dithPixel = quant(
 				srcPixel + trunc((7 * ep1[0] + 3 * ep2[2] + 5 * ep2[1] + ep2[0]) * (1.0f / 16.0f)));
 		ep1[1] = srcPixel - dithPixel;
-		dthPixBlck[y + 1u] = packUnorm4x8(float4(dithPixel * (1.0f / 255.0f), 1.0f));
+		dthPixBlck[y + 1u] = packUnorm4x8(vec4(dithPixel * (1.0f / 255.0f), 1.0f));
 
 		srcPixel = unpackUnorm4x8(srcPixBlck[y + 2u]).xyz * 255.0f;
 		dithPixel = quant(
 				srcPixel + trunc((7 * ep1[1] + 3 * ep2[3] + 5 * ep2[2] + ep2[1]) * (1.0f / 16.0f)));
 		ep1[2] = srcPixel - dithPixel;
-		dthPixBlck[y + 2u] = packUnorm4x8(float4(dithPixel * (1.0f / 255.0f), 1.0f));
+		dthPixBlck[y + 2u] = packUnorm4x8(vec4(dithPixel * (1.0f / 255.0f), 1.0f));
 
 		srcPixel = unpackUnorm4x8(srcPixBlck[y + 3u]).xyz * 255.0f;
 		dithPixel = quant(srcPixel + trunc((7 * ep1[2] + 5 * ep2[3] + ep2[2]) * (1.0f / 16.0f)));
 		ep1[3] = srcPixel - dithPixel;
-		dthPixBlck[y + 3u] = packUnorm4x8(float4(dithPixel * (1.0f / 255.0f), 1.0f));
+		dthPixBlck[y + 3u] = packUnorm4x8(vec4(dithPixel * (1.0f / 255.0f), 1.0f));
 
 		// swap( ep1, ep2 )
 		for (uint i = 0u; i < 4u; ++i) {
-			float3 tmp = ep1[i];
+			vec3 tmp = ep1[i];
 			ep1[i] = ep2[i];
 			ep2[i] = tmp;
 		}
@@ -420,11 +419,11 @@ void main() {
 	bool bAllColorsEqual = true;
 
 	// Load the whole 4x4 block
-	const uint2 pixelsToLoadBase = gl_GlobalInvocationID.xy << 2u;
+	const uvec2 pixelsToLoadBase = gl_GlobalInvocationID.xy << 2u;
 	for (uint i = 0u; i < 16u; ++i) {
-		const uint2 pixelsToLoad = pixelsToLoadBase + uint2(i & 0x03u, i >> 2u);
-		const float3 srcPixels0 = OGRE_Load2D(srcTex, int2(pixelsToLoad), 0).xyz;
-		srcPixelsBlock[i] = packUnorm4x8(float4(srcPixels0, 1.0f));
+		const uvec2 pixelsToLoad = pixelsToLoadBase + uvec2(i & 0x03u, i >> 2u);
+		const vec3 srcPixels0 = texelFetch(srcTex, ivec2(pixelsToLoad), 0).xyz;
+		srcPixelsBlock[i] = packUnorm4x8(vec4(srcPixels0, 1.0f));
 		bAllColorsEqual = bAllColorsEqual && srcPixelsBlock[0] == srcPixelsBlock[i];
 	}
 
@@ -432,7 +431,7 @@ void main() {
 	uint mask = 0u;
 
 	if (bAllColorsEqual) {
-		const uint3 rgbVal = uint3(unpackUnorm4x8(srcPixelsBlock[0]).xyz * 255.0f);
+		const uvec3 rgbVal = uvec3(unpackUnorm4x8(srcPixelsBlock[0]).xyz * 255.0f);
 		mask = 0xAAAAAAAAu;
 		maxEndp16 =
 				c_oMatch5[rgbVal.r][0] * 2048.0f + c_oMatch6[rgbVal.g][0] * 32.0f + c_oMatch5[rgbVal.b][0];
@@ -450,7 +449,7 @@ void main() {
 		// second step: pca+map along principal axis
 		OptimizeColorsBlock(ditherPixelsBlock, minEndp16, maxEndp16);
 		if (minEndp16 != maxEndp16) {
-			float3 colors[4];
+			vec3 colors[4];
 			EvalColors(colors, maxEndp16, minEndp16); // Note min/max are inverted
 			mask = MatchColorsBlock(srcPixelsBlock, colors);
 		}
@@ -462,7 +461,7 @@ void main() {
 
 			if (RefineBlock(ditherPixelsBlock, mask, minEndp16, maxEndp16)) {
 				if (minEndp16 != maxEndp16) {
-					float3 colors[4];
+					vec3 colors[4];
 					EvalColors(colors, maxEndp16, minEndp16); // Note min/max are inverted
 					mask = MatchColorsBlock(srcPixelsBlock, colors);
 				} else {
@@ -483,10 +482,10 @@ void main() {
 		mask ^= 0x55555555u;
 	}
 
-	uint2 outputBytes;
+	uvec2 outputBytes;
 	outputBytes.x = uint(maxEndp16) | (uint(minEndp16) << 16u);
 	outputBytes.y = mask;
 
-	uint2 dstUV = gl_GlobalInvocationID.xy;
-	imageStore(dstTexture, int2(dstUV), uint4(outputBytes.xy, 0u, 0u));
+	uvec2 dstUV = gl_GlobalInvocationID.xy;
+	imageStore(dstTexture, ivec2(dstUV), uvec4(outputBytes.xy, 0u, 0u));
 }

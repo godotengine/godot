@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NOISE_TEXTURE_2D_H
-#define NOISE_TEXTURE_2D_H
+#pragma once
 
 #include "noise.h"
 
 #include "core/object/ref_counted.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/texture.h"
 
 class NoiseTexture2D : public Texture2D {
@@ -123,5 +123,3 @@ public:
 	NoiseTexture2D();
 	virtual ~NoiseTexture2D();
 };
-
-#endif // NOISE_TEXTURE_2D_H

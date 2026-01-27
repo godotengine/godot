@@ -30,25 +30,72 @@
 
 #include "geometry_2d.h"
 
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
+GODOT_GCC_WARNING_POP
 #include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
 
 const int clipper_precision = 5; // Based on CMP_EPSILON.
-const double clipper_scale = Math::pow(10.0, clipper_precision);
 
-Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &polygon) {
+void Geometry2D::merge_many_polygons(const Vector<Vector<Vector2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes) {
+	using namespace Clipper2Lib;
+
+	PathsD subjects;
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		PathD path(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			const Vector2 &point = polygon[i];
+			path[i] = PointD(point.x, point.y);
+		}
+		subjects.push_back(path);
+	}
+
+	PathsD solution = Union(subjects, FillRule::NonZero);
+	solution = SimplifyPaths(solution, 0.01);
+
+	r_out_polygons.clear();
+	r_out_holes.clear();
+	for (PathsD::size_type i = 0; i < solution.size(); ++i) {
+		PathD &path = solution[i];
+
+		Vector<Point2> output_polygon;
+		output_polygon.resize(path.size());
+		for (PathsD::size_type j = 0; j < path.size(); ++j) {
+			output_polygon.set(j, Vector2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+		}
+		if (IsPositive(path)) {
+			r_out_polygons.push_back(output_polygon);
+		} else {
+			r_out_holes.push_back(output_polygon);
+		}
+	}
+}
+
+Vector<Vector<Vector2>> Geometry2D::decompose_many_polygons_in_convex(const Vector<Vector<Point2>> &p_polygons, const Vector<Vector<Point2>> &p_holes) {
 	Vector<Vector<Vector2>> decomp;
 	List<TPPLPoly> in_poly, out_poly;
 
-	TPPLPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
+	for (const Vector<Vector2> &polygon : p_polygons) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CCW);
+		in_poly.push_back(inp);
 	}
-	inp.SetOrientation(TPPL_ORIENTATION_CCW);
-	in_poly.push_back(inp);
+	for (const Vector<Vector2> &polygon : p_holes) {
+		TPPLPoly inp;
+		inp.Init(polygon.size());
+		for (int i = 0; i < polygon.size(); i++) {
+			inp.GetPoint(i) = polygon[i];
+		}
+		inp.SetOrientation(TPPL_ORIENTATION_CW);
+		inp.SetHole(true);
+		in_poly.push_back(inp);
+	}
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // Failed.
 		ERR_PRINT("Convex decomposing failed!");
@@ -57,9 +104,7 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Poi
 
 	decomp.resize(out_poly.size());
 	int idx = 0;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
-
+	for (TPPLPoly &tp : out_poly) {
 		decomp.write[idx].resize(tp.GetNumPoints());
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
@@ -70,6 +115,10 @@ Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Poi
 	}
 
 	return decomp;
+}
+
+Vector<Vector<Vector2>> Geometry2D::decompose_polygon_in_convex(const Vector<Point2> &p_polygon) {
+	return Geometry2D::decompose_many_polygons_in_convex({ p_polygon }, {});
 }
 
 struct _AtlasWorkRect {
@@ -178,8 +227,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2(results[i].max_h);
-		real_t w = next_power_of_2(results[i].max_w);
+		real_t h = next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
@@ -244,14 +293,16 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 	}
 
 	Vector<Vector<Point2>> polypaths;
-	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
+	polypaths.resize(paths.size());
+	for (PathsD::size_type i = 0; i < paths.size(); i++) {
 		const PathD &path = paths[i];
 
 		Vector<Vector2> polypath;
+		polypath.resize(path.size());
 		for (PathsD::size_type j = 0; j < path.size(); ++j) {
-			polypath.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+			polypath.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath);
+		polypaths.set(i, polypath);
 	}
 	return polypaths;
 }
@@ -299,20 +350,19 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	}
 
 	// Inflate/deflate.
-	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25 * clipper_scale);
-	// Here the points are scaled up internally and
-	// the arc_tolerance is scaled accordingly
-	// to attain the desired precision.
+	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25);
 
 	Vector<Vector<Point2>> polypaths;
+	polypaths.resize(paths.size());
 	for (PathsD::size_type i = 0; i < paths.size(); ++i) {
 		const PathD &path = paths[i];
 
 		Vector<Vector2> polypath2;
+		polypath2.resize(path.size());
 		for (PathsD::size_type j = 0; j < path.size(); ++j) {
-			polypath2.push_back(Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
+			polypath2.set(j, Point2(static_cast<real_t>(path[j].x), static_cast<real_t>(path[j].y)));
 		}
-		polypaths.push_back(polypath2);
+		polypaths.set(i, polypath2);
 	}
 	return polypaths;
 }

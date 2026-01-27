@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INFLECTION_MAP_H
-#define INFLECTION_MAP_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
+
+#include <iterator>
 
 /// An unordered map that splits elements between a fast-access vector of LinearCount consecutively
 /// indexed elements, and a slower-access map holding sparse indexes larger than LinearCount.
@@ -121,5 +122,3 @@ protected:
 	HashMap<KeyType, IndexValue> _inflection_indexes;
 	IndexValue _linear_indexes[LinearCount];
 };
-
-#endif // INFLECTION_MAP_H

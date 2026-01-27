@@ -30,6 +30,10 @@
 
 #include "dictionary.h"
 
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
+STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
+
 #include "core/templates/hash_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/container_type_validate.h"
@@ -43,20 +47,28 @@
 struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map;
 	ContainerTypeValidate typed_key;
 	ContainerTypeValidate typed_value;
 	Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
 };
 
-void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.is_empty()) {
-		return;
-	}
+Dictionary::ConstIterator Dictionary::begin() const {
+	return _p->variant_map.begin();
+}
 
+Dictionary::ConstIterator Dictionary::end() const {
+	return _p->variant_map.end();
+}
+
+LocalVector<Variant> Dictionary::get_key_list() const {
+	LocalVector<Variant> keys;
+
+	keys.reserve(_p->variant_map.size());
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		p_keys->push_back(E.key);
+		keys.push_back(E.key);
 	}
+	return keys;
 }
 
 Variant Dictionary::get_key_at_index(int p_index) const {
@@ -101,10 +113,12 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 		}
 		return *_p->read_only;
 	} else {
-		if (unlikely(!_p->variant_map.has(key))) {
-			VariantInternal::initialize(&_p->variant_map[key], _p->typed_value.type);
+		const uint32_t old_size = _p->variant_map.size();
+		Variant &value = _p->variant_map[key];
+		if (_p->variant_map.size() > old_size) {
+			VariantInternal::initialize(&value, _p->typed_value.type);
 		}
-		return _p->variant_map[key];
+		return value;
 	}
 }
 
@@ -117,8 +131,10 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 		VariantInternal::initialize(_p->typed_fallback, _p->typed_value.type);
 		return *_p->typed_fallback;
 	} else {
-		// Will not insert key, so no initialization is necessary.
-		return _p->variant_map[key];
+		static Variant empty;
+		const Variant *value = _p->variant_map.getptr(key);
+		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", key));
+		return *value;
 	}
 }
 
@@ -127,7 +143,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
 	if (!E) {
 		return nullptr;
 	}
@@ -140,7 +156,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(key));
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(key));
 	if (!E) {
 		return nullptr;
 	}
@@ -155,7 +171,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
 
 	if (!E) {
 		return Variant();
@@ -208,14 +224,14 @@ bool Dictionary::is_empty() const {
 bool Dictionary::has(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has'"), false);
-	return _p->variant_map.has(p_key);
+	return _p->variant_map.has(key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
 	for (int i = 0; i < p_keys.size(); i++) {
 		Variant key = p_keys[i];
 		ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has_all'"), false);
-		if (!has(key)) {
+		if (!_p->variant_map.has(key)) {
 			return false;
 		}
 	}
@@ -264,7 +280,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	}
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
+		HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
 		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
 			return false;
 		}
@@ -289,14 +305,32 @@ void Dictionary::_ref(const Dictionary &p_from) const {
 	_p = p_from._p;
 }
 
+void Dictionary::reserve(int p_new_capacity) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
+	ERR_FAIL_COND_MSG(p_new_capacity < 0, "New capacity must be non-negative.");
+	_p->variant_map.reserve(p_new_capacity);
+}
+
 void Dictionary::clear() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	_p->variant_map.clear();
 }
 
+struct _DictionaryVariantSort {
+	_FORCE_INLINE_ bool operator()(const KeyValue<Variant, Variant> &p_l, const KeyValue<Variant, Variant> &p_r) const {
+		bool valid = false;
+		Variant res;
+		Variant::evaluate(Variant::OP_LESS, p_l.key, p_r.key, res, valid);
+		if (!valid) {
+			res = false;
+		}
+		return res;
+	}
+};
+
 void Dictionary::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	_p->variant_map.sort();
+	_p->variant_map.sort_custom<_DictionaryVariantSort>();
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
@@ -410,7 +444,7 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	}
 
 	int size = p_dictionary._p->variant_map.size();
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map = HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>(size);
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>(size);
 
 	Vector<Variant> key_array;
 	key_array.resize(size);
@@ -543,7 +577,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	}
 	Variant key = *p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "next"), nullptr);
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(key);
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(key);
 
 	if (!E) {
 		return nullptr;
@@ -559,7 +593,11 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 }
 
 Dictionary Dictionary::duplicate(bool p_deep) const {
-	return recursive_duplicate(p_deep, 0);
+	return recursive_duplicate(p_deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
+}
+
+Dictionary Dictionary::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode) const {
+	return recursive_duplicate(true, p_deep_subresources_mode, 0);
 }
 
 void Dictionary::make_read_only() {
@@ -571,7 +609,7 @@ bool Dictionary::is_read_only() const {
 	return _p->read_only != nullptr;
 }
 
-Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) const {
+Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
 	Dictionary n;
 	n._p->typed_key = _p->typed_key;
 	n._p->typed_value = _p->typed_value;
@@ -581,10 +619,18 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, int recursion_count) con
 		return n;
 	}
 
+	n.reserve(_p->variant_map.size());
 	if (p_deep) {
+		bool is_call_chain_end = recursion_count == 0;
+
 		recursion_count++;
 		for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-			n[E.key.recursive_duplicate(true, recursion_count)] = E.value.recursive_duplicate(true, recursion_count);
+			n[E.key.recursive_duplicate(true, p_deep_subresources_mode, recursion_count)] = E.value.recursive_duplicate(true, p_deep_subresources_mode, recursion_count);
+		}
+
+		// Variant::recursive_duplicate() may have created a remap cache by now.
+		if (is_call_chain_end) {
+			Resource::_teardown_duplicate_from_variant();
 		}
 	} else {
 		for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
@@ -631,6 +677,10 @@ bool Dictionary::is_typed_key() const {
 
 bool Dictionary::is_typed_value() const {
 	return _p->typed_value.type != Variant::NIL;
+}
+
+bool Dictionary::is_same_instance(const Dictionary &p_other) const {
+	return _p == p_other._p;
 }
 
 bool Dictionary::is_same_typed(const Dictionary &p_other) const {
@@ -683,6 +733,14 @@ Variant Dictionary::get_typed_key_script() const {
 
 Variant Dictionary::get_typed_value_script() const {
 	return _p->typed_value.script;
+}
+
+const ContainerTypeValidate &Dictionary::get_key_validator() const {
+	return _p->typed_key;
+}
+
+const ContainerTypeValidate &Dictionary::get_value_validator() const {
+	return _p->typed_value;
 }
 
 void Dictionary::operator=(const Dictionary &p_dictionary) {

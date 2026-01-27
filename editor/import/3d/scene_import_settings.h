@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_IMPORT_SETTINGS_H
-#define SCENE_IMPORT_SETTINGS_H
+#pragma once
 
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/camera_3d.h"
@@ -50,6 +49,7 @@
 class EditorFileDialog;
 class EditorInspector;
 class SceneImportSettingsData;
+class Timer;
 
 class SceneImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)
@@ -129,8 +129,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *mesh_node = nullptr;
 		TreeItem *material_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 
 		HashMap<StringName, Variant> settings;
@@ -144,8 +144,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 		TreeItem *scene_node = nullptr;
 		TreeItem *mesh_node = nullptr;
 
-		float cam_rot_x = -Math_PI / 4;
-		float cam_rot_y = -Math_PI / 4;
+		float cam_rot_x = -Math::PI / 4;
+		float cam_rot_y = -Math::PI / 4;
 		float cam_zoom = 1;
 		HashMap<StringName, Variant> settings;
 	};
@@ -165,6 +165,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	};
 	HashMap<String, NodeData> node_map;
 
+	bool _get_current(const StringName &p_name, Variant &r_ret) const;
+	void _set_default(const StringName &p_name, const Variant &p_value);
 	void _fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent);
 	void _fill_mesh(Tree *p_tree, const Ref<Mesh> &p_mesh, TreeItem *p_parent);
 	void _fill_animation(Tree *p_tree, const Ref<Animation> &p_anim, const String &p_name, TreeItem *p_parent);
@@ -202,6 +204,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	HashMap<StringName, Variant> defaults;
 
 	SceneImportSettingsData *scene_import_settings_data = nullptr;
+	ResourceImporterScene *_resource_importer_scene = nullptr;
 
 	void _re_import();
 
@@ -232,7 +235,6 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 
 	void _load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
 
-	bool editing_animation = false;
 	bool generate_collider = false;
 
 	Timer *update_view_timer = nullptr;
@@ -242,7 +244,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	bool is_editing_animation() const { return editing_animation; }
+	ResourceImporterScene *get_resource_importer_scene() const { return _resource_importer_scene; }
 	void request_generate_collider();
 	void update_view();
 	void open_settings(const String &p_path, const String &p_scene_import_type = "PackedScene");
@@ -251,5 +253,3 @@ public:
 	SceneImportSettingsDialog();
 	~SceneImportSettingsDialog();
 };
-
-#endif // SCENE_IMPORT_SETTINGS_H

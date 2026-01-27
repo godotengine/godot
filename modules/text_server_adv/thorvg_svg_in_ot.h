@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_SVG_IN_OT_H
-#define THORVG_SVG_IN_OT_H
+#pragma once
 
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
@@ -44,6 +43,7 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/os/mutex.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
@@ -95,5 +95,3 @@ SVG_RendererHooks *get_tvg_svg_in_ot_hooks();
 
 #endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED
-
-#endif // THORVG_SVG_IN_OT_H

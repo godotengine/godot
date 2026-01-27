@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_INTERFACE_H
-#define EDITOR_INTERFACE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -102,7 +101,7 @@ public:
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
-	EditorFileSystem *get_resource_file_system() const;
+	EditorFileSystem *get_resource_filesystem() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
@@ -132,6 +131,12 @@ public:
 	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
+	String get_editor_language() const;
+
+	bool is_node_3d_snap_enabled() const;
+	real_t get_node_3d_translate_snap() const;
+	real_t get_node_3d_rotate_snap() const;
+	real_t get_node_3d_scale_snap() const;
 
 	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
 	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
@@ -170,13 +175,20 @@ public:
 	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
 
+	void set_object_edited(Object *p_object, bool p_edited);
+	bool is_object_edited(Object *p_object) const;
+
 	PackedStringArray get_open_scenes() const;
+	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
+
+	void add_root_node(Node *p_node);
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
 	void save_all_scenes();
+	Error close_scene();
 
 	// Scene playback.
 
@@ -190,9 +202,7 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	// Base.
 	static void create();
@@ -200,5 +210,3 @@ public:
 
 	EditorInterface();
 };
-
-#endif // EDITOR_INTERFACE_H

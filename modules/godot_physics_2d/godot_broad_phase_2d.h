@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_BROAD_PHASE_2D_H
-#define GODOT_BROAD_PHASE_2D_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
@@ -40,7 +39,7 @@ class GodotBroadPhase2D {
 public:
 	typedef GodotBroadPhase2D *(*CreateFunction)();
 
-	static CreateFunction create_func;
+	static inline CreateFunction create_func = nullptr;
 
 	typedef uint32_t ID;
 
@@ -65,7 +64,5 @@ public:
 
 	virtual void update() = 0;
 
-	virtual ~GodotBroadPhase2D();
+	virtual ~GodotBroadPhase2D() {}
 };
-
-#endif // GODOT_BROAD_PHASE_2D_H

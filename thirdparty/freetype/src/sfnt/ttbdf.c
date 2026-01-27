@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType embedded BDF properties (body).
  *
- * Copyright (C) 2005-2023 by
+ * Copyright (C) 2005-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -142,7 +142,7 @@
   {
     TT_Face    ttface = (TT_Face)face;
     TT_BDF     bdf    = &ttface->bdf;
-    FT_Size    size   = FT_FACE_SIZE( face );
+    FT_Size    size   = face->size;
     FT_Error   error  = FT_Err_Ok;
     FT_Byte*   p;
     FT_UInt    count;

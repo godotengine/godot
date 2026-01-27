@@ -41,11 +41,17 @@
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/xml_parser.h"
+#include "core/os/main_loop.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#include "editor/run/game_view_plugin.h"
+#endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <dlfcn.h>
 #include <sys/system_properties.h>
@@ -68,6 +74,14 @@ String _remove_symlink(const String &dir) {
 	chdir(current_dir_name);
 	return dir_without_symlink;
 }
+
+#ifdef TOOLS_ENABLED
+_FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
+	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
+	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+}
+#endif
 
 class AndroidLogger : public Logger {
 public:
@@ -311,7 +325,7 @@ String OS_Android::get_version() const {
 	}
 
 	// Handles stock Android.
-	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String sdk_version = get_system_property("ro.build.version.sdk");
 	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
@@ -323,6 +337,14 @@ String OS_Android::get_version() const {
 	return "";
 }
 
+String OS_Android::get_version_alias() const {
+	String release = get_system_property("ro.build.version.release_or_codename");
+	String sdk_version = get_system_property("ro.build.version.sdk");
+	String build = get_system_property("ro.build.version.incremental");
+
+	return vformat("%s (SDK %s build %s)", release, sdk_version, build);
+}
+
 MainLoop *OS_Android::get_main_loop() const {
 	return main_loop;
 }
@@ -331,9 +353,20 @@ void OS_Android::main_loop_begin() {
 	if (main_loop) {
 		main_loop->initialize();
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+		if (game_view_plugin != nullptr) {
+			game_view_plugin->connect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+	}
+#endif
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Android::main_loop_iterate");
 	if (!main_loop) {
 		return false;
 	}
@@ -353,6 +386,15 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 }
 
 void OS_Android::main_loop_end() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+		if (game_view_plugin != nullptr) {
+			game_view_plugin->disconnect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+	}
+#endif
+
 	if (main_loop) {
 		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 		if (scene_tree) {
@@ -361,6 +403,14 @@ void OS_Android::main_loop_end() {
 		main_loop->finalize();
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void OS_Android::_on_main_screen_changed(const String &p_screen_name) {
+	if (OS_Android::get_singleton() != nullptr && OS_Android::get_singleton()->get_godot_java() != nullptr) {
+		OS_Android::get_singleton()->get_godot_java()->on_editor_workspace_selected(p_screen_name);
+	}
+}
+#endif
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
@@ -423,6 +473,9 @@ void OS_Android::_load_system_font_config() const {
 
 	Ref<XMLParser> parser;
 	parser.instantiate();
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
 
 	Error err = parser->open(String(getenv("ANDROID_ROOT")).path_join("/etc/fonts.xml"));
 	if (err == OK) {
@@ -500,20 +553,22 @@ void OS_Android::_load_system_font_config() const {
 				if (in_font_node) {
 					fi.filename = parser->get_node_data().strip_edges();
 					fi.font_name = fn;
-					if (!fb.is_empty() && fn.is_empty()) {
-						fi.font_name = fb;
-						fi.priority = 2;
+					if (da->file_exists(root.path_join(fi.filename))) {
+						if (!fb.is_empty() && fn.is_empty()) {
+							fi.font_name = fb;
+							fi.priority = 2;
+						}
+						if (fi.font_name.is_empty()) {
+							fi.font_name = "sans-serif";
+							fi.priority = 5;
+						}
+						if (fi.font_name.ends_with("-condensed")) {
+							fi.stretch = 75;
+							fi.font_name = fi.font_name.trim_suffix("-condensed");
+						}
+						fonts.push_back(fi);
+						font_names.insert(fi.font_name);
 					}
-					if (fi.font_name.is_empty()) {
-						fi.font_name = "sans-serif";
-						fi.priority = 5;
-					}
-					if (fi.font_name.ends_with("-condensed")) {
-						fi.stretch = 75;
-						fi.font_name = fi.font_name.trim_suffix("-condensed");
-					}
-					fonts.push_back(fi);
-					font_names.insert(fi.font_name);
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
@@ -559,7 +614,7 @@ Vector<String> OS_Android::get_system_font_path_for_text(const String &p_font_na
 		font_name = font_aliases[font_name];
 	}
 	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
-	String lang_prefix = p_locale.split("_")[0];
+	String lang_prefix = p_locale.get_slicec('_', 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
@@ -823,7 +878,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 
-	if (godot_java->has_feature(p_feature)) {
+	if (godot_java->check_internal_feature_support(p_feature)) {
 		return true;
 	}
 

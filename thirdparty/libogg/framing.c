@@ -349,12 +349,13 @@ int ogg_stream_packetin(ogg_stream_state *os,ogg_packet *op){
 static int ogg_stream_flush_i(ogg_stream_state *os,ogg_page *og, int force, int nfill){
   int i;
   int vals=0;
-  int maxvals=(os->lacing_fill>255?255:os->lacing_fill);
+  int maxvals;
   int bytes=0;
   long acc=0;
   ogg_int64_t granule_pos=-1;
 
   if(ogg_stream_check(os)) return(0);
+  maxvals=(os->lacing_fill>255?255:os->lacing_fill);
   if(maxvals==0) return(0);
 
   /* construct a page */
@@ -639,11 +640,14 @@ int ogg_sync_wrote(ogg_sync_state *oy, long bytes){
 */
 
 long ogg_sync_pageseek(ogg_sync_state *oy,ogg_page *og){
-  unsigned char *page=oy->data+oy->returned;
+  unsigned char *page;
   unsigned char *next;
-  long bytes=oy->fill-oy->returned;
+  long bytes;
 
   if(ogg_sync_check(oy))return 0;
+
+  page=oy->data+oy->returned;
+  bytes=oy->fill-oy->returned;
 
   if(oy->headerbytes==0){
     int headerbytes,i;
@@ -1086,11 +1090,11 @@ void print_header(ogg_page *og){
           (int)og->header[4],(int)og->header[5]);
 
   fprintf(stderr,"  granulepos: %d  serialno: %d  pageno: %ld\n",
-          (og->header[9]<<24)|(og->header[8]<<16)|
+          ((unsigned)og->header[9]<<24)|(og->header[8]<<16)|
           (og->header[7]<<8)|og->header[6],
-          (og->header[17]<<24)|(og->header[16]<<16)|
+          ((unsigned)og->header[17]<<24)|(og->header[16]<<16)|
           (og->header[15]<<8)|og->header[14],
-          ((long)(og->header[21])<<24)|(og->header[20]<<16)|
+          ((long)((unsigned)og->header[21])<<24)|(og->header[20]<<16)|
           (og->header[19]<<8)|og->header[18]);
 
   fprintf(stderr,"  checksum: %02x:%02x:%02x:%02x\n  segments: %d (",
@@ -1103,19 +1107,26 @@ void print_header(ogg_page *og){
   fprintf(stderr,")\n\n");
 }
 
-void copy_page(ogg_page *og){
+static int copy_page(ogg_page *og){
   unsigned char *temp=_ogg_malloc(og->header_len);
+  if (!temp)
+    return -1;
   memcpy(temp,og->header,og->header_len);
   og->header=temp;
 
   temp=_ogg_malloc(og->body_len);
+  if (!temp)
+    return -1;
   memcpy(temp,og->body,og->body_len);
   og->body=temp;
+  return 0;
 }
 
-void free_page(ogg_page *og){
+static void free_page(ogg_page *og){
   _ogg_free (og->header);
+  og->header=NULL;
   _ogg_free (og->body);
+  og->body=NULL;
 }
 
 void error(void){
@@ -1498,6 +1509,11 @@ void test_pack(const int *pl, const int **headers, int byteskip,
 
   int byteskipcount=0;
 
+  if (!data) {
+    fprintf(stderr,"unable to allocate requried data buffer!\n");
+    exit(1);
+  }
+
   ogg_stream_reset(&os_en);
   ogg_stream_reset(&os_de);
   ogg_sync_reset(&oy);
@@ -1809,6 +1825,11 @@ int main(void){
     int inptr=0,i,j;
     ogg_page og[5];
 
+    if (!data) {
+      fprintf(stderr,"unable to allocate requried packet data buffer!\n");
+      exit(1);
+    }
+
     ogg_stream_reset(&os_en);
 
     for(i=0;pl[i]!=-1;i++){
@@ -1832,7 +1853,10 @@ int main(void){
         fprintf(stderr,"Too few pages output building sync tests!\n");
         exit(1);
       }
-      copy_page(&og[i]);
+      if (-1 == copy_page(&og[i])) {
+        fprintf(stderr,"unable to copy page building sync tests!\n");
+        exit(1);
+      }
     }
 
     /* Test lost pages on pagein/packetout: no rollback */

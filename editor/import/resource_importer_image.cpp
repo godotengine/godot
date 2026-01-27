@@ -92,6 +92,3 @@ Error ResourceImporterImage::import(ResourceUID::ID p_source_id, const String &p
 
 	return OK;
 }
-
-ResourceImporterImage::ResourceImporterImage() {
-}

@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_H
-#define CALLABLE_H
+#pragma once
 
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
 
+class Array;
 class Object;
 class Variant;
 class CallableCustom;
@@ -124,7 +124,7 @@ public:
 
 	void operator=(const Callable &p_callable);
 
-	operator String() const;
+	explicit operator String() const;
 
 	static Callable create(const Variant &p_variant, const StringName &p_method);
 
@@ -135,6 +135,10 @@ public:
 	Callable() {}
 	~Callable();
 };
+
+// Zero-constructing Callable initializes method and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Callable> : std::true_type {};
 
 class CallableCustom {
 	friend class Callable;
@@ -187,7 +191,7 @@ public:
 	bool operator!=(const Signal &p_signal) const;
 	bool operator<(const Signal &p_signal) const;
 
-	operator String() const;
+	explicit operator String() const;
 
 	Error emit(const Variant **p_arguments, int p_argcount) const;
 	Error connect(const Callable &p_callable, uint32_t p_flags = 0);
@@ -201,10 +205,12 @@ public:
 	Signal() {}
 };
 
+// Zero-constructing Signal initializes name and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Signal> : std::true_type {};
+
 struct CallableComparator {
 	const Callable &func;
 
 	bool operator()(const Variant &p_l, const Variant &p_r) const;
 };
-
-#endif // CALLABLE_H

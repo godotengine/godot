@@ -31,14 +31,15 @@
 #include "openxr_vulkan_extension.h"
 
 #include "../../openxr_util.h"
+#include "../openxr_fb_foveation_extension.h"
 
 #include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
-#include "servers/rendering_server.h"
 
-HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
@@ -70,7 +71,7 @@ bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_versi
 
 	XrResult result = xrGetVulkanGraphicsRequirements2KHR(OpenXRAPI::get_singleton()->get_instance(), OpenXRAPI::get_singleton()->get_system_id(), &vulkan_requirements);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get vulkan graphics requirements [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get Vulkan graphics requirements [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -124,7 +125,7 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	VkResult vk_result = VK_SUCCESS;
 	XrResult result = xrCreateVulkanInstanceKHR(OpenXRAPI::get_singleton()->get_instance(), &xr_vulkan_instance_info, &vulkan_instance, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan instance [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create Vulkan instance [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -158,7 +159,7 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 
 	XrResult result = xrGetVulkanGraphicsDevice2KHR(OpenXRAPI::get_singleton()->get_instance(), &get_info, &vulkan_physical_device);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to obtain vulkan physical device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to obtain Vulkan physical device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -184,12 +185,12 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 	VkResult vk_result = VK_SUCCESS;
 	XrResult result = xrCreateVulkanDeviceKHR(OpenXRAPI::get_singleton()->get_instance(), &create_info, &vulkan_device, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create Vulkan device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
 	if (vk_result != VK_SUCCESS) {
-		print_line("OpenXR: Failed to create vulkan device [vulkan error", vk_result, "]");
+		print_line("OpenXR: Failed to create Vulkan device [Vulkan error", vk_result, "]");
 	}
 
 	*r_device = vulkan_device;
@@ -200,6 +201,32 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 void OpenXRVulkanExtension::set_direct_queue_family_and_index(uint32_t p_queue_family_index, uint32_t p_queue_index) {
 	vulkan_queue_family_index = p_queue_family_index;
 	vulkan_queue_index = p_queue_index;
+}
+
+bool OpenXRVulkanExtension::use_fragment_density_offsets() {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return false;
+	}
+
+	return fb_foveation->is_foveation_eye_tracked_enabled();
+}
+
+void OpenXRVulkanExtension::get_fragment_density_offsets(LocalVector<VkOffset2D> &r_vk_offsets, const Vector2i &p_granularity) {
+	OpenXRFBFoveationExtension *fb_foveation = OpenXRFBFoveationExtension::get_singleton();
+	if (fb_foveation == nullptr) {
+		return;
+	}
+
+	LocalVector<Vector2i> offsets;
+	fb_foveation->get_fragment_density_offsets(offsets);
+
+	r_vk_offsets.reserve(offsets.size());
+	for (Vector2i offset : offsets) {
+		offset = ((offset + p_granularity / 2) / p_granularity) * p_granularity;
+
+		r_vk_offsets.push_back(VkOffset2D{ offset.x, offset.y });
+	}
 }
 
 XrGraphicsBindingVulkanKHR OpenXRVulkanExtension::graphics_binding_vulkan;
@@ -240,6 +267,7 @@ void OpenXRVulkanExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_s
 
 bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) {
 	LocalVector<XrSwapchainImageVulkanKHR> images;
+	LocalVector<XrSwapchainImageFoveationVulkanFB> density_images;
 
 	RenderingServer *rendering_server = RenderingServer::get_singleton();
 	ERR_FAIL_NULL_V(rendering_server, false);
@@ -249,7 +277,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -261,9 +289,23 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		image.image = VK_NULL_HANDLE;
 	}
 
+	if (OpenXRFBFoveationExtension::get_singleton()->is_enabled()) {
+		density_images.resize(swapchain_length);
+
+		for (uint64_t i = 0; i < swapchain_length; i++) {
+			density_images[i].type = XR_TYPE_SWAPCHAIN_IMAGE_FOVEATION_VULKAN_FB;
+			density_images[i].next = nullptr;
+			density_images[i].image = VK_NULL_HANDLE;
+			density_images[i].width = 0;
+			density_images[i].height = 0;
+
+			images[i].next = &density_images[i];
+		}
+	}
+
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images.ptr());
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchain images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -304,17 +346,21 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UINT;
 			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+			format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			break;
 		case VK_FORMAT_D32_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D24_UNORM_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		default:
 			// continue with our default value
@@ -351,9 +397,12 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	}
 
 	Vector<RID> texture_rids;
+	Vector<RID> density_map_rids;
 
 	// create Godot texture objects for each entry in our swapchain
-	for (const XrSwapchainImageVulkanKHR &swapchain_image : images) {
+	for (uint32_t i = 0; i < swapchain_length; i++) {
+		const XrSwapchainImageVulkanKHR &swapchain_image = images[i];
+
 		RID image_rid = rendering_device->texture_create_from_extension(
 				p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
 				format,
@@ -363,20 +412,39 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 				p_width,
 				p_height,
 				1,
-				p_array_size);
+				p_array_size,
+				1);
 
 		texture_rids.push_back(image_rid);
+
+		if (OpenXRFBFoveationExtension::get_singleton()->is_enabled() && density_images[i].image != VK_NULL_HANDLE) {
+			RID density_map_rid = rendering_device->texture_create_from_extension(
+					p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
+					RD::DATA_FORMAT_R8G8_UNORM,
+					RenderingDevice::TEXTURE_SAMPLES_1,
+					RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT,
+					(uint64_t)density_images[i].image,
+					density_images[i].width,
+					density_images[i].height,
+					1,
+					p_array_size,
+					1);
+
+			density_map_rids.push_back(density_map_rid);
+		} else {
+			density_map_rids.push_back(RID());
+		}
 	}
 
 	data->texture_rids = texture_rids;
+	data->density_map_rids = density_map_rids;
 
 	return true;
 }
 
 bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
-	// Even though this is a Vulkan renderer we're using OpenGL coordinate systems.
 	OpenXRUtil::XrMatrix4x4f matrix;
-	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
@@ -395,6 +463,14 @@ RID OpenXRVulkanExtension::get_texture(void *p_swapchain_graphics_data, int p_im
 	return data->texture_rids[p_image_index];
 }
 
+RID OpenXRVulkanExtension::get_density_map(void *p_swapchain_graphics_data, int p_image_index) {
+	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
+	ERR_FAIL_NULL_V(data, RID());
+
+	ERR_FAIL_INDEX_V(p_image_index, data->density_map_rids.size(), RID());
+	return data->density_map_rids[p_image_index];
+}
+
 void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) {
 	if (*p_swapchain_graphics_data == nullptr) {
 		return;
@@ -409,9 +485,16 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 
 	for (const RID &texture_rid : data->texture_rids) {
 		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
+
+	for (int i = 0; i < data->density_map_rids.size(); i++) {
+		if (data->density_map_rids[i].is_valid()) {
+			rendering_device->free_rid(data->density_map_rids[i]);
+		}
+	}
+	data->density_map_rids.clear();
 
 	memdelete(data);
 	*p_swapchain_graphics_data = nullptr;

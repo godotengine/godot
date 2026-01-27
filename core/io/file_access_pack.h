@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_PACK_H
-#define FILE_ACCESS_PACK_H
+#pragma once
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -39,17 +38,23 @@
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
+
+#define PACK_FORMAT_VERSION_V2 2
+#define PACK_FORMAT_VERSION_V3 3
+
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 2
+#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V3
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
 	PACK_REL_FILEBASE = 1 << 1,
+	PACK_SPARSE_BUNDLE = 1 << 2,
 };
 
 enum PackFileFlags {
 	PACK_FILE_ENCRYPTED = 1 << 0,
 	PACK_FILE_REMOVAL = 1 << 1,
+	PACK_FILE_DELTA = 1 << 2,
 };
 
 class PackSource;
@@ -67,6 +72,8 @@ public:
 		uint8_t md5[16];
 		PackSource *src = nullptr;
 		bool encrypted;
+		bool bundle;
+		bool delta;
 	};
 
 private:
@@ -98,12 +105,13 @@ private:
 	};
 
 	HashMap<PathMD5, PackedFile, PathMD5> files;
+	HashMap<PathMD5, Vector<PackedFile>, PathMD5> delta_patches;
 
 	Vector<PackSource *> sources;
 
 	PackedDir *root = nullptr;
 
-	static PackedData *singleton;
+	static inline PackedData *singleton = nullptr;
 	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
@@ -111,9 +119,11 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
+	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false, bool p_delta = false); // for PackSource
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
+	Vector<PackedFile> get_delta_patches(const String &p_path) const;
+	bool has_delta_patches(const String &p_path) const;
 	HashSet<String> get_file_paths() const;
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
@@ -126,6 +136,8 @@ public:
 
 	_FORCE_INLINE_ Ref<FileAccess> try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
+
+	_FORCE_INLINE_ int64_t get_size(const String &p_path);
 
 	_FORCE_INLINE_ Ref<DirAccess> try_open_directory(const String &p_path);
 	_FORCE_INLINE_ bool has_directory(const String &p_path);
@@ -156,8 +168,10 @@ public:
 };
 
 class FileAccessPack : public FileAccess {
+	GDSOFTCLASS(FileAccessPack, FileAccess);
 	PackedData::PackedFile pf;
 
+	String path;
 	mutable uint64_t pos;
 	mutable bool eof;
 	uint64_t off;
@@ -165,6 +179,8 @@ class FileAccessPack : public FileAccess {
 	Ref<FileAccess> f;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
 	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
 
@@ -175,6 +191,9 @@ class FileAccessPack : public FileAccess {
 
 public:
 	virtual bool is_open() const override;
+
+	virtual String get_path() const override { return path; }
+	virtual String get_path_absolute() const override { return path; }
 
 	virtual void seek(uint64_t p_position) override;
 	virtual void seek_end(int64_t p_position = 0) override;
@@ -199,6 +218,19 @@ public:
 
 	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);
 };
+
+int64_t PackedData::get_size(const String &p_path) {
+	String simplified_path = p_path.simplify_path();
+	PathMD5 pmd5(simplified_path.md5_buffer());
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	if (!E) {
+		return -1; // File not found.
+	}
+	if (E->value.offset == 0) {
+		return -1; // File was erased.
+	}
+	return E->value.size;
+}
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 	String simplified_path = p_path.simplify_path().trim_prefix("res://");
@@ -225,6 +257,7 @@ bool PackedData::has_directory(const String &p_path) {
 }
 
 class DirAccessPack : public DirAccess {
+	GDSOFTCLASS(DirAccessPack, DirAccess);
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;
@@ -272,5 +305,3 @@ Ref<DirAccess> PackedData::try_open_directory(const String &p_path) {
 	}
 	return da;
 }
-
-#endif // FILE_ACCESS_PACK_H

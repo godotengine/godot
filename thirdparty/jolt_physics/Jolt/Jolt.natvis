@@ -68,7 +68,7 @@
 		<DisplayString>min=({mMin}), max=({mMax})</DisplayString>
 	</Type>
 	<Type Name="JPH::BodyID">
-		<DisplayString>{mID}</DisplayString>
+		<DisplayString>idx={mID &amp; 0x007fffff}, seq={(mID >> 23) &amp; 0xff}, in_bp={mID >> 24,d}</DisplayString>
 	</Type>
 	<Type Name="JPH::Body">
 		<DisplayString>{mDebugName}: p=({mPosition.mF32[0],g}, {mPosition.mF32[1],g}, {mPosition.mF32[2],g}), r=({mRotation.mValue.mF32[0],g}, {mRotation.mValue.mF32[1],g}, {mRotation.mValue.mF32[2],g}, {mRotation.mValue.mF32[3],g}), v=({mLinearVelocity.mF32[0],g}, {mLinearVelocity.mF32[1],g}, {mLinearVelocity.mF32[2],g}), w=({mAngularVelocity.mF32[0],g}, {mAngularVelocity.mF32[1],g}, {mAngularVelocity.mF32[2],g})</DisplayString>

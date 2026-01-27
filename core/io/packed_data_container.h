@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKED_DATA_CONTAINER_H
-#define PACKED_DATA_CONTAINER_H
+#pragma once
 
 #include "core/io/resource.h"
 
@@ -76,8 +75,6 @@ public:
 	Error pack(const Variant &p_data);
 
 	int size() const;
-
-	PackedDataContainer() {}
 };
 
 class PackedDataContainerRef : public RefCounted {
@@ -97,8 +94,4 @@ public:
 
 	int size() const;
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const override;
-
-	PackedDataContainerRef() {}
 };
-
-#endif // PACKED_DATA_CONTAINER_H

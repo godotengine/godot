@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPE_INFO_H
-#define TYPE_INFO_H
+#pragma once
 
+#include "core/object/object.h"
+#include "core/templates/simple_type.h"
 #include "core/typedefs.h"
+#include "core/variant/variant.h"
 
 #include <type_traits>
 
@@ -50,6 +52,7 @@ enum Metadata {
 	METADATA_REAL_IS_DOUBLE,
 	METADATA_INT_IS_CHAR16,
 	METADATA_INT_IS_CHAR32,
+	METADATA_OBJECT_IS_REQUIRED,
 };
 }
 
@@ -61,17 +64,12 @@ enum Metadata {
 template <typename T, typename = void>
 struct GetTypeInfo;
 
+template <typename T>
+struct GetTypeInfo<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : GetTypeInfo<GetSimpleTypeT<T>> {};
+
 #define MAKE_TYPE_INFO(m_type, m_var_type)                                            \
 	template <>                                                                       \
 	struct GetTypeInfo<m_type> {                                                      \
-		static const Variant::Type VARIANT_TYPE = m_var_type;                         \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
-		static inline PropertyInfo get_class_info() {                                 \
-			return PropertyInfo(VARIANT_TYPE, String());                              \
-		}                                                                             \
-	};                                                                                \
-	template <>                                                                       \
-	struct GetTypeInfo<const m_type &> {                                              \
 		static const Variant::Type VARIANT_TYPE = m_var_type;                         \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
 		static inline PropertyInfo get_class_info() {                                 \
@@ -82,14 +80,6 @@ struct GetTypeInfo;
 #define MAKE_TYPE_INFO_WITH_META(m_type, m_var_type, m_metadata)    \
 	template <>                                                     \
 	struct GetTypeInfo<m_type> {                                    \
-		static const Variant::Type VARIANT_TYPE = m_var_type;       \
-		static const GodotTypeInfo::Metadata METADATA = m_metadata; \
-		static inline PropertyInfo get_class_info() {               \
-			return PropertyInfo(VARIANT_TYPE, String());            \
-		}                                                           \
-	};                                                              \
-	template <>                                                     \
-	struct GetTypeInfo<const m_type &> {                            \
 		static const Variant::Type VARIANT_TYPE = m_var_type;       \
 		static const GodotTypeInfo::Metadata METADATA = m_metadata; \
 		static inline PropertyInfo get_class_info() {               \
@@ -168,26 +158,9 @@ struct GetTypeInfo<Variant> {
 	}
 };
 
-template <>
-struct GetTypeInfo<const Variant &> {
-	static const Variant::Type VARIANT_TYPE = Variant::NIL;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::NIL, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
-	}
-};
-
 #define MAKE_TEMPLATE_TYPE_INFO(m_template, m_type, m_var_type)                       \
 	template <>                                                                       \
 	struct GetTypeInfo<m_template<m_type>> {                                          \
-		static const Variant::Type VARIANT_TYPE = m_var_type;                         \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
-		static inline PropertyInfo get_class_info() {                                 \
-			return PropertyInfo(VARIANT_TYPE, String());                              \
-		}                                                                             \
-	};                                                                                \
-	template <>                                                                       \
-	struct GetTypeInfo<const m_template<m_type> &> {                                  \
 		static const Variant::Type VARIANT_TYPE = m_var_type;                         \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
 		static inline PropertyInfo get_class_info() {                                 \
@@ -210,8 +183,46 @@ struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	}
 };
 
-namespace godot {
-namespace details {
+template <class T>
+class RequiredParam;
+
+template <class T>
+class RequiredResult;
+
+template <typename T>
+struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
+
+	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+	}
+
+	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(StringName(T::get_class_static()));
+	}
+};
+
+template <typename T>
+struct GetTypeInfo<RequiredResult<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
+
+	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+	}
+
+	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(StringName(T::get_class_static()));
+	}
+};
+
+namespace GodotTypeInfo {
+namespace Internal {
 inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
 	Vector<String> parts = p_qualified_name.split("::", false);
 	if (parts.size() <= 2) {
@@ -220,124 +231,111 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	// Contains namespace. We only want the class and enum names.
 	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
 }
-} // namespace details
-} // namespace godot
+} // namespace Internal
+} // namespace GodotTypeInfo
 
-#define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                            \
+#define MAKE_ENUM_TYPE_INFO(m_enum)                                                                                                          \
 	template <>                                                                                                                              \
-	struct GetTypeInfo<m_impl> {                                                                                                             \
+	struct GetTypeInfo<m_enum> {                                                                                                             \
 		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                              \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                        \
 		static inline PropertyInfo get_class_info() {                                                                                        \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                       \
 		}                                                                                                                                    \
 	};
 
-#define MAKE_ENUM_TYPE_INFO(m_enum)                 \
-	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum)       \
-	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum const) \
-	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum &)     \
-	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, const m_enum &)
-
 template <typename T>
-inline StringName __constant_get_enum_name(T param, const String &p_constant) {
-	if constexpr (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
-		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
-	}
+inline StringName __constant_get_enum_name(T param) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-template <typename T>
-class BitField {
-	int64_t value = 0;
-
-public:
-	_FORCE_INLINE_ BitField<T> &set_flag(T p_flag) {
-		value |= (int64_t)p_flag;
-		return *this;
-	}
-	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & (int64_t)p_flag; }
-	_FORCE_INLINE_ bool is_empty() const { return value == 0; }
-	_FORCE_INLINE_ void clear_flag(T p_flag) { value &= ~(int64_t)p_flag; }
-	_FORCE_INLINE_ void clear() { value = 0; }
-	_FORCE_INLINE_ constexpr BitField() = default;
-	_FORCE_INLINE_ constexpr BitField(int64_t p_value) { value = p_value; }
-	_FORCE_INLINE_ constexpr BitField(T p_value) { value = (int64_t)p_value; }
-	_FORCE_INLINE_ operator int64_t() const { return value; }
-	_FORCE_INLINE_ operator Variant() const { return value; }
-	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
-};
-
-#define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
+#define MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                          \
 	template <>                                                                                                                                  \
-	struct GetTypeInfo<m_impl> {                                                                                                                 \
+	struct GetTypeInfo<m_enum> {                                                                                                                 \
 		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                  \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};                                                                                                                                           \
 	template <>                                                                                                                                  \
-	struct GetTypeInfo<BitField<m_impl>> {                                                                                                       \
+	struct GetTypeInfo<BitField<m_enum>> {                                                                                                       \
 		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                  \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};
 
-#define MAKE_BITFIELD_TYPE_INFO(m_enum)                 \
-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum)       \
-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum const) \
-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum &)     \
-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, const m_enum &)
-
 template <typename T>
-inline StringName __constant_get_bitfield_name(T param, const String &p_constant) {
-	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
-		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's bitfield: " + p_constant);
-	}
+inline StringName __constant_get_bitfield_name(T param) {
 	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
 
+// No initialization by default, except for scalar types.
 template <typename T>
 struct ZeroInitializer {
-	static void initialize(T &value) {} //no initialization by default
+	static void initialize(T &value) {
+		if constexpr (std::is_scalar_v<T>) {
+			value = {};
+		}
+	}
 };
 
-template <>
-struct ZeroInitializer<bool> {
-	static void initialize(bool &value) { value = false; }
-};
+namespace GodotTypeInfo {
+namespace Internal {
 
 template <typename T>
-struct ZeroInitializer<T *> {
-	static void initialize(T *&value) { value = nullptr; }
+Variant::Type get_variant_type() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return Variant::Type::OBJECT;
+	} else {
+		return GetTypeInfo<T>::VARIANT_TYPE;
+	}
+}
+
+template <typename T>
+const String get_object_class_name_or_empty() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return T::get_class_static();
+	} else {
+		return "";
+	}
+}
+
+template <typename T>
+const String get_variant_type_identifier() {
+	if constexpr (std::is_base_of_v<Object, T>) {
+		return T::get_class_static();
+	} else if constexpr (std::is_same_v<Variant, T>) {
+		return "Variant";
+	} else {
+		return Variant::get_type_name(GetTypeInfo<T>::VARIANT_TYPE);
+	}
+}
+
+} //namespace Internal
+} //namespace GodotTypeInfo
+
+template <typename T>
+struct GetTypeInfo<TypedArray<T>> {
+	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, GodotTypeInfo::Internal::get_variant_type_identifier<T>());
+	}
 };
 
-#define ZERO_INITIALIZER_NUMBER(m_type)         \
-	template <>                                 \
-	struct ZeroInitializer<m_type> {            \
-		static void initialize(m_type &value) { \
-			value = 0;                          \
-		}                                       \
-	};
-
-ZERO_INITIALIZER_NUMBER(uint8_t)
-ZERO_INITIALIZER_NUMBER(int8_t)
-ZERO_INITIALIZER_NUMBER(uint16_t)
-ZERO_INITIALIZER_NUMBER(int16_t)
-ZERO_INITIALIZER_NUMBER(uint32_t)
-ZERO_INITIALIZER_NUMBER(int32_t)
-ZERO_INITIALIZER_NUMBER(uint64_t)
-ZERO_INITIALIZER_NUMBER(int64_t)
-ZERO_INITIALIZER_NUMBER(char16_t)
-ZERO_INITIALIZER_NUMBER(char32_t)
-ZERO_INITIALIZER_NUMBER(float)
-ZERO_INITIALIZER_NUMBER(double)
-
-#endif // TYPE_INFO_H
+template <typename K, typename V>
+struct GetTypeInfo<TypedDictionary<K, V>> {
+	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE,
+				vformat("%s;%s", GodotTypeInfo::Internal::get_variant_type_identifier<K>(), GodotTypeInfo::Internal::get_variant_type_identifier<V>()));
+	}
+};

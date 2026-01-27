@@ -28,22 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_FORWARD_CLUSTERED_H
-#define RENDER_FORWARD_CLUSTERED_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/multi_uma_buffer.h"
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/fsr2.h"
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
 #include "servers/rendering/renderer_rd/effects/motion_vectors_store.h"
-#include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
 
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
@@ -95,7 +95,7 @@ public:
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
 		RendererRD::FSR2Context *fsr2_context = nullptr;
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 		RendererRD::MFXTemporalContext *mfx_temporal_context = nullptr;
 #endif
 
@@ -103,8 +103,11 @@ public:
 		ClusterBuilderRD *cluster_builder = nullptr;
 
 		struct SSEffectsData {
-			Projection last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
-			Transform3D last_frame_transform;
+			Projection ssil_last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
+			Transform3D ssil_last_frame_transform;
+
+			Projection ssr_last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
+			Transform3D ssr_last_frame_transform;
 
 			RendererRD::SSEffects::SSILRenderBuffers ssil;
 			RendererRD::SSEffects::SSAORenderBuffers ssao;
@@ -141,7 +144,7 @@ public:
 		void ensure_fsr2(RendererRD::FSR2Effect *p_effect);
 		RendererRD::FSR2Context *get_fsr2_context() const { return fsr2_context; }
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 		bool ensure_mfx_temporal(RendererRD::MFXTemporalEffect *p_effect);
 		RendererRD::MFXTemporalContext *get_mfx_temporal_context() const { return mfx_temporal_context; }
 #endif
@@ -180,6 +183,13 @@ private:
 		RID pipeline;
 		RID texture;
 	} best_fit_normal;
+
+	struct IntegrateDFG {
+		IntegrateDfgShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+		RID texture;
+	} dfg_lut;
 
 	enum PassMode {
 		PASS_MODE_COLOR,
@@ -316,17 +326,66 @@ private:
 		};
 
 		struct InstanceData {
-			float transform[16];
-			float prev_transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; //base offset in global buffer for instance variables
 			uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4];
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
+
+			// These setters allow us to copy the data over with operation when using floats.
+			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
+#ifdef REAL_T_IS_DOUBLE
+				lightmap_uv_scale[0] = p_rect.position.x;
+				lightmap_uv_scale[1] = p_rect.position.y;
+				lightmap_uv_scale[2] = p_rect.size.x;
+				lightmap_uv_scale[3] = p_rect.size.y;
+#else
+				Rect2 *rect = reinterpret_cast<Rect2 *>(lightmap_uv_scale);
+				*rect = p_rect;
+#endif
+			}
+
+			inline void set_compressed_aabb(const AABB &p_aabb) {
+#ifdef REAL_T_IS_DOUBLE
+				compressed_aabb_position[0] = p_aabb.position.x;
+				compressed_aabb_position[1] = p_aabb.position.y;
+				compressed_aabb_position[2] = p_aabb.position.z;
+
+				compressed_aabb_size[0] = p_aabb.size.x;
+				compressed_aabb_size[1] = p_aabb.size.y;
+				compressed_aabb_size[2] = p_aabb.size.z;
+#else
+				Vector3 *compressed_aabb_position_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_position);
+				Vector3 *compressed_aabb_size_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_size);
+				*compressed_aabb_position_vec3 = p_aabb.position;
+				*compressed_aabb_size_vec3 = p_aabb.size;
+#endif
+			}
+
+			inline void set_uv_scale(const Vector4 &p_uv_scale) {
+#ifdef REAL_T_IS_DOUBLE
+				uv_scale[0] = p_uv_scale.x;
+				uv_scale[1] = p_uv_scale.y;
+				uv_scale[2] = p_uv_scale.z;
+				uv_scale[3] = p_uv_scale.w;
+#else
+				Vector4 *uv_scale_vec4 = reinterpret_cast<Vector4 *>(uv_scale);
+				*uv_scale_vec4 = p_uv_scale;
+#endif
+			}
 		};
+
+		static_assert(std::is_trivially_destructible_v<InstanceData>);
+		static_assert(std::is_trivially_constructible_v<InstanceData>);
 
 		UBO ubo;
 
@@ -340,9 +399,8 @@ private:
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
 
-		RID instance_buffer[RENDER_LIST_MAX];
-		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
-		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
+		MultiUmaBuffer<1u> instance_buffer[RENDER_LIST_MAX] = { MultiUmaBuffer<1u>("RENDER_LIST_OPAQUE"), MultiUmaBuffer<1u>("RENDER_LIST_MOTION"), MultiUmaBuffer<1u>("RENDER_LIST_ALPHA"), MultiUmaBuffer<1u>("RENDER_LIST_SECONDARY") };
+		InstanceData *curr_gpu_ptr[RENDER_LIST_MAX] = {};
 
 		LightmapCaptureData *lightmap_captures = nullptr;
 		uint32_t max_lightmap_captures;
@@ -356,6 +414,7 @@ private:
 		bool used_depth_texture = false;
 		bool used_sss = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -374,30 +433,38 @@ private:
 
 		LocalVector<ShadowPass> shadow_passes;
 
+		void grow_instance_buffer(RenderListType p_render_list, uint32_t p_req_element_count, bool p_append);
 	} scene_state;
 
 	static RenderForwardClustered *singleton;
 
-	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_apply_alpha_multiplier = false, bool p_pancake_shadows = false, int p_index = 0);
+	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Size2 &p_viewport_size, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_apply_alpha_multiplier = false, bool p_pancake_shadows = false, int p_index = 0);
 	void _setup_voxelgis(const PagedArray<RID> &p_voxelgis);
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	struct RenderElementInfo {
 		enum { MAX_REPEATS = (1 << 20) - 1 };
-		uint32_t repeat : 20;
-		uint32_t uses_projector : 1;
-		uint32_t uses_softshadow : 1;
-		uint32_t uses_lightmap : 1;
-		uint32_t uses_forward_gi : 1;
-		uint32_t lod_index : 8;
+		union {
+			struct {
+				uint32_t lod_index : 8;
+				uint32_t uses_softshadow : 1;
+				uint32_t uses_projector : 1;
+				uint32_t uses_forward_gi : 1;
+				uint32_t uses_lightmap : 1;
+			};
+			uint32_t value;
+		};
+		uint32_t repeat;
 	};
+
+	static_assert(std::is_trivially_destructible_v<RenderElementInfo>);
+	static_assert(std::is_trivially_constructible_v<RenderElementInfo>);
 
 	template <PassMode p_pass_mode, uint32_t p_color_pass_flags = 0>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
 	void _render_list_with_draw_list(RenderListParameters *p_params, RID p_framebuffer, BitField<RD::DrawFlags> p_draw_flags = RD::DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 0.0, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2());
 
-	void _update_instance_data_buffer(RenderListType p_render_list);
 	void _fill_instance_data(RenderListType p_render_list, int *p_render_info = nullptr, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_using_sdfgi = false, bool p_using_opaque_gi = false, bool p_using_motion_pass = false, bool p_append = false);
 
@@ -425,6 +492,7 @@ private:
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
 			FLAG_USES_MOTION_VECTOR = 131072,
+			FLAG_USES_STENCIL = 262144,
 		};
 
 		union {
@@ -433,18 +501,23 @@ private:
 				uint64_t sort_key2;
 			};
 			struct {
+				// Needs to be grouped together to be used in RenderElementInfo, as the value is masked directly.
 				uint64_t lod_index : 8;
-				uint64_t surface_index : 8;
-				uint64_t geometry_id : 32;
-				uint64_t material_id_low : 16;
-
-				uint64_t material_id_hi : 16;
-				uint64_t shader_id : 32;
 				uint64_t uses_softshadow : 1;
 				uint64_t uses_projector : 1;
 				uint64_t uses_forward_gi : 1;
 				uint64_t uses_lightmap : 1;
+
+				// Sorted based on optimal order for respecting priority and reducing the amount of rebinding of shaders, materials,
+				// and geometry. This current order was found to be the most optimal in large projects. If you wish to measure
+				// differences, refer to RenderingDeviceGraph and the methods available to print statistics for draw lists.
 				uint64_t depth_layer : 4;
+				uint64_t surface_index : 8;
+				uint64_t geometry_id : 32;
+				uint64_t material_id_hi : 8;
+
+				uint64_t material_id_lo : 24;
+				uint64_t shader_id : 32;
 				uint64_t priority : 8;
 			};
 		} sort;
@@ -493,7 +566,11 @@ private:
 
 		//used during setup
 		uint64_t prev_transform_change_frame = 0xFFFFFFFF;
-		bool prev_transform_dirty = true;
+		enum TransformStatus {
+			NONE,
+			MOVED,
+			TELEPORTED,
+		} transform_status = TransformStatus::MOVED;
 		Transform3D prev_transform;
 		RID voxel_gi_instances[MAX_VOXEL_GI_INSTANCESS_PER_INSTANCE];
 		GeometryInstanceSurfaceDataCache *surface_caches = nullptr;
@@ -505,6 +582,7 @@ private:
 		virtual void _mark_dirty() override;
 
 		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
+		virtual void reset_motion_vectors() override;
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
@@ -578,6 +656,14 @@ private:
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
 
+	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
+	struct GlobalSurfaceData {
+		bool screen_texture_used = false;
+		bool normal_texture_used = false;
+		bool depth_texture_used = false;
+		bool sss_used = false;
+	} global_surface_data;
+
 	/* Render List */
 
 	struct RenderList {
@@ -642,12 +728,11 @@ private:
 
 	/* Effects */
 
-	RendererRD::Resolve *resolve_effects = nullptr;
 	RendererRD::TAA *taa = nullptr;
 	RendererRD::FSR2Effect *fsr2_effect = nullptr;
 	RendererRD::SSEffects *ss_effects = nullptr;
 
-#ifdef METAL_ENABLED
+#ifdef METAL_MFXTEMPORAL_ENABLED
 	RendererRD::MFXTemporalEffect *mfx_temporal_effect = nullptr;
 #endif
 	RendererRD::MotionVectorsStore *motion_vectors_store = nullptr;
@@ -676,9 +761,9 @@ private:
 	/* Render Scene */
 	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
 	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
-	void _copy_framebuffer_to_ssil(Ref<RenderSceneBuffersRD> p_render_buffers);
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
-	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
+	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform);
+	void _copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
 	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
 
 	/* Debug */
@@ -692,6 +777,7 @@ protected:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
+	virtual void environment_set_ssr_half_size(bool p_half_size) override;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override;
@@ -740,6 +826,11 @@ public:
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
 
+	/* SHADER LIBRARY */
+
+	virtual void enable_features(BitField<FeatureBits> p_feature_bits) override;
+	virtual String get_name() const override;
+
 	virtual bool free(RID p_rid) override;
 
 	virtual void update() override;
@@ -748,5 +839,3 @@ public:
 	~RenderForwardClustered();
 };
 } // namespace RendererSceneRenderImplementation
-
-#endif // RENDER_FORWARD_CLUSTERED_H

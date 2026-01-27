@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for bitmap fonts (body only).
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -373,7 +373,7 @@
    * @Input:
    *   current ::
    *     Array of Euclidean distances.  `current` must point to the position
-   *     for which the distance is to be caculated.  We treat this array as
+   *     for which the distance is to be calculated.  We treat this array as
    *     a two-dimensional array mapped to a one-dimensional array.
    *
    *   x ::
@@ -550,7 +550,7 @@
    *
    * @Description:
    *   Loops over all the pixels and call `compute_edge_distance` only for
-   *   edge pixels.  This maked the process a lot faster since
+   *   edge pixels.  This makes the process a lot faster since
    *   `compute_edge_distance` uses functions such as `FT_Vector_NormLen',
    *   which are quite slow.
    *
@@ -848,10 +848,22 @@
                     FT_Int  y_offset,
                     FT_Int  width )
   {
+#if USE_SQUARED_DISTANCES
+    FT_16D16      edge_threshold = ONE / 4;
+#else
+    FT_16D16      edge_threshold = ONE / 2;
+#endif
     ED*           to_check;
     FT_16D16      dist;
     FT_16D16_Vec  dist_vec;
 
+
+    /*
+     * Skip neighbor comparison if the distance is less than or equal to 0.5.
+     * When using squared distances, compare to 0.25 (= 0.5^2) instead.
+     */
+    if ( current->dist <= edge_threshold )
+      return;
 
     to_check = current + ( y_offset * width ) + x_offset;
 

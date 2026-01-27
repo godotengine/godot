@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PLUGIN_SETTINGS_H
-#define EDITOR_PLUGIN_SETTINGS_H
+#pragma once
 
 #include "editor/plugins/plugin_config_dialog.h"
 
@@ -44,13 +43,11 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	enum {
-		COLUMN_PADDING_LEFT,
 		COLUMN_STATUS,
 		COLUMN_NAME,
 		COLUMN_VERSION,
 		COLUMN_AUTHOR,
 		COLUMN_EDIT,
-		COLUMN_PADDING_RIGHT,
 		COLUMN_MAX,
 	};
 
@@ -73,5 +70,3 @@ public:
 
 	EditorPluginSettings();
 };
-
-#endif // EDITOR_PLUGIN_SETTINGS_H

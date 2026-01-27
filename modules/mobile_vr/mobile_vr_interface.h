@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MOBILE_VR_INTERFACE_H
-#define MOBILE_VR_INTERFACE_H
+#pragma once
 
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
@@ -95,8 +94,8 @@ private:
 
 	///@TODO a few support functions for trackers, most are math related and should likely be moved elsewhere
 	float floor_decimals(const float p_value, const float p_decimals) {
-		float power_of_10 = pow(10.0f, p_decimals);
-		return floor(p_value * power_of_10) / power_of_10;
+		float power_of_10 = std::pow(10.0f, p_decimals);
+		return std::floor(p_value * power_of_10) / power_of_10;
 	}
 
 	Vector3 floor_decimals(const Vector3 &p_vector, const float p_decimals) {
@@ -175,5 +174,3 @@ public:
 	MobileVRInterface();
 	~MobileVRInterface();
 };
-
-#endif // MOBILE_VR_INTERFACE_H

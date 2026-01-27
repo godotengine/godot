@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_LOG_H
-#define EDITOR_LOG_H
+#pragma once
 
 #include "core/os/thread.h"
-#include "scene/gui/box_container.h"
+#include "editor/docks/editor_dock.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 
+class Timer;
 class UndoRedo;
 
-class EditorLog : public HBoxContainer {
-	GDCLASS(EditorLog, HBoxContainer);
+class EditorLog : public EditorDock {
+	GDCLASS(EditorLog, EditorDock);
 
 public:
 	enum MessageType {
@@ -88,13 +88,14 @@ private:
 		MessageType type;
 		Button *toggle_button = nullptr;
 
-		void initialize_button(const String &p_tooltip, Callable p_toggled_callback) {
+		void initialize_button(const String &p_name, const String &p_tooltip, Callable p_toggled_callback) {
 			toggle_button = memnew(Button);
 			toggle_button->set_toggle_mode(true);
 			toggle_button->set_pressed(true);
 			toggle_button->set_text(itos(message_count));
-			toggle_button->set_tooltip_text(TTR(p_tooltip));
-			toggle_button->set_focus_mode(FOCUS_NONE);
+			toggle_button->set_accessibility_name(TTRGET(p_name));
+			toggle_button->set_tooltip_text(TTRGET(p_tooltip));
+			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
 		}
@@ -139,8 +140,8 @@ private:
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
-	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
-	Button *tool_button = nullptr;
+	// Reusable RichTextLabel for BBCode parsing during search
+	RichTextLabel *bbcode_parser = nullptr;
 
 	bool is_loading_state = false; // Used to disable saving requests while loading (some signals from buttons will try to trigger a save, which happens during loading).
 	Timer *save_state_timer = nullptr;
@@ -165,6 +166,7 @@ private:
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
 	void _reset_message_counts();
+	void _set_dock_tab_icon(Ref<Texture2D> p_icon);
 
 	void _set_collapse(bool p_collapse);
 
@@ -180,7 +182,6 @@ protected:
 
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
-	void set_tool_button(Button *p_tool_button);
 	void register_undo_redo(UndoRedo *p_undo_redo);
 	void deinit();
 
@@ -191,5 +192,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorLog::MessageType);
-
-#endif // EDITOR_LOG_H

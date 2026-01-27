@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
-#define OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H
+#pragma once
 
 #include "../action_map/openxr_binding_modifier.h"
 #include "../action_map/openxr_haptic_feedback.h"
@@ -38,13 +37,18 @@
 #include "openxr_extension_wrapper.h"
 
 class OpenXRValveAnalogThresholdExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRValveAnalogThresholdExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRValveAnalogThresholdExtension *get_singleton();
 
 	OpenXRValveAnalogThresholdExtension();
 	virtual ~OpenXRValveAnalogThresholdExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 
@@ -84,5 +88,3 @@ public:
 	virtual String get_description() const override { return "Analog threshold modifier"; }
 	virtual PackedByteArray get_ip_modification() override;
 };
-
-#endif // OPENXR_VALVE_ANALOG_THRESHOLD_EXTENSION_H

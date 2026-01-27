@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_DEBUGGER_H
-#define SCRIPT_DEBUGGER_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
@@ -40,12 +39,13 @@ class ScriptDebugger {
 	typedef ScriptLanguage::StackInfo StackInfo;
 
 	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
 
 	HashMap<int, HashSet<StringName>> breakpoints;
 
-	static thread_local int lines_left;
-	static thread_local int depth;
-	static thread_local ScriptLanguage *break_lang;
+	static inline thread_local int lines_left = -1;
+	static inline thread_local int depth = -1;
+	static inline thread_local ScriptLanguage *break_lang = nullptr;
 	static thread_local Vector<StackInfo> error_stack_info;
 
 public:
@@ -64,6 +64,8 @@ public:
 	ScriptLanguage *get_break_language() { return break_lang; }
 	void set_skip_breakpoints(bool p_skip_breakpoints);
 	bool is_skipping_breakpoints();
+	void set_ignore_error_breaks(bool p_ignore);
+	bool is_ignoring_error_breaks();
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	_ALWAYS_INLINE_ bool is_breakpoint(int p_line, const StringName &p_source) const {
@@ -80,7 +82,4 @@ public:
 
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info);
 	Vector<StackInfo> get_error_stack_info() const;
-	ScriptDebugger() {}
 };
-
-#endif // SCRIPT_DEBUGGER_H

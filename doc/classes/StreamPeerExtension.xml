@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_available_bytes" qualifiers="virtual const">
+		<method name="_get_available_bytes" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 			</description>

@@ -28,16 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_LIST_H
-#define PROJECT_LIST_H
+#pragma once
 
 #include "core/io/config_file.h"
+#include "core/os/time.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 
 class AcceptDialog;
 class Button;
 class Label;
+class PopupMenu;
 class ProjectList;
 class TextureButton;
 class TextureRect;
@@ -56,14 +57,28 @@ class ProjectListItemControl : public HBoxContainer {
 	Label *project_version = nullptr;
 	TextureRect *project_unsupported_features = nullptr;
 	HBoxContainer *tag_container = nullptr;
+	Button *touch_menu_button = nullptr;
+
+	Color favorite_focus_color;
 
 	bool project_is_missing = false;
 	bool icon_needs_reload = true;
 	bool is_selected = false;
+	bool is_focus_hidden = false;
 	bool is_hovering = false;
+	bool is_favorite = false;
 
+	void _update_favorite_button_focus_color();
 	void _favorite_button_pressed();
 	void _explore_button_pressed();
+	void _request_menu();
+
+	ProjectList *get_list() const;
+
+	void _accessibility_action_open(const Variant &p_data);
+	void _accessibility_action_scroll_into_view(const Variant &p_data);
+	void _accessibility_action_focus(const Variant &p_data);
+	void _accessibility_action_blur(const Variant &p_data);
 
 protected:
 	void _notification(int p_what);
@@ -79,7 +94,7 @@ public:
 	void set_unsupported_features(PackedStringArray p_features);
 
 	bool should_load_project_icon() const;
-	void set_selected(bool p_selected);
+	void set_selected(bool p_selected, bool p_hide_focus = false);
 
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
@@ -92,6 +107,7 @@ class ProjectList : public ScrollContainer {
 	GDCLASS(ProjectList, ScrollContainer)
 
 	friend class ProjectManager;
+	friend class ProjectListItemControl;
 
 public:
 	enum FilterOption {
@@ -99,6 +115,19 @@ public:
 		NAME,
 		PATH,
 		TAGS,
+	};
+
+	enum MenuOption {
+		MENU_EDIT,
+		MENU_EDIT_VERBOSE,
+		MENU_EDIT_RECOVERY,
+		MENU_RUN,
+		MENU_SHOW_IN_FILE_MANAGER,
+		MENU_COPY_PATH,
+		MENU_RENAME,
+		MENU_MANAGE_TAGS,
+		MENU_DUPLICATE,
+		MENU_REMOVE,
 	};
 
 	// Can often be passed by copy.
@@ -162,6 +191,15 @@ public:
 		_FORCE_INLINE_ bool operator==(const Item &l) const {
 			return path == l.path;
 		}
+
+		String get_last_edited_string() const {
+			if (missing) {
+				return TTR("Missing Date");
+			}
+
+			OS::TimeZoneInfo tz = OS::get_singleton()->get_time_zone_info();
+			return Time::get_singleton()->get_datetime_string_from_unix_time(last_edited + tz.bias * 60, true);
+		}
 	};
 
 private:
@@ -179,6 +217,7 @@ private:
 	String _last_clicked; // Project key
 
 	VBoxContainer *project_list_vbox = nullptr;
+	PopupMenu *project_context_menu = nullptr;
 
 	// Projects scan.
 
@@ -212,14 +251,18 @@ private:
 	void _toggle_project(int p_index);
 	void _remove_project(int p_index, bool p_update_settings);
 
-	void _list_item_input(const Ref<InputEvent> &p_ev, Node *p_hb);
+	void _list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb);
 	void _on_favorite_pressed(Node *p_hb);
 	void _on_explore_pressed(const String &p_path);
+
+	void _open_menu(const Vector2 &p_at, Control *p_hb);
+	void _menu_option(int p_option);
+	void _update_menu_icons();
 
 	// Project list selection.
 
 	void _clear_project_selection();
-	void _select_project_nocheck(int p_index);
+	void _select_project_nocheck(int p_index, bool p_hide_focus = false);
 	void _deselect_project_nocheck(int p_index);
 	void _select_project_range(int p_begin, int p_end);
 
@@ -233,9 +276,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const char *SIGNAL_LIST_CHANGED;
-	static const char *SIGNAL_SELECTION_CHANGED;
-	static const char *SIGNAL_PROJECT_ASK_OPEN;
+	static inline const char *SIGNAL_LIST_CHANGED = "list_changed";
+	static inline const char *SIGNAL_SELECTION_CHANGED = "selection_changed";
+	static inline const char *SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
+	static inline const char *SIGNAL_MENU_OPTION_SELECTED = "menu_option_selected";
 
 	static bool project_feature_looks_like_version(const String &p_feature);
 
@@ -259,11 +303,15 @@ public:
 	void set_project_version(const String &p_project_path, int version);
 	int refresh_project(const String &dir_path);
 	void ensure_project_visible(int p_index);
+	int get_index(const ProjectListItemControl *p_control) const;
 
 	// Project list selection.
 
-	void select_project(int p_index);
+	void select_project(int p_index, bool p_hide_focus = false);
+	void deselect_project(int p_index);
 	void select_first_visible_project();
+	void select_all_visible_projects();
+	void deselect_all_visible_projects();
 	Vector<Item> get_selected_projects() const;
 	const HashSet<String> &get_selected_project_keys() const;
 	int get_single_selected_index() const;
@@ -278,7 +326,7 @@ public:
 
 	void set_search_term(String p_search_term);
 	void add_search_tag(const String &p_tag);
-	void set_order_option(int p_option);
+	void set_order_option(int p_option, bool p_save);
 
 	// Global menu integration.
 
@@ -286,5 +334,3 @@ public:
 
 	ProjectList();
 };
-
-#endif // PROJECT_LIST_H

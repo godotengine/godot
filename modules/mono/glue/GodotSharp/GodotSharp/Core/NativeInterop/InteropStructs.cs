@@ -455,6 +455,12 @@ namespace Godot.NativeInterop
             get => _data._m_obj_data.obj;
         }
 
+        public readonly ulong ObjectId
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._m_obj_data.id;
+        }
+
         public void Dispose()
         {
             switch (Type)
@@ -532,7 +538,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != IntPtr.Zero ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_string_size(in this);
         }
     }
 
@@ -758,12 +764,6 @@ namespace Godot.NativeInterop
 
             // There are more fields here, but we don't care as we never store this in C#
 
-            public readonly int Size
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _arrayVector.Size;
-            }
-
             public readonly unsafe bool IsReadOnly
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -776,12 +776,6 @@ namespace Godot.NativeInterop
         {
             private IntPtr _writeProxy;
             public unsafe godot_variant* _ptr;
-
-            public readonly unsafe int Size
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
-            }
         }
 
         public readonly unsafe godot_variant* Elements
@@ -799,7 +793,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _p != null ? _p->Size : 0;
+            get => (int)NativeFuncs.godotsharp_array_size(in this);
         }
 
         public readonly unsafe bool IsReadOnly
@@ -930,7 +924,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_byte_array_size(in this);
         }
     }
 
@@ -961,7 +955,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_int32_array_size(in this);
         }
     }
 
@@ -992,7 +986,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_int64_array_size(in this);
         }
     }
 
@@ -1023,7 +1017,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_float32_array_size(in this);
         }
     }
 
@@ -1054,7 +1048,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_float64_array_size(in this);
         }
     }
 
@@ -1085,7 +1079,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_string_array_size(in this);
         }
     }
 
@@ -1116,7 +1110,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector2_array_size(in this);
         }
     }
 
@@ -1147,7 +1141,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector3_array_size(in this);
         }
     }
 
@@ -1179,7 +1173,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector4_array_size(in this);
         }
     }
 
@@ -1211,7 +1205,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_color_array_size(in this);
         }
     }
 

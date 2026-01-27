@@ -202,7 +202,8 @@ enum hb_unicode_props_flags_t {
   /* If GEN_CAT=FORMAT, top byte masks: */
   UPROPS_MASK_Cf_ZWJ	= 0x0100u,
   UPROPS_MASK_Cf_ZWNJ	= 0x0200u,
-  UPROPS_MASK_Cf_VS	= 0x0400u
+  UPROPS_MASK_Cf_VS	= 0x0400u,
+  UPROPS_MASK_Cf_AAT_DELETED	= 0x0800u
 };
 HB_MARK_AS_FLAG_T (hb_unicode_props_flags_t);
 
@@ -216,8 +217,6 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 
   if (u >= 0x80u)
   {
-    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
-
     if (unlikely (unicode->is_default_ignorable (u)))
     {
       buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
@@ -246,6 +245,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 
     if (unlikely (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (gen_cat)))
     {
+      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS;
       props |= UPROPS_MASK_CONTINUATION;
       props |= unicode->modified_combining_class (u)<<8;
     }
@@ -339,6 +339,11 @@ _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
 	 !_hb_glyph_info_substituted (info);
 }
 static inline void
+_hb_glyph_info_set_default_ignorable (hb_glyph_info_t *info)
+{
+  info->unicode_props() |= UPROPS_MASK_IGNORABLE;
+}
+static inline void
 _hb_glyph_info_clear_default_ignorable (hb_glyph_info_t *info)
 {
   info->unicode_props() &= ~ UPROPS_MASK_IGNORABLE;
@@ -355,12 +360,13 @@ _hb_glyph_info_unhide (hb_glyph_info_t *info)
 }
 
 static inline void
-_hb_glyph_info_set_continuation (hb_glyph_info_t *info)
+_hb_glyph_info_set_continuation (hb_glyph_info_t *info, hb_buffer_t *buffer)
 {
+  buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS;
   info->unicode_props() |= UPROPS_MASK_CONTINUATION;
 }
 static inline void
-_hb_glyph_info_reset_continuation (hb_glyph_info_t *info)
+_hb_glyph_info_clear_continuation (hb_glyph_info_t *info)
 {
   info->unicode_props() &= ~ UPROPS_MASK_CONTINUATION;
 }
@@ -381,6 +387,8 @@ _hb_grapheme_group_func (const hb_glyph_info_t& a HB_UNUSED,
 static inline void
 _hb_ot_layout_reverse_graphemes (hb_buffer_t *buffer)
 {
+  // MONOTONE_GRAPHEMES was already applied and is taken care of by _hb_grapheme_group_func.
+  // So we just check for MONOTONE_CHARACTERS here.
   buffer->reverse_groups (_hb_grapheme_group_func,
 			  buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
 }
@@ -402,16 +410,16 @@ _hb_glyph_info_is_zwj (const hb_glyph_info_t *info)
   return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
 }
 static inline bool
-_hb_glyph_info_is_joiner (const hb_glyph_info_t *info)
+_hb_glyph_info_is_aat_deleted (const hb_glyph_info_t *info)
 {
-  return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ|UPROPS_MASK_Cf_ZWJ));
+  return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_AAT_DELETED);
 }
 static inline void
-_hb_glyph_info_flip_joiners (hb_glyph_info_t *info)
+_hb_glyph_info_set_aat_deleted (hb_glyph_info_t *info)
 {
-  if (!_hb_glyph_info_is_unicode_format (info))
-    return;
-  info->unicode_props() ^= UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ;
+  _hb_glyph_info_set_general_category (info, HB_UNICODE_GENERAL_CATEGORY_FORMAT);
+  info->unicode_props() |= UPROPS_MASK_Cf_AAT_DELETED;
+  info->unicode_props() |= UPROPS_MASK_HIDDEN;
 }
 
 /* lig_props: aka lig_id / lig_comp
@@ -633,9 +641,22 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 }
 
 /* Make sure no one directly touches our props... */
-#undef unicode_props0
-#undef unicode_props1
+#undef unicode_props
 #undef lig_props
 #undef glyph_props
+
+static inline void
+_hb_collect_glyph_alternates_add (hb_codepoint_t from,
+				  hb_codepoint_t to,
+				  hb_map_t *alternate_count,
+				  hb_map_t *alternate_glyphs)
+{
+  hb_codepoint_t zero = 0;
+  hb_codepoint_t *i = &zero;
+  alternate_count->has (from, &i);
+  alternate_glyphs->set (from | (*i << 24), to);
+  alternate_count->set (from, *i + 1);
+}
+
 
 #endif /* HB_OT_LAYOUT_HH */

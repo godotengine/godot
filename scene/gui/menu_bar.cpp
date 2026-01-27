@@ -85,6 +85,15 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
+		if (focused_menu == -1) {
+			focused_menu = 0;
+		}
+		selected_menu = focused_menu;
+		if (active_menu >= 0) {
+			get_menu_popup(active_menu)->hide();
+		}
+		_open_popup(selected_menu, true);
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -219,9 +228,9 @@ void MenuBar::bind_global_menu() {
 	String prev_tag;
 	if (start_index >= 0) {
 		for (int i = 0; i < count; i++) {
-			String tag = nmenu->get_item_tag(main_menu, i).operator String().get_slice("#", 1);
+			String tag = nmenu->get_item_tag(main_menu, i).operator String().get_slicec('#', 1);
 			if (!tag.is_empty() && tag != prev_tag) {
-				MenuBar *mb = Object::cast_to<MenuBar>(ObjectDB::get_instance(ObjectID(static_cast<uint64_t>(tag.to_int()))));
+				MenuBar *mb = ObjectDB::get_instance<MenuBar>(ObjectID(static_cast<uint64_t>(tag.to_int())));
 				if (mb && mb->get_start_index() >= start_index) {
 					global_start_idx = i;
 					break;
@@ -240,11 +249,13 @@ void MenuBar::bind_global_menu() {
 		if (!popups[i]->is_system_menu()) {
 			int index = nmenu->add_submenu_item(main_menu, menu_cache[i].name, submenu_rid, global_menu_tag + "#" + itos(i), global_start_idx + i);
 			menu_cache.write[i].submenu_rid = submenu_rid;
+			menu_cache.write[i].sysmenu_id = NativeMenu::INVALID_MENU_ID;
 			nmenu->set_item_hidden(main_menu, index, menu_cache[i].hidden);
 			nmenu->set_item_disabled(main_menu, index, menu_cache[i].disabled);
 			nmenu->set_item_tooltip(main_menu, index, menu_cache[i].tooltip);
 		} else {
 			menu_cache.write[i].submenu_rid = RID();
+			menu_cache.write[i].sysmenu_id = popups[i]->get_system_menu();
 		}
 	}
 }
@@ -269,6 +280,7 @@ void MenuBar::unbind_global_menu() {
 			popups[i]->unbind_global_menu();
 			menu_cache.write[i].submenu_rid = RID();
 		}
+		menu_cache.write[i].sysmenu_id = NativeMenu::INVALID_MENU_ID;
 	}
 
 	global_menu_tag = String();
@@ -276,6 +288,12 @@ void MenuBar::unbind_global_menu() {
 
 void MenuBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_MENU_BAR);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_menu_count() > 0) {
 				_refresh_menu_names();
@@ -298,18 +316,28 @@ void MenuBar::_notification(int p_what) {
 			RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
-				if (is_global && menu_cache[i].submenu_rid.is_valid()) {
-					int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
-					if (item_idx >= 0) {
-						nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+				if (is_global) {
+					if (menu_cache[i].submenu_rid.is_valid()) {
+						int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
+						if (item_idx >= 0) {
+							nmenu->set_item_text(main_menu, item_idx, atr(menu_cache[i].name));
+						}
+					} else if (menu_cache[i].sysmenu_id != NativeMenu::INVALID_MENU_ID) {
+						nmenu->set_system_menu_text(menu_cache[i].sysmenu_id, atr(menu_cache[i].name));
 					}
 				}
+			}
+			if (!is_global) {
+				update_minimum_size();
 			}
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
+			}
+			if (global_menu_tag.is_empty()) {
+				update_minimum_size();
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -472,7 +500,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 			style->draw(ci, item_rect);
 		}
 		// Focus colors only take precedence over normal state.
-		if (has_focus()) {
+		if (has_focus(true)) {
 			color = theme_cache.font_focus_color;
 		} else {
 			color = theme_cache.font_color;
@@ -496,7 +524,8 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, lang);
 }
 
 void MenuBar::_refresh_menu_names() {
@@ -504,13 +533,14 @@ void MenuBar::_refresh_menu_names() {
 	bool is_global = !global_menu_tag.is_empty();
 	RID main_menu = is_global ? nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID) : RID();
 
+	bool dirty = false;
 	Vector<PopupMenu *> popups = _get_popups();
 	for (int i = 0; i < popups.size(); i++) {
 		String menu_name = popups[i]->get_title().is_empty() ? String(popups[i]->get_name()) : popups[i]->get_title();
 		if (!popups[i]->has_meta("_menu_name") && menu_name != get_menu_title(i)) {
 			menu_cache.write[i].name = menu_name;
 			shape(menu_cache.write[i]);
-			queue_redraw();
+			dirty = true;
 			if (is_global && menu_cache[i].submenu_rid.is_valid()) {
 				int item_idx = nmenu->find_item_index_with_submenu(main_menu, menu_cache[i].submenu_rid);
 				if (item_idx >= 0) {
@@ -518,6 +548,11 @@ void MenuBar::_refresh_menu_names() {
 				}
 			}
 		}
+	}
+
+	if (dirty && !is_global) {
+		queue_redraw();
+		update_minimum_size();
 	}
 }
 
@@ -548,7 +583,7 @@ int MenuBar::get_menu_idx_from_control(PopupMenu *p_child) const {
 }
 
 void MenuBar::_popup_changed(ObjectID p_menu) {
-	PopupMenu *pm = Object::cast_to<PopupMenu>(ObjectDB::get_instance(p_menu));
+	PopupMenu *pm = ObjectDB::get_instance<PopupMenu>(p_menu);
 	if (!pm) {
 		return;
 	}
@@ -591,6 +626,10 @@ void MenuBar::add_child_notify(Node *p_child) {
 		if (!pm->is_system_menu()) {
 			nmenu->add_submenu_item(main_menu, atr(menu.name), submenu_rid, global_menu_tag + "#" + itos(menu_cache.size() - 1), _find_global_start_index() + menu_cache.size() - 1);
 			menu_cache.write[menu_cache.size() - 1].submenu_rid = submenu_rid;
+			menu_cache.write[menu_cache.size() - 1].sysmenu_id = NativeMenu::INVALID_MENU_ID;
+		} else {
+			menu_cache.write[menu_cache.size() - 1].submenu_rid = RID();
+			menu_cache.write[menu_cache.size() - 1].sysmenu_id = pm->get_system_menu();
 		}
 	}
 	update_minimum_size();
@@ -742,6 +781,8 @@ void MenuBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void MenuBar::set_switch_on_hover(bool p_enabled) {
@@ -950,6 +991,7 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 }
 
 MenuBar::MenuBar() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_process_shortcut_input(true);
 }
 

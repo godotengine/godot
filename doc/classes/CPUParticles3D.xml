@@ -49,7 +49,7 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
 			<description>
-				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
+				Returns the enabled state of the given particle flag.
 			</description>
 		</method>
 		<method name="request_particles_process">
@@ -97,7 +97,7 @@
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Enables or disables the given particle flag (see [enum ParticleFlags] for options).
+				Enables or disables the given particle flag.
 			</description>
 		</method>
 	</methods>
@@ -146,11 +146,11 @@
 			[b]Note:[/b] [member color] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color] will have no visible effect.
 		</member>
 		<member name="color_initial_ramp" type="Gradient" setter="set_color_initial_ramp" getter="get_color_initial_ramp">
-			Each particle's initial color will vary along this [GradientTexture1D] (multiplied with [member color]).
+			Each particle's initial color will vary along this [Gradient] (multiplied with [member color]).
 			[b]Note:[/b] [member color_initial_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_initial_ramp] will have no visible effect.
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
-			Each particle's color will vary along this [GradientTexture1D] over its lifetime (multiplied with [member color]).
+			Each particle's color will vary along this [Gradient] over its lifetime (multiplied with [member color]).
 			[b]Note:[/b] [member color_ramp] multiplies the particle mesh's vertex colors. To have a visible effect on a [BaseMaterial3D], [member BaseMaterial3D.vertex_color_use_as_albedo] [i]must[/i] be [code]true[/code]. For a [ShaderMaterial], [code]ALBEDO *= COLOR.rgb;[/code] must be inserted in the shader's [code]fragment()[/code] function. Otherwise, [member color_ramp] will have no visible effect.
 		</member>
 		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
@@ -166,7 +166,7 @@
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles3D.DrawOrder" default="0">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
@@ -198,7 +198,7 @@
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles3D.EmissionShape" default="0">
-			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [enum EmissionShape] is set to [constant EMISSION_SHAPE_SPHERE].

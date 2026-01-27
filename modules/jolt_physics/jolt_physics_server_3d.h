@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_PHYSICS_SERVER_3D_H
-#define JOLT_PHYSICS_SERVER_3D_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class JoltArea3D;
 class JoltBody3D;
@@ -49,7 +48,7 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 
 	mutable RID_PtrOwner<JoltSpace3D, true> space_owner;
 	mutable RID_PtrOwner<JoltArea3D, true> area_owner;
-	mutable RID_PtrOwner<JoltBody3D, true> body_owner;
+	mutable RID_PtrOwner<JoltBody3D, true> body_owner{ 65536, 1048576 };
 	mutable RID_PtrOwner<JoltSoftBody3D, true> soft_body_owner;
 	mutable RID_PtrOwner<JoltShape3D, true> shape_owner;
 	mutable RID_PtrOwner<JoltJoint3D, true> joint_owner;
@@ -301,7 +300,7 @@ public:
 
 	virtual RID soft_body_create() override;
 
-	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
+	virtual void soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space) override;
 	virtual RID soft_body_get_space(RID p_body) const override;
@@ -323,6 +322,11 @@ public:
 
 	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform) override;
 
+	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) override;
+	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) override;
+	virtual void soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override;
+	virtual void soft_body_apply_central_force(RID p_body, const Vector3 &p_force) override;
+
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_precision) override;
 	virtual int soft_body_get_simulation_precision(RID p_body) const override;
 
@@ -331,6 +335,9 @@ public:
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_coefficient) override;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
+
+	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) override;
+	virtual real_t soft_body_get_shrinking_factor(RID p_body) const override;
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_coefficient) override;
 	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override;
@@ -404,7 +411,7 @@ public:
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, bool p_disable) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
 
-	virtual void free(RID p_rid) override;
+	virtual void free_rid(RID p_rid) override;
 
 	virtual void set_active(bool p_active) override;
 
@@ -421,6 +428,7 @@ public:
 
 	virtual int get_process_info(PhysicsServer3D::ProcessInfo p_process_info) override;
 
+	bool is_on_separate_thread() const { return on_separate_thread; }
 	bool is_active() const { return active; }
 
 	void free_space(JoltSpace3D *p_space);
@@ -498,5 +506,3 @@ VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointFlagJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisFlagJolt)
-
-#endif // JOLT_PHYSICS_SERVER_3D_H

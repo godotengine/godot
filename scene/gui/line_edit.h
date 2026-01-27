@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LINE_EDIT_H
-#define LINE_EDIT_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
@@ -84,6 +83,12 @@ public:
 		KEYBOARD_TYPE_URL
 	};
 
+	enum ExpandMode {
+		EXPAND_MODE_ORIGINAL_SIZE,
+		EXPAND_MODE_FIT_TO_TEXT,
+		EXPAND_MODE_FIT_TO_LINE_EDIT,
+	};
+
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -92,7 +97,16 @@ private:
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
+	ExpandMode icon_expand_mode = EXPAND_MODE_ORIGINAL_SIZE;
 
+	enum AltInputMode {
+		ALT_INPUT_NONE,
+		ALT_INPUT_UNICODE,
+		ALT_INPUT_OEM,
+		ALT_INPUT_WIN,
+	};
+
+	AltInputMode alt_mode = ALT_INPUT_NONE;
 	bool alt_start = false;
 	bool alt_start_no_hold = false;
 	uint32_t alt_code = 0;
@@ -106,6 +120,7 @@ private:
 	Point2 ime_selection;
 
 	RID text_rid;
+	RID accessibility_text_root_element;
 	float full_width = 0.0;
 
 	bool selecting_enabled = true;
@@ -114,6 +129,7 @@ private:
 
 	bool context_menu_enabled = true;
 	bool emoji_menu_enabled = true;
+	bool backspace_deletes_composite_character_enabled = false;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
@@ -139,6 +155,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
+	bool virtual_keyboard_show_on_focus = true;
 	VirtualKeyboardType virtual_keyboard_type = KEYBOARD_TYPE_DEFAULT;
 
 	bool middle_mouse_paste_enabled = true;
@@ -148,6 +165,7 @@ private:
 
 	Ref<Texture2D> right_icon;
 	bool flat = false;
+	float right_icon_scale = 1.0;
 
 	struct Selection {
 		int begin = 0;
@@ -253,6 +271,9 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
 
+	void _edit(bool p_show_virtual_keyboard = true, bool p_hide_focus = false);
+	Point2 _get_right_icon_size(Ref<Texture2D> p_right_icon) const;
+
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
@@ -262,11 +283,21 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _edit_bind_compat_111117();
+	static void _bind_compatibility_methods();
+#endif
+
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	void _accessibility_action_set_selection(const Variant &p_data);
+	void _accessibility_action_replace_selected(const Variant &p_data);
+	void _accessibility_action_set_value(const Variant &p_data);
+	void _accessibility_action_menu(const Variant &p_data);
+
 public:
-	void edit();
+	void edit(bool p_hide_focus = false);
 	void unedit();
 	bool is_editing() const;
 	void set_keep_editing_on_text_submit(bool p_enabled);
@@ -296,6 +327,9 @@ public:
 	void set_emoji_menu_enabled(bool p_enabled);
 	bool is_emoji_menu_enabled() const;
 
+	void set_backspace_deletes_composite_character_enabled(bool p_enabled);
+	bool is_backspace_deletes_composite_character_enabled() const;
+
 	void select(int p_from = 0, int p_to = -1);
 	void select_all();
 	void selection_delete();
@@ -308,6 +342,7 @@ public:
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
 
+	void _set_text(String p_text, bool p_emit_signal = false);
 	void set_text(String p_text);
 	String get_text() const;
 	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
@@ -324,7 +359,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_placeholder(String p_text);
@@ -332,6 +367,8 @@ public:
 
 	void set_caret_column(int p_column);
 	int get_caret_column() const;
+	int get_next_composite_character_column(int p_column) const;
+	int get_previous_composite_character_column(int p_column) const;
 
 	void set_max_length(int p_max_length);
 	int get_max_length() const;
@@ -382,6 +419,9 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_virtual_keyboard_show_on_focus(bool p_show_on_focus);
+	bool get_virtual_keyboard_show_on_focus() const;
+
 	void set_virtual_keyboard_type(VirtualKeyboardType p_type);
 	VirtualKeyboardType get_virtual_keyboard_type() const;
 
@@ -399,6 +439,12 @@ public:
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
+
+	void set_icon_expand_mode(ExpandMode p_mode);
+	ExpandMode get_icon_expand_mode() const;
+
+	void set_right_icon_scale(float p_scale);
+	float get_right_icon_scale() const;
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
@@ -419,5 +465,4 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
-
-#endif // LINE_EDIT_H
+VARIANT_ENUM_CAST(LineEdit::ExpandMode);

@@ -31,6 +31,8 @@
 #include "error_macros.h"
 
 #include "core/io/logger.h"
+#include "core/object/object_id.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
@@ -41,6 +43,19 @@
 #endif
 
 static ErrorHandlerList *error_handler_list = nullptr;
+static thread_local bool is_printing_error = false;
+
+static void _err_print_fallback(const char *p_function, const char *p_file, int p_line, const char *p_error_details, ErrorHandlerType p_type, bool p_reentrance) {
+	if (p_reentrance) {
+		fprintf(stderr, "While attempting to print an error, another error was printed:\n");
+	}
+
+	fprintf(stderr, "%s: %s\n", _error_handler_type_string(p_type), p_error_details);
+
+	if (p_function && p_file) {
+		fprintf(stderr, "   at: %s (%s:%i)\n", p_function, p_file, p_line);
+	}
+}
 
 void add_error_handler(ErrorHandlerList *p_handler) {
 	// If p_handler is already in error_handler_list
@@ -89,15 +104,25 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	if (is_printing_error) {
+		// Fallback if we're already printing an error, to prevent infinite recursion.
+		const char *err_details = (p_message && *p_message) ? p_message : p_error;
+		_err_print_fallback(p_function, p_file, p_line, err_details, p_type, true);
+		return;
+	}
+
+	is_printing_error = true;
+
 	if (OS::get_singleton()) {
-		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
+		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type, ScriptServer::capture_script_backtraces(false));
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;
-		fprintf(stderr, "ERROR: %s\n   at: %s (%s:%i)\n", err_details, p_function, p_file, p_line);
+		_err_print_fallback(p_function, p_file, p_line, err_details, p_type, false);
 	}
 
 	_global_lock();
+
 	ErrorHandlerList *l = error_handler_list;
 	while (l) {
 		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, p_message, p_editor_notify, p_type);
@@ -105,28 +130,42 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 	}
 
 	_global_unlock();
+
+	is_printing_error = false;
 }
 
 // For printing errors when we may crash at any point, so we must flush ASAP a lot of lines
 // but we don't want to make it noisy by printing lots of file & line info (because it's already
 // been printing by a preceding _err_print_error).
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
+	const char *err_details = p_error.utf8().get_data();
+
+	if (is_printing_error) {
+		// Fallback if we're already printing an error, to prevent infinite recursion.
+		_err_print_fallback(nullptr, nullptr, 0, err_details, p_type, true);
+		return;
+	}
+
+	is_printing_error = true;
+
 	if (OS::get_singleton()) {
-		OS::get_singleton()->printerr("ERROR: %s\n", p_error.utf8().get_data());
+		OS::get_singleton()->printerr("%s: %s\n", _error_handler_type_string(p_type), err_details);
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
-		const char *err_details = p_error.utf8().get_data();
-		fprintf(stderr, "ERROR: %s\n", err_details);
+		_err_print_fallback(nullptr, nullptr, 0, err_details, p_type, false);
 	}
 
 	_global_lock();
+
 	ErrorHandlerList *l = error_handler_list;
 	while (l) {
-		l->errfunc(l->userdata, "", "", 0, p_error.utf8().get_data(), "", false, p_type);
+		l->errfunc(l->userdata, "", "", 0, err_details, "", false, p_type);
 		l = l->next;
 	}
 
 	_global_unlock();
+
+	is_printing_error = false;
 }
 
 // Errors with message. (All combinations of p_error and p_message as String or char*.)
@@ -187,7 +226,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 			} else {
 				String node_name;
 				if (p_id.is_valid()) {
-					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
+					Node *node = ObjectDB::get_instance<Node>(p_id);
 					if (node && node->is_inside_tree()) {
 						node_name = "\"" + String(node->get_path()) + "\"";
 					} else {

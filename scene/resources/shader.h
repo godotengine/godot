@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
@@ -42,6 +41,7 @@ class Shader : public Resource {
 	OBJ_SAVE_TYPE(Shader);
 
 public:
+	// Must be kept in sync with the List<String> of shader types in `servers/rendering/shader_types.cpp`.
 	enum Mode {
 		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
@@ -107,6 +107,8 @@ public:
 VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatLoaderShader, ResourceFormatLoader);
+
 public:
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
@@ -115,10 +117,10 @@ public:
 };
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceFormatSaverShader, ResourceFormatSaver);
+
 public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // SHADER_H

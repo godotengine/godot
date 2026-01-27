@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_content_view.h"
+#import "godot_content_view.h"
 
-#include "display_server_macos.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "godot_window.h"
+#import "key_mapping_macos.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
@@ -55,6 +57,9 @@
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
+		GodotProfileFrameMark;
+		GodotProfileZone("[GodotContentLayerDelegate displayLayer]");
+
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -66,6 +71,10 @@
 @end
 
 @implementation GodotContentView
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)event {
+	return YES;
+}
 
 - (void)setFrameSize:(NSSize)newSize {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
@@ -109,6 +118,22 @@
 	self.layer.needsDisplayOnBoundsChange = YES;
 }
 
+- (void)addObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
+	[registered_observers addObject:[[targetObserver description] stringByAppendingString:keyPath]];
+	[super addObserver:targetObserver forKeyPath:keyPath options:options context:context];
+}
+
+- (void)removeObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath {
+	if ([registered_observers containsObject:[[targetObserver description] stringByAppendingString:keyPath]]) {
+		@try {
+			[super removeObserver:targetObserver forKeyPath:keyPath];
+			[registered_observers removeObject:[[targetObserver description] stringByAppendingString:keyPath]];
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+		}
+	}
+}
+
 - (id)init {
 	self = [super init];
 	layer_delegate = [[GodotContentLayerDelegate alloc] init];
@@ -118,6 +143,7 @@
 	mouse_down_control = false;
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
+	registered_observers = [[NSMutableSet alloc] init];
 	[self updateTrackingAreas];
 
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
@@ -136,7 +162,12 @@
 // MARK: Backing Layer
 
 - (CALayer *)makeBackingLayer {
-	return [[CAMetalLayer class] layer];
+	CAMetalLayer *layer = [CAMetalLayer new];
+	layer.edgeAntialiasingMask = 0;
+	layer.masksToBounds = NO;
+	layer.presentsWithTransaction = NO;
+	[layer removeAllAnimations];
+	return layer;
 }
 
 - (BOOL)wantsUpdateLayer {
@@ -267,11 +298,10 @@
 	}
 
 	Char16String text;
-	text.resize([characters length] + 1);
+	text.resize_uninitialized([characters length] + 1);
 	[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
-	String u32text;
-	u32text.parse_utf16(text.ptr(), text.length());
+	String u32text = String::utf16(text.ptr(), text.length());
 
 	for (int i = 0; i < u32text.length(); i++) {
 		const char32_t codepoint = u32text[i];
@@ -516,6 +546,11 @@
 	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
+	const NSRect contentRect = [wd.window_view frame];
+	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
+		ds->mouse_enter_window(window_id);
+	}
+
 	Input::get_singleton()->parse_input_event(mm);
 }
 
@@ -622,7 +657,7 @@
 		[self removeTrackingArea:tracking_area];
 	}
 
-	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveWhenFirstResponder | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
 	tracking_area = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
 
 	[self addTrackingArea:tracking_area];
@@ -649,11 +684,10 @@
 		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true))) {
 			// Fallback unicode character handler used if IME is not active.
 			Char16String text;
-			text.resize([characters length] + 1);
+			text.resize_uninitialized([characters length] + 1);
 			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
-			String u32text;
-			u32text.parse_utf16(text.ptr(), text.length());
+			String u32text = String::utf16(text.ptr(), text.length());
 
 			DisplayServerMacOS::KeyEvent ke;
 			ke.window_id = window_id;
@@ -873,11 +907,11 @@
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
-		if (fabs(delta_x)) {
-			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:fabs(delta_x * 0.3)];
+		if (std::abs(delta_x)) {
+			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:std::abs(delta_x * 0.3)];
 		}
-		if (fabs(delta_y)) {
-			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:fabs(delta_y * 0.3)];
+		if (std::abs(delta_y)) {
+			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:std::abs(delta_y * 0.3)];
 		}
 	}
 }

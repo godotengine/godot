@@ -4,12 +4,6 @@
 
 #VERSION_DEFINES
 
-#define MAX_VIEWS 2
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
-
 layout(location = 0) out vec2 uv_interp;
 
 layout(push_constant, std430) uniform Params {
@@ -35,21 +29,14 @@ void main() {
 
 #VERSION_DEFINES
 
+#include "../oct_inc.glsl"
+
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
+#endif
 
 #define M_PI 3.14159265359
-#define MAX_VIEWS 2
 
 layout(location = 0) in vec2 uv_interp;
 
@@ -58,7 +45,7 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec2 pad;
+	vec2 border_size;
 	float luminance_multiplier;
 	float brightness_multiplier;
 }
@@ -115,10 +102,10 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 /* clang-format on */
 #endif
 
-layout(set = 2, binding = 0) uniform textureCube radiance;
+layout(set = 2, binding = 0) uniform texture2D radiance;
 #ifdef USE_CUBEMAP_PASS
-layout(set = 2, binding = 1) uniform textureCube half_res;
-layout(set = 2, binding = 2) uniform textureCube quarter_res;
+layout(set = 2, binding = 1) uniform texture2D half_res;
+layout(set = 2, binding = 2) uniform texture2D quarter_res;
 #elif defined(USE_MULTIVIEW)
 layout(set = 2, binding = 1) uniform texture2DArray half_res;
 layout(set = 2, binding = 2) uniform texture2DArray quarter_res;
@@ -179,7 +166,7 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		float sun_total = 0.0;
 		for (uint i = 0; i < sky_scene_data.directional_light_count; i++) {
 			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
-			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0) * M_PI;
 			fog_color += light_color * light_amount * sky_scene_data.fog_sun_scatter;
 		}
 	}
@@ -187,8 +174,38 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 	return vec4(fog_color, 1.0);
 }
 
+// Eberly approximation from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+// input [-1, 1] and output [0, PI]
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0.0) ? res : M_PI - res;
+}
+
+// Based on https://math.stackexchange.com/questions/1098487/atan2-faster-approximation
+// but using the Eberly coefficients from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+float atan2_approx(float y, float x) {
+	float a = min(abs(x), abs(y)) / max(abs(x), abs(y));
+	float s = a * a;
+	float poly = 0.0872929f;
+	poly = -0.301895f + poly * s;
+	poly = 1.0f + poly * s;
+	poly = poly * a;
+
+	float r = abs(y) > abs(x) ? (M_PI / 2.0) - poly : poly;
+	r = x < 0.0 ? M_PI - r : r;
+	r = y < 0.0 ? -r : r;
+
+	return r;
+}
+
 void main() {
+	vec2 uv = uv_interp * 0.5 + 0.5;
 	vec3 cube_normal;
+#ifdef USE_CUBEMAP_PASS
+	cube_normal = oct_to_vec3_with_border(uv, params.border_size.y);
+#else
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
 	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 0.0, 1.0); // unproject at the far plane
@@ -204,10 +221,9 @@ void main() {
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
+#endif
 
-	vec2 uv = uv_interp * 0.5 + 0.5;
-
-	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
@@ -224,10 +240,10 @@ void main() {
 #ifdef USE_CUBEMAP_PASS
 
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal) / params.luminance_multiplier;
+	half_res_color = texture(sampler2D(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3_to_oct_with_border(cube_normal, params.border_size)) / params.luminance_multiplier;
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal) / params.luminance_multiplier;
+	quarter_res_color = texture(sampler2D(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3_to_oct_with_border(cube_normal, params.border_size)) / params.luminance_multiplier;
 #endif
 
 #else
@@ -270,7 +286,8 @@ void main() {
 
 	if (sky_scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * sky_scene_data.volumetric_fog_sky_affect);
+		fog.rgb = frag_color.rgb * fog.a + fog.rgb;
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, sky_scene_data.volumetric_fog_sky_affect);
 	}
 
 	if (custom_fog.a > 0.0) {

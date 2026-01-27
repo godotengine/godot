@@ -105,9 +105,3 @@ Error ResourceImporterBitMap::import(ResourceUID::ID p_source_id, const String &
 
 	return ResourceSaver::save(bitmap, p_save_path + ".res");
 }
-
-ResourceImporterBitMap::ResourceImporterBitMap() {
-}
-
-ResourceImporterBitMap::~ResourceImporterBitMap() {
-}

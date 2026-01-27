@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_RENDER_RD_H
-#define RENDERER_SCENE_RENDER_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
@@ -40,6 +39,8 @@
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
+#include "servers/rendering/renderer_rd/effects/resolve.h"
+#include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
@@ -50,8 +51,9 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
+#include "servers/rendering/rendering_shader_library.h"
 
-class RendererSceneRenderRD : public RendererSceneRender {
+class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
 
@@ -61,9 +63,11 @@ protected:
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::DebugEffects *debug_effects = nullptr;
 	RendererRD::Luminance *luminance = nullptr;
+	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
+	RendererRD::Resolve *resolve_effects = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
 #endif
@@ -103,9 +107,11 @@ protected:
 	bool _compositor_effects_has_flag(const RenderDataRD *p_render_data, RS::CompositorEffectFlags p_flag, RS::CompositorEffectCallbackType p_callback_type = RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY);
 	bool _has_compositor_effect(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
 	void _process_compositor_effects(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
+	void _render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
-	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
-	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data);
+	void _render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data);
+	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data, bool p_use_msaa = false);
+	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data, bool p_use_msaa = false);
 	void _post_process_subpass(RID p_source_texture, RID p_framebuffer, const RenderDataRD *p_render_data);
 	void _disable_clear_request(const RenderDataRD *p_render_data);
 
@@ -140,6 +146,7 @@ private:
 	int soft_shadow_samples = 0;
 	RS::DecalFilter decals_filter = RS::DECAL_FILTER_LINEAR_MIPMAPS;
 	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
+	bool material_use_debanding = false;
 
 	/* RENDER BUFFERS */
 
@@ -229,9 +236,7 @@ public:
 	virtual void voxel_gi_set_quality(RS::VoxelGIQuality p_quality) override { gi.voxel_gi_quality = p_quality; }
 
 	/* render buffers */
-
-	virtual float _render_buffers_get_luminance_multiplier();
-	virtual RD::DataFormat _render_buffers_get_color_format();
+	virtual RD::DataFormat _render_buffers_get_preferred_color_format();
 	virtual bool _render_buffers_can_be_storage();
 	virtual Ref<RenderSceneBuffers> render_buffers_create() override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;
@@ -264,6 +269,7 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override;
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override;
+	virtual void material_set_use_debanding(bool p_enable) override;
 
 	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const {
 		return shadows_quality;
@@ -314,8 +320,12 @@ public:
 		return decals_filter;
 	}
 
+	_FORCE_INLINE_ bool material_use_debanding_get() const {
+		return material_use_debanding;
+	}
+
 	int get_roughness_layers() const;
-	bool is_using_radiance_cubemap_array() const;
+	bool is_using_radiance_octmap_array() const;
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
 
@@ -342,5 +352,3 @@ public:
 	RendererSceneRenderRD();
 	~RendererSceneRenderRD();
 };
-
-#endif // RENDERER_SCENE_RENDER_RD_H

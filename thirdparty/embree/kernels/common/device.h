@@ -38,7 +38,7 @@ namespace embree
       
       __forceinline pointer allocate( size_type n ) {
         assert(device);
-        return (pointer) device->malloc(n*sizeof(T),alignment);
+        return (pointer) device->malloc(n*sizeof(T),alignment,EmbreeMemoryType::MALLOC);
       }
       
       __forceinline void deallocate( pointer p, size_type n ) {
@@ -75,16 +75,26 @@ namespace embree
     void print();
 
     /*! sets the error code */
-    void setDeviceErrorCode(RTCError error);
+    void setDeviceErrorCode(RTCError error, std::string const& msg = "");
 
     /*! returns and clears the error code */
     RTCError getDeviceErrorCode();
 
+    /*! Returns the string representation for the error code. For example, for RTC_ERROR_UNKNOWN the string "RTC_ERROR_UNKNOWN" will be returned. */
+    static char* getDeviceErrorString();
+
+    /*! returns the last error message */
+    const char* getDeviceLastErrorMessage();
+
     /*! sets the error code */
-    static void setThreadErrorCode(RTCError error);
+    static void setThreadErrorCode(RTCError error, std::string const& msg = "");
 
     /*! returns and clears the error code */
     static RTCError getThreadErrorCode();
+
+
+    /*! returns the last error message */
+    static const char* getThreadLastErrorMessage();
 
     /*! processes error codes, do not call directly */
     static void process_error(Device* device, RTCError error, const char* str);
@@ -107,11 +117,22 @@ namespace embree
     /*! leave device by setting up some global state */
     virtual void leave() {}
 
-    /*! buffer allocation */
+    /*! buffer allocation - using USM shared */
     virtual void* malloc(size_t size, size_t align);
+
+    /*! buffer allocation */
+    virtual void* malloc(size_t size, size_t align, EmbreeMemoryType type);
 
     /*! buffer deallocation */
     virtual void free(void* ptr);
+
+    /*! returns true if device is of type DeviceGPU */
+    virtual bool is_gpu() const { return false; }
+
+    /*! returns true if device and host have shared memory system (e.g., integrated GPU) */
+    virtual bool has_unified_memory() const { return true; }
+
+    virtual EmbreeMemoryType get_memory_type(void* ptr) const { return EmbreeMemoryType::MALLOC; }
 
   private:
 
@@ -140,6 +161,13 @@ namespace embree
 #if defined(EMBREE_TARGET_SIMD8)
     std::unique_ptr<BVH8Factory> bvh8_factory;
 #endif
+
+  private:
+    static const std::vector<std::string> error_strings;
+
+  public:
+    static const char* getErrorString(RTCError error);
+
   };
 
 #if defined(EMBREE_SYCL_SUPPORT)
@@ -154,10 +182,26 @@ namespace embree
     virtual void enter() override;
     virtual void leave() override;
     virtual void* malloc(size_t size, size_t align) override;
+    virtual void* malloc(size_t size, size_t align, EmbreeMemoryType type) override;
     virtual void free(void* ptr) override;
 
     /* set SYCL device */
     void setSYCLDevice(const sycl::device sycl_device);
+
+    /*! returns true if device is of type DeviceGPU */
+    virtual bool is_gpu() const override { return true; }
+
+    /*! returns true if device and host have shared memory system (e.g., integrated GPU) */
+    virtual bool has_unified_memory() const override;
+
+    virtual EmbreeMemoryType get_memory_type(void* ptr) const override {
+      switch(sycl::get_pointer_type(ptr, gpu_context)) {
+        case sycl::usm::alloc::host: return EmbreeMemoryType::USM_HOST;
+        case sycl::usm::alloc::device: return EmbreeMemoryType::USM_DEVICE;
+        case sycl::usm::alloc::shared: return EmbreeMemoryType::USM_SHARED;
+        default: return EmbreeMemoryType::MALLOC;
+      }
+    }
 
   private:
     sycl::context gpu_context;

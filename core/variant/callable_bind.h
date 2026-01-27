@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_BIND_H
-#define CALLABLE_BIND_H
+#pragma once
 
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
@@ -61,7 +60,6 @@ public:
 	Vector<Variant> get_binds() { return binds; }
 
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
-	virtual ~CallableCustomBind();
 };
 
 class CallableCustomUnbind : public CallableCustom {
@@ -92,7 +90,4 @@ public:
 	int get_unbinds() { return argcount; }
 
 	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
-	virtual ~CallableCustomUnbind();
 };
-
-#endif // CALLABLE_BIND_H

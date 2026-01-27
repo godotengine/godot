@@ -42,12 +42,11 @@ JoltShapeInstance3D::ShapeReference::ShapeReference(JoltShapedObject3D *p_parent
 	}
 }
 
-JoltShapeInstance3D::ShapeReference::ShapeReference(const ShapeReference &p_other) :
+JoltShapeInstance3D::ShapeReference::ShapeReference(ShapeReference &&p_other) :
 		parent(p_other.parent),
 		shape(p_other.shape) {
-	if (shape != nullptr) {
-		shape->add_owner(parent);
-	}
+	p_other.parent = nullptr;
+	p_other.shape = nullptr;
 }
 
 JoltShapeInstance3D::ShapeReference::~ShapeReference() {
@@ -56,16 +55,10 @@ JoltShapeInstance3D::ShapeReference::~ShapeReference() {
 	}
 }
 
-JoltShapeInstance3D::ShapeReference &JoltShapeInstance3D::ShapeReference::operator=(const ShapeReference &p_other) {
-	if (shape != nullptr) {
-		shape->remove_owner(parent);
-	}
-
-	parent = p_other.parent;
-	shape = p_other.shape;
-
-	if (shape != nullptr) {
-		shape->add_owner(parent);
+JoltShapeInstance3D::ShapeReference &JoltShapeInstance3D::ShapeReference::operator=(ShapeReference &&p_other) {
+	if (this != &p_other) {
+		SWAP(parent, p_other.parent);
+		SWAP(shape, p_other.shape);
 	}
 
 	return *this;

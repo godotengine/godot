@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_DUMMY_H
-#define TEXT_SERVER_DUMMY_H
+#pragma once
 
 #include "servers/text/text_server_extension.h"
 
@@ -52,6 +51,7 @@ public:
 	virtual void font_set_fixed_size_scale_mode(const RID &p_font_rid, TextServer::FixedSizeScaleMode p_fixed_size_scale_mode) override {}
 	virtual TextServer::FixedSizeScaleMode font_get_fixed_size_scale_mode(const RID &p_font_rid) const override { return FIXED_SIZE_SCALE_DISABLE; }
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override { return TypedArray<Vector2i>(); }
+	virtual TypedArray<Dictionary> font_get_size_cache_info(const RID &p_font_rid) const override { return TypedArray<Dictionary>(); }
 	virtual void font_clear_size_cache(const RID &p_font_rid) override {}
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) override {}
 	virtual void font_set_ascent(const RID &p_font_rid, int64_t p_size, double p_ascent) override {}
@@ -89,14 +89,16 @@ public:
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override { return false; }
 	virtual String font_get_supported_chars(const RID &p_font_rid) const override { return String(); }
 	virtual PackedInt32Array font_get_supported_glyphs(const RID &p_font_rid) const override { return PackedInt32Array(); }
-	virtual void font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
-	virtual void font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override {}
+	virtual void font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const override {}
+	virtual void font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const override {}
 
 	virtual RID create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) override { return RID(); }
 	virtual void shaped_text_clear(const RID &p_shaped) override {}
+	virtual RID shaped_text_duplicate(const RID &p_shaped) override { return RID(); }
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) override { return false; }
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length, double p_baseline) override { return false; }
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, double p_baseline) override { return false; }
+	virtual bool shaped_text_has_object(const RID &p_shaped, const Variant &p_key) const override { return false; }
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const override { return 0; }
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const override { return Variant(); }
 	virtual Variant shaped_get_span_embedded_object(const RID &p_shaped, int64_t p_index) const override { return Variant(); }
@@ -124,5 +126,3 @@ public:
 	virtual double shaped_text_get_underline_position(const RID &p_shaped) const override { return 0; }
 	virtual double shaped_text_get_underline_thickness(const RID &p_shaped) const override { return 0; }
 };
-
-#endif // TEXT_SERVER_DUMMY_H

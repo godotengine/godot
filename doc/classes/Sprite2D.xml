@@ -18,23 +18,23 @@
 				[codeblocks]
 				[gdscript]
 				func _input(event):
-				    if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-				        if get_rect().has_point(to_local(event.position)):
-				            print("A click!")
+					if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+						if get_rect().has_point(to_local(event.position)):
+							print("A click!")
 				[/gdscript]
 				[csharp]
 				public override void _Input(InputEvent @event)
 				{
-				    if (@event is InputEventMouseButton inputEventMouse)
-				    {
-				        if (inputEventMouse.Pressed &amp;&amp; inputEventMouse.ButtonIndex == MouseButton.Left)
-				        {
-				            if (GetRect().HasPoint(ToLocal(inputEventMouse.Position)))
-				            {
-				                GD.Print("A click!");
-				            }
-				        }
-				    }
+					if (@event is InputEventMouseButton inputEventMouse)
+					{
+						if (inputEventMouse.Pressed &amp;&amp; inputEventMouse.ButtonIndex == MouseButton.Left)
+						{
+							if (GetRect().HasPoint(ToLocal(inputEventMouse.Position)))
+							{
+								GD.Print("A click!");
+							}
+						}
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -44,8 +44,7 @@
 			<return type="bool" />
 			<param index="0" name="pos" type="Vector2" />
 			<description>
-				Returns [code]true[/code], if the pixel at the given position is opaque and [code]false[/code] in other case. The position is in local coordinates.
-				[b]Note:[/b] It also returns [code]false[/code], if the sprite's texture is [code]null[/code] or if the given position is invalid.
+				Returns [code]true[/code] if the pixel at the given position is opaque, [code]false[/code] otherwise. Also returns [code]false[/code] if the given position is out of bounds or this sprite's [member texture] is [code]null[/code]. [param pos] is in local coordinates.
 			</description>
 		</method>
 	</methods>
@@ -71,9 +70,11 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
+			[b]Note:[/b] When you increase [member offset].y in Sprite2D, the sprite moves downward on screen (i.e., +Y is down).
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], texture is cut from a larger atlas texture. See [member region_rect].
+			[b]Note:[/b] When using a custom [Shader] on a [Sprite2D], the [code]UV[/code] shader built-in will refer to the entire texture space. Use the [code]REGION_RECT[/code] built-in to get the currently visible region defined in [member region_rect] instead. See [url=$DOCS_URL/tutorials/shaders/shader_reference/canvas_item_shader.html]CanvasItem shaders[/url] for details.
 		</member>
 		<member name="region_filter_clip_enabled" type="bool" setter="set_region_filter_clip_enabled" getter="is_region_filter_clip_enabled" default="false">
 			If [code]true[/code], the area outside of the [member region_rect] is clipped to avoid bleeding of the surrounding texture pixels. [member region_enabled] must be [code]true[/code].

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BOKEH_DOF_RD_H
-#define BOKEH_DOF_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/bokeh_dof.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/bokeh_dof_raster.glsl.gen.h"
 
@@ -87,7 +87,7 @@ private:
 		BokehDofShaderRD compute_shader;
 		BokehDofRasterShaderRD raster_shader;
 		RID shader_version;
-		RID compute_pipelines[BOKEH_MAX];
+		PipelineDeferredRD compute_pipelines[BOKEH_MAX];
 		PipelineCacheRD raster_pipelines[BOKEH_MAX];
 	} bokeh;
 
@@ -118,5 +118,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // BOKEH_DOF_RD_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIPO_H
-#define LIPO_H
+#pragma once
 
 // Universal / Universal 2 fat binary file creator and extractor.
 
@@ -37,6 +36,8 @@
 #include "core/object/ref_counted.h"
 
 class LipO : public RefCounted {
+	GDSOFTCLASS(LipO, RefCounted);
+
 	struct FatArch {
 		uint32_t cputype;
 		uint32_t cpusubtype;
@@ -68,5 +69,3 @@ public:
 
 	~LipO();
 };
-
-#endif // LIPO_H

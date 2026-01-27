@@ -31,12 +31,26 @@
 #include "doc_data.h"
 
 String DocData::get_default_value_string(const Variant &p_value) {
-	if (p_value.get_type() == Variant::ARRAY) {
-		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
-	} else if (p_value.get_type() == Variant::DICTIONARY) {
-		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string().replace("\n", " ");
+	const Variant::Type type = p_value.get_type();
+	if (type == Variant::ARRAY) {
+		return Variant(Array(p_value, 0, StringName(), Variant())).get_construct_string().replace_char('\n', ' ');
+	} else if (type == Variant::DICTIONARY) {
+		return Variant(Dictionary(p_value, 0, StringName(), Variant(), 0, StringName(), Variant())).get_construct_string().replace_char('\n', ' ');
+	} else if (type == Variant::INT) {
+		return itos(p_value);
+	} else if (type == Variant::FLOAT) {
+		// Since some values are 32-bit internally, use 32-bit for all
+		// documentation values to avoid garbage digits at the end.
+		const String s = String::num_scientific((float)p_value);
+		// Use float literals for floats in the documentation for clarity.
+		if (s != "inf" && s != "-inf" && s != "nan") {
+			if (!s.contains_char('.') && !s.contains_char('e')) {
+				return s + ".0";
+			}
+		}
+		return s;
 	} else {
-		return p_value.get_construct_string().replace("\n", " ");
+		return p_value.get_construct_string().replace_char('\n', ' ');
 	}
 }
 
@@ -51,7 +65,7 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 	} else if (p_retinfo.type == Variant::INT && p_retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_method.return_enum = p_retinfo.class_name;
 		if (p_method.return_enum.begins_with("_")) { //proxy class
-			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
+			p_method.return_enum = p_method.return_enum.substr(1);
 		}
 		p_method.return_is_bitfield = p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_method.return_type = "int";
@@ -85,7 +99,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 	} else if (p_arginfo.type == Variant::INT && p_arginfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 		p_argument.enumeration = p_arginfo.class_name;
 		if (p_argument.enumeration.begins_with("_")) { //proxy class
-			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
+			p_argument.enumeration = p_argument.enumeration.substr(1);
 		}
 		p_argument.is_bitfield = p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_argument.type = "int";
@@ -113,6 +127,13 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		p_method.qualifiers = "virtual";
 	}
 
+	if (p_methodinfo.flags & METHOD_FLAG_VIRTUAL_REQUIRED) {
+		if (!p_method.qualifiers.is_empty()) {
+			p_method.qualifiers += " ";
+		}
+		p_method.qualifiers += "required";
+	}
+
 	if (p_methodinfo.flags & METHOD_FLAG_CONST) {
 		if (!p_method.qualifiers.is_empty()) {
 			p_method.qualifiers += " ";
@@ -136,11 +157,10 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
-	int i = 0;
-	for (List<PropertyInfo>::ConstIterator itr = p_methodinfo.arguments.begin(); itr != p_methodinfo.arguments.end(); ++itr, ++i) {
+	for (int64_t i = 0; i < p_methodinfo.arguments.size(); ++i) {
 		DocData::ArgumentDoc argument;
-		argument_doc_from_arginfo(argument, *itr);
-		int default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
+		argument_doc_from_arginfo(argument, p_methodinfo.arguments[i]);
+		int64_t default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
 		if (default_arg_index >= 0) {
 			Variant default_arg = p_methodinfo.default_arguments[default_arg_index];
 			argument.default_value = get_default_value_string(default_arg);

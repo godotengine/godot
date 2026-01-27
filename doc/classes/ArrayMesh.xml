@@ -27,9 +27,9 @@
 		[csharp]
 		Vector3[] vertices =
 		[
-		    new Vector3(0, 1, 0),
-		    new Vector3(1, 0, 0),
-		    new Vector3(0, 0, 1),
+			new Vector3(0, 1, 0),
+			new Vector3(1, 0, 0),
+			new Vector3(0, 0, 1),
 		];
 
 		// Initialize the ArrayMesh.
@@ -207,7 +207,7 @@
 	</methods>
 	<members>
 		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode" default="1">
-			Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
+			The blend shape mode.
 		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.

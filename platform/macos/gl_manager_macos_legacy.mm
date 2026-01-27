@@ -28,16 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gl_manager_macos_legacy.h"
+#import "gl_manager_macos_legacy.h"
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
 #include <dlfcn.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
 Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	NSOpenGLPixelFormatAttribute attributes[] = {
@@ -204,6 +203,6 @@ GLManagerLegacy_MacOS::~GLManagerLegacy_MacOS() {
 	release_current();
 }
 
-#pragma clang diagnostic pop
+GODOT_CLANG_WARNING_POP
 
 #endif // MACOS_ENABLED && GLES3_ENABLED

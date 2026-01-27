@@ -38,7 +38,8 @@
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
-#include "servers/display_server.h"
+#include "rgb_to_rgba.glsl.gen.h"
+#include "servers/display/display_server.h"
 
 static Mutex betsy_mutex;
 static BetsyCompressor *betsy = nullptr;
@@ -220,10 +221,48 @@ void BetsyCompressor::_init() {
 		cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_ALPHA_STITCH].compiled);
 		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline.is_null());
 	}
+
+	{
+		Ref<RDShaderFile> rgb_to_rgba_shader;
+		rgb_to_rgba_shader.instantiate();
+		Error err = rgb_to_rgba_shader->parse_versions_from_text(rgb_to_rgba_shader_glsl);
+
+		if (err != OK) {
+			rgb_to_rgba_shader->print_errors("Betsy RGB to RGBA shader");
+		}
+
+		// Float32.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_float"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_FLOAT].pipeline.is_null());
+
+		// Float16.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_half"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_HALF].pipeline.is_null());
+
+		// Unorm8.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM8].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_unorm8"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM8].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM8].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM8].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM8].pipeline.is_null());
+
+		// Unorm16.
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM16].compiled = compress_rd->shader_create_from_spirv(rgb_to_rgba_shader->get_spirv_stages("version_unorm16"));
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM16].compiled.is_null());
+
+		cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM16].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM16].compiled);
+		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_RGB_TO_RGBA_UNORM16].pipeline.is_null());
+	}
 }
 
 void BetsyCompressor::init() {
-	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true);
+	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true, "Betsy pump task", true);
 	command_queue.set_pump_task_id(tid);
 	command_queue.push(this, &BetsyCompressor::_assign_mt_ids, tid);
 	command_queue.push_and_sync(this, &BetsyCompressor::_init);
@@ -248,28 +287,18 @@ void BetsyCompressor::_thread_exit() {
 
 	if (compress_rd != nullptr) {
 		if (dxt1_encoding_table_buffer.is_valid()) {
-			compress_rd->free(dxt1_encoding_table_buffer);
+			compress_rd->free_rid(dxt1_encoding_table_buffer);
 		}
 
-		compress_rd->free(src_sampler);
+		compress_rd->free_rid(src_sampler);
 
 		// Clear the shader cache, pipelines will be unreferenced automatically.
 		for (int i = 0; i < BETSY_SHADER_MAX; i++) {
 			if (cached_shaders[i].compiled.is_valid()) {
-				compress_rd->free(cached_shaders[i].compiled);
+				compress_rd->free_rid(cached_shaders[i].compiled);
 			}
 		}
-	}
-}
 
-void BetsyCompressor::finish() {
-	command_queue.push(this, &BetsyCompressor::_thread_exit);
-	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
-		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
-		task_id = WorkerThreadPool::INVALID_TASK_ID;
-	}
-
-	if (compress_rd != nullptr) {
 		// Free the RD (and RCD if necessary).
 		memdelete(compress_rd);
 		compress_rd = nullptr;
@@ -280,13 +309,23 @@ void BetsyCompressor::finish() {
 	}
 }
 
+void BetsyCompressor::finish() {
+	command_queue.push(this, &BetsyCompressor::_thread_exit);
+	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+		task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
+}
+
 // Helper functions.
 
 static int get_next_multiple(int n, int m) {
 	return n + (m - (n % m));
 }
 
-static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
+static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_is_rgb) {
+	r_is_rgb = false;
+
 	switch (r_img->get_format()) {
 		case Image::FORMAT_L8:
 			r_img->convert(Image::FORMAT_RGBA8);
@@ -307,7 +346,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGB8:
-			r_img->convert(Image::FORMAT_RGBA8);
+			r_is_rgb = true;
 			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 			break;
 
@@ -324,7 +363,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGBH:
-			r_img->convert(Image::FORMAT_RGBAH);
+			r_is_rgb = true;
 			r_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 			break;
 
@@ -341,7 +380,7 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			break;
 
 		case Image::FORMAT_RGBF:
-			r_img->convert(Image::FORMAT_RGBAF);
+			r_is_rgb = true;
 			r_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			break;
 
@@ -351,6 +390,23 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 
 		case Image::FORMAT_RGBE9995:
 			r_format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+			break;
+
+		case Image::FORMAT_R16:
+			r_format = RD::DATA_FORMAT_R16_UNORM;
+			break;
+
+		case Image::FORMAT_RG16:
+			r_format = RD::DATA_FORMAT_R16G16_UNORM;
+			break;
+
+		case Image::FORMAT_RGB16:
+			r_is_rgb = true;
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			break;
+
+		case Image::FORMAT_RGBA16:
+			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
 			break;
 
 		default: {
@@ -371,6 +427,13 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	if (r_img->is_compressed()) {
 		return ERR_INVALID_DATA;
+	}
+
+	int img_width = r_img->get_width();
+	int img_height = r_img->get_height();
+	if (img_width % 4 != 0 || img_height % 4 != 0) {
+		img_width = img_width <= 2 ? img_width : (img_width + 3) & ~3;
+		img_height = img_height <= 2 ? img_height : (img_height + 3) & ~3;
 	}
 
 	Error err = OK;
@@ -406,7 +469,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 
-	err = get_src_texture_format(r_img, src_texture_format.format);
+	bool needs_rgb_to_rgba = false;
+	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba);
 
 	if (err != OK) {
 		return err;
@@ -432,18 +496,24 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Encoding table setup.
 	if ((dest_format == Image::FORMAT_DXT1 || dest_format == Image::FORMAT_DXT5) && dxt1_encoding_table_buffer.is_null()) {
-		Vector<uint8_t> data;
-		data.resize(1024 * 4);
-		memcpy(data.ptrw(), dxt1_encoding_table, 1024 * 4);
+		LocalVector<float> dxt1_encoding_table;
+		dxt1_encoding_table.resize(256 * 4);
 
-		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, data);
+		for (int i = 0; i < 256; i++) {
+			dxt1_encoding_table[i * 2 + 0] = static_cast<float>(stb__OMatch5[i][0]);
+			dxt1_encoding_table[i * 2 + 1] = static_cast<float>(stb__OMatch5[i][1]);
+			dxt1_encoding_table[512 + (i * 2 + 0)] = static_cast<float>(stb__OMatch6[i][0]);
+			dxt1_encoding_table[512 + (i * 2 + 1)] = static_cast<float>(stb__OMatch6[i][1]);
+		}
+
+		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(dxt1_encoding_table.size() * sizeof(float), Span<float>(dxt1_encoding_table).reinterpret<uint8_t>());
 	}
 
 	const int mip_count = r_img->get_mipmap_count() + 1;
 
 	// Container for the compressed data.
 	Vector<uint8_t> dst_data;
-	dst_data.resize(Image::get_image_data_size(r_img->get_width(), r_img->get_height(), dest_format, r_img->has_mipmaps()));
+	dst_data.resize(Image::get_image_data_size(img_width, img_height, dest_format, r_img->has_mipmaps()));
 	uint8_t *dst_data_ptr = dst_data.ptrw();
 
 	Vector<Vector<uint8_t>> src_images;
@@ -452,9 +522,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Compress each mipmap.
 	for (int i = 0; i < mip_count; i++) {
-		int64_t ofs, size;
 		int width, height;
-		r_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
+		Image::get_image_mipmap_offset_and_dimensions(img_width, img_height, dest_format, i, width, height);
+
+		int64_t src_mip_ofs, src_mip_size;
+		int src_mip_w, src_mip_h;
+		r_img->get_mipmap_offset_size_and_dimensions(i, src_mip_ofs, src_mip_size, src_mip_w, src_mip_h);
 
 		// Set the source texture width and size.
 		src_texture_format.height = height;
@@ -464,13 +537,112 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dst_texture_format.height = (height + 3) >> 2;
 		dst_texture_format.width = (width + 3) >> 2;
 
-		// Create a buffer filled with the source mip layer data.
-		src_image_ptr[0].resize(size);
-		memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + ofs, size);
+		// Pad textures to nearest block by smearing.
+		if (width != src_mip_w || height != src_mip_h) {
+			const uint8_t *src_mip_read = r_img->ptr() + src_mip_ofs;
+
+			// Reserve the buffer for padded image data.
+			int px_size = Image::get_format_pixel_size(r_img->get_format());
+			src_image_ptr[0].resize(width * height * px_size);
+			uint8_t *ptrw = src_image_ptr[0].ptrw();
+
+			int x = 0, y = 0;
+			for (y = 0; y < src_mip_h; y++) {
+				for (x = 0; x < src_mip_w; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
+				}
+
+				// First, smear in x.
+				for (; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
+				}
+			}
+
+			// Then, smear in y.
+			for (; y < height; y++) {
+				for (x = 0; x < width; x++) {
+					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
+				}
+			}
+		} else {
+			// Create a buffer filled with the source mip layer data.
+			src_image_ptr[0].resize(src_mip_size);
+			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
+		}
 
 		// Create the textures on the GPU.
-		RID src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+		RID src_texture;
 		RID dst_texture_primary = compress_rd->texture_create(dst_texture_format, RD::TextureView());
+
+		if (needs_rgb_to_rgba) {
+			// RGB textures cannot be sampled directly on most hardware, so we do a little trick involving a compute shader
+			// which takes the input data as an SSBO and converts it directly into an RGBA image.
+			BetsyShaderType rgb_shader_type = BETSY_SHADER_MAX;
+
+			switch (r_img->get_format()) {
+				case Image::FORMAT_RGB8:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_UNORM8;
+					break;
+				case Image::FORMAT_RGBH:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_HALF;
+					break;
+				case Image::FORMAT_RGBF:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_FLOAT;
+					break;
+				case Image::FORMAT_RGB16:
+					rgb_shader_type = BETSY_SHADER_RGB_TO_RGBA_UNORM16;
+					break;
+				default:
+					break;
+			}
+
+			// The source 'RGB' buffer.
+			RID source_buffer = compress_rd->storage_buffer_create(src_image_ptr[0].size(), src_image_ptr[0].span());
+
+			RD::TextureFormat rgba_texture_format = src_texture_format;
+			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			src_texture = compress_rd->texture_create(rgba_texture_format, RD::TextureView());
+
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 0;
+					u.append_id(source_buffer);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+					u.binding = 1;
+					u.append_id(src_texture);
+					uniforms.push_back(u);
+				}
+			}
+
+			BetsyShader &rgb_shader = cached_shaders[rgb_shader_type];
+
+			RID uniform_set = compress_rd->uniform_set_create(uniforms, rgb_shader.compiled, 0);
+			RD::ComputeListID compute_list = compress_rd->compute_list_begin();
+
+			compress_rd->compute_list_bind_compute_pipeline(compute_list, rgb_shader.pipeline);
+			compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+			// Prepare the push constant with the mipmap's resolution.
+			RGBToRGBAPushConstant push_constant;
+			push_constant.width = width;
+			push_constant.height = height;
+
+			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RGBToRGBAPushConstant));
+			compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 8) / 8, get_next_multiple(height, 8) / 8, 1);
+
+			compress_rd->compute_list_end();
+
+			compress_rd->free_rid(source_buffer);
+		} else {
+			src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+		}
 
 		{
 			Vector<RD::Uniform> uniforms;
@@ -640,30 +812,30 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 			dst_texture_rid = dst_texture_combined;
 
-			compress_rd->free(dst_texture_primary);
-			compress_rd->free(dst_texture_alpha);
+			compress_rd->free_rid(dst_texture_primary);
+			compress_rd->free_rid(dst_texture_alpha);
 		}
 
 		// Copy data from the GPU to the buffer.
 		const Vector<uint8_t> texture_data = compress_rd->texture_get_data(dst_texture_rid, 0);
-		int64_t dst_ofs = Image::get_image_mipmap_offset(r_img->get_width(), r_img->get_height(), dest_format, i);
+		int64_t dst_ofs = Image::get_image_mipmap_offset(img_width, img_height, dest_format, i);
 
 		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
 
 		// Free the source and dest texture.
-		compress_rd->free(src_texture);
-		compress_rd->free(dst_texture_rid);
+		compress_rd->free_rid(src_texture);
+		compress_rd->free_rid(dst_texture_rid);
 	}
 
 	src_images.clear();
 
 	// Set the compressed data to the image.
-	r_img->set_data(r_img->get_width(), r_img->get_height(), r_img->has_mipmaps(), dest_format, dst_data);
+	r_img->set_data(img_width, img_height, r_img->has_mipmaps(), dest_format, dst_data);
 
 	print_verbose(
 			vformat("Betsy: Encoding a %dx%d image with %d mipmaps as %s took %d ms.",
-					r_img->get_width(),
-					r_img->get_height(),
+					img_width,
+					img_height,
 					r_img->get_mipmap_count(),
 					Image::get_format_name(dest_format),
 					OS::get_singleton()->get_ticks_msec() - start_time));

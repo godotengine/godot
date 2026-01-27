@@ -4,7 +4,7 @@
  *
  *   Define a set of compiler macros used in public FreeType headers.
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -62,8 +62,8 @@ FT_BEGIN_HEADER
    * because it is needed by `FT_EXPORT`.
    */
 
-  /* Visual C, mingw */
-#if defined( _WIN32 )
+  /* Visual C, MinGW, Cygwin */
+#if defined( _WIN32 ) || defined( __CYGWIN__ )
 
 #if defined( FT2_BUILD_LIBRARY ) && defined( DLL_EXPORT )
 #define FT_PUBLIC_FUNCTION_ATTRIBUTE  __declspec( dllexport )

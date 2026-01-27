@@ -52,28 +52,25 @@ public:
 		using namespace JoltBroadPhaseLayer;
 
 		allow_collision(BODY_STATIC, BODY_DYNAMIC);
+		allow_collision(BODY_STATIC, AREA_DETECTABLE);
+		allow_collision(BODY_STATIC, AREA_UNDETECTABLE);
 		allow_collision(BODY_STATIC_BIG, BODY_DYNAMIC);
+		allow_collision(BODY_STATIC_BIG, AREA_DETECTABLE);
+		allow_collision(BODY_STATIC_BIG, AREA_UNDETECTABLE);
 		allow_collision(BODY_DYNAMIC, BODY_STATIC);
 		allow_collision(BODY_DYNAMIC, BODY_STATIC_BIG);
 		allow_collision(BODY_DYNAMIC, BODY_DYNAMIC);
 		allow_collision(BODY_DYNAMIC, AREA_DETECTABLE);
 		allow_collision(BODY_DYNAMIC, AREA_UNDETECTABLE);
 		allow_collision(AREA_DETECTABLE, BODY_DYNAMIC);
+		allow_collision(AREA_DETECTABLE, BODY_STATIC);
+		allow_collision(AREA_DETECTABLE, BODY_STATIC_BIG);
 		allow_collision(AREA_DETECTABLE, AREA_DETECTABLE);
 		allow_collision(AREA_DETECTABLE, AREA_UNDETECTABLE);
 		allow_collision(AREA_UNDETECTABLE, BODY_DYNAMIC);
+		allow_collision(AREA_UNDETECTABLE, BODY_STATIC);
+		allow_collision(AREA_UNDETECTABLE, BODY_STATIC_BIG);
 		allow_collision(AREA_UNDETECTABLE, AREA_DETECTABLE);
-
-		if (JoltProjectSettings::areas_detect_static_bodies()) {
-			allow_collision(BODY_STATIC, AREA_DETECTABLE);
-			allow_collision(BODY_STATIC, AREA_UNDETECTABLE);
-			allow_collision(BODY_STATIC_BIG, AREA_DETECTABLE);
-			allow_collision(BODY_STATIC_BIG, AREA_UNDETECTABLE);
-			allow_collision(AREA_DETECTABLE, BODY_STATIC);
-			allow_collision(AREA_DETECTABLE, BODY_STATIC_BIG);
-			allow_collision(AREA_UNDETECTABLE, BODY_STATIC);
-			allow_collision(AREA_UNDETECTABLE, BODY_STATIC_BIG);
-		}
 	}
 
 	void allow_collision(UnderlyingType p_layer1, UnderlyingType p_layer2) { masks[p_layer1] |= uint8_t(1U << p_layer2); }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_COMPOSITOR_H
-#define RENDERER_COMPOSITOR_H
+#pragma once
 
 #include "servers/rendering/environment/renderer_fog.h"
 #include "servers/rendering/environment/renderer_gi.h"
@@ -88,13 +87,15 @@ public:
 	virtual RendererCanvasRender *get_canvas() = 0;
 	virtual RendererSceneRender *get_scene() = 0;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
 	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
 
+	virtual bool is_opengl() = 0;
 	virtual void gl_end_frame(bool p_swap_buffers) = 0;
 	virtual void end_frame(bool p_present) = 0;
 	virtual void finalize() = 0;
@@ -110,5 +111,3 @@ public:
 	RendererCompositor();
 	virtual ~RendererCompositor();
 };
-
-#endif // RENDERER_COMPOSITOR_H

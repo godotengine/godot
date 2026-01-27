@@ -102,7 +102,6 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
 {
     Line cur = {dash.ptCur, *to};
     auto len = cur.length();
-
     if (tvg::zero(len)) {
         _outlineMoveTo(*dash.outline, &dash.ptCur, transform);
     //draw the current line fully
@@ -117,7 +116,7 @@ static void _dashLineTo(SwDashStroke& dash, const Point* to, const Matrix& trans
         }
     //draw the current line partially
     } else {
-        while (len - dash.curLen > 0.0001f) {
+        while (len - dash.curLen > DASH_PATTERN_THRESHOLD) {
             Line left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -178,7 +177,7 @@ static void _dashCubicTo(SwDashStroke& dash, const Point* ctrl1, const Point* ct
         }
     //draw the current line partially
     } else {
-        while ((len - dash.curLen) > 0.0001f) {
+        while ((len - dash.curLen) > DASH_PATTERN_THRESHOLD) {
             Bezier left, right;
             if (dash.curLen > 0) {
                 len -= dash.curLen;
@@ -369,7 +368,8 @@ static SwOutline* _genDashOutline(const RenderShape* rshape, const Matrix& trans
         }
     }
 
-    dash.outline = mpoolReqDashOutline(mpool, tid);
+    mpoolRetOutline(mpool, tid);  //retreive the outline cache and use it for dash outline.
+    dash.outline = mpoolReqOutline(mpool, tid);
 
     //must begin with moveTo
     if (cmds[0] == PathCommand::MoveTo) {
@@ -517,7 +517,7 @@ bool shapePrepared(const SwShape* shape)
 }
 
 
-bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool antiAlias)
+bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, SwMpool* mpool, unsigned tid, bool antiAlias)
 {
     //FIXME: Should we draw it?
     //Case: Stroke Line
@@ -527,7 +527,7 @@ bool shapeGenRle(SwShape* shape, TVG_UNUSED const RenderShape* rshape, bool anti
     if (shape->fastTrack) return true;
 
     //Case B: Normal Shape RLE Drawing
-    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, antiAlias))) return true;
+    if ((shape->rle = rleRender(shape->rle, shape->outline, shape->bbox, mpool, tid, antiAlias))) return true;
 
     return false;
 }
@@ -543,7 +543,6 @@ void shapeDelOutline(SwShape* shape, SwMpool* mpool, uint32_t tid)
 void shapeReset(SwShape* shape)
 {
     rleReset(shape->rle);
-    rleReset(shape->strokeRle);
     shape->fastTrack = false;
     shape->bbox.reset();
 }
@@ -589,17 +588,13 @@ void shapeResetStroke(SwShape* shape, const RenderShape* rshape, const Matrix& t
 bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
 {
     SwOutline* shapeOutline = nullptr;
-    SwOutline* strokeOutline = nullptr;
-    auto dashStroking = false;
-    auto ret = true;
 
     //Dash style (+trimming)
     auto trimmed = rshape->strokeTrim();
     if (rshape->stroke->dashCnt > 0 || trimmed) {
         shapeOutline = _genDashOutline(rshape, transform, trimmed, mpool, tid);
         if (!shapeOutline) return false;
-        dashStroking = true;
-    //Normal style
+    //Trimming & Normal style
     } else {
         if (!shape->outline) {
             if (!_genOutline(shape, rshape, transform, mpool, tid, false)) return false;
@@ -607,24 +602,11 @@ bool shapeGenStrokeRle(SwShape* shape, const RenderShape* rshape, const Matrix& 
         shapeOutline = shape->outline;
     }
 
-    if (!strokeParseOutline(shape->stroke, *shapeOutline)) {
-        ret = false;
-        goto clear;
-    }
-
-    strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
-
-    if (!mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false)) {
-        ret = false;
-        goto clear;
-    }
-
-    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, true);
-
-clear:
-    if (dashStroking) mpoolRetDashOutline(mpool, tid);
+    if (!strokeParseOutline(shape->stroke, *shapeOutline)) return false;
+    auto strokeOutline = strokeExportOutline(shape->stroke, mpool, tid);
+    auto ret = mathUpdateOutlineBBox(strokeOutline, clipRegion, renderRegion, false);
+    shape->strokeRle = rleRender(shape->strokeRle, strokeOutline, renderRegion, mpool, tid, true);
     mpoolRetStrokeOutline(mpool, tid);
-
     return ret;
 }
 

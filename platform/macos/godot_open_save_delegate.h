@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_OPEN_SAVE_DELEGATE_H
-#define GODOT_OPEN_SAVE_DELEGATE_H
+#pragma once
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -42,6 +41,7 @@
 @interface GodotOpenSaveDelegate : NSObject <NSOpenSavePanelDelegate> {
 	NSSavePanel *dialog;
 	NSMutableArray *allowed_types;
+	Vector<Vector<String>> preferred_types;
 
 	HashMap<int, String> ctr_ids;
 	Dictionary options;
@@ -52,7 +52,7 @@
 }
 
 - (void)makeAccessoryView:(NSSavePanel *)p_panel filters:(const Vector<String> &)p_filters options:(const TypedArray<Dictionary> &)p_options;
-- (void)setFileTypes:(NSMutableArray *)p_allowed_types;
+- (void)setFileTypes:(NSMutableArray *)p_allowed_types pref:(const Vector<Vector<String>> &)p_preftypes;
 - (void)popupOptionAction:(id)p_sender;
 - (void)popupCheckAction:(id)p_sender;
 - (void)popupFileAction:(id)p_sender;
@@ -61,7 +61,6 @@
 - (int)setDefaultInt:(const String &)p_name value:(int)p_value;
 - (int)setDefaultBool:(const String &)p_name value:(bool)p_value;
 - (void)setRootPath:(const String &)p_root_path;
+- (String)validateFilename:(const String &)p_path;
 
 @end
-
-#endif // GODOT_OPEN_SAVE_DELEGATE_H

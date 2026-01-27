@@ -35,8 +35,8 @@
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 void EncodedObjectAsID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_object_id", "id"), &EncodedObjectAsID::set_object_id);
@@ -107,7 +107,7 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > len, ERR_FILE_EOF);
 
 	String str;
-	ERR_FAIL_COND_V(str.parse_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(str.append_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
 	r_string = str;
 
 	// Add padding.
@@ -1345,7 +1345,7 @@ static Error _encode_container_type(const ContainerType &p_type, uint8_t *&buf, 
 				_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
 			}
 		} else if (p_type.class_name != StringName()) {
-			_encode_string(p_full_objects ? p_type.class_name.operator String() : EncodedObjectAsID::get_class_static(), buf, r_len);
+			_encode_string(p_full_objects ? p_type.class_name : EncodedObjectAsID::get_class_static(), buf, r_len);
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
 			if (buf) {
@@ -1849,21 +1849,16 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 			r_len += 4;
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-
-			for (const Variant &key : keys) {
+			for (const KeyValue<Variant, Variant> &kv : dict) {
 				int len;
-				Error err = encode_variant(key, buf, len, p_full_objects, p_depth + 1);
+				Error err = encode_variant(kv.key, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {
 					buf += len;
 				}
-				const Variant *value = dict.getptr(key);
-				ERR_FAIL_NULL_V(value, ERR_BUG);
-				err = encode_variant(*value, buf, len, p_full_objects, p_depth + 1);
+				err = encode_variant(kv.value, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;

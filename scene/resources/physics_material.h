@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_MATERIAL_H
-#define PHYSICS_MATERIAL_H
+#pragma once
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 #include "core/io/resource.h"
 
 class PhysicsMaterial : public Resource {
@@ -66,8 +66,5 @@ public:
 	_FORCE_INLINE_ real_t computed_bounce() const {
 		return absorbent ? -bounce : bounce;
 	}
-
-	PhysicsMaterial() {}
 };
-
-#endif // PHYSICS_MATERIAL_H
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)

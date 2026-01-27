@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_BINDS_H
-#define RENDERING_DEVICE_BINDS_H
+#pragma once
 
 #include "servers/rendering/rendering_device.h"
 
@@ -222,6 +221,7 @@ class RDVertexAttribute : public RefCounted {
 	RD::VertexAttribute base;
 
 public:
+	RD_SETGET(uint32_t, binding)
 	RD_SETGET(uint32_t, location)
 	RD_SETGET(uint32_t, offset)
 	RD_SETGET(RD::DataFormat, format)
@@ -230,6 +230,7 @@ public:
 
 protected:
 	static void _bind_methods() {
+		RD_BIND(Variant::INT, RDVertexAttribute, binding);
 		RD_BIND(Variant::INT, RDVertexAttribute, location);
 		RD_BIND(Variant::INT, RDVertexAttribute, offset);
 		RD_BIND(Variant::INT, RDVertexAttribute, format);
@@ -426,11 +427,9 @@ protected:
 	}
 	void _set_versions(const Dictionary &p_versions) {
 		versions.clear();
-		List<Variant> keys;
-		p_versions.get_key_list(&keys);
-		for (const Variant &E : keys) {
-			StringName vname = E;
-			Ref<RDShaderSPIRV> bc = p_versions[E];
+		for (const KeyValue<Variant, Variant> &kv : p_versions) {
+			StringName vname = kv.key;
+			Ref<RDShaderSPIRV> bc = kv.value;
 			ERR_CONTINUE(bc.is_null());
 			versions[vname] = bc;
 		}
@@ -729,5 +728,3 @@ protected:
 		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "attachments", PROPERTY_HINT_ARRAY_TYPE, "RDPipelineColorBlendStateAttachment"), "set_attachments", "get_attachments");
 	}
 };
-
-#endif // RENDERING_DEVICE_BINDS_H

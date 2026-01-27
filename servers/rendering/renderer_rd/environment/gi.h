@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GI_RD_H
-#define GI_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/sdfgi_debug_probes.glsl.gen.h"
@@ -189,7 +189,7 @@ private:
 		uint32_t cell_offset;
 		uint32_t cell_count;
 		float aniso_strength;
-		uint32_t pad;
+		float cell_size;
 	};
 
 	struct VoxelGIDynamicPushConstant {
@@ -210,7 +210,8 @@ private:
 		float dynamic_range;
 		uint32_t on_mipmap;
 		float propagation;
-		float pad[3];
+		float cell_size;
+		float pad[2];
 	};
 
 	VoxelGILight *voxel_gi_lights = nullptr;
@@ -232,7 +233,7 @@ private:
 	VoxelGiShaderRD voxel_gi_shader;
 	RID voxel_gi_lighting_shader_version;
 	RID voxel_gi_lighting_shader_version_shaders[VOXEL_GI_SHADER_VERSION_MAX];
-	RID voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
+	PipelineDeferredRD voxel_gi_lighting_shader_version_pipelines[VOXEL_GI_SHADER_VERSION_MAX];
 
 	enum {
 		VOXEL_GI_DEBUG_COLOR,
@@ -289,7 +290,7 @@ private:
 
 		SdfgiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
-		RID preprocess_pipeline[PRE_PROCESS_MAX];
+		PipelineDeferredRD preprocess_pipeline[PRE_PROCESS_MAX];
 
 		struct DebugPushConstant {
 			float grid_size[3];
@@ -308,7 +309,7 @@ private:
 		SdfgiDebugShaderRD debug;
 		RID debug_shader;
 		RID debug_shader_version;
-		RID debug_pipeline;
+		PipelineDeferredRD debug_pipeline;
 
 		enum ProbeDebugMode {
 			PROBE_DEBUG_PROBES,
@@ -381,7 +382,7 @@ private:
 		};
 		SdfgiDirectLightShaderRD direct_light;
 		RID direct_light_shader;
-		RID direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
+		PipelineDeferredRD direct_light_pipeline[DIRECT_LIGHT_MODE_MAX];
 
 		enum {
 			INTEGRATE_MODE_PROCESS,
@@ -418,13 +419,14 @@ private:
 			float sky_color_or_orientation[3];
 			float y_mult;
 
+			float sky_irradiance_border_size[2];
 			uint32_t store_ambient_texture;
-			uint32_t pad[3];
+			uint32_t pad;
 		};
 
 		SdfgiIntegrateShaderRD integrate;
 		RID integrate_shader;
-		RID integrate_pipeline[INTEGRATE_MODE_MAX];
+		PipelineDeferredRD integrate_pipeline[INTEGRATE_MODE_MAX];
 
 		RID integrate_default_sky_uniform_set;
 
@@ -789,10 +791,17 @@ public:
 
 	RID sdfgi_ubo;
 
+	enum Group {
+		GROUP_NORMAL,
+		GROUP_VRS,
+	};
+
 	enum Mode {
 		MODE_VOXEL_GI,
+		MODE_VOXEL_GI_WITHOUT_SAMPLER,
 		MODE_SDFGI,
 		MODE_COMBINED,
+		MODE_COMBINED_WITHOUT_SAMPLER,
 		MODE_MAX
 	};
 
@@ -808,7 +817,7 @@ public:
 	bool half_resolution = false;
 	GiShaderRD shader;
 	RID shader_version;
-	RID pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
+	PipelineDeferredRD pipelines[SHADER_SPECIALIZATION_VARIATIONS][MODE_MAX];
 
 	GI();
 	~GI();
@@ -826,8 +835,8 @@ public:
 	bool voxel_gi_needs_update(RID p_probe) const;
 	void voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects);
 	void debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
+
+	void enable_vrs_shader_group();
 };
 
 } // namespace RendererRD
-
-#endif // GI_RD_H

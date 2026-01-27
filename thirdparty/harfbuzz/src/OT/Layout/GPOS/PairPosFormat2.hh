@@ -123,14 +123,39 @@ struct PairPosFormat2_4 : ValueBase
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct external_cache_t
+  {
+    hb_ot_layout_mapping_cache_t coverage;
+    hb_ot_layout_mapping_cache_t first;
+    hb_ot_layout_mapping_cache_t second;
+  };
+  void *external_cache_create () const
+  {
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
+    {
+      cache->coverage.clear ();
+      cache->first.clear ();
+      cache->second.clear ();
+    }
+    return cache;
+  }
+
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
-    hb_buffer_t *buffer = c->buffer;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    hb_buffer_t *buffer = c->buffer;
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
+
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
@@ -139,8 +164,13 @@ struct PairPosFormat2_4 : ValueBase
       return_trace (false);
     }
 
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint, cache ? &cache->first : nullptr);
+    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint, cache ? &cache->second : nullptr);
+#else
     unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
     unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
+#endif
     if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
     {
       buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);

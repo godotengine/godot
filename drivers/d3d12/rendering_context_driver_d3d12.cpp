@@ -30,6 +30,8 @@
 
 #include "rendering_context_driver_d3d12.h"
 
+#include "d3d12_hooks.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
@@ -37,37 +39,33 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#endif
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
 
-#include "dxcapi.h"
+#include <dxcapi.h>
+#include <dxgi1_6.h>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
 
-#include <dxguids.h>
+#include <thirdparty/directx_headers/include/dxguids/dxguids.h>
 #endif
+
+using Microsoft::WRL::ComPtr;
 
 // Note: symbols are not available in MinGW and old MSVC import libraries.
 // GUID values from https://github.com/microsoft/DirectX-Headers/blob/7a9f4d06911d30eecb56a4956dab29dcca2709ed/include/directx/d3d12.idl#L5877-L5881
-const GUID CLSID_D3D12DeviceFactoryGodot = { 0x114863bf, 0xc386, 0x4aee, { 0xb3, 0x9d, 0x8f, 0x0b, 0xbb, 0x06, 0x29, 0x55 } };
 const GUID CLSID_D3D12DebugGodot = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
 const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
 
@@ -76,7 +74,7 @@ const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x
 #define _MSC_VER 1800
 #endif
 #define USE_PIX
-#include "WinPixEventRuntime/pix3.h"
+#include <WinPixEventRuntime/pix3.h>
 #if defined(__GNUC__)
 #undef _MSC_VER
 #endif
@@ -96,9 +94,11 @@ RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
 	if (lib_dxgi) {
 		FreeLibrary(lib_dxgi);
 	}
+#ifdef DCOMP_ENABLED
 	if (lib_dcomp) {
 		FreeLibrary(lib_dcomp);
 	}
+#endif
 }
 
 Error RenderingContextDriverD3D12::_init_device_factory() {
@@ -111,8 +111,10 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 	lib_dxgi = LoadLibraryW(L"DXGI.dll");
 	ERR_FAIL_NULL_V(lib_dxgi, ERR_CANT_CREATE);
 
+#ifdef DCOMP_ENABLED
 	lib_dcomp = LoadLibraryW(L"Dcomp.dll");
 	ERR_FAIL_NULL_V(lib_dcomp, ERR_CANT_CREATE);
+#endif
 
 	// Note: symbol is not available in MinGW import library.
 	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetInterface");
@@ -120,18 +122,14 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 		return OK; // Fallback to the system loader.
 	}
 
-	ID3D12SDKConfiguration *sdk_config = nullptr;
-	if (SUCCEEDED(d3d_D3D12GetInterface(CLSID_D3D12SDKConfigurationGodot, IID_PPV_ARGS(&sdk_config)))) {
-		ID3D12SDKConfiguration1 *sdk_config1 = nullptr;
-		if (SUCCEEDED(sdk_config->QueryInterface(&sdk_config1))) {
-			if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf())))) {
-				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactoryGodot, IID_PPV_ARGS(device_factory.GetAddressOf()));
-			} else if (SUCCEEDED(sdk_config1->CreateDeviceFactory(agility_sdk_version, ".\\", IID_PPV_ARGS(device_factory.GetAddressOf())))) {
-				d3d_D3D12GetInterface(CLSID_D3D12DeviceFactoryGodot, IID_PPV_ARGS(device_factory.GetAddressOf()));
-			}
-			sdk_config1->Release();
+	ComPtr<ID3D12SDKConfiguration1> sdk_config;
+	HRESULT hr = d3d_D3D12GetInterface(CLSID_D3D12SDKConfigurationGodot, IID_PPV_ARGS(sdk_config.GetAddressOf()));
+	if (SUCCEEDED(hr)) {
+		hr = sdk_config->CreateDeviceFactory(agility_sdk_version, agility_sdk_path.ascii().get_data(), IID_PPV_ARGS(device_factory.GetAddressOf()));
+		if (FAILED(hr)) {
+			sdk_config->CreateDeviceFactory(agility_sdk_version, ".\\", IID_PPV_ARGS(device_factory.GetAddressOf()));
 		}
-		sdk_config->Release();
+		// If both calls failed, device factory is going to be nullptr, and D3D12CreateDevice is going to be used as fallback.
 	}
 	return OK;
 }

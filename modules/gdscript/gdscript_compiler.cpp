@@ -31,6 +31,7 @@
 #include "gdscript_compiler.h"
 
 #include "gdscript.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_byte_codegen.h"
 #include "gdscript_cache.h"
 #include "gdscript_utility_functions.h"
@@ -59,7 +60,7 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 		if (scr->native.is_valid()) {
 			nc = scr->native.ptr();
 		}
-		scr = scr->_base;
+		scr = scr->base.ptr();
 	}
 
 	ERR_FAIL_NULL_V(nc, false);
@@ -79,7 +80,7 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 	error = p_error;
 	if (p_node) {
 		err_line = p_node->start_line;
-		err_column = p_node->leftmost_column;
+		err_column = p_node->start_column;
 	} else {
 		err_line = 0;
 		err_column = 0;
@@ -92,11 +93,10 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 	}
 
 	GDScriptDataType result;
-	result.has_type = true;
 
 	switch (p_datatype.kind) {
 		case GDScriptParser::DataType::VARIANT: {
-			result.has_type = false;
+			result.kind = GDScriptDataType::VARIANT;
 		} break;
 		case GDScriptParser::DataType::BUILTIN: {
 			result.kind = GDScriptDataType::BUILTIN;
@@ -129,7 +129,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			if (p_handle_metatype && p_datatype.is_meta_type) {
 				result.kind = GDScriptDataType::NATIVE;
 				result.builtin_type = Variant::OBJECT;
-				result.native_type = p_datatype.script_type.is_valid() ? p_datatype.script_type->get_class() : Script::get_class_static();
+				result.native_type = p_datatype.script_type.is_valid() ? p_datatype.script_type->get_class_name() : Script::get_class_static();
 				break;
 			}
 
@@ -207,7 +207,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 }
 
 static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataType &p_arg_type) {
-	if (!p_arg_type.has_type) {
+	if (!p_arg_type.has_type()) {
 		return false;
 	}
 	if (p_par_type.type == Variant::NIL) {
@@ -243,9 +243,8 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	}
 	MethodInfo info;
 	ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
-	int i = 0;
-	for (List<PropertyInfo>::ConstIterator itr = info.arguments.begin(); itr != info.arguments.end(); ++itr, ++i) {
-		if (!_is_exact_type(*itr, p_arguments[i].type)) {
+	for (int64_t i = 0; i < info.arguments.size(); ++i) {
+		if (!_is_exact_type(info.arguments[i], p_arguments[i].type)) {
 			return false;
 		}
 	}
@@ -345,7 +344,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
@@ -373,7 +372,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (scr->native.is_valid()) {
 								nc = scr->native.ptr();
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 
 						// Class C++ integer constant.
@@ -409,11 +408,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								return temp;
 							}
 						}
-						scr = scr->_base;
+						scr = scr->base.ptr();
 					}
 				} break;
 
 				// GLOBALS.
+				case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 				case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE: {
 					// Try globals.
 					if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
@@ -583,7 +583,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script, false);
 
 			GDScriptCodeGenerator::Address result;
-			if (cast_type.has_type) {
+			if (cast_type.has_type()) {
 				// Create temporary for result first since it will be deleted last.
 				result = codegen.add_temporary(cast_type);
 
@@ -674,7 +674,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
 								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
 							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
-									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
+									static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->source == GDScriptParser::IdentifierNode::NATIVE_CLASS && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
 								StringName class_name = static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name;
 								MethodBind *method = ClassDB::get_method(class_name, subscript->attribute->name);
@@ -692,7 +692,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								}
 								if (is_awaited) {
 									gen->write_call_async(result, base, call->function_name, arguments);
-								} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
+								} else if (base.type.kind != GDScriptDataType::VARIANT && base.type.kind != GDScriptDataType::BUILTIN) {
 									// Native method, use faster path.
 									StringName class_name;
 									if (base.type.kind == GDScriptDataType::NATIVE) {
@@ -700,7 +700,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									} else {
 										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
-									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+									if (GDScriptAnalyzer::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_validate_call(method, arguments)) {
 											// Exact arguments, use validated call.
@@ -712,7 +712,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									} else {
 										gen->write_call(result, base, call->function_name, arguments);
 									}
-								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
+								} else if (base.type.kind == GDScriptDataType::BUILTIN) {
 									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
 								} else {
 									gen->write_call(result, base, call->function_name, arguments);
@@ -967,7 +967,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				return GDScriptCodeGenerator::Address();
 			}
 
-			if (test_type.has_type) {
+			if (test_type.has_type()) {
 				gen->write_type_test(result, operand, test_type);
 			} else {
 				gen->write_assign_true(result);
@@ -1052,7 +1052,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 												static_var_data_type = minfo.data_type;
 												break;
 											}
-											scr = scr->_base;
+											scr = scr->base.ptr();
 										}
 									}
 								}
@@ -1067,7 +1067,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Get at (potential) root stack pos, so it can be returned.
 				GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, chain.back()->get()->base);
-				const bool base_known_type = base.type.has_type;
+				const bool base_known_type = base.type.has_type();
 				const bool base_is_shared = Variant::is_type_shared(base.type.builtin_type);
 
 				if (r_error) {
@@ -1171,7 +1171,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Set back the values into their bases.
 				for (const ChainInfo &info : set_chain) {
-					bool known_type = assigned.type.has_type;
+					bool known_type = assigned.type.has_type();
 					bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
 
 					if (!known_type || !is_shared) {
@@ -1197,7 +1197,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					assigned = info.base;
 				}
 
-				bool known_type = assigned.type.has_type;
+				bool known_type = assigned.type.has_type();
 				bool is_shared = Variant::is_type_shared(assigned.type.builtin_type);
 
 				if (!known_type || !is_shared) {
@@ -1321,7 +1321,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								static_var_data_type = minfo.data_type;
 								break;
 							}
-							scr = scr->_base;
+							scr = scr->base.ptr();
 						}
 					}
 				}
@@ -1445,7 +1445,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Equality is always a boolean.
 			GDScriptDataType equality_type;
-			equality_type.has_type = true;
 			equality_type.kind = GDScriptDataType::BUILTIN;
 			equality_type.builtin_type = Variant::BOOL;
 
@@ -1526,7 +1525,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Equality is always a boolean.
 			GDScriptDataType equality_type;
-			equality_type.has_type = true;
 			equality_type.kind = GDScriptDataType::BUILTIN;
 			equality_type.builtin_type = Variant::BOOL;
 
@@ -1611,7 +1609,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Equality is always a boolean.
 			GDScriptDataType temp_type;
-			temp_type.has_type = true;
 			temp_type.kind = GDScriptDataType::BUILTIN;
 			temp_type.builtin_type = Variant::BOOL;
 
@@ -1709,7 +1706,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 
 			// Equality is always a boolean.
 			GDScriptDataType temp_type;
-			temp_type.has_type = true;
 			temp_type.kind = GDScriptDataType::BUILTIN;
 			temp_type.builtin_type = Variant::BOOL;
 
@@ -1904,10 +1900,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 	for (int i = 0; i < p_block->statements.size(); i++) {
 		const GDScriptParser::Node *s = p_block->statements[i];
 
-#ifdef DEBUG_ENABLED
-		// Add a newline before each statement, since the debugger needs those.
 		gen->write_newline(s->start_line);
-#endif
 
 		switch (s->type) {
 			case GDScriptParser::Node::MATCH: {
@@ -1932,7 +1925,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				// Then, let's save the type of the value in the stack too, so we can reuse for later comparisons.
 				GDScriptDataType typeof_type;
-				typeof_type.has_type = true;
 				typeof_type.kind = GDScriptDataType::BUILTIN;
 				typeof_type.builtin_type = Variant::INT;
 				GDScriptCodeGenerator::Address type = codegen.add_local("@match_type", typeof_type);
@@ -1956,10 +1948,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
 					List<GDScriptCodeGenerator::Address> branch_locals = _add_block_locals(codegen, branch->block);
 
-#ifdef DEBUG_ENABLED
-					// Add a newline before each branch, since the debugger needs those.
 					gen->write_newline(branch->start_line);
-#endif
+
 					// For each pattern in branch.
 					GDScriptCodeGenerator::Address pattern_result = codegen.add_temporary();
 					for (int k = 0; k < branch->patterns.size(); k++) {
@@ -2051,20 +2041,64 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype(), codegen.script));
 
-				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script));
-
-				GDScriptCodeGenerator::Address list = _parse_expression(codegen, err, for_n->list);
-				if (err) {
-					return err;
+				// Optimize `range()` call to not allocate an array.
+				GDScriptParser::CallNode *range_call = nullptr;
+				if (for_n->list && for_n->list->type == GDScriptParser::Node::CALL) {
+					GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(for_n->list);
+					if (call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
+						if (static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name == "range") {
+							range_call = call;
+						}
+					}
 				}
 
-				gen->write_for_assignment(list);
+				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype(), codegen.script), range_call != nullptr);
 
-				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+				if (range_call != nullptr) {
+					Vector<GDScriptCodeGenerator::Address> args;
+					args.resize(range_call->arguments.size());
+
+					for (int j = 0; j < args.size(); j++) {
+						args.write[j] = _parse_expression(codegen, err, range_call->arguments[j]);
+						if (err) {
+							return err;
+						}
+					}
+
+					switch (args.size()) {
+						case 1:
+							gen->write_for_range_assignment(codegen.add_constant(0), args[0], codegen.add_constant(1));
+							break;
+						case 2:
+							gen->write_for_range_assignment(args[0], args[1], codegen.add_constant(1));
+							break;
+						case 3:
+							gen->write_for_range_assignment(args[0], args[1], args[2]);
+							break;
+						default:
+							_set_error(R"*(Analyzer bug: Wrong "range()" argument count.)*", range_call);
+							return ERR_BUG;
+					}
+
+					for (int j = 0; j < args.size(); j++) {
+						if (args[j].mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							codegen.generator->pop_temporary();
+						}
+					}
+				} else {
+					GDScriptCodeGenerator::Address list = _parse_expression(codegen, err, for_n->list);
+					if (err) {
+						return err;
+					}
+
+					gen->write_for_list_assignment(list);
+
+					if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
 				}
 
-				gen->write_for(iterator, for_n->use_conversion_assign);
+				gen->write_for(iterator, for_n->use_conversion_assign, range_call != nullptr);
 
 				// Loop variables must be cleared even when `break`/`continue` is used.
 				List<GDScriptCodeGenerator::Address> loop_locals = _add_block_locals(codegen, for_n->loop);
@@ -2076,7 +2110,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					return err;
 				}
 
-				gen->write_endfor();
+				gen->write_endfor(range_call != nullptr);
 
 				_clear_block_locals(codegen, loop_locals); // Outside loop, after block - for `break` and normal exit.
 
@@ -2197,7 +2231,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 						codegen.generator->pop_temporary();
 					}
 					initialized = true;
-				} else if ((local_type.has_type && local_type.kind == GDScriptDataType::BUILTIN) || codegen.generator->is_local_dirty(local)) {
+				} else if (local_type.kind == GDScriptDataType::BUILTIN || codegen.generator->is_local_dirty(local)) {
 					// Initialize with default for the type. Built-in types must always be cleared (they cannot be `null`).
 					// Objects and untyped variables are assigned to `null` only if the stack address has been reused and not cleared.
 					codegen.generator->clear_address(local);
@@ -2260,10 +2294,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	codegen.function_node = p_func;
 
 	StringName func_name;
+	bool is_abstract = false;
 	bool is_static = false;
 	Variant rpc_config;
 	GDScriptDataType return_type;
-	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
 
@@ -2273,6 +2307,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		} else {
 			func_name = "<anonymous lambda>";
 		}
+		is_abstract = p_func->is_abstract;
 		is_static = p_func->is_static;
 		rpc_config = p_func->rpc_config;
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
@@ -2289,12 +2324,16 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	codegen.function_name = func_name;
 	method_info.name = func_name;
 	codegen.is_static = is_static;
+	if (is_abstract) {
+		method_info.flags |= METHOD_FLAG_VIRTUAL_REQUIRED;
+	}
 	if (is_static) {
 		method_info.flags |= METHOD_FLAG_STATIC;
 	}
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	int optional_parameters = 0;
+	GDScriptCodeGenerator::Address vararg_addr;
 
 	if (p_func) {
 		for (int i = 0; i < p_func->parameters.size(); i++) {
@@ -2308,6 +2347,11 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			if (parameter->initializer != nullptr) {
 				optional_parameters++;
 			}
+		}
+
+		if (p_func->is_vararg()) {
+			vararg_addr = codegen.add_local(p_func->rest_parameter->identifier->name, _gdtype_from_datatype(p_func->rest_parameter->get_datatype(), codegen.script));
+			method_info.flags |= METHOD_FLAG_VARARG;
 		}
 
 		method_info.default_arguments.append_array(p_func->default_arg_values);
@@ -2333,7 +2377,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-			if (field_type.has_type) {
+			if (field_type.has_type()) {
 				codegen.generator->write_newline(field->start_line);
 
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
@@ -2368,7 +2412,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			if (field->initializer) {
-				// Emit proper line change.
 				codegen.generator->write_newline(field->initializer->start_line);
 
 				GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);
@@ -2473,9 +2516,12 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			method_info.return_val = p_func->get_datatype().to_property_info(String());
 		} else {
 			gd_function->return_type = GDScriptDataType();
-			gd_function->return_type.has_type = true;
 			gd_function->return_type.kind = GDScriptDataType::BUILTIN;
 			gd_function->return_type.builtin_type = Variant::NIL;
+		}
+
+		if (p_func->is_vararg()) {
+			gd_function->_vararg_index = vararg_addr.address;
 		}
 	}
 
@@ -2502,7 +2548,6 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 	bool is_static = true;
 	Variant rpc_config;
 	GDScriptDataType return_type;
-	return_type.has_type = true;
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
 
@@ -2528,7 +2573,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 
 		GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-		if (field_type.has_type) {
+		if (field_type.has_type()) {
 			codegen.generator->write_newline(field->start_line);
 
 			if (field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type(0)) {
@@ -2563,7 +2608,6 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 
 		if (field->initializer) {
-			// Emit proper line change.
 			codegen.generator->write_newline(field->initializer->start_line);
 
 			GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, r_error, field->initializer, false, true);
@@ -2660,9 +2704,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->clearing = true;
 
+	p_script->cancel_pending_functions(true);
+
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
-	p_script->_base = nullptr;
 	p_script->members.clear();
 
 	// This makes possible to clear script constants and member_functions without heap-use-after-free errors.
@@ -2709,9 +2754,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->clearing = false;
 
 	p_script->tool = parser->is_tool();
+	p_script->_is_abstract = p_class->is_abstract;
 
 	if (p_script->local_name != StringName()) {
-		if (ClassDB::class_exists(p_script->local_name) && ClassDB::is_class_exposed(p_script->local_name)) {
+		if (GDScriptAnalyzer::class_exists(p_script->local_name)) {
 			_set_error(vformat(R"(The class "%s" shadows a native class)", p_script->local_name), p_class);
 			return ERR_ALREADY_EXISTS;
 		}
@@ -2772,7 +2818,6 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			}
 
 			p_script->base = base;
-			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
 		} break;
 		default: {
@@ -2821,7 +2866,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				PropertyInfo export_info = variable->export_info;
 
 				if (variable->exported) {
-					if (!minfo.data_type.has_type) {
+					if (!minfo.data_type.has_type()) {
 						prop_info.type = export_info.type;
 						prop_info.class_name = export_info.class_name;
 					}
@@ -3016,7 +3061,6 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 					p_script->placeholders.erase(psi); //remove placeholder
 
 					GDScriptInstance *instance = memnew(GDScriptInstance);
-					instance->base_ref_counted = Object::cast_to<RefCounted>(E->get());
 					instance->members.resize(p_script->member_indices.size());
 					instance->script = Ref<GDScript>(p_script);
 					instance->owner = E->get();

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WSL_PEER_H
-#define WSL_PEER_H
+#pragma once
 
 #ifndef WEB_ENABLED
 
@@ -37,7 +36,6 @@
 #include "websocket_peer.h"
 
 #include "core/crypto/crypto_core.h"
-#include "core/error/error_list.h"
 #include "core/io/stream_peer_tcp.h"
 
 #include <wslay/wslay.h>
@@ -61,7 +59,7 @@ private:
 	static wslay_event_callbacks _wsl_callbacks;
 
 	// Helpers
-	static String _compute_key_response(String p_key);
+	static String _compute_key_response(const String &p_key);
 	static String _generate_key();
 
 	// Client IP resolver.
@@ -75,7 +73,7 @@ private:
 			return ip_candidates.size() > 0 || resolver_id != IP::RESOLVER_INVALID_ID;
 		}
 
-		void try_next_candidate(Ref<StreamPeerTCP> &p_tcp);
+		void try_next_candidate(const Ref<StreamPeerTCP> &p_tcp);
 		void start(const String &p_host, int p_port);
 		void stop();
 		Resolver() {}
@@ -145,9 +143,9 @@ public:
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
-	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) override;
-	virtual Error accept_stream(Ref<StreamPeer> p_stream) override;
-	virtual void close(int p_code = 1000, String p_reason = "") override;
+	virtual Error connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options = Ref<TLSOptions>()) override;
+	virtual Error accept_stream(const Ref<StreamPeer> &p_stream) override;
+	virtual void close(int p_code = 1000, const String &p_reason = "") override;
 	virtual void poll() override;
 
 	virtual State get_ready_state() const override { return ready_state; }
@@ -168,5 +166,3 @@ public:
 };
 
 #endif // WEB_ENABLED
-
-#endif // WSL_PEER_H

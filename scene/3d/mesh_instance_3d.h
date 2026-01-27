@@ -28,14 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_H
-#define MESH_INSTANCE_3D_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/mesh.h"
 
+#ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+#endif // NAVIGATION_3D_DISABLED
 class Skin;
 class SkinReference;
 
@@ -47,7 +49,7 @@ protected:
 	Ref<Skin> skin;
 	Ref<Skin> skin_internal;
 	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path = NodePath("..");
+	NodePath skeleton_path;
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
@@ -69,6 +71,13 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
+#ifndef DISABLE_DEPRECATED
+	static inline bool use_parent_skeleton_compat = false;
+	static inline bool upgrading_skeleton_compat = false;
+#endif
+
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
@@ -90,6 +99,7 @@ public:
 	Ref<Material> get_surface_override_material(int p_surface) const;
 	Ref<Material> get_active_material(int p_surface) const;
 
+#ifndef PHYSICS_3D_DISABLED
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
@@ -98,6 +108,7 @@ public:
 
 	Node *create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
 	void create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
+#endif // PHYSICS_3D_DISABLED
 
 	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();
@@ -109,16 +120,18 @@ public:
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
+#ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 public:
+#ifndef NAVIGATION_3D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	MeshInstance3D();
 	~MeshInstance3D();
 };
-
-#endif // MESH_INSTANCE_3D_H

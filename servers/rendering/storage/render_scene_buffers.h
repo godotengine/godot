@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_H
-#define RENDER_SCENE_BUFFERS_H
+#pragma once
 
 #include "core/object/ref_counted.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RenderSceneBuffersConfiguration : public RefCounted {
 	GDCLASS(RenderSceneBuffersConfiguration, RefCounted);
@@ -139,5 +138,3 @@ public:
 	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
 };
-
-#endif // RENDER_SCENE_BUFFERS_H

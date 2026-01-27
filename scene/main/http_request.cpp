@@ -30,6 +30,7 @@
 
 #include "http_request.h"
 
+#include "core/io/file_access.h"
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -208,6 +209,26 @@ void HTTPRequest::cancel_request() {
 	requesting = false;
 }
 
+bool HTTPRequest::_is_content_header(const String &p_header) const {
+	return (p_header.begins_with("content-type:") || p_header.begins_with("content-length:") || p_header.begins_with("content-location:") || p_header.begins_with("content-encoding:") ||
+			p_header.begins_with("transfer-encoding:") || p_header.begins_with("connection:") || p_header.begins_with("authorization:"));
+}
+
+bool HTTPRequest::_is_method_safe() const {
+	return (method == HTTPClient::METHOD_GET || method == HTTPClient::METHOD_HEAD || method == HTTPClient::METHOD_OPTIONS || method == HTTPClient::METHOD_TRACE);
+}
+
+Error HTTPRequest::_get_redirect_headers(Vector<String> *r_headers) {
+	for (const String &E : headers) {
+		const String h = E.to_lower();
+		// We strip content headers when changing a redirect to GET.
+		if (!_is_content_header(h)) {
+			r_headers->push_back(E);
+		}
+	}
+	return OK;
+}
+
 bool HTTPRequest::_handle_response(bool *ret_value) {
 	if (!client->has_response()) {
 		_defer_done(RESULT_NO_RESPONSE, 0, PackedStringArray(), PackedByteArray());
@@ -240,8 +261,8 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		String new_request;
 
 		for (const String &E : rheaders) {
-			if (E.containsn("Location: ")) {
-				new_request = E.substr(9, E.length()).strip_edges();
+			if (E.to_lower().begins_with("location: ")) {
+				new_request = E.substr(9).strip_edges();
 			}
 		}
 
@@ -267,6 +288,16 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 				final_body_size.set(0);
 				redirections = new_redirs;
 				*ret_value = false;
+				if (!_is_method_safe()) {
+					// 301, 302, and 303 are changed to GET for unsafe methods.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-3.1
+					method = HTTPClient::METHOD_GET;
+					// Content headers should be dropped if changing method.
+					// See: https://www.rfc-editor.org/rfc/rfc9110#section-15.4-6.2.1
+					Vector<String> req_headers;
+					_get_redirect_headers(&req_headers);
+					headers = req_headers;
+				}
 				return true;
 			}
 		}
@@ -635,7 +666,7 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_http_proxy", "host", "port"), &HTTPRequest::set_http_proxy);
 	ClassDB::bind_method(D_METHOD("set_https_proxy", "host", "port"), &HTTPRequest::set_https_proxy);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE_PATH), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "download_chunk_size", PROPERTY_HINT_RANGE, "256,16777216,suffix:B"), "set_download_chunk_size", "get_download_chunk_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "accept_gzip"), "set_accept_gzip", "is_accepting_gzip");
@@ -666,6 +697,7 @@ HTTPRequest::HTTPRequest() {
 	tls_options = TLSOptions::client();
 	timer = memnew(Timer);
 	timer->set_one_shot(true);
+	timer->set_ignore_time_scale(true);
 	timer->connect("timeout", callable_mp(this, &HTTPRequest::_timeout));
 	add_child(timer);
 }

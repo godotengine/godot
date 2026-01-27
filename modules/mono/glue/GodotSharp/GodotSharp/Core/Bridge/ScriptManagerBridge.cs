@@ -199,7 +199,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void GetGlobalClassName(godot_string* scriptPath, godot_string* outBaseType, godot_string* outIconPath, godot_string* outClassName)
+        internal static unsafe void GetGlobalClassName(godot_string* scriptPath, godot_string* outBaseType, godot_string* outIconPath, godot_bool* outIsAbstract, godot_bool* outIsTool, godot_string* outClassName)
         {
             // This method must always return the outBaseType for every script, even if the script is
             // not a global class. But if the script is not a global class it must return an empty
@@ -250,8 +250,19 @@ namespace Godot.Bridge
                 }
                 if (!foundGlobalBaseScript)
                 {
-                    *outBaseType = Marshaling.ConvertStringToNative(native.Name);
+                    string nativeName = native.GetCustomAttribute<GodotClassNameAttribute>(false)?.Name ?? native.Name;
+                    *outBaseType = Marshaling.ConvertStringToNative(nativeName);
                 }
+            }
+
+            if (outIsAbstract != null)
+            {
+                *outIsAbstract = scriptType.IsAbstract.ToGodotBool();
+            }
+
+            if (outIsTool != null)
+            {
+                *outIsTool = Attribute.IsDefined(scriptType, typeof(ToolAttribute)).ToGodotBool();
             }
 
             if (!IsGlobalClass(scriptType))
@@ -343,17 +354,6 @@ namespace Godot.Bridge
                     {
                         LookupScriptForClass(type);
                     }
-                }
-            }
-
-            // This method may be called before initialization.
-            if (NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() && Engine.IsEditorHint())
-            {
-                if (_pathTypeBiMap.Paths.Count > 0)
-                {
-                    string[] scriptPaths = _pathTypeBiMap.Paths.ToArray();
-                    using godot_packed_string_array scriptPathsNative = Marshaling.ConvertSystemArrayToNativePackedStringArray(scriptPaths);
-                    NativeFuncs.godotsharp_internal_editor_file_system_update_files(scriptPathsNative);
                 }
             }
         }
@@ -483,6 +483,8 @@ namespace Godot.Bridge
             {
                 _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
             }
+
+            NativeFuncs.godotsharp_internal_reload_registered_script(outScript->Reference);
         }
 
         internal static unsafe void GetOrLoadOrCreateScriptForType(Type scriptType, godot_ref* outScript)
@@ -517,12 +519,14 @@ namespace Godot.Bridge
 
                     CreateScriptBridgeForType(scriptType, outScript);
                     scriptPath = null;
-                    return false;
                 }
                 finally
                 {
                     _scriptTypeBiMap.ReadWriteLock.ExitUpgradeableReadLock();
                 }
+
+                NativeFuncs.godotsharp_internal_reload_registered_script(outScript->Reference);
+                return false;
             }
 
             static string GetVirtualConstructedGenericTypeScriptPath(Type scriptType, string scriptPath)
@@ -587,6 +591,9 @@ namespace Godot.Bridge
             }
         }
 
+        /// <summary>
+        /// WARNING: We need to make sure that after unlocking the bimap, we call godotsharp_internal_reload_registered_script
+        /// </summary>
         private static unsafe void CreateScriptBridgeForType(Type scriptType, godot_ref* outScript)
         {
             Debug.Assert(!scriptType.IsGenericTypeDefinition, $"Script type must be a constructed generic type or not generic at all. Type: {scriptType}.");
@@ -603,8 +610,6 @@ namespace Godot.Bridge
             {
                 _scriptTypeBiMap.ReadWriteLock.ExitWriteLock();
             }
-
-            NativeFuncs.godotsharp_internal_reload_registered_script(outScript->Reference);
         }
 
         [UnmanagedCallersOnly]

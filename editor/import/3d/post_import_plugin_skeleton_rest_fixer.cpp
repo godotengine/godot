@@ -367,31 +367,15 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 				Vector3 prof_dir = prof_tail - prof_head;
 				Vector3 src_dir = src_tail - src_head;
+				if (Math::is_zero_approx(prof_dir.length_squared()) || Math::is_zero_approx(src_dir.length_squared())) {
+					continue;
+				}
+				prof_dir.normalize();
+				src_dir.normalize();
 
 				// Rotate rest.
 				if (Math::abs(Math::rad_to_deg(src_dir.angle_to(prof_dir))) > float(p_options["retarget/rest_fixer/fix_silhouette/threshold"])) {
-					// Get rotation difference.
-					Vector3 up_vec; // Need to rotate other than roll axis.
-					switch (Vector3(abs(src_dir.x), abs(src_dir.y), abs(src_dir.z)).min_axis_index()) {
-						case Vector3::AXIS_X: {
-							up_vec = Vector3(1, 0, 0);
-						} break;
-						case Vector3::AXIS_Y: {
-							up_vec = Vector3(0, 1, 0);
-						} break;
-						case Vector3::AXIS_Z: {
-							up_vec = Vector3(0, 0, 1);
-						} break;
-					}
-					Basis src_b;
-					src_b = src_b.looking_at(src_dir, up_vec);
-					Basis prof_b;
-					prof_b = src_b.looking_at(prof_dir, up_vec);
-					if (prof_b.is_equal_approx(Basis())) {
-						continue; // May not need to rotate.
-					}
-					Basis diff_b = prof_b * src_b.inverse();
-
+					Basis diff_b = Basis(Quaternion(src_dir, prof_dir));
 					// Apply rotation difference as global transform to skeleton.
 					Basis src_pg;
 					int src_parent = src_skeleton->get_bone_parent(src_idx);
@@ -408,45 +392,55 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			if (!Math::is_zero_approx(base_adjustment)) {
 				StringName scale_base_bone_name = profile->get_scale_base_bone();
 				int src_bone_idx = src_skeleton->find_bone(scale_base_bone_name);
-				Transform3D src_rest = src_skeleton->get_bone_rest(src_bone_idx);
-				src_skeleton->set_bone_rest(src_bone_idx, Transform3D(src_rest.basis, Vector3(src_rest.origin.x, src_rest.origin.y + base_adjustment, src_rest.origin.z)));
+				if (src_bone_idx >= 0) {
+					Vector3 up_vector = Vector3(0, base_adjustment, 0);
 
-				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
-				while (nodes.size()) {
-					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
-						Ref<Animation> anim = ap->get_animation(name);
-						int track_len = anim->get_track_count();
-						for (int i = 0; i < track_len; i++) {
-							if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
-								continue;
-							}
+					int src_parent = src_skeleton->get_bone_parent(src_bone_idx);
+					if (src_parent >= 0) {
+						Quaternion global_diff = src_skeleton->get_bone_global_rest(src_parent).basis.get_rotation_quaternion();
+						up_vector = global_diff.xform_inv(up_vector);
+					}
 
-							if (anim->track_is_compressed(i)) {
-								continue; // Shouldn't occur in internal_process().
-							}
+					Transform3D src_rest = src_skeleton->get_bone_rest(src_bone_idx);
+					src_skeleton->set_bone_rest(src_bone_idx, Transform3D(src_rest.basis, src_rest.origin + up_vector));
 
-							String track_path = String(anim->track_get_path(i).get_concatenated_names());
-							Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
-							ERR_CONTINUE(!node);
+					TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
+					while (nodes.size()) {
+						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+						List<StringName> anims;
+						ap->get_animation_list(&anims);
+						for (const StringName &name : anims) {
+							Ref<Animation> anim = ap->get_animation(name);
+							int track_len = anim->get_track_count();
+							for (int i = 0; i < track_len; i++) {
+								if (anim->track_get_path(i).get_subname_count() != 1 || anim->track_get_type(i) != Animation::TYPE_POSITION_3D) {
+									continue;
+								}
 
-							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (!track_skeleton || track_skeleton != src_skeleton) {
-								continue;
-							}
+								if (anim->track_is_compressed(i)) {
+									continue; // Shouldn't occur in internal_process().
+								}
 
-							StringName bn = anim->track_get_path(i).get_concatenated_subnames();
-							if (bn != scale_base_bone_name) {
-								continue;
-							}
+								String track_path = String(anim->track_get_path(i).get_concatenated_names());
+								Node *node = (ap->get_node(ap->get_root_node()))->get_node(NodePath(track_path));
+								ERR_CONTINUE(!node);
 
-							int key_len = anim->track_get_key_count(i);
-							for (int j = 0; j < key_len; j++) {
-								Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
-								pos.y += base_adjustment;
-								anim->track_set_key_value(i, j, pos);
+								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+								if (!track_skeleton || track_skeleton != src_skeleton) {
+									continue;
+								}
+
+								StringName bn = anim->track_get_path(i).get_concatenated_subnames();
+								if (bn != scale_base_bone_name) {
+									continue;
+								}
+
+								int key_len = anim->track_get_key_count(i);
+								for (int j = 0; j < key_len; j++) {
+									Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+									pos += up_vector;
+									anim->track_set_key_value(i, j, pos);
+								}
 							}
 						}
 					}
@@ -465,7 +459,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
 			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
 			if (src_bone_idx >= 0) {
-				real_t motion_scale = abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
+				real_t motion_scale = std::abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
 				if (motion_scale > 0) {
 					src_skeleton->set_motion_scale(motion_scale);
 				}
@@ -617,6 +611,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											path_string = path_string + String(":") + anim->track_get_path(i).get_concatenated_subnames();
 										}
 										anim->track_set_path(i, path_string);
+										anim->track_set_imported(i, true);
 									}
 								}
 							}
@@ -755,10 +750,9 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							if (is_using_modifier) {
 								int prof_idx = profile->find_bone(bn);
 								if (prof_idx < 0) {
-									if (keep_bone_rest.has(bone_idx)) {
-										warning_detected = true;
-									}
 									continue; // If is_using_modifier, the original skeleton rest is not changed.
+								} else if (keep_bone_rest.has(bone_idx)) {
+									warning_detected = true;
 								}
 							}
 
@@ -971,7 +965,4 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 		memdelete(prof_skeleton);
 	}
-}
-
-PostImportPluginSkeletonRestFixer::PostImportPluginSkeletonRestFixer() {
 }

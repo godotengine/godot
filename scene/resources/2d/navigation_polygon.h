@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_POLYGON_H
-#define NAVIGATION_POLYGON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_2d/navigation_constants_2d.h"
 
 class NavigationPolygon : public Resource {
 	GDCLASS(NavigationPolygon, Resource);
@@ -42,7 +41,6 @@ class NavigationPolygon : public Resource {
 	Vector<Vector2> vertices;
 	Vector<Vector<int>> polygons;
 	Vector<Vector<Vector2>> outlines;
-	Vector<Vector<Vector2>> baked_outlines;
 
 	mutable Rect2 item_rect;
 	mutable bool rect_cache_dirty = true;
@@ -51,7 +49,7 @@ class NavigationPolygon : public Resource {
 	// Navigation mesh
 	Ref<NavigationMesh> navigation_mesh;
 
-	real_t cell_size = NavigationDefaults2D::navmesh_cell_size;
+	real_t cell_size = NavigationDefaults2D::NAV_MESH_CELL_SIZE;
 	real_t border_size = 0.0f;
 
 	Rect2 baking_rect;
@@ -168,13 +166,8 @@ public:
 	void set_data(const Vector<Vector2> &p_vertices, const Vector<Vector<int>> &p_polygons, const Vector<Vector<Vector2>> &p_outlines);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons);
 	void get_data(Vector<Vector2> &r_vertices, Vector<Vector<int>> &r_polygons, Vector<Vector<Vector2>> &r_outlines);
-
-	NavigationPolygon() {}
-	~NavigationPolygon() {}
 };
 
 VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
-
-#endif // NAVIGATION_POLYGON_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_NODES_H
-#define VISUAL_SHADER_NODES_H
+#pragma once
 
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/visual_shader.h"
@@ -1897,6 +1896,7 @@ public:
 
 	virtual int get_input_port_count() const override;
 	virtual String get_input_port_name(int p_port) const override;
+	virtual PortType get_input_port_type(int p_port) const override;
 
 	virtual int get_output_port_count() const override;
 	virtual String get_output_port_name(int p_port) const override;
@@ -3178,5 +3178,3 @@ public:
 
 	VisualShaderNodeReroute();
 };
-
-#endif // VISUAL_SHADER_NODES_H

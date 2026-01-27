@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_OPENGL_EXTENSION_H
-#define OPENXR_OPENGL_EXTENSION_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -44,7 +43,7 @@
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
 public:
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;
@@ -56,6 +55,7 @@ public:
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) override;
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) override;
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) override;
+	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) override { return RID(); }
 
 private:
 	static OpenXROpenGLExtension *singleton;
@@ -93,5 +93,3 @@ private:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // OPENXR_OPENGL_EXTENSION_H

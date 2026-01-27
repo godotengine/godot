@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_PHYSICS_DIRECT_SPACE_STATE_3D_H
-#define JOLT_PHYSICS_DIRECT_SPACE_STATE_3D_H
+#pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 #include "Jolt/Jolt.h"
 
@@ -83,5 +82,3 @@ public:
 
 	JoltSpace3D &get_space() const { return *space; }
 };
-
-#endif // JOLT_PHYSICS_DIRECT_SPACE_STATE_3D_H

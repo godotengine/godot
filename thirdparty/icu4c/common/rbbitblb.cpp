@@ -99,13 +99,22 @@ void  RBBITableBuilder::buildForwardTable() {
     //   {bof} fake character.
     // 
     if (fRB->fSetBuilder->sawBOF()) {
-        RBBINode *bofTop    = new RBBINode(RBBINode::opCat);
-        RBBINode *bofLeaf   = new RBBINode(RBBINode::leafChar);
-        // Delete and exit if memory allocation failed.
-        if (bofTop == nullptr || bofLeaf == nullptr) {
+        RBBINode *bofTop    = new RBBINode(RBBINode::opCat, *fStatus);
+        if (bofTop == nullptr) {
             *fStatus = U_MEMORY_ALLOCATION_ERROR;
+        }
+        if (U_FAILURE(*fStatus)) {
             delete bofTop;
+            return;
+        }
+        RBBINode *bofLeaf   = new RBBINode(RBBINode::leafChar, *fStatus);
+        // Delete and exit if memory allocation failed.
+        if (bofLeaf == nullptr) {
+            *fStatus = U_MEMORY_ALLOCATION_ERROR;
+        }
+        if (U_FAILURE(*fStatus)) {
             delete bofLeaf;
+            delete bofTop;
             return;
         }
         bofTop->fLeftChild  = bofLeaf;
@@ -120,18 +129,23 @@ void  RBBITableBuilder::buildForwardTable() {
     //   Appears as a cat-node, left child being the original tree,
     //   right child being the end marker.
     //
-    RBBINode *cn = new RBBINode(RBBINode::opCat);
+    RBBINode *cn = new RBBINode(RBBINode::opCat, *fStatus);
     // Exit if memory allocation failed.
     if (cn == nullptr) {
         *fStatus = U_MEMORY_ALLOCATION_ERROR;
+    }
+    if (U_FAILURE(*fStatus)) {
+        delete cn;
         return;
     }
     cn->fLeftChild = fTree;
     fTree->fParent = cn;
-    RBBINode *endMarkerNode = cn->fRightChild = new RBBINode(RBBINode::endMark);
+    RBBINode *endMarkerNode = cn->fRightChild = new RBBINode(RBBINode::endMark, *fStatus);
     // Delete and exit if memory allocation failed.
     if (cn->fRightChild == nullptr) {
         *fStatus = U_MEMORY_ALLOCATION_ERROR;
+    }
+    if (U_FAILURE(*fStatus)) {
         delete cn;
         return;
     }
@@ -142,7 +156,7 @@ void  RBBITableBuilder::buildForwardTable() {
     //  Replace all references to UnicodeSets with the tree for the equivalent
     //      expression.
     //
-    fTree->flattenSets();
+    fTree->flattenSets(*fStatus, 0);
 #ifdef RBBI_DEBUG
     if (fRB->fDebugEnv && uprv_strstr(fRB->fDebugEnv, "stree")) {
         RBBIDebugPuts("\nParse tree after flattening Unicode Set references.");
@@ -1428,7 +1442,7 @@ void RBBITableBuilder::buildSafeReverseTable(UErrorCode &status) {
     // 1. Identify pairs of character classes that are "safe." Safe means that boundaries
     // following the pair do not depend on context or state before the pair. To test
     // whether a pair is safe, run it through the main forward state table, starting
-    // from each state. If the the final state is the same, no matter what the starting state,
+    // from each state. If the final state is the same, no matter what the starting state,
     // the pair is safe.
     //
     // 2. Build a state table that recognizes the safe pairs. It's similar to their

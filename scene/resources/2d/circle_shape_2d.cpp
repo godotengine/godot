@@ -30,8 +30,8 @@
 
 #include "circle_shape_2d.h"
 
-#include "servers/physics_server_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 bool CircleShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return p_point.length() < get_radius() + p_tolerance;
@@ -77,7 +77,7 @@ void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector<Vector2> points;
 	points.resize(24);
 
-	const real_t turn_step = Math_TAU / 24.0;
+	const real_t turn_step = Math::TAU / 24.0;
 	for (int i = 0; i < 24; i++) {
 		points.write[i] = Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * get_radius();
 	}

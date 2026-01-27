@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NET_SOCKET_ANDROID_H
-#define NET_SOCKET_ANDROID_H
+#pragma once
 
 #include "drivers/unix/net_socket_unix.h"
 
@@ -45,6 +44,8 @@
  * joins/leaves a multicast group.
  */
 class NetSocketAndroid : public NetSocketUnix {
+	GDSOFTCLASS(NetSocketAndroid, NetSocketUnix);
+
 private:
 	static jobject net_utils;
 	static jclass cls;
@@ -65,14 +66,12 @@ public:
 	static void setup(jobject p_net_utils);
 	static void terminate();
 
-	virtual void close();
+	virtual void close() override;
 
-	virtual Error set_broadcasting_enabled(bool p_enabled);
-	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
-	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name);
+	virtual Error set_broadcasting_enabled(bool p_enabled) override;
+	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
+	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 
 	NetSocketAndroid() {}
 	~NetSocketAndroid();
 };
-
-#endif // NET_SOCKET_ANDROID_H

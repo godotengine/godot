@@ -24,12 +24,12 @@
 				[codeblocks]
 				[gdscript]
 				for i in Decal.TEXTURE_MAX:
-				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+					$NewDecal.set_texture(i, $OldDecal.get_texture(i))
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
 				{
-				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+					GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
 				}
 				[/csharp]
 				[/codeblocks]
@@ -46,12 +46,12 @@
 				[codeblocks]
 				[gdscript]
 				for i in Decal.TEXTURE_MAX:
-				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+					$NewDecal.set_texture(i, $OldDecal.get_texture(i))
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
 				{
-				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+					GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
 				}
 				[/csharp]
 				[/codeblocks]

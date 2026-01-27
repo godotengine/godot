@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RB_SET_H
-#define RB_SET_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
@@ -79,7 +78,6 @@ public:
 		const T &get() const {
 			return value;
 		}
-		Element() {}
 	};
 
 	typedef T ValueType;
@@ -715,5 +713,3 @@ public:
 		clear();
 	}
 };
-
-#endif // RB_SET_H

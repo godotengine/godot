@@ -53,6 +53,7 @@ void PhysicsBody3D::_bind_methods() {
 
 PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
+	_define_ancestry(AncestralClass::PHYSICS_BODY_3D);
 	set_body_mode(p_mode);
 }
 
@@ -69,15 +70,15 @@ TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
@@ -208,6 +209,16 @@ Vector3 PhysicsBody3D::get_angular_velocity() const {
 
 real_t PhysicsBody3D::get_inverse_mass() const {
 	return 0;
+}
+
+PackedStringArray PhysicsBody3D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
+
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
+		warnings.push_back(RTR("PhysicsBody3D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
+	}
+
+	return warnings;
 }
 
 ///////////////////////////////////////

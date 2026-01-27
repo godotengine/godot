@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_SPECIAL_COMPAT_HASHES_H
-#define GDEXTENSION_SPECIAL_COMPAT_HASHES_H
+#pragma once
 
 #ifndef DISABLE_DEPRECATED
 
 #include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
+
+class Array;
 
 // Note: In most situations, compatibility methods should be registered via ClassDB::bind_compatibility_method().
 //       This class is only meant to be used in exceptional circumstances, for example, when Godot's hashing
@@ -48,7 +49,7 @@ class GDExtensionSpecialCompatHashes {
 		uint32_t current_hash;
 	};
 
-	static HashMap<StringName, LocalVector<Mapping>> mappings;
+	static inline HashMap<StringName, LocalVector<Mapping>> mappings;
 
 public:
 	static void initialize();
@@ -58,5 +59,3 @@ public:
 };
 
 #endif // DISABLE_DEPRECATED
-
-#endif // GDEXTENSION_SPECIAL_COMPAT_HASHES_H

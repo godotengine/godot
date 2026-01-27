@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRExtensionWrapper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Allows implementing OpenXR extensions with GDExtension.
+	</brief_description>
+	<description>
+		[OpenXRExtensionWrapper] allows implementing OpenXR extensions with GDExtension. The extension should be registered with [method register_extension_wrapper].
+		When [OpenXRInterface] is initialized as the primary interface and any [Viewport] has [member Viewport.use_xr] set to [code]true[/code], OpenXR will become involved in Godot's rendering process. If [member ProjectSettings.rendering/driver/threads/thread_model] is set to "Separate", Godot's renderer will run on its own thread, and special care must be taken in all [OpenXRExtensionWrapper]s in order to prevent crashes or unexpected behavior. Some virtual methods will be called on the render thread, and any data they access should not be directly written to on the main thread. This is to prevent two potential issues:
+		1. Changes intended for the next frame, taking effect on the current frame. When using the "Separate" thread model, the main thread will immediately start working on the next frame while the render thread may still be rendering the current frame. If the main thread changes anything used by the render thread directly, the change could end up being used one frame earlier than intended.
+		2. Reading and writing to the same data at the same time from different threads can lead to the render thread using data in an invalid state.
+		In most cases, the solution is to use [method RenderingServer.call_on_render_thread] to schedule [Callable]s to write to any data used on the render thread. When using the "Separate" thread model, these [Callable]s will run after the renderer finishes the current frame and before it starts rendering the next frame. When not using this mode, they'll run immediately, so it's recommended to always use [method RenderingServer.call_on_render_thread] in these cases, which will allow your code to do the right thing regardless of the thread model.
+		Any virtual methods that run on the render thread will be noted below.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_composition_layer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct to provide the given composition layer.
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_get_composition_layer_count" qualifiers="virtual">
+			<return type="int" />
+			<description>
+				Returns the number of composition layers this extension wrapper provides via [method _get_composition_layer].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_get_composition_layer_order" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns an integer that will be used to sort the given composition layer provided via [method _get_composition_layer]. Lower numbers will move the layer to the front of the list, and higher numbers to the end. The default projection layer has an order of [code]0[/code], so layers provided by this method should probably be above or below (but not exactly) [code]0[/code].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_composition_layer_provider].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_get_requested_extensions" qualifiers="virtual">
+			<return type="Dictionary" />
+			<param index="0" name="xr_version" type="int" />
+			<description>
+				Returns a [Dictionary] of OpenXR extensions related to this extension. [param xr_version] specifies the OpenXR version we're instantiating. This will be zero if the editor requests this list to flag supported features. The [Dictionary] should contain the name of the extension, mapped to a [code]bool *[/code] cast to an integer:
+				- If the [code]bool *[/code] is a [code]nullptr[/code] this extension is mandatory.
+				- If the [code]bool *[/code] points to a boolean, the boolean will be updated to [code]true[/code] if the extension is enabled.
+			</description>
+		</method>
+		<method name="_get_suggested_tracker_names" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a [PackedStringArray] of positional tracker names that are used within the extension wrapper.
+			</description>
+		</method>
+		<method name="_get_viewport_composition_layer_extension_properties" qualifiers="virtual">
+			<return type="Dictionary[]" />
+			<description>
+				Gets an array of [Dictionary]s that represent properties, just like [method Object._get_property_list], that will be added to [OpenXRCompositionLayer] nodes.
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_get_viewport_composition_layer_extension_property_defaults" qualifiers="virtual">
+			<return type="Dictionary" />
+			<description>
+				Gets a [Dictionary] containing the default values for the properties returned by [method _get_viewport_composition_layer_extension_properties].
+			</description>
+		</method>
+		<method name="_on_before_instance_created" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called before the OpenXR instance is created.
+				[b]Note:[/b] This virtual method will be called on the main thread, however, it will be called [i]before[/i] OpenXR becomes involved in rendering, so it is safe to write to data that will be used by the render thread.
+			</description>
+		</method>
+		<method name="_on_event_polled" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="event" type="const void*" />
+			<description>
+				Called when there is an OpenXR event to process. When implementing, return [code]true[/code] if the event was handled, return [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="_on_instance_created" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="instance" type="int" />
+			<description>
+				Called right after the OpenXR instance is created.
+				[b]Note:[/b] This virtual method will be called on the main thread, however, it will be called [i]before[/i] OpenXR becomes involved in rendering, so it is safe to write to data that will be used by the render thread.
+			</description>
+		</method>
+		<method name="_on_instance_destroyed" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called right before the OpenXR instance is destroyed.
+				[b]Note:[/b] This virtual method will be called on the main thread, however, it will be called [i]after[/i] OpenXR is done being involved in rendering, so it is safe to write to data that was used by the render thread.
+			</description>
+		</method>
+		<method name="_on_main_swapchains_created" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called right after the main swapchains are (re)created.
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_on_post_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right after the given viewport is rendered.
+				[b]Note:[/b] The draw commands might only be queued at this point, not executed.
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_on_pre_draw_viewport" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Called right before the given viewport is rendered.
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_on_pre_render" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called right before the XR viewports begin their rendering step.
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_on_process" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called as part of the OpenXR process handling. This happens right before general and physics processing steps of the main loop. During this step controller data is queried and made available to game logic.
+			</description>
+		</method>
+		<method name="_on_register_metadata" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Allows extensions to register additional controller metadata. This function is called even when the OpenXR API is not constructed as the metadata needs to be available to the editor.
+				Extensions should also provide metadata regardless of whether they are supported on the host system. The controller data is used to setup action maps for users who may have access to the relevant hardware.
+			</description>
+		</method>
+		<method name="_on_session_created" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="session" type="int" />
+			<description>
+				Called right after the OpenXR session is created.
+				[b]Note:[/b] This virtual method will be called on the main thread, however, it will be called [i]before[/i] OpenXR becomes involved in rendering, so it is safe to write to data that will be used by the render thread.
+			</description>
+		</method>
+		<method name="_on_session_destroyed" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called right before the OpenXR session is destroyed.
+				[b]Note:[/b] This virtual method will be called on the main thread, however, it will be called [i]after[/i] OpenXR is done being involved in rendering, so it is safe to write to data that was used by the render thread.
+			</description>
+		</method>
+		<method name="_on_state_exiting" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to exiting.
+			</description>
+		</method>
+		<method name="_on_state_focused" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to focused. This state is the active state when the game runs.
+			</description>
+		</method>
+		<method name="_on_state_idle" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to idle.
+			</description>
+		</method>
+		<method name="_on_state_loss_pending" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to loss pending.
+			</description>
+		</method>
+		<method name="_on_state_ready" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to ready. This means OpenXR is ready to set up the session.
+			</description>
+		</method>
+		<method name="_on_state_stopping" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to stopping.
+			</description>
+		</method>
+		<method name="_on_state_synchronized" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to synchronized. OpenXR also returns to this state when the application loses focus.
+			</description>
+		</method>
+		<method name="_on_state_visible" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the OpenXR session state is changed to visible. This means OpenXR is now ready to receive frames.
+			</description>
+		</method>
+		<method name="_on_sync_actions" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when OpenXR has performed its action sync.
+			</description>
+		</method>
+		<method name="_on_viewport_composition_layer_destroyed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="layer" type="const void*" />
+			<description>
+				Called when a composition layer created via [OpenXRCompositionLayer] is destroyed.
+				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
+			</description>
+		</method>
+		<method name="_prepare_view_configuration" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="view_count" type="int" />
+			<description>
+				Called before [method _set_view_configuration_and_get_next_pointer] to allow the extension to reserve data for the given number of views.
+			</description>
+		</method>
+		<method name="_print_view_configuration_info" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Called to allow an extension to print additional information about its view configuration, if applicable. This will only be called if verbose output is enabled.
+			</description>
+		</method>
+		<method name="_set_android_surface_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="property_values" type="Dictionary" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to Android surface swapchains created by [OpenXRCompositionLayer].
+				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_set_frame_end_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to [code]XrFrameEndInfo[/code].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_set_frame_wait_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to [code]XrFrameWaitInfo[/code].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
+				[b]Note:[/b] This virtual method will be called on the render thread.
+			</description>
+		</method>
+		<method name="_set_hand_joint_locations_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="hand_index" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when each hand tracker is created.
+			</description>
+		</method>
+		<method name="_set_instance_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="xr_version" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when the OpenXR instance is created. [param xr_version] specifies the OpenXR version we're instantiating.
+			</description>
+		</method>
+		<method name="_set_projection_views_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="view_index" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to the projection view of the given [param view_index].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_set_reference_space_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="reference_space_type" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to [code]XrReferenceSpaceCreateInfo[/code].
+			</description>
+		</method>
+		<method name="_set_session_create_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when the OpenXR session is created.
+			</description>
+		</method>
+		<method name="_set_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when creating OpenXR swapchains.
+			</description>
+		</method>
+		<method name="_set_system_properties_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when querying OpenXR system abilities.
+			</description>
+		</method>
+		<method name="_set_view_configuration_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when querying OpenXR view configuration.
+			</description>
+		</method>
+		<method name="_set_view_locate_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to [code]XrViewLocateInfo[/code].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="_set_viewport_composition_layer_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="layer" type="const void*" />
+			<param index="1" name="property_values" type="Dictionary" />
+			<param index="2" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to composition layers created by [OpenXRCompositionLayer].
+				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
+				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
+			</description>
+		</method>
+		<method name="get_openxr_api">
+			<return type="OpenXRAPIExtension" />
+			<description>
+				Returns the created [OpenXRAPIExtension], which can be used to access the OpenXR API.
+			</description>
+		</method>
+		<method name="register_extension_wrapper">
+			<return type="void" />
+			<description>
+				Registers the extension. This should happen at core module initialization level.
+				[b]Note:[/b] This cannot be called once OpenXR has been initialized.
+			</description>
+		</method>
+	</methods>
+</class>

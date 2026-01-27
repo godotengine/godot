@@ -58,6 +58,8 @@ public:
 	/// Cosine of the threshold angle (if the angle between the two triangles is bigger than this, the edge is active, note that a concave edge is always inactive).
 	/// Setting this value too small can cause ghost collisions with edges, setting it too big can cause depenetration artifacts (objects not depenetrating quickly).
 	/// Valid ranges are between cos(0 degrees) and cos(90 degrees). The default value is cos(5 degrees).
+	/// Negative values will make all edges active and causes EActiveEdgeMode::CollideOnlyWithActive to behave as EActiveEdgeMode::CollideWithAll.
+	/// This speeds up the build process but will require all bodies that can interact with the mesh to use BodyCreationSettings::mEnhancedInternalEdgeRemoval = true.
 	float							mActiveEdgeCosThresholdAngle = 0.996195f;					// cos(5 degrees)
 
 	/// When true, we store the user data coming from Triangle::mUserData or IndexedTriangle::mUserData in the mesh shape.
@@ -65,6 +67,15 @@ public:
 	/// Can be retrieved using MeshShape::GetTriangleUserData.
 	/// Turning this on increases the memory used by the MeshShape by roughly 25%.
 	bool							mPerTriangleUserData = false;
+
+	enum class EBuildQuality
+	{
+		FavorRuntimePerformance,																///< Favor runtime performance, takes more time to build the MeshShape but performs better
+		FavorBuildSpeed,																		///< Favor build speed, build the tree faster but the MeshShape will be slower
+	};
+
+	/// Determines the quality of the tree building process.
+	EBuildQuality					mBuildQuality = EBuildQuality::FavorRuntimePerformance;
 };
 
 /// A mesh shape, consisting of triangles. Mesh shapes are mostly used for static geometry.

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_SCENE_DUMMY_H
-#define RASTERIZER_SCENE_DUMMY_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
@@ -50,6 +49,7 @@ public:
 		virtual void set_surface_materials(const Vector<RID> &p_materials) override {}
 		virtual void set_mesh_instance(RID p_mesh_instance) override {}
 		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override {}
+		virtual void reset_motion_vectors() override {}
 		virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) override {}
 		virtual void set_lod_bias(float p_lod_bias) override {}
 		virtual void set_layer_mask(uint32_t p_layer_mask) override {}
@@ -120,6 +120,7 @@ public:
 
 	void environment_glow_set_use_bicubic_upscale(bool p_enable) override {}
 
+	void environment_set_ssr_half_size(bool p_half_size) override {}
 	void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
 
 	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
@@ -193,9 +194,8 @@ public:
 	virtual void decals_set_filter(RS::DecalFilter p_filter) override {}
 	virtual void light_projectors_set_filter(RS::LightProjectorFilter p_filter) override {}
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) override {}
+	virtual void material_set_use_debanding(bool p_enable) override {}
 
 	RasterizerSceneDummy() {}
 	~RasterizerSceneDummy() {}
 };
-
-#endif // RASTERIZER_SCENE_DUMMY_H

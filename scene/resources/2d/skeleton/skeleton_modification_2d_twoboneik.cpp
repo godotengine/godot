@@ -32,7 +32,7 @@
 #include "scene/2d/skeleton_2d.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Variant &p_value) {
@@ -124,7 +124,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		update_joint_two_bone2d_cache();
 	}
 
-	Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+	Node2D *target = ObjectDB::get_instance<Node2D>(target_node_cache);
 	if (!target || !target->is_inside_tree()) {
 		ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
 		return;
@@ -142,7 +142,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		return;
 	}
 
-	// Adopted from the links below:
+	// Adapted from the links below:
 	// http://theorangeduck.com/page/simple-two-joint
 	// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
 	// With modifications by TwistedTwigleg
@@ -150,9 +150,10 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 	float joint_one_to_target = target_difference.length();
 	float angle_atan = target_difference.angle();
 
-	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
-	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
+	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().abs().x, joint_one_bone->get_global_scale().abs().y);
+	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().abs().x, joint_two_bone->get_global_scale().abs().y);
 	bool override_angles_due_to_out_of_range = false;
+	bool same_scale_sign = true;
 
 	if (joint_one_to_target < target_minimum_distance) {
 		joint_one_to_target = target_minimum_distance;
@@ -165,6 +166,10 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 		override_angles_due_to_out_of_range = true;
 	}
 
+	if (joint_one_bone->get_global_scale().sign().x != joint_one_bone->get_global_scale().sign().y) {
+		same_scale_sign = false;
+	}
+
 	if (!override_angles_due_to_out_of_range) {
 		float angle_0 = Math::acos(((joint_one_to_target * joint_one_to_target) + (bone_one_length * bone_one_length) - (bone_two_length * bone_two_length)) / (2.0 * joint_one_to_target * bone_one_length));
 		float angle_1 = Math::acos(((bone_two_length * bone_two_length) + (bone_one_length * bone_one_length) - (joint_one_to_target * joint_one_to_target)) / (2.0 * bone_two_length * bone_one_length));
@@ -174,15 +179,26 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 			angle_1 = -angle_1;
 		}
 
-		if (isnan(angle_0) || isnan(angle_1)) {
+		if (std::isnan(angle_0) || std::isnan(angle_1)) {
 			// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
 		} else {
-			joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
-			joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+			if (same_scale_sign) {
+				joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+			} else {
+				joint_one_bone->set_global_rotation(angle_atan + angle_0 + joint_one_bone->get_bone_angle());
+			}
+
+			joint_two_bone->set_rotation(-Math::PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
 		}
+
 	} else {
-		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
-		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+		if (same_scale_sign) {
+			joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
+			joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+		} else {
+			joint_one_bone->set_global_rotation(angle_atan + joint_one_bone->get_bone_angle());
+			joint_two_bone->set_global_rotation(angle_atan + joint_two_bone->get_bone_angle());
+		}
 	}
 
 	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
@@ -201,7 +217,7 @@ void SkeletonModification2DTwoBoneIK::_setup_modification(SkeletonModificationSt
 }
 
 void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || joint_one_bone_idx < 0) {
 		return;
 	}
 
@@ -211,7 +227,8 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 	}
 	stack->skeleton->draw_set_transform(
 			stack->skeleton->to_local(operation_bone_one->get_global_position()),
-			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation());
+			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation(),
+			operation_bone_one->get_global_scale());
 
 	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
 #ifdef TOOLS_ENABLED
@@ -221,11 +238,11 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 #endif // TOOLS_ENABLED
 
 	if (flip_bend_direction) {
-		float angle = -(Math_PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		float angle = -(Math::PI * 0.5) + operation_bone_one->get_bone_angle();
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	} else {
-		float angle = (Math_PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		float angle = (Math::PI * 0.5) + operation_bone_one->get_bone_angle();
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
 
 #ifdef TOOLS_ENABLED
@@ -235,7 +252,7 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 				Vector2 target_direction = Vector2(0, 1);
 				if (target_node_cache.is_valid()) {
 					stack->skeleton->draw_set_transform(Vector2(0, 0), 0.0);
-					Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+					Node2D *target = ObjectDB::get_instance<Node2D>(target_node_cache);
 					target_direction = operation_bone_one->get_global_position().direction_to(target->get_global_position());
 				}
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRING_BONE_COLLISION_CAPSULE_3D_H
-#define SPRING_BONE_COLLISION_CAPSULE_3D_H
+#pragma once
 
 #include "scene/3d/spring_bone_collision_3d.h"
 
@@ -50,11 +49,11 @@ public:
 	float get_radius() const;
 	void set_height(float p_height);
 	float get_height() const;
+	void set_mid_height(real_t p_mid_height);
+	real_t get_mid_height() const;
 	void set_inside(bool p_enabled);
 	bool is_inside() const;
 
 	// Helper.
 	Pair<Vector3, Vector3> get_head_and_tail(const Transform3D &p_center) const;
 };
-
-#endif // SPRING_BONE_COLLISION_CAPSULE_3D_H

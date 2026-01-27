@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AES_CONTEXT_H
-#define AES_CONTEXT_H
+#pragma once
 
 #include "core/crypto/crypto_core.h"
 #include "core/object/ref_counted.h"
@@ -59,10 +58,6 @@ public:
 	PackedByteArray update(const PackedByteArray &p_src);
 	PackedByteArray get_iv_state();
 	void finish();
-
-	AESContext();
 };
 
 VARIANT_ENUM_CAST(AESContext::Mode);
-
-#endif // AES_CONTEXT_H

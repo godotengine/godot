@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_H
-#define INPUT_H
+#pragma once
 
 #include "core/input/input_event.h"
 #include "core/object/object.h"
 #include "core/os/keyboard.h"
 #include "core/os/thread_safe.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 
@@ -42,17 +42,19 @@ class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
 
-	static Input *singleton;
+	static inline Input *singleton = nullptr;
 
 	static constexpr uint64_t MAX_EVENT = 32;
 
 public:
+	// Keep synced with "DisplayServer::MouseMode" enum.
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
 		MOUSE_MODE_CAPTURED,
 		MOUSE_MODE_CONFINED,
 		MOUSE_MODE_CONFINED_HIDDEN,
+		MOUSE_MODE_MAX,
 	};
 
 #undef CursorShape
@@ -77,14 +79,20 @@ public:
 		CURSOR_MAX
 	};
 
-	enum {
-		JOYPADS_MAX = 16,
+	class JoypadFeatures {
+	public:
+		virtual ~JoypadFeatures() {}
+
+		virtual bool has_joy_light() const { return false; }
+		virtual void set_joy_light(const Color &p_color) {}
 	};
+
+	static constexpr int32_t JOYPADS_MAX = 16;
 
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	BitField<MouseButtonMask> mouse_button_mask;
+	BitField<MouseButtonMask> mouse_button_mask = MouseButtonMask::NONE;
 
 	RBSet<Key> key_label_pressed;
 	RBSet<Key> physical_keys_pressed;
@@ -105,15 +113,13 @@ private:
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
 
-	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	bool mouse_mode_override_enabled = false;
-	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
-
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
 		uint64_t pressed_process_frame = UINT64_MAX;
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
+		ObjectID pressed_event_id;
+		ObjectID released_event_id;
 		bool exact = true;
 
 		struct DeviceState {
@@ -170,12 +176,15 @@ private:
 		StringName name;
 		StringName uid;
 		bool connected = false;
+		bool is_known = false;
 		bool last_buttons[(size_t)JoyButton::MAX] = { false };
 		float last_axis[(size_t)JoyAxis::MAX] = { 0.0f };
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		bool has_light = false;
+		Input::JoypadFeatures *features = nullptr;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -255,6 +264,7 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
+	void _update_joypad_features(int p_device);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -268,6 +278,10 @@ private:
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
+	static void (*set_mouse_mode_override_func)(MouseMode);
+	static MouseMode (*get_mouse_mode_override_func)();
+	static void (*set_mouse_mode_override_enabled_func)(bool);
+	static bool (*is_mouse_mode_override_enabled_func)();
 	static void (*warp_mouse_func)(const Vector2 &p_position);
 
 	static CursorShape (*get_current_cursor_shape_func)();
@@ -286,8 +300,10 @@ protected:
 public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
-	void set_mouse_mode_override_enabled(bool p_enabled);
 	void set_mouse_mode_override(MouseMode p_mode);
+	MouseMode get_mouse_mode_override() const;
+	void set_mouse_mode_override_enabled(bool p_override_enabled);
+	bool is_mouse_mode_override_enabled();
 
 #ifdef TOOLS_ENABLED
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
@@ -305,6 +321,8 @@ public:
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
+	bool is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
+	bool is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
@@ -332,13 +350,18 @@ public:
 	void warp_mouse(const Vector2 &p_position);
 	Point2 warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	void parse_input_event(const Ref<InputEvent> &p_event);
+	void parse_input_event(RequiredParam<InputEvent> rp_event);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
+
+	void set_joy_features(int p_device, JoypadFeatures *p_features);
+
+	void set_joy_light(int p_device, const Color &p_color);
+	bool has_joy_light(int p_device) const;
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
@@ -399,5 +422,3 @@ public:
 
 VARIANT_ENUM_CAST(Input::MouseMode);
 VARIANT_ENUM_CAST(Input::CursorShape);
-
-#endif // INPUT_H

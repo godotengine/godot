@@ -28,17 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#pragma once
 
 #include "core/io/resource.h"
-#include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 class CameraAttributes;
 class Camera3D;
+class Compositor;
 class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
 
@@ -48,7 +49,9 @@ class World3D : public Resource {
 private:
 	RID scenario;
 	mutable RID space;
+#ifndef NAVIGATION_3D_DISABLED
 	mutable RID navigation_map;
+#endif // NAVIGATION_3D_DISABLED
 
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
@@ -67,7 +70,9 @@ protected:
 
 public:
 	RID get_space() const;
+#ifndef NAVIGATION_3D_DISABLED
 	RID get_navigation_map() const;
+#endif // NAVIGATION_3D_DISABLED
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);
@@ -84,10 +89,10 @@ public:
 
 	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
 
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsDirectSpaceState3D *get_direct_space_state();
+#endif // PHYSICS_3D_DISABLED
 
 	World3D();
 	~World3D();
 };
-
-#endif // WORLD_3D_H

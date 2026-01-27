@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIMESH_INSTANCE_3D_H
-#define MULTIMESH_INSTANCE_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/multimesh.h"
 
+#ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+#endif // NAVIGATION_3D_DISABLED
 
 class MultiMeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MultiMeshInstance3D, GeometryInstance3D);
@@ -58,15 +59,17 @@ public:
 	virtual AABB get_aabb() const override;
 
 private:
+#ifndef NAVIGATION_3D_DISABLED
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 public:
+#ifndef NAVIGATION_3D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	MultiMeshInstance3D();
 	~MultiMeshInstance3D();
 };
-
-#endif // MULTIMESH_INSTANCE_3D_H

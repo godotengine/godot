@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_FORWARD_MOBILE_H
-#define RENDER_FORWARD_MOBILE_H
+#pragma once
 
 #include "core/templates/paged_allocator.h"
+#include "servers/rendering/multi_uma_buffer.h"
 #include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 
@@ -86,9 +86,11 @@ private:
 			FB_CONFIG_MAX
 		};
 
-		RID get_color_fbs(FramebufferConfigType p_config_type);
+		RID get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth = false);
 		virtual void free_data() override;
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
+
+		RID get_motion_vectors_fb();
 
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
@@ -109,6 +111,7 @@ private:
 		// PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI,
 		PASS_MODE_DEPTH_MATERIAL,
 		// PASS_MODE_SDF,
+		PASS_MODE_MOTION_VECTORS,
 	};
 
 	struct RenderElementInfo;
@@ -159,22 +162,20 @@ private:
 
 	/* Render Scene */
 
-	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, int p_index = 0);
+	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, uint32_t p_pass_offset = 0u);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	void _update_render_base_uniform_set();
 
-	void _update_instance_data_buffer(RenderListType p_render_list);
 	void _fill_instance_data(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1, bool p_update_buffer = true);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 
-	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false, int p_index = 0);
+	void _setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Size2 &p_viewport_size, const Color &p_default_bg_color, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	RID render_base_uniform_set;
-	LocalVector<RID> render_pass_uniform_sets;
 
 	/* Light map */
 
@@ -192,7 +193,7 @@ private:
 	/* Scene state */
 
 	struct SceneState {
-		LocalVector<RID> uniform_buffers;
+		MultiUmaBuffer<1u> uniform_buffers = MultiUmaBuffer<1u>("SceneState::uniform_buffers");
 
 		struct PushConstantUbershader {
 			SceneShaderForwardMobile::ShaderSpecialization specialization;
@@ -200,31 +201,81 @@ private:
 		};
 
 		struct PushConstant {
-			float uv_offset[2];
+			uint32_t uv_offset;
 			uint32_t base_index;
-			uint32_t pad;
+			uint32_t multimesh_motion_vectors_current_offset;
+			uint32_t multimesh_motion_vectors_previous_offset;
 			PushConstantUbershader ubershader;
 		};
 
 		struct InstanceData {
-			float transform[16];
+			float transform[12];
+			float compressed_aabb_position[4];
+			float compressed_aabb_size[4];
+			float uv_scale[4];
 			uint32_t flags;
 			uint32_t instance_uniforms_ofs; // Base offset in global buffer for instance variables.
 			uint32_t gi_offset; // GI information when using lightmapping (VCT or lightmap index).
-			uint32_t layer_mask = 1;
+			uint32_t layer_mask;
+			float prev_transform[12];
 			float lightmap_uv_scale[4]; // Doubles as uv_offset when needed.
 			uint32_t reflection_probes[2]; // Packed reflection probes.
 			uint32_t omni_lights[2]; // Packed omni lights.
 			uint32_t spot_lights[2]; // Packed spot lights.
 			uint32_t decals[2]; // Packed spot lights.
-			float compressed_aabb_position[4];
-			float compressed_aabb_size[4];
-			float uv_scale[4];
+#ifdef REAL_T_IS_DOUBLE
+			float model_precision[4];
+			float prev_model_precision[4];
+#endif
+
+			// These setters allow us to copy the data over with operation when using floats.
+			inline void set_lightmap_uv_scale(const Rect2 &p_rect) {
+#ifdef REAL_T_IS_DOUBLE
+				lightmap_uv_scale[0] = p_rect.position.x;
+				lightmap_uv_scale[1] = p_rect.position.y;
+				lightmap_uv_scale[2] = p_rect.size.x;
+				lightmap_uv_scale[3] = p_rect.size.y;
+#else
+				Rect2 *rect = reinterpret_cast<Rect2 *>(lightmap_uv_scale);
+				*rect = p_rect;
+#endif
+			}
+
+			inline void set_compressed_aabb(const AABB &p_aabb) {
+#ifdef REAL_T_IS_DOUBLE
+				compressed_aabb_position[0] = p_aabb.position.x;
+				compressed_aabb_position[1] = p_aabb.position.y;
+				compressed_aabb_position[2] = p_aabb.position.z;
+
+				compressed_aabb_size[0] = p_aabb.size.x;
+				compressed_aabb_size[1] = p_aabb.size.y;
+				compressed_aabb_size[2] = p_aabb.size.z;
+#else
+				Vector3 *compressed_aabb_position_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_position);
+				Vector3 *compressed_aabb_size_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_size);
+				*compressed_aabb_position_vec3 = p_aabb.position;
+				*compressed_aabb_size_vec3 = p_aabb.size;
+#endif
+			}
+
+			inline void set_uv_scale(const Vector4 &p_uv_scale) {
+#ifdef REAL_T_IS_DOUBLE
+				uv_scale[0] = p_uv_scale.x;
+				uv_scale[1] = p_uv_scale.y;
+				uv_scale[2] = p_uv_scale.z;
+				uv_scale[3] = p_uv_scale.w;
+#else
+				Vector4 *uv_scale_vec4 = reinterpret_cast<Vector4 *>(uv_scale);
+				*uv_scale_vec4 = p_uv_scale;
+#endif
+			}
 		};
 
-		RID instance_buffer[RENDER_LIST_MAX];
-		uint32_t instance_buffer_size[RENDER_LIST_MAX] = { 0, 0, 0 };
-		LocalVector<InstanceData> instance_data[RENDER_LIST_MAX];
+		static_assert(std::is_trivially_destructible_v<InstanceData>);
+		static_assert(std::is_trivially_constructible_v<InstanceData>);
+
+		MultiUmaBuffer<1u> instance_buffer[RENDER_LIST_MAX] = { MultiUmaBuffer<1u>("RENDER_LIST_OPAQUE"), MultiUmaBuffer<1u>("RENDER_LIST_ALPHA"), MultiUmaBuffer<1u>("RENDER_LIST_SECONDARY") };
+		InstanceData *curr_gpu_ptr[RENDER_LIST_MAX] = {};
 
 		// !BAS! We need to change lightmaps, we're not going to do this with a buffer but pushing the used lightmap in
 		LightmapData lightmaps[MAX_LIGHTMAPS];
@@ -239,10 +290,9 @@ private:
 		RID lightmap_capture_buffer;
 
 		bool used_screen_texture = false;
-		bool used_normal_texture = false;
 		bool used_depth_texture = false;
-		bool used_sss = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -260,6 +310,8 @@ private:
 		};
 
 		LocalVector<ShadowPass> shadow_passes;
+
+		void grow_instance_buffer(RenderListType p_render_list, uint32_t p_req_element_count, bool p_append);
 	} scene_state;
 
 	/* Render List */
@@ -292,6 +344,22 @@ private:
 			sorter.sort(elements.ptr() + p_from, p_size);
 		}
 
+		struct SortByKeyAndStencil {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				bool a_stencil = A->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL;
+				bool b_stencil = B->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL;
+				if (a_stencil != b_stencil) {
+					return a_stencil < b_stencil;
+				}
+				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
+			}
+		};
+
+		void sort_by_key_and_stencil() {
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByKeyAndStencil> sorter;
+			sorter.sort(elements.ptr(), elements.size());
+		}
+
 		struct SortByDepth {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
 				return (A->owner->depth < B->owner->depth);
@@ -322,10 +390,18 @@ private:
 	};
 
 	struct RenderElementInfo {
-		uint32_t uses_lightmap : 1;
-		uint32_t lod_index : 8;
-		uint32_t reserved : 23;
+		union {
+			struct {
+				uint32_t lod_index : 8;
+				uint32_t uses_lightmap : 1;
+				uint32_t reserved : 23;
+			};
+			uint32_t value;
+		};
 	};
+
+	static_assert(std::is_trivially_destructible_v<RenderElementInfo>);
+	static_assert(std::is_trivially_constructible_v<RenderElementInfo>);
 
 	template <PassMode p_pass_mode>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
@@ -338,8 +414,7 @@ protected:
 	/* setup */
 	virtual void _update_shader_quality_settings() override;
 
-	virtual float _render_buffers_get_luminance_multiplier() override;
-	virtual RD::DataFormat _render_buffers_get_color_format() override;
+	virtual RD::DataFormat _render_buffers_get_preferred_color_format() override;
 	virtual bool _render_buffers_can_be_storage() override;
 
 	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
@@ -347,6 +422,7 @@ protected:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
 	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override {}
+	virtual void environment_set_ssr_half_size(bool p_half_size) override {}
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override {}
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override {}
@@ -394,6 +470,7 @@ protected:
 			FLAG_USES_NORMAL_TEXTURE = 16384,
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
+			FLAG_USES_STENCIL = 131072,
 		};
 
 		union {
@@ -402,27 +479,28 @@ protected:
 				uint64_t sort_key2;
 			};
 			struct {
-				// !BAS! CHECK BITS!!!
+				// Needs to be grouped together to be used in RenderElementInfo, as the value is masked directly.
+				uint64_t lod_index : 8;
+				uint64_t uses_lightmap : 1;
+				uint64_t pad : 3;
 
-				uint64_t surface_index : 10;
-				uint64_t geometry_id : 32;
-				uint64_t material_id_low : 16;
-
-				uint64_t material_id_hi : 16;
-				uint64_t shader_id : 32;
-				uint64_t uses_lightmap : 4; // sort by lightmap id here, not whether its yes/no (is 4 bits enough?)
+				// Sorted based on optimal order for respecting priority and reducing the amount of rebinding of shaders, materials,
+				// and geometry. This current order was found to be the most optimal in large projects. If you wish to measure
+				// differences, refer to RenderingDeviceGraph and the methods available to print statistics for draw lists.
 				uint64_t depth_layer : 4;
-				uint64_t priority : 8;
+				uint64_t surface_index : 8;
+				uint64_t geometry_id : 32;
+				uint64_t material_id_hi : 8;
 
-				// uint64_t lod_index : 8; // no need to sort on LOD
-				// uint64_t uses_forward_gi : 1; // no GI here, remove
+				uint64_t material_id_lo : 24;
+				uint64_t shader_id : 32;
+				uint64_t priority : 8;
 			};
 		} sort;
 
 		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
-		uint32_t lod_index = 0;
 
 		void *surface = nullptr;
 		RID material_uniform_set;
@@ -453,6 +531,10 @@ protected:
 		uint32_t instance_count = 0;
 		uint32_t trail_steps = 1;
 
+		uint64_t prev_transform_change_frame = UINT_MAX;
+		bool prev_transform_dirty = true;
+		Transform3D prev_transform;
+
 		// lightmap
 		uint32_t gi_offset_cache = 0; // !BAS! Should rename this to lightmap_offset_cache, in forward clustered this was shared between gi and lightmap
 		RID lightmap_instance;
@@ -480,6 +562,7 @@ protected:
 
 		virtual void _mark_dirty() override;
 
+		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override;
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
@@ -587,6 +670,11 @@ public:
 				uint32_t use_32_bit_shadows : 1;
 				uint32_t use_shadow_cubemaps : 1;
 				uint32_t use_shadow_dual_paraboloid : 1;
+				uint32_t use_vrs : 1;
+				uint32_t use_subpass_post_pass : 1;
+				uint32_t use_separate_post_pass : 1;
+				uint32_t use_hdr_render_target : 1;
+				uint32_t use_ldr_render_target : 1;
 			};
 		};
 	};
@@ -608,6 +696,12 @@ public:
 	void _update_dirty_geometry_instances();
 	void _update_dirty_geometry_pipelines();
 
+	// Global data about the scene that can be used to pre-allocate resources without relying on culling.
+	struct GlobalSurfaceData {
+		bool screen_texture_used = false;
+		bool depth_texture_used = false;
+	} global_surface_data;
+
 	virtual RenderGeometryInstance *geometry_instance_create(RID p_base) override;
 	virtual void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;
 
@@ -617,6 +711,11 @@ public:
 
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override;
+
+	/* SHADER LIBRARY */
+
+	virtual void enable_features(BitField<FeatureBits> p_feature_bits) override;
+	virtual String get_name() const override;
 
 	virtual bool free(RID p_rid) override;
 
@@ -632,5 +731,3 @@ public:
 	~RenderForwardMobile();
 };
 } // namespace RendererSceneRenderImplementation
-
-#endif // RENDER_FORWARD_MOBILE_H

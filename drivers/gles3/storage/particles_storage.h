@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLES_STORAGE_GLES3_H
-#define PARTICLES_STORAGE_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -196,6 +195,8 @@ private:
 		GLuint back_process_buffer = 0; // Transform + color + custom data + userdata + velocity + flags. Only needed for processing.
 		GLuint back_instance_buffer = 0; // Transform + color + custom data. In packed format needed for rendering.
 
+		uint64_t last_change = 0;
+
 		uint32_t instance_buffer_size_cache = 0;
 		uint32_t instance_buffer_stride_cache = 0;
 		uint32_t num_attrib_arrays_cache = 0;
@@ -287,6 +288,7 @@ private:
 		GLuint heightfield_texture = 0;
 		GLuint heightfield_fb = 0;
 		Size2i heightfield_fb_size;
+		uint32_t heightfield_mask = (1 << 20) - 1;
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
@@ -397,6 +399,20 @@ public:
 		return particles->back_instance_buffer;
 	}
 
+	_FORCE_INLINE_ GLuint particles_get_prev_gl_buffer(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_NULL_V(particles, 0);
+
+		return particles->front_instance_buffer;
+	}
+
+	_FORCE_INLINE_ uint64_t particles_get_last_change(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_NULL_V(particles, 0);
+
+		return particles->last_change;
+	}
+
 	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_NULL_V(particles, false);
@@ -434,6 +450,9 @@ public:
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
 	GLuint particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override;
 
 	_FORCE_INLINE_ Size2i particles_collision_get_heightfield_size(RID p_particles_collision) const {
 		ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
@@ -457,5 +476,3 @@ public:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // PARTICLES_STORAGE_GLES3_H

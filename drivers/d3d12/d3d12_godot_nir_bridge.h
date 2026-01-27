@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef D3D12_GODOT_NIR_BRIDGE_H
-#define D3D12_GODOT_NIR_BRIDGE_H
+#pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,8 +52,10 @@ typedef struct GodotNirCallbacks {
 	void (*report_bitcode_bit_offset_fn)(uint64_t p_bit_offset, void *p_data);
 } GodotNirCallbacks;
 
+extern void *godot_nir_malloc(size_t p_size);
+extern void *godot_nir_realloc(void *p_block, size_t p_size);
+extern void godot_nir_free(void *p_block);
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif // D3D12_GODOT_NIR_BRIDGE_H

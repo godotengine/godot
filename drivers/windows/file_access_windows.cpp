@@ -41,12 +41,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include <errno.h>
 #include <io.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
-#include <wchar.h>
+#include <cerrno>
+#include <cwchar>
 
 #ifdef _MSC_VER
 #define S_ISREG(m) ((m) & _S_IFREG)
@@ -85,12 +85,12 @@ String FileAccessWindows::fix_path(const String &p_path) const {
 	if (r_path.is_relative_path()) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
+		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(r_path);
+		r_path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(r_path);
 	}
 	r_path = r_path.simplify_path();
-	r_path = r_path.replace("/", "\\");
+	r_path = r_path.replace_char('/', '\\');
 	if (!r_path.is_network_share_path() && !r_path.begins_with(R"(\\?\)")) {
 		r_path = R"(\\?\)" + r_path;
 	}
@@ -214,7 +214,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		path = tmpfile;
 	}
 
-	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? ((p_mode_flags == READ) ? _SH_DENYWR : _SH_DENYRW) : _SH_DENYNO);
 
 	if (f == nullptr) {
 		switch (errno) {
@@ -282,7 +282,7 @@ String FileAccessWindows::get_path() const {
 }
 
 String FileAccessWindows::get_path_absolute() const {
-	return path.trim_prefix(R"(\\?\)").replace("\\", "/");
+	return path.trim_prefix(R"(\\?\)").replace_char('\\', '/');
 }
 
 bool FileAccessWindows::is_open() const {
@@ -308,6 +308,8 @@ void FileAccessWindows::seek_end(int64_t p_position) {
 }
 
 uint64_t FileAccessWindows::get_position() const {
+	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
+
 	int64_t aux_position = _ftelli64(f);
 	if (aux_position < 0) {
 		check_errors();
@@ -416,7 +418,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		file = file.substr(0, file.length() - 1);
 	}
 
-	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
 	if (handle != INVALID_HANDLE_VALUE) {
 		FILETIME ft_create, ft_write;
@@ -449,6 +451,78 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 
 	return 0;
+}
+
+uint64_t FileAccessWindows::_get_access_time(const String &p_file) {
+	if (is_path_invalid(p_file)) {
+		return 0;
+	}
+
+	String file = fix_path(p_file);
+	if (file.ends_with("\\") && file != "\\") {
+		file = file.substr(0, file.length() - 1);
+	}
+
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+	if (handle != INVALID_HANDLE_VALUE) {
+		FILETIME ft_create, ft_access;
+
+		bool status = GetFileTime(handle, &ft_create, &ft_access, nullptr);
+
+		CloseHandle(handle);
+
+		if (status) {
+			uint64_t ret = 0;
+
+			// If access time is invalid, fallback to creation time.
+			if (ft_access.dwHighDateTime == 0 && ft_access.dwLowDateTime == 0) {
+				ret = ft_create.dwHighDateTime;
+				ret <<= 32;
+				ret |= ft_create.dwLowDateTime;
+			} else {
+				ret = ft_access.dwHighDateTime;
+				ret <<= 32;
+				ret |= ft_access.dwLowDateTime;
+			}
+
+			const uint64_t WINDOWS_TICKS_PER_SECOND = 10000000;
+			const uint64_t TICKS_TO_UNIX_EPOCH = 116444736000000000LL;
+
+			if (ret >= TICKS_TO_UNIX_EPOCH) {
+				return (ret - TICKS_TO_UNIX_EPOCH) / WINDOWS_TICKS_PER_SECOND;
+			}
+		}
+	}
+
+	ERR_FAIL_V_MSG(0, "Failed to get access time for: " + p_file + "");
+}
+
+int64_t FileAccessWindows::_get_size(const String &p_file) {
+	if (is_path_invalid(p_file)) {
+		return 0;
+	}
+
+	String file = fix_path(p_file);
+	if (file.ends_with("\\") && file != "\\") {
+		file = file.substr(0, file.length() - 1);
+	}
+
+	DWORD file_attr = GetFileAttributesW((LPCWSTR)(file.utf16().get_data()));
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+	if (handle != INVALID_HANDLE_VALUE && !(file_attr & FILE_ATTRIBUTE_DIRECTORY)) {
+		LARGE_INTEGER fsize;
+
+		bool status = GetFileSizeEx(handle, &fsize);
+
+		CloseHandle(handle);
+
+		if (status) {
+			return (int64_t)fsize.QuadPart;
+		}
+	}
+	ERR_FAIL_V_MSG(-1, "Failed to get size for: " + p_file + "");
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessWindows::_get_unix_permissions(const String &p_file) {
@@ -507,6 +581,104 @@ Error FileAccessWindows::_set_read_only_attribute(const String &p_file, bool p_r
 	ERR_FAIL_COND_V_MSG(!ok, FAILED, "Failed to set attributes for: " + p_file);
 
 	return OK;
+}
+
+PackedByteArray FileAccessWindows::_get_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	ERR_FAIL_COND_V(p_attribute_name.is_empty(), PackedByteArray());
+
+	String file = fix_path(p_file);
+	file += ":" + p_attribute_name;
+	const Char16String &file_utf16 = file.utf16();
+
+	PackedByteArray data;
+	HANDLE h = CreateFileW((LPCWSTR)file_utf16.get_data(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (h != INVALID_HANDLE_VALUE) {
+		size_t bytes_in_buffer = 0;
+		const int CHUNK_SIZE = 4096;
+
+		DWORD read = 0;
+		for (;;) {
+			data.resize(bytes_in_buffer + CHUNK_SIZE);
+			bool success = ReadFile(h, data.ptrw() + bytes_in_buffer, CHUNK_SIZE, &read, nullptr);
+			if (!success || read == 0) {
+				break;
+			}
+			bytes_in_buffer += read;
+		}
+		data.resize(bytes_in_buffer);
+		CloseHandle(h);
+	}
+	return data;
+}
+
+Error FileAccessWindows::_set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) {
+	ERR_FAIL_COND_V(p_attribute_name.is_empty(), FAILED);
+
+	String file = fix_path(p_file);
+	file += ":" + p_attribute_name;
+	const Char16String &file_utf16 = file.utf16();
+
+	PackedByteArray data;
+	HANDLE h = CreateFileW((LPCWSTR)file_utf16.get_data(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (h == INVALID_HANDLE_VALUE) {
+		return FAILED;
+	}
+
+	DWORD written = 0;
+	bool ok = true;
+	if (p_data.size() > 0) {
+		ok = WriteFile(h, p_data.ptr(), p_data.size(), &written, nullptr);
+	}
+	CloseHandle(h);
+
+	ERR_FAIL_COND_V_MSG(!ok || written != p_data.size(), FAILED, "Failed to set extended attributes for: " + p_file);
+
+	return OK;
+}
+
+Error FileAccessWindows::_remove_extended_attribute(const String &p_file, const String &p_attribute_name) {
+	ERR_FAIL_COND_V(p_attribute_name.is_empty(), FAILED);
+
+	String file = fix_path(p_file);
+	file += ":" + p_attribute_name;
+	const Char16String &file_utf16 = file.utf16();
+
+	return DeleteFileW((LPCWSTR)(file_utf16.get_data())) != 0 ? OK : FAILED;
+}
+
+PackedStringArray FileAccessWindows::_get_extended_attributes_list(const String &p_file) {
+	PackedStringArray ret;
+	String file = fix_path(p_file);
+
+	char info_block[65536] = {};
+	PFILE_STREAM_INFO stream_info = (PFILE_STREAM_INFO)info_block;
+
+	HANDLE h = CreateFileW((LPCWSTR)file.utf16().get_data(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+	if (h == INVALID_HANDLE_VALUE) {
+		return ret;
+	}
+	BOOL out = GetFileInformationByHandleEx(h, FileStreamInfo, info_block, sizeof(info_block));
+	CloseHandle(h);
+	if (!out) {
+		return ret;
+	}
+	while (true) {
+		if (stream_info->StreamNameLength != 0) {
+			String name = String::utf16((const char16_t *)stream_info->StreamName, stream_info->StreamNameLength / sizeof(WCHAR));
+			if (name.ends_with(":$DATA")) {
+				name = name.trim_prefix(":").trim_suffix(":$DATA");
+				if (!name.is_empty()) {
+					ret.push_back(name);
+				}
+			}
+		}
+		if (stream_info->NextEntryOffset == 0) {
+			break;
+		}
+		stream_info = (PFILE_STREAM_INFO)((LPBYTE)stream_info + stream_info->NextEntryOffset);
+	}
+
+	return ret;
 }
 
 void FileAccessWindows::close() {

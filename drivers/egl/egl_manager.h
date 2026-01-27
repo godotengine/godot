@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EGL_MANAGER_H
-#define EGL_MANAGER_H
+#pragma once
 
 #ifdef EGL_ENABLED
 
@@ -37,7 +36,7 @@
 #include "platform_gl.h"
 
 #include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 class EGLManager {
 private:
@@ -119,5 +118,3 @@ public:
 };
 
 #endif // EGL_ENABLED
-
-#endif // EGL_MANAGER_H

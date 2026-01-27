@@ -38,7 +38,7 @@ private:
 		/// Construct a node ID
 		static inline NodeID	sInvalid()							{ return NodeID(cInvalidNodeIndex); }
 		static inline NodeID	sFromBodyID(BodyID inID)			{ NodeID node_id(inID.GetIndexAndSequenceNumber()); JPH_ASSERT(node_id.IsBody()); return node_id; }
-		static inline NodeID	sFromNodeIndex(uint32 inIdx)		{ NodeID node_id(inIdx | cIsNode); JPH_ASSERT(node_id.IsNode()); return node_id; }
+		static inline NodeID	sFromNodeIndex(uint32 inIdx)		{ JPH_ASSERT((inIdx & cIsNode) == 0); return NodeID(inIdx | cIsNode); }
 
 		/// Check what type of ID it is
 		inline bool				IsValid() const						{ return mID != cInvalidNodeIndex; }
@@ -261,8 +261,7 @@ public:
 
 private:
 	/// Constants
-	static const uint32			cInvalidNodeIndex = 0xffffffff;		///< Value used to indicate node index is invalid
-	static const float			cLargeFloat;						///< A large floating point number that is small enough to not cause any overflows
+	static constexpr uint32		cInvalidNodeIndex = 0xffffffff;		///< Value used to indicate node index is invalid
 	static const AABox			cInvalidBounds;						///< Invalid bounding box using cLargeFloat
 
 	/// We alternate between two trees in order to let collision queries complete in parallel to adding/removing objects to the tree

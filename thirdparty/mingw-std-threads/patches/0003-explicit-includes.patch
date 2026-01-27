@@ -1,0 +1,24 @@
+diff --git a/thirdparty/mingw-std-threads/mingw.condition_variable.h b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+index d099fad2ec..d2982fb087 100644
+--- a/thirdparty/mingw-std-threads/mingw.condition_variable.h
++++ b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+@@ -29,6 +29,7 @@
+ 
+ #include <cassert>
+ #include <chrono>
++#include <exception>
+ #include <system_error>
+ 
+ #include <sdkddkver.h>  //  Detect Windows version.
+diff --git a/thirdparty/mingw-std-threads/mingw.mutex.h b/thirdparty/mingw-std-threads/mingw.mutex.h
+index 1e881e6c7d..d9802ea2ae 100644
+--- a/thirdparty/mingw-std-threads/mingw.mutex.h
++++ b/thirdparty/mingw-std-threads/mingw.mutex.h
+@@ -37,6 +37,7 @@
+ #include <chrono>
+ #include <system_error>
+ #include <atomic>
++#include <exception>
+ #include <mutex> //need for call_once()
+ 
+ #if STDMUTEX_RECURSION_CHECKS || !defined(NDEBUG)

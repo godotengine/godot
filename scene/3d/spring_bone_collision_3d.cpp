@@ -44,7 +44,7 @@ PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
 }
 
 void SpringBoneCollision3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "bone_name") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "bone_name") {
 		Skeleton3D *sk = get_skeleton();
 		if (sk) {
 			p_property.hint = PROPERTY_HINT_ENUM_SUGGESTION;
@@ -55,6 +55,15 @@ void SpringBoneCollision3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (bone < 0 && (p_property.name == "position_offset" || p_property.name == "rotation_offset")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
+void SpringBoneCollision3D::_validate_bone_name() {
+	// Prior bone name.
+	if (!bone_name.is_empty()) {
+		set_bone_name(bone_name);
+	} else if (bone != -1) {
+		set_bone(bone);
 	}
 }
 
@@ -173,6 +182,15 @@ void SpringBoneCollision3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation_offset"), "set_rotation_offset", "get_rotation_offset");
 }
 
+void SpringBoneCollision3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_PARENTED: {
+			_validate_bone_name();
+		} break;
+	}
+}
+
 Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
 	return _collide(p_center, p_bone_radius, p_bone_length, p_current);
 }
@@ -180,13 +198,3 @@ Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone
 Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
 	return Vector3(0, 0, 0);
 }
-
-#ifdef TOOLS_ENABLED
-void SpringBoneCollision3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_EDITOR_PRE_SAVE: {
-			sync_pose();
-		} break;
-	}
-}
-#endif // TOOLS_ENABLED

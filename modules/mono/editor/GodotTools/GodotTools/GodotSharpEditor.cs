@@ -118,7 +118,7 @@ namespace GodotTools
 
         private void _ShowDotnetFeatures()
         {
-            _bottomPanelBtn.Show();
+            MSBuildPanel.Open();
             _toolBarBuildButton.Show();
         }
 
@@ -286,9 +286,10 @@ namespace GodotTools
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.Fleet:
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
-                    RiderPathManager.OpenFile(GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
+                    RiderPathManager.OpenFile(editorId, GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
                     return Error.Ok;
                 }
                 case ExternalEditorId.MonoDevelop:
@@ -455,12 +456,6 @@ namespace GodotTools
             }
         }
 
-        private void BuildStateChanged()
-        {
-            if (_bottomPanelBtn != null)
-                _bottomPanelBtn.Icon = MSBuildPanel.GetBuildStateIcon();
-        }
-
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
@@ -510,8 +505,7 @@ namespace GodotTools
             _confirmCreateSlnDialog.Confirmed += () => CreateProjectSolution();
 
             MSBuildPanel = new MSBuildPanel();
-            MSBuildPanel.BuildStateChanged += BuildStateChanged;
-            _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
+            AddDock(MSBuildPanel);
 
             AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
@@ -545,7 +539,7 @@ namespace GodotTools
             }
             else
             {
-                _bottomPanelBtn.Hide();
+                MSBuildPanel.Close();
                 _toolBarBuildButton.Hide();
             }
             _menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
@@ -568,7 +562,8 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudio}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsMacOS)
@@ -576,14 +571,16 @@ namespace GodotTools
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
             else if (OS.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code and VSCodium:{(int)ExternalEditorId.VsCode}" +
-                                   $",JetBrains Rider and Fleet:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Rider:{(int)ExternalEditorId.Rider}" +
+                                   $",JetBrains Fleet:{(int)ExternalEditorId.Fleet}" +
                                    $",Custom:{(int)ExternalEditorId.CustomEditor}";
             }
 
@@ -639,8 +636,10 @@ namespace GodotTools
             AddInspectorPlugin(inspectorPlugin);
             _inspectorPluginWeak = WeakRef(inspectorPlugin);
 
+            // TranslationParser Plugin
+            AddTranslationParserPlugin(new CsTranslationParserPlugin());
+
             BuildManager.Initialize();
-            RiderPathManager.Initialize();
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
@@ -651,9 +650,6 @@ namespace GodotTools
             base._DisablePlugin();
 
             _editorSettings.SettingsChanged -= OnSettingsChanged;
-
-            // Custom signals aren't automatically disconnected currently.
-            MSBuildPanel.BuildStateChanged -= BuildStateChanged;
         }
 
         public override void _ExitTree()
@@ -664,13 +660,28 @@ namespace GodotTools
 
         private void OnSettingsChanged()
         {
-            // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
-            // At that point, there's so much info logged that it doesn't make sense to display it in
-            // the tiny editor window, and it'd make the editor hang or crash anyway.
-            var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
-            var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
-            if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
-                _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            var changedSettings = _editorSettings.GetChangedSettings();
+            if (changedSettings.Contains(Settings.VerbosityLevel))
+            {
+                // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
+                // At that point, there's so much info logged that it doesn't make sense to display it in
+                // the tiny editor window, and it'd make the editor hang or crash anyway.
+                var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
+                var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
+                if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
+                    _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
+            }
+
+            if (changedSettings.Contains(Settings.ExternalEditor) && !changedSettings.Contains(RiderPathManager.EditorPathSettingName))
+            {
+                var editor = _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>();
+                if (editor != ExternalEditorId.Fleet && editor != ExternalEditorId.Rider)
+                {
+                    return;
+                }
+
+                RiderPathManager.InitializeIfNeeded(editor);
+            }
         }
 
         protected override void Dispose(bool disposing)

@@ -38,11 +38,31 @@ typedef struct RTCBufferTy* RTCBuffer;
 /* Creates a new buffer. */
 RTC_API RTCBuffer rtcNewBuffer(RTCDevice device, size_t byteSize);
 
+/* Creates a new buffer using explicit host device memory. */
+RTC_API RTCBuffer rtcNewBufferHostDevice(RTCDevice device, size_t byteSize);
+
 /* Creates a new shared buffer. */
 RTC_API RTCBuffer rtcNewSharedBuffer(RTCDevice device, void* ptr, size_t byteSize);
 
+/* Creates a new shared buffer using explicit host device memory. */
+RTC_API RTCBuffer rtcNewSharedBufferHostDevice(RTCDevice device, void* ptr, size_t byteSize);
+
+/* Synchronize host and device memory by copying data from host to device. */
+RTC_API void rtcCommitBuffer(RTCBuffer buffer);
+
+#if defined(EMBREE_SYCL_SUPPORT) && defined(SYCL_LANGUAGE_VERSION)
+
+RTC_API_CPP sycl::event rtcCommitBufferWithQueue(RTCBuffer buffer, sycl::queue queue);
+
+#endif
+
 /* Returns a pointer to the buffer data. */
 RTC_API void* rtcGetBufferData(RTCBuffer buffer);
+
+/* Returns a pointer to the buffer data on the device. Returns the same pointer as
+  rtcGetBufferData if the device is no SYCL device or if Embree is executed on a
+  system with unified memory (e.g., iGPUs). */
+RTC_API void* rtcGetBufferDataDevice(RTCBuffer buffer);
 
 /* Retains the buffer (increments the reference count). */
 RTC_API void rtcRetainBuffer(RTCBuffer buffer);

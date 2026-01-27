@@ -4,7 +4,7 @@
  *
  *   FreeType smooth renderer declaration
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -19,11 +19,6 @@
 #ifndef FTGRAYS_H_
 #define FTGRAYS_H_
 
-#ifdef __cplusplus
-  extern "C" {
-#endif
-
-
 #ifdef STANDALONE_
 #include "ftimage.h"
 #else
@@ -31,6 +26,7 @@
 #include <freetype/ftimage.h>
 #endif
 
+FT_BEGIN_HEADER
 
   /**************************************************************************
    *
@@ -46,10 +42,7 @@
 
   FT_EXPORT_VAR( const FT_Raster_Funcs )  ft_grays_raster;
 
-
-#ifdef __cplusplus
-  }
-#endif
+FT_END_HEADER
 
 #endif /* FTGRAYS_H_ */
 

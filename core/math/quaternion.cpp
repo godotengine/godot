@@ -46,24 +46,12 @@ Vector3 Quaternion::get_euler(EulerOrder p_order) const {
 	return Basis(*this).get_euler(p_order);
 }
 
-void Quaternion::operator*=(const Quaternion &p_q) {
-	real_t xx = w * p_q.x + x * p_q.w + y * p_q.z - z * p_q.y;
-	real_t yy = w * p_q.y + y * p_q.w + z * p_q.x - x * p_q.z;
-	real_t zz = w * p_q.z + z * p_q.w + x * p_q.y - y * p_q.x;
-	w = w * p_q.w - x * p_q.x - y * p_q.y - z * p_q.z;
-	x = xx;
-	y = yy;
-	z = zz;
-}
-
-Quaternion Quaternion::operator*(const Quaternion &p_q) const {
-	Quaternion r = *this;
-	r *= p_q;
-	return r;
-}
-
 bool Quaternion::is_equal_approx(const Quaternion &p_quaternion) const {
 	return Math::is_equal_approx(x, p_quaternion.x) && Math::is_equal_approx(y, p_quaternion.y) && Math::is_equal_approx(z, p_quaternion.z) && Math::is_equal_approx(w, p_quaternion.w);
+}
+
+bool Quaternion::is_same(const Quaternion &p_quaternion) const {
+	return Math::is_same(x, p_quaternion.x) && Math::is_same(y, p_quaternion.y) && Math::is_same(z, p_quaternion.z) && Math::is_same(w, p_quaternion.w);
 }
 
 bool Quaternion::is_finite() const {
@@ -160,7 +148,7 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999f) {
+	if (Math::abs(dot) > 0.9999f) {
 		return from;
 	}
 
@@ -192,11 +180,11 @@ Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const 
 	post_q = Basis(post_q).get_rotation_quaternion();
 
 	// Flip quaternions to shortest path if necessary.
-	bool flip1 = signbit(from_q.dot(pre_q));
+	bool flip1 = std::signbit(from_q.dot(pre_q));
 	pre_q = flip1 ? -pre_q : pre_q;
-	bool flip2 = signbit(from_q.dot(to_q));
+	bool flip2 = std::signbit(from_q.dot(to_q));
 	to_q = flip2 ? -to_q : to_q;
-	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : signbit(to_q.dot(post_q));
+	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : std::signbit(to_q.dot(post_q));
 	post_q = flip3 ? -post_q : post_q;
 
 	// Calc by Expmap in from_q space.
@@ -243,11 +231,11 @@ Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b
 	post_q = Basis(post_q).get_rotation_quaternion();
 
 	// Flip quaternions to shortest path if necessary.
-	bool flip1 = signbit(from_q.dot(pre_q));
+	bool flip1 = std::signbit(from_q.dot(pre_q));
 	pre_q = flip1 ? -pre_q : pre_q;
-	bool flip2 = signbit(from_q.dot(to_q));
+	bool flip2 = std::signbit(from_q.dot(to_q));
 	to_q = flip2 ? -to_q : to_q;
-	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : signbit(to_q.dot(post_q));
+	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : std::signbit(to_q.dot(post_q));
 	post_q = flip3 ? -post_q : post_q;
 
 	// Calc by Expmap in from_q space.

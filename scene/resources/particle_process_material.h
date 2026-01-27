@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLE_PROCESS_MATERIAL_H
-#define PARTICLE_PROCESS_MATERIAL_H
+#pragma once
 
 #include "core/templates/rid.h"
 #include "core/templates/self_list.h"
@@ -149,10 +148,12 @@ private:
 		int users = 0;
 	};
 
+	static Mutex shader_map_mutex;
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
 	static RBSet<String> min_max_properties;
 
 	MaterialKey current_key;
+	RID shader_rid;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
@@ -186,7 +187,7 @@ private:
 		return mk;
 	}
 
-	static Mutex material_mutex;
+	static Mutex dirty_materials_mutex;
 	static SelfList<ParticleProcessMaterial>::List dirty_materials;
 
 	struct ShaderNames {
@@ -332,8 +333,6 @@ private:
 	int emission_point_count = 1;
 	Vector3 emission_shape_offset;
 	Vector3 emission_shape_scale;
-
-	bool anim_loop = false;
 
 	bool turbulence_enabled;
 	Vector3 turbulence_noise_speed;
@@ -502,6 +501,7 @@ public:
 	void set_emission_shape_scale(const Vector3 &p_emission_shape_scale);
 	Vector3 get_emission_shape_scale() const;
 
+	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
@@ -515,5 +515,3 @@ VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode)
-
-#endif // PARTICLE_PROCESS_MATERIAL_H

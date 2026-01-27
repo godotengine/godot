@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_RD_H
-#define RENDER_SCENE_BUFFERS_RD_H
+#pragma once
 
 #ifdef METAL_ENABLED
 #include "../effects/metal_fx.h"
@@ -56,7 +55,6 @@
 
 #define RB_TEX_BLUR_0 SNAME("blur_0")
 #define RB_TEX_BLUR_1 SNAME("blur_1")
-#define RB_TEX_HALF_BLUR SNAME("half_blur") // only for raster!
 
 #define RB_TEX_BACK_COLOR SNAME("back_color")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
@@ -66,10 +64,12 @@ class RenderSceneBuffersRD : public RenderSceneBuffers {
 
 private:
 	bool can_be_storage = true;
+	bool force_hdr = false;
 	uint32_t max_cluster_elements = 512;
-	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	RD::DataFormat preferred_data_format = RD::DATA_FORMAT_MAX;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
+	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
 
 	// Our render target represents our final destination that we display on screen.
 	RID render_target;
@@ -186,9 +186,12 @@ public:
 	bool get_can_be_storage() const { return can_be_storage; }
 	void set_max_cluster_elements(const uint32_t p_max_elements) { max_cluster_elements = p_max_elements; }
 	uint32_t get_max_cluster_elements() { return max_cluster_elements; }
-	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
-	RD::DataFormat get_base_data_format() const { return base_data_format; }
+	void set_preferred_data_format(const RD::DataFormat p_preferred_data_format) { preferred_data_format = p_preferred_data_format; }
+	RD::DataFormat get_preferred_data_format() const { return preferred_data_format; }
+	RD::DataFormat get_base_data_format() const { return force_hdr ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : preferred_data_format; }
+	float get_luminance_multiplier() const;
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
+	RS::ViewportVRSMode get_vrs_mode() { return vrs_mode; }
 
 	void cleanup();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
@@ -310,6 +313,8 @@ public:
 	bool has_velocity_buffer(bool p_has_msaa);
 	RID get_velocity_buffer(bool p_get_msaa);
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
+
+	RID get_velocity_depth_buffer();
 
 	// Samplers adjusted with the mipmap bias that is best fit for the configuration of these render buffers.
 
@@ -451,5 +456,3 @@ public:
 	// 2 full size, 2 half size
 	WeightBuffers weight_buffers[4]; // Only used in raster
 };
-
-#endif // RENDER_SCENE_BUFFERS_RD_H

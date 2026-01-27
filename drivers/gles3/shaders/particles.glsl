@@ -342,7 +342,7 @@ void main() {
 			mediump float attractor_attenuation = attractors[i].attenuation;
 			amount = pow(amount, attractor_attenuation);
 			dir = safe_normalize(mix(dir, attractors[i].transform[2].xyz, attractors[i].directionality));
-			attractor_force -= amount * dir * attractors[i].strength;
+			attractor_force -= mass * amount * dir * attractors[i].strength;
 		}
 
 		float particle_size = particle_size;

@@ -1,0 +1,5 @@
+GH-98918
+--------
+Validate extension JSON: Error: Field 'classes/FileAccess/methods/open_encrypted/arguments': size changed value in new API, from 3 to 4.
+
+Optional argument added to allow setting initialization vector. Compatibility method registered.

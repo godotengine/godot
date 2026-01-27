@@ -4,7 +4,7 @@
 		A 3D node that has its position automatically updated by the [XRServer].
 	</brief_description>
 	<description>
-		This node can be bound to a specific pose of a [XRPositionalTracker] and will automatically have its [member Node3D.transform] updated by the [XRServer]. Nodes of this type must be added as children of the [XROrigin3D] node.
+		This node can be bound to a specific pose of an [XRPositionalTracker] and will automatically have its [member Node3D.transform] updated by the [XRServer]. Nodes of this type must be added as children of the [XROrigin3D] node.
 	</description>
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
@@ -46,6 +46,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pose" type="StringName" setter="set_pose_name" getter="get_pose_name" default="&amp;&quot;default&quot;">
 			The name of the pose we're bound to. Which poses a tracker supports is not known during design time.
 			Godot defines number of standard pose names such as [code]aim[/code] and [code]grip[/code] but other may be configured within a given [XRInterface].

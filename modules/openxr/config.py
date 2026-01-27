@@ -1,8 +1,8 @@
 def can_build(env, platform):
     if platform in ("linuxbsd", "windows", "android", "macos"):
-        return env["openxr"] and not env["disable_3d"]
+        return not env["disable_xr"]
     else:
-        # not supported on these platforms
+        # Not supported on these platforms.
         return False
 
 
@@ -17,7 +17,11 @@ def get_doc_classes():
         "OpenXRActionSet",
         "OpenXRActionMap",
         "OpenXRAPIExtension",
+        "OpenXRExtensionWrapper",
         "OpenXRExtensionWrapperExtension",
+        "OpenXRFrameSynthesisExtension",
+        "OpenXRFutureResult",
+        "OpenXRFutureExtension",
         "OpenXRInteractionProfile",
         "OpenXRInteractionProfileMetadata",
         "OpenXRIPBinding",
@@ -37,6 +41,40 @@ def get_doc_classes():
         "OpenXRBindingModifierEditor",
         "OpenXRHapticBase",
         "OpenXRHapticVibration",
+        "OpenXRRenderModelExtension",
+        "OpenXRRenderModel",
+        "OpenXRRenderModelManager",
+        "OpenXRStructureBase",
+        "OpenXRSpatialEntityExtension",
+        "OpenXRSpatialEntityTracker",
+        "OpenXRAnchorTracker",
+        "OpenXRPlaneTracker",
+        "OpenXRMarkerTracker",
+        "OpenXRSpatialCapabilityConfigurationBaseHeader",
+        "OpenXRSpatialCapabilityConfigurationAnchor",
+        "OpenXRSpatialCapabilityConfigurationQrCode",
+        "OpenXRSpatialCapabilityConfigurationMicroQrCode",
+        "OpenXRSpatialCapabilityConfigurationAruco",
+        "OpenXRSpatialCapabilityConfigurationAprilTag",
+        "OpenXRSpatialContextPersistenceConfig",
+        "OpenXRSpatialCapabilityConfigurationPlaneTracking",
+        "OpenXRSpatialComponentData",
+        "OpenXRSpatialComponentBounded2DList",
+        "OpenXRSpatialComponentBounded3DList",
+        "OpenXRSpatialComponentParentList",
+        "OpenXRSpatialComponentMesh2DList",
+        "OpenXRSpatialComponentMesh3DList",
+        "OpenXRSpatialComponentPlaneAlignmentList",
+        "OpenXRSpatialComponentPolygon2DList",
+        "OpenXRSpatialComponentPlaneSemanticLabelList",
+        "OpenXRSpatialComponentMarkerList",
+        "OpenXRSpatialQueryResultData",
+        "OpenXRSpatialComponentAnchorList",
+        "OpenXRSpatialComponentPersistenceList",
+        "OpenXRSpatialAnchorCapability",
+        "OpenXRSpatialPlaneTrackingCapability",
+        "OpenXRSpatialMarkerTrackingCapability",
+        "OpenXRAndroidThreadSettingsExtension",
     ]
 
 

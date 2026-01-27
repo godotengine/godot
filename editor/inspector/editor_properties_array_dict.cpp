@@ -1,0 +1,1776 @@
+/**************************************************************************/
+/*  editor_properties_array_dict.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "editor_properties_array_dict.h"
+
+#include "core/input/input.h"
+#include "core/io/marshalls.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_variant_type_selectors.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/inspector/editor_properties_vector.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/margin_container.h"
+
+bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+
+	if (!name.begins_with("indices")) {
+		return false;
+	}
+
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slicec('/', 2).to_int();
+	} else {
+		index = name.get_slicec('/', 1).to_int();
+	}
+
+	array.set(index, p_value);
+	return true;
+}
+
+bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) const {
+	String name = p_name;
+
+	if (!name.begins_with("indices")) {
+		return false;
+	}
+
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slicec('/', 2).to_int();
+	} else {
+		index = name.get_slicec('/', 1).to_int();
+	}
+
+	bool valid;
+	r_ret = array.get(index, &valid);
+
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+
+	return valid;
+}
+
+void EditorPropertyArrayObject::set_array(const Variant &p_array) {
+	array = p_array;
+}
+
+Variant EditorPropertyArrayObject::get_array() {
+	return array;
+}
+
+///////////////////
+
+bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Variant &p_value) {
+	String name = p_name;
+
+	if (name == "new_item_key") {
+		new_item_key = p_value;
+		return true;
+	}
+
+	if (name == "new_item_value") {
+		new_item_value = p_value;
+		return true;
+	}
+
+	if (name.begins_with("indices")) {
+		dict = dict.duplicate();
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
+		dict[key] = p_value;
+		return true;
+	}
+
+	return false;
+}
+
+bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_ret) const {
+	if (!get_by_property_name(p_name, r_ret)) {
+		return false;
+	}
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+	return true;
+}
+
+bool EditorPropertyDictionaryObject::get_by_property_name(const String &p_name, Variant &r_ret) const {
+	String name = p_name;
+
+	if (name == "new_item_key") {
+		r_ret = new_item_key;
+		return true;
+	}
+
+	if (name == "new_item_value") {
+		r_ret = new_item_value;
+		return true;
+	}
+
+	if (name == "new_item_key_name") {
+		r_ret = TTR("New Key:");
+		return true;
+	}
+
+	if (name == "new_item_value_name") {
+		r_ret = TTR("New Value:");
+		return true;
+	}
+
+	if (name.begins_with("indices")) {
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
+		r_ret = dict[key];
+		return true;
+	}
+
+	if (name.begins_with("keys")) {
+		int index = name.get_slicec('/', 1).to_int();
+		Variant key = dict.get_key_at_index(index);
+		r_ret = key;
+		return true;
+	}
+
+	return false;
+}
+
+void EditorPropertyDictionaryObject::set_dict(const Dictionary &p_dict) {
+	dict = p_dict;
+}
+
+Dictionary EditorPropertyDictionaryObject::get_dict() {
+	return dict;
+}
+
+void EditorPropertyDictionaryObject::set_new_item_key(const Variant &p_new_item) {
+	new_item_key = p_new_item;
+}
+
+Variant EditorPropertyDictionaryObject::get_new_item_key() {
+	return new_item_key;
+}
+
+void EditorPropertyDictionaryObject::set_new_item_value(const Variant &p_new_item) {
+	new_item_value = p_new_item;
+}
+
+Variant EditorPropertyDictionaryObject::get_new_item_value() {
+	return new_item_value;
+}
+
+String EditorPropertyDictionaryObject::get_property_name_for_index(int p_index) {
+	switch (p_index) {
+		case NEW_KEY_INDEX:
+			return "new_item_key";
+		case NEW_VALUE_INDEX:
+			return "new_item_value";
+		default:
+			return "indices/" + itos(p_index);
+	}
+}
+
+String EditorPropertyDictionaryObject::get_key_name_for_index(int p_index) {
+	switch (p_index) {
+		case NEW_KEY_INDEX:
+			return "new_item_key_name";
+		case NEW_VALUE_INDEX:
+			return "new_item_value_name";
+		default:
+			return "keys/" + itos(p_index);
+	}
+}
+
+String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
+	switch (p_index) {
+		case NEW_KEY_INDEX:
+			return TTR("New Key:");
+			break;
+		case NEW_VALUE_INDEX:
+			return TTR("New Value:");
+			break;
+		default:
+			return dict.get_key_at_index(p_index).get_construct_string();
+			break;
+	}
+}
+
+///////////////////// ARRAY ///////////////////////////
+
+void EditorPropertyArray::initialize_array(Variant &p_array) {
+	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+		Array array;
+		StringName subtype_class;
+		Ref<Script> subtype_script;
+		if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
+			if (ClassDB::class_exists(subtype_hint_string)) {
+				subtype_class = subtype_hint_string;
+			}
+		}
+		array.set_typed(subtype, subtype_class, subtype_script);
+		p_array = array;
+	} else {
+		VariantInternal::initialize(&p_array, array_type);
+	}
+}
+
+void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	if (!p_property.begins_with("indices")) {
+		return;
+	}
+
+	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
+	}
+
+	int index = p_property.get_slicec('/', 1).to_int();
+
+	Variant array = object->get_array().duplicate();
+	array.set(index, p_value);
+	emit_changed(get_edited_property(), array, p_name, p_changing);
+	if (p_changing) {
+		object->set_array(array);
+	}
+}
+
+void EditorPropertyArray::_change_type(Object *p_button, int p_slot_index) {
+	Button *button = Object::cast_to<Button>(p_button);
+	changing_type_index = p_slot_index;
+	Rect2 rect = button->get_screen_rect();
+	change_type->reset_size();
+	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->popup();
+}
+
+void EditorPropertyArray::_change_type_menu(int p_index) {
+	if (p_index == Variant::VARIANT_MAX) {
+		_remove_pressed(changing_type_index);
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(
+			changing_type_index == EditorPropertyArrayObject::NOT_CHANGING_TYPE,
+			"Tried to change type of an array item, but no item was selected.");
+
+	Variant value;
+	VariantInternal::initialize(&value, Variant::Type(p_index));
+
+	Variant array = object->get_array().duplicate();
+	array.set(slots[changing_type_index].index, value);
+
+	emit_changed(get_edited_property(), array);
+}
+
+void EditorPropertyArray::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyArray::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
+void EditorPropertyArray::_create_new_property_slot() {
+	int idx = slots.size();
+	HBoxContainer *hbox = memnew(HBoxContainer);
+
+	EditorProperty *prop = memnew(EditorPropertyNil);
+
+	Button *reorder_button = memnew(Button);
+	reorder_button->set_accessibility_name(TTRC("Reorder"));
+	reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
+	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
+	reorder_button->set_disabled(is_read_only());
+	reorder_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+	reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
+	reorder_button->connect(SNAME("button_up"), callable_mp(this, &EditorPropertyArray::_reorder_button_up));
+	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
+
+	hbox->add_child(prop);
+
+	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
+
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
+	if (is_untyped_array) {
+		edit_btn = memnew(Button);
+		edit_btn->set_accessibility_name(TTRC("Edit"));
+		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
+	} else {
+		remove_btn = memnew(Button);
+		remove_btn->set_accessibility_name(TTRC("Remove"));
+		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
+	}
+	property_vbox->add_child(hbox);
+
+	Slot slot;
+	slot.prop = prop;
+	slot.object = object;
+	slot.container = hbox;
+	slot.reorder_button = reorder_button;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
+	slot.set_index(idx + page_index * page_length);
+	slots.push_back(slot);
+}
+
+void EditorPropertyArray::set_preview_value(bool p_preview_value) {
+	preview_value = p_preview_value;
+}
+
+void EditorPropertyArray::update_property() {
+	Variant array = get_edited_property_value();
+
+	String array_type_name = Variant::get_type_name(array_type);
+	String array_sub_type_name;
+	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+		String type_name;
+		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+			type_name = subtype_hint_string;
+		} else {
+			type_name = Variant::get_type_name(subtype);
+		}
+
+		if (preview_value) {
+			array_sub_type_name = vformat("[%s] ", type_name);
+		} else {
+			array_type_name = vformat("%s[%s]", array_type_name, type_name);
+		}
+	}
+
+	if (!array.is_array()) {
+		if (preview_value) {
+			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_text(array_type_name);
+		} else {
+			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			edit->set_button_icon(Ref<Texture2D>());
+			edit->set_text(vformat(TTR("(Nil) %s"), array_type_name));
+		}
+		edit->set_pressed(false);
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+			slots.clear();
+		}
+		return;
+	}
+
+	object->set_array(array);
+
+	int size = array.call("size");
+	int max_page = MAX(0, size - 1) / page_length;
+	if (page_index > max_page) {
+		_page_changed(max_page);
+	}
+
+	if (preview_value) {
+		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").remove_char('\n');
+		if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
+			int type_end = ctr_str.find("](");
+			if (type_end > 0) {
+				ctr_str = ctr_str.substr(type_end + 2);
+			}
+		}
+
+		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+		edit->set_button_icon(get_editor_theme_icon(array_type_name));
+		edit->set_text(vformat("%s%s", array_sub_type_name, ctr_str));
+		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), array_type_name, array_sub_type_name, size));
+	} else {
+		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		edit->set_button_icon(Ref<Texture2D>());
+		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
+	}
+
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (edit->is_pressed() != unfolded) {
+		edit->set_pressed(unfolded);
+	}
+
+	if (unfolded) {
+		updating = true;
+
+		if (!container) {
+			container = memnew(PanelContainer);
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			container->add_child(vbox);
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			vbox->add_child(hbox);
+
+			Label *size_label = memnew(Label(TTR("Size:")));
+			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(size_label);
+
+			size_slider = memnew(EditorSpinSlider);
+			size_slider->set_step(1);
+			size_slider->set_max(INT32_MAX);
+			size_slider->set_editing_integer(true);
+			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+			size_slider->set_read_only(is_read_only());
+			size_slider->set_accessibility_name(TTRC("Size"));
+			size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
+			hbox->add_child(size_slider);
+
+			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			vbox->add_child(property_vbox);
+
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
+			button_add_item->set_disabled(is_read_only());
+			button_add_item->set_accessibility_name(TTRC("Add"));
+			vbox->add_child(button_add_item);
+
+			paginator = memnew(EditorPaginator);
+			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
+			vbox->add_child(paginator);
+
+			for (int i = 0; i < page_length; i++) {
+				_create_new_property_slot();
+			}
+		}
+
+		size_slider->set_value(size);
+		property_vbox->set_visible(size > 0);
+		button_add_item->set_visible(page_index == max_page);
+		paginator->update(page_index, max_page);
+		paginator->set_visible(max_page > 0);
+
+		for (Slot &slot : slots) {
+			bool slot_visible = &slot != &reorder_slot && slot.index < size;
+			slot.container->set_visible(slot_visible);
+			// If not visible no need to update it
+			if (!slot_visible) {
+				continue;
+			}
+
+			int idx = slot.index;
+			Variant::Type value_type = subtype;
+
+			if (value_type == Variant::NIL) {
+				value_type = array.get(idx).get_type();
+			}
+
+			// Check if the editor property needs to be updated.
+			bool value_as_id = Object::cast_to<EncodedObjectAsID>(array.get(idx));
+			if (value_type != slot.type || (value_type == Variant::OBJECT && (value_as_id != slot.as_id))) {
+				slot.as_id = value_as_id;
+				slot.type = value_type;
+				EditorProperty *new_prop = nullptr;
+				if (value_type == Variant::OBJECT && value_as_id) {
+					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+					editor->setup("Object");
+					new_prop = editor;
+				} else {
+					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", subtype_hint, subtype_hint_string, PROPERTY_USAGE_NONE);
+				}
+				new_prop->set_selectable(false);
+				new_prop->set_use_folding(is_using_folding());
+				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
+				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
+				}
+				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				new_prop->set_read_only(is_read_only());
+
+				if (slot.reorder_button) {
+					new_prop->add_inline_control(slot.reorder_button, INLINE_CONTROL_LEFT);
+					slot.reorder_button->get_parent()->move_child(slot.reorder_button, 0);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
+				} else if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
+				}
+
+				slot.prop->add_sibling(new_prop, false);
+				slot.prop->queue_free();
+				slot.prop = new_prop;
+				slot.set_index(idx);
+			}
+			if (slot.index == changing_type_index) {
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
+			}
+			slot.prop->update_property();
+		}
+
+		updating = false;
+
+	} else {
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+			slots.clear();
+		}
+	}
+}
+
+void EditorPropertyArray::_remove_pressed(int p_slot_index) {
+	Variant array = object->get_array().duplicate();
+	array.call("remove_at", slots[p_slot_index].index);
+
+	emit_changed(get_edited_property(), array);
+}
+
+void EditorPropertyArray::_button_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		edit->draw_rect(Rect2(Point2(), edit->get_size()), color, false);
+	}
+}
+
+void EditorPropertyArray::_button_add_item_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		button_add_item->draw_rect(Rect2(Point2(), button_add_item->get_size()), color, false);
+	}
+}
+
+bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
+	if (is_read_only()) {
+		return false;
+	}
+
+	String allowed_type = Variant::get_type_name(subtype);
+
+	// When the subtype is of type Object, an additional subtype may be specified in the hint string
+	// (e.g. Resource, Texture2D, ShaderMaterial, etc). We want the allowed type to be that, not just "Object".
+	if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
+		allowed_type = subtype_hint_string;
+	}
+
+	Dictionary drag_data = p_drag_data;
+	const String drop_type = drag_data.get("type", "");
+
+	if (drop_type == "files") {
+		PackedStringArray files = drag_data["files"];
+
+		for (const String &file : files) {
+			int idx_in_dir;
+			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			if (!dir) {
+				return false;
+			}
+			StringName ftype = dir->get_file_type(idx_in_dir);
+			String script_class = dir->get_file_resource_script_class(idx_in_dir);
+
+			for (String at : allowed_type.split(",", false)) {
+				at = at.strip_edges();
+				// Fail if one of the files is not of allowed type.
+				if (!ClassDB::is_parent_class(ftype, at) && !EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+					return false;
+				}
+			}
+		}
+
+		// If no files fail, drop is valid.
+		return true;
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_null()) {
+			return false;
+		}
+
+		String res_type = res->get_class();
+		StringName script_class;
+		if (res->get_script()) {
+			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		}
+
+		for (String at : allowed_type.split(",", false)) {
+			at = at.strip_edges();
+			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if (drop_type == "nodes") {
+		Array node_paths = drag_data["nodes"];
+
+		PackedStringArray allowed_subtype_array;
+		if (allowed_type == "NodePath") {
+			if (subtype_hint_string == "NodePath") {
+				return true;
+			} else {
+				for (String ast : subtype_hint_string.split(",", false)) {
+					ast = ast.strip_edges();
+					allowed_subtype_array.append(ast);
+				}
+			}
+		}
+
+		bool is_drop_allowed = true;
+
+		for (int i = 0; i < node_paths.size(); i++) {
+			const Node *dropped_node = get_node_or_null(node_paths[i]);
+			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
+
+			if (allowed_type != "NodePath") {
+				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
+					// Fail if one of the nodes is not of allowed type.
+					return false;
+				}
+			}
+
+			// The array of NodePaths is restricted to specific types using @export_node_path().
+			if (allowed_type == "NodePath" && subtype_hint_string != "NodePath") {
+				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
+					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
+					for (const String &ast : allowed_subtype_array) {
+						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
+							is_drop_allowed = true;
+							break;
+						} else {
+							is_drop_allowed = false;
+						}
+					}
+					if (!is_drop_allowed) {
+						break;
+					}
+				}
+			}
+		}
+
+		return is_drop_allowed;
+	}
+
+	return false;
+}
+
+bool EditorPropertyArray::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	return _is_drop_valid(p_data);
+}
+
+void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	Dictionary drag_data = p_data;
+	const String drop_type = drag_data.get("type", "");
+	Variant array = object->get_array();
+
+	// Handle the case where array is not initialized yet.
+	if (!array.is_array()) {
+		initialize_array(array);
+	} else {
+		array = array.duplicate();
+	}
+
+	if (drop_type == "files") {
+		PackedStringArray files = drag_data["files"];
+
+		// Loop the file array and add to existing array.
+		for (int i = 0; i < files.size(); i++) {
+			const String &file = files[i];
+
+			Ref<Resource> res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				array.call("push_back", res);
+			}
+		}
+
+		emit_changed(get_edited_property(), array);
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+
+		if (res.is_valid()) {
+			array.call("push_back", res);
+
+			emit_changed(get_edited_property(), array);
+		}
+	}
+
+	if (drop_type == "nodes") {
+		Array node_paths = drag_data["nodes"];
+		Node *base_node = get_base_node();
+
+		for (int i = 0; i < node_paths.size(); i++) {
+			const NodePath &path = node_paths[i];
+
+			if (subtype == Variant::OBJECT) {
+				array.call("push_back", get_node(path));
+			} else if (subtype == Variant::NODE_PATH) {
+				array.call("push_back", base_node->get_path().rel_path_to(path));
+			}
+		}
+
+		emit_changed(get_edited_property(), array);
+	}
+}
+
+Node *EditorPropertyArray::get_base_node() {
+	Node *base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+
+	if (!base_node) {
+		base_node = get_tree()->get_edited_scene_root();
+	}
+
+	return base_node;
+}
+
+void EditorPropertyArray::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (is_visible_in_tree()) {
+				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+					dropping = true;
+					edit->queue_redraw();
+					if (button_add_item) {
+						button_add_item->queue_redraw();
+					}
+				}
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
+				edit->queue_redraw();
+				if (button_add_item) {
+					button_add_item->queue_redraw();
+				}
+			}
+		} break;
+	}
+}
+
+void EditorPropertyArray::_edit_pressed() {
+	Variant array = get_edited_property_value();
+	if (!array.is_array() && edit->is_pressed()) {
+		initialize_array(array);
+		emit_changed(get_edited_property(), array);
+	}
+
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+	update_property();
+}
+
+void EditorPropertyArray::_page_changed(int p_page) {
+	if (updating) {
+		return;
+	}
+	page_index = p_page;
+	int i = p_page * page_length;
+
+	if (reorder_slot.index < 0) {
+		for (Slot &slot : slots) {
+			slot.set_index(i);
+			i++;
+		}
+	} else {
+		int reorder_from_page = reorder_slot.index / page_length;
+		if (reorder_from_page < p_page) {
+			i++;
+		}
+		for (Slot &slot : slots) {
+			if (slot.index != reorder_slot.index) {
+				slot.set_index(i);
+				i++;
+			} else if (i == reorder_slot.index) {
+				i++;
+			}
+		}
+	}
+	update_property();
+}
+
+void EditorPropertyArray::_length_changed(double p_page) {
+	if (updating) {
+		return;
+	}
+
+	Variant array = object->get_array().duplicate();
+	array.call("resize", int(p_page));
+
+	emit_changed(get_edited_property(), array);
+}
+
+void EditorPropertyArray::_add_element() {
+	_length_changed(double(object->get_array().call("size")) + 1.0);
+}
+
+void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
+	array_type = p_array_type;
+
+	// The format of p_hint_string is:
+	// subType/subTypeHint:nextSubtype ... etc.
+	if (!p_hint_string.is_empty()) {
+		int hint_subtype_separator = p_hint_string.find_char(':');
+		if (hint_subtype_separator >= 0) {
+			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
+			int slash_pos = subtype_string.find_char('/');
+			if (slash_pos >= 0) {
+				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
+				subtype_string = subtype_string.substr(0, slash_pos);
+			}
+
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
+			subtype = Variant::Type(subtype_string.to_int());
+		} else {
+			subtype = Variant::get_type_by_name(p_hint_string);
+
+			if (subtype == Variant::VARIANT_MAX) {
+				subtype = Variant::OBJECT;
+				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				subtype_hint_string = p_hint_string;
+			}
+		}
+	}
+}
+
+void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
+	if (reorder_slot.index < 0 || is_read_only()) {
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Variant array = object->get_array();
+		int size = array.call("size");
+
+		// Cumulate the mouse delta, many small changes (dragging slowly) should result in reordering at some point.
+		reorder_mouse_y_delta += mm->get_relative().y;
+
+		// Reordering is done by moving the dragged element by +1/-1 index at a time based on the cumulated mouse delta so if
+		// already at the array bounds make sure to ignore the remaining out of bounds drag (by resetting the cumulated delta).
+		if ((reorder_to_index == 0 && reorder_mouse_y_delta < 0.0f) || (reorder_to_index == size - 1 && reorder_mouse_y_delta > 0.0f)) {
+			reorder_mouse_y_delta = 0.0f;
+			return;
+		}
+
+		float required_y_distance = 20.0f * EDSCALE;
+		if (Math::abs(reorder_mouse_y_delta) > required_y_distance) {
+			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
+			reorder_mouse_y_delta -= required_y_distance * direction;
+
+			reorder_to_index += direction;
+
+			property_vbox->move_child(reorder_slot.container, reorder_to_index % page_length);
+
+			if ((direction < 0 && reorder_to_index % page_length == page_length - 1) || (direction > 0 && reorder_to_index % page_length == 0)) {
+				// Automatically move to the next/previous page.
+				_page_changed(page_index + direction);
+			}
+			// Ensure the moving element is visible in the root inspector.
+			EditorInspector *parent_inspector = get_parent_inspector();
+			if (parent_inspector) {
+				// Defer to prevent moving elements from not displaying properly, especially near borders.
+				callable_mp((ScrollContainer *)parent_inspector->get_root_inspector(), &ScrollContainer::ensure_control_visible).call_deferred(reorder_slot.container);
+			}
+		}
+	}
+}
+
+void EditorPropertyArray::_reorder_button_down(int p_slot_index) {
+	if (is_read_only()) {
+		return;
+	}
+	reorder_slot = slots[p_slot_index];
+	reorder_to_index = reorder_slot.index;
+	// Ideally it'd to be able to show the mouse but I had issues with
+	// Control's `mouse_exit()`/`mouse_entered()` signals not getting called.
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+}
+
+void EditorPropertyArray::_reorder_button_up() {
+	if (is_read_only()) {
+		return;
+	}
+
+	if (reorder_slot.index != reorder_to_index) {
+		// Move the element.
+		Variant array = object->get_array().duplicate();
+
+		property_vbox->move_child(reorder_slot.container, reorder_slot.index % page_length);
+		Variant value_to_move = array.get(reorder_slot.index);
+		array.call("remove_at", reorder_slot.index);
+		array.call("insert", reorder_to_index, value_to_move);
+
+		slots[reorder_to_index % page_length].reorder_button->grab_focus();
+		emit_changed(get_edited_property(), array);
+	}
+
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+
+	ERR_FAIL_NULL(reorder_slot.reorder_button);
+	reorder_slot.reorder_button->warp_mouse(reorder_slot.reorder_button->get_size() / 2.0f);
+	reorder_to_index = -1;
+	reorder_mouse_y_delta = 0.0f;
+	reorder_slot = Slot();
+	_page_changed(page_index);
+}
+
+bool EditorPropertyArray::is_colored(ColorationMode p_mode) {
+	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
+EditorPropertyArray::EditorPropertyArray() {
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+
+	edit = memnew(Button);
+	edit->set_accessibility_name(TTRC("Edit"));
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_edit_pressed));
+	edit->set_toggle_mode(true);
+	SET_DRAG_FORWARDING_CD(edit, EditorPropertyArray);
+	edit->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_draw));
+	add_child(edit);
+	add_focusable(edit);
+
+	change_type = memnew(EditorVariantTypePopupMenu(true));
+	add_child(change_type);
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyArray::_change_type_menu));
+	changing_type_index = -1;
+
+	subtype = Variant::NIL;
+	subtype_hint = PROPERTY_HINT_NONE;
+	subtype_hint_string = "";
+	has_borders = true;
+}
+
+///////////////////// DICTIONARY ///////////////////////////
+
+void EditorPropertyDictionary::initialize_dictionary(Variant &p_dictionary) {
+	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+		Dictionary dict;
+		StringName key_subtype_class;
+		Ref<Script> key_subtype_script;
+		if (key_subtype == Variant::OBJECT && !key_subtype_hint_string.is_empty() && ClassDB::class_exists(key_subtype_hint_string)) {
+			key_subtype_class = key_subtype_hint_string;
+		}
+		StringName value_subtype_class;
+		Ref<Script> value_subtype_script;
+		if (value_subtype == Variant::OBJECT && !value_subtype_hint_string.is_empty() && ClassDB::class_exists(value_subtype_hint_string)) {
+			value_subtype_class = value_subtype_hint_string;
+		}
+		dict.set_typed(key_subtype, key_subtype_class, key_subtype_script, value_subtype, value_subtype_class, value_subtype_script);
+		p_dictionary = dict;
+	} else {
+		VariantInternal::initialize(&p_dictionary, Variant::DICTIONARY);
+	}
+}
+
+void EditorPropertyDictionary::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
+	if (p_value.get_type() == Variant::OBJECT && p_value.is_null()) {
+		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
+	}
+
+	object->set(p_property, p_value);
+	bool new_item_or_key = !p_property.begins_with("indices");
+	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing || new_item_or_key);
+	if (new_item_or_key) {
+		update_property();
+	}
+}
+
+void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {
+	Button *button = Object::cast_to<Button>(p_button);
+	int index = slots[p_slot_index].index;
+	Rect2 rect = button->get_screen_rect();
+	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), index < 0);
+	change_type->reset_size();
+	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
+	change_type->popup();
+	changing_type_index = index;
+}
+
+void EditorPropertyDictionary::_add_key_value() {
+	// Do not allow nil as valid key. I experienced errors with this
+	if (object->get_new_item_key().get_type() == Variant::NIL) {
+		return;
+	}
+
+	Dictionary dict = object->get_dict().duplicate();
+	Variant new_key = object->get_new_item_key();
+	Variant new_value = object->get_new_item_value();
+	dict[new_key] = new_value;
+
+	Variant::Type type = new_key.get_type();
+	new_key.zero();
+	VariantInternal::initialize(&new_key, type);
+	object->set_new_item_key(new_key);
+
+	type = new_value.get_type();
+	new_value.zero();
+	VariantInternal::initialize(&new_value, type);
+	object->set_new_item_value(new_value);
+
+	object->set_dict(dict);
+	slots[(dict.size() - 1) % page_length].update_prop_or_index();
+	emit_changed(get_edited_property(), dict);
+}
+
+void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
+	HBoxContainer *hbox = memnew(HBoxContainer);
+
+	EditorProperty *prop_key = nullptr;
+	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+		prop_key = memnew(EditorPropertyNil);
+	}
+
+	EditorProperty *prop = memnew(EditorPropertyNil);
+	prop->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbox->add_child(prop);
+	if (prop_key) {
+		prop->add_inline_control(prop_key, INLINE_CONTROL_LEFT);
+	}
+
+	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
+
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
+	if (is_untyped_dict) {
+		edit_btn = memnew(Button);
+		edit_btn->set_accessibility_name(TTRC("Edit"));
+		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
+	} else if (p_idx >= 0) {
+		remove_btn = memnew(Button);
+		remove_btn->set_accessibility_name(TTRC("Remove"));
+		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
+		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
+	}
+
+	if (add_panel) {
+		add_panel->get_child(0)->add_child(hbox);
+	} else {
+		property_vbox->add_child(hbox);
+	}
+
+	Slot slot;
+	slot.prop = prop;
+	slot.prop_key = prop_key;
+	slot.object = object;
+	slot.container = hbox;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
+	int index = p_idx + (p_idx >= 0 ? page_index * page_length : 0);
+	slot.set_index(index);
+	slots.push_back(slot);
+}
+
+void EditorPropertyDictionary::_change_type_menu(int p_index) {
+	ERR_FAIL_COND_MSG(
+			changing_type_index == EditorPropertyDictionaryObject::NOT_CHANGING_TYPE,
+			"Tried to change the type of a dict key or value, but nothing was selected.");
+
+	Variant value;
+	switch (changing_type_index) {
+		case EditorPropertyDictionaryObject::NEW_KEY_INDEX:
+		case EditorPropertyDictionaryObject::NEW_VALUE_INDEX:
+			VariantInternal::initialize(&value, Variant::Type(p_index));
+			if (changing_type_index == EditorPropertyDictionaryObject::NEW_KEY_INDEX) {
+				object->set_new_item_key(value);
+			} else {
+				object->set_new_item_value(value);
+			}
+			update_property();
+			break;
+
+		default:
+			Dictionary dict = object->get_dict().duplicate();
+			Variant key = dict.get_key_at_index(changing_type_index);
+			if (p_index < Variant::VARIANT_MAX) {
+				VariantInternal::initialize(&value, Variant::Type(p_index));
+				dict[key] = value;
+			} else {
+				dict.erase(key);
+				object->set_dict(dict);
+				for (Slot &slot : slots) {
+					slot.update_prop_or_index();
+				}
+			}
+
+			emit_changed(get_edited_property(), dict);
+	}
+}
+
+void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
+	PackedStringArray types = p_hint_string.split(";");
+	if (types.size() > 0 && !types[0].is_empty()) {
+		String key = types[0];
+		int hint_key_subtype_separator = key.find_char(':');
+		if (hint_key_subtype_separator >= 0) {
+			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
+			int slash_pos = key_subtype_string.find_char('/');
+			if (slash_pos >= 0) {
+				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1).to_int());
+				key_subtype_string = key_subtype_string.substr(0, slash_pos);
+			}
+
+			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
+			key_subtype = Variant::Type(key_subtype_string.to_int());
+		} else {
+			key_subtype = Variant::get_type_by_name(key);
+
+			if (key_subtype == Variant::VARIANT_MAX) {
+				key_subtype = Variant::OBJECT;
+				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				key_subtype_hint_string = key;
+			}
+		}
+
+		Variant new_key = object->get_new_item_key();
+		VariantInternal::initialize(&new_key, key_subtype);
+		object->set_new_item_key(new_key);
+	}
+
+	if (types.size() > 1 && !types[1].is_empty()) {
+		String value = types[1];
+		int hint_value_subtype_separator = value.find_char(':');
+		if (hint_value_subtype_separator >= 0) {
+			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
+			int slash_pos = value_subtype_string.find_char('/');
+			if (slash_pos >= 0) {
+				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1).to_int());
+				value_subtype_string = value_subtype_string.substr(0, slash_pos);
+			}
+
+			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
+			value_subtype = Variant::Type(value_subtype_string.to_int());
+		} else {
+			value_subtype = Variant::get_type_by_name(value);
+
+			if (value_subtype == Variant::VARIANT_MAX) {
+				value_subtype = Variant::OBJECT;
+				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
+				value_subtype_hint_string = value;
+			}
+		}
+
+		Variant new_value = object->get_new_item_value();
+		VariantInternal::initialize(&new_value, value_subtype);
+		object->set_new_item_value(new_value);
+	}
+}
+
+void EditorPropertyDictionary::set_preview_value(bool p_preview_value) {
+	preview_value = p_preview_value;
+}
+
+void EditorPropertyDictionary::update_property() {
+	Variant updated_val = get_edited_property_value();
+
+	String dict_type_name = "Dictionary";
+	String dict_sub_type_name;
+	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+		String key_subtype_name = "Variant";
+		if (key_subtype == Variant::OBJECT && (key_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || key_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+			key_subtype_name = key_subtype_hint_string;
+		} else if (key_subtype != Variant::NIL) {
+			key_subtype_name = Variant::get_type_name(key_subtype);
+		}
+		String value_subtype_name = "Variant";
+		if (value_subtype == Variant::OBJECT && (value_subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || value_subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
+			value_subtype_name = value_subtype_hint_string;
+		} else if (value_subtype != Variant::NIL) {
+			value_subtype_name = Variant::get_type_name(value_subtype);
+		}
+		if (preview_value) {
+			dict_sub_type_name = vformat("[%s, %s] ", key_subtype_name, value_subtype_name);
+		} else {
+			dict_type_name += vformat("[%s, %s]", key_subtype_name, value_subtype_name);
+		}
+	}
+
+	if (updated_val.get_type() != Variant::DICTIONARY) {
+		if (preview_value) {
+			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_text(dict_type_name);
+		} else {
+			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			edit->set_button_icon(Ref<Texture2D>());
+			edit->set_text(vformat(TTR("(Nil) %s"), dict_type_name));
+		}
+		edit->set_pressed(false);
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+			add_panel = nullptr;
+			slots.clear();
+		}
+		return;
+	}
+
+	Dictionary dict = updated_val;
+	object->set_dict(updated_val);
+
+	if (preview_value) {
+		String ctr_str = updated_val.get_construct_string().remove_char('\n');
+		if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
+			int type_end = ctr_str.find("](");
+			if (type_end > 0) {
+				ctr_str = ctr_str.substr(type_end + 2).trim_suffix(")");
+			}
+		}
+
+		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+		edit->set_button_icon(get_editor_theme_icon(dict_type_name));
+		edit->set_text(vformat("%s%s", dict_sub_type_name, ctr_str));
+		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), dict_type_name, dict_sub_type_name, dict.size()));
+	} else {
+		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		edit->set_button_icon(Ref<Texture2D>());
+		edit->set_text(vformat(TTR("%s (size %d)"), dict_type_name, dict.size()));
+	}
+
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (edit->is_pressed() != unfolded) {
+		edit->set_pressed(unfolded);
+	}
+
+	if (unfolded) {
+		updating = true;
+
+		if (!container) {
+			container = memnew(PanelContainer);
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			container->add_child(vbox);
+
+			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			vbox->add_child(property_vbox);
+
+			paginator = memnew(EditorPaginator);
+			paginator->connect("page_changed", callable_mp(this, &EditorPropertyDictionary::_page_changed));
+			vbox->add_child(paginator);
+
+			for (int i = 0; i < page_length; i++) {
+				_create_new_property_slot(slots.size());
+			}
+
+			add_panel = memnew(PanelContainer);
+			property_vbox->add_child(add_panel);
+			add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
+			VBoxContainer *add_vbox = memnew(VBoxContainer);
+			add_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			add_panel->add_child(add_vbox);
+
+			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_KEY_INDEX);
+			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
+
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Key/Value Pair"), SNAME("Add")));
+			button_add_item->set_disabled(is_read_only());
+			button_add_item->set_accessibility_name(TTRC("Add"));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
+			add_vbox->add_child(button_add_item);
+		}
+
+		int size = dict.size();
+
+		int max_page = MAX(0, size - 1) / page_length;
+		if (page_index > max_page) {
+			_page_changed(max_page);
+		}
+
+		paginator->update(page_index, max_page);
+		paginator->set_visible(max_page > 0);
+
+		add_panel->set_visible(page_index == max_page);
+
+		for (Slot &slot : slots) {
+			bool slot_visible = slot.index < size;
+			slot.container->set_visible(slot_visible);
+			// If not visible no need to update it.
+			if (!slot_visible) {
+				continue;
+			}
+
+			// Check if the editor property key needs to be updated.
+			if (slot.prop_key) {
+				Variant key;
+				object->get_by_property_name(slot.key_name, key);
+				Variant::Type key_type = key.get_type();
+
+				bool key_as_id = Object::cast_to<EncodedObjectAsID>(key);
+				if (key_type != slot.key_type || (key_type == Variant::OBJECT && key_as_id != slot.key_as_id)) {
+					slot.key_as_id = key_as_id;
+					slot.key_type = key_type;
+					EditorProperty *new_prop = nullptr;
+					if (key_type == Variant::OBJECT && key_as_id) {
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("Object");
+						new_prop = editor;
+					} else {
+						new_prop = EditorInspector::instantiate_property_editor(this, key_type, "", key_subtype_hint, key_subtype_hint_string, PROPERTY_USAGE_NONE);
+					}
+					new_prop->set_read_only(true);
+					new_prop->set_selectable(false);
+					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+					new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+					new_prop->set_draw_background(false);
+					new_prop->set_use_folding(is_using_folding());
+					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+					new_prop->set_draw_label(false);
+					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
+					if (arr_prop) {
+						arr_prop->set_preview_value(true);
+					}
+					EditorPropertyDictionary *dict_prop = Object::cast_to<EditorPropertyDictionary>(new_prop);
+					if (dict_prop) {
+						dict_prop->set_preview_value(true);
+					}
+					slot.set_key_prop(new_prop);
+					if (slot.prop) {
+						slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
+					}
+				}
+			}
+
+			Variant value;
+			object->get_by_property_name(slot.prop_name, value);
+
+			Variant::Type value_type;
+
+			if (dict.is_typed_value() && value_subtype != Variant::NIL && slot.prop_key) {
+				value_type = value_subtype;
+			} else {
+				value_type = value.get_type();
+			}
+
+			// Check if the editor property needs to be updated.
+			bool value_as_id = Object::cast_to<EncodedObjectAsID>(value);
+			if (value_type != slot.type || (value_type == Variant::OBJECT && value_as_id != slot.as_id)) {
+				slot.as_id = value_as_id;
+				slot.type = value_type;
+				EditorProperty *new_prop = nullptr;
+				if (value_type == Variant::OBJECT && value_as_id) {
+					EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+					editor->setup("Object");
+					new_prop = editor;
+				} else {
+					bool use_key = slot.index == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
+					new_prop = EditorInspector::instantiate_property_editor(this, value_type, "", use_key ? key_subtype_hint : value_subtype_hint,
+							use_key ? key_subtype_hint_string : value_subtype_hint_string, PROPERTY_USAGE_NONE);
+				}
+				new_prop->set_selectable(false);
+				new_prop->set_use_folding(is_using_folding());
+				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
+				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
+				}
+				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+					new_prop->set_label(" ");
+					new_prop->set_label_overlayed(true);
+				}
+				new_prop->set_read_only(is_read_only());
+				if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
+				}
+				if (slot.prop_key) {
+					new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
+				}
+
+				slot.set_prop(new_prop);
+
+			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
+				Variant key = dict.get_key_at_index(slot.index);
+				String cs = key.get_construct_string();
+				slot.prop->set_tooltip_text(cs);
+			}
+
+			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
+			// Otherwise, focus will stay on the change type button, which is not very user friendly.
+			if (changing_type_index == slot.index) {
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
+			}
+
+			slot.prop->update_property();
+			if (slot.prop_key) {
+				slot.prop_key->update_property();
+			}
+		}
+		updating = false;
+
+	} else {
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+			add_panel = nullptr;
+			slots.clear();
+		}
+	}
+}
+
+void EditorPropertyDictionary::_remove_pressed(int p_slot_index) {
+	Dictionary dict = object->get_dict().duplicate();
+	int index = slots[p_slot_index].index;
+	dict.erase(dict.get_key_at_index(index));
+
+	emit_changed(get_edited_property(), dict);
+}
+
+void EditorPropertyDictionary::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyDictionary::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
+void EditorPropertyDictionary::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (button_add_item) {
+				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
+			}
+		} break;
+	}
+}
+
+void EditorPropertyDictionary::_edit_pressed() {
+	Variant prop_val = get_edited_property_value();
+	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+		initialize_dictionary(prop_val);
+		emit_changed(get_edited_property(), prop_val);
+	}
+
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+	update_property();
+}
+
+void EditorPropertyDictionary::_page_changed(int p_page) {
+	page_index = p_page;
+	int i = p_page * page_length;
+	for (Slot &slot : slots) {
+		if (slot.index > -1) {
+			slot.set_index(i);
+			i++;
+		}
+	}
+	if (updating) {
+		return;
+	}
+	update_property();
+}
+
+bool EditorPropertyDictionary::is_colored(ColorationMode p_mode) {
+	return p_mode == COLORATION_CONTAINER_RESOURCE;
+}
+
+EditorPropertyDictionary::EditorPropertyDictionary() {
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+
+	edit = memnew(Button);
+	edit->set_accessibility_name(TTRC("Edit"));
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
+	edit->set_toggle_mode(true);
+	add_child(edit);
+	add_focusable(edit);
+
+	container = nullptr;
+	button_add_item = nullptr;
+	paginator = nullptr;
+	change_type = memnew(EditorVariantTypePopupMenu(true));
+	add_child(change_type);
+	change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyDictionary::_change_type_menu));
+	changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE;
+	has_borders = true;
+
+	key_subtype = Variant::NIL;
+	key_subtype_hint = PROPERTY_HINT_NONE;
+	key_subtype_hint_string = "";
+
+	value_subtype = Variant::NIL;
+	value_subtype_hint = PROPERTY_HINT_NONE;
+	value_subtype_hint_string = "";
+}
+
+///////////////////// LOCALIZABLE STRING ///////////////////////////
+
+void EditorPropertyLocalizableString::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
+	if (p_property.begins_with("indices")) {
+		int index = p_property.get_slicec('/', 1).to_int();
+
+		Dictionary dict = object->get_dict().duplicate();
+		Variant key = dict.get_key_at_index(index);
+		dict[key] = p_value;
+
+		object->set_dict(dict);
+		emit_changed(get_edited_property(), dict, "", true);
+	}
+}
+
+void EditorPropertyLocalizableString::_add_locale_popup() {
+	locale_select->popup_locale_dialog();
+}
+
+void EditorPropertyLocalizableString::_add_locale(const String &p_locale) {
+	Dictionary dict = object->get_dict().duplicate();
+	object->set_new_item_key(p_locale);
+	object->set_new_item_value(String());
+	dict[object->get_new_item_key()] = object->get_new_item_value();
+
+	emit_changed(get_edited_property(), dict, "", false);
+	update_property();
+}
+
+void EditorPropertyLocalizableString::_remove_item(Object *p_button, int p_index) {
+	Dictionary dict = object->get_dict().duplicate();
+
+	Variant key = dict.get_key_at_index(p_index);
+	dict.erase(key);
+
+	emit_changed(get_edited_property(), dict, "", false);
+	update_property();
+}
+
+void EditorPropertyLocalizableString::update_property() {
+	Variant updated_val = get_edited_property_value();
+
+	if (updated_val.get_type() == Variant::NIL) {
+		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
+		edit->set_pressed(false);
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+		}
+		return;
+	}
+
+	Dictionary dict = updated_val;
+	object->set_dict(dict);
+
+	edit->set_text(vformat(TTR("Localizable String (size %d)"), dict.size()));
+
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (edit->is_pressed() != unfolded) {
+		edit->set_pressed(unfolded);
+	}
+
+	if (unfolded) {
+		updating = true;
+
+		if (!container) {
+			container = memnew(MarginContainer);
+			container->set_theme_type_variation("MarginContainer4px");
+			add_child(container);
+			set_bottom_editor(container);
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			container->add_child(vbox);
+
+			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
+			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			vbox->add_child(property_vbox);
+
+			paginator = memnew(EditorPaginator);
+			paginator->connect("page_changed", callable_mp(this, &EditorPropertyLocalizableString::_page_changed));
+			vbox->add_child(paginator);
+		} else {
+			// Queue children for deletion, deleting immediately might cause errors.
+			for (int i = property_vbox->get_child_count() - 1; i >= 0; i--) {
+				property_vbox->get_child(i)->queue_free();
+			}
+		}
+
+		int size = dict.size();
+
+		int max_page = MAX(0, size - 1) / page_length;
+		page_index = MIN(page_index, max_page);
+
+		paginator->update(page_index, max_page);
+		paginator->set_visible(max_page > 0);
+
+		int offset = page_index * page_length;
+
+		int amount = MIN(size - offset, page_length);
+
+		for (int i = 0; i < amount; i++) {
+			String prop_name;
+			Variant key;
+			Variant value;
+
+			prop_name = "indices/" + itos(i + offset);
+			key = dict.get_key_at_index(i + offset);
+			value = dict.get_value_at_index(i + offset);
+
+			EditorProperty *prop = memnew(EditorPropertyText);
+
+			prop->set_object_and_property(object.ptr(), prop_name);
+			int remove_index = 0;
+
+			String cs = key.get_construct_string();
+			prop->set_label(cs);
+			prop->set_tooltip_text(cs);
+			remove_index = i + offset;
+
+			prop->set_selectable(false);
+			prop->connect("property_changed", callable_mp(this, &EditorPropertyLocalizableString::_property_changed));
+			prop->connect("object_id_selected", callable_mp(this, &EditorPropertyLocalizableString::_object_id_selected));
+
+			HBoxContainer *hbox = memnew(HBoxContainer);
+			property_vbox->add_child(hbox);
+			hbox->add_child(prop);
+			prop->set_h_size_flags(SIZE_EXPAND_FILL);
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_accessibility_name(TTRC("Remove Translation"));
+			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			hbox->add_child(edit_btn);
+			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
+
+			prop->update_property();
+		}
+
+		if (page_index == max_page) {
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
+			button_add_item->set_accessibility_name(TTRC("Add Translation"));
+			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
+			property_vbox->add_child(button_add_item);
+		}
+
+		updating = false;
+
+	} else {
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add_item = nullptr;
+			container = nullptr;
+		}
+	}
+}
+
+void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyLocalizableString::_edit_pressed() {
+	Variant prop_val = get_edited_property_value();
+	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
+		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
+		get_edited_object()->set(get_edited_property(), prop_val);
+	}
+
+	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
+	update_property();
+}
+
+void EditorPropertyLocalizableString::_page_changed(int p_page) {
+	if (updating) {
+		return;
+	}
+	page_index = p_page;
+	update_property();
+}
+
+EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
+	object.instantiate();
+	page_length = int(EDITOR_GET("interface/inspector/max_array_dictionary_items_per_page"));
+
+	edit = memnew(Button);
+	edit->set_accessibility_name(TTRC("Edit"));
+	edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
+	edit->set_toggle_mode(true);
+	add_child(edit);
+	add_focusable(edit);
+
+	container = nullptr;
+	button_add_item = nullptr;
+	paginator = nullptr;
+	updating = false;
+
+	locale_select = memnew(EditorLocaleDialog);
+	locale_select->connect("locale_selected", callable_mp(this, &EditorPropertyLocalizableString::_add_locale));
+	add_child(locale_select);
+}

@@ -97,10 +97,11 @@ struct Scene::Impl
         //Half translucent requires intermediate composition.
         if (opacity == 255) return compFlag;
 
-        //If scene has several children or only scene, it may require composition.
-        //OPTIMIZE: the bitmap type of the picture would not need the composition.
-        //OPTIMIZE: a single paint of a scene would not need the composition.
-        if (paints.size() == 1 && paints.front()->type() == Type::Shape) return compFlag;
+        //Only shape or picture may not require composition.
+        if (paints.size() == 1) {
+            auto type = paints.front()->type();
+            if (type == Type::Shape || type == Type::Picture) return compFlag;
+        }
 
         compFlag |= CompositionFlag::Opacity;
 
@@ -119,6 +120,12 @@ struct Scene::Impl
         }
         for (auto paint : paints) {
             paint->pImpl->update(renderer, transform, clips, opacity, flag, false);
+        }
+
+        if (effects) {
+            for (auto e = effects->begin(); e < effects->end(); ++e) {
+                renderer->prepare(*e, transform);
+            }
         }
 
         return nullptr;
@@ -146,7 +153,7 @@ struct Scene::Impl
                 //Notify the possiblity of the direct composition of the effect result to the origin surface.
                 auto direct = (effects->count == 1) & (compFlag == CompositionFlag::PostProcessing);
                 for (auto e = effects->begin(); e < effects->end(); ++e) {
-                    renderer->effect(cmp, *e, direct);
+                    if ((*e)->valid) renderer->render(cmp, *e, direct);
                 }
             }
             renderer->endComposite(cmp);
@@ -179,7 +186,7 @@ struct Scene::Impl
         if (effects) {
             for (auto e = effects->begin(); e < effects->end(); ++e) {
                 auto effect = *e;
-                if (effect->valid || renderer->prepare(effect)) {
+                if (effect->valid && renderer->region(effect)) {
                     ex = std::min(ex, effect->extend.x);
                     ey = std::min(ey, effect->extend.y);
                     ew = std::max(ew, effect->extend.w);
@@ -238,7 +245,40 @@ struct Scene::Impl
             dup->paints.push_back(cdup);
         }
 
-        if (effects) TVGERR("RENDERER", "TODO: Duplicate Effects?");
+        if (effects) {
+            dup->effects = new Array<RenderEffect*>;
+            for (auto p = effects->begin(); p < effects->end(); ++p) {
+                RenderEffect* ret = nullptr;
+                switch ((*p)->type) {
+                    case SceneEffect::GaussianBlur: {
+                        ret = new RenderEffectGaussianBlur(*(RenderEffectGaussianBlur*)(*p));
+                        break;
+                    }
+                    case SceneEffect::DropShadow: {
+                        ret = new RenderEffectDropShadow(*(RenderEffectDropShadow*)(*p));
+                        break;
+                    }
+                    case SceneEffect::Fill: {
+                        ret = new RenderEffectFill(*(RenderEffectFill*)(*p));
+                        break;
+                    }
+                    case SceneEffect::Tint: {
+                        ret = new RenderEffectTint(*(RenderEffectTint*)(*p));
+                        break;
+                    }
+                    case SceneEffect::Tritone: {
+                        ret = new RenderEffectTritone(*(RenderEffectTritone*)(*p));
+                        break;
+                    }
+                    default: break;
+                }
+                if (ret) {
+                    ret->rd = nullptr;
+                    ret->valid = false;
+                    dup->effects->push(ret);
+                }
+            }
+        }
 
         return scene;
     }

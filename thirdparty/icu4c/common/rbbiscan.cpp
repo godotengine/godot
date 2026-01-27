@@ -767,15 +767,24 @@ void RBBIRuleScanner::findSetFor(const UnicodeString &s, RBBINode *node, Unicode
             c = s.char32At(0);
             setToAdopt = new UnicodeSet(c, c);
         }
+        if (setToAdopt == nullptr) {
+            error(U_MEMORY_ALLOCATION_ERROR);
+            return;
+        }
     }
 
     //
     // Make a new uset node to refer to this UnicodeSet
     // This new uset node becomes the child of the caller's setReference node.
     //
-    RBBINode *usetNode    = new RBBINode(RBBINode::uset);
+    UErrorCode localStatus = U_ZERO_ERROR;
+    RBBINode *usetNode    = new RBBINode(RBBINode::uset, localStatus);
     if (usetNode == nullptr) {
-        error(U_MEMORY_ALLOCATION_ERROR);
+        localStatus = U_MEMORY_ALLOCATION_ERROR;
+    }
+    if (U_FAILURE(localStatus)) {
+        delete usetNode;
+        error(localStatus);
         delete setToAdopt;
         return;
     }
@@ -1011,7 +1020,7 @@ void RBBIRuleScanner::parse() {
     // Main loop for the rule parsing state machine.
     //   Runs once per state transition.
     //   Each time through optionally performs, depending on the state table,
-    //      - an advance to the the next input char
+    //      - an advance to the next input char
     //      - an action to be performed.
     //      - pushing or popping a state to/from the local state return stack.
     //
@@ -1191,7 +1200,7 @@ RBBINode  *RBBIRuleScanner::pushNewNode(RBBINode::NodeType  t) {
         return nullptr;
     }
     fNodeStackPtr++;
-    fNodeStack[fNodeStackPtr] = new RBBINode(t);
+    fNodeStack[fNodeStackPtr] = new RBBINode(t, *fRB->fStatus);
     if (fNodeStack[fNodeStackPtr] == nullptr) {
         *fRB->fStatus = U_MEMORY_ALLOCATION_ERROR;
     }

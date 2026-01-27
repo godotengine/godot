@@ -34,6 +34,7 @@
 #include "core/math/math_funcs.h"
 
 #include <zlib.h> // Should come before including tinyexr.
+#include <cstdlib>
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
@@ -285,7 +286,7 @@ Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 
 Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
 	const Vector<uint8_t> buffer = save_exr_buffer(p_img, p_grayscale);
-	if (buffer.size() == 0) {
+	if (buffer.is_empty()) {
 		print_error(String("Saving EXR failed."));
 		return ERR_FILE_CANT_WRITE;
 	} else {

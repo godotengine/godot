@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TLS_CONTEXT_MBEDTLS_H
-#define TLS_CONTEXT_MBEDTLS_H
+#pragma once
 
 #include "crypto_mbedtls.h"
 
@@ -44,6 +43,8 @@
 class TLSContextMbedTLS;
 
 class CookieContextMbedTLS : public RefCounted {
+	GDSOFTCLASS(CookieContextMbedTLS, RefCounted);
+
 	friend class TLSContextMbedTLS;
 
 protected:
@@ -57,10 +58,12 @@ public:
 	void clear();
 
 	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
+	~CookieContextMbedTLS() override;
 };
 
 class TLSContextMbedTLS : public RefCounted {
+	GDSOFTCLASS(TLSContextMbedTLS, RefCounted);
+
 protected:
 	bool inited = false;
 
@@ -84,7 +87,5 @@ public:
 	mbedtls_ssl_context *get_context();
 
 	TLSContextMbedTLS();
-	~TLSContextMbedTLS();
+	~TLSContextMbedTLS() override;
 };
-
-#endif // TLS_CONTEXT_MBEDTLS_H

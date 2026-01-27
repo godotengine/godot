@@ -4,7 +4,7 @@
  *
  *   OpenType JSTF table validation (body).
  *
- * Copyright (C) 2004-2023 by
+ * Copyright (C) 2004-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -163,7 +163,7 @@
     OTV_OPTIONAL_OFFSET( DefJstfLangSys );
     JstfLangSysCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (JstfLangSysCount = %d)\n", JstfLangSysCount ));
+    OTV_TRACE(( " (JstfLangSysCount = %u)\n", JstfLangSysCount ));
 
     table_size = JstfLangSysCount * 6 + 6;
 
@@ -227,7 +227,7 @@
 
     JstfScriptCount = FT_NEXT_USHORT( p );
 
-    FT_TRACE3(( " (JstfScriptCount = %d)\n", JstfScriptCount ));
+    FT_TRACE3(( " (JstfScriptCount = %u)\n", JstfScriptCount ));
 
     OTV_LIMIT_CHECK( JstfScriptCount * 6 );
 

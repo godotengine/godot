@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field renderer interface (specification).
  *
- * Copyright (C) 2020-2023 by
+ * Copyright (C) 2020-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.

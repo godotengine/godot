@@ -30,9 +30,11 @@
 
 #include "openxr_api_extension.h"
 
-#include "extensions/openxr_extension_wrapper_extension.h"
+#include "extensions/openxr_extension_wrapper.h"
+#include "openxr_api_extension.compat.inc"
 
 void OpenXRAPIExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_openxr_version"), &OpenXRAPIExtension::get_openxr_version);
 	ClassDB::bind_method(D_METHOD("get_instance"), &OpenXRAPIExtension::get_instance);
 	ClassDB::bind_method(D_METHOD("get_system_id"), &OpenXRAPIExtension::get_system_id);
 	ClassDB::bind_method(D_METHOD("get_session"), &OpenXRAPIExtension::get_session);
@@ -51,6 +53,7 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_initialized"), &OpenXRAPIExtension::is_initialized);
 	ClassDB::bind_method(D_METHOD("is_running"), &OpenXRAPIExtension::is_running);
 
+	ClassDB::bind_method(D_METHOD("set_custom_play_space", "space"), &OpenXRAPIExtension::set_custom_play_space);
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
 	ClassDB::bind_method(D_METHOD("get_predicted_display_time"), &OpenXRAPIExtension::get_predicted_display_time);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
@@ -66,6 +69,9 @@ void OpenXRAPIExtension::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("register_projection_views_extension", "extension"), &OpenXRAPIExtension::register_projection_views_extension);
 	ClassDB::bind_method(D_METHOD("unregister_projection_views_extension", "extension"), &OpenXRAPIExtension::unregister_projection_views_extension);
+
+	ClassDB::bind_method(D_METHOD("register_frame_info_extension", "extension"), &OpenXRAPIExtension::register_frame_info_extension);
+	ClassDB::bind_method(D_METHOD("unregister_frame_info_extension", "extension"), &OpenXRAPIExtension::unregister_frame_info_extension);
 
 	ClassDB::bind_method(D_METHOD("get_render_state_z_near"), &OpenXRAPIExtension::get_render_state_z_near);
 	ClassDB::bind_method(D_METHOD("get_render_state_z_far"), &OpenXRAPIExtension::get_render_state_z_far);
@@ -90,9 +96,16 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emulate_environment_blend_mode_alpha_blend", "enabled"), &OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend);
 	ClassDB::bind_method(D_METHOD("is_environment_blend_mode_alpha_supported"), &OpenXRAPIExtension::is_environment_blend_mode_alpha_blend_supported);
 
+	ClassDB::bind_method(D_METHOD("update_main_swapchain_size"), &OpenXRAPIExtension::update_main_swapchain_size);
+
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING);
+}
+
+uint64_t OpenXRAPIExtension::get_openxr_version() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_openxr_version();
 }
 
 uint64_t OpenXRAPIExtension::get_instance() {
@@ -115,9 +128,9 @@ Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionConstPtr<const vo
 	return OpenXRAPI::get_singleton()->transform_from_pose(*(XrPosef *)p_pose.data);
 }
 
-bool OpenXRAPIExtension::xr_result(uint64_t result, String format, Array args) {
+bool OpenXRAPIExtension::xr_result(uint64_t p_result, const String &p_format, const Array &p_args) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
-	return OpenXRAPI::get_singleton()->xr_result((XrResult)result, format.utf8().get_data(), args);
+	return OpenXRAPI::get_singleton()->xr_result((XrResult)p_result, p_format.utf8().get_data(), p_args);
 }
 
 bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
@@ -125,7 +138,7 @@ bool OpenXRAPIExtension::openxr_is_enabled(bool p_check_run_in_editor) {
 	return OpenXRAPI::openxr_is_enabled(p_check_run_in_editor);
 }
 
-uint64_t OpenXRAPIExtension::get_instance_proc_addr(String p_name) {
+uint64_t OpenXRAPIExtension::get_instance_proc_addr(const String &p_name) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	CharString str = p_name.utf8();
 	PFN_xrVoidFunction addr = nullptr;
@@ -180,6 +193,11 @@ bool OpenXRAPIExtension::is_running() {
 	return OpenXRAPI::get_singleton()->is_running();
 }
 
+void OpenXRAPIExtension::set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_custom_play_space(*(XrSpace *)p_custom_space.data);
+}
+
 uint64_t OpenXRAPIExtension::get_play_space() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	return (uint64_t)OpenXRAPI::get_singleton()->get_play_space();
@@ -211,8 +229,8 @@ RID OpenXRAPIExtension::find_action(const String &p_name, const RID &p_action_se
 
 uint64_t OpenXRAPIExtension::action_get_handle(RID p_action) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
-	XrAction action_hanlde = OpenXRAPI::get_singleton()->action_get_handle(p_action);
-	return reinterpret_cast<uint64_t>(action_hanlde);
+	XrAction action_handle = OpenXRAPI::get_singleton()->action_get_handle(p_action);
+	return (uint64_t)action_handle;
 }
 
 uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
@@ -220,24 +238,34 @@ uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_hand_tracker(p_hand_index);
 }
 
-void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->register_composition_layer_provider(p_extension);
 }
 
-void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_composition_layer_provider(p_extension);
 }
 
-void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->register_projection_views_extension(p_extension);
 }
 
-void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_projection_views_extension(p_extension);
+}
+
+void OpenXRAPIExtension::register_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->register_frame_info_extension(p_extension);
+}
+
+void OpenXRAPIExtension::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->unregister_frame_info_extension(p_extension);
 }
 
 double OpenXRAPIExtension::get_render_state_z_near() {
@@ -293,7 +321,7 @@ uint64_t OpenXRAPIExtension::openxr_swapchain_get_swapchain(uint64_t p_swapchain
 
 	OpenXRAPI::OpenXRSwapChainInfo *swapchain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swapchain_info);
 	XrSwapchain swapchain = swapchain_info->get_swapchain();
-	return reinterpret_cast<uint64_t>(swapchain);
+	return (uint64_t)swapchain;
 }
 
 void OpenXRAPIExtension::openxr_swapchain_acquire(uint64_t p_swapchain_info) {
@@ -326,6 +354,11 @@ uint64_t OpenXRAPIExtension::get_projection_layer() {
 void OpenXRAPIExtension::set_render_region(const Rect2i &p_render_region) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->set_render_region(p_render_region);
+}
+
+void OpenXRAPIExtension::update_main_swapchain_size() {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->update_main_swapchain_size();
 }
 
 void OpenXRAPIExtension::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {

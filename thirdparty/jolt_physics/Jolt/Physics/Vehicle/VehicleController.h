@@ -37,7 +37,7 @@ public:
 };
 
 /// Runtime data for interface that controls acceleration / deceleration of the vehicle
-class JPH_EXPORT VehicleController : public RefTarget<VehicleController>, public NonCopyable
+class JPH_EXPORT VehicleController : public NonCopyable
 {
 public:
 	JPH_OVERRIDE_NEW_DELETE
@@ -49,6 +49,9 @@ public:
 	/// Access the vehicle constraint that this controller is part of
 	VehicleConstraint &			GetConstraint()								{ return mConstraint; }
 	const VehicleConstraint &	GetConstraint() const						{ return mConstraint; }
+
+	/// Recreate the settings for this controller
+	virtual Ref<VehicleControllerSettings> GetSettings() const = 0;
 
 protected:
 	// The functions below are only for the VehicleConstraint

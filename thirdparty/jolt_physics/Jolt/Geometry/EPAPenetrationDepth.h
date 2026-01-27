@@ -103,8 +103,6 @@ public:
 	template <typename AE, typename BE>
 	EStatus				GetPenetrationDepthStepGJK(const AE &inAExcludingConvexRadius, float inConvexRadiusA, const BE &inBExcludingConvexRadius, float inConvexRadiusB, float inTolerance, Vec3 &ioV, Vec3 &outPointA, Vec3 &outPointB)
 	{
-		JPH_PROFILE_FUNCTION();
-
 		JPH_IF_ENABLE_ASSERTS(mGJKTolerance = inTolerance;)
 
 		// Don't supply a zero ioV, we only want to get points on the hull of the Minkowsky sum and not internal points.
@@ -540,9 +538,9 @@ public:
 				|| contact_normal_invalid))
 		{
 			// If we're initially intersecting, we need to run the EPA algorithm in order to find the deepest contact point
-			AddConvexRadius<A> add_convex_a(inA, inConvexRadiusA);
-			AddConvexRadius<B> add_convex_b(inB, inConvexRadiusB);
-			TransformedConvexObject<AddConvexRadius<A>> transformed_a(inStart, add_convex_a);
+			AddConvexRadius add_convex_a(inA, inConvexRadiusA);
+			AddConvexRadius add_convex_b(inB, inConvexRadiusB);
+			TransformedConvexObject transformed_a(inStart, add_convex_a);
 			if (!GetPenetrationDepthStepEPA(transformed_a, add_convex_b, inPenetrationTolerance, outContactNormal, outPointA, outPointB))
 				return false;
 		}

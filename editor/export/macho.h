@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MACHO_H
-#define MACHO_H
+#pragma once
 
 // Mach-O binary object file format parser and editor.
 
@@ -37,6 +36,8 @@
 #include "core/object/ref_counted.h"
 
 class MachO : public RefCounted {
+	GDSOFTCLASS(MachO, RefCounted);
+
 public:
 	struct MachHeader {
 		uint32_t cputype;
@@ -112,6 +113,8 @@ public:
 		PLATFORM_TVOSSIMULATOR = 8,
 		PLATFORM_WATCHOSSIMULATOR = 9,
 		PLATFORM_DRIVERKIT = 10,
+		PLATFORM_VISIONOS = 11,
+		PLATFORM_VISIONOSSIMULATOR = 12,
 	};
 
 	struct LoadCommandHeader {
@@ -222,5 +225,3 @@ public:
 	uint64_t get_signature_size();
 	bool set_signature_size(uint64_t p_size);
 };
-
-#endif // MACHO_H

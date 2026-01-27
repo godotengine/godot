@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PROFILER_H
-#define EDITOR_PROFILER_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -125,8 +124,6 @@ private:
 	int total_metrics = 0;
 	int last_metric = -1;
 
-	int max_functions = 0;
-
 	bool updating_frame = false;
 
 	int hover_metric = -1;
@@ -186,5 +183,3 @@ public:
 
 	EditorProfiler();
 };
-
-#endif // EDITOR_PROFILER_H

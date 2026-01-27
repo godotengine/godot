@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_DATA_RD_H
-#define RENDER_DATA_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
@@ -40,11 +39,11 @@ class RenderDataRD : public RenderData {
 
 public:
 	// Access methods to expose data externally
-	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override;
-	virtual RenderSceneData *get_render_scene_data() const override;
+	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override { return render_buffers; }
+	virtual RenderSceneData *get_render_scene_data() const override { return scene_data; }
 
-	virtual RID get_environment() const override;
-	virtual RID get_camera_attributes() const override;
+	virtual RID get_environment() const override { return environment; }
+	virtual RID get_camera_attributes() const override { return camera_attributes; }
 
 	// Members are publicly accessible within the render engine.
 	Ref<RenderSceneBuffersRD> render_buffers;
@@ -96,5 +95,3 @@ public:
 
 	uint32_t voxel_gi_count = 0;
 };
-
-#endif // RENDER_DATA_RD_H

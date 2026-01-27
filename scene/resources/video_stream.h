@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#pragma once
 
 #include "scene/resources/texture.h"
 
@@ -95,7 +94,7 @@ class VideoStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0R(Ref<VideoStreamPlayback>, _instantiate_playback);
+	GDVIRTUAL0R_REQUIRED(Ref<VideoStreamPlayback>, _instantiate_playback);
 
 	String file;
 	int audio_track = 0;
@@ -110,5 +109,3 @@ public:
 	VideoStream();
 	~VideoStream();
 };
-
-#endif // VIDEO_STREAM_H

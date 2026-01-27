@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for CJK writing system (specification).
  *
- * Copyright (C) 2006-2023 by
+ * Copyright (C) 2006-2025 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -84,7 +84,7 @@ FT_BEGIN_HEADER
     /* used for horizontal metrics too for CJK */
     FT_Bool        control_overshoot;
     FT_UInt        blue_count;
-    AF_CJKBlueRec  blues[AF_BLUE_STRINGSET_MAX];
+    AF_CJKBlueRec  blues[AF_BLUE_STRINGSET_MAX_LEN];
 
     FT_Fixed       org_scale;
     FT_Pos         org_delta;

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_DUMMY_H
-#define RASTERIZER_DUMMY_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -45,7 +44,7 @@
 #include "servers/rendering/dummy/storage/texture_storage.h"
 #include "servers/rendering/dummy/storage/utilities.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RasterizerDummy : public RendererCompositor {
 private:
@@ -77,6 +76,7 @@ public:
 	RendererCanvasRender *get_canvas() override { return &canvas; }
 	RendererSceneRender *get_scene() override { return &scene; }
 
+	void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter = true) override {}
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
 
 	void initialize() override {}
@@ -88,6 +88,7 @@ public:
 
 	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
 
+	bool is_opengl() override { return false; }
 	void gl_end_frame(bool p_swap_buffers) override {}
 
 	void end_frame(bool p_present) override {
@@ -115,5 +116,3 @@ public:
 	RasterizerDummy() {}
 	~RasterizerDummy() {}
 };
-
-#endif // RASTERIZER_DUMMY_H

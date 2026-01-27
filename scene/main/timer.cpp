@@ -30,6 +30,8 @@
 
 #include "timer.h"
 
+#include "core/config/engine.h"
+
 void Timer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -114,7 +116,7 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start(double p_time) {
-	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree. Either add it or set autostart to true.");
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Unable to start the timer because it's not inside the scene tree. Either add it or set autostart to true.");
 
 	if (p_time > 0) {
 		set_wait_time(p_time);
@@ -245,5 +247,3 @@ void Timer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
 }
-
-Timer::Timer() {}

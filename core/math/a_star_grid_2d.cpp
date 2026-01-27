@@ -34,27 +34,27 @@
 #include "core/variant/typed_array.h"
 
 static real_t heuristic_euclidean(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
 }
 
 static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return dx + dy;
 }
 
 static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	real_t F = Math_SQRT2 - 1;
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
+	real_t F = Math::SQRT2 - 1;
 	return (dx < dy) ? F * dx + dy : F * dy + dx;
 }
 
 static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	real_t dx = (real_t)Math::abs(p_to.x - p_from.x);
+	real_t dy = (real_t)Math::abs(p_to.y - p_from.y);
 	return MAX(dx, dy);
 }
 
@@ -495,6 +495,12 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 	last_closest_point = nullptr;
 	pass++;
 
+	if (_get_solid_unchecked(p_begin_point->id)) {
+		return false;
+	}
+	if (p_begin_point == p_end_point) {
+		return true;
+	}
 	if (_get_solid_unchecked(p_end_point->id) && !p_allow_partial_path) {
 		return false;
 	}
@@ -503,6 +509,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 
 	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
+	LocalVector<Point *> nbors;
 
 	p_begin_point->g_score = 0;
 	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
@@ -528,7 +535,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point, bool p_allow_
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
-		LocalVector<Point *> nbors;
+		nbors.clear();
 		_get_nbors(p, nbors);
 
 		for (Point *e : nbors) {
@@ -635,17 +642,8 @@ Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vec
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
-
-	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(a->pos);
-		return ret;
-	}
-
-	Point *begin_point = a;
-	Point *end_point = b;
+	Point *begin_point = _get_point(p_from_id.x, p_from_id.y);
+	Point *end_point = _get_point(p_to_id.x, p_to_id.y);
 
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
@@ -688,17 +686,8 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_from_id, region));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point %s out of bounds %s.", p_to_id, region));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
-
-	if (a == b) {
-		TypedArray<Vector2i> ret;
-		ret.push_back(a->id);
-		return ret;
-	}
-
-	Point *begin_point = a;
-	Point *end_point = b;
+	Point *begin_point = _get_point(p_from_id.x, p_from_id.y);
+	Point *end_point = _get_point(p_to_id.x, p_to_id.y);
 
 	bool found_route = _solve(begin_point, end_point, p_allow_partial_path);
 	if (!found_route) {
@@ -782,7 +771,7 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Always,Never,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
 
 	BIND_ENUM_CONSTANT(HEURISTIC_EUCLIDEAN);
 	BIND_ENUM_CONSTANT(HEURISTIC_MANHATTAN);

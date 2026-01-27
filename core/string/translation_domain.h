@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_DOMAIN_H
-#define TRANSLATION_DOMAIN_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
@@ -50,6 +49,9 @@ class TranslationDomain : public RefCounted {
 		String suffix = "]";
 	};
 
+	bool enabled = true;
+
+	String locale_override;
 	HashSet<Ref<Translation>> translations;
 	PseudolocalizationConfig pseudolocalization;
 
@@ -71,14 +73,31 @@ public:
 	PackedStringArray get_loaded_locales() const;
 
 public:
+	// These two methods are public for easier TranslationServer bindings.
+	TypedArray<Translation> get_translations_bind() const;
+	TypedArray<Translation> find_translations_bind(const String &p_locale, bool p_exact) const;
+
+#ifndef DISABLE_DEPRECATED
 	Ref<Translation> get_translation_object(const String &p_locale) const;
+#endif
 
 	void add_translation(const Ref<Translation> &p_translation);
 	void remove_translation(const Ref<Translation> &p_translation);
 	void clear();
 
+	bool has_translation(const Ref<Translation> &p_translation) const;
+	const HashSet<Ref<Translation>> get_translations() const;
+	HashSet<Ref<Translation>> find_translations(const String &p_locale, bool p_exact) const;
+	bool has_translation_for_locale(const String &p_locale, bool p_exact) const;
+
 	StringName translate(const StringName &p_message, const StringName &p_context) const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
+
+	String get_locale_override() const;
+	void set_locale_override(const String &p_locale);
+
+	bool is_enabled() const;
+	void set_enabled(bool p_enabled);
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);
@@ -100,8 +119,4 @@ public:
 	void set_pseudolocalization_suffix(const String &p_suffix);
 
 	StringName pseudolocalize(const StringName &p_message) const;
-
-	TranslationDomain();
 };
-
-#endif // TRANSLATION_DOMAIN_H

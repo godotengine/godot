@@ -31,6 +31,7 @@
 #include "ray_cast_3d.h"
 
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/resources/mesh.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
@@ -264,8 +265,8 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast3D::add_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -273,8 +274,8 @@ void RayCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	remove_exception_rid(p_node->get_rid());
 }
 
@@ -381,8 +382,8 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 
 	ADD_GROUP("Collide With", "collide_with");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 
 	ADD_GROUP("Debug Shape", "debug_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
@@ -408,12 +409,12 @@ void RayCast3D::_update_debug_shape_vertices() {
 		float scale_factor = 100.0;
 		Vector3 dir = Vector3(target_position).normalized();
 		// Draw truncated pyramid
-		Vector3 normal = (fabs(dir.x) + fabs(dir.y) > CMP_EPSILON) ? Vector3(-dir.y, dir.x, 0).normalized() : Vector3(0, -dir.z, dir.y).normalized();
+		Vector3 normal = (std::abs(dir.x) + std::abs(dir.y) > CMP_EPSILON) ? Vector3(-dir.y, dir.x, 0).normalized() : Vector3(0, -dir.z, dir.y).normalized();
 		normal *= debug_shape_thickness / scale_factor;
 		int vertices_strip_order[14] = { 4, 5, 0, 1, 2, 5, 6, 4, 7, 0, 3, 2, 7, 6 };
 		for (int v = 0; v < 14; v++) {
 			Vector3 vertex = vertices_strip_order[v] < 4 ? normal : normal / 3.0 + target_position;
-			debug_shape_vertices.push_back(vertex.rotated(dir, Math_PI * (0.5 * (vertices_strip_order[v] % 4) + 0.25)));
+			debug_shape_vertices.push_back(vertex.rotated(dir, Math::PI * (0.5 * (vertices_strip_order[v] % 4) + 0.25)));
 		}
 	}
 }
@@ -547,11 +548,11 @@ void RayCast3D::_update_debug_shape() {
 void RayCast3D::_clear_debug_shape() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
 }
