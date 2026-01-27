@@ -31,6 +31,7 @@
 #include "voxelizer.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {

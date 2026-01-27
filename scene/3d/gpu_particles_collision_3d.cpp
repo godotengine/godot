@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_3d.h"
 
+#include "core/math/geometry_3d.h"
 #include "core/object/worker_thread_pool.h"
 #include "mesh_instance_3d.h"
 #include "scene/3d/camera_3d.h"

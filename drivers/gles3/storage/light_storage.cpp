@@ -34,6 +34,7 @@
 #include "../rasterizer_gles3.h"
 #include "../rasterizer_scene_gles3.h"
 #include "core/config/project_settings.h"
+#include "core/math/geometry_3d.h"
 #include "texture_storage.h"
 
 using namespace GLES3;

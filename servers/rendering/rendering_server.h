@@ -31,13 +31,16 @@
 #pragma once
 
 #include "core/io/image.h"
-#include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device.h"
+
+namespace Geometry3D {
+struct MeshData;
+}
 
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
