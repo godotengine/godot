@@ -1017,6 +1017,10 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
+			// Skip entries like "None:0" (it's not an actual flag).
+			if (current_val == 0) {
+				continue;
+			}
 		} else {
 			current_val = 1u << i;
 		}

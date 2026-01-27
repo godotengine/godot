@@ -32,7 +32,9 @@
 
 #include "drivers/apple_embedded/display_layer_apple_embedded.h"
 
+#if defined(GLES3_ENABLED)
 #import <OpenGLES/EAGLDrawable.h>
+#endif
 #import <QuartzCore/QuartzCore.h>
 
 // An ugly workaround for iOS simulator
@@ -48,7 +50,9 @@ API_AVAILABLE(ios(13.0))
 #endif
 @end
 
+#if defined(GLES3_ENABLED)
 API_DEPRECATED("OpenGLES is deprecated", ios(2.0, 12.0))
 @interface GDTOpenGLLayer : CAEAGLLayer <GDTDisplayLayer>
 
 @end
+#endif
