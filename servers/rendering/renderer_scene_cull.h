@@ -1317,6 +1317,7 @@ public:
 
 	// SSAO
 	PASS10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	PASS2(environment_set_ssao_algorithm, RID, RS::EnvironmentSSAOAlgorithm)
 
 	PASS1RC(bool, environment_get_ssao_enabled, RID)
 	PASS1RC(float, environment_get_ssao_radius, RID)
@@ -1327,17 +1328,32 @@ public:
 	PASS1RC(float, environment_get_ssao_sharpness, RID)
 	PASS1RC(float, environment_get_ssao_direct_light_affect, RID)
 	PASS1RC(float, environment_get_ssao_ao_channel_affect, RID)
+	PASS1RC(RS::EnvironmentSSAOAlgorithm, environment_get_ssao_algorithm, RID)
 
 	PASS6(environment_set_ssao_quality, RS::EnvironmentSSAOQuality, bool, float, int, float, float)
 
 	// SSIL
 	PASS6(environment_set_ssil, RID, bool, float, float, float, float)
+	PASS12(environment_set_ssgi, RID, bool, float, int, float, float, bool, int, float, float, float, float)
 
 	PASS1RC(bool, environment_get_ssil_enabled, RID)
 	PASS1RC(float, environment_get_ssil_radius, RID)
 	PASS1RC(float, environment_get_ssil_intensity, RID)
 	PASS1RC(float, environment_get_ssil_sharpness, RID)
 	PASS1RC(float, environment_get_ssil_normal_rejection, RID)
+	PASS1RC(bool, environment_get_ssgi_enabled, RID)
+	PASS1RC(float, environment_get_ssgi_intensity, RID)
+	PASS1RC(int, environment_get_ssgi_radius, RID)
+	PASS1RC(float, environment_get_ssgi_depth_threshold, RID)
+	PASS1RC(float, environment_get_ssgi_normal_power, RID)
+	PASS1RC(bool, environment_get_ssgi_multirez, RID)
+	PASS1RC(int, environment_get_ssgi_multirez_levels, RID)
+	PASS1RC(float, environment_get_ssgi_multirez_dist_2, RID)
+	PASS1RC(float, environment_get_ssgi_multirez_dist_4, RID)
+	PASS1RC(float, environment_get_ssgi_multirez_dist_8, RID)
+	PASS1RC(float, environment_get_ssgi_multirez_dist_16, RID)
+	PASS2(environment_set_ssil_algorithm, RID, RS::EnvironmentSSILAlgorithm)
+	PASS1RC(RS::EnvironmentSSILAlgorithm, environment_get_ssil_algorithm, RID)
 
 	PASS6(environment_set_ssil_quality, RS::EnvironmentSSILQuality, bool, float, int, float, float)
 
@@ -1369,6 +1385,18 @@ public:
 	PASS1RC(float, environment_get_adjustments_saturation, RID)
 	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
 	PASS1RC(RID, environment_get_color_correction, RID)
+
+	PASS11(environment_set_screen_space_shadows, RID, bool, float, float, float, int, float, float, float, float, float)
+	PASS1RC(bool, environment_get_screen_space_shadow_enabled, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_thickness, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_max_distance, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_strength, RID)
+	PASS1RC(int, environment_get_screen_space_shadow_steps, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_light_radius, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_thickness_falloff, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_contact_distance, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_fade_range, RID)
+	PASS1RC(float, environment_get_screen_space_shadow_history_weight, RID)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

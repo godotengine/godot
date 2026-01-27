@@ -282,6 +282,36 @@
 		<member name="ssao_sharpness" type="float" setter="set_ssao_sharpness" getter="get_ssao_sharpness" default="0.98">
 			The amount that the screen-space ambient occlusion effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
 		</member>
+		<member name="ss_shadow_contact_distance" type="float" setter="set_ss_shadow_contact_distance" getter="get_ss_shadow_contact_distance" default="0.05">
+			Distance from the camera in meters at which the high-quality contact-shadow behavior fades out. Lower values clamp screen-space shadows to the surface where the occlusion is cast, but can cause noisy results on faraway geometry.
+		</member>
+		<member name="ss_shadow_enabled" type="bool" setter="set_ss_shadow_enabled" getter="is_ss_shadow_enabled" default="true">
+			If [code]true[/code], enables the screen-space shadow pass. Screen-space shadows ray march in the depth buffer using the main directional light to fake contact shadows in real time. This is cheaper than real-time ray tracing but only works for what is visible on screen.
+		</member>
+		<member name="ss_shadow_fade_range" type="float" setter="set_ss_shadow_fade_range" getter="get_ss_shadow_fade_range" default="10.0">
+			Distance in meters over which the screen-space shadow intensity fades out. Set to [code]0.0[/code] to keep the same strength regardless of camera distance.
+		</member>
+		<member name="ss_shadow_history_weight" type="float" setter="set_ss_shadow_history_weight" getter="get_ss_shadow_history_weight" default="0.4">
+			Temporal smoothing factor for screen-space shadows. [code]0.0[/code] disables temporal accumulation (shadows update immediately) while [code]1.0[/code] blends almost entirely with the previous frame, reducing flicker at the cost of responsiveness. Only works when rendering a single view.
+		</member>
+		<member name="ss_shadow_light_radius" type="float" setter="set_ss_shadow_light_radius" getter="get_ss_shadow_light_radius" default="0.05">
+			Softness of the sampled directional light. Higher values jitter rays to simulate area lights and produce blurrier contact shadows.
+		</member>
+		<member name="ss_shadow_max_distance" type="float" setter="set_ss_shadow_max_distance" getter="get_ss_shadow_max_distance" default="0.5">
+			The maximum ray-march distance in meters used by the screen-space shadow trace. Higher values help catch occluders further from the receiver but increase artifact risk and cost.
+		</member>
+		<member name="ss_shadow_steps" type="int" setter="set_ss_shadow_steps" getter="get_ss_shadow_steps" default="16">
+			Number of samples cast per pixel for screen-space shadows. Increasing the count produces smoother results at the cost of performance.
+		</member>
+		<member name="ss_shadow_strength" type="float" setter="set_ss_shadow_strength" getter="get_ss_shadow_strength" default="1.0">
+			The intensity multiplier for screen-space shadows before mixing with the scene. Use this to reduce or exaggerate the contribution of screen-space contact shadows.
+		</member>
+		<member name="ss_shadow_thickness" type="float" setter="set_ss_shadow_thickness" getter="get_ss_shadow_thickness" default="0.1">
+			The base thickness of the virtual occluder in meters. Lower values make the trace more sensitive (thinner surfaces can block) while higher values prevent flickering on noisy depth but may create gaps.
+		</member>
+		<member name="ss_shadow_thickness_falloff" type="float" setter="set_ss_shadow_thickness_falloff" getter="get_ss_shadow_thickness_falloff" default="1.0">
+			Amount by which the occluder thickness increases with the distance from the camera. Helps stabilize shadows on distant objects.
+		</member>
 		<member name="ssil_enabled" type="bool" setter="set_ssil_enabled" getter="is_ssil_enabled" default="false">
 			If [code]true[/code], the screen-space indirect lighting effect is enabled. Screen space indirect lighting is a form of indirect lighting that allows diffuse light to bounce between nearby objects. Screen-space indirect lighting works very similarly to screen-space ambient occlusion, in that it only affects a limited range. It is intended to be used along with a form of proper global illumination like SDFGI or [VoxelGI]. Screen-space indirect lighting is not affected by individual light's [member Light3D.light_indirect_energy].
 			[b]Note:[/b] SSIL is only supported in the Forward+ rendering method, not Mobile or Compatibility.
@@ -297,6 +327,40 @@
 		</member>
 		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.98">
 			The amount that the screen-space indirect lighting effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
+		</member>
+		<member name="ssgi_enabled" type="bool" setter="set_ssgi_enabled" getter="is_ssgi_enabled" default="false">
+			If [code]true[/code], enables the screen-space global illumination (SSGI) effect. This is a screen-space diffuse bounce that uses the previous frame's lighting to approximate indirect light, including emissive materials.
+			[b]Note:[/b] SSGI is only supported in the Forward+ rendering method.
+		</member>
+		<member name="ssgi_intensity" type="float" setter="set_ssgi_intensity" getter="get_ssgi_intensity" default="1.0">
+			Intensity multiplier for the screen-space global illumination effect.
+		</member>
+		<member name="ssgi_radius" type="int" setter="set_ssgi_radius" getter="get_ssgi_radius" default="2">
+			Sampling radius for screen-space global illumination in pixels. Higher values increase reach at the cost of performance.
+		</member>
+		<member name="ssgi_depth_threshold" type="float" setter="set_ssgi_depth_threshold" getter="get_ssgi_depth_threshold" default="50.0">
+			Depth sensitivity used to reject samples from different surfaces. Higher values allow more depth variation.
+		</member>
+		<member name="ssgi_normal_power" type="float" setter="set_ssgi_normal_power" getter="get_ssgi_normal_power" default="8.0">
+			Normal similarity exponent used for weighting samples. Higher values preserve edges but can reduce bounce.
+		</member>
+		<member name="ssgi_multirez" type="bool" setter="set_ssgi_multirez" getter="is_ssgi_multirez_enabled" default="false">
+			If [code]true[/code], SSGI uses multi-resolution inputs to improve stability at large radii.
+		</member>
+		<member name="ssgi_multirez_levels" type="int" setter="set_ssgi_multirez_levels" getter="get_ssgi_multirez_levels" default="4">
+			Maximum downsample level for SSGI multi-resolution input. Higher values reduce noise but increase memory and cost.
+		</member>
+		<member name="ssgi_multirez_dist_2" type="float" setter="set_ssgi_multirez_dist_2" getter="get_ssgi_multirez_dist_2" default="1.0">
+			Distance threshold for switching to the 2x downsampled SSGI input when multiresolution is enabled.
+		</member>
+		<member name="ssgi_multirez_dist_4" type="float" setter="set_ssgi_multirez_dist_4" getter="get_ssgi_multirez_dist_4" default="2.0">
+			Distance threshold for switching to the 4x downsampled SSGI input when multiresolution is enabled.
+		</member>
+		<member name="ssgi_multirez_dist_8" type="float" setter="set_ssgi_multirez_dist_8" getter="get_ssgi_multirez_dist_8" default="4.0">
+			Distance threshold for switching to the 8x downsampled SSGI input when multiresolution is enabled.
+		</member>
+		<member name="ssgi_multirez_dist_16" type="float" setter="set_ssgi_multirez_dist_16" getter="get_ssgi_multirez_dist_16" default="8.0">
+			Distance threshold for switching to the 16x downsampled SSGI input when multiresolution is enabled.
 		</member>
 		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.5">
 			The depth tolerance for screen-space reflections.

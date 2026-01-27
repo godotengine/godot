@@ -2940,6 +2940,30 @@
 		<member name="rendering/environment/ssil/quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the screen-space indirect lighting effect. Higher values take more samples and so will result in better quality, at the cost of performance. Setting to [code]Ultra[/code] will use the [member rendering/environment/ssil/adaptive_target] setting.
 		</member>
+		<member name="rendering/environment/ssgi/sample_range" type="int" setter="" getter="" default="2">
+			Grid sampling range for SSGI, independent of [member Environment.ssgi_radius]. Higher values increase sample count and quality at the cost of performance.
+		</member>
+		<member name="rendering/environment/ssgi/sample_quality" type="int" setter="" getter="" default="2">
+			Sets the sampling quality for SSGI. Higher values use denser sampling and a softer falloff at the cost of performance.
+		</member>
+		<member name="rendering/environment/ssgi/temporal_history_weight" type="float" setter="" getter="" default="0.9">
+			History blend weight for SSGI temporal accumulation. Lower values reduce ghosting but increase noise.
+		</member>
+		<member name="rendering/environment/ssgi/temporal_luma_reject" type="float" setter="" getter="" default="1.5">
+			Luminance rejection strength for temporal accumulation. Higher values react faster to lighting changes.
+		</member>
+		<member name="rendering/environment/ssgi/temporal_velocity_reject" type="float" setter="" getter="" default="0.25">
+			Velocity rejection factor for temporal accumulation. Higher values reduce history usage on fast motion.
+		</member>
+		<member name="rendering/environment/ssgi/temporal_clamp_sigma" type="float" setter="" getter="" default="2.0">
+			Standard deviation multiplier for neighborhood clamp in SSGI temporal reprojection.
+		</member>
+		<member name="rendering/environment/ssgi/stability_blur_strength" type="float" setter="" getter="" default="0.5">
+			Blend factor for history blur when stability is low.
+		</member>
+		<member name="rendering/environment/ssgi/jitter_scale" type="float" setter="" getter="" default="0.5">
+			Scale of the SSGI sampling jitter (in pixels). Set to 0 to disable jitter.
+		</member>
 		<member name="rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth. See also [member rendering/environment/subsurface_scattering/subsurface_scattering_scale].
 			[b]Note:[/b] This property is only read when the project starts. To set the subsurface scattering depth scale at runtime, call [method RenderingServer.sub_surface_scattering_set_scale] instead.

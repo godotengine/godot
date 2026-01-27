@@ -185,6 +185,8 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
 #define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSS (1 << 4)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSGI (1 << 5)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -308,7 +310,7 @@ struct ImplementationData {
 	uint ss_effects_flags;
 	float ssao_light_affect;
 	float ssao_ao_affect;
-	uint pad1;
+	float ssgi_intensity;
 
 	mat4 sdf_to_bounds;
 
@@ -454,12 +456,16 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
-layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
-layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
+layout(set = 1, binding = 35) uniform texture2DArray ssgi_buffer;
+layout(set = 1, binding = 36) uniform texture2DArray ssr_buffer;
+layout(set = 1, binding = 37) uniform texture2DArray ssr_mip_level_buffer;
+layout(set = 1, binding = 38) uniform texture2DArray sss_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
-layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
-layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
+layout(set = 1, binding = 35) uniform texture2D ssgi_buffer;
+layout(set = 1, binding = 36) uniform texture2D ssr_buffer;
+layout(set = 1, binding = 37) uniform texture2D ssr_mip_level_buffer;
+layout(set = 1, binding = 38) uniform texture2D sss_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
@@ -483,6 +489,13 @@ vec3 prefiltered_dfg(float lod, float NoV) {
 // https://google.github.io/filament/Filament.html#listing_energycompensationimpl
 vec3 get_energy_compensation(vec3 f0, float env) {
 	return 1.0 + f0 * (1.0 / env - 1.0);
+}
+
+// Brinck and Maximov 2016, "The Technical Art of Uncharted 4"
+float compute_micro_shadowing(float NoL, float ao, float opacity) {
+	float aperture = 2.0 * ao * ao;
+	float microshadow = clamp(NoL + aperture - 1.0, 0.0, 1.0);
+	return mix(1.0, microshadow, opacity);
 }
 
 /* Set 2 Skeleton & Instancing (can change per item) */

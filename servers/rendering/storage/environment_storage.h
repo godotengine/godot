@@ -151,13 +151,28 @@ private:
 		float ssao_sharpness = 0.98;
 		float ssao_direct_light_affect = 0.0;
 		float ssao_ao_channel_affect = 0.0;
+		RS::EnvironmentSSAOAlgorithm ssao_algorithm = RS::ENV_SSAO_ALGORITHM_STANDARD;
 
-		// SSIL
-		bool ssil_enabled = false;
-		float ssil_radius = 5.0;
-		float ssil_intensity = 1.0;
-		float ssil_sharpness = 0.98;
-		float ssil_normal_rejection = 1.0;
+	// SSIL
+	bool ssil_enabled = false;
+	float ssil_radius = 5.0;
+	float ssil_intensity = 1.0;
+	float ssil_sharpness = 0.98;
+	float ssil_normal_rejection = 1.0;
+	RS::EnvironmentSSILAlgorithm ssil_algorithm = RS::ENV_SSIL_ALGORITHM_STANDARD;
+
+	// SSGI
+	bool ssgi_enabled = false;
+	float ssgi_intensity = 1.0;
+	int ssgi_radius = 2;
+	float ssgi_depth_threshold = 50.0;
+	float ssgi_normal_power = 8.0;
+	bool ssgi_multirez = false;
+	int ssgi_multirez_levels = 4;
+	float ssgi_multirez_dist_2 = 1.0f;
+	float ssgi_multirez_dist_4 = 2.0f;
+	float ssgi_multirez_dist_8 = 4.0f;
+	float ssgi_multirez_dist_16 = 8.0f;
 
 		// SDFGI
 		bool sdfgi_enabled = false;
@@ -178,6 +193,18 @@ private:
 		float adjustments_saturation = 1.0f;
 		bool use_1d_color_correction = false;
 		RID color_correction;
+
+		// Screen-space shadow tracing
+		bool ss_shadow_enabled = true;
+		float ss_shadow_thickness = 0.1f;
+		float ss_shadow_max_distance = 0.1f;
+		float ss_shadow_strength = 0.8f;
+		int ss_shadow_steps = 16;
+		float ss_shadow_light_radius = 0.05f;
+		float ss_shadow_thickness_falloff = 1.0f;
+		float ss_shadow_contact_distance = 0.05f;
+		float ss_shadow_fade_range = 10.0f;
+		float ss_shadow_history_weight = 0.4f;
 	};
 
 	mutable RID_Owner<Environment, true> environment_owner;
@@ -298,9 +325,11 @@ public:
 	float environment_get_ssao_power(RID p_env) const;
 	float environment_get_ssao_detail(RID p_env) const;
 	float environment_get_ssao_horizon(RID p_env) const;
-	float environment_get_ssao_sharpness(RID p_env) const;
-	float environment_get_ssao_direct_light_affect(RID p_env) const;
-	float environment_get_ssao_ao_channel_affect(RID p_env) const;
+		float environment_get_ssao_sharpness(RID p_env) const;
+		float environment_get_ssao_direct_light_affect(RID p_env) const;
+		float environment_get_ssao_ao_channel_affect(RID p_env) const;
+		void environment_set_ssao_algorithm(RID p_env, RS::EnvironmentSSAOAlgorithm p_algorithm);
+		RS::EnvironmentSSAOAlgorithm environment_get_ssao_algorithm(RID p_env) const;
 
 	// SSIL
 	void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection);
@@ -309,6 +338,20 @@ public:
 	float environment_get_ssil_intensity(RID p_env) const;
 	float environment_get_ssil_sharpness(RID p_env) const;
 	float environment_get_ssil_normal_rejection(RID p_env) const;
+	void environment_set_ssgi(RID p_env, bool p_enable, float p_intensity, int p_radius, float p_depth_threshold, float p_normal_power, bool p_multirez, int p_multirez_levels, float p_multirez_dist_2, float p_multirez_dist_4, float p_multirez_dist_8, float p_multirez_dist_16);
+	bool environment_get_ssgi_enabled(RID p_env) const;
+	float environment_get_ssgi_intensity(RID p_env) const;
+	int environment_get_ssgi_radius(RID p_env) const;
+	float environment_get_ssgi_depth_threshold(RID p_env) const;
+	float environment_get_ssgi_normal_power(RID p_env) const;
+	bool environment_get_ssgi_multirez(RID p_env) const;
+	int environment_get_ssgi_multirez_levels(RID p_env) const;
+	float environment_get_ssgi_multirez_dist_2(RID p_env) const;
+	float environment_get_ssgi_multirez_dist_4(RID p_env) const;
+	float environment_get_ssgi_multirez_dist_8(RID p_env) const;
+	float environment_get_ssgi_multirez_dist_16(RID p_env) const;
+	void environment_set_ssil_algorithm(RID p_env, RS::EnvironmentSSILAlgorithm p_algorithm);
+	RS::EnvironmentSSILAlgorithm environment_get_ssil_algorithm(RID p_env) const;
 
 	// SDFGI
 	void environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias);
@@ -331,4 +374,17 @@ public:
 	float environment_get_adjustments_saturation(RID p_env) const;
 	bool environment_get_use_1d_color_correction(RID p_env) const;
 	RID environment_get_color_correction(RID p_env) const;
+
+	// Screen-space shadow tracing
+	void environment_set_screen_space_shadows(RID p_env, bool enabled, float thickness, float max_distance, float strength, int step_count, float light_radius, float thickness_falloff, float contact_distance, float fade_range, float history_weight);
+	bool environment_get_screen_space_shadow_enabled(RID p_env) const;
+	float environment_get_screen_space_shadow_thickness(RID p_env) const;
+	float environment_get_screen_space_shadow_max_distance(RID p_env) const;
+	float environment_get_screen_space_shadow_strength(RID p_env) const;
+	int environment_get_screen_space_shadow_steps(RID p_env) const;
+	float environment_get_screen_space_shadow_light_radius(RID p_env) const;
+	float environment_get_screen_space_shadow_thickness_falloff(RID p_env) const;
+	float environment_get_screen_space_shadow_contact_distance(RID p_env) const;
+	float environment_get_screen_space_shadow_fade_range(RID p_env) const;
+	float environment_get_screen_space_shadow_history_weight(RID p_env) const;
 };

@@ -3025,6 +3025,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSAO);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSIL);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_DECAL_ATLAS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SDFGI);
@@ -3037,6 +3038,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_OCCLUDERS);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_VISIBILITY_BUFFER);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_VRS_DISABLED);
@@ -3104,8 +3106,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap_agx_contrast", "env", "agx_contrast"), &RenderingServer::environment_set_tonemap_agx_contrast);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
+	ClassDB::bind_method(D_METHOD("environment_set_screen_space_shadows", "env", "enabled", "thickness", "max_distance", "strength", "steps", "light_radius", "thickness_falloff", "contact_distance", "fade_range", "history_weight"), &RenderingServer::environment_set_screen_space_shadows);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
+	ClassDB::bind_method(D_METHOD("environment_set_ssao_algorithm", "env", "algorithm"), &RenderingServer::environment_set_ssao_algorithm);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RS::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi", "env", "enable", "cascades", "min_cell_size", "y_scale", "use_occlusion", "bounce_feedback", "read_sky", "energy", "normal_bias", "probe_bias"), &RenderingServer::environment_set_sdfgi);
@@ -3116,6 +3120,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_ssr_roughness_quality", "quality"), &RenderingServer::environment_set_ssr_roughness_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssao_quality);
 	ClassDB::bind_method(D_METHOD("environment_set_ssil_quality", "quality", "half_size", "adaptive_target", "blur_passes", "fadeout_from", "fadeout_to"), &RenderingServer::environment_set_ssil_quality);
+	ClassDB::bind_method(D_METHOD("environment_set_ssil_algorithm", "env", "algorithm"), &RenderingServer::environment_set_ssil_algorithm);
+	ClassDB::bind_method(D_METHOD("environment_get_ssil_algorithm", "env"), &RenderingServer::environment_get_ssil_algorithm);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_ray_count", "ray_count"), &RenderingServer::environment_set_sdfgi_ray_count);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_converge", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_converge);
 	ClassDB::bind_method(D_METHOD("environment_set_sdfgi_frames_to_update_light", "frames"), &RenderingServer::environment_set_sdfgi_frames_to_update_light);
@@ -3170,12 +3176,20 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSAO_QUALITY_ULTRA);
+	BIND_ENUM_CONSTANT(ENV_SSAO_ALGORITHM_STANDARD);
+	BIND_ENUM_CONSTANT(ENV_SSAO_ALGORITHM_VISIBILITY_BITMASK);
+	BIND_ENUM_CONSTANT(ENV_SSAO_ALGORITHM_VISIBILITY_BITMASK_BI);
 
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_VERY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(ENV_SSIL_QUALITY_ULTRA);
+	BIND_ENUM_CONSTANT(ENV_SSIL_ALGORITHM_STANDARD);
+	BIND_ENUM_CONSTANT(ENV_SSIL_ALGORITHM_VISIBILITY_BITMASK);
+	BIND_ENUM_CONSTANT(ENV_SSIL_ALGORITHM_STANDARD);
+	BIND_ENUM_CONSTANT(ENV_SSIL_ALGORITHM_VISIBILITY_BITMASK);
+	BIND_ENUM_CONSTANT(ENV_SSIL_ALGORITHM_VISIBILITY_BITMASK_BI);
 
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(ENV_SDFGI_Y_SCALE_75_PERCENT);
@@ -3766,6 +3780,15 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssil/blur_passes", PROPERTY_HINT_RANGE, "0,6"), 4);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssgi/sample_range", PROPERTY_HINT_RANGE, "1,64,1"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/environment/ssgi/sample_quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/temporal_history_weight", PROPERTY_HINT_RANGE, "0.0,0.99,0.01"), 0.9);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/temporal_luma_reject", PROPERTY_HINT_RANGE, "0.0,4.0,0.01"), 1.5);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/temporal_velocity_reject", PROPERTY_HINT_RANGE, "0.0,2.0,0.01"), 0.25);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/temporal_clamp_sigma", PROPERTY_HINT_RANGE, "0.0,8.0,0.1"), 2.0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/stability_blur_strength", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssgi/jitter_scale", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.5);
 
 	// Move the project setting definitions here so they are available when we init the rendering internals.
 	GLOBAL_DEF_BASIC("rendering/viewport/hdr_2d", false);

@@ -37,7 +37,10 @@
 #include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/vb_resolve.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
@@ -249,6 +252,18 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 
 	setup_render_buffer_data(rb);
 
+	if (vb_always_on) {
+		bool need_aux = _mesh_blend_enabled();
+		bool use_main_depth_for_vb = vb_reuse_main_depth;
+		if (_mesh_blend_enabled()) {
+			use_main_depth_for_vb = false; // mesh blend needs storage-capable depth
+		}
+		if (rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+			use_main_depth_for_vb = false;
+		}
+		rb->ensure_visibility_textures(need_aux, !use_main_depth_for_vb);
+	}
+
 	return rb;
 }
 
@@ -450,6 +465,347 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 	RD::get_singleton()->draw_command_end_label();
 }
 
+void RendererSceneRenderRD::visibility_resolve(RenderSceneBuffersRD *rb, const RenderDataRD *p_render_data) {
+	ERR_FAIL_NULL(rb);
+
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	_ensure_vb_dummy_images();
+	bool need_aux = _mesh_blend_enabled();
+	rb->ensure_visibility_textures(need_aux, true);
+
+	if (vb_resolve_shader_rd == nullptr) {
+		vb_resolve_shader_rd = memnew(VbResolveShaderRD);
+		Vector<String> variants;
+		variants.push_back(String()); // single default variant
+		vb_resolve_shader_rd->initialize(variants);
+	}
+
+	if (!vb_resolve_shader_version.is_valid()) {
+		vb_resolve_shader_version = vb_resolve_shader_rd->version_create();
+	}
+
+	RID shader_rid = vb_resolve_shader_rd->version_get_shader(vb_resolve_shader_version, 0);
+	ERR_FAIL_COND(shader_rid.is_null());
+
+	if (!vb_resolve_pipeline.is_valid()) {
+		vb_resolve_pipeline = RD::get_singleton()->compute_pipeline_create(shader_rid);
+		ERR_FAIL_COND_MSG(!vb_resolve_pipeline.is_valid(), "Failed to create compute pipeline for vb_resolve.");
+	}
+
+	bool use_direct_output = rb->get_can_be_storage();
+	if (!use_direct_output) {
+		_ensure_vb_out_storage(rb);
+	}
+
+	Size2i isz = rb->get_internal_size();
+	if (isz.x <= 0 || isz.y <= 0) {
+		return;
+	}
+
+	uint32_t gx = (isz.x + 7) / 8;
+	uint32_t gy = (isz.y + 7) / 8;
+
+	RD::ComputeListID cl = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(cl, vb_resolve_pipeline);
+
+	uint32_t view_count = rb->get_view_count();
+		for (uint32_t v = 0; v < view_count; v++) {
+			RID tex_vis = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS, v, 0);
+			RID tex_out = use_direct_output ? rb->get_internal_texture(v) : vb_out_color_storage[v];
+			RID tex_aux = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX, v, 0);
+			if (!tex_aux.is_valid()) {
+				tex_aux = vb_dummy_aux_image;
+			}
+			RID tex_depth = vb_dummy_depth_image;
+			if (tex_vis.is_null() || tex_out.is_null()) {
+				continue;
+			}
+
+			RD::Uniform u_vis(RD::UNIFORM_TYPE_IMAGE, 0, { tex_vis });
+			RD::Uniform u_out(RD::UNIFORM_TYPE_IMAGE, 1, { tex_out });
+			RD::Uniform u_aux(RD::UNIFORM_TYPE_IMAGE, 2, { tex_aux });
+			RD::Uniform u_depth(RD::UNIFORM_TYPE_IMAGE, 3, { tex_depth });
+
+			RID uniform_set = uniform_set_cache->get_cache(shader_rid, 0, u_vis, u_out, u_aux, u_depth);
+			RD::get_singleton()->compute_list_bind_uniform_set(cl, uniform_set, 0);
+			RD::get_singleton()->compute_list_dispatch(cl, gx, gy, 1);
+		}
+
+	RD::get_singleton()->compute_list_add_barrier(cl);
+	RD::get_singleton()->compute_list_end();
+
+	if (!use_direct_output) {
+		for (uint32_t v = 0; v < view_count; v++) {
+			RID src = vb_out_color_storage[v];
+			if (src.is_null()) {
+				continue;
+			}
+			RID dst_fb = FramebufferCacheRD::get_singleton()->get_cache(rb->get_internal_texture(v));
+			copy_effects->copy_to_fb_rect(src, dst_fb, Rect2i(0, 0, isz.x, isz.y));
+		}
+	}
+}
+
+bool RendererSceneRenderRD::_mesh_blend_enabled() const {
+	return mesh_blend != nullptr && bool(GLOBAL_GET("rendering/mesh_blend/enabled"));
+}
+
+void RendererSceneRenderRD::_ensure_mesh_blend_textures(RenderSceneBuffersRD *p_render_buffers) {
+	ERR_FAIL_NULL(p_render_buffers);
+
+	Size2i size = p_render_buffers->get_internal_size();
+	if (size.x <= 0 || size.y <= 0) {
+		return;
+	}
+
+	uint32_t usage = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	p_render_buffers->create_texture(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_MASK, RD::DATA_FORMAT_R16G16_SFLOAT, usage);
+	p_render_buffers->create_texture(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_EDGE0, RD::DATA_FORMAT_R32G32_UINT, usage);
+	p_render_buffers->create_texture(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_EDGE1, RD::DATA_FORMAT_R32G32_UINT, usage);
+	p_render_buffers->create_texture(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_SOURCE, p_render_buffers->get_base_data_format(), usage);
+}
+
+void RendererSceneRenderRD::_process_mesh_blend(const RenderDataRD *p_render_data) {
+	if (!_mesh_blend_enabled()) {
+		return;
+	}
+
+	ERR_FAIL_NULL(p_render_data);
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	bool need_aux = _mesh_blend_enabled();
+	// Mesh blend requires storage-capable depth; always use VB depth.
+	rb->ensure_visibility_textures(need_aux, true);
+
+	RID vb_vis = rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS);
+	RID vb_aux = rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX);
+	if (vb_vis.is_null() || vb_aux.is_null()) {
+		return;
+	}
+
+	Size2i size = rb->get_internal_size();
+	if (size.x <= 0 || size.y <= 0) {
+		return;
+	}
+
+	_ensure_mesh_blend_textures(rb.ptr());
+	float edge_radius_pixels = MAX(0.001f, float(GLOBAL_GET("rendering/mesh_blend/edge_radius_pixels")));
+	float world_radius = MAX(0.0f, float(GLOBAL_GET("rendering/mesh_blend/world_radius")));
+	bool use_world_radius = world_radius > 0.0f;
+	float effective_radius = use_world_radius ? world_radius : edge_radius_pixels;
+	float depth_tolerance = MAX(0.0f, float(GLOBAL_GET("rendering/mesh_blend/depth_tolerance")));
+	float neighbor_blend = MAX(0.0f, float(GLOBAL_GET("rendering/mesh_blend/neighbor_blend")));
+
+	RendererRD::MeshBlend::CameraData camera_data = {};
+	uint32_t view_count = rb->get_view_count();
+	for (uint32_t v = 0; v < MIN(view_count, RendererRD::MeshBlend::CameraData::MAX_CAMERAS); v++) {
+		Projection projection = (view_count > 1) ? p_render_data->scene_data->get_view_projection(v) : p_render_data->scene_data->get_cam_projection();
+		Projection inv_projection = projection.inverse();
+		Transform3D eye_transform = p_render_data->scene_data->cam_transform;
+		if (view_count > 1) {
+			eye_transform.origin += eye_transform.basis.xform(p_render_data->scene_data->view_eye_offset[v]);
+		}
+		Projection inv_view = Projection(eye_transform);
+		Projection inv_view_proj = inv_view * inv_projection;
+		RendererRD::MaterialStorage::store_camera(inv_view_proj, camera_data.inv_view_projection[v]);
+	}
+	mesh_blend->update_camera_data(camera_data);
+
+	RD::get_singleton()->draw_command_begin_label("Mesh Blend");
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		RID mask_slice = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_MASK, v, 0);
+		RID edge_ping = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_EDGE0, v, 0);
+		RID edge_pong = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_EDGE1, v, 0);
+		RID color_source = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_MESH_BLEND_SOURCE, v, 0);
+
+		RID vb_vis_slice = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS, v, 0);
+		RID vb_aux_slice = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX, v, 0);
+			RID vb_depth_slice = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_DEPTH, v, 0);
+		if (vb_depth_slice.is_null()) {
+			continue;
+		}
+		mesh_blend->generate_mask(vb_vis_slice, vb_aux_slice, vb_depth_slice, mask_slice, edge_ping, size, depth_tolerance, neighbor_blend);
+
+	int spread = 1;
+	while (spread < int(edge_radius_pixels)) {
+			spread <<= 1;
+		}
+		if (spread < 1) {
+			spread = 1;
+		}
+
+		RID current_edge = edge_ping;
+		RID next_edge = edge_pong;
+		while (spread >= 1) {
+			mesh_blend->jump_flood(current_edge, next_edge, mask_slice, size, spread);
+			SWAP(current_edge, next_edge);
+			spread >>= 1;
+		}
+
+		copy_effects->copy_to_rect(rb->get_internal_texture(v), color_source, Rect2i(0, 0, size.x, size.y));
+
+		RID framebuffer = FramebufferCacheRD::get_singleton()->get_cache(rb->get_internal_texture(v));
+		int view_slot = MIN<int>(v, int(RendererRD::MeshBlend::CameraData::MAX_CAMERAS) - 1);
+		mesh_blend->blend(color_source, rb->get_depth_texture(v), mask_slice, current_edge, framebuffer, size, effective_radius, view_slot, use_world_radius, neighbor_blend);
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+}
+// ——— VISIBILITY FILL (runtime test) ————————————————————————————————
+void RendererSceneRenderRD::_ensure_vb_vis_texture(RenderSceneBuffersRD *rb) {
+	// Lazily allocate the VB textures only when a VB consumer is active.
+	rb->ensure_visibility_textures(false, true);
+}
+
+void RendererSceneRenderRD::visibility_fill_test(RenderSceneBuffersRD *rb, const RenderDataRD *p_render_data) {
+	ERR_FAIL_NULL(rb);
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	_ensure_vb_vis_texture(rb);
+
+	// Compute care scrie un pattern în vb_vis_image (uvec2)
+	static const char *VB_FILL_CS = R"GLSL(
+#version 450
+layout(local_size_x = 8, local_size_y = 8) in;
+layout(rg32ui, set = 0, binding = 0) uniform uimage2D vb_vis_image;
+
+void main() {
+	ivec2 px = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 sz = imageSize(vb_vis_image);
+	if (px.x >= sz.x || px.y >= sz.y) return;
+
+	uint prim_id = uint((px.x ^ px.y) & 0xFFFFu);
+	uint mesh_id = uint(((px.x * 131u) + (px.y * 17u)) & 0xFFFFu);
+	imageStore(vb_vis_image, px, uvec4(prim_id, mesh_id, 0u, 0u));
+}
+)GLSL";
+
+	// 1) Compile shader (o dată)
+	if (!vb_fill_shader.is_valid()) {
+		Vector<String> stage_sources;
+		stage_sources.resize(RenderingDevice::SHADER_STAGE_MAX);
+		stage_sources.write[RenderingDevice::SHADER_STAGE_COMPUTE] = String(VB_FILL_CS);
+
+		Vector<uint64_t> dyn;
+		Vector<RD::ShaderStageSPIRVData> stages_spirv = ShaderRD::compile_stages(stage_sources, dyn);
+		ERR_FAIL_COND_MSG(stages_spirv.is_empty(), "compile_stages() failed for vb_fill.");
+
+		vb_fill_shader = RD::get_singleton()->shader_create_from_spirv(stages_spirv, "vb_fill");
+		ERR_FAIL_COND_MSG(!vb_fill_shader.is_valid(), "shader_create_from_spirv() failed for vb_fill.");
+	}
+
+	// 2) Pipeline (o dată)
+	if (!vb_fill_pipeline.is_valid()) {
+		vb_fill_pipeline = RD::get_singleton()->compute_pipeline_create(vb_fill_shader);
+		ERR_FAIL_COND_MSG(!vb_fill_pipeline.is_valid(), "Failed to create compute pipeline for vb_fill.");
+	}
+
+	// 3) Dispatch
+	Size2i isz = rb->get_internal_size();
+	if (isz.x <= 0 || isz.y <= 0) {
+		return;
+	}
+	uint32_t gx = (isz.x + 7) / 8;
+	uint32_t gy = (isz.y + 7) / 8;
+
+	RD::ComputeListID cl = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(cl, vb_fill_pipeline);
+
+	uint32_t view_count = rb->get_view_count();
+	for (uint32_t v = 0; v < view_count; v++) {
+		RID tex_vis = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS, v, 0);
+		RD::Uniform u_vis(RD::UNIFORM_TYPE_IMAGE, 0, { tex_vis });
+		RID set = uniform_set_cache->get_cache(vb_fill_shader, 0, u_vis);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(cl, set, 0);
+		RD::get_singleton()->compute_list_dispatch(cl, gx, gy, 1);
+	}
+
+	RD::get_singleton()->compute_list_add_barrier(cl);
+	RD::get_singleton()->compute_list_end();
+}
+
+void RendererSceneRenderRD::_ensure_vb_out_storage(RenderSceneBuffersRD *rb) {
+	Size2i isz = rb->get_internal_size();
+	uint32_t views = rb->get_view_count();
+
+	bool recreate =
+		(isz != vb_out_size) ||
+		(views != vb_out_views) ||
+		(vb_out_color_storage.size() != (int)views);
+
+	if (!recreate)
+		return;
+
+	for (int i = 0; i < vb_out_color_storage.size(); i++) {
+		if (vb_out_color_storage[i].is_valid())
+			RD::get_singleton()->free_rid(vb_out_color_storage[i]);
+	}
+
+	vb_out_color_storage.clear();
+	vb_out_color_storage.resize(views);
+
+	RD::TextureFormat tf;
+	tf.texture_type = RD::TEXTURE_TYPE_2D;
+	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	tf.width  = MAX(1, isz.x);
+	tf.height = MAX(1, isz.y);
+	tf.depth  = 1;
+	tf.array_layers = 1;
+	tf.mipmaps = 1;
+	tf.samples = RD::TEXTURE_SAMPLES_1;
+
+	tf.usage_bits =
+		RD::TEXTURE_USAGE_STORAGE_BIT |
+		RD::TEXTURE_USAGE_CAN_UPDATE_BIT |
+		RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT |
+		RD::TEXTURE_USAGE_CAN_COPY_TO_BIT |
+		RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+	RD::TextureView tv;
+
+	for (uint32_t v = 0; v < views; v++) {
+		vb_out_color_storage.write[v] =
+			RD::get_singleton()->texture_create(tf, tv);
+	}
+
+	vb_out_size  = isz;
+	vb_out_views = views;
+}
+
+void RendererSceneRenderRD::_ensure_vb_dummy_images() {
+	if (!vb_dummy_aux_image.is_valid()) {
+		RD::TextureFormat tf;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
+		tf.format = RD::DATA_FORMAT_R16G16_SFLOAT;
+		tf.width = 1;
+		tf.height = 1;
+		tf.depth = 1;
+		tf.array_layers = 1;
+		tf.mipmaps = 1;
+		tf.samples = RD::TEXTURE_SAMPLES_1;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		vb_dummy_aux_image = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+
+	if (!vb_dummy_depth_image.is_valid()) {
+		RD::TextureFormat tf;
+		tf.texture_type = RD::TEXTURE_TYPE_2D;
+		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+		tf.width = 1;
+		tf.height = 1;
+		tf.depth = 1;
+		tf.array_layers = 1;
+		tf.mipmaps = 1;
+		tf.samples = RD::TEXTURE_SAMPLES_1;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		vb_dummy_depth_image = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	}
+}
+
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data, bool p_use_msaa) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -478,6 +834,17 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			spatial_upscaler = mfx_spatial;
 #endif
 		}
+	}
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_VISIBILITY_BUFFER) {
+		if (vb_test_pattern_enabled) {
+			visibility_fill_test(rb.ptr(), p_render_data);
+		}
+		visibility_resolve(rb.ptr(), p_render_data);
+		can_use_effects = false;  // dacă ai o astfel de variabilă
+	}
+
+	if (_mesh_blend_enabled()) {
+		_process_mesh_blend(p_render_data);
 	}
 
 	bool use_smaa = smaa && rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_SMAA;
@@ -987,6 +1354,9 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_
 		case RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
 			can_use_effects = false;
 			break;
+		case RS::VIEWPORT_DEBUG_DRAW_VISIBILITY_BUFFER:
+			can_use_effects = false;
+			break;
 		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
 		case RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
 		case RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
@@ -1090,6 +1460,15 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(rb->get_internal_texture(), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
+	}
+
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_VISIBILITY_BUFFER) {
+		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		RID src = rb->get_internal_texture();
+		if (src.is_null()) {
+			src = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		}
+		copy_effects->copy_to_fb_rect(src, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
@@ -1719,6 +2098,18 @@ void RendererSceneRenderRD::init() {
 	environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
 	environment_set_volumetric_fog_filter_active(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter"));
 
+	//GLOBAL_DEF_RST("rendering/debug/visibility_buffer/test_pattern", true);
+	vb_test_pattern_enabled = GLOBAL_GET("rendering/debug/visibility_buffer/test_pattern");
+	GLOBAL_DEF("rendering/debug/visibility_buffer/always_on", false);
+	vb_always_on = GLOBAL_GET("rendering/debug/visibility_buffer/always_on");
+	GLOBAL_DEF("rendering/debug/visibility_buffer/reuse_main_depth", true);
+	vb_reuse_main_depth = GLOBAL_GET("rendering/debug/visibility_buffer/reuse_main_depth");
+	GLOBAL_DEF("rendering/mesh_blend/enabled", true);
+	GLOBAL_DEF("rendering/mesh_blend/edge_radius_pixels", 9.0);
+	GLOBAL_DEF("rendering/mesh_blend/world_radius", 3.0);
+	GLOBAL_DEF("rendering/mesh_blend/neighbor_blend", 0.0);
+	GLOBAL_DEF("rendering/mesh_blend/depth_tolerance", 0.001);
+
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
@@ -1757,6 +2148,7 @@ void RendererSceneRenderRD::init() {
 	}
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
+		mesh_blend = memnew(RendererRD::MeshBlend);
 	}
 #ifdef METAL_ENABLED
 	mfx_spatial = memnew(RendererRD::MFXSpatialEffect);
@@ -1765,6 +2157,32 @@ void RendererSceneRenderRD::init() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
+	for (int i = 0; i < vb_out_color_storage.size(); i++) {
+		if (vb_out_color_storage[i].is_valid()) {
+			RD::get_singleton()->free_rid(vb_out_color_storage[i]);
+		}
+	}
+	if (vb_dummy_aux_image.is_valid()) {
+		RD::get_singleton()->free_rid(vb_dummy_aux_image);
+	}
+	if (vb_dummy_depth_image.is_valid()) {
+		RD::get_singleton()->free_rid(vb_dummy_depth_image);
+	}
+	if (vb_fill_pipeline.is_valid()) {
+		RD::get_singleton()->free_rid(vb_fill_pipeline);
+	}
+	if (vb_fill_shader.is_valid()) {
+		RD::get_singleton()->free_rid(vb_fill_shader);
+	}
+	if (vb_resolve_pipeline.is_valid()) {
+		RD::get_singleton()->free_rid(vb_resolve_pipeline);
+	}
+	if (vb_resolve_shader_rd) {
+		if (vb_resolve_shader_version.is_valid()) {
+			vb_resolve_shader_rd->version_free(vb_resolve_shader_version);
+		}
+		memdelete(vb_resolve_shader_rd);
+	}
 	if (forward_id_storage) {
 		memdelete(forward_id_storage);
 	}
@@ -1786,6 +2204,9 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 	if (tone_mapper) {
 		memdelete(tone_mapper);
+	}
+	if (mesh_blend) {
+		memdelete(mesh_blend);
 	}
 	if (vrs) {
 		memdelete(vrs);

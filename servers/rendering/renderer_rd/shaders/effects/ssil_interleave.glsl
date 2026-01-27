@@ -27,6 +27,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_image;
+
 layout(set = 1, binding = 0) uniform sampler2DArray source_texture;
 layout(r8, set = 2, binding = 0) uniform restrict readonly image2DArray source_edges;
 
@@ -66,7 +67,7 @@ void main() {
 	int index_vertical = mx + (1 - my) * 2; // neighboring, vertical
 	int index_diagonal = (1 - mx) + (1 - my) * 2; // diagonal
 
-	vec4 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0);
+	vec3 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0).rgb;
 
 	vec4 edgesLRTB = unpack_edges(imageLoad(source_edges, ivec3(pix_pos / uvec2(params.size_modifier), index_center)).r);
 
@@ -80,11 +81,11 @@ void main() {
 
 	// calculate final sampling offsets and sample using bilinear filter
 	vec2 uv_horizontal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx + fmxe - 0.5, 0.5 - fmy)) * params.pixel_size;
-	vec4 color_horizontal = textureLod(source_texture, vec3(uv_horizontal, index_horizontal), 0.0);
+	vec3 color_horizontal = textureLod(source_texture, vec3(uv_horizontal, index_horizontal), 0.0).rgb;
 	vec2 uv_vertical = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(0.5 - fmx, fmy - 0.5 + fmye)) * params.pixel_size;
-	vec4 color_vertical = textureLod(source_texture, vec3(uv_vertical, index_vertical), 0.0);
+	vec3 color_vertical = textureLod(source_texture, vec3(uv_vertical, index_vertical), 0.0).rgb;
 	vec2 uv_diagonal = (gl_GlobalInvocationID.xy + vec2(0.5) + vec2(fmx - 0.5 + fmxe, fmy - 0.5 + fmye)) * params.pixel_size;
-	vec4 color_diagonal = textureLod(source_texture, vec3(uv_diagonal, index_diagonal), 0.0);
+	vec3 color_diagonal = textureLod(source_texture, vec3(uv_diagonal, index_diagonal), 0.0).rgb;
 
 	// reduce weight for samples near edge - if the edge is on both sides, weight goes to 0
 	vec4 blendWeights;
@@ -100,23 +101,23 @@ void main() {
 	color += color_diagonal * blendWeights.w;
 	color /= blendWeightsSum;
 
-	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), color);
 #else // !MODE_SMART
 
 	vec2 uv = (gl_GlobalInvocationID.xy + vec2(0.5)) * params.pixel_size;
 #ifdef MODE_HALF
-	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
-	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
-	vec4 avg = (a + d) * 0.5;
+	vec3 a = textureLod(source_texture, vec3(uv, 0), 0.0).rgb;
+	vec3 d = textureLod(source_texture, vec3(uv, 3), 0.0).rgb;
+	vec3 color = (a + d) * 0.5; // Changed avg to color for consistency
 
 #else
-	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
-	vec4 b = textureLod(source_texture, vec3(uv, 1), 0.0);
-	vec4 c = textureLod(source_texture, vec3(uv, 2), 0.0);
-	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
-	vec4 avg = (a + b + c + d) * 0.25;
+	vec3 a = textureLod(source_texture, vec3(uv, 0), 0.0).rgb;
+	vec3 b = textureLod(source_texture, vec3(uv, 1), 0.0).rgb;
+	vec3 c = textureLod(source_texture, vec3(uv, 2), 0.0).rgb;
+	vec3 d = textureLod(source_texture, vec3(uv, 3), 0.0).rgb;
+	vec3 color = (a + b + c + d) * 0.25; // Changed avg to color for consistency
 
 #endif
-	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), avg);
 #endif
+
+	imageStore(dest_image, ssC, vec4(color, 1.0));
 }

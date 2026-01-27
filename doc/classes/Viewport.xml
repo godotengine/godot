@@ -339,7 +339,7 @@
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
 		</member>
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
-			The overlay mode for test rendered geometry in debug purposes.
+			The overlay mode used to visualize intermediate rendering buffers. Set to [constant Viewport.DEBUG_DRAW_VISIBILITY_BUFFER] to inspect the visibility buffer when tuning mesh blend seams.
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
@@ -751,6 +751,10 @@
 		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
 			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+		</constant>
+		<constant name="DEBUG_DRAW_VISIBILITY_BUFFER" value="27" enum="DebugDraw">
+			Draws the visibility buffer containing primitive and instance identifiers. This is useful for debugging visibility buffer passes such as mesh blending.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).

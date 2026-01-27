@@ -36,6 +36,7 @@
 #include "servers/rendering/renderer_rd/effects/debug_effects.h"
 #include "servers/rendering/renderer_rd/effects/fsr.h"
 #include "servers/rendering/renderer_rd/effects/luminance.h"
+#include "servers/rendering/renderer_rd/effects/mesh_blend.h"
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
@@ -53,6 +54,8 @@
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_shader_library.h"
 
+class VbResolveShaderRD;
+
 class RendererSceneRenderRD : public RendererSceneRender, public RenderingShaderLibrary {
 	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
@@ -63,6 +66,7 @@ protected:
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::DebugEffects *debug_effects = nullptr;
 	RendererRD::Luminance *luminance = nullptr;
+	RendererRD::MeshBlend *mesh_blend = nullptr;
 	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
@@ -109,6 +113,9 @@ protected:
 	void _process_compositor_effects(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data);
 	void _render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
+	void _process_mesh_blend(const RenderDataRD *p_render_data);
+	void _ensure_mesh_blend_textures(RenderSceneBuffersRD *p_render_buffers);
+	bool _mesh_blend_enabled() const;
 	void _render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data, bool p_use_msaa = false);
 	void _render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data, bool p_use_msaa = false);
@@ -167,8 +174,40 @@ private:
 	uint32_t volumetric_fog_depth = 128;
 	bool volumetric_fog_filter_active = true;
 
+	bool vb_test_pattern_enabled = true;
+	
+	// --- Visibility Buffer (VB) ---
+	VbResolveShaderRD *vb_resolve_shader_rd = nullptr;
+	RID vb_resolve_shader_version; // ShaderRD version handle
+	RID vb_resolve_pipeline;
+
+	// TEST: fill (runtime)
+	RID vb_fill_shader;        // compute
+	RID vb_fill_pipeline;
+
+	// --- VB vis texture & out ---
+	Vector<RID> vb_out_color_storage;
+	Size2i      vb_out_size = Size2i();
+	uint32_t    vb_out_views = 0;
+	RID vb_dummy_aux_image;
+	RID vb_dummy_depth_image;
+
+	// Asigurări textures/buffers
+	void _ensure_vb_out_storage(RenderSceneBuffersRD *rb);
+	void _ensure_vb_vis_texture(RenderSceneBuffersRD *rb);
+	void _ensure_vb_dummy_images();
+	bool vb_always_on = false;
+	bool vb_reuse_main_depth = true;
+
+	// Etapele VB (test)
+	void visibility_fill_test(RenderSceneBuffersRD *rb, const RenderDataRD *p_render_data);
+	void visibility_resolve(RenderSceneBuffersRD *rb, const RenderDataRD *p_render_data);
+
+
 public:
 	static RendererSceneRenderRD *get_singleton() { return singleton; }
+	bool is_visibility_buffer_reusing_main_depth() const { return vb_reuse_main_depth; }
+	bool is_mesh_blend_enabled() const { return _mesh_blend_enabled(); }
 
 	/* LIGHTING */
 

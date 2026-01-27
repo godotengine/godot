@@ -137,6 +137,7 @@ private:
 	float ssao_sharpness = 0.98;
 	float ssao_direct_light_affect = 0.0;
 	float ssao_ao_channel_affect = 0.0;
+	RenderingServer::EnvironmentSSAOAlgorithm ssao_algorithm = RenderingServer::ENV_SSAO_ALGORITHM_STANDARD;
 	void _update_ssao();
 
 	// SSIL
@@ -145,8 +146,23 @@ private:
 	float ssil_intensity = 1.0;
 	float ssil_sharpness = 0.98;
 	float ssil_normal_rejection = 1.0;
+	RenderingServer::EnvironmentSSILAlgorithm ssil_algorithm = RenderingServer::ENV_SSIL_ALGORITHM_STANDARD;
 
 	void _update_ssil();
+
+	// SSGI
+	bool ssgi_enabled = false;
+	float ssgi_intensity = 1.0;
+	int ssgi_radius = 2;
+	float ssgi_depth_threshold = 50.0;
+	float ssgi_normal_power = 8.0;
+	bool ssgi_multirez = false;
+	int ssgi_multirez_levels = 4;
+	float ssgi_multirez_dist_2 = 1.0f;
+	float ssgi_multirez_dist_4 = 2.0f;
+	float ssgi_multirez_dist_8 = 4.0f;
+	float ssgi_multirez_dist_16 = 8.0f;
+	void _update_ssgi();
 
 	// SDFGI
 	bool sdfgi_enabled = false;
@@ -222,6 +238,19 @@ private:
 	bool use_1d_color_correction = true;
 	Ref<Texture> adjustment_color_correction;
 	void _update_adjustment();
+	void _update_screen_space_shadows();
+
+	// Screen-space shadow tracing
+	bool ss_shadow_enabled = true;
+	float ss_shadow_thickness = 0.1f;
+	float ss_shadow_max_distance = 0.5f;
+	float ss_shadow_strength = 1.0f;
+	int ss_shadow_steps = 16;
+	float ss_shadow_light_radius = 0.05f;
+	float ss_shadow_thickness_falloff = 1.0f;
+	float ss_shadow_contact_distance = 0.05f;
+	float ss_shadow_fade_range = 10.0f;
+	float ss_shadow_history_weight = 0.4f;
 
 protected:
 	static void _bind_methods();
@@ -309,6 +338,8 @@ public:
 	float get_ssao_direct_light_affect() const;
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
+	void set_ssao_algorithm(RenderingServer::EnvironmentSSAOAlgorithm p_algorithm);
+	RenderingServer::EnvironmentSSAOAlgorithm get_ssao_algorithm() const;
 
 	// SSIL
 	void set_ssil_enabled(bool p_enabled);
@@ -321,6 +352,32 @@ public:
 	float get_ssil_sharpness() const;
 	void set_ssil_normal_rejection(float p_normal_rejection);
 	float get_ssil_normal_rejection() const;
+	void set_ssil_algorithm(RenderingServer::EnvironmentSSILAlgorithm p_algorithm);
+	RenderingServer::EnvironmentSSILAlgorithm get_ssil_algorithm() const;
+
+	// SSGI
+	void set_ssgi_enabled(bool p_enabled);
+	bool is_ssgi_enabled() const;
+	void set_ssgi_intensity(float p_intensity);
+	float get_ssgi_intensity() const;
+	void set_ssgi_radius(int p_radius);
+	int get_ssgi_radius() const;
+	void set_ssgi_depth_threshold(float p_threshold);
+	float get_ssgi_depth_threshold() const;
+	void set_ssgi_normal_power(float p_power);
+	float get_ssgi_normal_power() const;
+	void set_ssgi_multirez(bool p_enabled);
+	bool is_ssgi_multirez_enabled() const;
+	void set_ssgi_multirez_levels(int p_levels);
+	int get_ssgi_multirez_levels() const;
+	void set_ssgi_multirez_dist_2(float p_distance);
+	float get_ssgi_multirez_dist_2() const;
+	void set_ssgi_multirez_dist_4(float p_distance);
+	float get_ssgi_multirez_dist_4() const;
+	void set_ssgi_multirez_dist_8(float p_distance);
+	float get_ssgi_multirez_dist_8() const;
+	void set_ssgi_multirez_dist_16(float p_distance);
+	float get_ssgi_multirez_dist_16() const;
 
 	// SDFGI
 	void set_sdfgi_enabled(bool p_enabled);
@@ -447,6 +504,28 @@ public:
 	float get_adjustment_saturation() const;
 	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
 	Ref<Texture> get_adjustment_color_correction() const;
+
+	// Screen-space shadow tracing
+	void set_ss_shadow_enabled(bool p_enabled);
+	bool is_ss_shadow_enabled() const;
+	void set_ss_shadow_thickness(float p_thickness);
+	float get_ss_shadow_thickness() const;
+	void set_ss_shadow_max_distance(float p_max_distance);
+	float get_ss_shadow_max_distance() const;
+	void set_ss_shadow_strength(float p_strength);
+	float get_ss_shadow_strength() const;
+	void set_ss_shadow_steps(int p_steps);
+	int get_ss_shadow_steps() const;
+	void set_ss_shadow_light_radius(float p_radius);
+	float get_ss_shadow_light_radius() const;
+	void set_ss_shadow_thickness_falloff(float p_falloff);
+	float get_ss_shadow_thickness_falloff() const;
+	void set_ss_shadow_contact_distance(float p_distance);
+	float get_ss_shadow_contact_distance() const;
+	void set_ss_shadow_fade_range(float p_range);
+	float get_ss_shadow_fade_range() const;
+	void set_ss_shadow_history_weight(float p_weight);
+	float get_ss_shadow_history_weight() const;
 
 	Environment();
 	~Environment();

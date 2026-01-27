@@ -78,7 +78,7 @@ void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &RenderSceneBuffersRD::get_use_debanding);
 }
 
-void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
+void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) const {
 	ERR_FAIL_COND(p_named_texture.texture.is_null());
 
 	p_named_texture.sizes.resize(p_named_texture.format.mipmaps);
@@ -248,6 +248,32 @@ void RenderSceneBuffersRD::set_anisotropic_filtering_level(RS::ViewportAnisotrop
 	update_samplers();
 }
 
+bool RenderSceneBuffersRD::ensure_visibility_textures(bool p_with_aux, bool p_create_depth) {
+	if (internal_size.x <= 0 || internal_size.y <= 0) {
+		return false;
+	}
+
+	if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS)) {
+		const RenderingDevice::DataFormat fmt = RenderingDevice::DATA_FORMAT_R32G32_UINT;
+		const uint32_t usage = RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_STORAGE_BIT;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS, fmt, usage, RenderingDevice::TEXTURE_SAMPLES_1, internal_size);
+	}
+
+	if (p_with_aux && !has_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX)) {
+		const RenderingDevice::DataFormat fmt = RenderingDevice::DATA_FORMAT_R16G16_SFLOAT;
+		const uint32_t usage = RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_STORAGE_BIT;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX, fmt, usage, RenderingDevice::TEXTURE_SAMPLES_1, internal_size);
+	}
+
+	if (p_create_depth && !has_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_DEPTH)) {
+		const RenderingDevice::DataFormat fmt = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
+		const uint32_t usage = RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_STORAGE_BIT;
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_DEPTH, fmt, usage, RenderingDevice::TEXTURE_SAMPLES_1, internal_size);
+	}
+
+	return has_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS) && (p_create_depth ? has_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_DEPTH) : true);
+}
+
 void RenderSceneBuffersRD::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
 }
@@ -282,7 +308,8 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 bool RenderSceneBuffersRD::has_texture(const StringName &p_context, const StringName &p_texture_name) const {
 	NTKey key(p_context, p_texture_name);
 
-	return named_textures.has(key);
+	const NamedTexture *nt = named_textures.getptr(key);
+	return nt != nullptr && nt->texture.is_valid();
 }
 
 RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique, bool p_discardable) {
@@ -306,6 +333,11 @@ RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const Stri
 	tf.usage_bits = p_usage_bits;
 	tf.samples = p_texture_samples;
 	tf.is_discardable = p_discardable;
+	
+	#ifdef DEBUG_ENABLED
+	tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT; //Remember to delete both
+	tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	#endif
 
 	return create_texture_from_format(p_context, p_texture_name, tf, RD::TextureView(), p_unique);
 }
@@ -326,16 +358,20 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 
 	NTKey key(p_context, p_texture_name);
 
-	// check if this is a known texture
-	if (named_textures.has(key)) {
-		return named_textures[key].texture;
+	// Check if this is a known texture. If the texture RID is invalid (e.g. creation previously failed),
+	// recreate it using the provided format so consumers don't end up binding a null texture.
+	NamedTexture &named_texture = named_textures[key];
+	if (named_texture.texture.is_valid()) {
+		return named_texture.texture;
 	}
 
-	// Add a new entry..
-	NamedTexture &named_texture = named_textures[key];
 	named_texture.format = p_texture_format;
 	named_texture.is_unique = p_unique;
 	named_texture.texture = RD::get_singleton()->texture_create(p_texture_format, p_view);
+
+	if (named_texture.texture.is_null()) {
+		return RID();
+	}
 
 	Array arr = { p_context, p_texture_name };
 	RD::get_singleton()->set_resource_name(named_texture.texture, String("RenderBuffer {0}/{1}").format(arr));
@@ -389,7 +425,25 @@ RID RenderSceneBuffersRD::get_texture(const StringName &p_context, const StringN
 
 	ERR_FAIL_COND_V(!named_textures.has(key), RID());
 
-	return named_textures[key].texture;
+	NamedTexture *named_texture = const_cast<NamedTexture *>(named_textures.getptr(key));
+	ERR_FAIL_NULL_V(named_texture, RID());
+
+	if (named_texture->texture.is_null() && named_texture->format.width > 0 && named_texture->format.height > 0) {
+		// Avoid recreating depth/stencil textures or D24 formats for sampling; they may be unsupported on some drivers.
+		if ((named_texture->format.usage_bits & RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) || named_texture->format.format == RD::DATA_FORMAT_D24_UNORM_S8_UINT) {
+			return RID();
+		}
+
+		bool supported = RD::get_singleton()->texture_is_format_supported_for_usage(named_texture->format.format, named_texture->format.usage_bits);
+		if (supported) {
+			named_texture->texture = RD::get_singleton()->texture_create(named_texture->format, RD::TextureView());
+			if (named_texture->texture.is_valid()) {
+				update_sizes(*named_texture);
+			}
+		}
+	}
+
+	return named_texture->texture;
 }
 
 Ref<RDTextureFormat> RenderSceneBuffersRD::_get_texture_format(const StringName &p_context, const StringName &p_texture_name) const {
@@ -428,7 +482,22 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 	// check if this is a known texture
 	ERR_FAIL_COND_V(!named_textures.has(key), RID());
 	NamedTexture &named_texture = named_textures[key];
-	ERR_FAIL_COND_V(named_texture.texture.is_null(), RID());
+	if (named_texture.texture.is_null() && named_texture.format.width > 0 && named_texture.format.height > 0) {
+		if ((named_texture.format.usage_bits & RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) || named_texture.format.format == RD::DATA_FORMAT_D24_UNORM_S8_UINT) {
+			return RID();
+		}
+
+		bool supported = RD::get_singleton()->texture_is_format_supported_for_usage(named_texture.format.format, named_texture.format.usage_bits);
+		if (supported) {
+			named_texture.texture = RD::get_singleton()->texture_create(named_texture.format, RD::TextureView());
+			if (named_texture.texture.is_valid()) {
+				update_sizes(named_texture);
+			}
+		}
+	}
+	if (named_texture.texture.is_null()) {
+		return RID();
+	}
 
 	// check if we're in bounds
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, named_texture.format.array_layers, RID());
@@ -734,12 +803,21 @@ RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msa
 		// Use R32 for resolve on Forward+ (p_storage == true), or if we don't support depth resolve.
 		return RD::DATA_FORMAT_R32_SFLOAT;
 	} else {
-		const RenderingDeviceCommons::DataFormat preferred_formats[2] = {
-			p_storage ? RD::DATA_FORMAT_D32_SFLOAT_S8_UINT : RD::DATA_FORMAT_D24_UNORM_S8_UINT,
-			p_storage ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT
+		// Always prefer D32 for sampling; some drivers can't sample D24 depth-stencil.
+		const RenderingDeviceCommons::DataFormat preferred_formats[3] = {
+			RD::DATA_FORMAT_D32_SFLOAT_S8_UINT,
+			RD::DATA_FORMAT_D32_SFLOAT,
+			RD::DATA_FORMAT_D24_UNORM_S8_UINT
 		};
 
-		return RD::get_singleton()->texture_is_format_supported_for_usage(preferred_formats[0], get_depth_usage_bits(p_resolve, p_msaa, p_storage)) ? preferred_formats[0] : preferred_formats[1];
+		const uint32_t usage = get_depth_usage_bits(p_resolve, p_msaa, p_storage);
+		for (int i = 0; i < 3; i++) {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(preferred_formats[i], usage)) {
+				return preferred_formats[i];
+			}
+		}
+		// Fallback to D32 even if unsupported, driver will error otherwise.
+		return RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 	}
 }
 

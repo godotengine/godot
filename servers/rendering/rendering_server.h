@@ -1138,6 +1138,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
+		VIEWPORT_DEBUG_DRAW_SSS,
 		VIEWPORT_DEBUG_DRAW_SSIL,
 		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 		VIEWPORT_DEBUG_DRAW_DECAL_ATLAS,
@@ -1152,6 +1153,8 @@ public:
 		VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 		VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 		VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
+		
+		VIEWPORT_DEBUG_DRAW_VISIBILITY_BUFFER,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -1286,6 +1289,7 @@ public:
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
 	virtual void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
+	virtual void environment_set_screen_space_shadows(RID p_env, bool p_enabled, float p_thickness, float p_max_distance, float p_strength, int p_step_count, float p_light_radius, float p_thickness_falloff, float p_contact_shadow_distance, float p_shadow_fade_range, float p_history_weight) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
 
@@ -1300,8 +1304,6 @@ public:
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
 
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) = 0;
-
 	enum EnvironmentSSAOQuality {
 		ENV_SSAO_QUALITY_VERY_LOW,
 		ENV_SSAO_QUALITY_LOW,
@@ -1310,9 +1312,19 @@ public:
 		ENV_SSAO_QUALITY_ULTRA,
 	};
 
+	enum EnvironmentSSAOAlgorithm {
+		ENV_SSAO_ALGORITHM_STANDARD,
+		ENV_SSAO_ALGORITHM_VISIBILITY_BITMASK,
+		ENV_SSAO_ALGORITHM_VISIBILITY_BITMASK_BI,
+	};
+
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) = 0;
 	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+	virtual void environment_set_ssao_algorithm(RID p_env, EnvironmentSSAOAlgorithm p_algorithm) = 0;
+	virtual EnvironmentSSAOAlgorithm environment_get_ssao_algorithm(RID p_env) const = 0;
 
 	virtual void environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) = 0;
+	virtual void environment_set_ssgi(RID p_env, bool p_enable, float p_intensity, int p_radius, float p_depth_threshold, float p_normal_power, bool p_multirez, int p_multirez_levels, float p_multirez_dist_2, float p_multirez_dist_4, float p_multirez_dist_8, float p_multirez_dist_16) = 0;
 
 	enum EnvironmentSSILQuality {
 		ENV_SSIL_QUALITY_VERY_LOW,
@@ -1322,7 +1334,15 @@ public:
 		ENV_SSIL_QUALITY_ULTRA,
 	};
 
+	enum EnvironmentSSILAlgorithm {
+		ENV_SSIL_ALGORITHM_STANDARD,
+		ENV_SSIL_ALGORITHM_VISIBILITY_BITMASK,
+		ENV_SSIL_ALGORITHM_VISIBILITY_BITMASK_BI,
+	};
+
 	virtual void environment_set_ssil_quality(EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
+	virtual void environment_set_ssil_algorithm(RID p_env, EnvironmentSSILAlgorithm p_algorithm) = 0;
+	virtual EnvironmentSSILAlgorithm environment_get_ssil_algorithm(RID p_env) const = 0;
 
 	enum EnvironmentSDFGIYScale {
 		ENV_SDFGI_Y_SCALE_50_PERCENT,
@@ -1998,7 +2018,9 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentFogMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOAlgorithm);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSILAlgorithm);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToConverge);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIRayCount);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSDFGIFramesToUpdateLight);

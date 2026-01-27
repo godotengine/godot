@@ -45,17 +45,36 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi_downsample.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi_deinterleave.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi_temporal.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssgi_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_shadows.glsl.gen.h"
 #include "servers/rendering/rendering_server.h"
+#include "core/math/vector2i.h"
 
 #define RB_SCOPE_SSLF SNAME("rb_sslf")
 #define RB_SCOPE_SSDS SNAME("rb_ssds")
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
+#define RB_SCOPE_SSGI SNAME("rb_ssgi")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
+#define RB_SCOPE_SSS SNAME("SSS")
+#define RB_TEX_SSS_SHADOW SNAME("Shadow")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
+#define RB_SSGI_HALF SNAME("ssgi_half")
+#define RB_SSGI_INPUT SNAME("ssgi_input")
+#define RB_SSGI_INPUT_2 SNAME("ssgi_input_2")
+#define RB_SSGI_INPUT_4 SNAME("ssgi_input_4")
+#define RB_SSGI_INPUT_8 SNAME("ssgi_input_8")
+#define RB_SSGI_INPUT_16 SNAME("ssgi_input_16")
+#define RB_SSGI_PONG SNAME("ssgi_pong")
+#define RB_SSGI_HISTORY SNAME("ssgi_history")
 #define RB_LAST_FRAME SNAME("last_frame")
 #define RB_DEINTERLEAVED SNAME("deinterleaved")
 #define RB_DEINTERLEAVED_PONG SNAME("deinterleaved_pong")
@@ -86,7 +105,7 @@ public:
 
 	/* Last Frame */
 
-	void allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
+	void allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssgi, bool p_use_ssr);
 	void copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_render_buffers, CopyEffects &p_copy_effects);
 
 	/* SS Downsampler */
@@ -109,12 +128,45 @@ public:
 		float intensity = 2.0;
 		float sharpness = 0.98;
 		float normal_rejection = 1.0;
+		bool use_visibility_bitmask = false;
+		int vb_mode = 0;
 
 		Size2i full_screen_size;
 	};
 
 	void ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, const SSILSettings &p_settings);
 	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
+
+	/* SSGI */
+	struct SSGIRenderBuffers {
+		bool half_size = true;
+		bool history_valid = false;
+		int buffer_width;
+		int buffer_height;
+		int half_buffer_width;
+		int half_buffer_height;
+	};
+
+	struct SSGISettings {
+		float intensity = 1.0;
+		float depth_threshold = 50.0;
+		float normal_power = 8.0;
+		int radius = 2;
+		float z_near = 0.0f;
+		float z_far = 0.0f;
+		bool orthogonal = false;
+		bool multirez = false;
+		int multirez_levels = 4;
+		float multirez_dist_2 = 1.0f;
+		float multirez_dist_4 = 2.0f;
+		float multirez_dist_8 = 4.0f;
+		float multirez_dist_16 = 8.0f;
+
+		Size2i full_screen_size;
+	};
+
+	void ssgi_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSGIRenderBuffers &p_ssgi_buffers, const SSGISettings &p_settings);
+	void screen_space_global_illumination(Ref<RenderSceneBuffersRD> p_render_buffers, SSGIRenderBuffers &p_ssgi_buffers, uint32_t p_view, RID p_normal_buffer, const SSGISettings &p_settings);
 
 	/* SSAO */
 	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
@@ -134,6 +186,8 @@ public:
 		float detail = 0.5;
 		float horizon = 0.06;
 		float sharpness = 0.98;
+		bool use_visibility_bitmask = false;
+		int vb_mode = 0; // 0: off, 1: VB uni, 2: VB bi
 
 		Size2i full_screen_size;
 	};
@@ -159,6 +213,8 @@ public:
 	void sss_set_scale(float p_scale, float p_depth_scale);
 
 	void sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size);
+
+	void gen_screen_space_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_normal_roughness, float p_depth_threshold, float p_trace_distance, float p_shadow_weight, int p_ray_steps, float p_light_radius, float p_thickness_falloff, float p_contact_distance, float p_fade_range, float p_history_weight, uint32_t p_frame_count, const Vector3 &p_camera_position, Transform3D light_dir, Projection p_projection, Transform3D p_view);
 
 private:
 	/* Settings */
@@ -253,14 +309,14 @@ private:
 		float NDC_to_view_mul[2];
 		float NDC_to_view_add[2];
 
-		float pad2[2];
+		float vb_flag; // use visibility bitmask
 		float z_near;
 		float z_far;
+		float _pad_flags; // align to 16 bytes
 
 		float radius;
 		float intensity;
 		int size_multiplier;
-		int pad;
 
 		float fade_out_mul;
 		float fade_out_add;
@@ -271,6 +327,7 @@ private:
 		float neg_inv_radius;
 		float load_counter_avg_div;
 		float adaptive_sample_limit;
+		float _pad1; // align to 8 bytes for following ivec2
 
 		int32_t pass_coord_offset[2];
 		float pass_uv_offset[2];
@@ -296,6 +353,7 @@ private:
 
 	struct SSILProjectionUniforms {
 		float inv_last_frame_projection_matrix[16];
+		float pad[4];
 	};
 
 	struct SSIL {
@@ -319,9 +377,77 @@ private:
 		RID interleave_shader_version;
 
 		PipelineDeferredRD pipelines[SSIL_MAX];
+
+		uint32_t history_index = 0;
 	} ssil;
 
 	void gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_slices, const RID *p_edges_slices, const SSILSettings &p_settings, bool p_adaptive_base_pass, RID p_gather_uniform_set, RID p_importance_map_uniform_set, RID p_projection_uniform_set);
+
+	/* SSGI */
+
+	struct SSGIDeinterleavePushConstant {
+		float pixel_sizes[4];
+		float thresholds[4];
+		float camera[4];
+	};
+
+	struct SSGIPushConstant {
+		float pixel_intensity[4];
+		float thresholds[4];
+		int32_t radius_pad[4];
+		float camera[4];
+		float multirez[4];
+		float multirez_dist[4];
+		float jitter[4];
+		int32_t sample_params[4]; // x: sample_count
+	};
+
+	struct SSGIUpscalePushConstant {
+		float pixel_sizes[4];
+		float thresholds[4];
+		float camera[4];
+	};
+
+	struct SSGIBlurPushConstant {
+		float pixel_dir[4];
+		float thresholds[4];
+		float camera[4];
+	};
+
+	struct SSGITemporalPushConstant {
+		float pixel_params[4];
+		float thresholds[4];
+		float camera[4];
+		float temporal_params[4];
+		float disocclusion_params[4];
+		float stability_params[4];
+	};
+
+	struct SSGI {
+		SSGIDeinterleavePushConstant deinterleave_push_constant;
+		SsgiDeinterleaveShaderRD deinterleave_shader;
+		RID deinterleave_shader_version;
+		PipelineDeferredRD deinterleave_pipeline;
+		SsgiDownsampleShaderRD downsample_shader;
+		RID downsample_shader_version;
+		PipelineDeferredRD downsample_pipeline;
+		SSGIPushConstant push_constant;
+		SsgiShaderRD shader;
+		RID shader_version;
+		PipelineDeferredRD pipeline;
+		SSGIUpscalePushConstant upscale_push_constant;
+		SsgiUpscaleShaderRD upscale_shader;
+		RID upscale_shader_version;
+		PipelineDeferredRD upscale_pipeline;
+		SSGIBlurPushConstant blur_push_constant;
+		SsgiBlurShaderRD blur_shader;
+		RID blur_shader_version;
+		PipelineDeferredRD blur_pipeline;
+		SSGITemporalPushConstant temporal_push_constant;
+		SsgiTemporalShaderRD temporal_shader;
+		RID temporal_shader_version;
+		PipelineDeferredRD temporal_pipeline;
+	} ssgi;
 
 	/* SSAO */
 
@@ -353,7 +479,7 @@ private:
 		float NDC_to_view_mul[2];
 		float NDC_to_view_add[2];
 
-		float pad[2];
+		float flags[2]; // x: use visibility bitmask, y: unused
 		float half_screen_pixel_size_x025[2];
 
 		float radius;
@@ -527,6 +653,48 @@ private:
 		RID shader_version;
 		PipelineDeferredRD pipelines[SUBSURFACE_SCATTERING_MODE_MAX];
 	} sss;
+
+	struct ScreenSpaceShadowsPushConstant {
+		float screen_size_rcp[2];
+		float screen_size[2];
+
+		float light_dir[3];
+		float thickness;
+
+		float max_dist;
+		float intensity;
+		uint32_t sample_count;
+		uint32_t use_normals;
+
+		float camera_pos[3];
+		uint32_t frame_count;
+		float light_radius;
+		float thickness_falloff;
+		float contact_shadow_distance;
+		float shadow_fade_range;
+		float history_blend;
+		uint32_t use_history;
+		float history_pad[2];
+	};
+
+	struct ScreenSpaceShadowsData {
+		float proj[16];
+		float proj_inv[16];
+		float view[16];
+		float view_inv[16];
+	};
+
+	struct ScreenSpaceShadows {
+		ScreenSpaceShadowsPushConstant push_constant;
+		ScreenSpaceShadowsShaderRD shader;
+		RID shader_version;
+		RID pipelines[1];
+		RID ubo;
+		RID history_textures[2];
+		RID history_dummy;
+		Size2i history_size;
+		uint32_t history_index = 0;
+	} screen_space_shadows;
 };
 
 } // namespace RendererRD

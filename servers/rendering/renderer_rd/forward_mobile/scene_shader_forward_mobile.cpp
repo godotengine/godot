@@ -694,9 +694,11 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["SSS_TRANSMITTANCE_COLOR"] = "transmittance_color_highp";
 		actions.renames["SSS_TRANSMITTANCE_DEPTH"] = "transmittance_depth_highp";
 		actions.renames["SSS_TRANSMITTANCE_BOOST"] = "transmittance_boost_highp";
+		actions.renames["MESH_BLEND"] = "mesh_blend_value";
 		actions.renames["BACKLIGHT"] = "backlight_highp";
 		actions.renames["AO"] = "ao_highp";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect_highp";
+		actions.renames["MICRO_SHADOWS"] = "micro_shadows_highp";
 		actions.renames["EMISSION"] = "emission_highp";
 		actions.renames["POINT_COORD"] = "point_coord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -719,6 +721,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(read_view_matrix * read_model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
@@ -745,6 +748,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
 		actions.usage_defines["AO"] = "#define AO_USED\n";
 		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
+		actions.usage_defines["MICRO_SHADOWS"] = "#define MICRO_SHADOWS_USED\n";
 		actions.usage_defines["UV"] = "#define UV_USED\n";
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
 		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";

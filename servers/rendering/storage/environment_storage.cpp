@@ -765,16 +765,24 @@ float RendererEnvironmentStorage::environment_get_ssao_ao_channel_affect(RID p_e
 	return env->ssao_ao_channel_affect;
 }
 
+void RendererEnvironmentStorage::environment_set_ssao_algorithm(RID p_env, RS::EnvironmentSSAOAlgorithm p_algorithm) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->ssao_algorithm = p_algorithm;
+}
+
+RS::EnvironmentSSAOAlgorithm RendererEnvironmentStorage::environment_get_ssao_algorithm(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RS::ENV_SSAO_ALGORITHM_STANDARD);
+	return env->ssao_algorithm;
+}
+
 // SSIL
 
 void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_sharpness, float p_normal_rejection) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) is only available when using the Forward+ renderer.");
-	}
-#endif
+
 	env->ssil_enabled = p_enable;
 	env->ssil_radius = p_radius;
 	env->ssil_intensity = p_intensity;
@@ -807,9 +815,106 @@ float RendererEnvironmentStorage::environment_get_ssil_sharpness(RID p_env) cons
 }
 
 float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
+	const Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
 	return env->ssil_normal_rejection;
+}
+
+void RendererEnvironmentStorage::environment_set_ssgi(RID p_env, bool p_enable, float p_intensity, int p_radius, float p_depth_threshold, float p_normal_power, bool p_multirez, int p_multirez_levels, float p_multirez_dist_2, float p_multirez_dist_4, float p_multirez_dist_8, float p_multirez_dist_16) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+
+	env->ssgi_enabled = p_enable;
+	env->ssgi_intensity = p_intensity;
+	env->ssgi_radius = p_radius;
+	env->ssgi_depth_threshold = p_depth_threshold;
+	env->ssgi_normal_power = p_normal_power;
+	env->ssgi_multirez = p_multirez;
+	env->ssgi_multirez_levels = p_multirez_levels;
+	env->ssgi_multirez_dist_2 = p_multirez_dist_2;
+	env->ssgi_multirez_dist_4 = p_multirez_dist_4;
+	env->ssgi_multirez_dist_8 = p_multirez_dist_8;
+	env->ssgi_multirez_dist_16 = p_multirez_dist_16;
+}
+
+bool RendererEnvironmentStorage::environment_get_ssgi_enabled(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->ssgi_enabled;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_intensity(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->ssgi_intensity;
+}
+
+int RendererEnvironmentStorage::environment_get_ssgi_radius(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 2);
+	return env->ssgi_radius;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_depth_threshold(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 50.0);
+	return env->ssgi_depth_threshold;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_normal_power(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 8.0);
+	return env->ssgi_normal_power;
+}
+
+bool RendererEnvironmentStorage::environment_get_ssgi_multirez(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+
+	return env->ssgi_multirez;
+}
+
+int RendererEnvironmentStorage::environment_get_ssgi_multirez_levels(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 4);
+
+	return env->ssgi_multirez_levels;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_multirez_dist_2(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0f);
+	return env->ssgi_multirez_dist_2;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_multirez_dist_4(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 2.0f);
+	return env->ssgi_multirez_dist_4;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_multirez_dist_8(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 4.0f);
+	return env->ssgi_multirez_dist_8;
+}
+
+float RendererEnvironmentStorage::environment_get_ssgi_multirez_dist_16(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 8.0f);
+	return env->ssgi_multirez_dist_16;
+}
+
+void RendererEnvironmentStorage::environment_set_ssil_algorithm(RID p_env, RS::EnvironmentSSILAlgorithm p_algorithm) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->ssil_algorithm = p_algorithm;
+}
+
+RS::EnvironmentSSILAlgorithm RendererEnvironmentStorage::environment_get_ssil_algorithm(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RS::ENV_SSIL_ALGORITHM_STANDARD);
+	return env->ssil_algorithm;
 }
 
 // SDFGI
@@ -944,4 +1049,80 @@ RID RendererEnvironmentStorage::environment_get_color_correction(RID p_env) cons
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, RID());
 	return env->color_correction;
+}
+
+void RendererEnvironmentStorage::environment_set_screen_space_shadows(RID p_env, bool enabled, float thickness, float max_dist, float intensity, int sample_count, float light_radius, float thickness_falloff, float contact_distance, float fade_range, float history_weight) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+
+	env->ss_shadow_enabled = enabled;
+	env->ss_shadow_thickness = thickness;
+	env->ss_shadow_max_distance = max_dist;
+	env->ss_shadow_strength = intensity;
+	env->ss_shadow_steps = MAX(1, sample_count);
+	env->ss_shadow_light_radius = MAX(light_radius, 0.0f);
+	env->ss_shadow_thickness_falloff = MAX(thickness_falloff, 0.0f);
+	env->ss_shadow_contact_distance = MAX(contact_distance, 0.0f);
+	env->ss_shadow_fade_range = MAX(fade_range, 0.0f);
+	env->ss_shadow_history_weight = CLAMP(history_weight, 0.0f, 1.0f);
+}
+
+bool RendererEnvironmentStorage::environment_get_screen_space_shadow_enabled(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, false);
+	return env->ss_shadow_enabled;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_thickness(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.1f);
+	return env->ss_shadow_thickness;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_max_distance(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.1f);
+	return env->ss_shadow_max_distance;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_strength(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.8f);
+	return env->ss_shadow_strength;
+}
+
+int RendererEnvironmentStorage::environment_get_screen_space_shadow_steps(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 16);
+	return env->ss_shadow_steps;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_light_radius(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.05f);
+	return env->ss_shadow_light_radius;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_thickness_falloff(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0f);
+	return env->ss_shadow_thickness_falloff;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_contact_distance(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0f);
+	return env->ss_shadow_contact_distance;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_fade_range(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 10.0f);
+	return env->ss_shadow_fade_range;
+}
+
+float RendererEnvironmentStorage::environment_get_screen_space_shadow_history_weight(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.4f);
+	return env->ss_shadow_history_weight;
 }

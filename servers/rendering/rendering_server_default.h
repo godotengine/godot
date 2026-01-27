@@ -822,10 +822,15 @@ public:
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
+	FUNC2(environment_set_ssao_algorithm, RID, EnvironmentSSAOAlgorithm)
 	FUNC6(environment_set_ssao_quality, EnvironmentSSAOQuality, bool, float, int, float, float)
+	FUNC1RC(EnvironmentSSAOAlgorithm, environment_get_ssao_algorithm, RID)
 
 	FUNC6(environment_set_ssil, RID, bool, float, float, float, float)
+	FUNC12(environment_set_ssgi, RID, bool, float, int, float, float, bool, int, float, float, float, float)
 	FUNC6(environment_set_ssil_quality, EnvironmentSSILQuality, bool, float, int, float, float)
+	FUNC2(environment_set_ssil_algorithm, RID, EnvironmentSSILAlgorithm)
+	FUNC1RC(EnvironmentSSILAlgorithm, environment_get_ssil_algorithm, RID)
 
 	FUNC13(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, float, RID)
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
@@ -834,6 +839,8 @@ public:
 	FUNC2(environment_set_tonemap_agx_contrast, RID, float)
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
+
+FUNC11(environment_set_screen_space_shadows, RID, bool, float, float, float, int, float, float, float, float, float)
 
 	FUNC11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, EnvironmentFogMode)
 

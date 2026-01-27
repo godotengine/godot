@@ -393,6 +393,18 @@ float Environment::get_ssao_ao_channel_affect() const {
 	return ssao_ao_channel_affect;
 }
 
+void Environment::set_ssao_algorithm(RenderingServer::EnvironmentSSAOAlgorithm p_algorithm) {
+	if (ssao_algorithm == p_algorithm) {
+		return;
+	}
+	ssao_algorithm = p_algorithm;
+	_update_ssao();
+}
+
+RenderingServer::EnvironmentSSAOAlgorithm Environment::get_ssao_algorithm() const {
+	return ssao_algorithm;
+}
+
 void Environment::_update_ssao() {
 	RS::get_singleton()->environment_set_ssao(
 			environment,
@@ -405,6 +417,7 @@ void Environment::_update_ssao() {
 			ssao_sharpness,
 			ssao_direct_light_affect,
 			ssao_ao_channel_affect);
+	RS::get_singleton()->environment_set_ssao_algorithm(environment, ssao_algorithm);
 }
 
 // SSIL
@@ -454,6 +467,123 @@ float Environment::get_ssil_normal_rejection() const {
 	return ssil_normal_rejection;
 }
 
+void Environment::set_ssil_algorithm(RenderingServer::EnvironmentSSILAlgorithm p_algorithm) {
+	if (ssil_algorithm == p_algorithm) {
+		return;
+	}
+	ssil_algorithm = p_algorithm;
+	_update_ssil();
+}
+
+RenderingServer::EnvironmentSSILAlgorithm Environment::get_ssil_algorithm() const {
+	return ssil_algorithm;
+}
+
+// SSGI
+
+void Environment::set_ssgi_enabled(bool p_enabled) {
+	ssgi_enabled = p_enabled;
+	_update_ssgi();
+}
+
+bool Environment::is_ssgi_enabled() const {
+	return ssgi_enabled;
+}
+
+void Environment::set_ssgi_intensity(float p_intensity) {
+	ssgi_intensity = p_intensity;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_intensity() const {
+	return ssgi_intensity;
+}
+
+void Environment::set_ssgi_radius(int p_radius) {
+	ssgi_radius = p_radius;
+	_update_ssgi();
+}
+
+int Environment::get_ssgi_radius() const {
+	return ssgi_radius;
+}
+
+void Environment::set_ssgi_depth_threshold(float p_threshold) {
+	ssgi_depth_threshold = p_threshold;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_depth_threshold() const {
+	return ssgi_depth_threshold;
+}
+
+void Environment::set_ssgi_normal_power(float p_power) {
+	ssgi_normal_power = p_power;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_normal_power() const {
+	return ssgi_normal_power;
+}
+
+void Environment::set_ssgi_multirez(bool p_enabled) {
+	ssgi_multirez = p_enabled;
+	_update_ssgi();
+}
+
+bool Environment::is_ssgi_multirez_enabled() const {
+	return ssgi_multirez;
+}
+
+void Environment::set_ssgi_multirez_levels(int p_levels) {
+	if (p_levels != 2 && p_levels != 4 && p_levels != 8 && p_levels != 16) {
+		WARN_PRINT("Invalid SSGI multires levels (must be 2, 4, 8, or 16). Using 4.");
+		p_levels = 4;
+	}
+	ssgi_multirez_levels = p_levels;
+	_update_ssgi();
+}
+
+int Environment::get_ssgi_multirez_levels() const {
+	return ssgi_multirez_levels;
+}
+
+void Environment::set_ssgi_multirez_dist_2(float p_distance) {
+	ssgi_multirez_dist_2 = p_distance;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_multirez_dist_2() const {
+	return ssgi_multirez_dist_2;
+}
+
+void Environment::set_ssgi_multirez_dist_4(float p_distance) {
+	ssgi_multirez_dist_4 = p_distance;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_multirez_dist_4() const {
+	return ssgi_multirez_dist_4;
+}
+
+void Environment::set_ssgi_multirez_dist_8(float p_distance) {
+	ssgi_multirez_dist_8 = p_distance;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_multirez_dist_8() const {
+	return ssgi_multirez_dist_8;
+}
+
+void Environment::set_ssgi_multirez_dist_16(float p_distance) {
+	ssgi_multirez_dist_16 = p_distance;
+	_update_ssgi();
+}
+
+float Environment::get_ssgi_multirez_dist_16() const {
+	return ssgi_multirez_dist_16;
+}
+
 void Environment::_update_ssil() {
 	RS::get_singleton()->environment_set_ssil(
 			environment,
@@ -462,6 +592,11 @@ void Environment::_update_ssil() {
 			ssil_intensity,
 			ssil_sharpness,
 			ssil_normal_rejection);
+	RS::get_singleton()->environment_set_ssil_algorithm(environment, ssil_algorithm);
+}
+
+void Environment::_update_ssgi() {
+	RS::get_singleton()->environment_set_ssgi(environment, ssgi_enabled, ssgi_intensity, ssgi_radius, ssgi_depth_threshold, ssgi_normal_power, ssgi_multirez, ssgi_multirez_levels, ssgi_multirez_dist_2, ssgi_multirez_dist_4, ssgi_multirez_dist_8, ssgi_multirez_dist_16);
 }
 
 // SDFGI
@@ -1084,17 +1219,151 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 	return adjustment_color_correction;
 }
 
+void Environment::set_ss_shadow_enabled(bool p_enabled) {
+	if (ss_shadow_enabled == p_enabled) {
+		return;
+	}
+	ss_shadow_enabled = p_enabled;
+	_update_screen_space_shadows();
+	notify_property_list_changed();
+}
+
+bool Environment::is_ss_shadow_enabled() const {
+	return ss_shadow_enabled;
+}
+
+void Environment::set_ss_shadow_thickness(float p_thickness) {
+	ss_shadow_thickness = p_thickness;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_thickness() const {
+	return ss_shadow_thickness;
+}
+
+void Environment::set_ss_shadow_max_distance(float p_max_distance) {
+	ss_shadow_max_distance = p_max_distance;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_max_distance() const {
+	return ss_shadow_max_distance;
+}
+
+void Environment::set_ss_shadow_strength(float p_strength) {
+	ss_shadow_strength = CLAMP(p_strength, 0.0f, 1.0f);
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_strength() const {
+	return ss_shadow_strength;
+}
+
+void Environment::set_ss_shadow_steps(int p_samples) {
+	int clamped = CLAMP(p_samples, 1, 128);
+	if (ss_shadow_steps == clamped) {
+		return;
+	}
+	ss_shadow_steps = clamped;
+	_update_screen_space_shadows();
+}
+
+int Environment::get_ss_shadow_steps() const {
+	return ss_shadow_steps;
+}
+
+void Environment::set_ss_shadow_light_radius(float p_radius) {
+	float clamped = MAX(p_radius, 0.0f);
+	if (Math::is_equal_approx(ss_shadow_light_radius, clamped)) {
+		return;
+	}
+	ss_shadow_light_radius = clamped;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_light_radius() const {
+	return ss_shadow_light_radius;
+}
+
+void Environment::set_ss_shadow_thickness_falloff(float p_falloff) {
+	float clamped = MAX(p_falloff, 0.0f);
+	if (Math::is_equal_approx(ss_shadow_thickness_falloff, clamped)) {
+		return;
+	}
+	ss_shadow_thickness_falloff = clamped;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_thickness_falloff() const {
+	return ss_shadow_thickness_falloff;
+}
+
+void Environment::set_ss_shadow_contact_distance(float p_distance) {
+	float clamped = MAX(p_distance, 0.0f);
+	if (Math::is_equal_approx(ss_shadow_contact_distance, clamped)) {
+		return;
+	}
+	ss_shadow_contact_distance = clamped;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_contact_distance() const {
+	return ss_shadow_contact_distance;
+}
+
+void Environment::set_ss_shadow_fade_range(float p_range) {
+	float clamped = MAX(p_range, 0.0f);
+	if (Math::is_equal_approx(ss_shadow_fade_range, clamped)) {
+		return;
+	}
+	ss_shadow_fade_range = clamped;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_fade_range() const {
+	return ss_shadow_fade_range;
+}
+
+void Environment::set_ss_shadow_history_weight(float p_weight) {
+	float clamped = CLAMP(p_weight, 0.0f, 1.0f);
+	if (Math::is_equal_approx(ss_shadow_history_weight, clamped)) {
+		return;
+	}
+	ss_shadow_history_weight = clamped;
+	_update_screen_space_shadows();
+}
+
+float Environment::get_ss_shadow_history_weight() const {
+	return ss_shadow_history_weight;
+}
+
+
 void Environment::_update_adjustment() {
 	RID color_correction = adjustment_color_correction.is_valid() ? adjustment_color_correction->get_rid() : RID();
 
-	RS::get_singleton()->environment_set_adjustment(
+			RS::get_singleton()->environment_set_adjustment(
+				environment,
+				adjustment_enabled,
+				adjustment_brightness,
+				adjustment_contrast,
+				adjustment_saturation,
+				use_1d_color_correction,
+				color_correction);
+}
+
+void Environment::_update_screen_space_shadows() {
+	RS::get_singleton()->environment_set_screen_space_shadows(
 			environment,
-			adjustment_enabled,
-			adjustment_brightness,
-			adjustment_contrast,
-			adjustment_saturation,
-			use_1d_color_correction,
-			color_correction);
+			ss_shadow_enabled,
+			ss_shadow_thickness,
+			ss_shadow_max_distance,
+			ss_shadow_strength,
+			ss_shadow_steps,
+			ss_shadow_light_radius,
+			ss_shadow_thickness_falloff,
+			ss_shadow_contact_distance,
+			ss_shadow_fade_range,
+			ss_shadow_history_weight);
 }
 
 // Private methods, constructor and destructor
@@ -1188,6 +1457,10 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (!ss_shadow_enabled && p_property.name.begins_with("ss_shadow_") && p_property.name != "ss_shadow_enabled") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -1328,6 +1601,29 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssao_direct_light_affect"), &Environment::get_ssao_direct_light_affect);
 	ClassDB::bind_method(D_METHOD("set_ssao_ao_channel_affect", "amount"), &Environment::set_ssao_ao_channel_affect);
 	ClassDB::bind_method(D_METHOD("get_ssao_ao_channel_affect"), &Environment::get_ssao_ao_channel_affect);
+	ClassDB::bind_method(D_METHOD("set_ssao_algorithm", "algorithm"), &Environment::set_ssao_algorithm);
+	ClassDB::bind_method(D_METHOD("get_ssao_algorithm"), &Environment::get_ssao_algorithm);
+
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_enabled", "enabled"), &Environment::set_ss_shadow_enabled);
+	ClassDB::bind_method(D_METHOD("is_ss_shadow_enabled"), &Environment::is_ss_shadow_enabled);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_thickness", "thickness"), &Environment::set_ss_shadow_thickness);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_thickness"), &Environment::get_ss_shadow_thickness);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_max_distance", "max_distance"), &Environment::set_ss_shadow_max_distance);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_max_distance"), &Environment::get_ss_shadow_max_distance);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_strength", "strength"), &Environment::set_ss_shadow_strength);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_strength"), &Environment::get_ss_shadow_strength);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_steps", "steps"), &Environment::set_ss_shadow_steps);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_steps"), &Environment::get_ss_shadow_steps);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_light_radius", "radius"), &Environment::set_ss_shadow_light_radius);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_light_radius"), &Environment::get_ss_shadow_light_radius);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_thickness_falloff", "falloff"), &Environment::set_ss_shadow_thickness_falloff);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_thickness_falloff"), &Environment::get_ss_shadow_thickness_falloff);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_contact_distance", "contact_distance"), &Environment::set_ss_shadow_contact_distance);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_contact_distance"), &Environment::get_ss_shadow_contact_distance);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_fade_range", "fade_range"), &Environment::set_ss_shadow_fade_range);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_fade_range"), &Environment::get_ss_shadow_fade_range);
+	ClassDB::bind_method(D_METHOD("set_ss_shadow_history_weight", "weight"), &Environment::set_ss_shadow_history_weight);
+	ClassDB::bind_method(D_METHOD("get_ss_shadow_history_weight"), &Environment::get_ss_shadow_history_weight);
 
 	ADD_GROUP("SSAO", "ssao_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssao_enabled", "is_ssao_enabled");
@@ -1339,6 +1635,19 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssao_sharpness", "get_ssao_sharpness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_algorithm", PROPERTY_HINT_ENUM, "Standard,Visibility Bitmask (Unidirectional),Visibility Bitmask (Bidirectional)"), "set_ssao_algorithm", "get_ssao_algorithm");
+
+	ADD_GROUP("SSS", "ss_shadow_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ss_shadow_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ss_shadow_enabled", "is_ss_shadow_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_thickness", PROPERTY_HINT_RANGE, "0.00,2.0,0.01"), "set_ss_shadow_thickness", "get_ss_shadow_thickness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_max_distance", PROPERTY_HINT_RANGE, "0.00,2.0,0.01"), "set_ss_shadow_max_distance", "get_ss_shadow_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_strength", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_ss_shadow_strength", "get_ss_shadow_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ss_shadow_steps", PROPERTY_HINT_RANGE, "4,128,1"), "set_ss_shadow_steps", "get_ss_shadow_steps");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_light_radius", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_ss_shadow_light_radius", "get_ss_shadow_light_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_thickness_falloff", PROPERTY_HINT_RANGE, "0.0,8.0,0.01"), "set_ss_shadow_thickness_falloff", "get_ss_shadow_thickness_falloff");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_contact_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01"), "set_ss_shadow_contact_distance", "get_ss_shadow_contact_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_fade_range", PROPERTY_HINT_RANGE, "0.0,128.0,0.01,or_greater"), "set_ss_shadow_fade_range", "get_ss_shadow_fade_range");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ss_shadow_history_weight", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_ss_shadow_history_weight", "get_ss_shadow_history_weight");
 
 	// SSIL
 	ClassDB::bind_method(D_METHOD("set_ssil_enabled", "enabled"), &Environment::set_ssil_enabled);
@@ -1351,6 +1660,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ssil_sharpness"), &Environment::get_ssil_sharpness);
 	ClassDB::bind_method(D_METHOD("set_ssil_normal_rejection", "normal_rejection"), &Environment::set_ssil_normal_rejection);
 	ClassDB::bind_method(D_METHOD("get_ssil_normal_rejection"), &Environment::get_ssil_normal_rejection);
+	ClassDB::bind_method(D_METHOD("set_ssil_algorithm", "algorithm"), &Environment::set_ssil_algorithm);
+	ClassDB::bind_method(D_METHOD("get_ssil_algorithm"), &Environment::get_ssil_algorithm);
 
 	ADD_GROUP("SSIL", "ssil_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssil_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssil_enabled", "is_ssil_enabled");
@@ -1358,6 +1669,44 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_intensity", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_ssil_intensity", "get_ssil_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_sharpness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_sharpness", "get_ssil_sharpness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssil_normal_rejection", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ssil_normal_rejection", "get_ssil_normal_rejection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssil_algorithm", PROPERTY_HINT_ENUM, "Standard,Visibility Bitmask (Unidirectional),Visibility Bitmask (Bidirectional)"), "set_ssil_algorithm", "get_ssil_algorithm");
+
+	// SSGI
+	ClassDB::bind_method(D_METHOD("set_ssgi_enabled", "enabled"), &Environment::set_ssgi_enabled);
+	ClassDB::bind_method(D_METHOD("is_ssgi_enabled"), &Environment::is_ssgi_enabled);
+	ClassDB::bind_method(D_METHOD("set_ssgi_intensity", "intensity"), &Environment::set_ssgi_intensity);
+	ClassDB::bind_method(D_METHOD("get_ssgi_intensity"), &Environment::get_ssgi_intensity);
+	ClassDB::bind_method(D_METHOD("set_ssgi_radius", "radius"), &Environment::set_ssgi_radius);
+	ClassDB::bind_method(D_METHOD("get_ssgi_radius"), &Environment::get_ssgi_radius);
+	ClassDB::bind_method(D_METHOD("set_ssgi_depth_threshold", "threshold"), &Environment::set_ssgi_depth_threshold);
+	ClassDB::bind_method(D_METHOD("get_ssgi_depth_threshold"), &Environment::get_ssgi_depth_threshold);
+	ClassDB::bind_method(D_METHOD("set_ssgi_normal_power", "power"), &Environment::set_ssgi_normal_power);
+	ClassDB::bind_method(D_METHOD("get_ssgi_normal_power"), &Environment::get_ssgi_normal_power);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez", "enabled"), &Environment::set_ssgi_multirez);
+	ClassDB::bind_method(D_METHOD("is_ssgi_multirez_enabled"), &Environment::is_ssgi_multirez_enabled);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez_levels", "levels"), &Environment::set_ssgi_multirez_levels);
+	ClassDB::bind_method(D_METHOD("get_ssgi_multirez_levels"), &Environment::get_ssgi_multirez_levels);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez_dist_2", "distance"), &Environment::set_ssgi_multirez_dist_2);
+	ClassDB::bind_method(D_METHOD("get_ssgi_multirez_dist_2"), &Environment::get_ssgi_multirez_dist_2);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez_dist_4", "distance"), &Environment::set_ssgi_multirez_dist_4);
+	ClassDB::bind_method(D_METHOD("get_ssgi_multirez_dist_4"), &Environment::get_ssgi_multirez_dist_4);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez_dist_8", "distance"), &Environment::set_ssgi_multirez_dist_8);
+	ClassDB::bind_method(D_METHOD("get_ssgi_multirez_dist_8"), &Environment::get_ssgi_multirez_dist_8);
+	ClassDB::bind_method(D_METHOD("set_ssgi_multirez_dist_16", "distance"), &Environment::set_ssgi_multirez_dist_16);
+	ClassDB::bind_method(D_METHOD("get_ssgi_multirez_dist_16"), &Environment::get_ssgi_multirez_dist_16);
+
+	ADD_GROUP("SSGI", "ssgi_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssgi_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_ssgi_enabled", "is_ssgi_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_intensity", PROPERTY_HINT_RANGE, "0,8,0.01,or_greater"), "set_ssgi_intensity", "get_ssgi_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssgi_radius", PROPERTY_HINT_RANGE, "1,64,1"), "set_ssgi_radius", "get_ssgi_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_depth_threshold", PROPERTY_HINT_RANGE, "0,200,0.1,or_greater"), "set_ssgi_depth_threshold", "get_ssgi_depth_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_normal_power", PROPERTY_HINT_RANGE, "1,64,1,or_greater"), "set_ssgi_normal_power", "get_ssgi_normal_power");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssgi_multirez"), "set_ssgi_multirez", "is_ssgi_multirez_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssgi_multirez_levels", PROPERTY_HINT_ENUM, "2:2,4:4,8:8,16:16"), "set_ssgi_multirez_levels", "get_ssgi_multirez_levels");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_multirez_dist_2", PROPERTY_HINT_RANGE, "0,64,0.1,or_greater"), "set_ssgi_multirez_dist_2", "get_ssgi_multirez_dist_2");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_multirez_dist_4", PROPERTY_HINT_RANGE, "0,64,0.1,or_greater"), "set_ssgi_multirez_dist_4", "get_ssgi_multirez_dist_4");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_multirez_dist_8", PROPERTY_HINT_RANGE, "0,64,0.1,or_greater"), "set_ssgi_multirez_dist_8", "get_ssgi_multirez_dist_8");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssgi_multirez_dist_16", PROPERTY_HINT_RANGE, "0,64,0.1,or_greater"), "set_ssgi_multirez_dist_16", "get_ssgi_multirez_dist_16");
 
 	// SDFGI
 
@@ -1625,10 +1974,12 @@ Environment::Environment() {
 	_update_ssr();
 	_update_ssao();
 	_update_ssil();
+	_update_ssgi();
 	_update_sdfgi();
 	_update_glow();
 	_update_fog();
 	_update_adjustment();
+	_update_screen_space_shadows();
 	_update_volumetric_fog();
 	_update_bg_energy();
 	notify_property_list_changed();

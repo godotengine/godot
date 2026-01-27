@@ -59,6 +59,15 @@
 #define RB_TEX_BACK_COLOR SNAME("back_color")
 #define RB_TEX_BACK_DEPTH SNAME("back_depth")
 
+#define RB_TEX_VB_VIS      SNAME("vb_vis")      // R32G32_UINT: (object_id, tri_id)
+#define RB_TEX_VB_AUX      SNAME("vb_aux")      // RG16F
+#define RB_TEX_VB_DEPTH    SNAME("vb_depth")    // D32_SFLOAT
+#define RB_TEX_MESH_BLEND_MASK SNAME("mesh_blend_mask")       // RG16F: (id, normalized distance)
+#define RB_TEX_MESH_BLEND_EDGE0 SNAME("mesh_blend_edge0")     // R32G32_UINT: edge coords
+#define RB_TEX_MESH_BLEND_EDGE1 SNAME("mesh_blend_edge1")     // R32G32_UINT: ping/pong
+#define RB_TEX_MESH_BLEND_SOURCE SNAME("mesh_blend_source")   // source color copy
+
+
 class RenderSceneBuffersRD : public RenderSceneBuffers {
 	GDCLASS(RenderSceneBuffersRD, RenderSceneBuffers);
 
@@ -163,7 +172,7 @@ private:
 	};
 
 	mutable HashMap<NTKey, NamedTexture, NTKey> named_textures;
-	void update_sizes(NamedTexture &p_named_texture);
+	void update_sizes(NamedTexture &p_named_texture) const;
 	void free_named_texture(NamedTexture &p_named_texture);
 
 	// Data buffers
@@ -193,6 +202,7 @@ public:
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
 	RS::ViewportVRSMode get_vrs_mode() { return vrs_mode; }
 
+	bool ensure_visibility_textures(bool p_with_aux = true, bool p_create_depth = true);
 	void cleanup();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_reflections(const Size2i p_reflection_size);
@@ -241,6 +251,16 @@ public:
 	_FORCE_INLINE_ RS::ViewportScreenSpaceAA get_screen_space_aa() const { return screen_space_aa; }
 	_FORCE_INLINE_ bool get_use_taa() const { return use_taa; }
 	_FORCE_INLINE_ bool get_use_debanding() const { return use_debanding; }
+	
+	_FORCE_INLINE_ RID get_vb_vis_texture() const {
+	return get_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_VIS);
+	}
+	_FORCE_INLINE_ RID get_vb_aux_texture() const {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_AUX);
+	}
+	_FORCE_INLINE_ RID get_vb_depth_texture_rb() const {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_VB_DEPTH);
+	}
 
 	uint64_t get_auto_exposure_version() const { return auto_exposure_version; }
 	void set_auto_exposure_version(const uint64_t p_auto_exposure_version) { auto_exposure_version = p_auto_exposure_version; }

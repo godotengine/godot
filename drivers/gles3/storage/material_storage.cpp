@@ -1303,9 +1303,11 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["SSS_TRANSMITTANCE_COLOR"] = "transmittance_color";
 		actions.renames["SSS_TRANSMITTANCE_DEPTH"] = "transmittance_depth";
 		actions.renames["SSS_TRANSMITTANCE_BOOST"] = "transmittance_boost";
+		actions.renames["MESH_BLEND"] = "mesh_blend_value";
 		actions.renames["BACKLIGHT"] = "backlight";
 		actions.renames["AO"] = "ao";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
+		actions.renames["MICRO_SHADOWS"] = "micro_shadows";
 		actions.renames["EMISSION"] = "emission";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -1328,6 +1330,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data_block.data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(scene_data_block.data.view_matrix * model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
 		actions.renames["VIEW_RIGHT"] = "uint(1)";
@@ -1354,6 +1357,7 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
 		actions.usage_defines["AO"] = "#define AO_USED\n";
 		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
+		actions.usage_defines["MICRO_SHADOWS"] = "#define MICRO_SHADOWS_USED\n";
 		actions.usage_defines["UV"] = "#define UV_USED\n";
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
 		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";

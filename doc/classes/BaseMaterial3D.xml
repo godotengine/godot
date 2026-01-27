@@ -102,6 +102,12 @@
 		<member name="ao_light_affect" type="float" setter="set_ao_light_affect" getter="get_ao_light_affect" default="0.0">
 			Amount that ambient occlusion affects lighting from lights. If [code]0[/code], ambient occlusion only affects ambient light. If [code]1[/code], ambient occlusion affects lights just as much as it affects ambient light. This can be used to impact the strength of the ambient occlusion effect, but typically looks unrealistic.
 		</member>
+		<member name="ao_micro_shadows" type="float" setter="set_micro_shadows" getter="get_micro_shadows" default="0.85">
+			Amount of micro shadowing applied to ambient occlusion. Higher values result in more shadowing in crevices and corners, while lower values result in less shadowing. This can help improve the appearance of ambient occlusion by simulating small details embedded in the materials.
+			[b]Note:[/b] This setting only has an effect if directional lights are present in the scene. It does not work with [OmniLight3D] and [SpotLight3D].
+			[b]Note:[/b] For best results, this setting requires an [member ao_texture] and a [member normal_texture] generated with the same pipeline.
+			[b]Note:[/b] This setting can serve as a PBR alternative to [member ao_light_affect].
+		</member>
 		<member name="ao_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], use [code]UV2[/code] coordinates to look up from the [member ao_texture].
 		</member>
@@ -208,6 +214,10 @@
 		</member>
 		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="BaseMaterial3D.DistanceFadeMode" default="0">
 			Specifies which type of fade to use. Can be any of the [enum DistanceFadeMode]s.
+		</member>
+		<member name="mesh_blend" type="float" setter="set_mesh_blend" getter="get_mesh_blend" default="0.0">
+			Scales how much this material contributes to the visibility buffer seam blending pass. Set to [code]0.0[/code] to disable mesh blending for the material. Values between [code]0.0[/code] and [code]1.0[/code] multiply [member ProjectSettings.rendering/mesh_blend/edge_radius_pixels] (and [member ProjectSettings.rendering/mesh_blend/world_radius] when enabled), letting you fine-tune on a per-material basis. Set to [code]-1.0[/code] to explicitly opt out of mesh blending for this material while keeping visibility buffer debug intact.
+			[b]Note:[/b] Mesh blending only runs when the project setting [member ProjectSettings.rendering/mesh_blend/enabled] is [code]true[/code] and is currently only available with the clustered Forward+ renderer.
 		</member>
 		<member name="emission" type="Color" setter="set_emission" getter="get_emission" default="Color(0, 0, 0, 1)">
 			The emitted light's color. See [member emission_enabled].
