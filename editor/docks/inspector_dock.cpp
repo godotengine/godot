@@ -719,7 +719,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	set_name(TTRC("Inspector"));
 	set_icon_name("AnimationTrackList");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
@@ -871,11 +871,15 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	load_resource_dialog->set_current_dir("res://");
 	load_resource_dialog->connect("file_selected", callable_mp(this, &InspectorDock::_resource_file_selected));
 
+	MarginContainer *mc = memnew(MarginContainer);
+	main_vb->add_child(mc);
+	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
 	inspector = memnew(EditorInspector);
-	main_vb->add_child(inspector);
+	mc->add_child(inspector);
 	inspector->set_autoclear(true);
 	inspector->set_show_categories(true, true);
-	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
 	inspector->set_hide_script(false);
 	inspector->set_hide_metadata(false);
@@ -883,6 +887,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_property_name_style(property_name_style);
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
+	inspector->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
 
 	inspector->set_use_filter(true);
 

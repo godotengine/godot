@@ -360,8 +360,8 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 
 /////////////////////////////////////
 
-Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
-	ERR_FAIL_COND_V(p_ray_query.is_null(), Dictionary());
+Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
 
 	RayResult result;
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
@@ -382,8 +382,8 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	return d;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_point_query.is_null(), TypedArray<Dictionary>());
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
 
 	Vector<ShapeResult> ret;
 	ret.resize(p_max_results);
@@ -407,8 +407,8 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<Phy
 	return r;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Dictionary>());
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Dictionary>());
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
@@ -427,8 +427,8 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(const Ref<Phy
 	return ret;
 }
 
-Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), Vector<real_t>());
+Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
 
 	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
@@ -442,8 +442,8 @@ Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQue
 	return ret;
 }
 
-TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), TypedArray<Vector3>());
+TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Vector3>());
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
@@ -460,8 +460,8 @@ TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsS
 	return r;
 }
 
-Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
-	ERR_FAIL_COND_V(p_shape_query.is_null(), Dictionary());
+Dictionary PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Dictionary());
 
 	ShapeRestInfo sri;
 
@@ -656,8 +656,8 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 
 ///////////////////////////////////////
 
-bool PhysicsServer3D::_body_test_motion(RID p_body, const Ref<PhysicsTestMotionParameters3D> &p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
-	ERR_FAIL_COND_V(p_parameters.is_null(), false);
+bool PhysicsServer3D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> rp_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(p_parameters, rp_parameters, false);
 
 	MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {

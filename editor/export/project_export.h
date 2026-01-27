@@ -79,13 +79,15 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Button *delete_preset = nullptr;
 	ItemList *presets = nullptr;
 
+	VBoxContainer *settings_vb = nullptr;
 	LineEdit *name = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
 	CheckButton *advanced_options = nullptr;
 
-	Button *button_export = nullptr;
+	Label *empty_label = nullptr;
+
 	bool updating = false;
 
 	RichTextLabel *result_dialog_log = nullptr;
@@ -196,7 +198,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
 
-	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
 	void _export_all_dialog();
@@ -217,7 +218,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
 
-	void _script_export_mode_changed(int p_mode);
+	void _script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode);
 
 	void _open_key_help_link();
 

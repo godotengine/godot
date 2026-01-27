@@ -11,7 +11,7 @@ partial class ExportedProperties
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(70);
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(71);
         string __NotGenerateComplexLamdaProperty_default_value = default;
         values.Add(PropertyName.@NotGenerateComplexLamdaProperty, global::Godot.Variant.From<string>(__NotGenerateComplexLamdaProperty_default_value));
         string __NotGenerateLamdaNoFieldProperty_default_value = default;
@@ -138,6 +138,8 @@ partial class ExportedProperties
         values.Add(PropertyName.@PropertyGodotObjectOrDerived, global::Godot.Variant.From<global::Godot.GodotObject>(__PropertyGodotObjectOrDerived_default_value));
         global::Godot.Texture __PropertyGodotResourceTexture_default_value = default;
         values.Add(PropertyName.@PropertyGodotResourceTexture, global::Godot.Variant.From<global::Godot.Texture>(__PropertyGodotResourceTexture_default_value));
+        global::Godot.Texture __PropertyGodotResourceTextureWithInitializer_default_value = new()  { ResourceName  = ""   };
+        values.Add(PropertyName.@PropertyGodotResourceTextureWithInitializer, global::Godot.Variant.From<global::Godot.Texture>(__PropertyGodotResourceTextureWithInitializer_default_value));
         global::Godot.StringName __PropertyStringName_default_value = new global::Godot.StringName("foo");
         values.Add(PropertyName.@PropertyStringName, global::Godot.Variant.From<global::Godot.StringName>(__PropertyStringName_default_value));
         global::Godot.NodePath __PropertyNodePath_default_value = new global::Godot.NodePath("foo");

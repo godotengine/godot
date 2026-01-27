@@ -20,7 +20,7 @@
 		<method name="get_available_display_refresh_rates" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+				Returns a list of display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
 			</description>
 		</method>
 		<method name="get_hand_joint_angular_velocity" qualifiers="const" deprecated="Use [method XRHandTracker.get_hand_joint_angular_velocity] obtained from [method XRServer.get_tracker] instead.">
@@ -108,8 +108,8 @@
 		<method name="is_foveation_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if OpenXR's foveation extension is supported, the interface must be initialized before this returns a valid value.
-				[b]Note:[/b] This feature is only available on the Compatibility renderer and currently only available on some stand alone headsets. For Vulkan set [member Viewport.vrs_mode] to [code]VRS_XR[/code] on desktop.
+				Returns [code]true[/code] if OpenXR's foveation extension is supported. The interface must be initialized before this returns a valid value.
+				[b]Note:[/b] When using the Vulkan rendering driver, [member Viewport.vrs_mode] must be set to [constant Viewport.VRS_XR] to support foveation.
 			</description>
 		</method>
 		<method name="is_hand_interaction_supported" qualifiers="const">
@@ -162,11 +162,11 @@
 			The display refresh rate for the current HMD. Only functional if this feature is supported by the OpenXR runtime and after the interface has been initialized.
 		</member>
 		<member name="foveation_dynamic" type="bool" setter="set_foveation_dynamic" getter="get_foveation_dynamic" default="false">
-			Enable dynamic foveation adjustment, the interface must be initialized before this is accessible. If enabled foveation will automatically adjusted between low and [member foveation_level].
+			If [code]true[/code], enables dynamic foveation adjustment. The interface must be initialized before this is accessible. If enabled, foveation will automatically be adjusted between low and [member foveation_level].
 			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="foveation_level" type="int" setter="set_foveation_level" getter="get_foveation_level" default="0">
-			Set foveation level from 0 (off) to 3 (high), the interface must be initialized before this is accessible.
+			The foveation level, from [code]0[/code] (off) to [code]3[/code] (high). The interface must be initialized before this is accessible.
 			[b]Note:[/b] Only works on the Compatibility renderer.
 		</member>
 		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
@@ -274,7 +274,7 @@
 			The session is about to be lost. [signal session_loss_pending] is emitted when we change to this state.
 		</constant>
 		<constant name="SESSION_STATE_EXITING" value="8" enum="SessionState">
-			The OpenXR instance is about to be destroyed and we're existing. [signal instance_exiting] is emitted when we change to this state.
+			The OpenXR instance is about to be destroyed and we're exiting. [signal instance_exiting] is emitted when we change to this state.
 		</constant>
 		<constant name="HAND_LEFT" value="0" enum="Hand">
 			Left hand.

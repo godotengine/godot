@@ -1,4 +1,4 @@
-PCRE2 License
+PCRE2 Licence
 =============
 
 | SPDX-License-Identifier: | BSD-3-Clause WITH PCRE2-exception |
@@ -16,7 +16,8 @@ testdata directory is not copyrighted and is in the public domain.
 The basic library functions are written in C and are freestanding. Also
 included in the distribution is a just-in-time compiler that can be used to
 optimize pattern matching. This is an optional feature that can be omitted when
-the library is built.
+the library is built. The just-in-time compiler is separately licensed under the
+"2-clause BSD" licence.
 
 
 COPYRIGHT
@@ -52,6 +53,8 @@ COPYRIGHT
 
     Copyright (c) 2009-2024 Zoltan Herczeg
     All rights reserved.
+
+The code in the `deps/sljit` directory has its own LICENSE file.
 
 ### All other contributions
 
@@ -99,5 +102,3 @@ not apply all the way down a chain of software. If binary package A includes
 PCRE2, it must respect the condition, but if package B is software that
 includes package A, the condition is not imposed on package B unless it uses
 PCRE2 independently.
-
-End

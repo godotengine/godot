@@ -550,7 +550,7 @@ bool GLTFAccessor::is_equal_exact(const Ref<GLTFAccessor> &p_other) const {
 
 // Private decode functions.
 
-PackedInt64Array GLTFAccessor::_decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views) const {
+PackedInt64Array GLTFAccessor::_decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views) const {
 	const int64_t bytes_per_component = _get_bytes_per_component(sparse_indices_component_type);
 	PackedInt64Array numbers;
 	ERR_FAIL_INDEX_V(sparse_indices_buffer_view, p_buffer_views.size(), numbers);
@@ -589,7 +589,7 @@ PackedInt64Array GLTFAccessor::_decode_sparse_indices(const Ref<GLTFState> &p_gl
 }
 
 template <typename T>
-Vector<T> GLTFAccessor::_decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views, bool p_sparse_values) const {
+Vector<T> GLTFAccessor::_decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const Vector<Ref<GLTFBufferView>> &p_buffer_views, bool p_sparse_values) const {
 	const int64_t bytes_per_component = _get_bytes_per_component(component_type);
 	const int64_t bytes_per_vector = _get_bytes_per_vector();
 	const int64_t vector_size = _get_vector_size();
@@ -732,7 +732,7 @@ Vector<T> GLTFAccessor::_decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, 
 
 template <typename T>
 Vector<T> GLTFAccessor::_decode_as_numbers(const Ref<GLTFState> &p_gltf_state) const {
-	const TypedArray<GLTFBufferView> &p_buffer_views = p_gltf_state->get_buffer_views();
+	const Vector<Ref<GLTFBufferView>> &p_buffer_views = p_gltf_state->get_buffer_views();
 	Vector<T> ret_numbers = _decode_raw_numbers<T>(p_gltf_state, p_buffer_views, false);
 	if (sparse_count == 0) {
 		return ret_numbers;
@@ -1440,10 +1440,10 @@ GLTFAccessorIndex GLTFAccessor::store_accessor_data_into_state(const Ref<GLTFSta
 	ERR_FAIL_COND_V_MSG(buffer_view_index == -1, -1, "glTF export: Accessor failed to write new buffer view into glTF state.");
 	set_buffer_view(buffer_view_index);
 	// Add the new accessor to the state, but check for duplicates first.
-	TypedArray<GLTFAccessor> state_accessors = p_gltf_state->get_accessors();
+	Vector<Ref<GLTFAccessor>> state_accessors = p_gltf_state->get_accessors();
 	const GLTFAccessorIndex accessor_count = state_accessors.size();
 	for (GLTFAccessorIndex i = 0; i < accessor_count; i++) {
-		Ref<GLTFAccessor> existing_accessor = state_accessors[i];
+		const Ref<GLTFAccessor> &existing_accessor = state_accessors[i];
 		if (is_equal_exact(existing_accessor)) {
 			// An identical accessor already exists in the state, so just return the index.
 			return i;
@@ -1675,10 +1675,10 @@ GLTFAccessorIndex GLTFAccessor::encode_new_sparse_accessor_from_vec3s(const Ref<
 		const PackedFloat64Array filtered_numbers = accessor->_filter_numbers(dense_values);
 		accessor->_calculate_min_and_max(filtered_numbers);
 		// Add the new accessor to the state, but check for duplicates first.
-		TypedArray<GLTFAccessor> state_accessors = p_gltf_state->get_accessors();
+		Vector<Ref<GLTFAccessor>> state_accessors = p_gltf_state->get_accessors();
 		const GLTFAccessorIndex accessor_count = state_accessors.size();
 		for (GLTFAccessorIndex i = 0; i < accessor_count; i++) {
-			Ref<GLTFAccessor> existing_accessor = state_accessors[i];
+			const Ref<GLTFAccessor> &existing_accessor = state_accessors[i];
 			if (accessor->is_equal_exact(existing_accessor)) {
 				// An identical accessor already exists in the state, so just return the index.
 				return i;

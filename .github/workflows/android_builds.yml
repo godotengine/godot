@@ -58,16 +58,8 @@ jobs:
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      - name: Download pre-built Android Swappy Frame Pacing Library
-        uses: dsaltares/fetch-gh-release-asset@1.1.2
-        with:
-          repo: godotengine/godot-swappy
-          version: tags/from-source-2025-01-31
-          file: godot-swappy.7z
-          target: swappy/godot-swappy.7z
-
-      - name: Extract pre-built Android Swappy Frame Pacing Library
-        run: 7za x -y swappy/godot-swappy.7z -o${{github.workspace}}/thirdparty/swappy-frame-pacing
+      - name: Download Swappy
+        run: python ./misc/scripts/install_swappy_android.py
 
       - name: Compilation
         uses: ./.github/actions/godot-build

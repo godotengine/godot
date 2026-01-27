@@ -31,6 +31,7 @@
 #import "godot_application_delegate.h"
 
 #import "display_server_macos.h"
+#import "godot_menu_item.h"
 #import "key_mapping_macos.h"
 #import "native_menu_macos.h"
 #import "os_macos.h"
@@ -130,7 +131,7 @@
 }
 
 - (void)system_theme_changed:(NSNotification *)notification {
-	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
+	DisplayServerMacOSBase *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		ds->emit_system_theme_changed();
 	}
@@ -280,6 +281,16 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 		ke->set_location(KeyMappingMacOS::translate_location(key));
 		input->parse_input_event(ke);
 	}
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+	if (item) {
+		GodotMenuItem *value = [item representedObject];
+		if (value) {
+			return value->enabled;
+		}
+	}
+	return YES;
 }
 
 - (void)globalMenuCallback:(id)sender {

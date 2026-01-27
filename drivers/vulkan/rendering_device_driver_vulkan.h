@@ -41,6 +41,7 @@
 #define _DEBUG
 #endif
 #endif
+#include "thirdparty/re-spirv/re-spirv.h"
 #include "thirdparty/vulkan/vk_mem_alloc.h"
 
 #include "drivers/vulkan/godot_vulkan.h"
@@ -155,6 +156,13 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	PendingFlushes pending_flushes;
+
+	struct PipelineStatistics {
+		Ref<FileAccess> file_access;
+		Mutex file_access_mutex;
+	};
+
+	PipelineStatistics pipeline_statistics;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
@@ -437,9 +445,13 @@ public:
 	/****************/
 private:
 	struct ShaderInfo {
+		String name;
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
 		TightLocalVector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
+		TightLocalVector<respv::Shader> respv_stage_shaders;
+		TightLocalVector<Vector<uint8_t>> spirv_stage_bytes;
+		TightLocalVector<uint64_t> original_stage_size;
 		VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
 	};
 
@@ -484,7 +496,7 @@ private:
 
 	HashMap<int, DescriptorSetPools> linear_descriptor_set_pools;
 	bool linear_descriptor_pools_enabled = true;
-	VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it, int p_linear_pool_index);
+	VkDescriptorPool _descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool);
 	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
 
 	// Global flag to toggle usage of immutable sampler when creating pipeline layouts.
@@ -498,6 +510,8 @@ private:
 		DescriptorSetPools::Iterator pool_sets_it;
 		TightLocalVector<BufferInfo const *, uint32_t> dynamic_buffers;
 	};
+
+	bool adreno_5xx_empty_descriptor_set_layout_workaround = false;
 
 public:
 	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) override final;
@@ -520,6 +534,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) override final;

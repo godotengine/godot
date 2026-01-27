@@ -46,14 +46,12 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	uint32_t bool_index = 0;
 	uint32_t bool_specializations = p_bool_specializations;
 	while (bool_specializations) {
-		if (bool_specializations & (1 << bool_index)) {
-			RD::PipelineSpecializationConstant sc;
-			sc.bool_value = true;
-			sc.constant_id = bool_index;
-			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-			specialization_constants.push_back(sc);
-			bool_specializations &= ~(1 << bool_index);
-		}
+		RD::PipelineSpecializationConstant sc;
+		sc.bool_value = bool(bool_specializations & (1 << bool_index));
+		sc.constant_id = bool_index;
+		sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+		specialization_constants.push_back(sc);
+		bool_specializations &= ~(1 << bool_index);
 		bool_index++;
 	}
 

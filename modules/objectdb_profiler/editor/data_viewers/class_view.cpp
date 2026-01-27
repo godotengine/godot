@@ -104,6 +104,8 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 	class_tree->set_column_custom_minimum_width(0, 200 * EDSCALE);
 	class_tree->set_column_title(1, diff_data ? TTRC("A Count") : TTRC("Count"));
 	class_tree->set_column_expand(1, false);
+	class_tree->set_theme_type_variation("TreeSecondary");
+
 	if (diff_data) {
 		class_tree->set_column_title_tooltip_text(1, vformat(TTR("A: %s"), snapshot_data->name));
 		class_tree->set_column_title_tooltip_text(2, vformat(TTR("B: %s"), diff_data->name));
@@ -112,6 +114,7 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 		class_tree->set_column_title(3, TTRC("Delta"));
 		class_tree->set_column_expand(3, false);
 	}
+
 	class_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_class_selected));
 	class_tree->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	class_tree->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -180,6 +183,7 @@ Tree *SnapshotClassView::_make_object_list_tree(const String &p_column_name) {
 	list->set_column_titles_visible(true);
 	list->set_column_title(0, p_column_name);
 	list->set_column_expand(0, true);
+	list->set_theme_type_variation("TreeSecondary");
 	list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotClassView::_object_selected).bind(list));
 	list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);

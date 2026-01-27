@@ -415,9 +415,9 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
-bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -472,9 +472,9 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 }
 
-bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+bool Input::is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	ERR_FAIL_COND_V(p_event.is_null(), false);
+	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
 
 	if (disable_input) {
 		return false;
@@ -795,6 +795,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_canceled(mb->is_canceled());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
+			touch_event->set_window_id(mb->get_window_id());
 			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			_THREAD_SAFE_UNLOCK_
 			event_dispatch_function(touch_event);
@@ -1003,12 +1004,13 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 	_update_joypad_features(p_device);
 }
 
-bool Input::set_joy_light(int p_device, const Color &p_color) {
+void Input::set_joy_light(int p_device, const Color &p_color) {
 	Joypad *joypad = joy_names.getptr(p_device);
-	if (!joypad || joypad->features == nullptr) {
-		return false;
+	if (!joypad || !joypad->has_light || joypad->features == nullptr) {
+		return;
 	}
-	return joypad->features->set_joy_light(p_color);
+	Color linear = p_color.srgb_to_linear();
+	joypad->features->set_joy_light(linear);
 }
 
 bool Input::has_joy_light(int p_device) const {
@@ -1227,10 +1229,10 @@ void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::parse_input_event(const Ref<InputEvent> &p_event) {
+void Input::parse_input_event(RequiredParam<InputEvent> rp_event) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 #ifdef DEBUG_ENABLED
 	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();
@@ -1414,10 +1416,12 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	if (map.type == TYPE_AXIS) {
 		JoyAxis axis = JoyAxis(map.index);
 		float value = map.value;
+#ifndef ANDROID_ENABLED // Android trigger values are already between 0.0f and 1.0f.
 		if (range == FULL_AXIS && (axis == JoyAxis::TRIGGER_LEFT || axis == JoyAxis::TRIGGER_RIGHT)) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
+#endif
 		_axis_event(p_device, axis, value);
 		return;
 	}

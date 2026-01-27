@@ -34,10 +34,10 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -411,7 +411,7 @@ void TileMapEditorPlugin::_edit_tile_map_layer(TileMapLayer *p_tile_map_layer, b
 	Ref<TileSet> tile_set = p_tile_map_layer->get_tile_set();
 	if (tile_set.is_valid()) {
 		tile_set_plugin_singleton->edit(tile_set.ptr());
-		tile_set_plugin_singleton->make_visible(true);
+		tile_set_plugin_singleton->open_editor();
 		tile_set_id = tile_set->get_instance_id();
 	} else {
 		tile_set_plugin_singleton->edit(nullptr);
@@ -480,9 +480,10 @@ bool TileMapEditorPlugin::handles(Object *p_object) const {
 
 void TileMapEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->open();
+		editor->make_visible();
 	} else {
 		editor->close();
+		TileSetEditor::get_singleton()->close();
 	}
 }
 
@@ -533,10 +534,14 @@ bool TileSetEditorPlugin::handles(Object *p_object) const {
 
 void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		editor->open();
+		editor->make_visible();
 	} else {
 		editor->close();
 	}
+}
+
+void TileSetEditorPlugin::open_editor() {
+	editor->open();
 }
 
 ObjectID TileSetEditorPlugin::get_edited_tileset() const {

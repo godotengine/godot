@@ -322,8 +322,8 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 			item = tree->get_root();
 			if (!item) {
 				item = tree->create_item(nullptr);
-				index = 0;
 			}
+			index = 0;
 		} else {
 			index = p_node->get_index(false);
 			item = tree->create_item(p_parent, index);
@@ -926,17 +926,17 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	Node *scene_node = get_scene_node();
-
-	if (node_cache.current_scene_node != scene_node) {
-		_reset();
-		marked.clear();
-		node_cache.current_scene_node = scene_node;
-		node_cache.force_update = true;
-	}
-
 	if (!update_when_invisible && !is_visible_in_tree()) {
 		return;
+	}
+
+	Node *scene_node = get_scene_node();
+	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
+	if (node_cache.current_scene_id != scene_id) {
+		_reset();
+		marked.clear();
+		node_cache.current_scene_id = scene_id;
+		node_cache.force_update = true;
 	}
 
 	if (tree->is_editing()) {
@@ -947,7 +947,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	last_hash = hash_djb2_one_64(0);
 
-	if (node_cache.current_scene_node) {
+	if (node_cache.current_scene_id.is_valid()) {
 		// Handle pinning/unpinning the animation player only do this once per iteration.
 		Node *pinned_node = AnimationPlayerEditor::get_singleton()->get_editing_node();
 		// If pinned state changed, update the currently pinned node.
@@ -1098,7 +1098,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		} else {
 			p_parent->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 			p_parent->set_selectable(0, false);
-			p_parent->deselect(0);
 		}
 	}
 	if (is_root) {
@@ -1115,9 +1114,6 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 				// Needs to be deferred to account for possible root visibility change.
 				callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
 			}
-		} else if (n) {
-			editor_selection->remove_node(n);
-			p_parent->deselect(0);
 		}
 	}
 
@@ -2398,14 +2394,19 @@ SceneTreeDialog::SceneTreeDialog() {
 	show_all_nodes->hide();
 	filter_hbc->add_child(show_all_nodes);
 
+	MarginContainer *mc = memnew(MarginContainer);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	content->add_child(mc);
+
 	tree = memnew(SceneTreeEditor(false, false, true));
 	tree->set_update_when_invisible(false);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
 	// Initialize button state, must be done after the tree has been created to update its 'show_all_nodes' flag.
 	// This is also done before adding the tree to the content to avoid triggering unnecessary tree filtering.
 	show_all_nodes->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_all_nodes_for_node_selection", false));
-	content->add_child(tree);
+	mc->add_child(tree);
 
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());
@@ -2481,7 +2482,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 			}
 		}
 
-		if (current_scene_node != p_node) {
+		if (current_scene_id != p_node->get_instance_id()) {
 			// Do not remove from the Tree control here. See delete_pending below.
 			I->value.item->deselect(0);
 			I->value.delete_serial = delete_serial;

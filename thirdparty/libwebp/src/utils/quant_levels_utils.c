@@ -13,7 +13,9 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <stddef.h>
 
+#include "src/webp/types.h"
 #include "src/utils/quant_levels_utils.h"
 
 #define NUM_SYMBOLS     256
@@ -137,4 +139,3 @@ int QuantizeLevels(uint8_t* const data, int width, int height,
 
   return 1;
 }
-

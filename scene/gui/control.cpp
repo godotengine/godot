@@ -179,7 +179,7 @@ bool Control::_edit_use_rect() const {
 }
 #endif // DEBUG_ENABLED
 
-void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
+void Control::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_MAIN_THREAD_GUARD;
 	if (p_keep_global_transform) {
 		Transform2D temp = get_global_transform();
@@ -407,6 +407,10 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
 	for (const ThemeDB::ThemeItemBind &E : theme_items) {
+		if (E.external) {
+			continue; // External items are not meant to be exposed.
+		}
+
 		uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 
 		switch (E.data_type) {
@@ -2262,7 +2266,11 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 		release_focus();
 	}
 
+	if (data.focus_mode == p_focus_mode) {
+		return;
+	}
 	data.focus_mode = p_focus_mode;
+	queue_accessibility_update();
 }
 
 Control::FocusMode Control::get_focus_mode() const {
@@ -2286,6 +2294,7 @@ void Control::set_focus_behavior_recursive(FocusBehaviorRecursive p_focus_behavi
 	}
 	data.focus_behavior_recursive = p_focus_behavior_recursive;
 	_update_focus_behavior_recursive();
+	queue_accessibility_update();
 }
 
 Control::FocusBehaviorRecursive Control::get_focus_behavior_recursive() const {
@@ -3332,9 +3341,9 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 
 /// Local property overrides.
 
-void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
+void Control::add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_icon.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_icon, rp_icon);
 
 	if (data.theme_icon_override.has(p_name)) {
 		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3345,9 +3354,9 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
+void Control::add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_style.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_style, rp_style);
 
 	if (data.theme_style_override.has(p_name)) {
 		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3358,9 +3367,9 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
+void Control::add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_font.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
 
 	if (data.theme_font_override.has(p_name)) {
 		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -3750,8 +3759,10 @@ void Control::_notification(int p_notification) {
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+			if (_is_focusable()) {
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Control::_accessibility_action_foucs));
+				DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &Control::_accessibility_action_blur));
+			}
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SHOW_TOOLTIP, callable_mp(this, &Control::_accessibility_action_show_tooltip));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_HIDE_TOOLTIP, callable_mp(this, &Control::_accessibility_action_hide_tooltip));
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &Control::_accessibility_action_scroll_into_view));

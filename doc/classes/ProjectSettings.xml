@@ -277,7 +277,7 @@
 			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
 			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
 			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
-			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD), do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
 			The number of accessibility information updates per second.
@@ -415,8 +415,8 @@
 		<member name="application/run/max_fps" type="int" setter="" getter="" default="0">
 			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
 			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
-			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
-			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate. See also [method DisplayServer.screen_get_refresh_rate].
+			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using an FPS limit slightly lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url]. At higher refresh rates, the difference between the FPS limit and the monitor refresh rate should be increased to ensure frames to account for timing inaccuracies. The optimal formula for the FPS limit value in this scenario is [code]r - (r * r) / 3600.0[/code], where [code]r[/code] is the monitor's refresh rate.
 			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
 			See also [member physics/common/physics_ticks_per_second].
 			This setting can be overridden using the [code]--max-fps &lt;fps&gt;[/code] command line argument (including with a value of [code]0[/code] for unlimited framerate).
@@ -486,8 +486,8 @@
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled first time TTS method is used, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
-			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
+			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled the first time any TTS method is used. See also [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
+			[b]Note:[/b] Enabling TTS can cause additional idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
 		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this unchanged unless you know what you are doing.
@@ -1231,10 +1231,11 @@
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
 		<member name="gui/common/swap_cancel_ok" type="int" setter="" getter="" default="0">
-			How to position the Cancel and OK buttons in the project's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting.
-			- [b]Auto[/b] ([code]0[/code]) follows the platform convention: OK first on Windows, KDE, and LXQt, Cancel first on macOS and other Linux desktop environments. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
-			- [b]Cancel First[/b] ([code]1[/code]) forces the ordering Cancel/OK.
-			- [b]OK First[/b] ([code]2[/code]) forces the ordering OK/Cancel.
+			How to position the Cancel and OK buttons in the project's [AcceptDialog] windows. Different platforms have different conventions for this, which can be overridden through this setting.
+			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt; Cancel first on macOS and other Linux desktop environments.
+			- [b]Cancel First[/b] forces the Cancel/OK ordering.
+			- [b]OK First[/b] forces the OK/Cancel ordering.
+			To check if these buttons are swapped at runtime, use [method DisplayServer.get_swap_cancel_ok].
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
@@ -1273,7 +1274,7 @@
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 			The default scale factor for [Control]s, when not overridden by a [Theme].
-			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
+			[b]Note:[/b] This property is only read when the project starts. To change the default theme scale at runtime, set [member ThemeDB.fallback_base_scale] instead. However, to adjust the scale of all 2D elements at runtime, it's preferable to use [member Window.content_scale_factor] on the root [Window] node instead (as this also affects overridden [Theme]s). See [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]Multiple resolutions[/url] in the documentation for details.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
@@ -2476,7 +2477,7 @@
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
 		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-bundle.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="true">
@@ -2670,9 +2671,12 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics jitter fix at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
+			The number of fixed iterations per second. This controls how often physics simulation and the [method Node._physics_process] method are run.
+			CPU usage scales approximately with the physics tick rate. However, at very low tick rates (usually below 30), physics behavior can break down. Input can also become less responsive at low tick rates as there can be a gap between input being registered, and the response on the next physics tick. High tick rates give more accurate physics simulation, particularly for fast moving objects. For example, racing games may benefit from increasing the tick rate above the default 60.
+			See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only [member physics/common/max_physics_steps_per_frame] physics ticks may be simulated per rendered frame at most. If more physics ticks have to be simulated per rendered frame to keep up with rendering, the project will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended to also increase [member physics/common/max_physics_steps_per_frame] if increasing [member physics/common/physics_ticks_per_second] significantly above its default value.
+			[b]Note:[/b] Consider enabling [url=$DOCS_URL/tutorials/physics/interpolation/index.html]physics interpolation[/url] if you change [member physics/common/physics_ticks_per_second] to a value that is not a multiple of [code]60[/code]. Using physics interpolation will avoid jittering when the monitor refresh rate and physics update rate don't exactly match.
 		</member>
 		<member name="physics/jolt_physics_3d/collisions/active_edge_threshold" type="float" setter="" getter="" default="0.87266463">
 			The maximum angle, in radians, between two adjacent triangles in a [ConcavePolygonShape3D] or [HeightMapShape3D] for which the edge between those triangles is considered inactive.
@@ -3226,7 +3230,7 @@
 		<member name="rendering/reflections/sky_reflections/ggx_samples.mobile" type="int" setter="" getter="" default="16">
 			Lower-end override for [member rendering/reflections/sky_reflections/ggx_samples] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="8">
+		<member name="rendering/reflections/sky_reflections/roughness_layers" type="int" setter="" getter="" default="7">
 			Limits the number of layers to use in radiance maps when using importance sampling. A lower number will be slightly faster and take up less VRAM.
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
@@ -3253,19 +3257,15 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
-		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="613">
-			Version code of the [url=https://devblogs.microsoft.com/directx/directx12agility/]Direct3D 12 Agility SDK[/url] to use ([code]D3D12SDKVersion[/code]). This must match the [i]minor[/i] version that is installed next to the editor binary and in the export templates directory for the current editor version. For example, if you have [code]1.613.3[/code] installed, you need to input [code]613[/code] here.
+		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="618">
+			Version code of the [url=https://devblogs.microsoft.com/directx/directx12agility/]Direct3D 12 Agility SDK[/url] to use ([code]D3D12SDKVersion[/code]). This must match the [i]minor[/i] version that is installed next to the editor binary and in the export templates directory for the current editor version. For example, if you have [code]1.618.5[/code] installed, you need to input [code]618[/code] here.
 		</member>
-		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
-			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.
+		<member name="rendering/rendering_device/d3d12/max_resource_descriptors" type="int" setter="" getter="" default="65536">
+			The number of entries in the resource descriptor heap the Direct3D 12 rendering driver uses for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
-		<member name="rendering/rendering_device/d3d12/max_resource_descriptors_per_frame" type="int" setter="" getter="" default="16384">
-			The number of entries in the resource descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
-			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
-		</member>
-		<member name="rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame" type="int" setter="" getter="" default="1024">
-			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
+		<member name="rendering/rendering_device/d3d12/max_sampler_descriptors" type="int" setter="" getter="" default="1024">
+			The number of entries in the sampler descriptor heap the Direct3D 12 rendering driver uses for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
 		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
@@ -3609,6 +3609,9 @@
 		</member>
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
+		</member>
+		<member name="xr/openxr/target_api_version" type="String" setter="" getter="" default="&quot;&quot;">
+			Optionally sets a specific API version of OpenXR to initialize in [code]major.minor.patch[/code] notation. Some XR runtimes gate old behavior behind version checks. This is non-standard OpenXR behavior.
 		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;" keywords="mono, stereo">
 			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.

@@ -379,7 +379,7 @@ class DisplayServerX11 : public DisplayServer {
 	SafeFlag events_thread_done;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
-	bool _wait_for_events() const;
+	bool _wait_for_events(int timeout_seconds = 1, int timeout_microseconds = 0) const;
 	void _poll_events();
 	void _check_pending_events(LocalVector<XEvent> &r_events);
 

@@ -59,16 +59,6 @@ bool ChainIK3D::_set(const StringName &p_path, const Variant &p_value) {
 			set_extend_end_bone(which, p_value);
 		} else if (what == "joint_count") {
 			set_joint_count(which, p_value);
-		} else if (what == "joints") {
-			int idx = path.get_slicec('/', 3).to_int();
-			String prop = path.get_slicec('/', 4);
-			if (prop == "bone_name") {
-				set_joint_bone_name(which, idx, p_value);
-			} else if (prop == "bone") {
-				set_joint_bone(which, idx, p_value);
-			} else {
-				return false;
-			}
 		} else {
 			return false;
 		}
@@ -144,7 +134,7 @@ void ChainIK3D::get_property_list(List<PropertyInfo> *p_list) const {
 		for (uint32_t j = 0; j < chain_settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 		}
 	}
 
@@ -308,18 +298,6 @@ float ChainIK3D::get_end_bone_length(int p_index) const {
 
 // Individual joints.
 
-void ChainIK3D::set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name) {
-	// Exists only for indicate bone name on the inspector, no needs to make dirty joint array.
-	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
-	ERR_FAIL_INDEX(p_joint, (int)joints.size());
-	joints[p_joint].name = p_bone_name;
-	Skeleton3D *sk = get_skeleton();
-	if (sk) {
-		set_joint_bone(p_index, p_joint, sk->find_bone(joints[p_joint].name));
-	}
-}
-
 String ChainIK3D::get_joint_bone_name(int p_index, int p_joint) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), String());
 	const LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
@@ -327,7 +305,7 @@ String ChainIK3D::get_joint_bone_name(int p_index, int p_joint) const {
 	return joints[p_joint].name;
 }
 
-void ChainIK3D::set_joint_bone(int p_index, int p_joint, int p_bone) {
+void ChainIK3D::_set_joint_bone(int p_index, int p_joint, int p_bone) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, (int)joints.size());
@@ -471,7 +449,7 @@ void ChainIK3D::_update_joints(int p_index) {
 
 	set_joint_count(p_index, new_joints.size());
 	for (uint32_t i = 0; i < new_joints.size(); i++) {
-		set_joint_bone(p_index, i, new_joints[i]);
+		_set_joint_bone(p_index, i, new_joints[i]);
 	}
 
 	if (sk) {
@@ -497,6 +475,7 @@ void ChainIK3D::_update_mutable_info() {
 		for (uint32_t i = 0; i < settings.size(); i++) {
 			chain_settings[i]->root_global_rest = Transform3D();
 		}
+		return;
 	}
 	bool changed = false;
 	for (uint32_t i = 0; i < settings.size(); i++) {

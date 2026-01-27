@@ -41,7 +41,9 @@
 #include "core/os/time.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -86,7 +88,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		partial_snapshots[request_id] = PartialSnapshot();
 		partial_snapshots[request_id].total_size = total_size;
 		Array args = { request_id, 0, SNAPSHOT_CHUNK_SIZE };
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
 		return true;
 	}
@@ -94,7 +96,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		int request_id = p_data[0];
 		PartialSnapshot &chunk = partial_snapshots[request_id];
 		chunk.data.append_array(p_data[1]);
-		take_snapshot->set_text(vformat(TTRC("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
+		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
 		if (chunk.data.size() != chunk.total_size) {
 			Array args = { request_id, chunk.data.size(), chunk.data.size() + SNAPSHOT_CHUNK_SIZE };
 			EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
@@ -111,12 +113,18 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 
 void ObjectDBProfilerPanel::receive_snapshot(int request_id) {
 	const Vector<uint8_t> &in_data = partial_snapshots[request_id].data;
-	String snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace_char('T', '_').replace_char(':', '-');
 	Ref<DirAccess> snapshot_dir = _get_and_create_snapshot_storage_dir();
 	if (snapshot_dir.is_valid()) {
 		Error err;
+		String base_snapshot_file_name = Time::get_singleton()->get_datetime_string_from_system(false).replace_char('T', '_').replace_char(':', '-');
+		String snapshot_file_name = base_snapshot_file_name;
 		String current_dir = snapshot_dir->get_current_dir();
 		String joined_dir = current_dir.path_join(snapshot_file_name) + ".odb_snapshot";
+
+		for (int i = 2; FileAccess::exists(joined_dir); i++) {
+			snapshot_file_name = base_snapshot_file_name + '_' + String::chr('0' + i);
+			joined_dir = current_dir.path_join(snapshot_file_name) + ".odb_snapshot";
+		}
 
 		Ref<FileAccess> file = FileAccess::open(joined_dir, FileAccess::WRITE, &err);
 		if (err == OK) {
@@ -167,7 +175,7 @@ TreeItem *ObjectDBProfilerPanel::_add_snapshot_button(const String &p_snapshot_f
 void ObjectDBProfilerPanel::_show_selected_snapshot() {
 	if (snapshot_list->get_selected()->get_text(0) == (String)diff_button->get_selected_metadata()) {
 		for (int i = 0; i < diff_button->get_item_count(); i++) {
-			if (diff_button->get_item_text(i) == current_snapshot->get_snapshot()->name) {
+			if (diff_button->get_item_text(i) == current_snapshot->name) {
 				diff_button->select(i);
 				break;
 			}
@@ -184,7 +192,7 @@ void ObjectDBProfilerPanel::_on_snapshot_deselected() {
 	_update_enabled_diff_items();
 }
 
-Ref<GameStateSnapshotRef> ObjectDBProfilerPanel::get_snapshot(const String &p_snapshot_file_name) {
+Ref<GameStateSnapshot> ObjectDBProfilerPanel::get_snapshot(const String &p_snapshot_file_name) {
 	if (snapshot_cache.has(p_snapshot_file_name)) {
 		return snapshot_cache.get(p_snapshot_file_name);
 	}
@@ -201,7 +209,7 @@ Ref<GameStateSnapshotRef> ObjectDBProfilerPanel::get_snapshot(const String &p_sn
 	Vector<uint8_t> content = snapshot_file->get_buffer(snapshot_file->get_length()); // We want to split on newlines, so normalize them.
 	ERR_FAIL_COND_V_MSG(content.is_empty(), nullptr, "ObjectDB Snapshot file is empty: " + full_file_path);
 
-	Ref<GameStateSnapshotRef> snapshot = GameStateSnapshot::create_ref(p_snapshot_file_name, content);
+	Ref<GameStateSnapshot> snapshot = GameStateSnapshot::create_ref(p_snapshot_file_name, content);
 	if (snapshot.is_valid()) {
 		snapshot_cache.insert(p_snapshot_file_name, snapshot);
 	}
@@ -225,8 +233,8 @@ void ObjectDBProfilerPanel::_view_tab_changed(int p_tab_idx) {
 	// Populating tabs only on tab changed because we're handling a lot of data,
 	// and the editor freezes for a while if we try to populate every tab at once.
 	SnapshotView *view = cast_to<SnapshotView>(view_tabs->get_current_tab_control());
-	GameStateSnapshot *snapshot = current_snapshot.is_null() ? nullptr : current_snapshot->get_snapshot();
-	GameStateSnapshot *diff = diff_snapshot.is_null() ? nullptr : diff_snapshot->get_snapshot();
+	GameStateSnapshot *snapshot = current_snapshot.ptr();
+	GameStateSnapshot *diff = diff_snapshot.ptr();
 	if (snapshot != nullptr && !view->is_showing_snapshot(snapshot, diff)) {
 		view->show_snapshot(snapshot, diff);
 	}
@@ -235,6 +243,11 @@ void ObjectDBProfilerPanel::_view_tab_changed(int p_tab_idx) {
 void ObjectDBProfilerPanel::clear_snapshot(bool p_update_view_tabs) {
 	for (SnapshotView *view : views) {
 		view->clear_snapshot();
+	}
+
+	const Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+	if (Object::cast_to<SnapshotDataObject>(edited_object)) {
+		EditorNode::get_singleton()->push_item(nullptr);
 	}
 
 	current_snapshot.unref();
@@ -333,7 +346,7 @@ void ObjectDBProfilerPanel::_edit_snapshot_name() {
 ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	set_name(TTRC("ObjectDB Profiler"));
 
-	snapshot_cache = LRUCache<String, Ref<GameStateSnapshotRef>>(SNAPSHOT_CACHE_MAX_SIZE);
+	snapshot_cache = LRUCache<String, Ref<GameStateSnapshot>>(SNAPSHOT_CACHE_MAX_SIZE);
 
 	EditorDebuggerNode::get_singleton()->get_current_debugger()->connect("breaked", callable_mp(this, &ObjectDBProfilerPanel::_on_debug_breaked));
 
@@ -368,6 +381,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	snapshot_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	snapshot_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	snapshot_list->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	snapshot_list->set_theme_type_variation("TreeSecondary");
 
 	snapshot_list->set_allow_rmb_select(true);
 	snapshot_list->connect("item_mouse_selected", callable_mp(this, &ObjectDBProfilerPanel::_snapshot_rmb));
@@ -390,6 +404,7 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 
 	// Tabs of various views right for each snapshot.
 	view_tabs = memnew(TabContainer);
+	view_tabs->set_theme_type_variation("TabContainerInner");
 	root_container->add_child(view_tabs);
 	view_tabs->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	view_tabs->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);

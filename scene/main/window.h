@@ -244,7 +244,7 @@ private:
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);
-	void _window_input_text(const String &p_text);
+	void _window_input_text(const String &p_text, bool p_emit_signal = false);
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
@@ -495,7 +495,6 @@ public:
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 #endif
 
 	bool has_theme_icon_override(const StringName &p_name) const;

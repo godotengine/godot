@@ -63,7 +63,8 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		ERR_PRINT("Invalid architecture");
 	}
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -490,7 +491,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
 	// TODO(sgc): Need to set appropriate version when using Metal
@@ -539,7 +540,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
@@ -609,10 +610,10 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
@@ -843,7 +844,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		if (lines[i].contains("$binary")) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
 		} else if (lines[i].contains("$name")) {
-			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name")) + "\n";
+			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name").operator String().xml_escape(true)) + "\n";
 		} else if (lines[i].contains("$bundle_identifier")) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].contains("$short_version")) {
@@ -856,7 +857,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			String cat = p_preset->get("application/app_category");
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
 		} else if (lines[i].contains("$copyright")) {
-			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
+			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright").operator String().xml_escape(true)) + "\n";
 		} else if (lines[i].contains("$min_version_arm64")) {
 			strnew += lines[i].replace("$min_version_arm64", p_preset->get("application/min_macos_version_arm64")) + "\n";
 		} else if (lines[i].contains("$min_version_x86_64")) {
@@ -889,47 +890,47 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSMicrophoneUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/microphone_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCameraUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/camera_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSLocationUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/location_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/location_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSContactsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/address_book_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/address_book_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCalendarsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/calendar_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/calendar_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSPhotoLibraryUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/photos_library_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/photos_library_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDesktopFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/desktop_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/desktop_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDocumentsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/documents_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/documents_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDownloadsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/downloads_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/downloads_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSNetworkVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/network_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/network_volumes_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSRemovableVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/removable_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/removable_volumes_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!descriptions.is_empty()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
@@ -1784,41 +1785,41 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + project_name + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
-				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
-				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
-				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
-				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String().xml_escape(true) + "\";");
 			}
-			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
+			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String().xml_escape(true) + "\";");
 		}
 
 		for (const String &lang : locales) {
@@ -1836,47 +1837,47 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				domain->set_locale_override(lang);
 				const String &name = domain->translate(project_name, String());
 				if (name != project_name) {
-					f->store_line("CFBundleDisplayName = \"" + name + "\";");
+					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
 			} else if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
 
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (location_usage_descriptions.has(lang)) {
-				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (address_book_usage_descriptions.has(lang)) {
-				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (calendar_usage_descriptions.has(lang)) {
-				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (photos_library_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (desktop_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (documents_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (downloads_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (network_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (removable_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (copyrights.has(lang)) {
-				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
+				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String().xml_escape(true) + "\";");
 			}
 		}
 	}

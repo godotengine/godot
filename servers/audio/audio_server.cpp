@@ -109,6 +109,9 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 			input_size++;
 		}
 	} else {
+		// This protection was added in GH-26505 due to a "possible crash".
+		// This cannot have happened unless two non-locked threads entered function simultaneously, which was possible when multiple calls to
+		// `AudioDriver::input_start()` did not raise an error condition.
 		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
@@ -1842,6 +1845,71 @@ void AudioServer::set_input_device(const String &p_name) {
 	AudioDriver::get_singleton()->set_input_device(p_name);
 }
 
+Error AudioServer::set_input_device_active(bool p_is_active) {
+	if (input_device_active == p_is_active) {
+		return OK;
+	}
+	if (p_is_active) {
+		if (!GLOBAL_GET("audio/driver/enable_input")) {
+			WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
+			return FAILED;
+		}
+
+		input_buffer_ofs = 0;
+		input_device_active = true;
+		return AudioDriver::get_singleton()->input_start();
+	} else {
+		input_device_active = false;
+		return AudioDriver::get_singleton()->input_stop();
+	}
+}
+
+int AudioServer::get_input_frames_available() {
+	AudioDriver *ad = AudioDriver::get_singleton();
+	ad->lock();
+	int64_t input_position = ad->get_input_position();
+	if (input_position < input_buffer_ofs) {
+		input_position += ad->get_input_buffer().size();
+	}
+	ad->unlock();
+	return (int)((input_position - input_buffer_ofs) / 2); // Buffer is stereo.
+}
+
+int AudioServer::get_input_buffer_length_frames() {
+	AudioDriver *ad = AudioDriver::get_singleton();
+	ad->lock();
+	int buffsize = ad->get_input_buffer().size();
+	ad->unlock();
+	return buffsize / 2;
+}
+
+PackedVector2Array AudioServer::get_input_frames(int p_frames) {
+	PackedVector2Array ret;
+	AudioDriver *ad = AudioDriver::get_singleton();
+	ad->lock();
+	int input_position = ad->get_input_position();
+	Vector<int32_t> buf = ad->get_input_buffer();
+	if (input_position < input_buffer_ofs) {
+		input_position += buf.size();
+	}
+	if ((input_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
+		ret.resize(p_frames);
+		for (int i = 0; i < p_frames; i++) {
+			float l = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+			if (input_buffer_ofs >= buf.size()) {
+				input_buffer_ofs = 0;
+			}
+			float r = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+			if (input_buffer_ofs >= buf.size()) {
+				input_buffer_ofs = 0;
+			}
+			ret.write[i] = Vector2(l, r);
+		}
+	}
+	ad->unlock();
+	return ret;
+}
+
 void AudioServer::set_enable_tagging_used_audio_streams(bool p_enable) {
 	tag_used_audio_streams = p_enable;
 }
@@ -2016,6 +2084,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_device_list"), &AudioServer::get_input_device_list);
 	ClassDB::bind_method(D_METHOD("get_input_device"), &AudioServer::get_input_device);
 	ClassDB::bind_method(D_METHOD("set_input_device", "name"), &AudioServer::set_input_device);
+	ClassDB::bind_method(D_METHOD("set_input_device_active", "active"), &AudioServer::set_input_device_active);
+	ClassDB::bind_method(D_METHOD("get_input_frames_available"), &AudioServer::get_input_frames_available);
+	ClassDB::bind_method(D_METHOD("get_input_buffer_length_frames"), &AudioServer::get_input_buffer_length_frames);
+	ClassDB::bind_method(D_METHOD("get_input_frames", "frames"), &AudioServer::get_input_frames);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);

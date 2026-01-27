@@ -110,7 +110,7 @@ void GLTFBufferView::set_vertex_attributes(bool p_attributes) {
 
 Vector<uint8_t> GLTFBufferView::load_buffer_view_data(const Ref<GLTFState> p_gltf_state) const {
 	ERR_FAIL_COND_V(p_gltf_state.is_null(), Vector<uint8_t>());
-	const TypedArray<Vector<uint8_t>> &buffers = p_gltf_state->get_buffers();
+	const Vector<PackedByteArray> &buffers = p_gltf_state->get_buffers();
 	ERR_FAIL_INDEX_V(buffer, buffers.size(), Vector<uint8_t>());
 	const PackedByteArray &buffer_data = buffers[buffer];
 	const int64_t byte_end = byte_offset + byte_length;
@@ -127,11 +127,11 @@ GLTFBufferViewIndex GLTFBufferView::write_new_buffer_view_into_state(const Ref<G
 		ERR_FAIL_COND_V_MSG(p_byte_stride < 4 || p_byte_stride % 4 != 0, -1, "glTF export: Vertex attributes using TARGET_ARRAY_BUFFER must have a byte stride that is a multiple of 4 as required by section 3.6.2.4 of the glTF specification.");
 	}
 	// Check for duplicate buffer views before adding a new one.
-	TypedArray<GLTFBufferView> state_buffer_views = p_gltf_state->get_buffer_views();
+	Vector<Ref<GLTFBufferView>> state_buffer_views = p_gltf_state->get_buffer_views();
 	const int buffer_view_index = state_buffer_views.size();
 	if (p_deduplicate) {
 		for (int i = 0; i < buffer_view_index; i++) {
-			const Ref<GLTFBufferView> existing_buffer_view = state_buffer_views[i];
+			const Ref<GLTFBufferView> &existing_buffer_view = state_buffer_views[i];
 			if (existing_buffer_view->get_byte_offset() % p_alignment == 0 &&
 					existing_buffer_view->get_byte_length() == p_input_data.size() &&
 					existing_buffer_view->get_byte_stride() == p_byte_stride &&
@@ -145,7 +145,7 @@ GLTFBufferViewIndex GLTFBufferView::write_new_buffer_view_into_state(const Ref<G
 		}
 	}
 	// Write the data into the buffer at the specified index.
-	TypedArray<PackedByteArray> state_buffers = p_gltf_state->get_buffers();
+	Vector<PackedByteArray> state_buffers = p_gltf_state->get_buffers();
 	if (state_buffers.size() <= p_buffer_index) {
 		state_buffers.resize(p_buffer_index + 1);
 	}
@@ -160,7 +160,7 @@ GLTFBufferViewIndex GLTFBufferView::write_new_buffer_view_into_state(const Ref<G
 	state_buffer.resize(byte_offset + input_data_size);
 	uint8_t *buffer_ptr = state_buffer.ptrw();
 	memcpy(buffer_ptr + byte_offset, p_input_data.ptr(), input_data_size);
-	state_buffers[p_buffer_index] = state_buffer;
+	state_buffers.set(p_buffer_index, state_buffer);
 	p_gltf_state->set_buffers(state_buffers);
 	// Create a new GLTFBufferView that references the new buffer.
 	Ref<GLTFBufferView> buffer_view;

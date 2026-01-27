@@ -291,8 +291,11 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				export_plugins_activity_element_contents += "<!-- Start of manifest activity element contents from " + export_plugin_name + " -->\n";
 				export_plugins_activity_element_contents += contents;
 				export_plugins_activity_element_contents += "\n";
+				export_plugins_activity_element_contents += "<!-- End of manifest activity element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -387,8 +390,11 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_application_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_application_text += "<!-- Start of manifest application element contents from " + export_plugin_name + " -->\n";
 				manifest_application_text += contents;
 				manifest_application_text += "\n";
+				manifest_application_text += "<!-- End of manifest application element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}

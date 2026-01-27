@@ -50,6 +50,27 @@
 
 #define PRINT_NATIVE_COMMANDS 0
 
+// Enable the use of re-spirv for optimizing shaders after applying specialization constants.
+#define RESPV_ENABLED 1
+
+// Only enable function inlining for re-spirv when dealing with a shader that uses specialization constants.
+#define RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS 1
+
+// Print additional information about every shader optimized with re-spirv.
+#define RESPV_VERBOSE 0
+
+// Disable dead code elimination when using re-spirv.
+#define RESPV_DONT_REMOVE_DEAD_CODE 0
+
+// Record numerous statistics about pipeline creation such as time and shader sizes. When combined with enabling
+// and disabling re-spirv, this can be used to measure its effects.
+#define RECORD_PIPELINE_STATISTICS 0
+
+#if RECORD_PIPELINE_STATISTICS
+#include "core/io/file_access.h"
+#define RECORD_PIPELINE_STATISTICS_PATH "./pipelines.csv"
+#endif
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -1586,6 +1607,14 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
 		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
 	}
+
+	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
+	// there are empty descriptor set layouts placed between non-empty ones.
+	adreno_5xx_empty_descriptor_set_layout_workaround =
+			physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			physical_device_properties.deviceID >= 0x5000000 &&
+			physical_device_properties.deviceID < 0x6000000;
+
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -1636,6 +1665,14 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 #endif
 
 	shader_container_format.set_debug_info_enabled(Engine::get_singleton()->is_generate_spirv_debug_info_enabled());
+
+#if RECORD_PIPELINE_STATISTICS
+	pipeline_statistics.file_access = FileAccess::open(RECORD_PIPELINE_STATISTICS_PATH, FileAccess::WRITE);
+	ERR_FAIL_NULL_V_MSG(pipeline_statistics.file_access, ERR_CANT_CREATE, "Unable to write pipeline statistics file.");
+
+	pipeline_statistics.file_access->store_csv_line({ "name", "hash", "stage", "spec", "glslang", "re-spirv", "time" });
+	pipeline_statistics.file_access->flush();
+#endif
 
 	return OK;
 }
@@ -3760,6 +3797,8 @@ static VkShaderStageFlagBits RD_STAGE_TO_VK_SHADER_STAGE_BITS[RDD::SHADER_STAGE_
 RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	ShaderReflection shader_refl = p_shader_container->get_shader_reflection();
 	ShaderInfo shader_info;
+	shader_info.name = p_shader_container->shader_name.get_data();
+
 	for (uint32_t i = 0; i < SHADER_STAGE_MAX; i++) {
 		if (shader_refl.push_constant_stages.has_flag((ShaderStage)(1 << i))) {
 			shader_info.vk_push_constant_stages |= RD_STAGE_TO_VK_SHADER_STAGE_BITS[i];
@@ -3846,9 +3885,23 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 	VkResult res;
 	String error_text;
 	Vector<uint8_t> decompressed_code;
-	Vector<uint8_t> decoded_spirv;
 	VkShaderModule vk_module;
-	for (int i = 0; i < shader_refl.stages_vector.size(); i++) {
+	PackedByteArray decoded_spirv;
+	const bool use_respv = RESPV_ENABLED && !shader_container_format.get_debug_info_enabled();
+	const bool store_respv = use_respv && !shader_refl.specialization_constants.is_empty();
+	const int64_t stage_count = shader_refl.stages_vector.size();
+	shader_info.vk_stages_create_info.reserve(stage_count);
+	shader_info.original_stage_size.reserve(stage_count);
+
+#if RECORD_PIPELINE_STATISTICS
+	shader_info.spirv_stage_bytes.reserve(stage_count);
+#endif
+
+	if (store_respv) {
+		shader_info.respv_stage_shaders.reserve(stage_count);
+	}
+
+	for (int i = 0; i < stage_count; i++) {
 		const RenderingShaderContainer::Shader &shader = p_shader_container->shaders[i];
 		bool requires_decompression = (shader.code_decompressed_size > 0);
 		if (requires_decompression) {
@@ -3878,6 +3931,40 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 			memcpy(decoded_spirv.ptrw(), smolv_input, decoded_spirv.size());
 		}
 
+		shader_info.original_stage_size.push_back(decoded_spirv.size());
+
+		if (use_respv) {
+			const bool inline_data = store_respv || !RESPV_ONLY_INLINE_SHADERS_WITH_SPEC_CONSTANTS;
+			respv::Shader respv_shader(decoded_spirv.ptr(), decoded_spirv.size(), inline_data);
+			if (respv_shader.empty()) {
+#if RESPV_VERBOSE
+				print_line("re-spirv failed to parse the shader, skipping optimization.");
+#endif
+				if (store_respv) {
+					shader_info.respv_stage_shaders.push_back(respv::Shader());
+				}
+			} else if (store_respv) {
+				shader_info.respv_stage_shaders.push_back(respv_shader);
+			} else {
+				std::vector<uint8_t> respv_optimized_data;
+				if (respv::Optimizer::run(respv_shader, nullptr, 0, respv_optimized_data)) {
+#if RESPV_VERBOSE
+					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes.", decoded_spirv.size(), respv_optimized_data.size()));
+#endif
+					decoded_spirv.resize(respv_optimized_data.size());
+					memcpy(decoded_spirv.ptrw(), respv_optimized_data.data(), respv_optimized_data.size());
+				} else {
+#if RESPV_VERBOSE
+					print_line("re-spirv failed to optimize the shader.");
+#endif
+				}
+			}
+		}
+
+#if RECORD_PIPELINE_STATISTICS
+		shader_info.spirv_stage_bytes.push_back(decoded_spirv);
+#endif
+
 		VkShaderModuleCreateInfo shader_module_create_info = {};
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		shader_module_create_info.codeSize = decoded_spirv.size();
@@ -3899,12 +3986,25 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 
 	// Descriptor sets.
 	if (error_text.is_empty()) {
+		// For Adreno 5XX driver bug.
+		VkDescriptorSetLayoutBinding placeholder_binding = {};
+		placeholder_binding.binding = 0;
+		placeholder_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		placeholder_binding.descriptorCount = 1;
+		placeholder_binding.stageFlags = VK_SHADER_STAGE_ALL;
+
 		for (uint32_t i = 0; i < shader_refl.uniform_sets.size(); i++) {
 			// Empty ones are fine if they were not used according to spec (binding count will be 0).
 			VkDescriptorSetLayoutCreateInfo layout_create_info = {};
 			layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			layout_create_info.bindingCount = vk_set_bindings[i].size();
 			layout_create_info.pBindings = vk_set_bindings[i].ptr();
+
+			// ...not so fine on Adreno 5XX.
+			if (adreno_5xx_empty_descriptor_set_layout_workaround && layout_create_info.bindingCount == 0) {
+				layout_create_info.bindingCount = 1;
+				layout_create_info.pBindings = &placeholder_binding;
+			}
 
 			VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 			res = vkCreateDescriptorSetLayout(vk_device, &layout_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT), &layout);
@@ -3987,21 +4087,7 @@ void RenderingDeviceDriverVulkan::shader_destroy_modules(ShaderID p_shader) {
 /*********************/
 /**** UNIFORM SET ****/
 /*********************/
-VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it, int p_linear_pool_index) {
-	bool linear_pool = p_linear_pool_index >= 0;
-	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(p_key) : descriptor_set_pools.find(p_key);
-
-	if (pool_sets_it) {
-		for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
-			if (E.value < max_descriptor_sets_per_pool) {
-				*r_pool_sets_it = pool_sets_it;
-				return E.key;
-			}
-		}
-	}
-
-	// Create a new one.
-
+VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool) {
 	// Here comes more vulkan API strangeness.
 	VkDescriptorPoolSize *vk_sizes = ALLOCA_ARRAY(VkDescriptorPoolSize, UNIFORM_TYPE_MAX);
 	uint32_t vk_sizes_count = 0;
@@ -4089,7 +4175,7 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 
 	VkDescriptorPoolCreateInfo descriptor_set_pool_create_info = {};
 	descriptor_set_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	if (linear_descriptor_pools_enabled && linear_pool) {
+	if (linear_descriptor_pools_enabled && p_linear_pool) {
 		descriptor_set_pool_create_info.flags = 0;
 	} else {
 		descriptor_set_pool_create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // Can't think how somebody may NOT need this flag.
@@ -4104,18 +4190,6 @@ VkDescriptorPool RenderingDeviceDriverVulkan::_descriptor_set_pool_find_or_creat
 		ERR_FAIL_COND_V_MSG(res, VK_NULL_HANDLE, "vkCreateDescriptorPool failed with error " + itos(res) + ".");
 	}
 
-	// Bookkeep.
-
-	if (!pool_sets_it) {
-		if (linear_pool) {
-			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
-		} else {
-			pool_sets_it = descriptor_set_pools.insert(p_key, HashMap<VkDescriptorPool, uint32_t>());
-		}
-	}
-	HashMap<VkDescriptorPool, uint32_t> &pool_rcs = pool_sets_it->value;
-	pool_rcs.insert(vk_pool, 0);
-	*r_pool_sets_it = pool_sets_it;
 	return vk_pool;
 }
 
@@ -4155,25 +4229,28 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 		vk_writes[writes_amount] = {};
 		vk_writes[writes_amount].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 
+		bool add_write = true;
 		uint32_t num_descriptors = 1;
 
 		switch (uniform.type) {
 			case UNIFORM_TYPE_SAMPLER: {
-				if (uniform.immutable_sampler && immutable_samplers_enabled) {
-					continue; // Skipping immutable samplers.
-				}
 				num_descriptors = uniform.ids.size();
-				VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
 
-				for (uint32_t j = 0; j < num_descriptors; j++) {
-					vk_img_infos[j] = {};
-					vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
-					vk_img_infos[j].imageView = VK_NULL_HANDLE;
-					vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				if (uniform.immutable_sampler && immutable_samplers_enabled) {
+					add_write = false;
+				} else {
+					VkDescriptorImageInfo *vk_img_infos = ALLOCA_ARRAY(VkDescriptorImageInfo, num_descriptors);
+
+					for (uint32_t j = 0; j < num_descriptors; j++) {
+						vk_img_infos[j] = {};
+						vk_img_infos[j].sampler = (VkSampler)uniform.ids[j].id;
+						vk_img_infos[j].imageView = VK_NULL_HANDLE;
+						vk_img_infos[j].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+					}
+
+					vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+					vk_writes[writes_amount].pImageInfo = vk_img_infos;
 				}
-
-				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-				vk_writes[writes_amount].pImageInfo = vk_img_infos;
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 				num_descriptors = uniform.ids.size() / 2;
@@ -4350,35 +4427,64 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			}
 		}
 
-		vk_writes[writes_amount].dstBinding = uniform.binding;
-		vk_writes[writes_amount].descriptorCount = num_descriptors;
+		if (add_write) {
+			vk_writes[writes_amount].dstBinding = uniform.binding;
+			vk_writes[writes_amount].descriptorCount = num_descriptors;
+			writes_amount++;
+		}
 
-		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(),
-				"Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
+		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(), "Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
 		pool_key.uniform_type[uniform.type] += num_descriptors;
-		writes_amount++;
 	}
 
-	// Need a descriptor pool.
-	DescriptorSetPools::Iterator pool_sets_it;
-	VkDescriptorPool vk_pool = _descriptor_set_pool_find_or_create(pool_key, &pool_sets_it, p_linear_pool_index);
-	DEV_ASSERT(vk_pool);
-	pool_sets_it->value[vk_pool]++;
+	bool linear_pool = p_linear_pool_index >= 0;
+	DescriptorSetPools::Iterator pool_sets_it = linear_pool ? linear_descriptor_set_pools[p_linear_pool_index].find(pool_key) : descriptor_set_pools.find(pool_key);
+	if (!pool_sets_it) {
+		if (linear_pool) {
+			pool_sets_it = linear_descriptor_set_pools[p_linear_pool_index].insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		} else {
+			pool_sets_it = descriptor_set_pools.insert(pool_key, HashMap<VkDescriptorPool, uint32_t>());
+		}
+	}
 
 	VkDescriptorSetAllocateInfo descriptor_set_allocate_info = {};
 	descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptor_set_allocate_info.descriptorPool = vk_pool;
 	descriptor_set_allocate_info.descriptorSetCount = 1;
 	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
 	descriptor_set_allocate_info.pSetLayouts = &shader_info->vk_descriptor_set_layouts[p_set_index];
 
 	VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
+	for (KeyValue<VkDescriptorPool, uint32_t> &E : pool_sets_it->value) {
+		if (E.value < max_descriptor_sets_per_pool) {
+			descriptor_set_allocate_info.descriptorPool = E.key;
+			VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
 
-	VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
-	if (res) {
-		_descriptor_set_pool_unreference(pool_sets_it, vk_pool, p_linear_pool_index);
-		ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			// Break early on success.
+			if (res == VK_SUCCESS) {
+				break;
+			}
+
+			// "Fragmented pool" and "out of memory pool" errors are handled by creating more pools. Any other error is unexpected.
+			if (res != VK_ERROR_FRAGMENTED_POOL && res != VK_ERROR_OUT_OF_POOL_MEMORY) {
+				ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+			}
+		}
 	}
+
+	// Create a new pool when no allocations could be made from the existing pools.
+	if (vk_descriptor_set == VK_NULL_HANDLE) {
+		descriptor_set_allocate_info.descriptorPool = _descriptor_set_pool_create(pool_key, linear_pool);
+		VkResult res = vkAllocateDescriptorSets(vk_device, &descriptor_set_allocate_info, &vk_descriptor_set);
+
+		// All errors are unexpected at this stage.
+		if (res) {
+			vkDestroyDescriptorPool(vk_device, descriptor_set_allocate_info.descriptorPool, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DESCRIPTOR_POOL));
+			ERR_FAIL_V_MSG(UniformSetID(), "Cannot allocate descriptor sets, error " + itos(res) + ".");
+		}
+	}
+
+	DEV_ASSERT(descriptor_set_allocate_info.descriptorPool != VK_NULL_HANDLE && vk_descriptor_set != VK_NULL_HANDLE);
+	pool_sets_it->value[descriptor_set_allocate_info.descriptorPool]++;
 
 	for (uint32_t i = 0; i < writes_amount; i++) {
 		vk_writes[i].dstSet = vk_descriptor_set;
@@ -4390,9 +4496,9 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 	UniformSetInfo *usi = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 	usi->vk_descriptor_set = vk_descriptor_set;
 	if (p_linear_pool_index >= 0) {
-		usi->vk_linear_descriptor_pool = vk_pool;
+		usi->vk_linear_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
 	} else {
-		usi->vk_descriptor_pool = vk_pool;
+		usi->vk_descriptor_pool = descriptor_set_allocate_info.descriptorPool;
 	}
 	usi->pool_sets_it = pool_sets_it;
 	usi->dynamic_buffers.resize(num_dynamic_buffers);
@@ -4606,6 +4712,24 @@ void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_
 	}
 #endif
 	vkCmdClearColorImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_color, 1, &vk_subresources);
+}
+
+void RenderingDeviceDriverVulkan::command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) {
+	VkClearDepthStencilValue vk_depth_stencil = {};
+	vk_depth_stencil.depth = p_depth;
+	vk_depth_stencil.stencil = p_stencil;
+
+	VkImageSubresourceRange vk_subresources = {};
+	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
+
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	const TextureInfo *tex_info = (const TextureInfo *)p_texture.id;
+#ifdef DEBUG_ENABLED
+	if (tex_info->transient) {
+		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_texture must not be used in command_clear_depth_stencil_texture. Use a clear store action pass instead.");
+	}
+#endif
+	vkCmdClearDepthStencilImage(command_buffer->vk_command_buffer, tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_texture_layout], &vk_depth_stencil, 1, &vk_subresources);
 }
 
 void RenderingDeviceDriverVulkan::command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) {
@@ -5508,26 +5632,104 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 			"Cannot create pipeline without shader module, please make sure shader modules are destroyed only after all associated pipelines are created.");
 	VkPipelineShaderStageCreateInfo *vk_pipeline_stages = ALLOCA_ARRAY(VkPipelineShaderStageCreateInfo, shader_info->vk_stages_create_info.size());
 
+	thread_local std::vector<uint8_t> respv_optimized_data;
+	thread_local LocalVector<respv::SpecConstant> respv_spec_constants;
+	thread_local LocalVector<VkShaderModule> respv_shader_modules;
+	thread_local LocalVector<VkSpecializationMapEntry> specialization_entries;
+
+#if RECORD_PIPELINE_STATISTICS
+	thread_local LocalVector<uint64_t> respv_run_time;
+	thread_local LocalVector<uint64_t> respv_size;
+	uint32_t stage_count = shader_info->vk_stages_create_info.size();
+	respv_run_time.clear();
+	respv_size.clear();
+	respv_run_time.resize_initialized(stage_count);
+	respv_size.resize_initialized(stage_count);
+#endif
+
+	respv_shader_modules.clear();
+	specialization_entries.clear();
+
 	for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
 		vk_pipeline_stages[i] = shader_info->vk_stages_create_info[i];
 
 		if (p_specialization_constants.size()) {
-			VkSpecializationMapEntry *specialization_map_entries = ALLOCA_ARRAY(VkSpecializationMapEntry, p_specialization_constants.size());
-			for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
-				specialization_map_entries[j] = {};
-				specialization_map_entries[j].constantID = p_specialization_constants[j].constant_id;
-				specialization_map_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
-				specialization_map_entries[j].size = sizeof(uint32_t);
+			bool use_pipeline_spec_constants = true;
+			if ((i < shader_info->respv_stage_shaders.size()) && !shader_info->respv_stage_shaders[i].empty()) {
+#if RECORD_PIPELINE_STATISTICS
+				uint64_t respv_start_time = OS::get_singleton()->get_ticks_usec();
+#endif
+				// Attempt to optimize the shader using re-spirv before relying on the driver.
+				respv_spec_constants.resize(p_specialization_constants.size());
+				for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+					respv_spec_constants[j].specId = p_specialization_constants[j].constant_id;
+					respv_spec_constants[j].values.resize(1);
+					respv_spec_constants[j].values[0] = p_specialization_constants[j].int_value;
+				}
+
+				respv::Options respv_options;
+#if RESPV_DONT_REMOVE_DEAD_CODE
+				respv_options.removeDeadCode = false;
+#endif
+				if (respv::Optimizer::run(shader_info->respv_stage_shaders[i], respv_spec_constants.ptr(), respv_spec_constants.size(), respv_optimized_data, respv_options)) {
+#if RESPV_VERBOSE
+					String spec_constants;
+					for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+						spec_constants += vformat("%d: %d", p_specialization_constants[j].constant_id, p_specialization_constants[j].int_value);
+						if (j < p_specialization_constants.size() - 1) {
+							spec_constants += ", ";
+						}
+					}
+
+					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes with constants %s (%d).", shader_info->respv_stage_shaders[i].inlinedSpirvWords.size() * sizeof(uint32_t), respv_optimized_data.size(), spec_constants, p_shader.id));
+#endif
+
+					// Create the shader module with the optimized output.
+					VkShaderModule shader_module = VK_NULL_HANDLE;
+					VkShaderModuleCreateInfo shader_module_create_info = {};
+					shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+					shader_module_create_info.pCode = (const uint32_t *)(respv_optimized_data.data());
+					shader_module_create_info.codeSize = respv_optimized_data.size();
+					VkResult err = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &shader_module);
+					if (err == VK_SUCCESS) {
+						// Replace the module used in the creation info.
+						vk_pipeline_stages[i].module = shader_module;
+						respv_shader_modules.push_back(shader_module);
+						use_pipeline_spec_constants = false;
+					}
+
+#if RECORD_PIPELINE_STATISTICS
+					respv_run_time[i] = OS::get_singleton()->get_ticks_usec() - respv_start_time;
+					respv_size[i] = respv_optimized_data.size();
+#endif
+				} else {
+#if RESPV_VERBOSE
+					print_line("re-spirv failed to optimize the shader.");
+#endif
+				}
 			}
 
-			VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
-			*specialization_info = {};
-			specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
-			specialization_info->pData = p_specialization_constants.ptr();
-			specialization_info->mapEntryCount = p_specialization_constants.size();
-			specialization_info->pMapEntries = specialization_map_entries;
+			if (use_pipeline_spec_constants) {
+				// Use specialization constants through the driver.
+				if (specialization_entries.is_empty()) {
+					specialization_entries.resize(p_specialization_constants.size());
+					for (uint32_t j = 0; j < p_specialization_constants.size(); j++) {
+						specialization_entries[j] = {};
+						specialization_entries[j].constantID = p_specialization_constants[j].constant_id;
+						specialization_entries[j].offset = (const char *)&p_specialization_constants[j].int_value - (const char *)p_specialization_constants.ptr();
+						specialization_entries[j].size = sizeof(uint32_t);
+					}
+				}
 
-			vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
+				VkSpecializationInfo *specialization_info = ALLOCA_SINGLE(VkSpecializationInfo);
+				*specialization_info = {};
+				specialization_info->dataSize = p_specialization_constants.size() * sizeof(PipelineSpecializationConstant);
+				specialization_info->pData = p_specialization_constants.ptr();
+				specialization_info->mapEntryCount = specialization_entries.size();
+				specialization_info->pMapEntries = specialization_entries.ptr();
+
+				vk_pipeline_stages[i].pSpecializationInfo = specialization_info;
+			}
 		}
 	}
 
@@ -5546,11 +5748,40 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	pipeline_create_info.renderPass = render_pass->vk_render_pass;
 	pipeline_create_info.subpass = p_render_subpass;
 
-	// ---
+#if RECORD_PIPELINE_STATISTICS
+	uint64_t pipeline_start_time = OS::get_singleton()->get_ticks_usec();
+#endif
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + ".");
+
+#if RECORD_PIPELINE_STATISTICS
+	{
+		MutexLock lock(pipeline_statistics.file_access_mutex);
+		uint64_t pipeline_creation_time = OS::get_singleton()->get_ticks_usec() - pipeline_start_time;
+		for (uint32_t i = 0; i < shader_info->vk_stages_create_info.size(); i++) {
+			PackedStringArray csv_array = {
+				shader_info->name,
+				String::num_uint64(hash_murmur3_buffer(shader_info->spirv_stage_bytes[i].ptr(), shader_info->spirv_stage_bytes[i].size())),
+				String::num_uint64(i),
+				String::num_uint64(respv_size[i] > 0),
+				String::num_uint64(shader_info->original_stage_size[i]),
+				String::num_uint64(respv_size[i] > 0 ? respv_size[i] : shader_info->spirv_stage_bytes[i].size()),
+				String::num_uint64(respv_run_time[i] + pipeline_creation_time)
+			};
+
+			pipeline_statistics.file_access->store_csv_line(csv_array);
+		}
+
+		pipeline_statistics.file_access->flush();
+	}
+#endif
+
+	// Destroy any modules created temporarily by re-spirv.
+	for (VkShaderModule vk_module : respv_shader_modules) {
+		vkDestroyShaderModule(vk_device, vk_module, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE));
+	}
 
 	return PipelineID(vk_pipeline);
 }
@@ -6282,6 +6513,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
 		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
 			return framebuffer_depth_resolve;
+		case SUPPORTS_POINT_SIZE:
+			return true;
 		default:
 			return false;
 	}

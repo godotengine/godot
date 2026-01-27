@@ -339,7 +339,19 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
+		if (p_name.operator String().begins_with("autoload_prepend/")) {
+			String node_name = p_name.operator String().get_slicec('/', 1);
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1).simplify_path();
+			} else {
+				autoload.path = path.simplify_path();
+			}
+			add_autoload(autoload, true);
+		} else if (p_name.operator String().begins_with("autoload/")) {
 			String node_name = p_name.operator String().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
@@ -706,7 +718,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
@@ -765,7 +777,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	// Attempt to load project file from macOS .app bundle resources.
 	resource_path = OS::get_singleton()->get_bundle_resource_dir();
 	if (!resource_path.is_empty()) {
@@ -1468,9 +1480,16 @@ const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_a
 	return autoloads;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert) {
 	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
+	if (p_front_insert) {
+		if (autoloads.has(p_autoload.name)) {
+			autoloads.erase(p_autoload.name);
+		}
+		autoloads.insert(p_autoload.name, p_autoload, true);
+	} else {
+		autoloads[p_autoload.name] = p_autoload;
+	}
 }
 
 void ProjectSettings::remove_autoload(const StringName &p_autoload) {
@@ -1485,6 +1504,12 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];
+}
+
+void ProjectSettings::fix_autoload_paths() {
+	for (KeyValue<StringName, AutoloadInfo> &kv : autoloads) {
+		kv.value.path = ResourceUID::ensure_path(kv.value.path);
+	}
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
@@ -1794,18 +1819,16 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/rendering_device/pipeline_cache/save_chunk_size_mb", PROPERTY_HINT_RANGE, "0.000001,64.0,0.001,or_greater"), 3.0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vulkan/max_descriptors_per_pool", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
-	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PROPERTY_HINT_RANGE, "512,262144");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", 1024);
-	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PROPERTY_HINT_RANGE, "256,2048");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
-	custom_prop_info["rendering/rendering_device/d3d12/max_misc_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors", 65536);
+	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors", PROPERTY_HINT_RANGE, "512,1000000");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors", 1024);
+	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors", PROPERTY_HINT_RANGE, "256,2048");
 
 	// The default value must match the minor part of the Agility SDK version
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
-	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
+	// For example, if the script installs 1.618.5, the default value must be 618.
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 618);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);

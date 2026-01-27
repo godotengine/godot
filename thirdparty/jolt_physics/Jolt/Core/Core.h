@@ -453,6 +453,7 @@ JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <functional>
 #include <algorithm>
 #include <cstdint>
+#include <type_traits>
 #if defined(JPH_COMPILER_MSVC) || (defined(JPH_COMPILER_CLANG) && defined(_MSC_VER)) // MSVC or clang-cl
 	#include <malloc.h> // for alloca
 #endif

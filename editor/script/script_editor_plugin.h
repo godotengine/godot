@@ -327,7 +327,6 @@ class ScriptEditor : public PanelContainer {
 	MenuButton *debug_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 	Timer *autosave_timer = nullptr;
-	uint64_t idle = 0;
 
 	PopupMenu *recent_scripts = nullptr;
 	PopupMenu *theme_submenu = nullptr;
@@ -356,7 +355,6 @@ class ScriptEditor : public PanelContainer {
 	AcceptDialog *error_dialog = nullptr;
 	ConfirmationDialog *erase_tab_confirm = nullptr;
 	ScriptCreateDialog *script_create_dialog = nullptr;
-	Button *scripts_visible = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;
 
 	float zoom_factor = 1.0f;
@@ -368,7 +366,6 @@ class ScriptEditor : public PanelContainer {
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesContainer *find_in_files = nullptr;
-	Button *find_in_files_button = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -478,7 +475,6 @@ class ScriptEditor : public PanelContainer {
 	Ref<ConfigFile> script_editor_cache;
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
@@ -527,6 +523,7 @@ class ScriptEditor : public PanelContainer {
 
 	bool waiting_update_names;
 	bool lock_history = false;
+	void _unlock_history();
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);
@@ -554,7 +551,6 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
-	void _on_find_in_files_close_button_clicked();
 
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);

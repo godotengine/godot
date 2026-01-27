@@ -595,7 +595,7 @@ extern "C" {
  * A variable that limits what CPU features are available.
  *
  * By default, SDL marks all features the current CPU supports as available.
- * This hint allows to limit these to a subset.
+ * This hint allows the enabled features to be limited to a subset.
  *
  * When the hint is unset, or empty, SDL will enable all detected CPU
  * features.
@@ -2126,8 +2126,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": WGI is not used.
- * - "1": WGI is used. (default)
+ * - "0": WGI is not used. (default)
+ * - "1": WGI is used.
  *
  * This hint should be set before SDL is initialized.
  *

@@ -402,6 +402,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	counters_display->set_column_title(2, TTRC("Outgoing RPC"));
 	counters_display->set_column_expand(2, false);
 	counters_display->set_column_clip_content(2, true);
+	counters_display->set_theme_type_variation("TreeSecondary");
 	counters_display->set_column_custom_minimum_width(2, 120 * EDSCALE);
 	sc->add_child(counters_display);
 
@@ -434,6 +435,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	replication_display->set_column_expand(4, false);
 	replication_display->set_column_clip_content(4, true);
 	replication_display->set_column_custom_minimum_width(4, 80 * EDSCALE);
+	replication_display->set_theme_type_variation("TreeSecondary");
 	replication_display->connect("button_clicked", callable_mp(this, &EditorNetworkProfiler::_replication_button_clicked));
 	sc->add_child(replication_display);
 

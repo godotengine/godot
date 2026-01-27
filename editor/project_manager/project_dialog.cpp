@@ -51,7 +51,12 @@
 
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
-	get_ok_button()->set_disabled(p_type == MESSAGE_ERROR);
+
+	if (p_type == MESSAGE_ERROR) {
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
+	} else {
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_PATH_INPUT);
+	}
 
 	Ref<Texture2D> new_icon;
 	switch (p_type) {
@@ -74,6 +79,12 @@ void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputT
 	} else if (p_input_type == INSTALL_PATH) {
 		install_status_rect->set_texture(new_icon);
 	}
+
+	_update_ok_button();
+}
+
+void ProjectDialog::_update_ok_button() {
+	get_ok_button()->set_disabled(!invalid_state_flags.is_empty());
 }
 
 static bool is_zip_file(Ref<DirAccess> p_d, const String &p_path) {
@@ -305,7 +316,7 @@ void ProjectDialog::_update_target_auto_dir() {
 	}
 	int naming_convention = (int)EDITOR_GET("project_manager/directory_naming_convention");
 	switch (naming_convention) {
-		case 0: // No convention
+		case 0: // No Convention
 			break;
 		case 1: // kebab-case
 			new_auto_dir = new_auto_dir.to_kebab_case();
@@ -510,11 +521,15 @@ void ProjectDialog::_renderer_selected() {
 	}
 
 	rd_not_supported->set_visible(rd_error);
-	get_ok_button()->set_disabled(rd_error);
 	if (rd_error) {
 		// Needs to be set here since theme colors aren't available at startup.
 		rd_not_supported->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		invalid_state_flags.set_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
+	} else {
+		invalid_state_flags.clear_flag(InvalidStateFlag::INVALID_STATE_FLAG_RENDERER_SELECT);
 	}
+
+	_update_ok_button();
 }
 
 void ProjectDialog::_nonempty_confirmation_ok_pressed() {
@@ -566,7 +581,7 @@ void ProjectDialog::ok_pressed() {
 			project_features.push_back("Mobile");
 		} else if (renderer_type == "gl_compatibility") {
 			project_features.push_back("GL Compatibility");
-			// Also change the default rendering method for the mobile override.
+			// Also change the default renderer for the mobile override.
 			initial_settings["rendering/renderer/rendering_method.mobile"] = "gl_compatibility";
 		} else {
 			WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
@@ -832,6 +847,8 @@ void ProjectDialog::ask_for_path_and_show() {
 }
 
 void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+	_update_ok_button();
+
 	if (mode == MODE_IMPORT && !p_is_confirmed) {
 		return;
 	}
@@ -968,7 +985,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_renderer_selected();
+			if (rendering_device_checked) {
+				_renderer_selected();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -978,7 +997,6 @@ void ProjectDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			fdialog_project = memnew(EditorFileDialog);
-			fdialog_project->set_previews_enabled(false); // Crucial, otherwise the engine crashes.
 			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
@@ -1008,6 +1026,7 @@ ProjectDialog::ProjectDialog() {
 	project_name = memnew(LineEdit);
 	project_name->set_virtual_keyboard_show_on_focus(false);
 	project_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_name->set_accessibility_name(TTRC("Project Name:"));
 	name_container->add_child(project_name);
 
 	project_path_container = memnew(VBoxContainer);
@@ -1074,6 +1093,7 @@ ProjectDialog::ProjectDialog() {
 
 	msg = memnew(Label);
 	msg->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	msg->set_accessibility_live(DisplayServer::LIVE_POLITE);
 	msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	msg->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	msg->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1101,6 +1121,7 @@ ProjectDialog::ProjectDialog() {
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1113,6 +1134,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Mobile"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #ifndef RD_ENABLED
 	rs_button->set_disabled(true);
 #endif
@@ -1125,6 +1147,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Compatibility"));
+	rs_button->set_accessibility_name(TTRC("Renderer:"));
 #if !defined(GLES3_ENABLED)
 	rs_button->set_disabled(true);
 #endif
@@ -1155,7 +1178,7 @@ ProjectDialog::ProjectDialog() {
 
 	rd_not_supported = memnew(Label);
 	rd_not_supported->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	rd_not_supported->set_text(vformat(TTRC("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
+	rd_not_supported->set_text(vformat(TTR("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1188,7 +1211,6 @@ ProjectDialog::ProjectDialog() {
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	default_files_container->add_child(spacer);
 	fdialog_install = memnew(EditorFileDialog);
-	fdialog_install->set_previews_enabled(false); //Crucial, otherwise the engine crashes.
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
 

@@ -40,20 +40,20 @@
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is disabled.
+				Returns [code]true[/code] if the menu item is disabled.
 			</description>
 		</method>
 		<method name="is_menu_hidden" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu" type="int" />
 			<description>
-				Returns [code]true[/code], if menu item is hidden.
+				Returns [code]true[/code] if the menu item is hidden.
 			</description>
 		</method>
 		<method name="is_native_menu" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], if system global menu is supported and used by this [MenuBar].
+				Returns [code]true[/code] if the current system's global menu is supported and used by this [MenuBar].
 			</description>
 		</method>
 		<method name="set_disable_shortcuts">

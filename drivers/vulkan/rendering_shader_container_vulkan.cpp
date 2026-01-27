@@ -108,6 +108,10 @@ void RenderingShaderContainerFormatVulkan::set_debug_info_enabled(bool p_debug_i
 	debug_info_enabled = p_debug_info_enabled;
 }
 
+bool RenderingShaderContainerFormatVulkan::get_debug_info_enabled() const {
+	return debug_info_enabled;
+}
+
 RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}
 
 RenderingShaderContainerFormatVulkan::~RenderingShaderContainerFormatVulkan() {}

@@ -43,6 +43,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 
 	VBoxContainer *source_tree_vb = nullptr;
 	Tree *source_tree = nullptr;
+	MarginContainer *destination_tree_mc = nullptr;
 	Tree *destination_tree = nullptr;
 	Label *asset_title_label = nullptr;
 	Label *asset_conflicts_label = nullptr;

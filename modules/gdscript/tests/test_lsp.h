@@ -32,9 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "modules/modules_enabled.gen.h" // For jsonrpc.
-
-#ifdef MODULE_JSONRPC_ENABLED
+#ifndef GDSCRIPT_NO_LSP
 
 #include "tests/test_macros.h"
 
@@ -53,6 +51,17 @@
 #include "modules/regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
+
+class TestGDScriptLanguageProtocolInitializer {
+public:
+	static void setup_client() {
+		GDScriptLanguageProtocol *proto = GDScriptLanguageProtocol::get_singleton();
+		Ref<GDScriptLanguageProtocol::LSPeer> peer = memnew(GDScriptLanguageProtocol::LSPeer);
+		proto->clients.insert(proto->next_client_id, peer);
+		proto->latest_client_id = proto->next_client_id;
+		proto->next_client_id++;
+	}
+};
 
 template <>
 struct doctest::StringMaker<LSP::Position> {
@@ -96,6 +105,7 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	init_language(absolute_root);
 
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
+	TestGDScriptLanguageProtocolInitializer::setup_client();
 
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 	workspace->root = absolute_root;
@@ -502,8 +512,7 @@ func f():
 
 			for (const String &path : paths) {
 				assert_no_errors_in(path);
-				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 				REQUIRE(parser);
 				LSP::DocumentSymbol cls = parser->get_symbols();
 
@@ -515,8 +524,7 @@ func f():
 		SUBCASE("Documentation is correctly set") {
 			String path = "res://lsp/doc_comments.gd";
 			assert_no_errors_in(path);
-			GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 			REQUIRE(parser);
 			LSP::DocumentSymbol cls = parser->get_symbols();
 			REQUIRE(cls.documentation.contains("brief"));
@@ -597,6 +605,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // MODULE_JSONRPC_ENABLED
+#endif // GDSCRIPT_NO_LSP
 
 #endif // TOOLS_ENABLED

@@ -603,7 +603,9 @@
 			Specifies how the content is scaled when the [Window] is resized.
 		</member>
 		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i(0, 0)">
-			Base size of the content (i.e. nodes that are drawn inside the window). If non-zero, [Window]'s content will be scaled when the window is resized to a different size.
+			The content's base size in "virtual" pixels. Not to be confused with [member size], which sets the actual window's physical size in pixels. If set to a value greater than [code]0[/code] and [member content_scale_mode] is set to a value other than [constant CONTENT_SCALE_MODE_DISABLED], the [Window]'s content will be scaled when the window is resized to a different size. Higher values will make the content appear [i]smaller[/i], as it will be able to fit more of the project in view. On the root [Window], this is set to match [member ProjectSettings.display/window/size/viewport_width] and [member ProjectSettings.display/window/size/viewport_height] by default.
+			For example, when using [constant CONTENT_SCALE_MODE_CANVAS_ITEMS] and [member content_scale_size] set to [code]Vector2i(1280, 720)[/code], using a window size of [code]2560×1440[/code] will make 2D elements appear at double their original size, as the content is scaled by a factor of [code]2.0[/code] ([code]2560.0 / 1280.0 = 2.0[/code], [code]1440.0 / 720.0 = 2.0[/code]).
+			See [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html#base-size]the Base size section of the Multiple resolutions documentation[/url] for details.
 		</member>
 		<member name="content_scale_stretch" type="int" setter="set_content_scale_stretch" getter="get_content_scale_stretch" enum="Window.ContentScaleStretch" default="0">
 			The policy to use to determine the final scale factor for 2D elements. This affects how [member content_scale_factor] is applied, in addition to the automatic scale factor determined by [member content_scale_size].
@@ -711,7 +713,7 @@
 			[b]Note:[/b] This property only works with native windows.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
-			The window's size in pixels.
+			The window's size in pixels. See also [member content_scale_size], which doesn't set the window's physical size but affects how scaling works relative to the current [member content_scale_mode].
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
@@ -932,7 +934,7 @@
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
-			The content will not be scaled to match the [Window]'s size.
+			The content will not be scaled to match the [Window]'s size ([member content_scale_size] is ignored).
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1" enum="ContentScaleMode">
 			The content will be rendered at the target size. This is more performance-expensive than [constant CONTENT_SCALE_MODE_VIEWPORT], but provides better results.

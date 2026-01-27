@@ -129,7 +129,7 @@ struct SwShapeTask : SwTask
             if (updateShape) shapeReset(&shape);
             if (updateFill || clipper) {
                 if (shapePrepare(&shape, rshape, transform, bbox, renderRegion, mpool, tid, clips.count > 0 ? true : false)) {
-                    if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
+                    if (!shapeGenRle(&shape, rshape, mpool, tid, antialiasing(strokeWidth))) goto err;
                 } else {
                     updateFill = false;
                     renderRegion.reset();
@@ -165,8 +165,9 @@ struct SwShapeTask : SwTask
         //Clip Path
         for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
             auto clipper = static_cast<SwTask*>(*clip);
-            if (shape.rle && !clipper->clip(shape.rle)) goto err;                 //Clip shape rle
-            if (shape.strokeRle && !clipper->clip(shape.strokeRle)) goto err;     //Clip stroke rle
+            auto clipShapeRle = shape.rle ? clipper->clip(shape.rle) : true;
+            auto clipStrokeRle = shape.strokeRle ? clipper->clip(shape.strokeRle) : true;
+            if (!clipShapeRle && !clipStrokeRle) goto err;
         }
 
         bbox = renderRegion; //sync
@@ -220,7 +221,7 @@ struct SwImageTask : SwTask
             if (!imagePrepare(&image, transform, clipRegion, bbox, mpool, tid)) goto end;
 
             if (clips.count > 0) {
-                if (!imageGenRle(&image, bbox, false)) goto end;
+                if (!imageGenRle(&image, bbox, mpool, tid, false)) goto end;
                 if (image.rle) {
                     //Clear current task memorypool here if the clippers would use the same memory pool
                     imageDelOutline(&image, mpool, tid);
@@ -403,7 +404,32 @@ bool SwRenderer::renderImage(RenderData data)
 
     if (task->opacity == 0) return true;
 
-    return rasterImage(surface, &task->image, task->transform, task->bbox, task->opacity);
+    //Outside of the viewport, skip the rendering
+    auto& bbox = task->bbox;
+    if (bbox.max.x <= bbox.min.x || bbox.max.y <= bbox.min.y || bbox.min.x >= int32_t(surface->w) || bbox.min.y >= int32_t(surface->h)) return true;
+
+    auto& image = task->image;
+
+    //RLE Image
+    if (image.rle) {
+        if (image.direct) return rasterDirectRleImage(surface, image, task->opacity);
+        else if (image.scaled) return rasterScaledRleImage(surface, image, task->transform, bbox, task->opacity);
+        else {
+            //create a intermediate buffer for rle clipping
+            auto cmp = request(sizeof(pixel_t), false);
+            cmp->compositor->method = CompositeMethod::None;
+            cmp->compositor->valid = true;
+            cmp->compositor->image.rle = image.rle;
+            rasterClear(cmp, (uint32_t)bbox.min.x, (uint32_t)bbox.min.y, (uint32_t)(bbox.max.x - bbox.min.x), (uint32_t)(bbox.max.y - bbox.min.y), 0);
+            rasterTexmapPolygon(cmp, image, task->transform, bbox, 255);
+            return rasterDirectRleImage(surface, cmp->compositor->image, task->opacity);
+        }
+    //Whole Image
+    } else {
+        if (image.direct) return rasterDirectImage(surface, image, bbox, task->opacity);
+        else if (image.scaled) return rasterScaledImage(surface, image, task->transform, bbox, task->opacity);
+        else return rasterTexmapPolygon(surface, image, task->transform, bbox, task->opacity);
+    }
 }
 
 
@@ -638,8 +664,7 @@ bool SwRenderer::endComposite(RenderCompositor* cmp)
 
     //Default is alpha blending
     if (p->method == CompositeMethod::None) {
-        Matrix m = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-        return rasterImage(surface, &p->image, m, p->bbox, p->opacity);
+        return rasterDirectImage(surface, p->image, p->bbox, p->opacity);
     }
 
     return true;
@@ -678,13 +703,16 @@ bool SwRenderer::render(RenderCompositor* cmp, const RenderEffect* effect, bool 
         return false;
     }
 
+    //TODO: Support grayscale effects.
+    if (p->recoverSfc->channelSize != sizeof(uint32_t)) direct = false;
+    
     switch (effect->type) {
         case SceneEffect::GaussianBlur: {
             return effectGaussianBlur(p, request(surface->channelSize, true), static_cast<const RenderEffectGaussianBlur*>(effect));
         }
         case SceneEffect::DropShadow: {
             auto cmp1 = request(surface->channelSize, true);
-            cmp1->compositor->valid = false;
+            cmp1->compositor->valid = false;   //prevent a conflict with cmp2 request.
             auto cmp2 = request(surface->channelSize, true);
             SwSurface* surfaces[] = {cmp1, cmp2};
             auto ret = effectDropShadow(p, surfaces, static_cast<const RenderEffectDropShadow*>(effect), direct);
@@ -726,8 +754,7 @@ void SwRenderer::dispose(RenderData data)
 
 void* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags)
 {
-    if (!surface) return task;
-    if (flags == RenderUpdateFlag::None) return task;
+    if (!surface || (transform.e11 == 0.0f && transform.e12 == 0.0f) || (transform.e21 == 0.0f && transform.e22 == 0.0f)) return task;  //invalid
 
     //TODO: Failed threading them. It would be better if it's possible.
     //See: https://github.com/thorvg/thorvg/issues/1409
@@ -738,7 +765,7 @@ void* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const Arr
 
     task->clips = clips;
     task->transform = transform;
-    
+
     //zero size?
     if (task->transform.e11 == 0.0f && task->transform.e12 == 0.0f) return task; //zero width
     if (task->transform.e21 == 0.0f && task->transform.e22 == 0.0f) return task; //zero height
@@ -757,7 +784,16 @@ void* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const Arr
         tasks.push(task);
     }
 
-    TaskScheduler::request(task);
+    //TODO: Failed threading them. It would be better if it's possible.
+    //See: https://github.com/thorvg/thorvg/issues/1409
+    //Guarantee composition targets get ready.
+    if (flags & RenderUpdateFlag::Clip) {
+        for (uint32_t i = 0; i < clips.count; ++i) {
+            static_cast<SwTask*>(clips[i])->done();
+        }
+    }
+
+    if (flags) TaskScheduler::request(task);
 
     return task;
 }
@@ -767,10 +803,11 @@ RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Ma
 {
     //prepare task
     auto task = static_cast<SwImageTask*>(data);
-    if (!task) task = new SwImageTask;
-    else task->done();
-
-    task->source = surface;
+    if (task) task->done();
+    else {
+        task = new SwImageTask;
+        task->source = surface;
+    }
 
     return prepareCommon(task, transform, clips, opacity, flags);
 }
@@ -780,10 +817,12 @@ RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const
 {
     //prepare task
     auto task = static_cast<SwShapeTask*>(data);
-    if (!task) task = new SwShapeTask;
-    else task->done();
+    if (task) task->done();
+    else {
+        task = new SwShapeTask;
+        task->rshape = &rshape;
+    }
 
-    task->rshape = &rshape;
     task->clipper = clipper;
 
     return prepareCommon(task, transform, clips, opacity, flags);

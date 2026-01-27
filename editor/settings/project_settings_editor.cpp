@@ -306,7 +306,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (ED_IS_SHORTCUT("file_dialog/focus_path", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_event)) {
 			_focus_current_path_box();
 			handled = true;
 		}
@@ -813,6 +813,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(localization_editor);
 
 	TabContainer *globals_container = memnew(TabContainer);
+	globals_container->set_theme_type_variation("TabContainerInner");
 	globals_container->set_name(TTRC("Globals"));
 	tab_container->add_child(globals_container);
 

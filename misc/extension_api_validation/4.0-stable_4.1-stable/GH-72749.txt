@@ -1,0 +1,16 @@
+GH-72749
+--------
+Validate extension JSON: Error: Hash changed for 'classes/Area2D/methods/get_priority', from 67C0E66E to E8C5525A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area2D/methods/set_priority', from 1647D661 to 4CAD1009. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area3D/methods/get_priority', from 67C0E66E to E8C5525A. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/Area3D/methods/set_priority', from 1647D661 to 4CAD1009. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_priority/return_value': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_priority/return_value': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_priority/arguments/0': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_priority/arguments/0': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_priority/return_value': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_priority/return_value': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_priority/arguments/0': meta changed value in new API, from "float" to "int32".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_priority/arguments/0': type changed value in new API, from "float" to "int".
+
+Type changed from `float` to `int`. Previously the `float` values were internally converted to `int`s anyways and the type ways inconsistent with the type of the priority property, which already was `int`.

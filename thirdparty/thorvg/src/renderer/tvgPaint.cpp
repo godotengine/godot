@@ -41,97 +41,88 @@
     }
 
 
-static Result _clipRect(RenderMethod* renderer, const Point* pts, const Matrix& pm, const Matrix& rm, RenderRegion& before)
+static bool _clipRect(RenderMethod* renderer, const Point* pts, const Matrix& m, RenderRegion& before)
 {
-    //sorting
-    Point tmp[4];
-    Point min = {FLT_MAX, FLT_MAX};
-    Point max = {0.0f, 0.0f};
-
+    Point c[4];  //corners
     for (int i = 0; i < 4; ++i) {
-        tmp[i] = pts[i];
-        tmp[i] *= rm;
-        tmp[i] *= pm;
-        if (tmp[i].x < min.x) min.x = tmp[i].x;
-        if (tmp[i].x > max.x) max.x = tmp[i].x;
-        if (tmp[i].y < min.y) min.y = tmp[i].y;
-        if (tmp[i].y > max.y) max.y = tmp[i].y;
+        c[i] = pts[i] * m;
     }
-
-    float region[4] = {float(before.x), float(before.x + before.w), float(before.y), float(before.y + before.h)};
 
     //figure out if the clipper is a superset of the current viewport(before) region
-    if (min.x <= region[0] && max.x >= region[1] && min.y <= region[2] && max.y >= region[3]) {
-        //viewport region is same, nothing to do.
-        return Result::Success;
-    //figure out if the clipper is totally outside of the viewport
-    } else if (max.x <= region[0] || min.x >= region[1] || max.y <= region[2] || min.y >= region[3]) {
-        renderer->viewport({0, 0, 0, 0});
-        return Result::Success;
-    }
-    return Result::InsufficientCondition;
+    auto pointInConvexQuad = [](const Point& p, const Point* quad) {
+        auto sign = [](const Point& p1, const Point& p2, const Point& p3) {
+            return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+        };
+        auto b1 = sign(p, quad[0], quad[1]) < 0.0f;
+        auto b2 = sign(p, quad[1], quad[2]) < 0.0f;
+        auto b3 = sign(p, quad[2], quad[3]) < 0.0f;
+        auto b4 = sign(p, quad[3], quad[0]) < 0.0f;
+        return ((b1 == b2) && (b2 == b3) && (b3 == b4));
+    };
+
+    if (!pointInConvexQuad({float(before.x), float(before.y)}, c)) return false;
+    if (!pointInConvexQuad({float(before.x + before.w), float(before.y)}, c)) return false;
+    if (!pointInConvexQuad({float(before.x + before.w), float(before.y + before.h)}, c)) return false;
+    if (!pointInConvexQuad({float(before.x), float(before.y + before.h)}, c)) return false;
+
+    //same viewport
+    return true;
 }
 
 
-static Result _compFastTrack(RenderMethod* renderer, Paint* cmpTarget, const Matrix& pm, RenderRegion& before)
+static bool _compFastTrack(RenderMethod* renderer, Paint* cmpTarget, const Matrix& pm, RenderRegion& before)
 {
     /* Access Shape class by Paint is bad... but it's ok still it's an internal usage. */
     auto shape = static_cast<Shape*>(cmpTarget);
+
+    //Trimming likely makes the shape non-rectangular
+    if (P(shape)->rs.strokeTrim()) return false;
 
     //Rectangle Candidates?
     const Point* pts;
     auto ptsCnt = shape->pathCoords(&pts);
 
-    //nothing to clip
-    if (ptsCnt == 0) return Result::InvalidArguments;
-    if (ptsCnt != 4) return Result::InsufficientCondition;
-
-    auto& rm = P(cmpTarget)->transform();
+    //No rectangle format
+    if (ptsCnt != 4) return false;
 
     //No rotation and no skewing, still can try out clipping the rect region.
-    auto tryClip = false;
-
-    if ((!rightAngle(pm) || skewed(pm))) tryClip = true;
-    if ((!rightAngle(rm) || skewed(rm))) tryClip = true;
-
-    if (tryClip) return _clipRect(renderer, pts, pm, rm, before);
+    auto tm = pm * cmpTarget->transform();
 
     //Perpendicular Rectangle?
-    auto pt1 = pts + 0;
-    auto pt2 = pts + 1;
-    auto pt3 = pts + 2;
-    auto pt4 = pts + 3;
+    if (rightAngle(tm) && !skewed(tm)) {
+        auto pt1 = pts + 0;
+        auto pt2 = pts + 1;
+        auto pt3 = pts + 2;
+        auto pt4 = pts + 3;
 
-    if ((tvg::equal(pt1->x, pt2->x) && tvg::equal(pt2->y, pt3->y) && tvg::equal(pt3->x, pt4->x) && tvg::equal(pt1->y, pt4->y)) ||
-        (tvg::equal(pt2->x, pt3->x) && tvg::equal(pt1->y, pt2->y) && tvg::equal(pt1->x, pt4->x) && tvg::equal(pt3->y, pt4->y))) {
+        if ((tvg::equal(pt1->x, pt2->x) && tvg::equal(pt2->y, pt3->y) && tvg::equal(pt3->x, pt4->x) && tvg::equal(pt1->y, pt4->y)) ||
+            (tvg::equal(pt2->x, pt3->x) && tvg::equal(pt1->y, pt2->y) && tvg::equal(pt1->x, pt4->x) && tvg::equal(pt3->y, pt4->y))) {
 
-        RenderRegion after;
+            RenderRegion after;
 
-        auto v1 = *pt1;
-        auto v2 = *pt3;
-        v1 *= rm;
-        v2 *= rm;
-        v1 *= pm;
-        v2 *= pm;
+            auto v1 = *pt1;
+            auto v2 = *pt3;
+            v1 *= tm;
+            v2 *= tm;
 
-        //sorting
-        if (v1.x > v2.x) std::swap(v1.x, v2.x);
-        if (v1.y > v2.y) std::swap(v1.y, v2.y);
+            //sorting
+            if (v1.x > v2.x) std::swap(v1.x, v2.x);
+            if (v1.y > v2.y) std::swap(v1.y, v2.y);
 
-        after.x = static_cast<int32_t>(v1.x);
-        after.y = static_cast<int32_t>(v1.y);
-        after.w = static_cast<int32_t>(ceil(v2.x - after.x));
-        after.h = static_cast<int32_t>(ceil(v2.y - after.y));
+            after.x = static_cast<int32_t>(nearbyint(v1.x));
+            after.y = static_cast<int32_t>(nearbyint(v1.y));
+            after.w = static_cast<int32_t>(nearbyint(v2.x)) - after.x;
+            after.h = static_cast<int32_t>(nearbyint(v2.y)) - after.y;
 
-        if (after.w < 0) after.w = 0;
-        if (after.h < 0) after.h = 0;
+            if (after.w < 0) after.w = 0;
+            if (after.h < 0) after.h = 0;
 
-        after.intersect(before);
-        renderer->viewport(after);
-
-        return Result::Success;
+            after.intersect(before);
+            renderer->viewport(after);
+            return true;
+        }
     }
-    return Result::InsufficientCondition;
+    return _clipRect(renderer, pts, tm, before);
 }
 
 
@@ -214,8 +205,12 @@ bool Paint::Impl::render(RenderMethod* renderer)
         RenderRegion region;
         PAINT_METHOD(region, bounds(renderer));
 
-        if (MASK_REGION_MERGING(compData->method)) region.add(P(compData->target)->bounds(renderer));
-        if (region.w == 0 || region.h == 0) return true;
+        auto cData = compData;
+        while (cData) {
+            if (MASK_REGION_MERGING(cData->method)) region.add(P(cData->target)->bounds(renderer));
+            if (region.w == 0 || region.h == 0) return true;
+            cData = P(cData->target)->compData;
+        }
         cmp = renderer->target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method), CompositionFlag::Masking);
         if (renderer->beginComposite(cmp, CompositeMethod::None, 255)) {
             compData->target->pImpl->render(renderer);
@@ -246,7 +241,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
     /* 1. Composition Pre Processing */
     RenderData trd = nullptr;                 //composite target render data
     RenderRegion viewport;
-    Result compFastTrack = Result::InsufficientCondition;
+    auto compFastTrack = false;
 
     if (compData) {
         auto target = compData->target;
@@ -263,13 +258,13 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
             if (!shape->fill() && !(PP(shape)->compData)) {
                 if ((method == CompositeMethod::AlphaMask && a == 255 && PP(shape)->opacity == 255) || (method == CompositeMethod::InvAlphaMask && (a == 0 || PP(shape)->opacity == 0))) {
                     viewport = renderer->viewport();
-                    if ((compFastTrack = _compFastTrack(renderer, target, pm, viewport)) == Result::Success) {
-                        P(target)->ctxFlag |= ContextFlag::FastTrack;
+                    if ((compFastTrack = _compFastTrack(renderer, target, pm, viewport))) {
+                         P(target)->ctxFlag |= ContextFlag::FastTrack;
                     }
                 }
             }
         }
-        if (compFastTrack == Result::InsufficientCondition) {
+        if (!compFastTrack) {
             trd = P(target)->update(renderer, pm, clips, 255, pFlag, false);
         }
     }
@@ -282,13 +277,12 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
         viewport = renderer->viewport();
         /* TODO: Intersect the clipper's clipper, if both are FastTrack.
            Update the subsequent clipper first and check its ctxFlag. */
-        if (!pclip->clipper && _compFastTrack(renderer, this->clipper, pm, viewport) == Result::Success) {
+        if (!pclip->clipper && static_cast<Shape*>(this->clipper)->strokeWidth() == 0.0f && _compFastTrack(renderer, this->clipper, pm, viewport)) {
             pclip->ctxFlag |= ContextFlag::FastTrack;
-            compFastTrack = Result::Success;
+            compFastTrack = true;
         } else {
             trd = pclip->update(renderer, pm, clips, 255, pFlag, true);
             clips.push(trd);
-            compFastTrack = Result::InsufficientCondition;
         }
     }
 
@@ -303,7 +297,7 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
     PAINT_METHOD(rd, update(renderer, tr.cm, clips, opacity, newFlag, clipper));
 
     /* 4. Composition Post Processing */
-    if (compFastTrack == Result::Success) renderer->viewport(viewport);
+    if (compFastTrack) renderer->viewport(viewport);
     else if (this->clipper) clips.pop();
 
     return rd;

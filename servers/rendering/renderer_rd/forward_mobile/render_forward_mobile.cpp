@@ -495,7 +495,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (p_radiance_texture.is_valid()) {
 			radiance_texture = p_radiance_texture;
 		} else {
-			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			radiance_texture = texture_storage->texture_rd_get_default(is_using_radiance_octmap_array() ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 		}
 		RD::Uniform u;
 		u.binding = 2;
@@ -512,7 +512,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		if (ref_texture.is_valid()) {
 			u.append_id(ref_texture);
 		} else {
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK));
 		}
 		uniforms.push_back(u);
 	}
@@ -1013,7 +1013,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
-	_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
+	_setup_environment(p_render_data, is_reflection_probe, screen_size, screen_size, p_default_bg_color, false);
 
 	// May have changed due to the above (light buffer enlarged, as an example).
 	_update_render_base_uniform_set();
@@ -1185,7 +1185,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// Shadow pass can change the base uniform set samplers.
 		_update_render_base_uniform_set();
 
-		_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, p_render_data->render_buffers.is_valid());
+		_setup_environment(p_render_data, is_reflection_probe, screen_size, screen_size, p_default_bg_color, p_render_data->render_buffers.is_valid());
 
 		if (merge_transparent_pass && using_subpass_post_process) {
 			RENDER_TIMESTAMP("Render Opaque + Transparent + Tonemap");
@@ -1226,7 +1226,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
 				bool convert_to_linear = !hdr_render_target;
 
-				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear);
+				copy_effects->copy_to_drawlist(draw_list, fb_format, texture, convert_to_linear, 2.0f);
 			}
 		}
 
@@ -1245,7 +1245,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			// Note, sky.setup should have been called up above and setup stuff we need.
 
-			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_luminance_multiplier, sky_brightness_multiplier);
+			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, inverse_luminance_multiplier, sky_brightness_multiplier);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
 		}
@@ -1325,7 +1325,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, radiance_texture, samplers, true);
 
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
-				//_setup_environment(p_render_data, is_reflection_probe, screen_size, p_default_bg_color, false);
+				//_setup_environment(p_render_data, is_reflection_probe, screen_size, screen_size, p_default_bg_color, false);
 
 				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 				render_list_params.framebuffer_format = fb_format;
@@ -1576,7 +1576,12 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	render_data.instances = &p_instances;
 	render_data.render_info = p_render_info;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), Color(), false, p_use_pancake);
+	Size2i screen_size = RD::get_singleton()->framebuffer_get_size(p_framebuffer);
+	Size2i viewport_size = p_rect.size;
+	if (viewport_size == Size2()) {
+		viewport_size = screen_size;
+	}
+	_setup_environment(&render_data, true, screen_size, viewport_size, Color(), false, p_use_pancake);
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
 		scene_data.screen_mesh_lod_threshold = 0.0;
@@ -1669,7 +1674,12 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), Color());
+	Size2i screen_size = RD::get_singleton()->framebuffer_get_size(p_framebuffer);
+	Size2i viewport_size = p_region.size;
+	if (viewport_size == Size2()) {
+		viewport_size = screen_size;
+	}
+	_setup_environment(&render_data, true, screen_size, viewport_size, Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
@@ -1714,7 +1724,12 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), Color());
+	Size2i screen_size = RD::get_singleton()->framebuffer_get_size(p_framebuffer);
+	Size2i viewport_size = p_region.size;
+	if (viewport_size == Size2()) {
+		viewport_size = screen_size;
+	}
+	_setup_environment(&render_data, true, screen_size, viewport_size, Color());
 
 	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode);
@@ -1796,7 +1811,8 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	render_data.scene_data = &scene_data;
 	render_data.instances = &p_instances;
 
-	_setup_environment(&render_data, true, Vector2(1, 1), Color(), false, false);
+	Size2i screen_size = RD::get_singleton()->framebuffer_get_size(p_fb);
+	_setup_environment(&render_data, true, screen_size, screen_size, Color(), false, false);
 
 	PassMode pass_mode = PASS_MODE_SHADOW;
 
@@ -2233,7 +2249,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 	}
 }
 
-void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows) {
+void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, bool p_no_fog, const Size2i &p_screen_size, const Size2 &p_viewport_size, const Color &p_default_bg_color, bool p_opaque_render_buffers, bool p_pancake_shadows) {
 	RID env = is_environment(p_render_data->environment) ? p_render_data->environment : RID();
 	RID reflection_probe_instance = p_render_data->reflection_probe.is_valid() ? RendererRD::LightStorage::get_singleton()->reflection_probe_instance_get_probe(p_render_data->reflection_probe) : RID();
 
@@ -2246,7 +2262,7 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	// Start a new setup.
 	scene_state.uniform_buffers.prepare_for_upload();
-	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers.get_for_upload(0u), get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, false);
+	p_render_data->scene_data->update_ubo(scene_state.uniform_buffers.get_for_upload(0u), get_debug_draw_mode(), env, reflection_probe_instance, p_render_data->camera_attributes, p_pancake_shadows, p_screen_size, p_viewport_size, p_default_bg_color, luminance_multiplier, p_opaque_render_buffers, false);
 }
 
 /// RENDERING ///
@@ -2429,6 +2445,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_key.render_pass = p_params->subpass;
 		pipeline_key.ubershader = 0;
 
+		bool emulate_point_size = shader->uses_point_size && scene_shader.emulate_point_size;
+
 		const RD::PolygonCullMode cull_mode = shader->get_cull_mode_from_cull_variant(cull_variant);
 		RD::VertexFormatID vertex_format = -1;
 		RID pipeline_rd;
@@ -2440,9 +2458,9 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			// Skeleton and blend shape.
 			uint64_t input_mask = shader->get_vertex_input_mask(pipeline_key.version, pipeline_key.ubershader);
 			if (surf->owner->mesh_instance.is_valid()) {
-				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, emulate_point_size, vertex_array_rd, vertex_format);
 			} else {
-				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, vertex_array_rd, vertex_format);
+				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, p_pass_mode == PASS_MODE_MOTION_VECTORS, emulate_point_size, vertex_array_rd, vertex_format);
 			}
 
 			pipeline_key.vertex_format_id = vertex_format;
@@ -2477,7 +2495,11 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		}
 
 		if (pipeline_valid) {
-			index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			if (!emulate_point_size) {
+				index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
+			} else {
+				index_array_rd = RID();
+			}
 
 			if (prev_vertex_array_rd != vertex_array_rd) {
 				RD::get_singleton()->draw_list_bind_vertex_array(draw_list, vertex_array_rd);
@@ -2535,7 +2557,14 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				instance_count /= surf->owner->trail_steps;
 			}
 
-			if (bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT)) {
+			bool indirect = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT);
+
+			if (emulate_point_size) {
+				if (indirect) {
+					WARN_PRINT("Indirect draws are not supported when emulating point size.");
+				}
+				RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
+			} else if (indirect) {
 				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
 			} else {
 				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
@@ -3124,13 +3153,13 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	return RD::get_singleton()->framebuffer_format_create_multipass(attachments, passes, p_view_count, vrs_attachment);
 }
 
-static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline() {
+static RD::FramebufferFormatID _get_reflection_probe_color_framebuffer_format_for_pipeline(bool p_storage) {
 	RD::AttachmentFormat attachment;
 	thread_local Vector<RD::AttachmentFormat> attachments;
 	attachments.clear();
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_color_format();
-	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits();
+	attachment.usage_flags = RendererRD::LightStorage::get_reflection_probe_color_usage_bits(p_storage);
 	attachments.push_back(attachment);
 
 	attachment.format = RendererRD::LightStorage::get_reflection_probe_depth_format();
@@ -3167,7 +3196,8 @@ static RD::FramebufferFormatID _get_shadow_atlas_framebuffer_format_for_pipeline
 void RenderForwardMobile::_mesh_compile_pipeline_for_surface(SceneShaderForwardMobile::ShaderData *p_shader, void *p_mesh_surface, bool p_instanced_surface, RS::PipelineSource p_source, SceneShaderForwardMobile::ShaderData::PipelineKey &r_pipeline_key, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 	uint64_t input_mask = p_shader->get_vertex_input_mask(r_pipeline_key.version, true);
-	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, false);
+	bool emulate_point_size = p_shader->uses_point_size && scene_shader.emulate_point_size;
+	r_pipeline_key.vertex_format_id = mesh_storage->mesh_surface_get_vertex_format(p_mesh_surface, input_mask, p_instanced_surface, false, emulate_point_size);
 	r_pipeline_key.ubershader = true;
 	p_shader->pipeline_hash_map.compile_pipeline(r_pipeline_key, r_pipeline_key.hash(), p_source, r_pipeline_key.ubershader);
 
@@ -3178,6 +3208,7 @@ void RenderForwardMobile::_mesh_compile_pipeline_for_surface(SceneShaderForwardM
 
 void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipelineData &p_surface, const GlobalPipelineData &p_global, RS::PipelineSource p_source, Vector<ShaderPipelinePair> *r_pipeline_pairs) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	bool octmap_use_storage = !copy_effects->get_raster_effects().has_flag(RendererRD::CopyEffects::RASTER_EFFECT_OCTMAP);
 
 	// Set the attributes common to all pipelines.
 	SceneShaderForwardMobile::ShaderData::PipelineKey pipeline_key;
@@ -3227,7 +3258,7 @@ void RenderForwardMobile::_mesh_compile_pipelines_for_surface(const SurfacePipel
 
 	if (p_global.use_reflection_probes) {
 		pipeline_key.version = SceneShaderForwardMobile::SHADER_VERSION_COLOR_PASS;
-		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline();
+		pipeline_key.framebuffer_format_id = _get_reflection_probe_color_framebuffer_format_for_pipeline(octmap_use_storage);
 		_mesh_compile_pipeline_for_surface(p_surface.shader, p_surface.mesh_surface, p_surface.instanced, p_source, pipeline_key, r_pipeline_pairs);
 	}
 
@@ -3390,8 +3421,8 @@ RenderForwardMobile::RenderForwardMobile() {
 	String defines;
 
 	defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
-	if (is_using_radiance_cubemap_array()) {
-		defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+	if (is_using_radiance_octmap_array()) {
+		defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 	}
 	// defines += "\n#define SDFGI_OCT_SIZE " + itos(gi.sdfgi_get_lightprobe_octahedron_size()) + "\n";
 	defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";

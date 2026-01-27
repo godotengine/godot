@@ -108,7 +108,7 @@ ParticlesEditorPlugin::ParticlesEditorPlugin() {
 	menu = memnew(MenuButton);
 	menu->set_switch_on_hover(true);
 	menu->set_flat(false);
-	menu->set_theme_type_variation("FlatMenuButton");
+	menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
 	toolbar->add_child(menu);
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ParticlesEditorPlugin::_menu_callback));
 }

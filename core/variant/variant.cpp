@@ -174,13 +174,16 @@ String Variant::get_type_name(Variant::Type p_type) {
 	return "";
 }
 
-Variant::Type Variant::get_type_by_name(const String &p_type_name) {
-	static HashMap<String, Type> type_names;
-	if (unlikely(type_names.is_empty())) {
-		for (int i = 0; i < VARIANT_MAX; i++) {
-			type_names[get_type_name((Type)i)] = (Type)i;
-		}
+static HashMap<String, Variant::Type> _init_type_name_map() {
+	HashMap<String, Variant::Type> type_names;
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		type_names[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 	}
+	return type_names;
+}
+
+Variant::Type Variant::get_type_by_name(const String &p_type_name) {
+	static HashMap<String, Type> type_names = _init_type_name_map();
 
 	const Type *ptr = type_names.getptr(p_type_name);
 	return (ptr == nullptr) ? VARIANT_MAX : *ptr;
@@ -3430,14 +3433,24 @@ bool Variant::is_ref_counted() const {
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
 		case OBJECT:
-		case ARRAY:
 		case DICTIONARY:
+		case ARRAY:
+		// NOTE: Packed array constructors **do** copies (unlike `Array()` and `Dictionary()`),
+		// whereas they pass by reference when inside a `Variant`.
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY:
+		case PACKED_VECTOR4_ARRAY:
 			return true;
-		default: {
-		}
+		default:
+			return false;
 	}
-
-	return false;
 }
 
 bool Variant::is_shared() const {

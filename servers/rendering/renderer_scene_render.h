@@ -137,7 +137,10 @@ public:
 	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
 	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
-	float environment_get_white(RID p_env) const;
+	float environment_get_white(RID p_env, bool p_limit_agx_white) const;
+	void environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast);
+	float environment_get_tonemap_agx_contrast(RID p_env) const;
+	RendererEnvironmentStorage::TonemapParameters environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white) const;
 
 	// Fog
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode);

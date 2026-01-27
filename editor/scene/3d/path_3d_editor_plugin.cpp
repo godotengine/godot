@@ -913,7 +913,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Click: Select multiple Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Click: Select multiple Points") + "\n" + vformat(TTR("%s+Click: Add Point"), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->set_accessibility_name(TTRC("Select Points"));
 	toolbar->add_child(curve_edit);
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "editor_export_preset.h"
+#include "editor_export_preset.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -256,6 +257,14 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 		files.push_back(E);
 	}
 	return files;
+}
+
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return selected_files;
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
 }
 
 Dictionary EditorExportPreset::get_customized_files() const {
@@ -549,12 +558,12 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
-void EditorExportPreset::set_script_export_mode(int p_mode) {
+void EditorExportPreset::set_script_export_mode(ScriptExportMode p_mode) {
 	script_mode = p_mode;
 	EditorExport::singleton->save_presets();
 }
 
-int EditorExportPreset::get_script_export_mode() const {
+EditorExportPreset::ScriptExportMode EditorExportPreset::get_script_export_mode() const {
 	return script_mode;
 }
 

@@ -84,7 +84,7 @@ public:
 		virtual ~JoypadFeatures() {}
 
 		virtual bool has_joy_light() const { return false; }
-		virtual bool set_joy_light(const Color &p_color) { return false; }
+		virtual void set_joy_light(const Color &p_color) {}
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -321,8 +321,8 @@ public:
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
-	bool is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
-	bool is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
+	bool is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
+	bool is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
@@ -350,7 +350,7 @@ public:
 	void warp_mouse(const Vector2 &p_position);
 	Point2 warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	void parse_input_event(const Ref<InputEvent> &p_event);
+	void parse_input_event(RequiredParam<InputEvent> rp_event);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);
@@ -360,7 +360,7 @@ public:
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
 
-	bool set_joy_light(int p_device, const Color &p_color);
+	void set_joy_light(int p_device, const Color &p_color);
 	bool has_joy_light(int p_device) const;
 
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);

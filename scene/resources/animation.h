@@ -168,7 +168,6 @@ private:
 
 	struct ValueTrack : public Track {
 		UpdateMode update_mode = UPDATE_CONTINUOUS;
-		bool update_on_seek = false;
 		LocalVector<TKey<Variant>> values;
 
 		ValueTrack() {

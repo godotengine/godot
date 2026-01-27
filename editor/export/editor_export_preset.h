@@ -98,7 +98,7 @@ private:
 	uint64_t seed = 0;
 
 	String script_key;
-	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	ScriptExportMode script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -109,6 +109,11 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	int _get_script_export_mode_bind_compat_107167() const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Ref<EditorExportPlatform> get_platform() const;
 
@@ -118,6 +123,8 @@ public:
 	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
+	HashSet<String> get_selected_files() const;
+	void set_selected_files(const HashSet<String> &p_files);
 	Dictionary get_customized_files() const;
 	int get_customized_files_count() const;
 	void set_customized_files(const Dictionary &p_files);
@@ -199,8 +206,8 @@ public:
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
 
-	void set_script_export_mode(int p_mode);
-	int get_script_export_mode() const;
+	void set_script_export_mode(ScriptExportMode p_mode);
+	ScriptExportMode get_script_export_mode() const;
 
 	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
 		return get_or_env(p_name, p_env_var);

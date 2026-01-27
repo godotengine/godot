@@ -1037,8 +1037,11 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
 			const String contents = export_plugins[i]->get_android_manifest_element_contents(Ref<EditorExportPlatform>(this), p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_text += "<!-- Start of manifest element contents from " + export_plugin_name + " -->\n";
 				manifest_text += contents;
 				manifest_text += "\n";
+				manifest_text += "<!-- End of manifest element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -1981,7 +1984,8 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	r_features->push_back("etc2");
 	r_features->push_back("astc");
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -2184,11 +2188,11 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args", PROPERTY_HINT_NONE, "monospace"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/SALT"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "apk_expansion/public_key", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 
@@ -2264,6 +2268,7 @@ bool EditorExportPlatformAndroid::should_update_export_options() {
 	return false;
 }
 
+#ifndef ANDROID_ENABLED
 bool EditorExportPlatformAndroid::poll_export() {
 	bool dc = devices_changed.is_set();
 	if (dc) {
@@ -2589,6 +2594,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	CLEANUP_AND_RETURN(OK);
 #undef CLEANUP_AND_RETURN
 }
+#endif // ANDROID_ENABLED
 
 Ref<Texture2D> EditorExportPlatformAndroid::get_run_icon() const {
 	return run_icon;
@@ -3113,8 +3119,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 
 List<String> EditorExportPlatformAndroid::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 	List<String> list;
-	list.push_back("apk");
-	list.push_back("aab");
+	int export_format = int(p_preset->get("gradle_build/export_format"));
+	if (export_format == EXPORT_FORMAT_AAB) {
+		list.push_back("aab");
+	} else {
+		list.push_back("apk");
+	}
 	return list;
 }
 
@@ -3954,6 +3964,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		android_editor_gradle_runner->run_gradle(
 				project_path,
 				build_path.substr(project_path.length()),
+				export_path.path_join(export_filename),
+				export_format_arg,
 				cmdline,
 				copy_args);
 #else
@@ -4369,18 +4381,18 @@ void EditorExportPlatformAndroid::initialize() {
 		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 
-		devices_changed.set();
 #ifndef DISABLE_DEPRECATED
 		android_plugins_changed.set();
 #endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
+		devices_changed.set();
 		_create_editor_debug_keystore_if_needed();
 		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
-#else
-		android_editor_gradle_runner = memnew(AndroidEditorGradleRunner);
-#endif
 		use_scrcpy = EditorSettings::get_singleton()->get_project_metadata("android", "use_scrcpy", false);
+#else // ANDROID_ENABLED
+		android_editor_gradle_runner = memnew(AndroidEditorGradleRunner);
+#endif // ANDROID_ENABLED
 	}
 }
 

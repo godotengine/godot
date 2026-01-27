@@ -71,6 +71,7 @@ class ViewportRotationControl : public Control {
 		Vector2 screen_point;
 		float z_axis = -99.0;
 		int axis = -1;
+		bool is_positive = true;
 	};
 
 	struct Axis2DCompare {
@@ -659,11 +660,11 @@ public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
 	enum ToolMode {
-		TOOL_MODE_SELECT,
+		TOOL_MODE_TRANSFORM,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
 		TOOL_MODE_SCALE,
-		TOOL_MODE_TRANSFORM,
+		TOOL_MODE_SELECT,
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
@@ -677,7 +678,11 @@ public:
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_MAX
+	};
 
+	enum TransformMode {
+		TRANSFORM_MODE_GLOBAL = 1,
+		TRANSFORM_MODE_LOCAL = 2,
 	};
 
 private:
@@ -760,11 +765,11 @@ private:
 	} gizmo;
 
 	enum MenuOption {
-		MENU_TOOL_SELECT,
+		MENU_TOOL_TRANSFORM,
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,
 		MENU_TOOL_SCALE,
-		MENU_TOOL_TRANSFORM,
+		MENU_TOOL_SELECT,
 		MENU_TOOL_LIST_SELECT,
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_USE_SNAP,

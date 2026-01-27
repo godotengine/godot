@@ -89,7 +89,6 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
-	bool transform_dirty = true;
 	bool use_model_front = false;
 	RotationMode rotation_mode = ROTATION_XYZ;
 

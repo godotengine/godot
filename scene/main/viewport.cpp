@@ -2828,16 +2828,22 @@ void Viewport::_post_gui_grab_click_focus() {
 
 ///////////////////////////////
 
-void Viewport::push_text_input(const String &p_text) {
+void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 	ERR_MAIN_THREAD_GUARD;
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
 
-	if (gui.key_focus) {
-		gui.key_focus->call("set_text", p_text);
+	StringName set_text_method = SNAME("_set_text");
+	if (!gui.key_focus || !gui.key_focus->has_method(set_text_method)) {
+		return;
 	}
+	gui.key_focus->call(set_text_method, p_text, p_emit_signal);
+}
+
+void Viewport::push_text_input(const String &p_text) {
+	_push_text_input(p_text, false);
 }
 
 Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point) {
@@ -3217,7 +3223,7 @@ void Viewport::_window_start_resize(SubWindowResize p_edge, Window *p_window) {
 	_sub_window_update(sw.window);
 }
 
-void Viewport::_update_mouse_over() {
+void Viewport::_update_mouse_over(const Ref<InputEventMouse> &p_mm) {
 	// Update gui.mouse_over and gui.subwindow_over in all Viewports.
 	// Send necessary mouse_enter/mouse_exit signals and the MOUSE_ENTER/MOUSE_EXIT notifications for every Viewport in the SceneTree.
 
@@ -3228,18 +3234,20 @@ void Viewport::_update_mouse_over() {
 
 	if (get_tree()->get_root()->is_embedding_subwindows() || is_sub_viewport()) {
 		// Use embedder logic for calculating mouse position.
-		_update_mouse_over(gui.last_mouse_pos);
+		_update_mouse_over(p_mm->get_position());
 	} else {
 		// Native Window: Use DisplayServer logic for calculating mouse position.
 		Window *receiving_window = get_tree()->get_root()->gui.windowmanager_window_over;
 		if (!receiving_window) {
 			return;
 		}
-
-		Vector2 pos = DisplayServer::get_singleton()->mouse_get_position() - receiving_window->get_position();
-		pos = receiving_window->get_final_transform().affine_inverse().xform(pos);
-
-		receiving_window->_update_mouse_over(pos);
+		if (receiving_window->get_window_id() != p_mm->get_window_id()) {
+			Vector2 pos = DisplayServer::get_singleton()->mouse_get_position() - receiving_window->get_position();
+			pos = receiving_window->get_final_transform().affine_inverse().xform(pos);
+			receiving_window->_update_mouse_over(pos);
+		} else {
+			receiving_window->_update_mouse_over(p_mm->get_position());
+		}
 	}
 }
 
@@ -3453,10 +3461,10 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 	if (disable_input || disable_input_override) {
 		return;
@@ -3487,9 +3495,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 
 	Ref<InputEventMouse> me = ev;
 	if (me.is_valid()) {
-		gui.last_mouse_pos = me->get_position();
-
-		_update_mouse_over();
+		_update_mouse_over(me);
 	}
 
 	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
@@ -3522,11 +3528,11 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 }
 
 #ifndef DISABLE_DEPRECATED
-void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
 	ERR_FAIL_COND(!is_inside_tree());
-	ERR_FAIL_COND(p_event.is_null());
+	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
 
 	local_input_handled = false;
 

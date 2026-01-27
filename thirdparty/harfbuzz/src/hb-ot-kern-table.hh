@@ -90,7 +90,6 @@ struct KernSubTableFormat3
   template <typename set_t>
   void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
   {
-    set_t set;
     if (likely (glyphCount))
     {
       left_set.add_range (0, num_glyphs - 1);

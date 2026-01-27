@@ -70,6 +70,16 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
 	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
 
+	private static final String[] JOYPAD_IGNORE_LIST = new String[] {
+		// Ignore fingerprint scanners.
+		"uinput-fpc",
+		"uinput-goodix",
+		"uinput-synaptics",
+		"uinput-elan",
+		"uinput-vfs",
+		"uinput-atrus",
+	};
+
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
 	private final HashSet<Integer> mHardwareKeyboardIds = new HashSet<>();
@@ -357,6 +367,13 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		if (!device.supportsSource(InputDevice.SOURCE_GAMEPAD) &&
 				!device.supportsSource(InputDevice.SOURCE_JOYSTICK)) {
 			return;
+		}
+
+		for (String name : JOYPAD_IGNORE_LIST) {
+			if (device.getName().equals(name)) {
+				Log.i(TAG, "=== Input Device ignored: " + device.getName());
+				return;
+			}
 		}
 
 		// Assign first available number. Reuse numbers where possible.
