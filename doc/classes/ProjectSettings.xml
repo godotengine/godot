@@ -3125,7 +3125,7 @@
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/lights_and_shadows/multi_bounce_occlusion/enabled" type="bool" setter="" getter="" default="false">
+		<member name="rendering/lights_and_shadows/multi_bounce_occlusion/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], approximates local multi-bounce global illumination in ambient occlusion by integrating albedo information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
