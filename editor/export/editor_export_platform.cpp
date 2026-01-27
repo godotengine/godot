@@ -1960,7 +1960,7 @@ Dictionary EditorExportPlatform::_save_zip_patch(const Ref<EditorExportPreset> &
 }
 
 bool EditorExportPlatform::_store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs) {
-	p_fd->store_32(PACK_HEADER_MAGIC);
+	p_fd->store_32(PackedSourcePCK::FOURCC);
 	p_fd->store_32(PACK_FORMAT_VERSION);
 	p_fd->store_32(GODOT_VERSION_MAJOR);
 	p_fd->store_32(GODOT_VERSION_MINOR);
@@ -2198,7 +2198,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 		uint64_t pck_size = f->get_position() - pck_start_pos;
 		f->store_64(pck_size);
-		f->store_32(PACK_HEADER_MAGIC);
+		f->store_32(PackedSourcePCK::FOURCC);
 
 		if (r_embedded_size) {
 			*r_embedded_size = f->get_position() - embed_pos;

@@ -36,9 +36,6 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 
-// Godot's packed file magic header ("GDPC" in ASCII).
-#define PACK_HEADER_MAGIC 0x43504447
-
 #define PACK_FORMAT_VERSION_V2 2
 #define PACK_FORMAT_VERSION_V3 3
 
@@ -155,6 +152,9 @@ public:
 
 class PackedSourcePCK : public PackSource {
 public:
+	// Godot Pack.
+	static constexpr uint32_t FOURCC = make_fourcc("GDPC");
+
 	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
 	virtual Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
 };
