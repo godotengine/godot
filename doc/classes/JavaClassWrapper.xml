@@ -21,6 +21,42 @@
 		<link title="Integrating with Android APIs">$DOCS_URL/tutorials/platform/android/javaclasswrapper_and_androidruntimeplugin.html</link>
 	</tutorials>
 	<methods>
+		<method name="create_proxy">
+			<return type="JavaObject" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="interfaces" type="PackedStringArray" />
+			<description>
+				Creates a [JavaObject] implementing the given Java interfaces using the given [Object] as the implementation.
+				The [param object] must contain methods signatures matching the methods signatures from the passed Java [param interfaces]. Invoking methods from the Java [param interfaces] will route to the matching [param object] method.
+				[codeblock]
+				class PrintProxy:
+					func println(content: String) -&gt; void:
+						print(content)
+
+				var print_proxy = PrintProxy.new()
+				var printer_object = JavaClassWrapper.create_proxy(print_proxy, ["android.util.Printer"])
+				printer_object.println("Hello Godot World!")
+				[/codeblock]
+				[b]Note:[/b] This method only works on Android. On every other platform, this method will always return [code]null[/code].
+			</description>
+		</method>
+		<method name="create_sam_callback">
+			<return type="JavaObject" />
+			<param index="0" name="sam_interface" type="String" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Creates a [JavaObject] implementing the Java Single Abstract Method (SAM) interface using the Godot [Callable] as the implementation.
+				The [param sam_interface] [b]must be[/b] a Java SAM interface, meaning it must only have a single abstract method to implement.
+				The [param callable] must be able to handle the same parameter types as the SAM interface method, and must provide the same return type. The [param callable] will be invoked as a callback, passing the arguments from the Java SAM interface method.
+				[codeblock]
+				var cb = func (content: String) -&gt; void:
+					print(content)
+				var callback = JavaClassWrapper.create_sam_callback("android.util.Printer", cb)
+				callback.println("Hello Godot World!")
+				[/codeblock]
+				[b]Note:[/b] This method only works on Android. On every other platform, this method will always return [code]null[/code].
+			</description>
+		</method>
 		<method name="get_exception">
 			<return type="JavaObject" />
 			<description>

@@ -1456,74 +1456,58 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 	return false;
 }
 
-Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_public_methods_access) {
-	String class_name_dots = p_class.replace_char('/', '.');
-	if (class_cache.has(class_name_dots)) {
-		return class_cache[class_name_dots];
+bool JavaClassWrapper::_wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access) {
+	ERR_FAIL_NULL_V(p_class, false);
+
+	jobjectArray constructors = (jobjectArray)p_env->CallObjectMethod(p_class, Class_getConstructors);
+	if (p_env->ExceptionCheck()) {
+		p_env->ExceptionDescribe();
+		p_env->ExceptionClear();
 	}
+	ERR_FAIL_NULL_V(constructors, false);
 
-	JNIEnv *env = get_jni_env();
-	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
-
-	jclass bclass = jni_find_class(env, class_name_dots.replace_char('.', '/').utf8().get_data());
-	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
-
-	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getConstructors);
-	if (env->ExceptionCheck()) {
-		env->ExceptionDescribe();
-		env->ExceptionClear();
+	jobjectArray methods = (jobjectArray)p_env->CallObjectMethod(p_class, Class_getDeclaredMethods);
+	if (p_env->ExceptionCheck()) {
+		p_env->ExceptionDescribe();
+		p_env->ExceptionClear();
 	}
-	ERR_FAIL_NULL_V(constructors, Ref<JavaClass>());
+	ERR_FAIL_NULL_V(methods, false);
 
-	jobjectArray methods = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredMethods);
-	if (env->ExceptionCheck()) {
-		env->ExceptionDescribe();
-		env->ExceptionClear();
-	}
-	ERR_FAIL_NULL_V(methods, Ref<JavaClass>());
-
-	Ref<JavaClass> java_class = memnew(JavaClass);
-	java_class->java_class_name = class_name_dots;
-	Vector<String> class_name_parts = class_name_dots.split(".");
-	java_class->java_constructor_name = class_name_parts[class_name_parts.size() - 1];
-	java_class->_class = (jclass)env->NewGlobalRef(bclass);
-	class_cache[class_name_dots] = java_class;
-
-	int constructor_count = env->GetArrayLength(constructors);
-	int method_count = env->GetArrayLength(methods);
+	int constructor_count = p_env->GetArrayLength(constructors);
+	int method_count = p_env->GetArrayLength(methods);
 
 	int methods_and_constructors_count = method_count + constructor_count;
 	for (int i = 0; i < methods_and_constructors_count; i++) {
 		bool is_constructor = i < constructor_count;
 		jobject obj = is_constructor
-				? env->GetObjectArrayElement(constructors, i)
-				: env->GetObjectArrayElement(methods, i - constructor_count);
+				? p_env->GetObjectArrayElement(constructors, i)
+				: p_env->GetObjectArrayElement(methods, i - constructor_count);
 		ERR_CONTINUE(!obj);
 
 		String str_method;
 		if (is_constructor) {
 			str_method = "<init>";
 		} else {
-			jstring name = (jstring)env->CallObjectMethod(obj, Method_getName);
-			str_method = jstring_to_string(name, env);
-			env->DeleteLocalRef(name);
+			jstring name = (jstring)p_env->CallObjectMethod(obj, Method_getName);
+			str_method = jstring_to_string(name, p_env);
+			p_env->DeleteLocalRef(name);
 		}
 
 		Vector<String> params;
 
-		jint mods = env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
+		jint mods = p_env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
 		bool is_public = (mods & 0x0001) != 0; // java.lang.reflect.Modifier.PUBLIC
 
 		if (!is_public && (is_constructor || !p_allow_non_public_methods_access)) {
-			env->DeleteLocalRef(obj);
+			p_env->DeleteLocalRef(obj);
 			continue; //not public bye
 		}
 
-		jobjectArray param_types = (jobjectArray)env->CallObjectMethod(obj, is_constructor ? Constructor_getParameterTypes : Method_getParameterTypes);
-		int count = env->GetArrayLength(param_types);
+		jobjectArray param_types = (jobjectArray)p_env->CallObjectMethod(obj, is_constructor ? Constructor_getParameterTypes : Method_getParameterTypes);
+		int count = p_env->GetArrayLength(param_types);
 
-		if (!java_class->methods.has(str_method)) {
-			java_class->methods[str_method] = List<JavaClass::MethodInfo>();
+		if (!p_java_class->methods.has(str_method)) {
+			p_java_class->methods[str_method] = List<JavaClass::MethodInfo>();
 		}
 
 		JavaClass::MethodInfo mi;
@@ -1534,24 +1518,24 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 		String signature = "(";
 
 		for (int j = 0; j < count; j++) {
-			jobject obj2 = env->GetObjectArrayElement(param_types, j);
+			jobject obj2 = p_env->GetObjectArrayElement(param_types, j);
 			String strsig;
 			uint32_t sig = 0;
-			if (!_get_type_sig(env, obj2, sig, strsig)) {
+			if (!_get_type_sig(p_env, obj2, sig, strsig)) {
 				valid = false;
-				env->DeleteLocalRef(obj2);
+				p_env->DeleteLocalRef(obj2);
 				break;
 			}
 			signature += strsig;
 			mi.param_types.push_back(sig);
 			mi.param_sigs.push_back(strsig);
-			env->DeleteLocalRef(obj2);
+			p_env->DeleteLocalRef(obj2);
 		}
 
 		if (!valid) {
-			print_line("Method can't be bound (unsupported arguments): " + class_name_dots + "::" + str_method);
-			env->DeleteLocalRef(obj);
-			env->DeleteLocalRef(param_types);
+			print_line("Method can't be bound (unsupported arguments): " + p_java_class->java_class_name + "::" + str_method);
+			p_env->DeleteLocalRef(obj);
+			p_env->DeleteLocalRef(param_types);
 			continue;
 		}
 
@@ -1561,27 +1545,27 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 			signature += "V";
 			mi.return_type = JavaClass::ARG_TYPE_CLASS;
 		} else {
-			jobject return_type = (jobject)env->CallObjectMethod(obj, Method_getReturnType);
+			jobject return_type = (jobject)p_env->CallObjectMethod(obj, Method_getReturnType);
 
 			String strsig;
 			uint32_t sig = 0;
-			if (!_get_type_sig(env, return_type, sig, strsig)) {
-				print_line("Method can't be bound (unsupported return type): " + class_name_dots + "::" + str_method);
-				env->DeleteLocalRef(obj);
-				env->DeleteLocalRef(param_types);
-				env->DeleteLocalRef(return_type);
+			if (!_get_type_sig(p_env, return_type, sig, strsig)) {
+				print_line("Method can't be bound (unsupported return type): " + p_java_class->java_class_name + "::" + str_method);
+				p_env->DeleteLocalRef(obj);
+				p_env->DeleteLocalRef(param_types);
+				p_env->DeleteLocalRef(return_type);
 				continue;
 			}
 
 			signature += strsig;
 			mi.return_type = sig;
 
-			env->DeleteLocalRef(return_type);
+			p_env->DeleteLocalRef(return_type);
 		}
 
 		bool discard = false;
 
-		for (List<JavaClass::MethodInfo>::Element *E = java_class->methods[str_method].front(); E; E = E->next()) {
+		for (List<JavaClass::MethodInfo>::Element *E = p_java_class->methods[str_method].front(); E; E = E->next()) {
 			float new_likeliness = 0;
 			float existing_likeliness = 0;
 
@@ -1612,7 +1596,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 			}
 
 			if (new_likeliness > existing_likeliness) {
-				java_class->methods[str_method].erase(E);
+				p_java_class->methods[str_method].erase(E);
 				break;
 			} else {
 				discard = true;
@@ -1621,70 +1605,200 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_p
 
 		if (!discard) {
 			if (mi._static) {
-				mi.method = env->GetStaticMethodID(bclass, str_method.utf8().get_data(), signature.utf8().get_data());
+				mi.method = p_env->GetStaticMethodID(p_class, str_method.utf8().get_data(), signature.utf8().get_data());
 			} else {
-				mi.method = env->GetMethodID(bclass, str_method.utf8().get_data(), signature.utf8().get_data());
+				mi.method = p_env->GetMethodID(p_class, str_method.utf8().get_data(), signature.utf8().get_data());
 			}
 
-			if (env->ExceptionCheck()) {
+			if (p_env->ExceptionCheck()) {
 				// Exceptions may be thrown when trying to access hidden methods; write the exception to the logs and continue.
-				env->ExceptionDescribe();
-				env->ExceptionClear();
+				p_env->ExceptionDescribe();
+				p_env->ExceptionClear();
 				continue;
 			}
 
 			if (mi.method) {
-				java_class->methods[str_method].push_back(mi);
+				p_java_class->methods[str_method].push_back(mi);
 			}
 		}
 
-		env->DeleteLocalRef(obj);
-		env->DeleteLocalRef(param_types);
+		p_env->DeleteLocalRef(obj);
+		p_env->DeleteLocalRef(param_types);
 	}
 
-	env->DeleteLocalRef(constructors);
-	env->DeleteLocalRef(methods);
+	p_env->DeleteLocalRef(constructors);
+	p_env->DeleteLocalRef(methods);
 
-	jobjectArray fields = (jobjectArray)env->CallObjectMethod(bclass, Class_getFields);
+	jobjectArray fields = (jobjectArray)p_env->CallObjectMethod(p_class, Class_getFields);
 
-	int count = env->GetArrayLength(fields);
+	int count = p_env->GetArrayLength(fields);
 
 	for (int i = 0; i < count; i++) {
-		jobject obj = env->GetObjectArrayElement(fields, i);
+		jobject obj = p_env->GetObjectArrayElement(fields, i);
 		ERR_CONTINUE(!obj);
 
-		jstring name = (jstring)env->CallObjectMethod(obj, Field_getName);
-		String str_field = jstring_to_string(name, env);
-		env->DeleteLocalRef(name);
-		int mods = env->CallIntMethod(obj, Field_getModifiers);
+		jstring name = (jstring)p_env->CallObjectMethod(obj, Field_getName);
+		String str_field = jstring_to_string(name, p_env);
+		p_env->DeleteLocalRef(name);
+		int mods = p_env->CallIntMethod(obj, Field_getModifiers);
 		if ((mods & 0x8) && (mods & 0x1)) { //static public!
 
-			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
+			jobject objc = p_env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {
 				uint32_t sig;
 				String strsig;
-				jclass cl = env->GetObjectClass(objc);
-				if (JavaClassWrapper::_get_type_sig(env, cl, sig, strsig)) {
+				jclass cl = p_env->GetObjectClass(objc);
+				if (JavaClassWrapper::_get_type_sig(p_env, cl, sig, strsig)) {
 					if ((sig & JavaClass::ARG_TYPE_MASK) <= JavaClass::ARG_TYPE_STRING) {
 						Variant value;
-						if (JavaClass::_convert_object_to_variant(env, objc, value, sig)) {
-							java_class->constant_map[str_field] = value;
+						if (JavaClass::_convert_object_to_variant(p_env, objc, value, sig)) {
+							p_java_class->constant_map[str_field] = value;
 						}
 					}
 				}
 
-				env->DeleteLocalRef(cl);
+				p_env->DeleteLocalRef(cl);
 			}
 
-			env->DeleteLocalRef(objc);
+			p_env->DeleteLocalRef(objc);
 		}
-		env->DeleteLocalRef(obj);
+		p_env->DeleteLocalRef(obj);
 	}
 
-	env->DeleteLocalRef(fields);
+	p_env->DeleteLocalRef(fields);
+	return true;
+}
+
+Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_non_public_methods_access) {
+	String class_name_dots = p_class.replace_char('/', '.');
+	if (class_cache.has(class_name_dots)) {
+		return class_cache[class_name_dots];
+	}
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
+
+	jclass bclass = jni_find_class(env, class_name_dots.replace_char('.', '/').utf8().get_data());
+	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
+
+	Ref<JavaClass> java_class;
+	java_class.instantiate();
+	java_class->java_class_name = class_name_dots;
+	Vector<String> class_name_parts = class_name_dots.split(".");
+	java_class->java_constructor_name = class_name_parts[class_name_parts.size() - 1];
+	java_class->_class = (jclass)env->NewGlobalRef(bclass);
+	java_class->is_interface = env->CallBooleanMethod(bclass, Class_isInterface);
+
+	bool class_components_configured;
+	if (_is_proxy_class(env, bclass)) {
+		// Proxy class components must be setup using the interfaces they implement.
+		jobjectArray interfaces = (jobjectArray)env->CallObjectMethod(bclass, Class_getInterfaces);
+		if (env->ExceptionCheck()) {
+			env->ExceptionDescribe();
+			env->ExceptionClear();
+		}
+		int interfaces_count = interfaces == nullptr ? 0 : env->GetArrayLength(interfaces);
+		for (int i = 0; i < interfaces_count; i++) {
+			jclass interface = (jclass)env->GetObjectArrayElement(interfaces, i);
+			ERR_CONTINUE(!interface);
+
+			jstring j_interface_name = (jstring)env->CallObjectMethod(interface, Class_getName);
+			String interface_name = jstring_to_string(j_interface_name, env);
+			env->DeleteLocalRef(j_interface_name);
+			if (!_wrap_class_components(env, java_class, interface, p_allow_non_public_methods_access)) {
+				ERR_PRINT(vformat("Unable to set up components for proxy class interface %s.", interface_name));
+				continue;
+			}
+
+			class_components_configured = true;
+		}
+	} else {
+		class_components_configured = _wrap_class_components(env, java_class, bclass, p_allow_non_public_methods_access);
+	}
 	env->DeleteLocalRef(bclass);
 
+	if (!class_components_configured) {
+		java_class.unref();
+		return Ref<JavaClass>();
+	}
+
+	// Cache the initialized JavaClass instance.
+	class_cache[class_name_dots] = java_class;
+
 	return java_class;
+}
+
+Ref<JavaObject> JavaClassWrapper::create_sam_callback(const String &p_sam_interface, const Callable &p_callable) {
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, Ref<JavaObject>());
+	ERR_FAIL_NULL_V(android_runtime_class, Ref<JavaObject>());
+	ERR_FAIL_NULL_V(ARP_create_proxy_from_godot_callable, Ref<JavaObject>());
+
+	Ref<JavaClass> interface_class = wrap(p_sam_interface);
+	if (interface_class.is_null()) {
+		ERR_PRINT(vformat("Invalid java class: %s.", p_sam_interface));
+		return Ref<JavaObject>();
+	}
+	if (!interface_class->is_interface) {
+		ERR_PRINT(vformat("Java class %s must be an interface.", p_sam_interface));
+		return Ref<JavaObject>();
+	}
+
+	if (interface_class->methods.size() != 1) {
+		ERR_PRINT(vformat("%s must be a Single Abstract Method (SAM) interface.", p_sam_interface));
+		return Ref<JavaObject>();
+	}
+
+	jobject j_callable = callable_to_jcallable(env, p_callable);
+	jstring j_interface = env->NewStringUTF(p_sam_interface.utf8().get_data());
+
+	jobject proxy = env->CallStaticObjectMethod(android_runtime_class, ARP_create_proxy_from_godot_callable, j_interface, j_callable);
+	Ref<JavaObject> result = _jobject_to_variant(env, proxy);
+
+	env->DeleteLocalRef(j_callable);
+	env->DeleteLocalRef(j_interface);
+	env->DeleteLocalRef(proxy);
+
+	return result;
+}
+
+Ref<JavaObject> JavaClassWrapper::create_proxy(const Object *p_object, const PackedStringArray &p_interfaces) {
+	ERR_FAIL_NULL_V(p_object, Ref<JavaObject>());
+	ERR_FAIL_COND_V(p_interfaces.is_empty(), Ref<JavaObject>());
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, Ref<JavaObject>());
+	ERR_FAIL_NULL_V(android_runtime_class, Ref<JavaObject>());
+	ERR_FAIL_NULL_V(ARP_create_proxy_from_godot_callable, Ref<JavaObject>());
+
+	for (const String &interface_name : p_interfaces) {
+		Ref<JavaClass> interface_class = wrap(interface_name);
+		if (interface_class.is_null()) {
+			ERR_PRINT(vformat("Invalid java class: %s.", interface_name));
+			return Ref<JavaObject>();
+		}
+
+		if (!interface_class->is_interface) {
+			ERR_PRINT(vformat("Java class %s must be an interface.", interface_name));
+			return Ref<JavaObject>();
+		}
+	}
+
+	jlong object_id = p_object->get_instance_id();
+	jobjectArray j_interfaces = env->NewObjectArray(p_interfaces.size(), jni_find_class(env, "java/lang/String"), nullptr);
+	for (int i = 0; i < p_interfaces.size(); i++) {
+		jstring j_interface = env->NewStringUTF(p_interfaces[i].utf8().get_data());
+		env->SetObjectArrayElement(j_interfaces, i, j_interface);
+		env->DeleteLocalRef(j_interface);
+	}
+
+	jobject proxy = env->CallStaticObjectMethod(android_runtime_class, ARP_create_proxy_from_godot_object_id, object_id, j_interfaces);
+	Ref<JavaObject> result = _jobject_to_variant(env, proxy);
+
+	env->DeleteLocalRef(j_interfaces);
+	env->DeleteLocalRef(proxy);
+
+	return result;
 }
 
 Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access) {
@@ -1698,6 +1812,14 @@ Ref<JavaClass> JavaClassWrapper::wrap_jclass(jclass p_class, bool p_allow_non_pu
 	return _wrap(class_name_string, p_allow_non_public_methods_access);
 }
 
+bool JavaClassWrapper::_is_proxy_class(JNIEnv *env, jclass p_class) {
+	ERR_FAIL_NULL_V(proxy_class, false);
+	ERR_FAIL_NULL_V(Proxy_isProxyClass, false);
+	ERR_FAIL_NULL_V(env, false);
+
+	return env->CallStaticBooleanMethod(proxy_class, Proxy_isProxyClass, p_class);
+}
+
 JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
 JavaClassWrapper::JavaClassWrapper() {
@@ -1706,12 +1828,27 @@ JavaClassWrapper::JavaClassWrapper() {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 
+	proxy_class = jni_find_class(env, "java/lang/reflect/Proxy");
+	if (proxy_class) {
+		proxy_class = (jclass)env->NewGlobalRef(proxy_class);
+		Proxy_isProxyClass = env->GetStaticMethodID(proxy_class, "isProxyClass", "(Ljava/lang/Class;)Z");
+	}
+
+	android_runtime_class = jni_find_class(env, "org/godotengine/godot/plugin/AndroidRuntimePlugin");
+	if (android_runtime_class) {
+		android_runtime_class = (jclass)env->NewGlobalRef(android_runtime_class);
+		ARP_create_proxy_from_godot_callable = env->GetStaticMethodID(android_runtime_class, "createProxyFromGodotCallable", "(Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)Ljava/lang/Object;");
+		ARP_create_proxy_from_godot_object_id = env->GetStaticMethodID(android_runtime_class, "createProxyFromGodotObjectID", "(J[Ljava/lang/String;)Ljava/lang/Object;");
+	}
+
 	jclass bclass = jni_find_class(env, "java/lang/Class");
 	Class_getConstructors = env->GetMethodID(bclass, "getConstructors", "()[Ljava/lang/reflect/Constructor;");
 	Class_getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 	Class_getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
+	Class_getInterfaces = env->GetMethodID(bclass, "getInterfaces", "()[Ljava/lang/Class;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Class_getSuperclass = env->GetMethodID(bclass, "getSuperclass", "()Ljava/lang/Class;");
+	Class_isInterface = env->GetMethodID(bclass, "isInterface", "()Z");
 	env->DeleteLocalRef(bclass);
 
 	bclass = jni_find_class(env, "java/lang/reflect/Constructor");
