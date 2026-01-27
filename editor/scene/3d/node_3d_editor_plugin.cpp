@@ -1732,6 +1732,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	} else if (!selection_results.is_empty()) {
 		NodePath root_path = get_tree()->get_edited_scene_root()->get_path();
 		StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
+		int icon_max_width = EditorNode::get_singleton()->get_editor_theme()->get_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 		for (int i = 0; i < selection_results.size(); i++) {
 			Node3D *spat = selection_results[i];
@@ -1764,6 +1765,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 			}
 			selection_menu->add_item((String)spat->get_name() + suffix);
 			selection_menu->set_item_icon(i, icon);
+			selection_menu->set_item_icon_max_width(i, icon_max_width);
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i, String(spat->get_name()) + "\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
