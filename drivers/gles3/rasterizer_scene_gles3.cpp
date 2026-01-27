@@ -4433,6 +4433,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		if (config->force_vertex_shading) {
 			global_defines += "\n#define USE_VERTEX_LIGHTING\n";
 		}
+		if (!config->multi_bounce_occlusion) {
+			global_defines += "\n#define MULTI_BOUNCE_OCCLUSION_DISABLED\n";
+		}
 		if (!config->specular_occlusion) {
 			global_defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 		}

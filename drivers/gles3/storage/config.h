@@ -86,6 +86,7 @@ public:
 	bool unorm16_texture_supported = false;
 
 	bool force_vertex_shading = false;
+	bool multi_bounce_occlusion = false;
 	bool specular_occlusion = false;
 
 	bool support_anisotropic_filter = false;

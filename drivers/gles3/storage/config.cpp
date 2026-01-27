@@ -189,6 +189,7 @@ Config::Config() {
 #endif
 
 	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
+	multi_bounce_occlusion = GLOBAL_GET("rendering/lights_and_shadows/multi_bounce_occlusion/enabled");
 	specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");
 	use_nearest_mip_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
 

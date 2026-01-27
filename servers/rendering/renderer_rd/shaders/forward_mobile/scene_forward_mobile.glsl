@@ -1819,7 +1819,20 @@ void main() {
 	} //Reflection probes
 
 	// finalize ambient light here
+#ifndef MULTI_BOUNCE_OCCLUSION_DISABLED
+	// Apply multi-bounce ambient-occlusion approximation to ambient light:
+	// https://blog.selfshadow.com/publications/s2016-shading-course/activision/s2016_pbs_activision_occlusion.pdf#page=78
+	{
+		hvec3 a = hvec3(2.0404) * albedo - hvec3(0.3324);
+		hvec3 b = hvec3(-4.7951) * albedo + hvec3(0.6417);
+		hvec3 c = hvec3(2.7552) * albedo + hvec3(0.6903);
+		hvec3 x = hvec3(ao);
+		hvec3 bounce_occlusion = max(x, ((x * a + b) * x + c) * x);
+		ambient_light *= bounce_occlusion;
+	}
+#else // MULTI_BOUNCE_OCCLUSION_DISABLED
 	ambient_light *= ao;
+#endif // MULTI_BOUNCE_OCCLUSION_DISABLED
 #ifndef SPECULAR_OCCLUSION_DISABLED
 #ifdef BENT_NORMAL_MAP_USED
 	// Simplified bent normal occlusion.
