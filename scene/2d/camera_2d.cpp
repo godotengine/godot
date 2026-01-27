@@ -106,9 +106,7 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	Vector2 new_zoom = p_zoom;
 	
 	if (zoom_limit_enabled) {
-		Vector2 clamped_zoom;
-		clamped_zoom.x = CLAMP(new_zoom.x, zoom_min.x, zoom_max.x);
-		clamped_zoom.y = CLAMP(new_zoom.y, zoom_min.y, zoom_max.y);
+		Vector2 clamped_zoom = new_zoom.clamp(zoom_min, zoom_max);
 		
 		if (new_zoom.x < zoom_min.x || new_zoom.x > zoom_max.x ||
 			new_zoom.y < zoom_min.y || new_zoom.y > zoom_max.y) {
