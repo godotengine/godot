@@ -75,10 +75,11 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
 	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_node_3d());
 	Ref<LightmapGIData> data = baker->get_light_data();
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
 
 	p_gizmo->clear();
 
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 
 	if (data.is_null() || !p_gizmo->is_selected()) {
 		return;
