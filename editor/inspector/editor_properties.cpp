@@ -777,7 +777,7 @@ void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (!drag_data.has("type")) {
 		return;
 	}
-	if (String(drag_data["type"]) != "files") {
+	if (String(drag_data["type"]) != (folder ? "files_and_dirs" : "files")) {
 		return;
 	}
 	const Vector<String> filesPaths = drag_data["files"];
@@ -785,7 +785,16 @@ void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return;
 	}
 
-	_path_selected(filesPaths[0]);
+	if (folder) {
+		for (const String &file_path : filesPaths) {
+			if (file_path.ends_with("/")) {
+				_path_selected(file_path);
+				break;
+			}
+		}
+	} else {
+		_path_selected(filesPaths[0]);
+	}
 }
 
 bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -793,7 +802,7 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	if (!drag_data.has("type")) {
 		return false;
 	}
-	if (String(drag_data["type"]) != "files") {
+	if (String(drag_data["type"]) != (folder ? "files_and_dirs" : "files")) {
 		return false;
 	}
 	const Vector<String> filesPaths = drag_data["files"];
@@ -801,9 +810,17 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 		return false;
 	}
 
-	for (const String &extension : extensions) {
-		if (filesPaths[0].ends_with(extension.substr(1))) {
-			return true;
+	if (folder) {
+		for (const String &file_path : filesPaths) {
+			if (file_path.ends_with("/")) {
+				return true;
+			}
+		}
+	} else {
+		for (const String &extension : extensions) {
+			if (filesPaths[0].ends_with(extension.substr(1))) {
+				return true;
+			}
 		}
 	}
 
