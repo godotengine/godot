@@ -80,6 +80,7 @@ private:
 	bool extra_gpu_memory_tracking = false;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	bool accurate_breadcrumbs = false;
+	String _godot_source_root;
 #endif
 	int32_t gpu_idx = -1;
 
@@ -214,6 +215,9 @@ public:
 	bool is_extra_gpu_memory_tracking_enabled() const;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	bool is_accurate_breadcrumbs_enabled() const;
+	const String &godot_source_root() const {
+		return _godot_source_root;
+	}
 #endif
 	int32_t get_gpu_index() const;
 
