@@ -34,17 +34,23 @@
 #include "core/object/class_db.h"
 #include "core/os/memory.h"
 
-extern "C" {
-#include <pcre2.h>
+#ifndef PCRE2_STATIC
+#define PCRE2_STATIC
+#endif
+
+#ifndef PCRE2_CODE_UNIT_WIDTH
+#define PCRE2_CODE_UNIT_WIDTH 32
+#endif
+
+#include <thirdparty/pcre2/src/pcre2.h>
+
+static void *_regex_malloc(PCRE2_SIZE p_size, void *p_user) {
+	return memalloc(p_size);
 }
 
-static void *_regex_malloc(PCRE2_SIZE size, void *user) {
-	return memalloc(size);
-}
-
-static void _regex_free(void *ptr, void *user) {
-	if (ptr) {
-		memfree(ptr);
+static void _regex_free(void *p_ptr, void *p_user) {
+	if (p_ptr) {
+		memfree(p_ptr);
 	}
 }
 
@@ -159,8 +165,8 @@ void RegExMatch::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "strings"), "", "get_strings");
 }
 
-void RegEx::_pattern_info(uint32_t what, void *where) const {
-	pcre2_pattern_info_32((pcre2_code_32 *)code, what, where);
+void RegEx::_pattern_info(uint32_t p_what, void *r_where) const {
+	pcre2_pattern_info_32((pcre2_code_32 *)code, p_what, r_where);
 }
 
 Ref<RegEx> RegEx::create_from_string(const String &p_pattern, bool p_show_error) {

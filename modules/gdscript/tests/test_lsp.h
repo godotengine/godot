@@ -42,10 +42,9 @@
 #include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
+#include "core/string/regex.h"
 #include "editor/file_system/editor_file_system.h"
 #include "tests/test_macros.h"
-
-#include "modules/regex/regex.h"
 
 #include <thirdparty/doctest/doctest.h>
 

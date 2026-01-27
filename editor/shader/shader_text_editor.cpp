@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
+#include "core/string/regex.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -55,8 +56,6 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
-
-#include "modules/regex/regex.h"
 
 /*** SHADER PREVIEW LINE LAYER ****/
 
