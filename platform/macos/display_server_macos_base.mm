@@ -72,6 +72,47 @@ String DisplayServerMacOSBase::clipboard_get() const {
 	return ret;
 }
 
+int DisplayServerMacOSBase::clipboard_get_file_count() const {
+	// If there is a way to modify the commented code to not count directories, it would be preferable. Keeping just in case.
+	//NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	//NSArray *classArray = [NSArray arrayWithObject:[NSURL class]];
+	//NSDictionary *options = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSPasteboardURLReadingFileURLsOnlyKey];
+	//NSArray *fileURLs = [pasteboard readObjectsForClasses:classArray options:options];
+	//if (!fileURLs) {
+	//	return 0;
+	//}
+	//
+	//return fileURLs.count;
+	return clipboard_get_files().size();
+}
+
+Vector<String> DisplayServerMacOSBase::clipboard_get_files() const {
+	_THREAD_SAFE_METHOD_
+
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSURL class]];
+	NSDictionary *options = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSPasteboardURLReadingFileURLsOnlyKey];
+
+	Vector<String> files;
+	BOOL ok = [pasteboard canReadObjectForClasses:classArray options:options];
+
+	if (!ok) {
+		return files;
+	}
+
+	NSArray *fileURLs = [pasteboard readObjectsForClasses:classArray options:options];
+
+	for (NSURL *url in fileURLs) {
+		if (!url.hasDirectoryPath) {
+			String file = String::utf8([url.filePathURL.path UTF8String]);
+			files.push_back(file);
+			continue;
+		}
+	}
+
+	return files;
+}
+
 Ref<Image> DisplayServerMacOSBase::clipboard_get_image() const {
 	Ref<Image> image;
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
@@ -95,6 +136,12 @@ bool DisplayServerMacOSBase::clipboard_has() const {
 	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
 	NSDictionary *options = [NSDictionary dictionary];
 	return [pasteboard canReadObjectForClasses:classArray options:options];
+}
+
+bool DisplayServerMacOSBase::clipboard_has_file() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeFileURL, nil]];
+	return result;
 }
 
 bool DisplayServerMacOSBase::clipboard_has_image() const {
