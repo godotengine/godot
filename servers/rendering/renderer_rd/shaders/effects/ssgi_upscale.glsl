@@ -116,24 +116,15 @@ void main() {
 		center_normal = decode_normal(textureLod(input_normal, uv_center, 0.0).xyz);
 	}
 
-	ivec2 base = pixel / 2;
-
 	vec3 accum = vec3(0.0);
 	float weight_sum = 0.0;
 
-	for (int y = 0; y <= 1; y++) {
-		for (int x = 0; x <= 1; x++) {
-			ivec2 half_coord = clamp(base + ivec2(x, y), ivec2(0), half_size - ivec2(1));
-			vec3 ssgi_sample;
-			ivec2 half_cache = half_coord - half_origin;
-			if (all(greaterThanEqual(half_cache, ivec2(0))) && all(lessThan(half_cache, ivec2(HALF_TILE_SIZE)))) {
-				ssgi_sample = cache_ssgi[half_cache_index(half_cache)].xyz;
-			} else {
-				vec2 uv_half = (vec2(half_coord) + vec2(0.5)) * params.pixel_sizes.zw;
-				ssgi_sample = textureLod(input_ssgi, uv_half, 0.0).rgb;
-			}
+	const float kernel[3] = float[3](1.0, 2.0, 1.0);
 
-			ivec2 full_coord = clamp(half_coord * 2 + ivec2(1, 1), ivec2(0), full_size - ivec2(1));
+	for (int y = -1; y <= 1; y++) {
+		for (int x = -1; x <= 1; x++) {
+			ivec2 full_coord = clamp(pixel + ivec2(x, y), ivec2(0), full_size - ivec2(1));
+
 			vec3 sample_normal;
 			float sample_depth;
 			ivec2 full_cache = full_coord - tile_origin;
@@ -151,7 +142,12 @@ void main() {
 			depth_weight = clamp(depth_weight, 0.0, 1.0);
 			float normal_weight = pow(clamp(dot(center_normal, sample_normal), 0.0, 1.0), params.thresholds.y);
 
-			float weight = depth_weight * normal_weight;
+			float spatial_weight = kernel[abs(x)] * kernel[abs(y)];
+			float weight = depth_weight * normal_weight * spatial_weight;
+
+			vec2 uv_full = (vec2(full_coord) + vec2(0.5)) * params.pixel_sizes.xy;
+			vec3 ssgi_sample = textureLod(input_ssgi, uv_full, 0.0).rgb;
+
 			accum += ssgi_sample * weight;
 			weight_sum += weight;
 		}
@@ -159,7 +155,6 @@ void main() {
 
 	vec3 base_sample = textureLod(input_ssgi, uv_center, 0.0).rgb;
 	vec3 weighted = (weight_sum > 0.0) ? (accum / weight_sum) : base_sample;
-	// Blend with bilinear sample to reduce blocky shimmer from half-res reconstruction.
-	vec3 result = mix(base_sample, weighted, 0.75);
+	vec3 result = mix(base_sample, weighted, 0.85);
 	imageStore(output_image, pixel, vec4(result, 1.0));
 }
