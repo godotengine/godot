@@ -461,6 +461,11 @@
 		<member name="audio/driver/output_latency.web" type="int" setter="" getter="" default="50">
 			Safer override for [member audio/driver/output_latency] in the Web platform, to avoid audio issues especially on mobile devices.
 		</member>
+		<member name="audio/driver/speaker_mode_override" type="int" setter="" getter="" default="0">
+			Override the speaker mode used internally by Godot. [code]Disabled[/code] will use the audio driver's speaker mode, while other values will override the internal speaker mode, and thus the number of audio channels, used by the [AudioServer].
+			When the [AudioServer] speaker mode is overridden and differs from the audio driver's speaker mode, audio channels will be ignored or muted, depending on if there are more channels than the driver supports, or fewer (respectively).
+			This setting can itself be overridden using the [code]--speaker-mode-override &lt;mode&gt;[/code] command line argument.
+		</member>
 		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
@@ -484,11 +489,6 @@
 		</member>
 		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0" keywords="ambient, play, record, solo">
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
-		</member>
-		<member name="audio/general/speaker_mode_override" type="int" setter="" getter="" default="0">
-			Override the speaker mode used internally by Godot. [code]Disabled[/code] will use the Godot audio driver's speaker mode, while other values will override the internal speaker mode, and thus the number of audio channels, used by the [AudioServer].
-			When the [AudioServer] speaker mode is overridden and differs from the audio driver's speaker mode, audio channels will be ignored or muted, depending on if there are more channels than the driver supports, or fewer (respectively).
-			This setting can itself be overridden using the [code]--speaker-mode-override &lt;mode&gt;[/code] command line argument.
 		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled the first time any TTS method is used. See also [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
