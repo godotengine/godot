@@ -1093,7 +1093,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 
 	tabs.write[p_tab].hidden = p_hidden;
 
-	if (_are_all_tabs_hidden()) {
+	if (p_hidden && _are_all_tabs_hidden()) {
 		current = -1;
 	}
 
