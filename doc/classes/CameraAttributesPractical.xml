@@ -43,5 +43,32 @@
 		<member name="dof_blur_near_transition" type="float" setter="set_dof_blur_near_transition" getter="get_dof_blur_near_transition" default="1.0">
 			When positive, distance over which blur effect will scale from 0 to [member dof_blur_amount], ending at [member dof_blur_near_distance]. When negative, uses physically-based scaling so depth of field effect will scale from 0 at [member dof_blur_near_distance] and will increase in a physically accurate way as objects get closer to the [Camera3D].
 		</member>
+		<member name="motion_blur_clamp_velocities_to_tile" type="bool" setter="set_motion_blur_clamp_velocities_to_tile" getter="is_motion_blur_clamp_velocities_to_tile" default="true">
+			When true, object blur will be clamped to the motion blur tile size (configurable in project settings) as to not reveal the edges of motion blur tiles.
+		</member>
+		<member name="motion_blur_enabled" type="bool" setter="set_motion_blur_enabled" getter="is_motion_blur_enabled" default="false">
+		</member>
+		<member name="motion_blur_intensity" type="float" setter="set_motion_blur_intensity" getter="get_motion_blur_intensity" default="1.0">
+			Defines the amount of motion blur to apply given the object's velocity. At 1.0, the object's velocity will be blurred verbatim. An intensity of 0.5 can be interpreted as a 180 degrees shutter.
+		</member>
+		<member name="motion_blur_movement_velocity_multiplier" type="float" setter="set_motion_blur_movement_velocity_multiplier" getter="get_motion_blur_movement_velocity_multiplier" default="1.0">
+			Defines the intensity of blur similar to [member motion_blur_intensity], but only for the part of the motion caused by camera movement.
+		</member>
+		<member name="motion_blur_object_velocity_multiplier" type="float" setter="set_motion_blur_object_velocity_multiplier" getter="get_motion_blur_object_velocity_multiplier" default="1.0">
+			Defines the intensity of blur similar to [member motion_blur_intensity], but only for the part of the motion caused by object movement.
+		</member>
+		<member name="motion_blur_rotation_velocity_multiplier" type="float" setter="set_motion_blur_rotation_velocity_multiplier" getter="get_motion_blur_rotation_velocity_multiplier" default="1.0">
+			Defines the intensity of blur similar to [member motion_blur_intensity], but only for the part of the motion caused by camera rotation.
+		</member>
+		<member name="motion_blur_velocity_lower_threshold" type="float" setter="set_motion_blur_velocity_lower_threshold" getter="get_motion_blur_velocity_lower_threshold" default="0.0">
+			Defines a magnitude of motion that beyond which motion would start getting blurred. Works in tandem with [member motion_blur_velocity_upper_threshold] to define a seamless transition between non-blurred motion, and a fully blurred motion given the motion's magnitude.
+			The value is treated in terms of screen portion.
+			You can use these thresholds to create a less intrusive motion blur effect, where below certain movement speeds details stay crisp.
+		</member>
+		<member name="motion_blur_velocity_upper_threshold" type="float" setter="set_motion_blur_velocity_upper_threshold" getter="get_motion_blur_velocity_upper_threshold" default="0.0">
+			Defines a magnitude of motion that beyond which motion will be blurred in full. Works in tandem with [member motion_blur_velocity_lower_threshold] to define a seamless transition between non-blurred motion, and a fully blurred motion given the motion's magnitude.
+			The value is treated in terms of screen portion.
+			You can use these thresholds to create a less intrusive motion blur effect, where below certain movement speeds details stay crisp.
+		</member>
 	</members>
 </class>
