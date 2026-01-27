@@ -519,14 +519,19 @@
 			Use with [method set_param_texture] to set the turbulence influence over the particles life time.
 		</constant>
 		<constant name="SUB_EMITTER_DISABLED" value="0" enum="SubEmitterMode">
+			The subemitter is disabled.
 		</constant>
 		<constant name="SUB_EMITTER_CONSTANT" value="1" enum="SubEmitterMode">
+			The submitter is emitted on the constant interval defined by [member sub_emitter_frequency].
 		</constant>
 		<constant name="SUB_EMITTER_AT_END" value="2" enum="SubEmitterMode">
+			The subemitter is emitted at the end of the particle's lifetime.
 		</constant>
 		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
+			The subemitter is emitted when the particle collides.
 		</constant>
 		<constant name="SUB_EMITTER_AT_START" value="4" enum="SubEmitterMode">
+			The subemitter is emitted when the particle spawns.
 		</constant>
 		<constant name="SUB_EMITTER_MAX" value="5" enum="SubEmitterMode">
 			Represents the size of the [enum SubEmitterMode] enum.
