@@ -80,6 +80,7 @@ protected:
 	real_t rotation_smoothing_speed = 5.0;
 	bool rotation_smoothing_enabled = false;
 
+	int previous_limit_sides = 0;
 	bool limit_enabled = true;
 	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;

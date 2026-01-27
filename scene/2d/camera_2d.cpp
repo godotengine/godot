@@ -149,21 +149,18 @@ Transform2D Camera2D::get_camera_transform() {
 				} else {
 					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[SIDE_LEFT] * drag_horizontal_offset;
 				}
-
 				drag_horizontal_offset_changed = false;
 			}
 
 			if (drag_vertical_enabled && !is_part_of_edited_scene() && !drag_vertical_offset_changed) {
 				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_TOP]));
 				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom_scale.y * drag_margin[SIDE_BOTTOM]));
-
 			} else {
 				if (drag_vertical_offset < 0) {
 					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_BOTTOM] * drag_vertical_offset;
 				} else {
 					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[SIDE_TOP] * drag_vertical_offset;
 				}
-
 				drag_vertical_offset_changed = false;
 			}
 
@@ -174,104 +171,73 @@ Transform2D Camera2D::get_camera_transform() {
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom_scale);
 
+		int current_limit_sides = 0;
+
 		if (limit_enabled && limit_smoothing_enabled) {
-			bool hit_limit = false;
-			int hit_sides = 0;
-			
-			// Apply horizontal limiting.
 			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - screen_rect.size.x) {
 				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
-				hit_limit = true;
-				hit_sides |= 1 | 4;
-			} else if (screen_rect.position.x <= limit[SIDE_LEFT]) {
+				current_limit_sides |= 1 | 4;
+			} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
 				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
-				hit_limit = true;
-				hit_sides |= 1;
-			} else if (screen_rect.position.x + screen_rect.size.x >= limit[SIDE_RIGHT]) {  // Changed > to >=
+				current_limit_sides |= 1;
+			} else if (screen_rect.position.x + screen_rect.size.x > limit[SIDE_RIGHT]) {
 				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[SIDE_RIGHT];
-				hit_limit = true;
-				hit_sides |= 4;
+				current_limit_sides |= 4;
 			}
 
-			// Apply vertical limiting.
 			if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - screen_rect.size.y) {
 				camera_pos.y -= screen_rect.position.y + (screen_rect.size.y - limit[SIDE_BOTTOM] - limit[SIDE_TOP]) / 2;
-				hit_limit = true;
-				hit_sides |= 2 | 8;
-			} else if (screen_rect.position.y <= limit[SIDE_TOP]) {  // Changed < to <=
+				current_limit_sides |= 2 | 8;
+			} else if (screen_rect.position.y < limit[SIDE_TOP]) {
 				camera_pos.y -= screen_rect.position.y - limit[SIDE_TOP];
-				hit_limit = true;
-				hit_sides |= 2;
-			} else if (screen_rect.position.y + screen_rect.size.y >= limit[SIDE_BOTTOM]) {  // Changed > to >=
+				current_limit_sides |= 2;
+			} else if (screen_rect.position.y + screen_rect.size.y > limit[SIDE_BOTTOM]) {
 				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[SIDE_BOTTOM];
-				hit_limit = true;
-				hit_sides |= 8;
-			}
-			
-			if (hit_limit) {
-				emit_signal(SNAME("position_limit_reached"), hit_sides);
-			}
-		}
-		if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
-			bool hit_limit = false;
-			int hit_sides = 0;
-			
-			Point2 bottom_right_corner = screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position);
-			
-			// Apply horizontal limiting.
-			if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
-				screen_rect.position.x = (limit[SIDE_LEFT] + limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) / 2;
-				hit_limit = true;
-				hit_sides |= 1 | 4;
-			} else if (screen_rect.position.x <= limit[SIDE_LEFT]) {  // Changed < to <=
-				screen_rect.position.x = limit[SIDE_LEFT];
-				hit_limit = true;
-				hit_sides |= 1;
-			} else if (bottom_right_corner.x >= limit[SIDE_RIGHT]) {  // Changed > to >=
-				screen_rect.position.x = limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x);
-				hit_limit = true;
-				hit_sides |= 4;
-			}
-
-			// Apply vertical limiting.
-			if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) {
-				screen_rect.position.y = (limit[SIDE_TOP] + limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) / 2;
-				hit_limit = true;
-				hit_sides |= 2 | 8;
-			} else if (screen_rect.position.y <= limit[SIDE_TOP]) {  // Changed < to <=
-				screen_rect.position.y = limit[SIDE_TOP];
-				hit_limit = true;
-				hit_sides |= 2;
-			} else if (bottom_right_corner.y >= limit[SIDE_BOTTOM]) {  // Changed > to >=
-				screen_rect.position.y = limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y);
-				hit_limit = true;
-				hit_sides |= 8;
-			}
-			
-			if (hit_limit) {
-				emit_signal(SNAME("position_limit_reached"), hit_sides);
+				current_limit_sides |= 8;
 			}
 		}
 
 		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
 			real_t c;
 			if (position_smoothing_delta_independent) {
-				// Delta-independent smoothing using exponential decay
 				bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
-				real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-				// Clamp delta to prevent large jumps
+				real_t delta;
+				if (physics_process) {
+					delta = get_physics_process_delta_time();
+				} else {
+					real_t time_scale = Engine::get_singleton()->get_time_scale();
+					if (time_scale > 0.0) {
+						delta = get_process_delta_time() / time_scale;
+					} else {
+						delta = get_process_delta_time();
+					}
+				}
 				delta = MIN(delta, smoothing_delta_limit);
-				// Exponential decay formula for frame-rate independent smoothing
 				c = 1.0 - Math::exp(-position_smoothing_speed * delta);
 			} else {
 				bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
 				real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-				// Clamp delta to prevent large jumps
 				delta = MIN(delta, smoothing_delta_limit);
 				c = position_smoothing_speed * delta;
 			}
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
+		} else {
+			ret_camera_pos = camera_pos;
+		}
+
+		if (limit_enabled && current_limit_sides != previous_limit_sides) {
+			int newly_hit = current_limit_sides & ~previous_limit_sides;
+			if (newly_hit != 0) {
+				emit_signal(SNAME("position_limit_reached"), newly_hit);
+			}
+			
+			int newly_released = previous_limit_sides & ~current_limit_sides;
+			if (newly_released != 0) {
+				emit_signal(SNAME("position_limit_released"), newly_released);
+			}
+			
+			previous_limit_sides = current_limit_sides;
 		}
 
 	} else {
@@ -301,29 +267,45 @@ Transform2D Camera2D::get_camera_transform() {
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
+
+		int current_limit_sides = 0;
+		
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
-		// Apply horizontal limiting.
+
 		if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
-			// Split the difference horizontally (center it).
 			screen_rect.position.x = (limit[SIDE_LEFT] + limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) / 2;
+			current_limit_sides |= 1 | 4;
 		} else if (screen_rect.position.x < limit[SIDE_LEFT]) {
-			// Only apply left limit.
 			screen_rect.position.x = limit[SIDE_LEFT];
+			current_limit_sides |= 1;
 		} else if (bottom_right_corner.x > limit[SIDE_RIGHT]) {
-			// Only apply right limit.
 			screen_rect.position.x = limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x);
+			current_limit_sides |= 4;
 		}
 
-		// Apply vertical limiting.
 		if (limit[SIDE_TOP] > limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) {
-			// Split the limit difference vertically.
 			screen_rect.position.y = (limit[SIDE_TOP] + limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y)) / 2;
+			current_limit_sides |= 2 | 8;
 		} else if (screen_rect.position.y < limit[SIDE_TOP]) {
-			// Only apply the top limit.
 			screen_rect.position.y = limit[SIDE_TOP];
+			current_limit_sides |= 2;
 		} else if (bottom_right_corner.y > limit[SIDE_BOTTOM]) {
-			// Only apply the bottom limit.
 			screen_rect.position.y = limit[SIDE_BOTTOM] - (bottom_right_corner.y - screen_rect.position.y);
+			current_limit_sides |= 8;
+		}
+
+		if (current_limit_sides != previous_limit_sides) {
+			int newly_hit = current_limit_sides & ~previous_limit_sides;
+			if (newly_hit != 0) {
+				emit_signal(SNAME("position_limit_reached"), newly_hit);
+			}
+			
+			int newly_released = previous_limit_sides & ~current_limit_sides;
+			if (newly_released != 0) {
+				emit_signal(SNAME("position_limit_released"), newly_released);
+			}
+			
+			previous_limit_sides = current_limit_sides;
 		}
 	}
 
@@ -1009,6 +991,7 @@ bool Camera2D::is_margin_drawing_enabled() const {
 
 void Camera2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("position_limit_reached", PropertyInfo(Variant::INT, "sides_hit")));
+	ADD_SIGNAL(MethodInfo("position_limit_released", PropertyInfo(Variant::INT, "sides_released")));
 	ADD_SIGNAL(MethodInfo("zoom_limit_reached", PropertyInfo(Variant::VECTOR2, "attempted_zoom"), PropertyInfo(Variant::VECTOR2, "clamped_zoom")));
 	
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Camera2D::set_offset);
