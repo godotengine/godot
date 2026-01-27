@@ -104,12 +104,12 @@ void Camera2D::set_zoom(const Vector2 &p_zoom) {
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
 
 	Vector2 new_zoom = p_zoom;
-	
+
 	if (zoom_limit_enabled) {
 		Vector2 clamped_zoom = new_zoom.clamp(zoom_min, zoom_max);
-		
+
 		if (new_zoom.x < zoom_min.x || new_zoom.x > zoom_max.x ||
-			new_zoom.y < zoom_min.y || new_zoom.y > zoom_max.y) {
+				new_zoom.y < zoom_min.y || new_zoom.y > zoom_max.y) {
 			emit_signal(SNAME("zoom_limit_reached"), new_zoom, clamped_zoom);
 		}
 		new_zoom = clamped_zoom;
@@ -231,12 +231,12 @@ Transform2D Camera2D::get_camera_transform() {
 			if (newly_hit != 0) {
 				emit_signal(SNAME("position_limit_reached"), newly_hit);
 			}
-			
+
 			int newly_released = previous_limit_sides & ~current_limit_sides;
 			if (newly_released != 0) {
 				emit_signal(SNAME("position_limit_released"), newly_released);
 			}
-			
+
 			previous_limit_sides = current_limit_sides;
 		}
 
@@ -267,9 +267,8 @@ Transform2D Camera2D::get_camera_transform() {
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
-
 		int current_limit_sides = 0;
-		
+
 		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
 
 		if (limit[SIDE_LEFT] > limit[SIDE_RIGHT] - (bottom_right_corner.x - screen_rect.position.x)) {
@@ -299,12 +298,12 @@ Transform2D Camera2D::get_camera_transform() {
 			if (newly_hit != 0) {
 				emit_signal(SNAME("position_limit_reached"), newly_hit);
 			}
-			
+
 			int newly_released = previous_limit_sides & ~current_limit_sides;
 			if (newly_released != 0) {
 				emit_signal(SNAME("position_limit_released"), newly_released);
 			}
-			
+
 			previous_limit_sides = current_limit_sides;
 		}
 	}
@@ -993,7 +992,7 @@ void Camera2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("position_limit_reached", PropertyInfo(Variant::INT, "sides_hit")));
 	ADD_SIGNAL(MethodInfo("position_limit_released", PropertyInfo(Variant::INT, "sides_released")));
 	ADD_SIGNAL(MethodInfo("zoom_limit_reached", PropertyInfo(Variant::VECTOR2, "attempted_zoom"), PropertyInfo(Variant::VECTOR2, "clamped_zoom")));
-	
+
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Camera2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &Camera2D::get_offset);
 
@@ -1061,7 +1060,7 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "enabled"), &Camera2D::set_position_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_position_smoothing_enabled"), &Camera2D::is_position_smoothing_enabled);
-	
+
 	ClassDB::bind_method(D_METHOD("set_zoom_limit_enabled", "enabled"), &Camera2D::set_zoom_limit_enabled);
 	ClassDB::bind_method(D_METHOD("is_zoom_limit_enabled"), &Camera2D::is_zoom_limit_enabled);
 
