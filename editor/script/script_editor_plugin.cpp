@@ -1843,6 +1843,15 @@ void ScriptEditor::_notification(int p_what) {
 			}
 		} break;
 
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorThemeManager::is_generated_theme_outdated() ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
+				_apply_editor_settings();
+			}
+		} break;
+
 		case NOTIFICATION_READY: {
 			// Can't set own styles in NOTIFICATION_THEME_CHANGED, so for now this will do.
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditorPanel"), EditorStringName(EditorStyles)));
@@ -1863,7 +1872,6 @@ void ScriptEditor::_notification(int p_what) {
 			script_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
-			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 #ifdef ANDROID_ENABLED
 			set_process(true);
@@ -1918,8 +1926,10 @@ void ScriptEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
-			_test_script_times_on_disk();
-			_update_modified_scripts_for_external_editor();
+			if (is_inside_tree()) {
+				_test_script_times_on_disk();
+				_update_modified_scripts_for_external_editor();
+			}
 		} break;
 	}
 }
@@ -3047,17 +3057,6 @@ void ScriptEditor::_save_layout() {
 	}
 
 	EditorNode::get_singleton()->save_editor_layout_delayed();
-}
-
-void ScriptEditor::_editor_settings_changed() {
-	if (!EditorThemeManager::is_generated_theme_outdated() &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor") &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor") &&
-			!EditorSettings::get_singleton()->check_changed_settings_in_group("docks/filesystem")) {
-		return;
-	}
-
-	_apply_editor_settings();
 }
 
 void ScriptEditor::_apply_editor_settings() {

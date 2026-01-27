@@ -204,6 +204,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("parent")) {
 				NodePath np = next_tag.fields["parent"];
+				np.prepend_period();
 				PackedInt32Array np_id;
 				if (next_tag.fields.has("parent_id_path")) {
 					np_id = next_tag.fields["parent_id_path"];

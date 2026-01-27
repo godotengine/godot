@@ -124,7 +124,7 @@ void ResourceImporterDynamicFont::get_import_options(const String &p_path, List<
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal,Light (Except Pixel Fonts),Normal (Except Pixel Fonts)"), 3));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
@@ -187,11 +187,10 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_force_autohinter(autohinter);
 	font->set_modulate_color_glyphs(modulate_color_glyphs);
 	font->set_allow_system_fallback(allow_system_fallback);
-	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
-	if (subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+	if (subpixel_positioning == 4 || hinting == 3 || hinting == 4) /* Dected Pixel Fonts */ {
 		Array rids = font->get_rids();
 		if (!rids.is_empty()) {
 			PackedInt32Array glyphs = TS->font_get_supported_glyphs(rids[0]);
@@ -218,14 +217,32 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 					break;
 				}
 			}
-			if (is_pixel && !glyphs.is_empty()) {
-				print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
-				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
-			} else {
-				subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+			if (subpixel_positioning == 4) { // Auto (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling subpixel positioning.", p_source_file));
+					subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+				} else {
+					subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+				}
+			}
+			if (hinting == 3) { // Light (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling hinting.", p_source_file));
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_LIGHT;
+				}
+			} else if (hinting == 4) { // Normal (Except Pixel Fonts)
+				if (is_pixel && !glyphs.is_empty()) {
+					print_line(vformat("%s: Pixel font detected, disabling hinting.", p_source_file));
+					hinting = TextServer::HINTING_NONE;
+				} else {
+					hinting = TextServer::HINTING_NORMAL;
+				}
 			}
 		}
 	}
+	font->set_hinting((TextServer::Hinting)hinting);
 	font->set_subpixel_positioning((TextServer::SubpixelPositioning)subpixel_positioning);
 	font->set_keep_rounding_remainders(keep_rounding_remainders);
 

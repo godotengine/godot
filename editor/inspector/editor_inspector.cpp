@@ -468,7 +468,7 @@ void EditorProperty::_notification(int p_what) {
 			// Only draw the label if it's not empty.
 			if (label.is_empty()) {
 				size.height = 0;
-			} else if (sub_inspector_color_level >= 0) {
+			} else if (sub_inspector_color_level >= 0 && theme_cache.sub_inspector_background[sub_inspector_color_level].is_valid()) {
 				draw_style_box(theme_cache.sub_inspector_background[sub_inspector_color_level], Rect2(Vector2(), size));
 			} else {
 				draw_style_box(selected ? theme_cache.background_selected : theme_cache.background, Rect2(Vector2(), size));
@@ -3727,15 +3727,15 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
-void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> ped) {
-	for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
+void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
+	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
 		if (ep && !F.properties.is_empty() && current_favorites.has(F.properties[0])) {
 			ep->favorited = true;
 			favorites_vbox->add_child(F.property_editor);
 		} else {
-			current_vbox->add_child(F.property_editor);
+			p_current_vbox->add_child(F.property_editor);
 		}
 
 		if (ep) {
@@ -3795,7 +3795,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->update_cache();
 		}
 	}
-	ped->added_editors.clear();
+	p_plugin->added_editors.clear();
 }
 
 bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName &p_property) {
@@ -3937,14 +3937,17 @@ void EditorInspector::update_tree() {
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
 	if (!valid_plugins.is_empty()) {
+		// Show early to avoid sizing problems.
+		begin_vbox->show();
+
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 			ped->parse_begin(object);
 			_parse_added_editors(begin_vbox, nullptr, ped);
 		}
 
-		// Show if any of the editors were added to the beginning.
-		if (begin_vbox->get_child_count() > 0) {
-			begin_vbox->show();
+		// Hide it again if no editors were added to the beginning.
+		if (begin_vbox->get_child_count() == 0) {
+			begin_vbox->hide();
 		}
 	}
 

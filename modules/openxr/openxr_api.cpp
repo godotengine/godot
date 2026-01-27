@@ -659,12 +659,21 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 bool OpenXRAPI::create_instance() {
 	// Create our OpenXR instance, this will query any registered extension wrappers for extensions we need to enable.
 
-	XrResult result = attempt_create_instance(XR_API_VERSION_1_1);
-	if (result == XR_ERROR_API_VERSION_UNSUPPORTED) {
-		// Couldn't initialize OpenXR 1.1, try 1.0
+	XrVersion init_version = XR_API_VERSION_1_1;
+
+	String custom_version = GLOBAL_GET("xr/openxr/target_api_version");
+	if (!custom_version.is_empty()) {
+		Vector<int> ints = custom_version.split_ints(".", false);
+		ERR_FAIL_COND_V_MSG(ints.size() != 3, false, "OpenXR target API version must be major.minor.patch.");
+		init_version = XR_MAKE_VERSION(ints[0], ints[1], ints[2]);
+	}
+
+	XrResult result = attempt_create_instance(init_version);
+	if (result == XR_ERROR_API_VERSION_UNSUPPORTED && init_version == XR_API_VERSION_1_1) {
 		print_verbose("OpenXR: Falling back to OpenXR 1.0");
 
-		result = attempt_create_instance(XR_API_VERSION_1_0);
+		init_version = XR_API_VERSION_1_0;
+		result = attempt_create_instance(init_version);
 	}
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 

@@ -2094,6 +2094,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			"DISABLE_LAYER", // GH-104154 (fpsmon).
 			"DISABLE_MANGOHUD", // GH-57403.
 			"DISABLE_VKBASALT",
+			"DISABLE_FOSSILIZE", // GH-115139.
 		};
 
 #if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
@@ -2788,6 +2789,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifndef _3D_DISABLED
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "xr/openxr/target_api_version"), "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
@@ -4723,6 +4725,23 @@ int Main::start() {
 
 	GDExtensionManager::get_singleton()->startup();
 
+#ifdef MACOS_ENABLED
+	// TODO: Used to fix full-screen splash drawing on macOS, processing events before main loop is fully initialized cause issues on Wayland, and has no effect on other platforms.
+	if (minimum_time_msec) {
+		int64_t minimum_time = 1000 * minimum_time_msec;
+		uint64_t prev_time = OS::get_singleton()->get_ticks_usec();
+		while (minimum_time > 0) {
+			DisplayServer::get_singleton()->process_events();
+			OS::get_singleton()->delay_usec(100);
+
+			uint64_t next_time = OS::get_singleton()->get_ticks_usec();
+			minimum_time -= (next_time - prev_time);
+			prev_time = next_time;
+		}
+	} else {
+		DisplayServer::get_singleton()->process_events();
+	}
+#else
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
 		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
@@ -4730,6 +4749,7 @@ int Main::start() {
 			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
 		}
 	}
+#endif
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();

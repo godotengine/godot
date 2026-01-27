@@ -409,6 +409,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 	if (fav_changed) {
 		EditorSettings::get_singleton()->set_favorites(favorite_paths);
+		// Setting favorites causes the tree to update, so continuing is redundant.
+		return;
 	}
 
 	Ref<Texture2D> folder_icon = get_editor_theme_icon(SNAME("Folder"));
@@ -2479,7 +2481,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				}
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
-			_update_tree(get_uncollapsed_paths());
 		} break;
 
 		case FILE_MENU_REMOVE_FAVORITE: {
@@ -2489,10 +2490,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				favorites_list.erase(p_selected[i]);
 			}
 			EditorSettings::get_singleton()->set_favorites(favorites_list);
-			_update_tree(get_uncollapsed_paths());
-			if (current_path == "Favorites") {
-				_update_file_list(true);
-			}
 		} break;
 
 		case FILE_MENU_SHOW_IN_FILESYSTEM: {
@@ -3697,7 +3694,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
-	files->grab_focus();
+	files->grab_focus(true);
 
 	// Right click is pressed in the file list.
 	Vector<String> paths;
@@ -4553,6 +4550,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
+	EditorSettings::get_singleton()->connect("_favorites_changed", callable_mp(this, &FileSystemDock::update_all));
 	main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));

@@ -3844,6 +3844,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, PackedStringArray());
 
 		menu->reset_size();
 		menu->set_position(p_menu_pos);

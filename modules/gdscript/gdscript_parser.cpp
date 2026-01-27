@@ -3454,8 +3454,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		if (!check(GDScriptTokenizer::Token::PERIOD)) {
 			make_completion_context(COMPLETION_SUPER, call);
 		}
-		push_multiline(true);
-		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+		if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+			push_multiline(true);
+			advance();
 			// Implicit call to the parent method of the same name.
 			if (current_function == nullptr) {
 				push_error(R"(Cannot use implicit "super" call outside of a function.)");
@@ -3472,15 +3473,18 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
 			make_completion_context(COMPLETION_SUPER_METHOD, call);
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
-				pop_multiline();
 				complete_extents(call);
 				return nullptr;
 			}
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
-				pop_multiline();
+
+			if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+				push_multiline(true);
+				advance();
+			} else {
+				push_error(R"(Expected "(" after function name.)");
 				complete_extents(call);
 				return nullptr;
 			}

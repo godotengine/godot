@@ -26,13 +26,14 @@
 # Hidden Kendo <anawyn.bun@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # RESONA <championkungpvp@gmail.com>, 2025.
+# Wi Chan <mac.wikrom@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-12-23 01:00+0000\n"
-"Last-Translator: RESONA <championkungpvp@gmail.com>\n"
+"PO-Revision-Date: 2026-01-15 07:06+0000\n"
+"Last-Translator: Wi Chan <mac.wikrom@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -40,10 +41,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "ตกลง"
+
+msgid "File already in use"
+msgstr "ไฟล์ถูกใช้งานอยู่แล้ว"
 
 msgid "Help"
 msgstr "ช่วยเหลือ"

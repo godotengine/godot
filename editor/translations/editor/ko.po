@@ -86,8 +86,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-13 19:51+0000\n"
-"Last-Translator: nulta <un5450@outlook.com>\n"
+"PO-Revision-Date: 2026-01-22 20:12+0000\n"
+"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -95,16 +95,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 msgid "OK"
 msgstr "확인"
 
+msgid "Failed"
+msgstr "실패"
+
+msgid "Unavailable"
+msgstr "사용 가능하지 않음"
+
+msgid "Unconfigured"
+msgstr "구성되지 않음"
+
+msgid "Unauthorized"
+msgstr "인증되지 않음"
+
+msgid "Parameter out of range"
+msgstr "매개변수 범위를 벗어남"
+
+msgid "Out of memory"
+msgstr "메모리 초과"
+
+msgid "File not found"
+msgstr "파일을 찾을 수 없음"
+
+msgid "File: Bad drive"
+msgstr "파일: 잘못된 드라이브"
+
+msgid "File: Bad path"
+msgstr "파일: 잘못된 경로"
+
+msgid "File: Permission denied"
+msgstr "파일: 권한 거부됨"
+
+msgid "File already in use"
+msgstr "파일이 이미 사용 중"
+
+msgid "Can't open file"
+msgstr "파일을 열 수 없음"
+
+msgid "Can't write file"
+msgstr "파일을 쓸 수 없음"
+
+msgid "Can't read file"
+msgstr "파일을 읽을 수 없음"
+
+msgid "File unrecognized"
+msgstr "파일을 인식할 수 없음"
+
+msgid "File corrupt"
+msgstr "파일이 손상됨"
+
+msgid "Missing dependencies for file"
+msgstr "파일에 종속성이 누락됨"
+
+msgid "End of file"
+msgstr "파일의 끝"
+
+msgid "Can't open"
+msgstr "열 수 없음"
+
+msgid "Can't create"
+msgstr "만들 수 없음"
+
+msgid "Query failed"
+msgstr "요청 실패"
+
+msgid "Already in use"
+msgstr "이미 사용 중"
+
 msgid "Locked"
 msgstr "잠김"
 
+msgid "Timeout"
+msgstr "시간 초과"
+
+msgid "Can't connect"
+msgstr "연결할 수 없음"
+
+msgid "Can't resolve"
+msgstr "해결할 수 없음"
+
+msgid "Connection error"
+msgstr "연결 오류"
+
+msgid "Can't acquire resource"
+msgstr "리소스를 획득할 수 없음"
+
+msgid "Can't fork"
+msgstr "포크할 수 없음"
+
+msgid "Invalid data"
+msgstr "잘못된 데이터"
+
+msgid "Invalid parameter"
+msgstr "잘못된 매개변수"
+
+msgid "Already exists"
+msgstr "이미 존재함"
+
+msgid "Does not exist"
+msgstr "존재하지 않음"
+
+msgid "Can't read database"
+msgstr "데이터베이스를 읽을 수 없음"
+
+msgid "Can't write database"
+msgstr "데이터베이스를 쓸 수 없음"
+
+msgid "Compilation failed"
+msgstr "컴파일 실패"
+
+msgid "Method not found"
+msgstr "메서드를 찾을 수 없음"
+
+msgid "Link failed"
+msgstr "연결 실패"
+
+msgid "Script failed"
+msgstr "스크립트 실패"
+
+msgid "Cyclic link detected"
+msgstr "순환 링크가 감지됨"
+
+msgid "Invalid declaration"
+msgstr "잘못된 선언"
+
+msgid "Duplicate symbol"
+msgstr "중복 기호"
+
+msgid "Parse error"
+msgstr "구문 분석 오류"
+
+msgid "Busy"
+msgstr "바쁨"
+
+msgid "Skip"
+msgstr "건너뛰기"
+
 msgid "Help"
 msgstr "도움말"
+
+msgid "Bug"
+msgstr "버그"
+
+msgid "Printer on fire"
+msgstr "프린터에 불이 붙음"
 
 msgid "unset"
 msgstr "미설정"
@@ -348,7 +486,7 @@ msgid "Redo"
 msgstr "다시 실행"
 
 msgid "Completion Query"
-msgstr "완성도"
+msgstr "쿼리 자동완성"
 
 msgid "New Line"
 msgstr "새 줄"
@@ -1548,6 +1686,9 @@ msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "미러링"
 
+msgid "Handle mode: %s"
+msgstr "핸들 모드: %s"
+
 msgid "Stream:"
 msgstr "스트림:"
 
@@ -1723,7 +1864,7 @@ msgid "Add Method Track Key"
 msgstr "메서드 트랙 키 추가"
 
 msgid "Method not found in object:"
-msgstr "오브젝트에 메서드가 없음:"
+msgstr "오브젝트에 메서드를 찾을 수 없음:"
 
 msgid "Animation Move Keys"
 msgstr "애니메이션 키 이동"
@@ -1791,8 +1932,7 @@ msgstr ""
 "\n"
 "이 애니메이션을 수정하려면, 씬의 고급 가져오기 설정으로 이동하여 애니메이션을 "
 "선택하세요.\n"
-"반복을 포함한 일부 옵션은 여기서 사용할 수 있습니다. 커스텀 트랙을 추가하려"
-"면,\n"
+"반복을 포함한 일부 옵션은 여기서 사용 가능합니다. 커스텀 트랙을 추가하려면,\n"
 "\"파일으로 저장\"과 \"커스텀 지정 트랙 유지\"를 활성화하세요."
 
 msgid ""
@@ -2292,7 +2432,7 @@ msgid "Timeout."
 msgstr "시간 초과."
 
 msgid "Failed:"
-msgstr "실패함:"
+msgstr "실패:"
 
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "잘못된 다운로드 해시. 파일이 변조된 것 같습니다."
@@ -2471,7 +2611,7 @@ msgid "Uncompressing Assets"
 msgstr "애셋 압축 풀기"
 
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr "애셋 \"%s\"에서 다음 파일의 압축 해제를 실패함:"
+msgstr "다음 파일을 애셋 \"%s\"에서 압축 해제하는 데 실패함:"
 
 msgid "(and %s more files)"
 msgstr "(및 더 많은 파일 %s개)"
@@ -3577,7 +3717,7 @@ msgid "This class is marked as deprecated."
 msgstr "이 클래스는 더 이상 사용되지 않는 것으로 표시되어 있습니다."
 
 msgid "This class is marked as experimental."
-msgstr "이 클래스는 실험적 단계로 표시되어 있습니다."
+msgstr "이 클래스는 실험적 단계로 표시됩니다."
 
 msgid "Matches the \"%s\" keyword."
 msgstr "\"%s\" 키워드와 일치합니다."
@@ -5032,7 +5172,7 @@ msgid "Scene Redo: %s"
 msgstr "씬 다시 실행: %s"
 
 msgid "Can't reload a scene that was never saved."
-msgstr "저장된 적이 없는 씬은 다시 불러올 수 없습니다."
+msgstr "저장되지 않은 씬은 다시 불러올 수 없습니다."
 
 msgid "Save & Reload"
 msgstr "저장 및 다시 불러오기"
@@ -5408,19 +5548,19 @@ msgid "Ungroup Selected Node(s)"
 msgstr "선택된 노드 묶음 풀기"
 
 msgid "Pan View"
-msgstr "팬 보기"
+msgstr "패닝 보기"
 
 msgid "Distraction Free Mode"
 msgstr "집중 모드"
 
 msgid "Toggle Last Opened Bottom Panel"
-msgstr "마지막으로 연 바닥 패널 토글"
+msgstr "마지막으로 연 아래 패널 토글"
 
 msgid "Toggle distraction-free mode."
 msgstr "집중 모드를 토글합니다."
 
 msgid "Copy Text"
-msgstr "문자 복사"
+msgstr "텍스트 복사"
 
 msgid "Command Palette"
 msgstr "명령 팔레트"
@@ -5708,7 +5848,7 @@ msgid "Invalid executable file."
 msgstr "잘못된 실행 파일."
 
 msgid "Can't resize signature load command."
-msgstr "서명 불러오기 명령의 크기를 조정할 수 없습니다."
+msgstr "서명 불러오기 명령의 크기를 조절할 수 없습니다."
 
 msgid "Failed to create fat binary."
 msgstr "fat 바이너리를 만드는 데 실패했습니다."
@@ -6073,7 +6213,7 @@ msgid ""
 "for official releases."
 msgstr ""
 "이 버전에 대한 다운로드 링크를 찾을 수 없습니다. 직접 다운로드는 공식 출시 버"
-"전에 대해서만 사용할 수 있습니다."
+"전에 대해서만 사용 가능합니다."
 
 msgid "Disconnected"
 msgstr "연결 끊김"
@@ -6306,7 +6446,7 @@ msgid ""
 "If checked, the preset will be available for use in one-click deploy.\n"
 "Only one preset per platform may be marked as runnable."
 msgstr ""
-"체크하면 프리셋은 원클릭 배포로 사용할 수 있습니다.\n"
+"체크하면 프리셋은 원클릭 배포로 사용 가능합니다.\n"
 "플랫폼 당 하나의 프리셋만 실행 가능으로 표시될 것입니다."
 
 msgid "Advanced Options"
@@ -6560,6 +6700,12 @@ msgstr "종속 관계 편집기"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "소유자: %s (총계: %d)"
+
+msgid "No owners found for: %s"
+msgstr "찾은 소유자가 없음: %s"
+
+msgid "Owners List"
+msgstr "소유자 목록"
 
 msgid "Localization remap"
 msgstr "현지화 리매핑"
@@ -6925,10 +7071,10 @@ msgid "Licenses"
 msgstr "라이선스"
 
 msgid "Pin Bottom Panel Switching"
-msgstr "바닥 패널 전환 고정"
+msgstr "아래 패널 전환 고정"
 
 msgid "Expand Bottom Panel"
-msgstr "바닥 패널 확장"
+msgstr "아래 패널 확장"
 
 msgid "Move/Duplicate: %s"
 msgstr "파일 이동/복사: %s"
@@ -6957,6 +7103,9 @@ msgstr "리소스 선택"
 
 msgid "Select Scene"
 msgstr "씬 선택"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "재귀가 감지되었습니다. 즉시 미리보기에 실패했습니다."
 
 msgid "Instant Preview"
 msgstr "즉시 미리보기"
@@ -7585,7 +7734,7 @@ msgid "Clear Property Array with Prefix %s"
 msgstr "접두어 %s을(를) 가진 속성 배열 비우기"
 
 msgid "Resize Property Array with Prefix %s"
-msgstr "접두어 %s을(를) 가진 속성 배열 크기 조정"
+msgstr "접두어 %s을(를) 가진 속성 배열 크기 조절"
 
 msgid "Element %d: %s%d*"
 msgstr "요소 %d: %s%d*"
@@ -7603,13 +7752,13 @@ msgid "Clear Array"
 msgstr "배열 비우기"
 
 msgid "Resize Array..."
-msgstr "배열 크기 조정..."
+msgstr "배열 크기 조절..."
 
 msgid "Add Element"
 msgstr "요소 추가"
 
 msgid "Resize Array"
-msgstr "배열 크기 조정"
+msgstr "배열 크기 조절"
 
 msgid "New Size:"
 msgstr "새 크기:"
@@ -7747,7 +7896,7 @@ msgid "Assign..."
 msgstr "지정..."
 
 msgid "Assign Node"
-msgstr "노드 지정"
+msgstr "노드 할당"
 
 msgid "Copy as Text"
 msgstr "텍스트로 복사"
@@ -7762,7 +7911,7 @@ msgid "Invalid RID"
 msgstr "잘못된 RID"
 
 msgid "Recursion detected, unable to assign resource to property."
-msgstr "재귀가 감지되어 프로퍼티에 리소스를 할당할 수 없습니다."
+msgstr "재귀가 감지되었습니다. 속성에 리소스를 할당할 수 없습니다."
 
 msgid ""
 "Can't create a ViewportTexture in a Texture2D node because the texture will "
@@ -8204,7 +8353,7 @@ msgid "Supports desktop platforms only."
 msgstr "데스크톱 플랫폼만 지원합니다."
 
 msgid "Advanced 3D graphics available."
-msgstr "고급 3D 그래픽을 사용할 수 있습니다."
+msgstr "고급 3D 그래픽이 사용 가능합니다."
 
 msgid "Can scale to large complex scenes."
 msgstr "크고 복잡한 씬을 충분히 그려낼 수 있습니다."
@@ -8252,12 +8401,12 @@ msgid ""
 "Are you sure you wish to continue?"
 msgstr ""
 "비어 있지 않은 폴더에 Godot 프로젝트를 만들고 있습니다.\n"
-"폴더 내의 모든 내용을 프로젝트 리소스로 가져올 것입니다!\n"
+"이 폴더의 전체 내용을 프로젝트 리소스로 가져옵니다!\n"
 "\n"
-"정말로 진행하시겠습니까?"
+"계속하길 원하십니까?"
 
 msgid "Couldn't create project directory, check permissions."
-msgstr "프로젝트 디렉터리를 만들 수 없었습니다. 권한이 있는지 확인해 주세요."
+msgstr "프로젝트 디렉터리를 만들 수 없었습니다. 권한을 확인하세요."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "프로젝트 경로에 project.godot 파일을 만들 수 없었습니다."
@@ -8269,7 +8418,7 @@ msgid "Error opening package file, not in ZIP format."
 msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
 
 msgid "The following files failed extraction from package:"
-msgstr "다음 파일을 패키지에서 추출하는데 실패함:"
+msgstr "다음 파일을 패키지에서 압축 해제하는데 실패함:"
 
 msgid "Couldn't duplicate project (error %d)."
 msgstr "프로젝트를 복제할 수 없었습니다 (오류 %d)."
@@ -8979,8 +9128,8 @@ msgid ""
 "To disable Recovery Mode, reload the project by pressing the Reload button "
 "next to the Recovery Mode banner, or by reopening the project normally."
 msgstr ""
-"복구 모드를 비활성화하려면 복구 모드 배너 옆에 다시 불러옴 버튼을 누르거나, 프"
-"로젝트를 정상적으로 다시 열어서 프로젝트를 다시 불러오세요."
+"복구 모드를 비활성화하려면 복구 모드 배너 옆에 다시 불러오기 버튼을 누르거나, "
+"프로젝트를 정상적으로 다시 열어서 프로젝트를 다시 불러오세요."
 
 msgid "Disable recovery mode and reload the project."
 msgstr "복구 모드를 비활성화하고 프로젝트를 다시 불러옵니다."
@@ -9744,7 +9893,7 @@ msgid "Sprite2D"
 msgstr "Sprite2D"
 
 msgid "Drag to Resize Region Rect"
-msgstr "사각 영역의 크기를 조정하려면 드래그"
+msgstr "사각 영역의 크기를 조절하려면 드래그"
 
 msgid "Simplification:"
 msgstr "단순화:"
@@ -9880,7 +10029,7 @@ msgid "Grid Snap"
 msgstr "격자 스냅"
 
 msgid "Subdivision"
-msgstr "세분"
+msgstr "분할"
 
 msgid "Painting Tiles Property"
 msgstr "칠하는 타일 속성"
@@ -10016,7 +10165,7 @@ msgid ""
 "This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
 "bottom panel to add one."
 msgstr ""
-"이 타일맵의 타일셋에 구성된 타일 소스가 없습니다. 이동하여 타일셋 바닥 패널에"
+"이 타일맵의 타일셋에 구성된 타일 소스가 없습니다. 이동하여 타일셋 아래 패널에"
 "서 소스를 하나 추가하세요."
 
 msgid "Sort sources"
@@ -10305,7 +10454,7 @@ msgid "Select tiles"
 msgstr "타일 선택"
 
 msgid "Resize a tile"
-msgstr "타일 크기 조정"
+msgstr "타일 크기 조절"
 
 msgid "Remove tile"
 msgstr "타일 제거"
@@ -10740,7 +10889,7 @@ msgid "High"
 msgstr "높음"
 
 msgid "Subdivisions: %s"
-msgstr "세분: %s"
+msgstr "분할: %s"
 
 msgid "Cell size: %s"
 msgstr "셀 크기: %s"
@@ -11390,6 +11539,24 @@ msgstr ""
 msgid "This debug draw mode is only supported when using the Forward+ renderer."
 msgstr "이 디버그 그리기 모드는 Forward+ 렌더러를 사용할 때에만 지원됩니다."
 
+msgid "X: %s"
+msgstr "X: %s"
+
+msgid "Y: %s"
+msgstr "Y: %s"
+
+msgid "Z: %s"
+msgstr "Z: %s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "크기: %s (%.1fMP)"
+
+msgid "Objects: %d"
+msgstr "오브젝트: %d"
+
+msgid "Primitives: %d"
+msgstr "프리미티브: %d"
+
 msgid "Draw Calls: %d"
 msgstr "드로우 콜: %d"
 
@@ -11403,7 +11570,7 @@ msgid "FPS: %d"
 msgstr "FPS: %d"
 
 msgid "Translating:"
-msgstr "이동 중:"
+msgstr "옮기는 중:"
 
 msgid "Instantiating:"
 msgstr "인스턴스화 중:"
@@ -11553,10 +11720,19 @@ msgid "SDFGI Cascades"
 msgstr "SDFGI 캐스케이드"
 
 msgid "Requires SDFGI to be enabled in Environment to have a visible effect."
-msgstr "가시적인 효과를 얻으려면 환경에서 SDFGI가 활성화되어 있어야 합니다."
+msgstr "가시적인 효과를 얻으려면 환경에서 SDFGI가 활성화되어야 합니다."
 
 msgid "SDFGI Probes"
 msgstr "SDFGI 프로브"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"SDFGI 프로브를 왼쪽 클릭하여 오클루전 정보를 표시합니다 (하양 = 가려지지 않"
+"음, 빨강 = 완전히 가려짐).\n"
+"가시적인 효과를 얻으려면 환경에서 SDFGI가 활성화되어야 합니다."
 
 msgid "Scene Luminance"
 msgstr "씬 광도"
@@ -11568,7 +11744,7 @@ msgid ""
 "effect."
 msgstr ""
 "3D 버퍼에서 계산된 씬 휘도를 표시합니다. 이는 자동 노출 계산에 사용됩니다.\n"
-"가시적인 효과를 얻으려면 카메라 특성에서 자동 노출이 활성화되어 있어야 합니다."
+"가시적인 효과를 얻으려면 CameraAttributes에서 자동 노출이 활성화되어야 합니다."
 
 msgid "SSAO"
 msgstr "SSAO"
@@ -11578,7 +11754,7 @@ msgid ""
 "enabled in Environment to have a visible effect."
 msgstr ""
 "화면 공간 앰비언트 오클루전 버퍼를 표시합니다. 가시적인 효과를 얻으려면 환경에"
-"서 SSAO가 활성화되어 있어야 합니다."
+"서 SSAO가 활성화되어야 합니다."
 
 msgid "SSIL"
 msgstr "SSIL"
@@ -11588,13 +11764,13 @@ msgid ""
 "enabled in Environment to have a visible effect."
 msgstr ""
 "화면 공간 간접 조명 버퍼를 표시합니다. 가시적인 효과를 얻으려면 환경에서 SSIL"
-"이 활성화되어 있어야 합니다."
+"이 활성화되어야 합니다."
 
 msgid "VoxelGI/SDFGI Buffer"
 msgstr "VoxelGI/SDFGI 버퍼"
 
 msgid "Requires SDFGI or VoxelGI to be enabled to have a visible effect."
-msgstr "가시적인 효과를 얻으려면 SDFGI 또는 VoxelGI가 활성화되어 있어야 합니다."
+msgstr "가시적인 효과를 얻으려면 SDFGI 또는 VoxelGI가 활성화되어야 합니다."
 
 msgid "Disable Mesh LOD"
 msgstr "메시 LOD 비활성화"
@@ -11836,7 +12012,7 @@ msgstr ""
 "Alt+우클릭: 클릭된 위치에 있는 잠금을 포함한 모든 노드의 목록을 보여줍니다."
 
 msgid "(Available in all modes.)"
-msgstr "(모든 모드에서 사용할 수 있습니다.)"
+msgstr "(모든 모드에서 사용 가능합니다.)"
 
 msgid "%s+Drag: Use snap."
 msgstr "%s+드래그: 스냅을 사용합니다."
@@ -12601,7 +12777,7 @@ msgid "Scale Node2D \"%s\" to (%s, %s)"
 msgstr "Node2D \"%s\"을(를) (%s, %s)로 스케일 조절"
 
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Control \"%s\"을(를) (%d, %d)로 크기 조정"
+msgstr "Control \"%s\"을(를) (%d, %d)로 크기 조절"
 
 msgid "Scale %d CanvasItems"
 msgstr "CanvasItem %d개 스케일 조절"
@@ -12798,10 +12974,13 @@ msgid "Transformation"
 msgstr "변형"
 
 msgid "Center Selection"
-msgstr "선택 항목 중앙으로"
+msgstr "선택 항목 가운데로"
 
 msgid "Frame Selection"
 msgstr "프레임 선택"
+
+msgid "Auto Resample CanvasItems"
+msgstr "CanvasItem 자동 리샘플링"
 
 msgid "Preview Canvas Scale"
 msgstr "캔버스 스케일 미리보기"
@@ -13909,7 +14088,7 @@ msgstr "사변형"
 
 msgid "Hold Shift to scale around midpoint instead of moving."
 msgstr ""
-"Shift 키를 누르고 있으면 이동하지 않고 중점을 기준으로 크기를 조정할 수 있습니"
+"Shift 키를 누르고 있으면 이동하지 않고 중점을 기준으로 크기를 조절할 수 있습니"
 "다."
 
 msgid "Toggle between minimum/maximum and base value/spread modes."
@@ -14574,7 +14753,7 @@ msgid "%d matches in %d files"
 msgstr "%d개 일치가 파일 %d개에 있음"
 
 msgid "Toggle Search Results Bottom Panel"
-msgstr "검색 결과 바닥 패널 토글"
+msgstr "검색 결과 아래 패널 토글"
 
 msgid "Path is empty."
 msgstr "경로가 비었습니다."
@@ -16127,7 +16306,7 @@ msgid "Set VisualShader Expression"
 msgstr "VisualShader 표현식 설정"
 
 msgid "Resize VisualShader Node"
-msgstr "VisualShader 노드 크기 조정"
+msgstr "VisualShader 노드 크기 조절"
 
 msgid "Hide Port Preview"
 msgstr "포트 미리보기 숨기기"
@@ -17416,7 +17595,7 @@ msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
 "integration features."
 msgstr ""
-"프로젝트에 사용할 수 있는 VCS 플러그인이 없습니다. VCS 통합 기능을 사용하려면 "
+"프로젝트에 사용 가능한 VCS 플러그인이 없습니다. VCS 통합 기능을 사용하려면 "
 "VCS 플러그인을 설치해야 합니다."
 
 msgid ""
@@ -17459,7 +17638,7 @@ msgid "Do you want to remove the %s remote?"
 msgstr "%s 원격을 제거하시겠습니까?"
 
 msgid "Toggle Version Control Bottom Panel"
-msgstr "버전 관리 바닥 패널 토글"
+msgstr "버전 관리 아래 패널 토글"
 
 msgid "Create Version Control Metadata"
 msgstr "버전 관리 메타데이터 만들기"
@@ -17686,7 +17865,7 @@ msgid "Range too big."
 msgstr "범위가 너무 큽니다."
 
 msgid "Cannot resize array."
-msgstr "배열의 크기를 조정할 수 없습니다."
+msgstr "배열의 크기를 조절할 수 없습니다."
 
 msgid "Step argument is zero!"
 msgstr "Step 인수가 0입니다!"
@@ -17888,7 +18067,7 @@ msgid "GridMap"
 msgstr "그리드맵"
 
 msgid "Toggle GridMap Bottom Panel"
-msgstr "그리드맵 바닥 패널 토글"
+msgstr "그리드맵 아래 패널 토글"
 
 msgid "All Clips"
 msgstr "모든 클립"
@@ -18127,7 +18306,7 @@ msgid "Replication"
 msgstr "리플리케이션"
 
 msgid "Toggle Replication Bottom Panel"
-msgstr "리플리케이션 바닥 패널 토글"
+msgstr "리플리케이션 아래 패널 토글"
 
 msgid "Select a replicator node in order to pick a property to add to it."
 msgstr "리플리케이터 노드를 선택하고 추가할 속성을 고르세요."
@@ -18185,7 +18364,7 @@ msgid "The MultiplayerSynchronizer needs a root path."
 msgstr "MultiplayerSynchronizer는 루트 경로가 있어야 합니다."
 
 msgid "Property/path must not be empty."
-msgstr "속성/경로는 비워 두면 안됩니다."
+msgstr "속성/경로는 비워둘 수 없습니다."
 
 msgid "Invalid property path: '%s'"
 msgstr "잘못된 속성 경로: '%s'"
@@ -18481,6 +18660,18 @@ msgstr "ObjectDB 참조 + 네이티브 참조"
 msgid "Cycles detected in the ObjectDB"
 msgstr "ObjectDB에 감지된 순환"
 
+msgid "Native References: %d"
+msgstr "네이티브 참조: %d"
+
+msgid "ObjectDB References: %d"
+msgstr "ObjectDB 참조: %d"
+
+msgid "Total References: %d"
+msgstr "총 참조: %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "ObjectDB 순환: %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[center]ObjectDB 참조[center]"
 
@@ -18541,6 +18732,25 @@ msgstr "총 오브젝트:"
 msgid "Total Nodes:"
 msgstr "총 노드:"
 
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr "여러 루트 노드 [i]('queue_free' 없이 'remove_child'를 호출 가능)[/i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr ""
+"참조개수 오브젝트는 순환으로만 참조됩니다 [i](순환은 때때로 메모리 누수를 나타"
+"냅니다)[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr ""
+"스크립트 오브젝트는 아무 다른 오브젝트에서 참조되지 않습니다 [i](참조되지 않"
+"은 오브젝트는 메모리 누수를 나타낼 수 있습니다)[/i]"
+
 msgid "Generating Snapshot"
 msgstr "스냅샷 생성 중"
 
@@ -18564,6 +18774,9 @@ msgstr "스냅샷 이름 바꾸기 실패"
 
 msgid "ObjectDB Profiler"
 msgstr "ObjectDB 프로파일러"
+
+msgid "Diff Against:"
+msgstr "대상과의 차이:"
 
 msgid "Rename Action"
 msgstr "액션 이름 바꾸기"
@@ -18833,6 +19046,9 @@ msgstr "\"밀어서 해제\"를 활성화하려면 \"Gradle 빌드 사용\"이 �
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "플러그인을 사용하려면 \"Gradle 빌드 사용\"이 활성화되어야 합니다."
 
+msgid "Support for \"Use Gradle Build\" on Android is currently experimental."
+msgstr "Android에서 \"Gradle 빌드 사용\"에 대한 지원은 현재 실험적입니다."
+
 msgid ""
 "\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
 "enabled."
@@ -18897,8 +19113,8 @@ msgid ""
 "If enabled, \"scrcpy\" is used to start the project and automatically stream "
 "device display (or virtual display) content."
 msgstr ""
-"활성화된 경우 \"scrcpy\"를 이용해 프로젝트를 시작하고 장치 디스플레이(또는 가"
-"상 디스플레이) 콘텐츠를 자동으로 스트리밍합니다."
+"활성화되면 \"scrcpy\"는 프로젝트를 시작하고 기기 디스플레이 (또는 가상 디스플"
+"레이) 내용을 자동으로 스트리밍하는 데 사용됩니다."
 
 msgid "Exporting APK..."
 msgstr "APK로 내보내는 중..."
@@ -18919,8 +19135,8 @@ msgid ""
 "Could not start scrcpy executable. Configure scrcpy path in the Editor "
 "Settings (Export > Android > scrcpy > Path)."
 msgstr ""
-"scrcpy 실행 파일을 시작할 수 없었습니다. 편집기 설정 (내보내기 > Android > "
-"scrcpy > 경로) 에서 scrcpy 경로를 구성하세요."
+"scrcpy 실행 파일을 시작할 수 없었습니다. 편집기 설정(내보내기 > Android > "
+"scrcpy > 경로)에서 scrcpy 경로를 구성하세요."
 
 msgid "Could not execute on device."
 msgstr "기기에서 실행할 수 없었습니다."
@@ -19729,10 +19945,10 @@ msgid "Could not find osslsigncode executable at \"%s\"."
 msgstr "\"%s\"에서 osslsigncode 실행 파일을 찾지 못했습니다."
 
 msgid "No identity found."
-msgstr "아이덴티티를 찾을 수 없습니다."
+msgstr "식별자를 찾을 수 없습니다."
 
 msgid "Invalid identity type."
-msgstr "잘못된 아이덴티티 유형입니다."
+msgstr "잘못된 식별자 유형입니다."
 
 msgid "Invalid timestamp server."
 msgstr "잘못된 타임스탬프 서버입니다."
@@ -19822,7 +20038,7 @@ msgstr ""
 msgid ""
 "Particle trails are only available when using the Forward+ or Mobile renderer."
 msgstr ""
-"입자 트레일은 Forward+ 또는 모바일 렌더러를 이용할 때만 사용할 수 있습니다."
+"입자 트레일은 Forward+ 또는 모바일 렌더러를 사용할 때만 사용 가능합니다."
 
 msgid ""
 "Particle sub-emitters are not available when using the Compatibility renderer."
@@ -19831,11 +20047,12 @@ msgstr "입자 서브이미터는 호환성 렌더러를 사용할 때는 지원
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
-msgstr "라이트 모양의 텍스처는 반드시 \"Texture\" 속성에 지정해야 합니다."
+msgstr "조명의 모양이 있는 텍스처는 반드시 \"Texture\" 속성에 지정해야 합니다."
 
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr "이 오클루더를 반영하려면 오클루더 폴리곤을 설정(또는 그려야) 합니다."
+msgstr ""
+"이 오클루더를 반영하려면 오클루더 폴리곤을 설정해야 (또는 그려야) 합니다."
 
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
@@ -20020,8 +20237,8 @@ msgid ""
 msgstr ""
 "TileMap 노드는 TileMapLayer 노드를 여러 개 사용하는 것으로 대체되었기 때문에 "
 "사용되지 않습니다.\n"
-"TileMap을 TileMapLayer 노드로 변환하려면 이 노드를 선택한 상태에서 타일맵 바"
-"닥 패널을 열고, 오른쪽 상단의 도구 아이콘을 클릭한 후 \"TileMap 레이어를 각각 "
+"TileMap을 TileMapLayer 노드로 변환하려면 이 노드를 선택한 상태에서 타일맵 아"
+"래 패널을 열고, 오른쪽 상단의 도구 아이콘을 클릭한 후 \"TileMap 레이어를 각각 "
 "TileMapLayer 노드로 추출\"을 선택하세요."
 
 msgid ""
@@ -20094,6 +20311,9 @@ msgid ""
 msgstr ""
 "CPUParticles3D 애니메이션을 사용하려면 Billboard Mode가 \"Particle "
 "Billboard\"로 설정된 StandardMaterial3D가 필요합니다."
+
+msgid "Decals are only available when using the Forward+ or Mobile renderer."
+msgstr "데칼은 Forward+ 또는 모바일 렌더러를 사용할 때만 사용 가능합니다."
 
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
@@ -20170,8 +20390,7 @@ msgid ""
 "Particle sub-emitters are only available when using the Forward+ or Mobile "
 "renderer."
 msgstr ""
-"입자 서브이미터는 Forward+ 또는 모바일 렌더러를 이용할 때만 사용할 수 있습니"
-"다."
+"입자 서브이미터는 Forward+ 또는 모바일 렌더러를 사용할 때만 사용 가능합니다."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -20181,6 +20400,12 @@ msgstr ""
 "굽기 마스크에 아무 비트도 설정되지 않았습니다. 즉, 구워도 이 "
 "GPUParticlesCollisionSDF3D에 대해 아무 콜리전도 만들어내지 않을 것입니다.\n"
 "굽기 마스크 속성에서 하나 이상의 비트를 설정해 주세요."
+
+msgid ""
+"Detecting settings with no target set! IterateIK3D must have a target to work."
+msgstr ""
+"설정된 대상이 없는 상태에서 설정을 감지하고 있습니다! IterateIK3D가 작동하려"
+"면 대상이 있어야 합니다."
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "빛의 크기는 실제로 보이는 빛의 크기에 영향을 미치지 않습니다."
@@ -20520,6 +20745,12 @@ msgstr ""
 "Skeleton3D 노드가 설정되지 않았습니다! SkeletonModifier3D는 Skeleton3D의 자식"
 "이어야 합니다."
 
+msgid ""
+"Detecting settings with no Path3D set! SplineIK3D must have a Path3D to work."
+msgstr ""
+"설정된 Path3D가 없는 상태에서 설정을 감지하고 있습니다! IterateIK3D가 작동하려"
+"면 Path3D가 있어야 합니다."
+
 msgid "Parent node should be a SpringBoneSimulator3D node."
 msgstr "부모 노드는 SpringBoneSimulator3D 노드여야 합니다."
 
@@ -20529,6 +20760,19 @@ msgid ""
 msgstr ""
 "AnimatedSprite3D가 프레임을 표시하려면 \"스프라이트 프레임\" 속성에서 "
 "SpriteFrames 리소스를 만들거나 설정해야 합니다."
+
+msgid ""
+"Detecting settings with no target set! TwoBoneIK3D must have a target to work."
+msgstr ""
+"설정된 대상이 없는 상태에서 설정을 감지하고 있습니다! TwoBoneIK3D가 작동하려"
+"면 대상이 있어야 합니다."
+
+msgid ""
+"Detecting settings with no pole target set! TwoBoneIK3D must have a pole "
+"target to work."
+msgstr ""
+"설정된 폴 대상이 없는 상태에서 설정을 감지하고 있습니다! TwoBoneIK3D가 작동하"
+"려면 폴 대상이 있어야 합니다."
 
 msgid ""
 "The GeometryInstance3D visibility range's End distance is set to a non-zero "
@@ -20564,14 +20808,14 @@ msgid ""
 "GeometryInstance3D transparency is only available when using the Forward+ "
 "renderer."
 msgstr ""
-"GeometryInstance3D 투명도는 Forward+ 렌더러를 이용할 때만 사용할 수 있습니다."
+"GeometryInstance3D 투명도는 Forward+ 렌더러를 사용할 때만 사용 가능합니다."
 
 msgid ""
 "GeometryInstance3D visibility range transparency fade is only available when "
 "using the Forward+ renderer."
 msgstr ""
-"GeometryInstance3D 가시성 범위 투명도 페이딩은 Forward+ 렌더러를 이용할 때만 "
-"사용할 수 있습니다."
+"GeometryInstance3D 가시성 범위 투명도 페이딩은 Forward+ 렌더러를 사용할 때만 "
+"사용 가능합니다."
 
 msgid "Plotting Meshes"
 msgstr "메시 구분 중"
@@ -20650,6 +20894,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "XROrigin3D는 자식으로 XRCamera3D 노드가 필요합니다."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"XROrigin3D 노드에 스케일 변경은 지원되지 않습니다. 대신 세계 스케일을 변경하세"
+"요."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -20679,8 +20930,17 @@ msgid ""
 "activation fails."
 msgstr ""
 "AnimationTree가 비활성 상태입니다.\n"
-"재생하려면 인스펙터에서 노드를 활성 상태로 변경하세요. 활성화에 실패한다면 노"
-"드 경고를 확인하세요."
+"재생하려면 인스펙터에서 노드를 활성 상태로 변경하세요. 활성 상태에 실패한다면 "
+"노드 경고를 확인하세요."
+
+msgid ""
+"The AnimationTree node (or one of its parents) has its process mode set to "
+"Disabled.\n"
+"Change the process mode in the inspector to allow playback."
+msgstr ""
+"AnimationTree 노드(또는 그 노드의 부모 중 하나)에 처리 모드가 비활성화로 설정"
+"되어 있습니다.\n"
+"재생을 허용하려면 인스펙터에서 처리 모드를 변경하세요."
 
 msgid ""
 "ButtonGroup is intended to be used only with buttons that have toggle_mode "
@@ -20738,14 +20998,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s 을(를) 여기에 놓을 수 없습니다. %s 을(를) 사용하여 취소합니다."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"GraphEdit과 GraphNode는 이후의 4.x 버전에서 하위 호환성 없는 API 변경을 포함"
-"한 큰 리팩터링을 거칠 것임을 유의해 주세요."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -20756,8 +21008,8 @@ msgid ""
 "The current font does not support rendering one or more characters used in "
 "this Label's text."
 msgstr ""
-"이 레이블의 텍스트에는 현재 글꼴이 렌더링할 수 없는 글자가 하나 이상 포함되어 "
-"있습니다."
+"이 레이블의 텍스트에는 현재 글꼴이 렌더링을 지원하지 않는 글자가 하나 이상 포"
+"함되어 있습니다."
 
 msgid ""
 "MSDF font pixel range is too small, some outlines/shadows will not render. "
@@ -20779,7 +21031,7 @@ msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater or equal to 0."
 msgstr "\"지수 편집\"이 활성화되면, \"최솟값\"은 0보다 크거나 같아야 합니다."
 
 msgid "Image alternative text must not be empty."
-msgstr "이미지 대체 텍스트는 비워 둘 수 없습니다."
+msgstr "이미지 대체 텍스트는 비워 두면 안됩니다."
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
@@ -20789,6 +21041,9 @@ msgstr ""
 "ScrollContainer는 단일 자식 컨트롤을 작업하기 위한 것입니다.\n"
 "(VBox, HBox 등) 컨테이너를 자식으로 사용하거나, Control을 사용하고 커스텀 최"
 "소 크기를 수동으로 설정하세요."
+
+msgid "Drag to resize"
+msgstr "크기를 조절하려면 드래그"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -20866,8 +21121,8 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr ""
-"이 노드는 실험적으로 표시되어 있으며 향후 버전에서 제거되거나 크게 변경될 수 "
-"있습니다."
+"이 노드는 실험적으로 표시되며 향후 버전에서 제거되거나 크게 변경될 수 있습니"
+"다."
 
 msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
@@ -21155,6 +21410,22 @@ msgstr "다음 함수를 찾을 수 없습니다: '%s'."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr "Varying '%s'은(는) 해당 문맥에서 '%s' 매개변수로 전달할 수 없습니다."
 
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"멀티뷰 텍스처 샘플러를 커스텀 함수의 매개변수로 전달할 수 없습니다. 메인 함수"
+"에서 이를 샘플한 다음 벡터 결과를 커스텀 함수로 전달하는 것을 고려하세요."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"RADIANCE 텍스처 샘플러를 커스텀 함수의 매개변수로 전달할 수 없습니다. 메인 함"
+"수에서 이를 샘플한 다음 벡터 결과를 커스텀 함수로 전달하는 것을 고려하세요."
+
 msgid "Unknown identifier in expression: '%s'."
 msgstr "표현식에 알 수 없는 식별자가 있습니다: '%s'."
 
@@ -21438,8 +21709,8 @@ msgid ""
 "'hint_normal_roughness_texture' is only available when using the Forward+ "
 "renderer."
 msgstr ""
-"'hint_normal_roughness_texture'는 Forward+ 렌더러를 이용할 때만 사용할 수 있습"
-"니다."
+"'hint_normal_roughness_texture'는 Forward+ 렌더러를 사용할 때만 사용 가능합니"
+"다."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture'는 '%s' 셰이더에서 지원되지 않습니다."
@@ -21653,7 +21924,7 @@ msgid "Shader include resource type is wrong."
 msgstr "셰이더 인클루드 리소스 유형이 잘못되었습니다."
 
 msgid "Cyclic include found"
-msgstr "순환 참조가 발견되었습니다"
+msgstr "순환 포함이 발견되었습니다"
 
 msgid "Shader max include depth exceeded."
 msgstr "셰이더의 최대 참조 깊이가 초과되었습니다."

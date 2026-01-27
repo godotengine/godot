@@ -475,7 +475,6 @@ class ScriptEditor : public PanelContainer {
 	Ref<ConfigFile> script_editor_cache;
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
-	void _editor_settings_changed();
 	void _apply_editor_settings();
 	void _filesystem_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);

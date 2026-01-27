@@ -79,6 +79,7 @@ private:
 	bool transient = false;
 	bool closable = false;
 
+	DockLayout current_layout;
 	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
 	bool is_open = false;
@@ -144,6 +145,8 @@ public:
 	String get_effective_layout_key() const;
 
 	virtual void update_layout(DockLayout p_layout) { GDVIRTUAL_CALL(_update_layout, p_layout); }
+	DockLayout get_current_layout() const { return current_layout; }
+
 	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const { GDVIRTUAL_CALL(_save_layout_to_config, p_layout, p_section); }
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) { GDVIRTUAL_CALL(_load_layout_from_config, p_layout, p_section); }
 };

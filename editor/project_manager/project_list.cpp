@@ -1295,6 +1295,9 @@ void ProjectList::_select_project_range(int p_begin, int p_end) {
 void ProjectList::select_project(int p_index, bool p_hide_focus) {
 	// This method keeps only one project selected.
 	_clear_project_selection();
+
+	Item &item = _projects.write[p_index];
+	item.control->grab_focus(p_hide_focus);
 	_select_project_nocheck(p_index, p_hide_focus);
 }
 

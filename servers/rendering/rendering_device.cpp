@@ -2764,9 +2764,8 @@ RDD::RenderPassID RenderingDevice::_render_pass_create_from_graph(RenderingDevic
 
 	// The graph delegates the creation of the render pass to the user according to the load and store ops that were determined as necessary after
 	// resolving the dependencies between commands. This function creates a render pass for the framebuffer accordingly.
-	Framebuffer *framebuffer = (Framebuffer *)(p_user_data);
-	const FramebufferFormatKey &key = framebuffer->rendering_device->framebuffer_formats[framebuffer->format_id].E->key();
-	return _render_pass_create(p_driver, key.attachments, key.passes, p_load_ops, p_store_ops, framebuffer->view_count, key.vrs_method, key.vrs_attachment, key.vrs_texel_size);
+	const FramebufferFormatKey *key = (const FramebufferFormatKey *)(p_user_data);
+	return _render_pass_create(p_driver, key->attachments, key->passes, p_load_ops, p_store_ops, key->view_count, key->vrs_method, key->vrs_attachment, key->vrs_texel_size);
 }
 
 RDG::ResourceUsage RenderingDevice::_vrs_usage_from_method(VRSMethod p_method) {
@@ -2953,7 +2952,6 @@ RID RenderingDevice::framebuffer_create_empty(const Size2i &p_size, TextureSampl
 	_THREAD_SAFE_METHOD_
 
 	Framebuffer framebuffer;
-	framebuffer.rendering_device = this;
 	framebuffer.format_id = framebuffer_format_create_empty(p_samples);
 	ERR_FAIL_COND_V(p_format_check != INVALID_FORMAT_ID && framebuffer.format_id != p_format_check, RID());
 	framebuffer.size = p_size;
@@ -2969,7 +2967,8 @@ RID RenderingDevice::framebuffer_create_empty(const Size2i &p_size, TextureSampl
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 
-	framebuffer_cache->render_pass_creation_user_data = framebuffer_owner.get_or_null(id);
+	// This relies on the fact that HashMap will not change the address of an object after it's been inserted into the container.
+	framebuffer_cache->render_pass_creation_user_data = (void *)(&framebuffer_formats[framebuffer.format_id].E->key());
 
 	return id;
 }
@@ -3071,7 +3070,6 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 			"The format used to check this framebuffer differs from the intended framebuffer format.");
 
 	Framebuffer framebuffer;
-	framebuffer.rendering_device = this;
 	framebuffer.format_id = format_id;
 	framebuffer.texture_ids = p_texture_attachments;
 	framebuffer.size = size;
@@ -3095,7 +3093,8 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 		}
 	}
 
-	framebuffer_cache->render_pass_creation_user_data = framebuffer_owner.get_or_null(id);
+	// This relies on the fact that HashMap will not change the address of an object after it's been inserted into the container.
+	framebuffer_cache->render_pass_creation_user_data = (void *)(&framebuffer_formats[framebuffer.format_id].E->key());
 
 	return id;
 }

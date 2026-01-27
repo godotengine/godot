@@ -3610,6 +3610,9 @@
 		<member name="xr/openxr/submit_depth_buffer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], OpenXR will manage the depth buffer and use the depth buffer for advanced reprojection provided this is supported by the XR runtime. Note that some rendering features in Godot can't be used with this feature.
 		</member>
+		<member name="xr/openxr/target_api_version" type="String" setter="" getter="" default="&quot;&quot;">
+			Optionally sets a specific API version of OpenXR to initialize in [code]major.minor.patch[/code] notation. Some XR runtimes gate old behavior behind version checks. This is non-standard OpenXR behavior.
+		</member>
 		<member name="xr/openxr/view_configuration" type="int" setter="" getter="" default="&quot;1&quot;" keywords="mono, stereo">
 			Specify the view configuration with which to configure OpenXR setting up either Mono or Stereo rendering.
 		</member>

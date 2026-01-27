@@ -103,13 +103,14 @@
 # Murat Ugur <muratyer1005@gmail.com>, 2025.
 # Sueda Ünlü <sue.unlu@gmail.com>, 2025.
 # Fatih Serbest <fatihxserbest@gmail.com>, 2026.
+# Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-10 10:02+0000\n"
-"Last-Translator: Fatih Serbest <fatihxserbest@gmail.com>\n"
+"PO-Revision-Date: 2026-01-14 14:30+0000\n"
+"Last-Translator: Hasan Kara <hasanbeytullahkara@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -117,7 +118,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -523,6 +524,12 @@ msgstr "Kaydırma ve Ölçekleme Parmak Hareketlerini Etkileştir"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "Döner Giriş Kaydırma Ekseni"
+
+msgid "Override Volume Buttons"
+msgstr "ses tuşlarını yeniden tanımla"
+
+msgid "Disable Scroll Deadzone"
+msgstr "Kaydırma Ölü Bölgesini Devre Dışı Bırak"
 
 msgid "Navigation"
 msgstr "Gezinti"
@@ -965,6 +972,15 @@ msgstr "Başlık"
 msgid "Transient"
 msgstr "Kısa Süreli"
 
+msgid "Icon Name"
+msgstr "Simge Adı"
+
+msgid "Dock Icon"
+msgstr "Dock Simgesi"
+
+msgid "Force Show Icon"
+msgstr "Simgeyi Göstermeye Zorla"
+
 msgid "Title Color"
 msgstr "Başlık Rengi"
 
@@ -1145,6 +1161,9 @@ msgstr "Salt Okunur"
 msgid "Flat"
 msgstr "Düz"
 
+msgid "Control State"
+msgstr "Denetim Durumu"
+
 msgid "Hide Slider"
 msgstr "Kaydırıcıyı Gizle"
 
@@ -1246,6 +1265,9 @@ msgstr "Örgü Sıkıştırmayı Devre Dışı Bırakmayı Zorla"
 
 msgid "Node"
 msgstr "Düğüm"
+
+msgid "Node Type"
+msgstr "Node Türü"
 
 msgid "Script"
 msgstr "Betik"

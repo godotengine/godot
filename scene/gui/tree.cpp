@@ -5001,6 +5001,9 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			is_mouse_hovering = false;
+			if (enable_drag_unfolding && drop_mode_over) {
+				_reset_drop_mode_over();
+			}
 			// Clear hovered item cache.
 			if (cache.hover_header_row || cache.hover_item != nullptr) {
 				cache.hover_header_row = false;
@@ -5114,9 +5117,7 @@ void Tree::_notification(int p_what) {
 			const Rect2 main_clip_rect = Rect2(0.0f, clip_top, get_size().x, clip_bottom - clip_top);
 			RenderingServer *rendering_server = RenderingServer::get_singleton();
 
-			rendering_server->canvas_item_add_clip_ignore(ci, true);
 			bg->draw(ci, Rect2(Point2(), get_size()));
-			rendering_server->canvas_item_add_clip_ignore(ci, false);
 
 			Rect2 header_clip_rect = Rect2(content_rect.position.x, 0.0f, content_rect.size.x, get_size().y); // Keep headers out of the scrollbar area.
 			if (v_scroll->is_visible()) {
@@ -5796,6 +5797,7 @@ void Tree::ensure_cursor_is_visible() {
 	// Note: Code below similar to `Tree::scroll_to_item()`, in case of bug fix both.
 	const Size2 area_size = _get_content_rect().size;
 
+	double delta_v = 0;
 	int y_offset = get_item_offset(selected_item);
 	if (y_offset != -1) {
 		const int tbh = _get_title_button_height();
@@ -5805,14 +5807,18 @@ void Tree::ensure_cursor_is_visible() {
 		int screen_h = area_size.height - tbh;
 
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
+			delta_v = y_offset - v_scroll->get_value();
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
+			delta_v = y_offset - screen_h + cell_h - v_scroll->get_value();
 			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
 		} else if (y_offset < v_scroll->get_value()) {
+			delta_v = y_offset - v_scroll->get_value();
 			v_scroll->set_value(y_offset);
 		}
 	}
 
+	double delta_h = 0;
 	if (select_mode != SELECT_ROW) { // Cursor always at column 0 in this mode.
 		int x_offset = 0;
 		for (int i = 0; i < selected_col; i++) {
@@ -5823,12 +5829,26 @@ void Tree::ensure_cursor_is_visible() {
 		const int screen_w = area_size.width;
 
 		if (cell_w > screen_w) {
+			delta_h = x_offset - h_scroll->get_value();
 			h_scroll->set_value(x_offset);
 		} else if (x_offset + cell_w > h_scroll->get_value() + screen_w) {
+			delta_h = x_offset - screen_w + cell_w - h_scroll->get_value();
 			callable_mp((Range *)h_scroll, &Range::set_value).call_deferred(x_offset - screen_w + cell_w);
 		} else if (x_offset < h_scroll->get_value()) {
+			delta_h = x_offset - h_scroll->get_value();
 			h_scroll->set_value(x_offset);
 		}
+	}
+
+	// Move focus_rect.
+	if (select_mode == SELECT_ROW) {
+		Rect2 r = selected_item->cells[selected_col].focus_rect;
+		r.position -= Vector2(delta_h, delta_v);
+		selected_item->cells.write[selected_col].focus_rect = r;
+	} else {
+		Rect2 r = selected_item->focus_rect;
+		r.position -= Vector2(delta_h, delta_v);
+		selected_item->focus_rect = r;
 	}
 
 	queue_accessibility_update();

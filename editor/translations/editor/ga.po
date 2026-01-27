@@ -3,13 +3,13 @@
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
 # Rónán Quill <ronan085@gmail.com>, 2019, 2020.
-# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025.
+# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-12-22 09:42+0000\n"
+"PO-Revision-Date: 2026-01-17 13:01+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
@@ -18,16 +18,154 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.15.2\n"
 
 msgid "OK"
 msgstr "Ceart go leor"
 
+msgid "Failed"
+msgstr "Theip ar"
+
+msgid "Unavailable"
+msgstr "Gan a bheith ar fáil"
+
+msgid "Unconfigured"
+msgstr "Gan chumraíocht"
+
+msgid "Unauthorized"
+msgstr "Neamhúdaraithe"
+
+msgid "Parameter out of range"
+msgstr "Paraiméadar lasmuigh den raon"
+
+msgid "Out of memory"
+msgstr "As cuimhne"
+
+msgid "File not found"
+msgstr "Níor aimsíodh an comhad"
+
+msgid "File: Bad drive"
+msgstr "Comhad: Tiomántán lochtach"
+
+msgid "File: Bad path"
+msgstr "Comhad: Droch-chosán"
+
+msgid "File: Permission denied"
+msgstr "Comhad: Cead diúltaithe"
+
+msgid "File already in use"
+msgstr "Comhad in úsáid cheana féin"
+
+msgid "Can't open file"
+msgstr "Ní féidir an comhad a oscailt"
+
+msgid "Can't write file"
+msgstr "Ní féidir comhad a scríobh"
+
+msgid "Can't read file"
+msgstr "Ní féidir an comhad a léamh"
+
+msgid "File unrecognized"
+msgstr "Comhad gan aitheantas"
+
+msgid "File corrupt"
+msgstr "Comhad truaillithe"
+
+msgid "Missing dependencies for file"
+msgstr "Spleáchais ar iarraidh don chomhad"
+
+msgid "End of file"
+msgstr "Deireadh an chomhaid"
+
+msgid "Can't open"
+msgstr "Ní féidir oscailt"
+
+msgid "Can't create"
+msgstr "Ní féidir a chruthú"
+
+msgid "Query failed"
+msgstr "Theip ar an bhfiosrúchán"
+
+msgid "Already in use"
+msgstr "In úsáid cheana féin"
+
 msgid "Locked"
 msgstr "Faoi Ghlas"
 
+msgid "Timeout"
+msgstr "Am críochnaithe"
+
+msgid "Can't connect"
+msgstr "Ní féidir ceangal"
+
+msgid "Can't resolve"
+msgstr "Ní féidir réiteach"
+
+msgid "Connection error"
+msgstr "Earráid nasc"
+
+msgid "Can't acquire resource"
+msgstr "Ní féidir acmhainn a fháil"
+
+msgid "Can't fork"
+msgstr "Ní féidir forc a úsáid"
+
+msgid "Invalid data"
+msgstr "Sonraí neamhbhailí"
+
+msgid "Invalid parameter"
+msgstr "Paraiméadar neamhbhailí"
+
+msgid "Already exists"
+msgstr "Tá sé ann cheana féin"
+
+msgid "Does not exist"
+msgstr "Níl ann"
+
+msgid "Can't read database"
+msgstr "Ní féidir an bunachar sonraí a léamh"
+
+msgid "Can't write database"
+msgstr "Ní féidir bunachar sonraí a scríobh"
+
+msgid "Compilation failed"
+msgstr "Theip ar an tiomsú"
+
+msgid "Method not found"
+msgstr "Níor aimsíodh an modh"
+
+msgid "Link failed"
+msgstr "Theip ar an nasc"
+
+msgid "Script failed"
+msgstr "Theip ar an script"
+
+msgid "Cyclic link detected"
+msgstr "Nasc timthriallach braite"
+
+msgid "Invalid declaration"
+msgstr "Dearbhú neamhbhailí"
+
+msgid "Duplicate symbol"
+msgstr "Siombail dhúblach"
+
+msgid "Parse error"
+msgstr "Earráid pharsála"
+
+msgid "Busy"
+msgstr "Gnóthach"
+
+msgid "Skip"
+msgstr "Léim"
+
 msgid "Help"
 msgstr "Cabhair"
+
+msgid "Bug"
+msgstr "Fabht"
+
+msgid "Printer on fire"
+msgstr "Printéir ar thine"
 
 msgid "unset"
 msgstr "díshuiteáil"
@@ -1480,6 +1618,9 @@ msgstr "Cothromaithe"
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
 msgstr "Scáthánaithe"
+
+msgid "Handle mode: %s"
+msgstr "Mód láimhseála: %s"
 
 msgid "Stream:"
 msgstr "Sruth:"
@@ -6654,6 +6795,12 @@ msgstr "Eagarthóir Spleáchais"
 msgid "Owners of: %s (Total: %d)"
 msgstr "Úinéirí: %s (Iomlán: %d)"
 
+msgid "No owners found for: %s"
+msgstr "Níor aimsíodh aon úinéirí do: %s"
+
+msgid "Owners List"
+msgstr "Liosta Úinéirí"
+
 msgid "Localization remap"
 msgstr "Athmhapa logánaithe"
 
@@ -7059,6 +7206,9 @@ msgstr "Roghnaigh Acmhainn"
 
 msgid "Select Scene"
 msgstr "Roghnaigh Radharc"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "Braitheadh athchúrsáil, theip ar Réamhamharc Meandarach."
 
 msgid "Instant Preview"
 msgstr "Réamhamharc Meandarach"
@@ -11634,6 +11784,24 @@ msgstr ""
 "Ní thacaítear leis an modh tarraingthe dífhabhtaithe seo ach amháin nuair a "
 "úsáidtear an rindreálaí Forward+."
 
+msgid "X: %s"
+msgstr "X: %s"
+
+msgid "Y: %s"
+msgstr "Y: %s"
+
+msgid "Z: %s"
+msgstr "Z: %s"
+
+msgid "Size: %s (%.1fMP)"
+msgstr "Méid: %s (%.1fMP)"
+
+msgid "Objects: %d"
+msgstr "Réada: %d"
+
+msgid "Primitives: %d"
+msgstr "Bunúsacha: %d"
+
 msgid "Draw Calls: %d"
 msgstr "Tarraing Glaonna: %d"
 
@@ -11807,6 +11975,16 @@ msgstr ""
 
 msgid "SDFGI Probes"
 msgstr "Tástálacha SDFGI"
+
+msgid ""
+"Left-click a SDFGI probe to display its occlusion information (white = not "
+"occluded, red = fully occluded).\n"
+"Requires SDFGI to be enabled in Environment to have a visible effect."
+msgstr ""
+"Cliceáil ar chlé ar tóireadóir SDFGI chun a fhaisnéis faoi bhac a thaispeáint "
+"(bán = gan bhac, dearg = lánbhac).\n"
+"Éilíonn sé seo go mbeidh SDFGI cumasaithe sa Timpeallacht le go mbeidh "
+"éifeacht infheicthe aige."
 
 msgid "Scene Luminance"
 msgstr "Luminance Radharc"
@@ -13088,6 +13266,9 @@ msgstr "Lárroghnúchán"
 
 msgid "Frame Selection"
 msgstr "Roghnú Fráma"
+
+msgid "Auto Resample CanvasItems"
+msgstr "Athshampláil Uathoibríoch ar Chanbhásí"
 
 msgid "Preview Canvas Scale"
 msgstr "Scála Canbhás Réamhamhairc"
@@ -18973,6 +19154,18 @@ msgstr "Tagairtí ObjectDB + Tagairtí Dúchasacha"
 msgid "Cycles detected in the ObjectDB"
 msgstr "Timthriallta braite sa ObjectDB"
 
+msgid "Native References: %d"
+msgstr "Tagairtí Dúchasacha: %d"
+
+msgid "ObjectDB References: %d"
+msgstr "Tagairtí ObjectDB: %d"
+
+msgid "Total References: %d"
+msgstr "Líon Iomlán na dTagairtí: %d"
+
+msgid "ObjectDB Cycles: %d"
+msgstr "Timthriallta ObjectDB: %d"
+
 msgid "[center]ObjectDB References[center]"
 msgstr "[lár]Tagairtí ObjectDB[lár]"
 
@@ -19036,6 +19229,26 @@ msgstr "Líon Iomlán na Réada:"
 
 msgid "Total Nodes:"
 msgstr "Líon Iomlán na Nóid:"
+
+msgid ""
+"Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')"
+"[/i]"
+msgstr ""
+"Il-nóid fréimhe [i](glao féideartha chuig 'remove_child' gan 'queue_free')[/i]"
+
+msgid ""
+"RefCounted objects only referenced in cycles [i](cycles often indicate a "
+"memory leaks)[/i]"
+msgstr ""
+"Réada RefCounted nach ndéantar tagairt dóibh ach i dtimthriallta [i](is minic "
+"a léiríonn timthriallta sceitheadh cuimhne)[/i]"
+
+msgid ""
+"Scripted objects not referenced by any other objects [i](unreferenced objects "
+"may indicate a memory leak)[/i]"
+msgstr ""
+"Réada scriptithe nach bhfuil tagairt déanta dóibh ag aon réada eile [i]"
+"(d’fhéadfadh réada gan tagairt sceitheadh cuimhne a léiriú)[/i]"
 
 msgid "Generating Snapshot"
 msgstr "Ag Giniúint Pictiúr"
@@ -21290,6 +21503,13 @@ msgid "XROrigin3D requires an XRCamera3D child node."
 msgstr "Éilíonn XROrigin3D nód leanaí XRCamera3D."
 
 msgid ""
+"Changing the scale on the XROrigin3D node is not supported. Change the World "
+"Scale instead."
+msgstr ""
+"Ní thacaítear le hathrú an scála ar an nód XROrigin3D. Athraigh an Scála "
+"Domhanda ina ionad."
+
+msgid ""
 "XR shaders are not enabled in project settings. Stereoscopic output is not "
 "supported unless they are enabled. Please enable `xr/shaders/enabled` to use "
 "stereoscopic output."
@@ -21394,14 +21614,6 @@ msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "Ní féidir %s a scaoileadh anseo. Úsáid %s chun cealú."
 
 msgid ""
-"Please be aware that GraphEdit and GraphNode will undergo extensive "
-"refactoring in a future 4.x version involving compatibility-breaking API "
-"changes."
-msgstr ""
-"Bí ar an eolas go ndéanfar athchóiriú fairsing ar GraphEdit agus GraphNode i "
-"leagan 4.x amach anseo a bhaineann le hathruithe API comhoiriúnachta."
-
-msgid ""
 "Labels with autowrapping enabled must have a custom minimum size configured "
 "to work correctly inside a container."
 msgstr ""
@@ -21449,6 +21661,9 @@ msgstr ""
 "Tá sé i gceist go n-oibreoidh ScrollContainer le rialú linbh amháin.\n"
 "Bain úsáid as coimeádán mar leanbh (VBox, HBox, etc.), nó Rialú agus socraigh "
 "an t-íosmhéid saincheaptha de láimh."
+
+msgid "Drag to resize"
+msgstr "Tarraing chun athrú méide"
 
 msgid ""
 "This node doesn't have a SubViewport as child, so it can't display its "
@@ -21831,6 +22046,24 @@ msgstr "Níor aimsíodh feidhm chomhoiriúnach le haghaidh: '%s'."
 msgid "Varying '%s' cannot be passed for the '%s' parameter in that context."
 msgstr ""
 "Ní féidir pas a fháil le hathrú '%s' don pharaiméadar '%s' sa chomhthéacs sin."
+
+msgid ""
+"Unable to pass a multiview texture sampler as a parameter to a custom "
+"function. Consider sampling it in the main function and then passing the "
+"vector result to the custom function."
+msgstr ""
+"Ní féidir samplaí uigeachta ilradhairc a chur mar pharaiméadar chuig feidhm "
+"saincheaptha. Smaoinigh ar é a shampláil sa phríomhfheidhm agus ansin an "
+"toradh veicteora a chur chuig an bhfeidhm saincheaptha."
+
+msgid ""
+"Unable to pass RADIANCE texture sampler as a parameter to a custom function. "
+"Consider sampling it in the main function and then passing the vector result "
+"to the custom function."
+msgstr ""
+"Ní féidir samplaí uigeachta RADIANCE a chur mar pharaiméadar chuig feidhm "
+"saincheaptha. Smaoinigh ar é a shampláil sa phríomhfheidhm agus ansin an "
+"toradh veicteora a chur chuig an bhfeidhm saincheaptha."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Aitheantóir anaithnid i slonn: '%s'."

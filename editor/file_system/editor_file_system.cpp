@@ -129,6 +129,11 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	return get_path().path_join(get_file(p_idx));
 }
 
+ResourceUID::ID EditorFileSystemDirectory::get_file_uid(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), ResourceUID::INVALID_ID);
+	return files[p_idx]->uid;
+}
+
 Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), Vector<String>());
 	Vector<String> deps;

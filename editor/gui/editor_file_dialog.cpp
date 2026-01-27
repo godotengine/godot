@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "editor/docks/filesystem_dock.h"
+#include "editor/editor_string_names.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 
 void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 	// Use dependency dialog to delete the entry in the editor, but only for project files.
@@ -82,6 +84,10 @@ Color EditorFileDialog::_get_folder_color(const String &p_path) const {
 	return FileSystemDock::get_dir_icon_color(p_path, FileDialog::_get_folder_color(p_path));
 }
 
+Vector2i EditorFileDialog::_get_list_mode_icon_size() const {
+	return Vector2i();
+}
+
 void EditorFileDialog::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("add_side_menu", "menu", "title"), &EditorFileDialog::add_side_menu, DEFVAL(""));
@@ -126,9 +132,33 @@ void EditorFileDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
-				// Synchronize back favorites and recent directories, in case they have changed.
-				EditorSettings::get_singleton()->set_favorites(get_favorite_list(), false);
-				EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				// Synchronize back favorites and recent directories if they have changed.
+				if (favorites_changed) {
+					Vector<String> settings_favorites = EditorSettings::get_singleton()->get_favorites();
+					Vector<String> current_favorites = get_favorite_list();
+					LocalVector<String> to_erase;
+
+					// The favorite list in EditorSettings may have files in between. They need to be handled properly to preserve order.
+					for (const String &fav : settings_favorites) {
+						if (!fav.ends_with("/")) {
+							continue;
+						}
+						int64_t idx = current_favorites.find(fav);
+						if (idx == -1) {
+							to_erase.push_back(fav);
+						} else {
+							current_favorites.remove_at(idx);
+						}
+					}
+					for (const String &fav : to_erase) {
+						settings_favorites.erase(fav);
+					}
+					settings_favorites.append_array(current_favorites);
+					EditorSettings::get_singleton()->set_favorites(settings_favorites, false);
+				}
+				if (recents_changed) {
+					EditorSettings::get_singleton()->set_recent_dirs(get_recent_list(), false);
+				}
 			}
 		} break;
 
