@@ -31,6 +31,7 @@
 #include "voxelizer.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/visual_shader_nodes.h"
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
@@ -330,17 +331,194 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 	return ret;
 }
 
+static void find_visual_shader_texture_param(Ref<VisualShader> p_vs, int p_port, String &r_name, Ref<Texture2D> &r_default_tex) {
+	List<VisualShader::Connection> connections;
+	p_vs->get_node_connections(VisualShader::TYPE_FRAGMENT, &connections);
+
+	for (const VisualShader::Connection &E : connections) {
+		if (E.to_node != VisualShader::NODE_ID_OUTPUT || E.to_port != p_port) {
+			continue;
+		}
+
+		int node_id = E.from_node;
+		while (true) {
+			Ref<VisualShaderNode> node = p_vs->get_node(VisualShader::TYPE_FRAGMENT, node_id);
+			if (node.is_null()) {
+				break;
+			}
+
+			Ref<VisualShaderNodeParameter> param = node;
+			if (param.is_valid()) {
+				r_name = param->get_parameter_name();
+				return;
+			}
+
+			Ref<VisualShaderNodeTexture> tex = node;
+			if (tex.is_null() || tex->get_source() != VisualShaderNodeTexture::SOURCE_PORT) {
+				const Vector<VisualShader::DefaultTextureParam> dparams = node->get_default_texture_parameters(VisualShader::TYPE_FRAGMENT, node_id);
+				if (dparams.is_empty()) {
+					break;
+				}
+				r_name = dparams[0].name;
+				if (dparams[0].params.size() > 0) {
+					r_default_tex = dparams[0].params.front()->get();
+				}
+				return;
+			}
+
+			int prev_node_id = -1;
+			for (const VisualShader::Connection &F : connections) {
+				if (F.to_node != node_id && F.to_port != 0) {
+					continue;
+				}
+				prev_node_id = F.from_node;
+				break;
+			}
+
+			if (prev_node_id == -1) {
+				break;
+			}
+			node_id = prev_node_id;
+		}
+	}
+}
+
+static Ref<Texture2D> get_shader_parameter_texture(Ref<ShaderMaterial> p_smat, const RID &p_shader_rid, const String &p_name, Ref<Texture2D> p_default) {
+	if (p_name.is_empty()) {
+		return p_default;
+	}
+	Variant v = p_smat->get_shader_parameter(p_name);
+	if (v.get_type() == Variant::NIL && p_shader_rid.is_valid()) {
+		v = RS::get_singleton()->shader_get_parameter_default(p_shader_rid, p_name);
+	}
+	if (v.get_type() == Variant::OBJECT) {
+		Ref<Texture2D> tex = v;
+		if (tex.is_valid()) {
+			return tex;
+		}
+	}
+	return p_default;
+}
+
+static Color get_shader_parameter_color(Ref<ShaderMaterial> p_smat, const RID &p_shader_rid, const String &p_name, const Color &p_default) {
+	if (p_name.is_empty()) {
+		return p_default;
+	}
+	Variant v = p_smat->get_shader_parameter(p_name);
+	if (v.get_type() == Variant::NIL && p_shader_rid.is_valid()) {
+		v = RS::get_singleton()->shader_get_parameter_default(p_shader_rid, p_name);
+	}
+	if (v.get_type() == Variant::COLOR) {
+		return v;
+	}
+	return p_default;
+}
+
+static void find_visual_shader_color_param(Ref<VisualShader> p_vs, int p_port, String &r_name) {
+	List<VisualShader::Connection> connections;
+	p_vs->get_node_connections(VisualShader::TYPE_FRAGMENT, &connections);
+
+	for (const VisualShader::Connection &E : connections) {
+		if (E.to_node != VisualShader::NODE_ID_OUTPUT || E.to_port != p_port) {
+			continue;
+		}
+
+		Ref<VisualShaderNodeParameter> param = p_vs->get_node(VisualShader::TYPE_FRAGMENT, E.from_node);
+		if (param.is_valid()) {
+			r_name = param->get_parameter_name();
+			return;
+		}
+
+		Ref<VisualShaderNode> node = p_vs->get_node(VisualShader::TYPE_FRAGMENT, E.from_node);
+		if (node.is_null()) {
+			continue;
+		}
+
+		for (const VisualShader::Connection &F : connections) {
+			if (F.to_node == E.from_node) {
+				Ref<VisualShaderNodeParameter> p = p_vs->get_node(VisualShader::TYPE_FRAGMENT, F.from_node);
+				if (p.is_valid()) {
+					r_name = p->get_parameter_name();
+					return;
+				}
+			}
+		}
+	}
+}
+
+Voxelizer::MaterialCache Voxelizer::_get_shader_material_cache(Ref<ShaderMaterial> p_material) {
+	MaterialCache mc;
+	RID shader_rid = p_material->get_shader_rid();
+	Ref<VisualShader> vs = p_material->get_shader();
+
+	String vs_albedo_tex_name;
+	Ref<Texture2D> vs_albedo_default_tex;
+	String vs_albedo_col_name;
+	String vs_emission_tex_name;
+	Ref<Texture2D> vs_emission_default_tex;
+	String vs_emission_col_name;
+
+	if (vs.is_valid()) {
+		find_visual_shader_texture_param(vs, 0, vs_albedo_tex_name, vs_albedo_default_tex);
+		find_visual_shader_color_param(vs, 0, vs_albedo_col_name);
+		find_visual_shader_texture_param(vs, 5, vs_emission_tex_name, vs_emission_default_tex);
+		find_visual_shader_color_param(vs, 5, vs_emission_col_name);
+	} else {
+		vs_albedo_col_name = "albedo";
+		vs_emission_col_name = "emission";
+	}
+
+	Color albedo_col = get_shader_parameter_color(p_material, shader_rid, vs_albedo_col_name, Color(1, 1, 1)).srgb_to_linear();
+	Ref<Texture2D> albedo_tex = get_shader_parameter_texture(p_material, shader_rid, vs_albedo_tex_name, vs_albedo_default_tex);
+
+	Ref<Image> img_albedo;
+	if (albedo_tex.is_valid()) {
+		img_albedo = albedo_tex->get_image();
+		mc.albedo = _get_bake_texture(img_albedo, albedo_col, Color(0, 0, 0));
+	} else {
+		mc.albedo = _get_bake_texture(img_albedo, Color(1, 1, 1), albedo_col);
+	}
+
+	float emission_energy = exposure_normalization;
+
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		Variant v_intensity = p_material->get_shader_parameter("emission_intensity");
+		if (v_intensity.get_type() == Variant::NIL && shader_rid.is_valid()) {
+			v_intensity = RS::get_singleton()->shader_get_parameter_default(shader_rid, "emission_intensity");
+		}
+		if (v_intensity.get_type() == Variant::FLOAT || v_intensity.get_type() == Variant::INT) {
+			emission_energy *= float(v_intensity);
+		}
+	}
+
+	Ref<Texture2D> emission_tex = get_shader_parameter_texture(p_material, shader_rid, vs_emission_tex_name, vs_emission_default_tex);
+	Color emission_col;
+	if (emission_tex.is_valid()) {
+		emission_col = get_shader_parameter_color(p_material, shader_rid, vs_emission_col_name, Color(1, 1, 1)).srgb_to_linear();
+	} else {
+		emission_col = get_shader_parameter_color(p_material, shader_rid, vs_emission_col_name, Color(0, 0, 0)).srgb_to_linear();
+	}
+
+	Ref<Image> img_emission;
+	if (emission_tex.is_valid()) {
+		img_emission = emission_tex->get_image();
+		mc.emission = _get_bake_texture(img_emission, emission_col * emission_energy, Color(0, 0, 0));
+	} else {
+		mc.emission = _get_bake_texture(img_emission, Color(1, 1, 1), emission_col * emission_energy);
+	}
+
+	return mc;
+}
+
 Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material) {
 	// This way of obtaining materials is inaccurate and also does not support some compressed formats very well.
-	Ref<BaseMaterial3D> mat = p_material;
-
-	Ref<Material> material = mat; //hack for now
-
-	if (material_cache.has(material)) {
-		return material_cache[material];
+	if (material_cache.has(p_material)) {
+		return material_cache[p_material];
 	}
 
 	MaterialCache mc;
+	Ref<BaseMaterial3D> mat = p_material;
+	Ref<ShaderMaterial> smat = p_material;
 
 	if (mat.is_valid()) {
 		Ref<Texture2D> albedo_tex = mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
@@ -376,6 +554,9 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 			Ref<Image> empty;
 			mc.emission = _get_bake_texture(empty, Color(0, 0, 0), Color(0, 0, 0));
 		}
+
+	} else if (smat.is_valid()) {
+		mc = _get_shader_material_cache(smat);
 
 	} else {
 		Ref<Image> empty;
