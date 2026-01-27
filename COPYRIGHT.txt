@@ -153,6 +153,16 @@ Copyright: 2014-present Godot Engine contributors
  1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
 License: Expat and WOL
 
+Files: servers/rendering/renderer_rd/shaders/effects/motion_blur_blur.glsl
+  servers/rendering/renderer_rd/shaders/effects/motion_blur_preprocess.glsl
+  servers/rendering/renderer_rd/shaders/effects/motion_blur_tile_max_x.glsl
+  servers/rendering/renderer_rd/shaders/effects/motion_blur_tile_max_y.glsl
+  servers/rendering/renderer_rd/shaders/effects/motion_blur_neighbor_max.glsl
+Comment: sphynx-owner's motion blur effect
+Copyright: 2025, sphynx-owner
+License: MIT
+
+
 Files: servers/rendering/renderer_rd/shaders/effects/tonemap.glsl
 Comment: NVidia's FXAA 3.11, simplified by Simon Rodriguez
 Copyright: 2014-2015, NVIDIA CORPORATION

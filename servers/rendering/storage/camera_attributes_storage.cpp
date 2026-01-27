@@ -57,6 +57,86 @@ void RendererCameraAttributes::camera_attributes_free(RID p_rid) {
 	camera_attributes_owner.free(p_rid);
 }
 
+void RendererCameraAttributes::camera_attributes_set_motion_blur_framerate_mode(RenderingServer::MotionBlurFramerateMode p_mode, int p_reference_framerate) {
+	motion_blur_framerate_mode = p_mode;
+	motion_blur_reference_framerate = p_reference_framerate;
+}
+
+void RendererCameraAttributes::camera_attributes_set_motion_blur_quality(RenderingServer::MotionBlurQuality p_quality) {
+	motion_blur_quality = p_quality;
+}
+
+void RendererCameraAttributes::camera_attributes_set_motion_blur_tile_size(RenderingServer::MotionBlurTileSize p_tile_size) {
+	motion_blur_tile_size = p_tile_size;
+}
+
+void RendererCameraAttributes::camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) {
+	if (motion_blur_show_in_editor == p_enabled) {
+		return;
+	}
+	motion_blur_show_in_editor = p_enabled;
+}
+
+void RendererCameraAttributes::camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, bool p_clamp_velocities_to_tile, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL(cam_attributes);
+#ifdef DEBUG_ENABLED
+	if ((OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile") && p_enable) {
+		WARN_PRINT_ONCE_ED("Motion blur is only available when using the Forward+ renderer.");
+	}
+#endif
+	cam_attributes->motion_blur_enabled = p_enable;
+	cam_attributes->motion_blur_intensity = p_intensity;
+	cam_attributes->motion_blur_clamp_velocities_to_tile = p_clamp_velocities_to_tile;
+	cam_attributes->motion_blur_object_velocity_multiplier = p_object_velocity_multiplier;
+	cam_attributes->motion_blur_movement_velocity_multiplier = p_movement_velocity_multiplier;
+	cam_attributes->motion_blur_rotation_velocity_multiplier = p_rotation_velocity_multiplier;
+	cam_attributes->motion_blur_velocity_lower_threshold = p_velocity_lower_threshold;
+	cam_attributes->motion_blur_velocity_upper_threshold = p_velocity_upper_threshold;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_intensity(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
+	return cam_attributes->motion_blur_intensity;
+}
+
+bool RendererCameraAttributes::camera_attributes_get_motion_blur_clamp_velocities_to_tile(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, false);
+	return cam_attributes->motion_blur_clamp_velocities_to_tile;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_object_velocity_multiplier(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, false);
+	return cam_attributes->motion_blur_object_velocity_multiplier;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_movement_velocity_multiplier(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
+	return cam_attributes->motion_blur_movement_velocity_multiplier;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_rotation_velocity_multiplier(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
+	return cam_attributes->motion_blur_rotation_velocity_multiplier;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_velocity_lower_threshold(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
+	return cam_attributes->motion_blur_velocity_lower_threshold;
+}
+
+float RendererCameraAttributes::camera_attributes_get_motion_blur_velocity_upper_threshold(RID p_camera_attributes) {
+	CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+	ERR_FAIL_NULL_V(cam_attributes, 0.0);
+	return cam_attributes->motion_blur_velocity_upper_threshold;
+}
+
 void RendererCameraAttributes::camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter) {
 	dof_blur_quality = p_quality;
 	dof_blur_use_jitter = p_use_jitter;

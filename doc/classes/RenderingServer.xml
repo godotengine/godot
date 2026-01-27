@@ -102,6 +102,45 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="camera_attributes_set_motion_blur">
+			<return type="void" />
+			<param index="0" name="camera_attributes" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<param index="2" name="intensity" type="float" />
+			<param index="3" name="clamp_velocities_to_tile" type="bool" />
+			<param index="4" name="object_velocity_multiplier" type="float" />
+			<param index="5" name="movement_velocity_multiplier" type="float" />
+			<param index="6" name="rotation_velocity_multiplier" type="float" />
+			<param index="7" name="velocity_lower_threshold" type="float" />
+			<param index="8" name="velocity_upper_threshold" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_framerate_mode">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="RenderingServer.MotionBlurFramerateMode" />
+			<param index="1" name="reference_framerate" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_quality">
+			<return type="void" />
+			<param index="0" name="quality" type="int" enum="RenderingServer.MotionBlurQuality" />
+			<description>
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_show_in_editor">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_tile_size">
+			<return type="void" />
+			<param index="0" name="tile_size" type="int" enum="RenderingServer.MotionBlurTileSize" />
+			<description>
+			</description>
+		</method>
 		<method name="camera_create">
 			<return type="RID" />
 			<description>
@@ -5836,6 +5875,20 @@
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="3" enum="DOFBlurQuality">
 			Highest quality DOF blur. Results in the smoothest looking blur by taking the most samples, but is also significantly slower.
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_LOW" value="0" enum="MotionBlurQuality">
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_MEDIUM" value="1" enum="MotionBlurQuality">
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_HIGH" value="2" enum="MotionBlurQuality">
+		</constant>
+		<constant name="MOTION_BLUR_TILE_SIZE_SMALL" value="0" enum="MotionBlurTileSize">
+		</constant>
+		<constant name="MOTION_BLUR_TILE_SIZE_MEDIUM" value="1" enum="MotionBlurTileSize">
+		</constant>
+		<constant name="MOTION_BLUR_TILE_SIZE_LARGE" value="2" enum="MotionBlurTileSize">
+		</constant>
+		<constant name="MOTION_BLUR_TILE_SIZE_EXTRA_LARGE" value="3" enum="MotionBlurTileSize">
 		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.

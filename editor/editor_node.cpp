@@ -487,6 +487,15 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
+	RS::MotionBlurFramerateMode motion_blur_framerate_mode = RS::MotionBlurFramerateMode(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_framerate_mode")));
+	int motion_blur_reference_framerate = GLOBAL_GET("rendering/camera/motion_blur/motion_blur_reference_framerate");
+	RS::get_singleton()->camera_attributes_set_motion_blur_framerate_mode(motion_blur_framerate_mode, motion_blur_reference_framerate);
+	bool editor_mb_enabled = bool(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_show_in_editor"));
+	RS::get_singleton()->camera_attributes_set_motion_blur_show_in_editor(editor_mb_enabled);
+	RS::MotionBlurQuality motion_blur_quality = RS::MotionBlurQuality(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_quality")));
+	RS::get_singleton()->camera_attributes_set_motion_blur_quality(motion_blur_quality);
+	RS::MotionBlurTileSize motion_blur_tile_size = RS::MotionBlurTileSize(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_tile_size")));
+	RS::get_singleton()->camera_attributes_set_motion_blur_tile_size(motion_blur_tile_size);
 	RSE::DOFBokehShape dof_shape = RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RSE::DOFBlurQuality dof_quality = RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
