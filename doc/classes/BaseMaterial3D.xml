@@ -781,7 +781,7 @@
 		<constant name="FLAG_DISABLE_MULTI_BOUNCE_OCCLUSION" value="25" enum="Flags">
 			Disables multi-bounce ambient occlusion.
 		</constant>
-		<constant name="FLAG_MAX" value="25" enum="Flags">
+		<constant name="FLAG_MAX" value="26" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
