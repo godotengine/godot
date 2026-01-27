@@ -183,7 +183,7 @@ Transform2D Camera2D::get_camera_transform() {
 				camera_pos.x -= screen_rect.position.x + (screen_rect.size.x - limit[SIDE_RIGHT] - limit[SIDE_LEFT]) / 2;
 				hit_limit = true;
 				hit_sides |= 1 | 4;
-			} else if (screen_rect.position.x <= limit[SIDE_LEFT]) {  // Changed < to <=
+			} else if (screen_rect.position.x <= limit[SIDE_LEFT]) {
 				camera_pos.x -= screen_rect.position.x - limit[SIDE_LEFT];
 				hit_limit = true;
 				hit_sides |= 1;
