@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
 #include "scene/gui/control.h"
@@ -43,6 +44,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
@@ -1632,6 +1634,20 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		return;
 	}
 
+	// If no custom tooltip is set on the control, check if the viewport has one set
+	if (!base_tooltip && gui.custom_tooltip.is_valid()) {
+		Node *scene = gui.custom_tooltip->instantiate();
+		Control *scene_as_control = Object::cast_to<Control>(scene);
+		if (scene_as_control) {
+			base_tooltip = scene_as_control;
+			// Set tooltip text of the root node so we can pass the text into the scene
+			base_tooltip->set_tooltip_text(gui.tooltip_text);
+		} else {
+			ERR_FAIL_EDMSG("Invalid scene for Viewport Custom Tooltip. Root node should extend Control.");
+			scene->queue_free();
+		}
+	}
+
 	// Popup window which houses the tooltip content.
 	PopupPanel *panel = memnew(PopupPanel);
 	panel->set_theme_type_variation(SNAME("TooltipPanel"));
@@ -1710,6 +1726,29 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		gui.tooltip_popup->popup(r);
 	}
 	gui.tooltip_popup->child_controls_changed();
+}
+
+void Viewport::set_custom_tooltip(Ref<PackedScene> p_custom_tooltip_scene) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_custom_tooltip_scene.is_valid()) {
+		// Check if it extends Control
+		Ref<SceneState> scene_state = p_custom_tooltip_scene->get_state();
+		String type;
+		while (scene_state.is_valid() && type.is_empty()) {
+			// Make sure we have a root node. Supposed to be at 0 index because find_node_by_path() does not seem to work.
+			ERR_FAIL_COND(scene_state->get_node_count() < 1);
+
+			type = scene_state->get_node_type(0);
+			scene_state = scene_state->get_base_scene_state();
+		}
+		ERR_FAIL_COND_EDMSG(type.is_empty(), vformat("Invalid PackedScene for Viewport Custom Tooltip: %s. Could not get the type of the root node.", p_custom_tooltip_scene->get_path()));
+		bool extends_correct_class = ClassDB::is_parent_class(type, "Control");
+		ERR_FAIL_COND_EDMSG(!extends_correct_class, vformat("Invalid PackedScene for Viewport Custom Tooltip: %s. Root node should extend Control. Found %s instead.", p_custom_tooltip_scene->get_path(), type));
+
+		gui.custom_tooltip = p_custom_tooltip_scene;
+	} else {
+		gui.custom_tooltip = Ref<PackedScene>();
+	}
 }
 
 void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
@@ -5005,6 +5044,8 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
 
+	ClassDB::bind_method(D_METHOD("set_custom_tooltip", "custom_tooltip_scene"), &Viewport::set_custom_tooltip);
+
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	ClassDB::bind_method(D_METHOD("set_physics_object_picking", "enable"), &Viewport::set_physics_object_picking);
 	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
@@ -5326,6 +5367,11 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(VRS_UPDATE_ALWAYS);
 	BIND_ENUM_CONSTANT(VRS_UPDATE_MAX);
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "gui/common/custom_tooltip_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "gui/common/custom_tooltip_scene.editor_hint", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res"), "");
+#endif
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
@@ -5375,6 +5421,10 @@ Viewport::Viewport() {
 
 	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_GET("gui/timers/tooltip_delay_sec");
+	String custom_tooltip_setting = GLOBAL_GET("gui/common/custom_tooltip_scene");
+	if (!custom_tooltip_setting.is_empty() && FileAccess::exists(custom_tooltip_setting) && ResourceLoader::get_resource_type(custom_tooltip_setting) == "PackedScene") {
+		set_custom_tooltip(ResourceLoader::load(custom_tooltip_setting));
+	}
 
 #ifndef _3D_DISABLED
 	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));
